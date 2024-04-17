@@ -1,0 +1,26 @@
+#pragma once
+#include "GEngine/Core/Core.h"
+#include "GEngine/Object/ScriptableObject.h"
+#include "GEngine/Components/Component.h"
+namespace GEngine
+{
+	class GENGINE_API NativeScript : public Component
+	{
+	public:
+
+
+		ScriptableObject*(*InstantiateFunc)();
+		void (*DestroyFunc)(NativeScript*);
+
+		template<typename T>
+		void Bind()
+		{
+			InstantiateFunc = [](){ return static_cast<ScriptableObject*>(new T()); };
+			DestroyFunc = [](NativeScript* ns) { delete ns->Instance; ns->Instance = nullptr; };
+		}
+	public:
+		ScriptableObject* Instance = nullptr;
+	};
+}
+
+

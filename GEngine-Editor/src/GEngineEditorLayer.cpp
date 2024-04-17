@@ -1,0 +1,702 @@
+#include "GEngineEditorLayer.h"
+
+
+namespace GEngine
+{
+
+	GEngineEditorLayer::GEngineEditorLayer()
+		: Layer("GEngine Editor")
+	{
+
+	}
+
+	void GEngineEditorLayer::OnAttach()
+	{
+		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
+
+		m_PlayButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/playButtonIcon.png");
+		m_PlayingButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/playingButtonIcon.png");
+		m_StopButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/stopButtonIcon.png");
+		m_PauseButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/pauseButtonIcon.png");
+		m_PausingButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/pausingButtonIcon.png");
+
+		m_PlayButtonIcon_Display = m_PlayButtonIcon;
+		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+
+		FrameBufferSpecification fspec;
+		fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
+		fspec.Width = 1280;
+		fspec.Height = 720;
+		m_SceneViewportFrameBuffer = FrameBuffer::Create(fspec);
+		m_GameViewportFrameBuffer = FrameBuffer::Create(fspec);
+		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
+		m_EditorScene = CreateRef<Scene>();
+		m_ActiveScene = m_EditorScene;
+		
+		m_Hierarchy.SetContext(m_ActiveScene);
+	}
+
+	void GEngineEditorLayer::OnDetach()
+	{
+	}
+
+	void GEngineEditorLayer::OnUpdate()
+	{
+
+		GE_PROFILE_FUNCTION();
+
+		// Scene update ( logic and physics )
+		{
+			if (m_SceneState == EditorSceneState::Play)
+			{
+				m_ActiveScene->OnUpdate();
+			}
+		}
+		Renderer2D::ResetStats();
+
+		// Scene Viewport
+		{			
+			// If framebuffer is changed in OnGuiRender(), the screen will flash
+			FrameBufferSpecification fbspsc = m_SceneViewportFrameBuffer->GetSpecification();
+			if (m_SceneViewportSize.value.x > 0 && m_SceneViewportSize.value.y > 0 && (fbspsc.Width != m_SceneViewportSize.value.x || fbspsc.Height != m_SceneViewportSize.value.y))
+			{
+				m_SceneViewportFrameBuffer->Resize(m_SceneViewportSize);
+			}
+
+			m_SceneViewportFrameBuffer->Bind();			
+
+			{
+				GE_PROFILE_SCOPE("Render: EditorOnRender");
+				// temporary
+				RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::Clear();
+
+
+				if (m_SceneViewportFocused && m_SceneViewportHovered)
+				{
+					m_EditorCamera.OnUpdate();
+				}
+
+				Renderer2D::BeginScene(m_EditorCamera);
+				m_ActiveScene->OnRender();
+				Renderer2D::EndScene();
+			}
+			{
+				// TOOO: Will be replaced with rayhit
+				// Get the pixel of the colorAttachment in index 1
+				/*Vector2 mousePos = { ImGui::GetMousePos().x, ImGui::GetMousePos().y };
+				mousePos.value.x -= m_ViewportBounds[0].value.x;
+				mousePos.value.y -= m_ViewportBounds[0].value.y;
+				Vector2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+				mousePos.value.y = viewportSize.value.y - mousePos.value.y;
+				if ((int)mousePos.value.x >= 0 && (int)mousePos.value.y >= 0 && (int)mousePos.value.x < (int)viewportSize.value.x && (int)mousePos.value.y < (int)viewportSize.value.y)
+				{
+					int pixel = m_FrameBuffer->ReadPixelInt(1, (int)mousePos.value.x, (int)mousePos.value.y);
+					if (pixel >= 0)
+					{
+						m_HoveredGameObject = { (uint32_t)pixel, m_ActiveScene.get() };
+					}
+					else
+					{
+						m_HoveredGameObject = {};
+					}
+
+				}*/
+			}
+			m_SceneViewportFrameBuffer->Unbind();
+
+		}
+
+
+		// Game Viewport
+		{
+			
+			// If framebuffer is changed in OnGuiRender(), the screen will flash
+			FrameBufferSpecification fbspsc = m_GameViewportFrameBuffer->GetSpecification();
+			if (m_GameViewportSize.value.x > 0 && m_GameViewportSize.value.y > 0 && (fbspsc.Width != m_GameViewportSize.value.x || fbspsc.Height != m_GameViewportSize.value.y))
+			{
+				m_GameViewportFrameBuffer->Resize(m_GameViewportSize);
+			}
+			m_GameViewportFrameBuffer->Bind();
+
+			{
+				GE_PROFILE_SCOPE("Render: OnRender");
+				// temporary
+				RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::Clear();
+
+				
+				auto camera =  m_ActiveScene->MainCamera();
+				if (camera.m_GameObject)
+				{
+					Renderer2D::BeginScene(camera); 
+					m_ActiveScene->OnRender();
+					Renderer2D::EndScene();
+				}
+			}
+			m_GameViewportFrameBuffer->Unbind();
+		}
+	}
+
+	void GEngineEditorLayer::OnGuiRender()
+	{
+		GE_PROFILE_FUNCTION();
+
+
+
+
+		bool dockSpace = true;
+		// If you strip some features of, this demo is pretty much equivalent to calling DockSpaceOverViewport()!
+   // In most cases you should be able to just call DockSpaceOverViewport() and ignore all the code below!
+   // In this specific demo, we are not using DockSpaceOverViewport() because:
+   // - we allow the host window to be floating/moveable instead of filling the viewport (when opt_fullscreen == false)
+   // - we allow the host window to have padding (when opt_padding == true)
+   // - we have a local menu bar in the host window (vs. you could use BeginMainMenuBar() + DockSpaceOverViewport() in your code!)
+   // TL;DR; this demo is more complicated than what you would normally use.
+   // If we removed all the options we are showcasing, this demo would become:
+   //     void ShowExampleAppDockSpace()
+   //     {
+   //         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+   //     }
+
+		static bool opt_fullscreen = true;
+		static bool opt_padding = false;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen)
+		{
+			const ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImGui::SetNextWindowSize(viewport->WorkSize);
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		}
+		else
+		{
+			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+		}
+
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+		// and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+		// all active windows docked into it will lose their parent and become undocked.
+		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		if (!opt_padding)
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace Demo", &dockSpace, window_flags);
+		if (!opt_padding)
+			ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// Submit the DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowMinSize.x = 350.0f;
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		style.WindowMinSize = ImVec2(32.0f,32.0f);
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				// Disabling fullscreen would allow the window to be moved to the front of other windows,
+				// which we can't undo at the moment without finer window depth/z control.
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+				{
+					NewScene();
+				}
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+				{
+					OpenScene();
+				}
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Save", "Ctrl+S"))
+				{
+					SaveScene();
+				}
+				if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
+				{
+					SaveSceneAs();
+				}
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Exit")) 
+				{
+					Application::Get().Close();
+				}
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+
+		
+		// Play / Stop Button
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, -2.0f });
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0.0f, 2.0f });
+			ImGui::Begin("##ToolBar",nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			float size = ImGui::GetWindowHeight() - 1.0f;
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
+			if (ImGui::ImageButton((ImTextureID)m_PlayButtonIcon_Display->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			{
+				OnScenePlay();
+			}
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
+			if (ImGui::ImageButton((ImTextureID)m_PauseButtonIcon_DisPlay->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			{
+				OnScenePause();
+			}
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
+			if (ImGui::ImageButton((ImTextureID)m_StopButtonIcon->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			{
+				OnSceneStop();
+			}
+			ImGui::PopStyleVar(2);
+			ImGui::End();
+		}
+		
+		
+
+		// Scene Viewport
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+			ImGui::Begin("Scene Viewport");
+			
+			// Set Viewport Focused and Hovered
+			m_SceneViewportFocused = ImGui::IsWindowFocused();
+			m_SceneViewportHovered = ImGui::IsWindowHovered();
+			Application::Get().GetImGuiLayer()->SetBlockEvent(!m_SceneViewportFocused || !m_SceneViewportHovered);
+
+			// Update viewport size
+			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			if (m_SceneViewportSize != viewportPanelSize && viewportPanelSize.value.x > 0 && viewportPanelSize.value.y > 0)
+			{
+				m_SceneViewportSize = viewportPanelSize;
+				m_EditorCamera.SetViewportSize(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y);
+			}
+			uint32_t tex = m_SceneViewportFrameBuffer->GetColorAttachmentRendererID();
+			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+
+			Vector2 windowRegionMin = { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
+			Vector2 windowRegionMax = { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
+			Vector2 viewportOffset = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
+			m_SceneViewportBounds[0] = windowRegionMin + viewportOffset;
+			m_SceneViewportBounds[1] = windowRegionMax + viewportOffset;
+
+
+			// Gizmos
+			GameObject selectedObj = m_Hierarchy.GetSelectedGameObject();
+			if (selectedObj && m_GizmoOperationType != -1)
+			{
+				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetDrawlist();
+				ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+
+				Matrix4x4 cameraProjection = m_EditorCamera.GetProjectionMatrix();
+				Matrix4x4 cameraView = m_EditorCamera.GetViewMatrix();
+
+				auto& tc = selectedObj.GetComponent<Transform>();
+				Matrix4x4 objTransform = tc.GetModelMatrix();
+				
+
+				// Snap
+				bool isSnap = Input::IsKeyPressed(KeyCode::LeftControl);
+				// for Scale and Position
+				float snapVal = 0.5f;
+				// for Rotation
+				if (m_GizmoOperationType == ImGuizmo::OPERATION::ROTATE)
+				{
+					snapVal = 15.0f;
+				}
+				float snapArr[3] = { snapVal, snapVal , snapVal };
+
+
+				ImGuizmo::Manipulate(cameraView.ValuePtr(), cameraProjection.ValuePtr(), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, objTransform.ValuePtr(), nullptr, isSnap ? snapArr : nullptr);
+
+				if (ImGuizmo::IsUsing())
+				{
+					Vector3 position, rotation, scale;
+					Math::DecomposeTransformMatrix(objTransform, position, rotation, scale); 
+					tc.m_Position = position;
+					tc.SetEulerAngle(Math::Degrees(rotation));
+					tc.m_Scale = scale;
+				}
+
+			}
+
+
+			// Recive Drag data
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					std::filesystem::path pathnam = (const wchar_t*)payload->Data;
+					// Scene data
+					if (pathnam.extension() == ".GEScene")
+					{
+						m_SceneFilePath = pathnam;
+						OpenScene();
+					}
+					
+				}
+				ImGui::EndDragDropTarget();
+			}
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
+
+		// Game Viewport
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+			ImGui::Begin("Game Viewport");
+
+			// Update viewport size
+			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			if (viewportPanelSize.value.x > 0 && viewportPanelSize.value.y > 0)
+			{
+				m_GameViewportSize = viewportPanelSize;
+				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.value.x, m_GameViewportSize.value.y);
+			}
+			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachmentRendererID();
+			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.value.x, m_GameViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
+
+		// Hierarchy
+		{
+			m_Hierarchy.OnGuiRender();
+		}
+
+		// Content Browser
+		{
+			m_ContentBrowser.OnGuiRender();
+		}
+
+		// Scene Viewport
+		{
+			ImGui::Begin("Scene Viewport Properties");
+
+
+			// Gizmo operation
+			{
+				std::string currentGizmoOperationType;
+				switch (m_GizmoOperationType)
+				{
+				case -1:
+					currentGizmoOperationType = "None";
+					break;
+				case 0:
+					currentGizmoOperationType = "Translate";
+					break;
+				case 1:
+					currentGizmoOperationType = "Rotate";
+					break;
+				case 2:
+					currentGizmoOperationType = "Scale";
+					break;
+				default:
+					break;
+				}
+				if (ImGui::BeginCombo("Gizmo operation", (const char*)currentGizmoOperationType.c_str()))
+				{
+					bool isSelected = m_GizmoOperationType == -1;
+					if (ImGui::Selectable((const char*)std::string("None").c_str(), isSelected))
+					{
+						m_GizmoOperationType = -1;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = m_GizmoOperationType == 0;
+					if (ImGui::Selectable((const char*)std::string("Translate").c_str(), isSelected))
+					{
+						m_GizmoOperationType = 0;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = m_GizmoOperationType == 1;
+					if (ImGui::Selectable((const char*)std::string("Rotate").c_str(), isSelected))
+					{
+						m_GizmoOperationType = 1;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = m_GizmoOperationType == 2;
+					if (ImGui::Selectable((const char*)std::string("Scale").c_str(), isSelected))
+					{
+						m_GizmoOperationType = 2;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+			}
+
+			// Gizmo mode
+			{
+				std::string currentGizmoModeType;
+				switch (m_GizmoModeType)
+				{
+					case 0:
+						currentGizmoModeType = "Local";
+						break;
+					case 1:
+						currentGizmoModeType = "Global";
+						break;
+					default:
+						break;
+				}
+
+				if (ImGui::BeginCombo("Gizmo mode", (const char*)currentGizmoModeType.c_str()))
+				{
+					bool isSelected = m_GizmoModeType == 0;
+					if (ImGui::Selectable((const char*)std::string("Local").c_str(), isSelected))
+					{
+						m_GizmoModeType = 0;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = m_GizmoModeType == 1;
+					if (ImGui::Selectable((const char*)std::string("Global").c_str(), isSelected))
+					{
+						m_GizmoModeType = 1;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+			}
+
+			ImGui::NewLine();
+			ImGui::Separator();
+			ImGui::Text("Frames : %llf", 1 / Time::GetDeltaTime());
+
+			ImGui::NewLine();
+			ImGui::Separator();
+			ImGui::Text("Stats:");
+			ImGui::Text("Quad Count: %d", Renderer2D::GetStats().QuadCount);
+			ImGui::Text("Draw Calls: %d", Renderer2D::GetStats().DrawCalls);
+			ImGui::Text("Vertex Count: %d", Renderer2D::GetStats().GetTotalVertexCount());
+			ImGui::Text("Index Count: %d", Renderer2D::GetStats().GetTotalIndexCount());
+
+			
+
+			ImGui::End();
+		}
+
+
+
+		ImGui::End();
+	}
+
+	void GEngineEditorLayer::OnEndFrame()
+	{
+		m_ActiveScene->OnEndFrame();
+	}
+
+
+	void GEngineEditorLayer::OnEvent(Event& e)
+	{
+		m_EditorCamera.OnEvent(e);
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_EVENT_FN(GEngineEditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(GE_BIND_EVENT_FN(GEngineEditorLayer::OnMouseButtonPressed));
+	}
+
+	bool GEngineEditorLayer::OnKeyPressed(KeyPressedEvent& e)
+	{
+		// Shortcut
+		if (e.GetRepeatCount() > 0)
+		{
+			return false;
+		}
+
+		bool controlPressed = Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
+		bool shiftPressed = Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
+
+		switch (e.GetKeyCode())
+		{
+			case KeyCode::N:
+			{
+				if (controlPressed)
+				{
+					// ctrl + N
+					NewScene();
+				}
+				break;
+			}
+			case KeyCode::O:
+			{
+				if (controlPressed)
+				{
+					// ctrl + O
+					OpenScene();
+				}
+				break;
+			}
+			case KeyCode::S:
+			{
+				if (controlPressed && shiftPressed)
+				{
+					// ctrl + shift + S
+					SaveSceneAs();
+				}
+				else if (controlPressed)
+				{
+					// ctrl + S
+					SaveScene();
+				}
+				break;
+			}
+			case KeyCode::D:
+			{
+				if (controlPressed)
+				{
+					// ctrl + D
+					DulicateGameObject();
+				}
+				break;
+			}
+		default:break;
+		}
+
+		return false;
+	}
+
+	bool GEngineEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		return false;
+	}
+
+	void GEngineEditorLayer::NewScene()
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.value.x, (uint32_t)m_SceneViewportSize.value.y);
+		m_Hierarchy.SetContext(m_ActiveScene);
+		m_HoveredGameObject = {};
+		m_SceneFilePath = "";
+	}
+
+
+	void GEngineEditorLayer::OpenScene()
+	{
+		
+		if (m_SceneFilePath.empty() == false && m_SceneFilePath.extension() == ".GEScene")
+		{
+			std::string filePath = m_SceneFilePath.string();
+			m_ActiveScene = CreateRef<Scene>();
+			m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.value.x, (uint32_t)m_SceneViewportSize.value.y);
+			m_Hierarchy.SetContext(m_ActiveScene);
+			m_HoveredGameObject = {};
+			Serializer::Deserialize(filePath, m_ActiveScene);
+		}
+	}
+
+	void GEngineEditorLayer::SaveScene()
+	{
+		if (m_SceneFilePath.empty() == false)
+		{
+			Serializer::Serialize(m_SceneFilePath.string(), m_ActiveScene);
+		}
+		else
+		{
+			SaveSceneAs();
+		}
+	}
+
+	void GEngineEditorLayer::SaveSceneAs()
+	{
+		std::string filePath = FileDialogs::SaveFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
+		if (filePath.empty() == false)
+		{
+			m_SceneFilePath = filePath;
+			Serializer::Serialize(filePath, m_ActiveScene);
+		}
+	}
+
+	void GEngineEditorLayer::OnScenePlay()
+	{
+		if (m_SceneState == EditorSceneState::Edit)
+		{
+			//TOOO: copy scene
+			m_EditorScene = m_ActiveScene;
+			m_ActiveScene = Scene::Copy(m_ActiveScene);
+			m_ActiveScene->OnAwake();
+			m_ActiveScene->OnStart();
+			m_Hierarchy.SetContext(m_ActiveScene);
+		}
+		m_SceneState = EditorSceneState::Play;
+		m_PlayButtonIcon_Display = m_PlayingButtonIcon;
+		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+	}
+
+	void GEngineEditorLayer::OnSceneStop()
+	{
+		if (m_SceneState == EditorSceneState::Play || m_SceneState == EditorSceneState::Pause)
+		{
+			m_ActiveScene = m_EditorScene;
+			m_Hierarchy.SetContext(m_ActiveScene);
+		}
+		m_SceneState = EditorSceneState::Edit;
+		m_PlayButtonIcon_Display = m_PlayButtonIcon;
+		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+	}
+
+	void GEngineEditorLayer::OnScenePause()
+	{
+		if (m_SceneState == EditorSceneState::Play)
+		{
+			m_SceneState = EditorSceneState::Pause;
+			m_PauseButtonIcon_DisPlay = m_PausingButtonIcon;
+			m_PlayButtonIcon_Display = m_PlayButtonIcon;
+		}
+	}
+
+	void GEngineEditorLayer::DulicateGameObject()
+	{
+		if (m_SceneState == EditorSceneState::Edit)
+		{
+			if (m_Hierarchy.GetSelectedGameObject())
+			{
+				m_ActiveScene->DuplicateGameObject(m_Hierarchy.GetSelectedGameObject());
+			}
+		}
+	}
+
+}
