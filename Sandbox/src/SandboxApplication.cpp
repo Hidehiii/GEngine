@@ -36,8 +36,8 @@ private:
 class Sandbox : public GEngine::Application
 {
 public:
-	Sandbox()
-		: Application()
+	Sandbox(const GEngine::ApplicationSpecification& spec)
+		: Application(spec)
 	{
 		//PushLayer(new ExplameLayer());
 		PushLayer(new Sandbox2D());
@@ -49,7 +49,13 @@ public:
 	}
 };
 
-GEngine::Application* GEngine::CreateApplication()
+GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args)
 {
-	return new Sandbox();
+	Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
+
+	ApplicationSpecification spec;
+	spec.Name = "Ray Tracing";
+	spec.Size = { 1080, 1080 };
+	spec.CommandLineArgs = args;
+	return new Sandbox(spec);
 }

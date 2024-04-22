@@ -19,4 +19,8 @@ namespace GEngine
     {
         value = glm::quat(glm::vec3(x, y, z));
     }
+    Vector3 Quaternion::operator*(const Vector3& v)
+    {
+        return value * v.value;
+    }
 }

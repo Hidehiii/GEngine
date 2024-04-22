@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Renderer.h"
+#include "GEngine/Scripting/ScriptEngine.h"
 
 
 
@@ -9,20 +10,29 @@ namespace GEngine
 {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name, const Vector2& size)
+	Application::Application(const ApplicationSpecification& spec)
 	{
 		GE_PROFILE_FUNCTION();
 
 		GE_CORE_ASSERT(!s_Instance, "Application already exists!");
+		
 		s_Instance = this;
+		m_Specification = spec;
 
-		m_Window = Scope<Window>(Window::Create(WindowProps(name, (uint32_t)size.value.x, (uint32_t)size.value.y)));
+		if (m_Specification.WorkingDirectory.empty() == false)
+		{
+			std::filesystem::current_path(m_Specification.WorkingDirectory);
+		}
+
+		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.value.x, (uint32_t)m_Specification.Size.value.y)));
 		m_Window->SetEventCallback(GE_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
 		Time::SetFixedTime(1.0f / 60.0f);
 
 		Renderer::Init();
+		ScriptEngine::Init();
+
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -30,6 +40,8 @@ namespace GEngine
 
 	Application::~Application()
 	{
+		ScriptEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()

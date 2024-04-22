@@ -20,9 +20,7 @@ namespace GEngine
 		static void Shutdown();
 		static void Flush();
 
-		static void BeginScene(const OrthoGraphicCamera& camera);
-		static void BeginScene(const Editor::EditorCamera& camera);
-		static void BeginScene(Camera& camera);
+		static void BeginScene();
 		static void EndScene();
 
 		static void RenderImage(Transform& transform, ImageRenderer& imagerRenderer);
@@ -38,6 +36,7 @@ namespace GEngine
 		static void DrawLine(const Vector3& start, const Vector3& direction, const float length, const Vector4& color);
 		static void DrawRect(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
 		static void DrawRect(Transform& transform, const Vector4& color);
+		static void DrawRect(Matrix4x4& transform, const Vector4& color);
 		// Without Texture
 		static void DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
 		static void DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
@@ -68,7 +67,7 @@ namespace GEngine
 		static Statistics GetStats();
 		static void ResetStats();
 	private:
-		static void ResetShaderData(Matrix4x4& v, Matrix4x4& p, Vector3& cameraPos);
+		static void ResetShaderData();
 		static void StartBatch();
 		static void NextBatch();
 	};

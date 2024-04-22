@@ -39,6 +39,10 @@ namespace GEngine
 
 		void SetModelMatrix(const Matrix4x4& modelMatrix) { m_ModelMatrix = modelMatrix; }
 
+		Vector3 Forward();
+		Vector3 Right();
+		Vector3 Up();
+
 		Vector3 GetEulerAngles() const { return m_EulerAngles; }
 		void SetEulerAngleInRadians(const Vector3 radians) { m_Rotation = Quaternion(radians); m_EulerAngles = radians;  RecalculateModelMatrix(); }
 		void SetEulerAngle(const Vector3 angles) { m_Rotation = Quaternion(Math::Radians(angles)); m_EulerAngles = Math::Radians(angles);  RecalculateModelMatrix(); }

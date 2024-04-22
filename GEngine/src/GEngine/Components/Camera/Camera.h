@@ -32,6 +32,8 @@ namespace GEngine
 		void SetCameraType(CameraType type) { m_CameraType = type; RecalculateProjectionMatrix(); }
 		void SetCameraType(int type) { m_CameraType = CameraType(type); RecalculateProjectionMatrix(); }
 		CameraType GetCameraType() { return m_CameraType;  }
+		float GetAspectRatio() { return m_AspectRatio; }
+
 		static std::string GetCameraTypeString(CameraType type) { return CameraTypeString[(int)type];  }
 	protected: 
 		void RecalculateProjectionMatrix();
@@ -44,6 +46,12 @@ namespace GEngine
 		void SetOrthoGraphicSize(float size) { m_OrthoGraphicSize = size; RecalculateProjectionMatrix(); }
 		void SetOrthoGraphicNearClip(float nearClip) { m_OrthoGraphicNear = nearClip; RecalculateProjectionMatrix(); }
 		void SetOrthoGraphicFarClip(float farClip) { m_OrthoGraphicFar = farClip; RecalculateProjectionMatrix(); }
+
+		// order: LB LT RT RB
+		Vector3* GetOrthoGraphicNearClipCoord();
+		Vector3* GetOrthoGraphicFarClipCoord();
+		// order: NLB NLT NRT NRB FLB FLT FRT FRB
+		Vector3* GetOrthoGraphicClipCoord();
 	public:
 		// Perspective Camera
 		void SetPerspective(float fov, float nearClip, float farClip);
@@ -53,6 +61,12 @@ namespace GEngine
 		void SetPerspectiveVerticalFOV(float fov) { m_PerspectiveFOV = fov; RecalculateProjectionMatrix(); }
 		void SetPerspectiveNearClip(float nearClip) { nearClip = std::max(0.01f, nearClip);  m_PerspectiveNear = nearClip; RecalculateProjectionMatrix(); }
 		void SetPerspectiveFarClip(float farClip) { farClip = std::max(m_PerspectiveNear + 0.01f, farClip);  m_PerspectiveFar = farClip; RecalculateProjectionMatrix(); }
+
+		// order: LB LT RT RB
+		Vector3* GetPerspectiveNearClipCoord();
+		Vector3* GetPerspectiveFarClipCoord();
+		// order: NLB NLT NRT NRB FLB FLT FRT FRB
+		Vector3* GetPerspectiveClipCoord();
 	public:
 		// Camera Properties
 		// Render order, more positive will display forward

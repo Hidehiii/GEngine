@@ -9,7 +9,9 @@
 #include "2D/RigidBody2D/RigidBody2D.h"
 #include "ID/ID.h"
 #include "Renderer/CircleRenderer/CircleRenderer.h"
-
+#include "2D/CircleCollider2D/CircleCollider2D.h"
+#include "3D/MeshFilter/MeshFilter.h"
+#include "Renderer/MeshRenderer/MeshRenderer.h"
 namespace GEngine
 {
 	template<typename... Component>
@@ -22,5 +24,6 @@ namespace GEngine
 	using AllComponents =
 		ComponentGroup<Transform, ImageRenderer,
 		Camera, NativeScript, RigidBody2D, BoxCollider2D,
-		Attribute, CircleRenderer>;
+		Attribute, CircleRenderer, CircleCollider2D, MeshFilter,
+		MeshRenderer>;
 }

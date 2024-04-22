@@ -1,0 +1,31 @@
+#pragma once
+
+#include "GEngine/Core/Core.h"
+#include "GEngine/Components/Component.h"
+#include "GEngine/Renderer/VertexArray.h"
+#include "GEngine/Renderer/Shader.h"
+#include "GEngine/Renderer/RenderBuffer.h"
+#include "GEngine/Renderer/UniformBuffer.h"
+
+namespace GEngine
+{
+
+
+	class GENGINE_API MeshRenderer : public Component
+	{
+	public:
+		MeshRenderer() = default;
+		MeshRenderer(const MeshRenderer&) = default;
+
+		void Init();
+
+		void OnRender();
+	public:
+		Ref<Shader> m_Shader;
+	private:
+		Ref<VertexArray> m_VertexArray;
+		Ref<VertexBuffer> m_VertexBuffer;
+	};
+}
+
+

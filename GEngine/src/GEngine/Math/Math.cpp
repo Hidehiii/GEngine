@@ -313,6 +313,46 @@ namespace GEngine
         return glm::max(v.value.x, v.value.y, v.value.z, v.value.w);
     }
 
+    float Math::Dot(const Vector2& v1, const Vector2& v2)
+    {
+        return glm::dot(v1.value, v2.value);
+    }
+
+    float Math::Dot(const Vector3& v1, const Vector3& v2)
+    {
+        return glm::dot(v1.value, v2.value);
+    }
+
+    float Math::Dot(const Vector4& v1, const Vector4& v2)
+    {
+        return glm::dot(v1.value, v2.value);
+    }
+
+    Vector3 Math::Clamp(const Vector3& value, const Vector3& min, const Vector3& max)
+    {
+        return glm::clamp(value.value, min.value, max.value);
+    }
+
+    float Math::Clamp(float value, float min, float max)
+    {
+        return glm::clamp(value, min, max);
+    }
+
+    Vector3 Math::Reflect(const Vector3& v, const Vector3& normal)
+    {
+        return glm::reflect(v.value, normal.value);
+    }
+
+    float Math::Sqrt(float value)
+    {
+        return glm::sqrt(value);    
+    }
+
+    float Math::Tan(float angle)
+    {
+        return glm::tan(angle);
+    }
+
     Matrix4x4 Math::IdentityMatrix()
     {
         return Matrix4x4(1.0f);

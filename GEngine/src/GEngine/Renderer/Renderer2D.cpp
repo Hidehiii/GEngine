@@ -37,6 +37,10 @@ namespace GEngine
 		Vector4 Color;
 	};
 
+	
+
+	
+
 	struct Renderer2DData
 	{
 		static const uint32_t MaxQuads = 20000;
@@ -74,23 +78,6 @@ namespace GEngine
 		Ref<Texture2D> WhiteTexture;
 
 		Renderer2D::Statistics stats;
-
-		struct CameraData
-		{
-			Matrix4x4 GE_MATRIX_V;
-			Matrix4x4 GE_MATRIX_P;
-			Matrix4x4 GE_MATRIX_VP;
-			Vector4 GE_CAMERA_POSITION;
-		};
-		CameraData CameraDataBuffer;
-		Ref<UniformBuffer> CameraUniformBuffer;
-
-		struct TimeData
-		{
-			float GE_TIME;
-		};
-		TimeData TimeDataBuffer;
-		Ref<UniformBuffer> TimeUniformBuffer;
 
 	};
 
@@ -150,7 +137,8 @@ namespace GEngine
 
 
 
-				s_Data.QuadShader = Shader::Create("Assets/Shaders/Quad2D.glsl");
+				s_Data.QuadShader = Shader::Create("Assets/Shaders/2D/Quad2D.glsl");
+				//s_Data.QuadShader = Shader::Create("Assets/Shaders/RayTrackSphere.glsl");
 
 
 				s_Data.WhiteTexture = Texture2D::Create(1, 1);
@@ -221,7 +209,7 @@ namespace GEngine
 
 
 
-				s_Data.CircleShader = Shader::Create("Assets/Shaders/Circle2D.glsl");
+				s_Data.CircleShader = Shader::Create("Assets/Shaders/2D/Circle2D.glsl");
 			}
 
 			// Line
@@ -242,10 +230,8 @@ namespace GEngine
 
 				s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
 
-				s_Data.LineShader = Shader::Create("Assets/Shaders/Line2D.glsl");
+				s_Data.LineShader = Shader::Create("Assets/Shaders/2D/Line2D.glsl");
 			}
-			s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
-			s_Data.TimeUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::TimeData), 1);
 		}
 		
 	}
@@ -294,25 +280,11 @@ namespace GEngine
 			s_Data.stats.DrawCalls++;
 		}
 	}
-	void Renderer2D::BeginScene(const OrthoGraphicCamera& camera)
+	void Renderer2D::BeginScene()
 	{
 		GE_PROFILE_FUNCTION();
 
-		ResetShaderData(camera.GetView(), camera.GetProjection(), camera.GetPosition());
-	}
-	void Renderer2D::BeginScene(const Editor::EditorCamera& camera)
-	{
-		GE_PROFILE_FUNCTION();
-
-
-		ResetShaderData(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());
-	}
-	void Renderer2D::BeginScene(Camera& camera)
-	{
-		GE_PROFILE_FUNCTION();
-
-		Transform& transform = camera.m_GameObject.GetComponent<Transform>();
-		ResetShaderData(Math::Inverse(transform.GetModelMatrix()), camera.GetProjectionMatrix(), transform.GetPosition());
+		ResetShaderData();
 	}
 	void Renderer2D::EndScene()
 	{
@@ -550,10 +522,14 @@ namespace GEngine
 	}
 	void Renderer2D::DrawRect(Transform& transform, const Vector4& color)
 	{
+		DrawRect(transform.GetModelMatrix(), color);
+	}
+	void Renderer2D::DrawRect(Matrix4x4& transform, const Vector4& color)
+	{
 		Vector4 pos[4];
 		for (int i = 0; i < 4; i++)
 		{
-			pos[i] = transform.GetModelMatrix() * s_Data.QuadVertexPositions[i];
+			pos[i] = transform * s_Data.QuadVertexPositions[i];
 		}
 		DrawLine(pos[0], pos[1], color);
 		DrawLine(pos[1], pos[2], color);
@@ -654,7 +630,7 @@ namespace GEngine
 	{
 		memset(&s_Data.stats, 0, sizeof(Statistics));
 	}
-	void Renderer2D::ResetShaderData(Matrix4x4& v, Matrix4x4& p, Vector3& cameraPos)
+	void Renderer2D::ResetShaderData()
 	{
 		
 		int32_t samplers[s_Data.MaxTextureSlots];
@@ -666,14 +642,6 @@ namespace GEngine
 
 		s_Data.CircleShader->Bind();
 		s_Data.CircleShader->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
-
-		s_Data.CameraDataBuffer.GE_CAMERA_POSITION = { cameraPos.value.x, cameraPos.value.y, cameraPos.value.z, 1.0f };
-		s_Data.CameraDataBuffer.GE_MATRIX_P = p;
-		s_Data.CameraDataBuffer.GE_MATRIX_V = v;
-		s_Data.CameraDataBuffer.GE_MATRIX_VP = p * v;
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraDataBuffer, sizeof(Renderer2DData::CameraData));
-		s_Data.TimeDataBuffer.GE_TIME = Time::GetRunTime();
-		s_Data.TimeUniformBuffer->SetData(&s_Data.TimeDataBuffer, sizeof(Renderer2DData::TimeData));
 
 
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -703,7 +671,10 @@ namespace GEngine
 	{
 		StartBatch();
 	}
-
+	void Renderer2D::SetLineWidth(float width)
+	{
+		RenderCommand::SetLineWidth(width);
+	}
 	void Renderer2D::RenderImage(Transform& transform, ImageRenderer& imagerRenderer)
 	{
 		if (imagerRenderer.m_Texture)

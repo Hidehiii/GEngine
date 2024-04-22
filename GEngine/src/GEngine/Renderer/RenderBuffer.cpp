@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Buffer.h"
+#include "RenderBuffer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Renderer.h"
 

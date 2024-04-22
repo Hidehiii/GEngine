@@ -34,7 +34,7 @@ namespace GEngine
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 	}
 	void OpenGLRendererAPI::SetClearColor(const Vector4& color)
 	{
@@ -55,6 +55,11 @@ namespace GEngine
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_LINES, 0, indexCount);
+	}
+	void OpenGLRendererAPI::DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	{
+		vertexArray->Bind();
+		glDrawArrays(GL_POINTS, 0, indexCount);
 	}
 	void OpenGLRendererAPI::SetLineWidth(float width)
 	{

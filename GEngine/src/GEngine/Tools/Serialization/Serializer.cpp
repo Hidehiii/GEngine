@@ -232,11 +232,27 @@ namespace GEngine
 			auto& boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
 			out << YAML::Key << "Offset" << YAML::Value << boxCollider2D.m_Offset;
 			out << YAML::Key << "Size" << YAML::Value << boxCollider2D.m_Size;
+			out << YAML::Key << "Rotation" << YAML::Value << boxCollider2D.m_Rotation;
 			out << YAML::Key << "Density" << YAML::Value << boxCollider2D.m_Density;
 			out << YAML::Key << "Friction" << YAML::Value << boxCollider2D.m_Friction;
 			out << YAML::Key << "Restitution" << YAML::Value << boxCollider2D.m_Restitution;
 			out << YAML::Key << "RestitutionThreshold" << YAML::Value << boxCollider2D.m_RestitutionThreshold;
 			out << YAML::Key << "IsTrigger" << YAML::Value << boxCollider2D.m_IsTrigger;
+			out << YAML::EndMap;
+		}
+		// CircleCollider2D
+		if (gameObject.HasComponent<CircleCollider2D>())
+		{
+			out << YAML::Key << "CircleCollider2D";
+			out << YAML::Value << YAML::BeginMap;
+			auto& circleCollider2D = gameObject.GetComponent<CircleCollider2D>();
+			out << YAML::Key << "Offset" << YAML::Value << circleCollider2D.m_Offset;
+			out << YAML::Key << "Radius" << YAML::Value << circleCollider2D.m_Radius;
+			out << YAML::Key << "Density" << YAML::Value << circleCollider2D.m_Density;
+			out << YAML::Key << "Friction" << YAML::Value << circleCollider2D.m_Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << circleCollider2D.m_Restitution;
+			out << YAML::Key << "RestitutionThreshold" << YAML::Value << circleCollider2D.m_RestitutionThreshold;
+			out << YAML::Key << "IsTrigger" << YAML::Value << circleCollider2D.m_IsTrigger;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -281,7 +297,16 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Scene>& scene)
 	{
-		YAML::Node data = YAML::LoadFile(filepath);
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch(YAML::ParserException e)
+		{
+			GE_CORE_ERROR("Failed to load scene file: {0}, \n{1}", filepath, e.what());
+			return;
+		}
 		if (!data["Scene"])
 			return;
 
@@ -356,7 +381,6 @@ namespace GEngine
 				{
 					auto circleRenderer = gameObject["CircleRenderer"];
 					Vector4 color = circleRenderer["Color"].as<Vector4>();
-					Vector2 tiling = circleRenderer["Tiling"].as<Vector2>();
 					std::string texturePath = circleRenderer["Texture"].as<std::string>();
 					float radius = circleRenderer["Radius"].as<float>();
 					float thickness = circleRenderer["Thickness"].as<float>();
@@ -384,17 +408,36 @@ namespace GEngine
 					auto boxCollider2D = gameObject["BoxCollider2D"];
 					Vector2 offset = boxCollider2D["Offset"].as<Vector2>();
 					Vector2 size = boxCollider2D["Size"].as<Vector2>();
+					float rotation = boxCollider2D["Rotation"].as<float>();
 					float density = boxCollider2D["Density"].as<float>();
 					float friction = boxCollider2D["Friction"].as<float>();
 					float restitution = boxCollider2D["Restitution"].as<float>();
 					float restitutionThreshold = boxCollider2D["RestitutionThreshold"].as<float>();
 					bool isTrigger = boxCollider2D["IsTrigger"].as<bool>();
 					newGameObject.AddComponent<BoxCollider2D>(offset, size);
+					newGameObject.GetComponent<BoxCollider2D>().m_Rotation = rotation;
 					newGameObject.GetComponent<BoxCollider2D>().m_Density = density;
 					newGameObject.GetComponent<BoxCollider2D>().m_Friction = friction;
 					newGameObject.GetComponent<BoxCollider2D>().m_Restitution = restitution;
 					newGameObject.GetComponent<BoxCollider2D>().m_RestitutionThreshold = restitutionThreshold;
 					newGameObject.GetComponent<BoxCollider2D>().m_IsTrigger = isTrigger;
+				}
+				if (gameObject["CircleCollider2D"])
+				{
+					auto circleCollider2D = gameObject["CircleCollider2D"];
+					Vector2 offset = circleCollider2D["Offset"].as<Vector2>();
+					float radius = circleCollider2D["Radius"].as<float>();
+					float density = circleCollider2D["Density"].as<float>();
+					float friction = circleCollider2D["Friction"].as<float>();
+					float restitution = circleCollider2D["Restitution"].as<float>();
+					float restitutionThreshold = circleCollider2D["RestitutionThreshold"].as<float>();
+					bool isTrigger = circleCollider2D["IsTrigger"].as<bool>();
+					newGameObject.AddComponent<CircleCollider2D>(offset, radius);
+					newGameObject.GetComponent<CircleCollider2D>().m_Density = density;
+					newGameObject.GetComponent<CircleCollider2D>().m_Friction = friction;
+					newGameObject.GetComponent<CircleCollider2D>().m_Restitution = restitution;
+					newGameObject.GetComponent<CircleCollider2D>().m_RestitutionThreshold = restitutionThreshold;
+					newGameObject.GetComponent<CircleCollider2D>().m_IsTrigger = isTrigger;
 				}
 			}
 		}

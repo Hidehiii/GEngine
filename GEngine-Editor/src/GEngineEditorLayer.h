@@ -32,9 +32,11 @@ namespace GEngine
 
 		void NewScene();
 		void OpenScene();
+		void OpenDialogToOpenScene();
 		void SaveScene();
 		void SaveSceneAs();
 
+		void OnOverlayRender();
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();
@@ -74,6 +76,8 @@ namespace GEngine
 		Ref<Texture2D> m_PauseButtonIcon_DisPlay;
 
 		EditorSceneState m_SceneState = EditorSceneState::Edit;
+
+		ModelImporter m_ModelImporter;
 	};
 
 }

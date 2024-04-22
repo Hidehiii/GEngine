@@ -6,11 +6,16 @@
 
 namespace GEngine
 {
+	class Vector2;
+	class Vector3;
+
 	class GENGINE_API Vector4
 	{
 	public:
 		Vector4(float v = 0);
 		Vector4(glm::vec4 v);
+		Vector4(Vector2 v, float z, float w);
+		Vector4(Vector3 v, float w);
 		Vector4(const Vector4&) = default;
 		Vector4(float x, float y, float z, float w);
 		~Vector4();

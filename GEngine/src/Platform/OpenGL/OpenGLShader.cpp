@@ -334,7 +334,7 @@ namespace GEngine
 				name.erase(index, 1);
 			}
 			m_Name = name;
-			GE_TRACE("Shader name: {0}", m_Name);
+			GE_CORE_TRACE("Shader name: {0}", m_Name);
 		}
 
 		// find type
@@ -369,7 +369,7 @@ namespace GEngine
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		const bool optimize = true;
+		const bool optimize = false;
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 

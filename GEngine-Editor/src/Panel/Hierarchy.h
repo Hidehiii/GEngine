@@ -17,9 +17,15 @@ namespace GEngine
 		GameObject GetSelectedGameObject() const { return m_SelectionContext; }
 		void SetSelectedGameObject(GameObject obj) { m_SelectionContext = obj;  }
 	private:
+		template<typename... Component>
+		auto GetAllGameObjectWithComponents()
+		{
+			return m_Context->m_Registry.view<Component...>();
+		}
+	private:
 		Ref<Scene> m_Context;
 		GameObject m_SelectionContext;
-		friend class Scene;
+		friend class GEngineEditorLayer;
 	};
 }
 

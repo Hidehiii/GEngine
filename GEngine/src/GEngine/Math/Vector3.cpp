@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Vector3.h"
-
+#include "Vector2.h"
 
 namespace GEngine
 {
@@ -12,6 +12,10 @@ namespace GEngine
 	Vector3::Vector3(glm::vec3 vector)
 	{
 		value = vector;
+	}
+	Vector3::Vector3(Vector2 v, float z)
+	{
+		value = glm::vec3(v.value, z);
 	}
 	Vector3::Vector3(float x, float y, float z)
 	{
@@ -112,20 +116,45 @@ namespace GEngine
 	{
 		return Vector3(-value);
 	}
+
 	Vector3 operator+(const Vector3& left, Vector3 right)
 	{
-		return Vector3(left.value + right.value);
+		return left.value + right.value;
 	}
+
 	Vector3 operator-(const Vector3& left, Vector3 right)
 	{
-		return Vector3(left.value - right.value);
+		return left.value - right.value;
 	}
+
 	Vector3 operator*(const Vector3& left, Vector3 right)
 	{
-		return Vector3(left.value * right.value);
+		return left.value * right.value;
 	}
+
 	Vector3 operator/(const Vector3& left, Vector3 right)
 	{
-		return Vector3(left.value / right.value);
+		return left.value / right.value;
 	}
+
+	Vector3 operator+(const float& left, const Vector3 right)
+	{
+		return left + right.value;
+	}
+
+	Vector3 operator-(const float& left, const Vector3 right)
+	{
+		return left - right.value;
+	}
+
+	Vector3 operator*(const float& left, const Vector3 right)
+	{
+		return left * right.value;
+	}
+
+	Vector3 operator/(const float& left, const Vector3 right)
+	{
+		return left / right.value;
+	}
+
 }

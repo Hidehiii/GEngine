@@ -18,6 +18,9 @@ namespace GEngine
     void VulkanRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
     }
+    void VulkanRendererAPI::DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+    {
+    }
     void VulkanRendererAPI::SetLineWidth(float width)
     {
     }

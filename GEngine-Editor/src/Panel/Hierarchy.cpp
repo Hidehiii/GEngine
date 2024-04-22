@@ -5,7 +5,6 @@
 
 namespace GEngine
 {
-
 	static void DrawFloatControl(const std::string& label, float& val, float restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
 	{
 		ImGui::Columns(1);
@@ -192,6 +191,9 @@ namespace GEngine
 			DrawAddComponentOption<Camera>("Camera", gameObject);
 			DrawAddComponentOption<RigidBody2D>("RigidBody 2D", gameObject);
 			DrawAddComponentOption<BoxCollider2D>("Box Collider 2D", gameObject);
+			DrawAddComponentOption<CircleCollider2D>("Circle Collider 2D", gameObject);
+			DrawAddComponentOption<MeshFilter>("Mesh Filter", gameObject);
+			DrawAddComponentOption<MeshRenderer>("Mesh Renderer", gameObject);
 			ImGui::EndPopup();
 		}
 	}
@@ -447,12 +449,69 @@ namespace GEngine
 		DrawComponent<BoxCollider2D>("Box Collider 2D", gameObject, true, [](auto& component)
 			{
 				DrawVector2Control("Offset", component.m_Offset);
-				DrawVector2Control("Size", component.m_Size, { 1.0f, 1.0f });
+				DrawVector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
+				DrawFloatControl("Rotation", component.m_Rotation);
 				DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
 				DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
 				DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
 				DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
 				ImGui::Checkbox("Is Trigger", &component.m_IsTrigger);
+			}
+		);
+
+		DrawComponent<CircleCollider2D>("Circle Collider 2D", gameObject, true, [](auto& component)
+			{
+				DrawVector2Control("Offset", component.m_Offset);
+				DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
+				DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
+				DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
+				DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
+				DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
+				ImGui::Checkbox("Is Trigger", &component.m_IsTrigger);
+			}
+		);
+
+		DrawComponent<MeshFilter>("Mesh Filter", gameObject, true, [](auto& component)
+			{
+				float size = 100.0f;
+				ImGui::Columns(2);
+				ImGui::SetColumnWidth(0, size);
+				ImGui::Text("Mesh");
+				ImGui::NextColumn();
+				float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+				ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+				buttonSize = { ImGui::CalcItemWidth(), lineHeight };
+				// Recive Drag data
+				auto meshString = MeshLibrary::GetMeshNames();
+				const char* currentMesh = component.GetMesh() ? component.GetMesh().m_Name.c_str() : "None";
+				if (ImGui::BeginCombo("##1", currentMesh))
+				{
+					for (int i = 0; i < meshString.size(); i++)
+					{
+						bool isSelected = currentMesh == meshString[i].c_str();
+						if (ImGui::Selectable(meshString[i].c_str(), isSelected))
+						{
+							component.SetMesh(MeshLibrary::GetMesh(meshString[i]));
+						}
+						if (isSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Reset"))
+				{
+					component.SetMesh(Mesh());
+				}
+				ImGui::Columns(1);
+			}
+		);
+
+		DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
+			{
+				//ImGui::Text(component.m_Shader ? "None" : component.m_Shader->GetShaderName().c_str());
 			}
 		);
 	}

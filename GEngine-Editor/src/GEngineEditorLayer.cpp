@@ -3,6 +3,8 @@
 
 namespace GEngine
 {
+	static std::filesystem::path s_ModelPath = "Resources/Model";
+
 
 	GEngineEditorLayer::GEngineEditorLayer()
 		: Layer("GEngine Editor")
@@ -34,6 +36,21 @@ namespace GEngine
 		m_ActiveScene = m_EditorScene;
 		
 		m_Hierarchy.SetContext(m_ActiveScene);
+
+
+		// Read all the model files in the model directory when the editor is attached
+		{
+			for (auto& modelFile : std::filesystem::directory_iterator(s_ModelPath))
+			{
+				const auto& path = modelFile.path();
+				std::string filenameString = path.filename().string();
+				if (path.extension() == ".fbx" || path.extension() == ".FBX")
+				{
+					m_ModelImporter.LoadMesh(path.string());
+				}
+			}
+			GE_TRACE("Model Count: {0}", MeshLibrary::GetMeshNames().size());
+		}
 	}
 
 	void GEngineEditorLayer::OnDetach()
@@ -68,7 +85,7 @@ namespace GEngine
 			{
 				GE_PROFILE_SCOPE("Render: EditorOnRender");
 				// temporary
-				RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
 				RenderCommand::Clear();
 
 
@@ -77,9 +94,11 @@ namespace GEngine
 					m_EditorCamera.OnUpdate();
 				}
 
-				Renderer2D::BeginScene(m_EditorCamera);
+
+				Renderer::BeginScene(m_EditorCamera);
 				m_ActiveScene->OnRender();
-				Renderer2D::EndScene();
+				OnOverlayRender();
+				Renderer::EndScene();
 			}
 			{
 				// TOOO: Will be replaced with rayhit
@@ -122,16 +141,16 @@ namespace GEngine
 			{
 				GE_PROFILE_SCOPE("Render: OnRender");
 				// temporary
-				RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
 				RenderCommand::Clear();
 
 				
 				auto camera =  m_ActiveScene->MainCamera();
 				if (camera.m_GameObject)
 				{
-					Renderer2D::BeginScene(camera); 
+					Renderer::BeginScene(camera); 
 					m_ActiveScene->OnRender();
-					Renderer2D::EndScene();
+					Renderer::EndScene();
 				}
 			}
 			m_GameViewportFrameBuffer->Unbind();
@@ -404,61 +423,21 @@ namespace GEngine
 
 			// Gizmo operation
 			{
-				std::string currentGizmoOperationType;
-				switch (m_GizmoOperationType)
+				const char* gizmoOperationTypeString[] = { "None", "Translate", "Rotate", "Scale" };
+				const char* currentGizmoOperationType = gizmoOperationTypeString[m_GizmoOperationType + 1];
+				if (ImGui::BeginCombo("Gizmo operation", currentGizmoOperationType))
 				{
-				case -1:
-					currentGizmoOperationType = "None";
-					break;
-				case 0:
-					currentGizmoOperationType = "Translate";
-					break;
-				case 1:
-					currentGizmoOperationType = "Rotate";
-					break;
-				case 2:
-					currentGizmoOperationType = "Scale";
-					break;
-				default:
-					break;
-				}
-				if (ImGui::BeginCombo("Gizmo operation", (const char*)currentGizmoOperationType.c_str()))
-				{
-					bool isSelected = m_GizmoOperationType == -1;
-					if (ImGui::Selectable((const char*)std::string("None").c_str(), isSelected))
+					for (int i = 0; i < 4; i++)
 					{
-						m_GizmoOperationType = -1;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					isSelected = m_GizmoOperationType == 0;
-					if (ImGui::Selectable((const char*)std::string("Translate").c_str(), isSelected))
-					{
-						m_GizmoOperationType = 0;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					isSelected = m_GizmoOperationType == 1;
-					if (ImGui::Selectable((const char*)std::string("Rotate").c_str(), isSelected))
-					{
-						m_GizmoOperationType = 1;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					isSelected = m_GizmoOperationType == 2;
-					if (ImGui::Selectable((const char*)std::string("Scale").c_str(), isSelected))
-					{
-						m_GizmoOperationType = 2;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
+						bool isSelected = m_GizmoOperationType == i - 1;
+						if (ImGui::Selectable(gizmoOperationTypeString[i], isSelected))
+						{
+							m_GizmoOperationType = i - 1;
+						}
+						if (isSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
 					}
 					ImGui::EndCombo();
 				}
@@ -466,38 +445,21 @@ namespace GEngine
 
 			// Gizmo mode
 			{
-				std::string currentGizmoModeType;
-				switch (m_GizmoModeType)
+				const char* gizmoModeTypeString[] = { "Local", "Global" };
+				const char* currentGizmoModeType = gizmoModeTypeString[m_GizmoModeType];
+				if (ImGui::BeginCombo("Gizmo mode", currentGizmoModeType))
 				{
-					case 0:
-						currentGizmoModeType = "Local";
-						break;
-					case 1:
-						currentGizmoModeType = "Global";
-						break;
-					default:
-						break;
-				}
-
-				if (ImGui::BeginCombo("Gizmo mode", (const char*)currentGizmoModeType.c_str()))
-				{
-					bool isSelected = m_GizmoModeType == 0;
-					if (ImGui::Selectable((const char*)std::string("Local").c_str(), isSelected))
+					for (int i = 0; i < 2; i++)
 					{
-						m_GizmoModeType = 0;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					isSelected = m_GizmoModeType == 1;
-					if (ImGui::Selectable((const char*)std::string("Global").c_str(), isSelected))
-					{
-						m_GizmoModeType = 1;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
+						bool isSelected = m_GizmoModeType == i;
+						if (ImGui::Selectable(gizmoModeTypeString[i], isSelected))
+						{
+							m_GizmoModeType = i;
+						}
+						if (isSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
 					}
 					ImGui::EndCombo();
 				}
@@ -542,7 +504,7 @@ namespace GEngine
 	bool GEngineEditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		// Shortcut
-		if (e.GetRepeatCount() > 0)
+		if (e.IsRepeat())
 		{
 			return false;
 		}
@@ -566,7 +528,7 @@ namespace GEngine
 				if (controlPressed)
 				{
 					// ctrl + O
-					OpenScene();
+					OpenDialogToOpenScene();
 				}
 				break;
 			}
@@ -628,6 +590,16 @@ namespace GEngine
 		}
 	}
 
+	void GEngineEditorLayer::OpenDialogToOpenScene()
+	{
+		std::string filePath = FileDialogs::OpenFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
+		if (filePath.empty() == false)
+		{
+			m_SceneFilePath = filePath;
+			OpenScene();
+		}
+	}
+
 	void GEngineEditorLayer::SaveScene()
 	{
 		if (m_SceneFilePath.empty() == false)
@@ -647,6 +619,94 @@ namespace GEngine
 		{
 			m_SceneFilePath = filePath;
 			Serializer::Serialize(filePath, m_ActiveScene);
+		}
+	}
+
+	void GEngineEditorLayer::OnOverlayRender()
+	{
+		// Grid
+		{
+			Renderer2D::DrawLine(Vector3(-10000.0f, 0.0f, 0.0f), Vector3(10000.0f, 0.0f, 0.0f), Vector4(0.4f, 0.0f, 0.0f, 1.0f));
+			Renderer2D::DrawLine(Vector3(0.0f, -10000.0f, 0.0f), Vector3(0.0f, 10000.0f, 0.0f), Vector4(0.0f, 0.4f, 0.0f, 1.0f));
+			Renderer2D::DrawLine(Vector3(0.0f, 0.0f, -10000.0f), Vector3(0.0f, 0.0f, 10000.0f), Vector4(0.0f, 0.0f, 0.4f, 1.0f));
+		}
+		// Camera View
+		{
+			auto camera = m_ActiveScene->MainCamera();
+			if (camera.m_GameObject)
+			{
+				if (camera.GetCameraType() == CameraType::Perspective)
+				{
+					// order: NLB NLT NRT NRB FLB FLT FRT FRB
+					Vector3* coords = camera.GetPerspectiveClipCoord();
+
+					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[2], coords[3], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[3], coords[0], Vector4(1.0f));
+
+					Renderer2D::DrawLine(coords[4], coords[5], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[5], coords[6], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[6], coords[7], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[7], coords[4], Vector4(1.0f));
+
+					Renderer2D::DrawLine(coords[0], coords[4], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[1], coords[5], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[2], coords[6], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[3], coords[7], Vector4(1.0f));
+				}
+				else
+				{
+					// order: NLB NLT NRT NRB FLB FLT FRT FRB
+					Vector3* coords = camera.GetOrthoGraphicClipCoord();
+
+					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[2], coords[3], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[3], coords[0], Vector4(1.0f));
+
+					Renderer2D::DrawLine(coords[4], coords[5], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[5], coords[6], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[6], coords[7], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[7], coords[4], Vector4(1.0f));
+
+					Renderer2D::DrawLine(coords[0], coords[4], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[1], coords[5], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[2], coords[6], Vector4(1.0f));
+					Renderer2D::DrawLine(coords[3], coords[7], Vector4(1.0f));
+				}
+			}
+		}
+		GameObject gameObject = m_Hierarchy.GetSelectedGameObject();
+		if (gameObject)
+		{
+			// visualize the circle collider 2D
+			if (gameObject.HasComponent<CircleCollider2D>())
+			{
+				auto circleCollider = gameObject.GetComponent<CircleCollider2D>();
+				auto transform = gameObject.GetComponent<Transform>();
+				Vector3 position = transform.m_Position + Vector3(circleCollider.m_Offset, 0.0f);
+				Vector3 scale = Vector3(circleCollider.m_Radius * 2.0f) * Math::Max(transform.m_Scale);
+				transform = Transform(position, Vector3(0.0f), scale);
+				float thickness = 0.035f * std::min(0.5f / circleCollider.m_Radius, 1.0f / Math::Max(transform.m_Scale));
+				Renderer2D::DrawCircle(transform, Vector4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, thickness);
+			}
+			// visualize the box collider 2D
+			if (gameObject.HasComponent<BoxCollider2D>())
+			{
+				auto boxCollider = gameObject.GetComponent<BoxCollider2D>();
+				auto transform = gameObject.GetComponent<Transform>();
+				// This transform of the collider is should be multiplied by the scale transform of the game object
+				// Otherwise, the collider will not be scaled with the game object
+				auto t = Math::Translate(Matrix4x4(1.0f), transform.m_Position)
+					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngles().value.z), Vector3(0.0f, 0.0f, 1.0f))
+					* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
+					* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
+					* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)
+					* Math::Scale(Matrix4x4(1.0f), Vector3(boxCollider.m_Size, 1.0f));
+				Renderer2D::SetLineWidth(0.065f);
+				Renderer2D::DrawRect(t, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+			}
 		}
 	}
 
@@ -698,5 +758,4 @@ namespace GEngine
 			}
 		}
 	}
-
 }

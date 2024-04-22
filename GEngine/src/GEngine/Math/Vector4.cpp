@@ -1,5 +1,7 @@
 #include "GEpch.h"
 #include "Vector4.h"
+#include "Vector3.h"
+#include "Vector2.h"
 
 namespace GEngine
 {
@@ -11,6 +13,16 @@ namespace GEngine
     Vector4::Vector4(glm::vec4 v)
     {
         value = v;
+    }
+
+    Vector4::Vector4(Vector2 v, float z, float w)
+    {
+        value = glm::vec4(v.value, z, w);
+    }
+
+    Vector4::Vector4(Vector3 v, float w)
+    {
+		value = glm::vec4(v.value, w);
     }
 
     GEngine::Vector4::Vector4(float x, float y, float z, float w)

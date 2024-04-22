@@ -45,6 +45,14 @@ namespace GEngine
 		static float Max(const Vector2& v);
 		static float Max(const Vector3& v);
 		static float Max(const Vector4& v);
+		static float Dot(const Vector2& v1, const Vector2& v2);
+		static float Dot(const Vector3& v1, const Vector3& v2);
+		static float Dot(const Vector4& v1, const Vector4& v2);
+		static Vector3 Clamp(const Vector3& value, const Vector3& min, const Vector3& max);
+		static float Clamp(float value, float min, float max);
+		static Vector3 Reflect(const Vector3& v, const Vector3& normal);
+		static float Sqrt(float value);
+		static float Tan(float angle);
 		static Matrix4x4 IdentityMatrix();
 	};
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <GEngine.h>
+#include "RayTracing.h"
 
-#include "ParticleSystem.h"
 
 class Sandbox2D : public GEngine::Layer
 {
@@ -17,16 +17,8 @@ public:
 	virtual void OnGuiRender() override;
 	void OnEvent(GEngine::Event& e) override;
 private:
-	GEngine::Ref<GEngine::Texture2D> m_Texture_01;
-	GEngine::Ref<GEngine::Texture2D> m_Texture_02;
-	GEngine::Ref<GEngine::Texture2D> m_SpriteSheet;
-	GEngine::Ref<GEngine::SubTexture2D> m_TrafficLights, m_Forest;
-	GEngine::Ref<GEngine::OrthoGraphicCameraController> m_CameraController;
-	GEngine::Vector4 m_Color = {1.0f, 1.0f, 1.0f, 1.0f};
-	float m_QuadCount = 0;
-	ParticleProps m_Particle;
-	ParticleSystem m_ParticleSystem;
-	std::unordered_map<char, GEngine::Ref<GEngine::SubTexture2D>> m_TextureMap;
-	float m_MapWidth, m_MapHeight;
+	GEngine::Editor::EditorCamera m_Camera;
+	GEngine::Editor::EditorCamera m_EditorCamera;
+	RayTracing m_RayTracing;
 };
 

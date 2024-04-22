@@ -3,31 +3,46 @@
 -- GEngine Dep
 
 VULKAN_SDK = os.getenv("VULKAN_SDK")
+FBX_SDK = "E:/FBXSDK/2020.3.7"
 
 IncludeDir = {}
 
-IncludeDir["vender"] = "GEngine/vendor"
-IncludeDir["GLFW"] = "GEngine/vendor/GLFW/include"
-IncludeDir["GLAD"] = "GEngine/vendor/GLAD/include"
-IncludeDir["glm"] = "GEngine/vendor/glm"
-IncludeDir["stb"] = "GEngine/vendor/stb"
-IncludeDir["entt"] = "GEngine/vendor/entt/include"
-IncludeDir["ImGui"] = "GEngine/vendor/ImGui"
-IncludeDir["yaml"] = "GEngine/vendor/yaml/include"
-IncludeDir["ImGuizmo"] = "GEngine/vendor/ImGuizmo"
-IncludeDir["SPIRVCross"] = "GEngine/vendor/SPIRVCross"
-IncludeDir["shaderc"] = "GEngine/vendor/shaderc/include"
+IncludeDir["vender"] = "%{wks.location}/GEngine/vendor"
+IncludeDir["GLFW"] = "%{wks.location}/GEngine/vendor/GLFW/include"
+IncludeDir["GLAD"] = "%{wks.location}/GEngine/vendor/GLAD/include"
+IncludeDir["glm"] = "%{wks.location}/GEngine/vendor/glm"
+IncludeDir["stb"] = "%{wks.location}/GEngine/vendor/stb"
+IncludeDir["entt"] = "%{wks.location}/GEngine/vendor/entt/include"
+IncludeDir["ImGui"] = "%{wks.location}/GEngine/vendor/ImGui"
+IncludeDir["yaml"] = "%{wks.location}/GEngine/vendor/yaml/include"
+IncludeDir["ImGuizmo"] = "%{wks.location}/GEngine/vendor/ImGuizmo"
+IncludeDir["SPIRVCross"] = "%{wks.location}/GEngine/vendor/SPIRVCross"
+IncludeDir["shaderc"] = "%{wks.location}/GEngine/vendor/shaderc/include"
 IncludeDir["vulkan"] = "%{VULKAN_SDK}/Include"
-IncludeDir["Box2D"] = "GEngine/vendor/box2d/include"
+IncludeDir["Box2D"] = "%{wks.location}/GEngine/vendor/box2d/include"
+IncludeDir["FBX"] = "%{FBX_SDK}/include"
+IncludeDir["mono"] = "%{wks.location}/GEngine/vendor/mono/include"
 
 
 LibraryDir = {}
 
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+LibraryDir["FBX_SDK"] = "%{FBX_SDK}/lib"
+LibraryDir["mono"] = "%{wks.location}/GEngine/vendor/mono/lib/%{cfg.buildcfg}"
 
 Library = {}
 
+Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
+
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
+
+Library["FBX_SDK_Debug"] = "%{LibraryDir.FBX_SDK}/x64/debug/libfbxsdk-md.lib"
+Library["FBX_XML2_Debug"] = "%{LibraryDir.FBX_SDK}/x64/debug/libxml2-md.lib"
+Library["FBX_Z_Debug"] = "%{LibraryDir.FBX_SDK}/x64/debug/zlib-md.lib"
+
+Library["FBX_SDK_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/libfbxsdk-md.lib"
+Library["FBX_XML2_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/libxml2-md.lib"
+Library["FBX_Z_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/zlib-md.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"

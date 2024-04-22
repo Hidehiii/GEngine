@@ -5,7 +5,37 @@
 
 namespace GEngine
 {
-	Renderer::SceneData* Renderer::s_SceneData = new Renderer::SceneData;
+
+	struct CameraData
+	{
+		Matrix4x4 GE_MATRIX_V;
+		Matrix4x4 GE_MATRIX_P;
+		Matrix4x4 GE_MATRIX_VP;
+		Vector4 GE_CAMERA_POSITION;
+	};
+	struct TimeData
+	{
+		float GE_TIME;
+	};
+
+	struct ModelData
+	{
+		Matrix4x4 GE_MATRIX_M;
+	};
+
+	struct ShaderUniformData
+	{
+		CameraData CameraDataBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
+
+		TimeData TimeDataBuffer;
+		Ref<UniformBuffer> TimeUniformBuffer;
+
+		ModelData ModelDataBuffer;
+		Ref<UniformBuffer> ModelUniformBuffer;
+	};
+
+	static ShaderUniformData s_ShaderUniformData;
 
 	void Renderer::Init()
 	{
@@ -13,6 +43,15 @@ namespace GEngine
 
 		RenderCommand::Init();
 		Renderer2D::Init();
+
+		s_ShaderUniformData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
+		s_ShaderUniformData.TimeUniformBuffer = UniformBuffer::Create(sizeof(TimeData), 1);
+		s_ShaderUniformData.ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 2);
+	}
+
+	void Renderer::Shutdown()
+	{
+		Renderer2D::Shutdown();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -22,17 +61,33 @@ namespace GEngine
 
 	void Renderer::BeginScene(const OrthoGraphicCamera& camera)
 	{
-		s_SceneData->ViewProjectionMatrix = camera.GetViewProjection();
+		SetCameraUniforms(camera.GetView(), camera.GetProjection(), camera.GetPosition());
+		SetTimeUniforms();
+
+		Renderer2D::BeginScene();
+	}
+	void Renderer::BeginScene(const Editor::EditorCamera& camera)
+	{
+		SetCameraUniforms(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());
+		SetTimeUniforms();
+
+		Renderer2D::BeginScene();
+	}
+	void Renderer::BeginScene(Camera& camera)
+	{
+		Transform& transform = camera.m_GameObject.GetComponent<Transform>();
+		SetCameraUniforms(Math::Inverse(transform.GetModelMatrix()), camera.GetProjectionMatrix(), transform.GetPosition());
+		SetTimeUniforms();
+
+		Renderer2D::BeginScene();
 	}
 	void Renderer::EndScene()
 	{
+		Renderer2D::EndScene();
 	}
-	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader, const Ref<Transform>& transform)
+	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader, Transform& transform)
 	{
 		shader->Bind();
-		shader->SetFloat1("_Time", Time::GetRunTime());
-		shader->SetMat4x4("GE_MATRIX_VP", s_SceneData->ViewProjectionMatrix);
-		shader->SetMat4x4("GE_MATRIX_M", transform->GetModelMatrix());
 		vertexArray->Bind();
 		RenderCommand::DrawTriangles(vertexArray);
 	}
@@ -40,5 +95,27 @@ namespace GEngine
 	{
 		RendererAPI::SetAPI(api);
 		RenderCommand::SetRendererAPI(api);
+	}
+
+	void Renderer::SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos)
+	{
+		s_ShaderUniformData.CameraDataBuffer.GE_MATRIX_V = v;
+		s_ShaderUniformData.CameraDataBuffer.GE_MATRIX_P = p;
+		s_ShaderUniformData.CameraDataBuffer.GE_MATRIX_VP = p * v;
+		s_ShaderUniformData.CameraDataBuffer.GE_CAMERA_POSITION = { pos, 1.0f };
+
+		s_ShaderUniformData.CameraUniformBuffer->SetData(&s_ShaderUniformData.CameraDataBuffer, sizeof(CameraData));
+	}
+	void Renderer::SetTimeUniforms()
+	{
+		s_ShaderUniformData.TimeDataBuffer.GE_TIME = Time::GetRunTime();
+
+		s_ShaderUniformData.TimeUniformBuffer->SetData(&s_ShaderUniformData.TimeDataBuffer, sizeof(TimeData));
+	}
+	void Renderer::SetModelUniforms(Transform& transform)
+	{
+		s_ShaderUniformData.ModelDataBuffer.GE_MATRIX_M = transform.GetModelMatrix();
+
+		s_ShaderUniformData.ModelUniformBuffer->SetData(&s_ShaderUniformData.ModelDataBuffer, sizeof(ModelData));
 	}
 }

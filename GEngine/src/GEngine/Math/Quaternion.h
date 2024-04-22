@@ -18,6 +18,8 @@ namespace GEngine
 		Quaternion(float w, float x, float y, float z);
 		Quaternion(float x, float y, float z);
 
+		Vector3 operator*(const Vector3& v);
+
 	public:
 		glm::quat value = glm::vec3(0.0f, 0.0f, 0.0f);
 	};

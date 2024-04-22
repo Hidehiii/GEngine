@@ -8,8 +8,8 @@ namespace GEngine
 	class GEngineEditor : public Application
 	{
 	public:
-		GEngineEditor()
-			: Application("GEngine Editor")
+		GEngineEditor(const ApplicationSpecification& spec)
+			: Application(spec)
 		{
 			PushLayer(new GEngineEditorLayer());
 		}
@@ -20,10 +20,15 @@ namespace GEngine
 		}
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
 		Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
-		return new GEngineEditor();
+
+		ApplicationSpecification spec;
+		spec.Name = "GEngine Editor";
+		spec.Size = { 2560, 1920 };
+		spec.CommandLineArgs = args;
+		return new GEngineEditor(spec);
 	}
 }
 

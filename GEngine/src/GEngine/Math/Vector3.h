@@ -8,12 +8,14 @@
 namespace GEngine
 {
 	class Quaternion;
+	class Vector2;
 
 	class GENGINE_API Vector3
 	{
 	public:
 		Vector3(float v = 0);
 		Vector3(glm::vec3 vector);
+		Vector3(Vector2 v, float z);
 		Vector3(const Vector3&) = default;
 		Vector3(float x, float y, float z);
 		Vector3(Vector4 c);
@@ -34,6 +36,11 @@ namespace GEngine
 		friend Vector3 operator-(const Vector3& left, Vector3 right);
 		friend Vector3 operator*(const Vector3& left, Vector3 right);
 		friend Vector3 operator/(const Vector3& left, Vector3 right);
+
+		GENGINE_API friend Vector3 operator+(const float& left, const Vector3 right);
+		GENGINE_API friend Vector3 operator-(const float& left, const Vector3 right);
+		GENGINE_API friend Vector3 operator*(const float& left, const Vector3 right);
+		GENGINE_API friend Vector3 operator/(const float& left, const Vector3 right);
 
 		Vector3 operator+(const float& other);
 		Vector3 operator-(const float& other);
@@ -58,6 +65,8 @@ namespace GEngine
 
 		glm::vec3 value;
 	};
+
+	
 }
 
 

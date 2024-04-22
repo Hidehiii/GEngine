@@ -15,6 +15,7 @@ namespace GEngine
 		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offset = 0) override {};
 	private:
 		uint32_t m_RendererID = 0;
+		uint32_t m_Index = 0;
 	};
 }
 

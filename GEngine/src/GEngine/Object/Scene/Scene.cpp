@@ -12,6 +12,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 namespace GEngine
 {
@@ -183,8 +184,9 @@ namespace GEngine
 			{
 				auto& boxCollider = gameObject.GetComponent<BoxCollider2D>();
 
-				b2PolygonShape shape;
-				shape.SetAsBox(boxCollider.m_Size.value.x / 2.0f * transform.m_Scale.value.x, boxCollider.m_Size.value.y / 2.0f * transform.m_Scale.value.y);
+				b2PolygonShape shape; 
+				shape.SetAsBox(boxCollider.m_Size.value.x / 2.0f * transform.m_Scale.value.x, boxCollider.m_Size.value.y / 2.0f * transform.m_Scale.value.y, 
+					b2Vec2(boxCollider.m_Offset.value.x, boxCollider.m_Offset.value.y), Math::Radians(boxCollider.m_Rotation));
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &shape;
@@ -192,6 +194,22 @@ namespace GEngine
 				fixtureDef.friction = boxCollider.m_Friction;
 				fixtureDef.restitution = boxCollider.m_Restitution;
 				fixtureDef.restitutionThreshold = boxCollider.m_RestitutionThreshold;
+				body->CreateFixture(&fixtureDef);
+			}
+			if (gameObject.HasComponent<CircleCollider2D>())
+			{
+				auto& circleCollider = gameObject.GetComponent<CircleCollider2D>();
+
+				b2CircleShape shape;
+				shape.m_p.Set(circleCollider.m_Offset.value.x, circleCollider.m_Offset.value.y);
+				shape.m_radius = Math::Max(transform.m_Scale) * circleCollider.m_Radius;
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &shape;
+				fixtureDef.density = circleCollider.m_Density;
+				fixtureDef.friction = circleCollider.m_Friction;
+				fixtureDef.restitution = circleCollider.m_Restitution;
+				fixtureDef.restitutionThreshold = circleCollider.m_RestitutionThreshold;
 				body->CreateFixture(&fixtureDef);
 			}
 		}
@@ -278,6 +296,15 @@ namespace GEngine
 				Renderer2D::RenderCircle(gameObject.GetComponent<Transform>(), gameObject.GetComponent<CircleRenderer>());
 			}
 		}
+		auto view_MeshRenderer = m_Registry.view<Transform, MeshFilter, MeshRenderer>();
+		for(auto entity : view_MeshRenderer)
+		{
+			GameObject& gameObject = m_Registry.get<MeshRenderer>(entity).m_GameObject;
+			if (gameObject.GetComponent<Attribute>().m_IsActive)
+			{
+				gameObject.GetComponent<MeshRenderer>().OnRender();
+			}
+		}
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
@@ -324,11 +351,24 @@ namespace GEngine
 	{
 	}
 	template <>
+	void GENGINE_API Scene::OnComponentAdded<CircleCollider2D>(GameObject gameObject, CircleCollider2D& component)
+	{
+	}
+	template <>
 	void GENGINE_API Scene::OnComponentAdded<NativeScript>(GameObject gameObject, NativeScript& component)
 	{
 	}
 	template <>
 	void GENGINE_API Scene::OnComponentAdded<CircleRenderer>(GameObject gameObject, CircleRenderer& component)
 	{
+	}
+	template <>
+	void GENGINE_API Scene::OnComponentAdded<MeshFilter>(GameObject gameObject, MeshFilter& component)
+	{
+	}
+	template <>
+	void GENGINE_API Scene::OnComponentAdded<MeshRenderer>(GameObject gameObject, MeshRenderer& component)
+	{
+		component.Init();
 	}
 }
