@@ -25,8 +25,8 @@ namespace GEngine
 				auto view = src.view<Component>();
 				for (auto srcEntity : view)
 				{
-					GE_CORE_ASSERT(enttMap.find(src.get<ID>(srcEntity).GetUUID()) != enttMap.end(), "Entity not found in map!");
-					entt::entity dstEntity = enttMap.at(src.get<ID>(srcEntity).GetUUID());
+					GE_CORE_ASSERT(enttMap.find(src.get<Attribute>(srcEntity).GetUUID()) != enttMap.end(), "Entity not found in map!");
+					entt::entity dstEntity = enttMap.at(src.get<Attribute>(srcEntity).GetUUID());
 
 					auto& srcComponent = src.get<Component>(srcEntity);
 					Component& component = dst.emplace_or_replace<Component>(dstEntity, srcComponent);
@@ -90,11 +90,12 @@ namespace GEngine
 
 		std::unordered_map<UUID, entt::entity> enttMap;
 
-		auto view = srcSceneRegistry.view<ID>();
+		auto view = srcSceneRegistry.view<Attribute>();
 		for (auto entity : view)
 		{
-			UUID id = srcSceneRegistry.get<ID>(entity).GetUUID();
-			auto& name = srcSceneRegistry.get<Name>(entity).m_Name;
+			auto& attribute = srcSceneRegistry.get<Attribute>(entity);
+			UUID id = attribute.GetUUID();
+			auto& name = attribute.m_Name;
 			auto newEntity = newScene->CreateGameObject(id, name);
 			enttMap[id] = (entt::entity)newEntity;
 		}
@@ -112,15 +113,14 @@ namespace GEngine
 	{
 		GameObject object = { m_Registry.create(), this };
 		object.AddComponent<Attribute>();
-		object.AddComponent<ID>(uuid);
+		object.GetComponent<Attribute>().m_UUID = uuid;
+		object.GetComponent<Attribute>().m_Name = name.empty() ? "GameObject" : name;
 		object.AddComponent<Transform>();
-		auto& n = object.AddComponent<Name>();
-		n.m_Name = name.empty() ? "GameObject" : name;
 		return object;
 	}
 	void Scene::DuplicateGameObject(GameObject gameObject)
 	{
-		GameObject newObject = CreateGameObject(gameObject.GetComponent<Name>().m_Name);
+		GameObject newObject = CreateGameObject(gameObject.GetComponent<Attribute>().m_Name);
 
 		CopyComponentIfExists(AllComponents{}, newObject, gameObject);
 	}
@@ -324,10 +324,6 @@ namespace GEngine
 	void Scene::OnComponentAdded(GameObject gameObject, T& component)
 	{
 		//static_assert(false);
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<Name>(GameObject gameObject, Name& component)
-	{
 	}
 	template <>
 	void GENGINE_API Scene::OnComponentAdded<Transform>(GameObject gameObject, Transform& component)

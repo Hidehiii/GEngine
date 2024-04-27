@@ -34,7 +34,8 @@ namespace GEngine
 		void SetScale(const Vector3& scale) { m_Scale = scale; RecalculateModelMatrix(); }
 
 		void Translate(const Vector3& translation) { m_Position += translation; RecalculateModelMatrix(); }
-		void Rotate(const Vector3& angles) { Math::Rotate(m_Rotation, angles); RecalculateModelMatrix(); }
+		void Rotate(const Vector3& angles) { m_EulerAngles += Math::Radians(angles); m_Rotation = Quaternion(m_EulerAngles); RecalculateModelMatrix(); }
+		void Rotate(const Quaternion& quat) { m_Rotation += quat; m_EulerAngles = Math::EulerAngles(m_Rotation); RecalculateModelMatrix(); }
 		void Scale(const Vector3& scale) { m_Scale *= scale; RecalculateModelMatrix(); }
 
 		void SetModelMatrix(const Matrix4x4& modelMatrix) { m_ModelMatrix = modelMatrix; }

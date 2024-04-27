@@ -61,9 +61,20 @@ namespace GEngine
 		vertexArray->Bind();
 		glDrawArrays(GL_POINTS, 0, indexCount);
 	}
+	void OpenGLRendererAPI::DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)
+	{
+		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+		vertexArray->Bind();
+		glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr, instanceCount);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 	void OpenGLRendererAPI::SetLineWidth(float width)
 	{
 		glLineWidth(width);
+	}
+	void OpenGLRendererAPI::SetPointSize(float size)
+	{
+		glPointSize(size);
 	}
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{

@@ -2,6 +2,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
 #include <unordered_map>
+#include <filesystem>
 #include <string>
 
 namespace GEngine
@@ -27,6 +28,7 @@ namespace GEngine
 
 		operator bool() const { return m_Vertices.size() > 0 && m_Indices.size() > 0 && m_Triangles.size() > 0; }
 	public:
+		std::filesystem::path m_SourceFilePath;
 		std::string m_Name;
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;

@@ -37,6 +37,7 @@ namespace GEngine
 		static void DrawRect(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
 		static void DrawRect(Transform& transform, const Vector4& color);
 		static void DrawRect(Matrix4x4& transform, const Vector4& color);
+		static void DrawPoint(const Vector3& position, const Vector4& color);
 		// Without Texture
 		static void DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
 		static void DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color);
@@ -55,6 +56,7 @@ namespace GEngine
 
 		// Other
 		static void SetLineWidth(float width);
+		static void SetPointSize(float size);
 
 		struct Statistics
 		{

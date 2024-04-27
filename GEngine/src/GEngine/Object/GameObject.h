@@ -8,7 +8,7 @@ namespace GEngine
 		GameObject();
 		GameObject(entt::entity handle, Scene* scene);
 		~GameObject();
-		GameObject(const GameObject& other) = default;
+		GameObject(const GameObject&) = default;
 
 		void OnUpdate();
 		void OnRender();

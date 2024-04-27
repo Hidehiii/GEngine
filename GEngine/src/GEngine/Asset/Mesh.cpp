@@ -7,23 +7,26 @@ namespace GEngine
 
 	bool MeshLibrary::AddMesh(const Mesh& mesh)
 	{
-		if (m_Meshes.find(mesh.m_Name) != m_Meshes.end())
+		std::string path = mesh.m_SourceFilePath.string() + "->" + mesh.m_Name;
+		if (m_Meshes.find(path) != m_Meshes.end())
 		{
-			GE_CORE_WARN("Mesh with name {0} already exists", mesh.m_Name);
+			GE_CORE_WARN("Mesh with name {0} already exists", path);
 			return false;
 		}
-		m_Meshes[mesh.m_Name] = mesh;
+		m_Meshes[path] = mesh;
 		return true;
 	}
 	std::string MeshLibrary::AddMesh_Force(Mesh& mesh)
 	{
- 		if (m_Meshes.find(mesh.m_Name) != m_Meshes.end())
+		std::string path = mesh.m_SourceFilePath.string() + "->" + mesh.m_Name;
+ 		if (m_Meshes.find(path) != m_Meshes.end())
 		{
-			GE_CORE_WARN("Mesh with name {0} already exists", mesh.m_Name);
+			GE_CORE_WARN("Mesh with name {0} already exists", path);
 			mesh.m_Name = mesh.m_Name + "_copy";
+			path = mesh.m_SourceFilePath.string() + "->" + mesh.m_Name;
 		}
-		m_Meshes[mesh.m_Name] = mesh;
-		return mesh.m_Name;
+		m_Meshes[path] = mesh;
+		return path;
 	}
 	Mesh MeshLibrary::GetMesh(const std::string& name)
 	{

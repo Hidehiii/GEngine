@@ -31,6 +31,7 @@
 #include "GEngine/Renderer/SubTexture2D.h"
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/UniformBuffer.h"
+#include "GEngine/Renderer/Material.h"
 
 // Camera
 #include "GEngine/Components/Camera/OrthoGraphicCamera.h"

@@ -16,7 +16,9 @@ namespace GEngine
 		inline static void DrawTriangles(const Ref<VertexArray>& vertexArray, const uint32_t count);
 		inline static void DrawTriangles(const Ref<VertexArray>& vertexArray);
 		inline static void DrawLines(const Ref<VertexArray>& vertexArray, const uint32_t count);
+		inline static void DrawPoints(const Ref<VertexArray>& vertexArray, const uint32_t count);
 		inline static void SetLineWidth(float width);
+		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		inline static float GetTime();
 		inline static void SetRendererAPI(RendererAPI::API api);

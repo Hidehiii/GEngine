@@ -29,7 +29,7 @@ namespace GEngine
 		}
 		else
 		{
-			GE_CORE_ERROR("{0} : There is no mesh filter attached to the game object or the mesh filter has no mesh attached to it.", m_GameObject.GetComponent<Name>().m_Name);
+			GE_CORE_ERROR("{0} : There is no mesh filter attached to the game object or the mesh filter has no mesh attached to it.", m_GameObject.GetComponent<Attribute>().m_Name);
 
 			m_VertexArray = nullptr;
 			m_VertexBuffer = nullptr;
@@ -48,7 +48,7 @@ namespace GEngine
 		}
 		else
 		{
-			GE_CORE_ERROR("{0} :There is no vertex array attached to the mesh renderer.", m_GameObject.GetComponent<Name>().m_Name);
+			GE_CORE_ERROR("{0} :There is no vertex array attached to the mesh renderer.", m_GameObject.GetComponent<Attribute>().m_Name);
 		}
 	}
 }

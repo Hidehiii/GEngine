@@ -37,7 +37,11 @@ namespace GEngine
 		Vector4 Color;
 	};
 
-	
+	struct PointVertex
+	{
+		Vector4 Position;
+		Vector4 Color;
+	};
 
 	
 
@@ -68,6 +72,13 @@ namespace GEngine
 		uint32_t LineVertexCount = 0;
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
+
+		Ref<VertexArray> PointVertexArray;
+		Ref<VertexBuffer> PointVertexBuffer;
+		Ref<Shader> PointShader;
+		uint32_t PointVertexCount = 0;
+		PointVertex* PointVertexBufferBase = nullptr;
+		PointVertex* PointVertexBufferPtr = nullptr;
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
@@ -232,6 +243,27 @@ namespace GEngine
 
 				s_Data.LineShader = Shader::Create("Assets/Shaders/2D/Line2D.glsl");
 			}
+
+			// Point
+			{
+				// Vertex Array
+				s_Data.PointVertexArray = (VertexArray::Create());
+
+
+				s_Data.PointVertexBuffer = (VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex)));
+
+				// Vertex Buffer Object
+				s_Data.PointVertexBuffer->SetLayout({
+					{ShaderDataType::float4, "PositionOS"},
+					{ShaderDataType::float4, "Color"}
+					});
+
+				s_Data.PointVertexBufferBase = new PointVertex[s_Data.MaxVertices];
+
+				s_Data.PointVertexArray->AddVertexBuffer(s_Data.PointVertexBuffer);
+
+				s_Data.PointShader = Shader::Create("Assets/Shaders/2D/Point2D.glsl");
+			}
 		}
 		
 	}
@@ -277,6 +309,15 @@ namespace GEngine
 			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 			s_Data.LineShader->Bind();
 			RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+			s_Data.stats.DrawCalls++;
+		}
+
+		if (s_Data.PointVertexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.PointVertexBufferPtr - (uint8_t*)s_Data.PointVertexBufferBase);
+			s_Data.PointVertexBuffer->SetData(s_Data.PointVertexBufferBase, dataSize);
+			s_Data.PointShader->Bind();
+			RenderCommand::DrawPoints(s_Data.PointVertexArray, s_Data.PointVertexCount);
 			s_Data.stats.DrawCalls++;
 		}
 	}
@@ -515,6 +556,23 @@ namespace GEngine
 
 		s_Data.stats.QuadCount++;
 	}
+	void Renderer2D::DrawPoint(const Vector3& position, const Vector4& color)
+	{
+		GE_PROFILE_FUNCTION();
+
+		if (s_Data.PointVertexCount >= Renderer2DData::MaxVertices)
+		{
+			NextBatch();
+		}
+
+		s_Data.PointVertexBufferPtr->Position = { position.value.x, position.value.y, position.value.z, 1.0f };
+		s_Data.PointVertexBufferPtr->Color = color;
+		s_Data.PointVertexBufferPtr++;
+
+		s_Data.PointVertexCount++;
+
+		s_Data.stats.QuadCount++;
+	}
 	void Renderer2D::DrawRect(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color)
 	{
 		Transform transform = Transform(position, rotation, size);
@@ -652,6 +710,9 @@ namespace GEngine
 
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 		s_Data.LineVertexCount = 0;
+
+		s_Data.PointVertexBufferPtr = s_Data.PointVertexBufferBase;
+		s_Data.PointVertexCount = 0;
 	}
 	void Renderer2D::StartBatch()
 	{
@@ -666,6 +727,9 @@ namespace GEngine
 
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 		s_Data.LineVertexCount = 0;
+
+		s_Data.PointVertexBufferPtr = s_Data.PointVertexBufferBase;
+		s_Data.PointVertexCount = 0;
 	}
 	void Renderer2D::NextBatch()
 	{
@@ -674,6 +738,10 @@ namespace GEngine
 	void Renderer2D::SetLineWidth(float width)
 	{
 		RenderCommand::SetLineWidth(width);
+	}
+	void Renderer2D::SetPointSize(float size)
+	{
+		RenderCommand::SetPointSize(size);
 	}
 	void Renderer2D::RenderImage(Transform& transform, ImageRenderer& imagerRenderer)
 	{

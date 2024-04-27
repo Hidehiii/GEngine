@@ -15,8 +15,13 @@ namespace GEngine
 	public:
 		Quaternion();
 		Quaternion(Vector3 v);
+		Quaternion(glm::quat q) { value = q;}
 		Quaternion(float w, float x, float y, float z);
 		Quaternion(float x, float y, float z);
+
+		Quaternion operator+(const Quaternion& q);
+
+		Quaternion operator+=(const Quaternion& q);
 
 		Vector3 operator*(const Vector3& v);
 

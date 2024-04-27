@@ -254,23 +254,18 @@ namespace GEngine
 	}
 	void Hierarchy::DrawComponents(GameObject gameObject)
 	{
-		if (gameObject.HasComponent<Name>())
+		if (gameObject.HasComponent<Attribute>())
 		{
-			auto& n = gameObject.GetComponent<Name>();
+			auto& attribute = gameObject.GetComponent<Attribute>();
 			char buf[256] = { 0 };
 			memset(buf, 0, sizeof(buf));
-			strcpy_s(buf, sizeof(buf), n.m_Name.c_str());
+			strcpy_s(buf, sizeof(buf), attribute.m_Name.c_str());
 			if (ImGui::InputText("##Name", buf, sizeof(buf)))
 			{
-				n.m_Name = std::string(buf);
+				attribute.m_Name = std::string(buf);
 			}
+			ImGui::Checkbox("Active", &attribute.m_IsActive);
 		}
-
-		DrawComponent<Attribute>("Attribute", gameObject, false, [](auto& component)
-			{
-				ImGui::Checkbox("Active", &component.m_IsActive);
-			}
-		);
 		
 
 		DrawComponent<Transform>("Transform", gameObject, false, [](auto& component)
@@ -521,11 +516,11 @@ namespace GEngine
 
 		ImGui::Begin("Scene Hierarchy");
 
-		auto view = m_Context->m_Registry.view<Name>();
+		auto view = m_Context->m_Registry.view<Attribute>();
 		for (auto entity : view)
 		{
-			GameObject g = m_Context->m_Registry.get<Name>(entity).m_GameObject;
-			auto obj = g.GetComponent<Name>();
+			GameObject g = m_Context->m_Registry.get<Attribute>(entity).m_GameObject;
+			auto obj = g.GetComponent<Attribute>();
 			ImGuiTreeNodeFlags flags = (((m_SelectionContext == g) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth);
 			bool isOpen =ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)g, flags, obj.m_Name.c_str());
 			if (ImGui::IsItemClicked())
@@ -548,10 +543,10 @@ namespace GEngine
 			if (isOpen)
 			{
 				ImGuiTreeNodeFlags flags = (((m_SelectionContext == g) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth);
-				if (ImGui::TreeNodeEx((void*)7123712, flags, obj.m_Name.c_str()))
+				/*if (ImGui::TreeNodeEx((void*)7123712, flags, obj.m_Name.c_str()))
 				{
 					ImGui::TreePop();
-				}
+				}*/
 				ImGui::TreePop();
 			}
 		}

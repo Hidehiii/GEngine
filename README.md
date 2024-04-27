@@ -1,6 +1,6 @@
 # GEngine
 
-A game engine base on Hazel Engine architecture.
+A game engine.
 
 The available version is in dev branch.
 

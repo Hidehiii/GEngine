@@ -82,7 +82,7 @@ namespace GEngine
     }
     Matrix4x4 Math::ToMatrix4x4(Vector3 rotation)
     {
-        return Matrix4x4(glm::toMat4(Quaternion(rotation.value).value));
+        return Matrix4x4(glm::toMat4(Quaternion(rotation).value));
     }
     bool Math::DecomposeTransformMatrix(const Matrix4x4 transformMatrix, Vector3& outPosition, Quaternion& outRotation, Vector3& outScale)
     {

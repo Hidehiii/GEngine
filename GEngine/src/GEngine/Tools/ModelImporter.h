@@ -23,9 +23,10 @@ namespace GEngine
         void ReadVertex(FbxMesh* mesh, int index, Vertex& vertex);
 		void ReadNormal(FbxMesh* mesh, int index, int vertexCounter, Vertex& vertex);
     private:
+		std::filesystem::path m_FilePath;
         std::vector<Mesh> m_Meshes;
 		FbxNode* m_RootNode = nullptr;
 	private:
-        FbxImporter* m_Importer;
+        FbxImporter* m_Importer = nullptr;
 	};
 }

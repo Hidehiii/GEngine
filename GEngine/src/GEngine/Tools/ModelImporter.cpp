@@ -9,9 +9,10 @@ namespace GEngine
     }
     bool ModelImporter::LoadMesh(const std::string filaName)
 	{
+        m_FilePath = filaName;
         FbxManager* manager = FbxManager::Create();
         FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
-        manager->SetIOSettings(settings);
+        manager->SetIOSettings(settings); 
         m_Importer = FbxImporter::Create(manager, "");
         if (!m_Importer->Initialize(filaName.c_str(), -1))
 		{
@@ -32,6 +33,7 @@ namespace GEngine
                 ProcessNode(m_RootNode->GetChild(i));
         }
         m_Importer->Destroy();
+        m_Meshes.clear();
 		return true;
 	}
 
@@ -75,6 +77,7 @@ namespace GEngine
 
         Mesh newMesh;
         newMesh.m_Name = mesh->GetName();
+        newMesh.m_SourceFilePath = m_FilePath;
         int triangleCount = mesh->GetPolygonCount();
         int vertexCounter = 0;
         GE_TRACE("Mesh Name: {0}", newMesh.m_Name);

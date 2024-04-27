@@ -33,9 +33,17 @@ namespace GEngine
 	{
 		s_RendererAPI->DrawLines(vertexArray, count);
 	}
+	inline void RenderCommand::DrawPoints(const Ref<VertexArray>& vertexArray, const uint32_t count)
+	{
+		s_RendererAPI->DrawPoints(vertexArray, count);
+	}
 	inline void RenderCommand::SetLineWidth(float width)
 	{
 		s_RendererAPI->SetLineWidth(width);
+	}
+	inline void RenderCommand::SetPointSize(float size)
+	{
+		s_RendererAPI->SetPointSize(size);
 	}
 	inline void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{

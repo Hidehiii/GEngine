@@ -7,7 +7,7 @@ namespace GEngine
 	class GENGINE_API NativeScript : public Component
 	{
 	public:
-
+		NativeScript(const NativeScript&) = default;
 
 		ScriptableObject*(*InstantiateFunc)();
 		void (*DestroyFunc)(NativeScript*);

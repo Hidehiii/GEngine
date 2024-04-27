@@ -3,7 +3,7 @@
 
 namespace GEngine
 {
-	static std::filesystem::path s_ModelPath = "Resources/Model";
+	static std::filesystem::path s_ModelPath = "Resources\\Model";
 
 
 	GEngineEditorLayer::GEngineEditorLayer()
@@ -46,11 +46,17 @@ namespace GEngine
 				std::string filenameString = path.filename().string();
 				if (path.extension() == ".fbx" || path.extension() == ".FBX")
 				{
+					GE_TRACE("Model: {0} loading", path);
 					m_ModelImporter.LoadMesh(path.string());
+					GE_TRACE("Model: {0} loaded", path);
 				}
 			}
 			GE_TRACE("Model Count: {0}", MeshLibrary::GetMeshNames().size());
 		}
+
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/2D/Quad2D.glsl");
+		Ref<Material> material = Material::Create(shader);
+
 	}
 
 	void GEngineEditorLayer::OnDetach()
@@ -96,7 +102,7 @@ namespace GEngine
 
 
 				Renderer::BeginScene(m_EditorCamera);
-				m_ActiveScene->OnRender();
+				m_ActiveScene->OnRender(); 
 				OnOverlayRender();
 				Renderer::EndScene();
 			}
@@ -352,16 +358,25 @@ namespace GEngine
 				}
 				float snapArr[3] = { snapVal, snapVal , snapVal };
 
+				Matrix4x4 deltaMatrix = objTransform;
 
-				ImGuizmo::Manipulate(cameraView.ValuePtr(), cameraProjection.ValuePtr(), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, objTransform.ValuePtr(), nullptr, isSnap ? snapArr : nullptr);
+
+				ImGuizmo::Manipulate(cameraView.ValuePtr(), cameraProjection.ValuePtr(), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, objTransform.ValuePtr(), deltaMatrix.ValuePtr(), isSnap ? snapArr : nullptr);
 
 				if (ImGuizmo::IsUsing())
 				{
+					// obj mat
 					Vector3 position, rotation, scale;
 					Math::DecomposeTransformMatrix(objTransform, position, rotation, scale); 
 					tc.m_Position = position;
 					tc.SetEulerAngle(Math::Degrees(rotation));
 					tc.m_Scale = scale;
+					// delta mat
+					/*Vector3 deltaPosition, deltaRotation, deltaScale;
+					Math::DecomposeTransformMatrix(deltaMatrix, deltaPosition, deltaRotation, deltaScale);
+					tc.m_Position += deltaPosition;
+					tc.Rotate(Math::Degrees(deltaRotation));
+					tc.m_Scale = deltaScale;*/
 				}
 
 			}
@@ -427,7 +442,12 @@ namespace GEngine
 				const char* currentGizmoOperationType = gizmoOperationTypeString[m_GizmoOperationType + 1];
 				if (ImGui::BeginCombo("Gizmo operation", currentGizmoOperationType))
 				{
-					for (int i = 0; i < 4; i++)
+					int size = 4;
+					if (m_GizmoModeType == 1)
+					{
+						size = 3;
+					}
+					for (int i = 0; i < size; i++)
 					{
 						bool isSelected = m_GizmoOperationType == i - 1;
 						if (ImGui::Selectable(gizmoOperationTypeString[i], isSelected))
@@ -441,6 +461,7 @@ namespace GEngine
 					}
 					ImGui::EndCombo();
 				}
+				
 			}
 
 			// Gizmo mode
@@ -449,7 +470,12 @@ namespace GEngine
 				const char* currentGizmoModeType = gizmoModeTypeString[m_GizmoModeType];
 				if (ImGui::BeginCombo("Gizmo mode", currentGizmoModeType))
 				{
-					for (int i = 0; i < 2; i++)
+					int size = 2;
+					if (m_GizmoOperationType == 2)
+					{
+						size = 1;
+					}
+					for (int i = 0; i < size; i++)
 					{
 						bool isSelected = m_GizmoModeType == i;
 						if (ImGui::Selectable(gizmoModeTypeString[i], isSelected))

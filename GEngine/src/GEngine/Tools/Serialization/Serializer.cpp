@@ -137,18 +137,17 @@ namespace GEngine
 	static void SerializeGameObject(YAML::Emitter& out, GameObject gameObject)
 	{
 		out << YAML::BeginMap;
-		out << YAML::Key << "GameObject" << YAML::Value << gameObject.GetComponent<ID>().GetUUID();
-		// Name
-		if (gameObject.HasComponent<Name>())
-		{
-			out << YAML::Key << "Name" << YAML::Value << gameObject.GetComponent<Name>().m_Name;
-		}
 		// Attributes
 		if (gameObject.HasComponent<Attribute>())
 		{
+			auto& attribute = gameObject.GetComponent<Attribute>();
+			// uuid and name
+			out << YAML::Key << "GameObject" << YAML::Value << attribute.GetUUID();
+			out << YAML::Key << "Name" << YAML::Value << attribute.m_Name;
+
+
 			out << YAML::Key << "Attribute";
 			out << YAML::Value << YAML::BeginMap;
-			auto& attribute = gameObject.GetComponent<Attribute>();
 			out << YAML::Key << "IsActive" << YAML::Value << attribute.m_IsActive;
 			out << YAML::EndMap;
 		}
@@ -272,7 +271,7 @@ namespace GEngine
 		out << YAML::Value << scene->name;
 		out << YAML::Key << "GameObjects";
 		out << YAML::Value << YAML::BeginSeq;
-		auto view = scene->m_Registry.view<Name>();
+		auto view = scene->m_Registry.view<Attribute>();
 		for (auto entity : view)
 		{
 			GameObject gameObject = { entity, scene.get()};
