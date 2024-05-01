@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
+
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())
@@ -14,7 +16,8 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLShader>(path);
+			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
+			return shader;
 		}
 		}
 
@@ -30,24 +33,20 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
+			Ref<Shader> shader = CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
+			return shader;
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	void ShaderLibrary::Add(Ref<Shader>& shader)
+	std::string ShaderLibrary::Add(Ref<Shader>& shader)
 	{
 		auto& name = shader->GetShaderName();
 		GE_CORE_ASSERT(Exists(name) == false, "Shader already exists!");
 		m_Shaders[name] = shader;
-	}
-	void ShaderLibrary::Add(const std::string& name, Ref<Shader>& shader)
-	{
-		shader->SetShaderName(name);
-		GE_CORE_ASSERT(Exists(name) == false, "Shader already exists!");
-		m_Shaders[name] = shader;
+		return name;
 	}
 	Ref<Shader> ShaderLibrary::Load(const std::string& path)
 	{
@@ -59,5 +58,14 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(Exists(name), "Shader not found!");
 		return m_Shaders[name];
+	}
+	std::vector<std::string> ShaderLibrary::GetShaderNames()
+	{
+		std::vector<std::string> names;
+		for (auto& pair : m_Shaders)
+		{
+			names.push_back(pair.first);
+		}
+		return names;
 	}
 }

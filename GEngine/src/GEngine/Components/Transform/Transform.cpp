@@ -12,14 +12,14 @@ namespace GEngine
 	}
 	Vector3 Transform::Forward()
 	{
-		return m_Rotation * Vector3(0.0f, 0.0f, -1.0f);
+		return (m_Rotation * Vector3(0.0f, 0.0f, -1.0f)).Normalized();
 	}
 	Vector3 Transform::Right()
 	{
-		return m_Rotation * Vector3(1.0f, 0.0f, 0.0f);
+		return (m_Rotation * Vector3(1.0f, 0.0f, 0.0f)).Normalized();
 	}
 	Vector3 Transform::Up()
 	{
-		return m_Rotation * Vector3(0.0f, 1.0f, 0.0f);
+		return (m_Rotation * Vector3(0.0f, 1.0f, 0.0f)).Normalized();
 	}
 }

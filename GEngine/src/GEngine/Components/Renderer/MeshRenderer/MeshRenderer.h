@@ -5,7 +5,7 @@
 #include "GEngine/Renderer/VertexArray.h"
 #include "GEngine/Renderer/Shader.h"
 #include "GEngine/Renderer/RenderBuffer.h"
-#include "GEngine/Renderer/UniformBuffer.h"
+#include "GEngine/Renderer/Material.h"
 
 namespace GEngine
 {
@@ -20,8 +20,10 @@ namespace GEngine
 		void Init();
 
 		void OnRender();
+
+		void SetMaterial(Ref<Material> material);
 	public:
-		Ref<Shader> m_Shader;
+		Ref<Material> m_Material;
 	private:
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexBuffer> m_VertexBuffer;

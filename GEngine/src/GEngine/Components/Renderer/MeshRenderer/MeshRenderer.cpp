@@ -25,7 +25,8 @@ namespace GEngine
 
 			m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 			m_VertexArray->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
-			m_Shader = Shader::Create("Assets/Shaders/3D/PBR.glsl");
+			if(m_Material == nullptr)
+				m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));
 		}
 		else
 		{
@@ -33,14 +34,13 @@ namespace GEngine
 
 			m_VertexArray = nullptr;
 			m_VertexBuffer = nullptr;
-			m_Shader = nullptr;
 		}
 	}
 	void MeshRenderer::OnRender()
 	{
-		if (m_VertexArray)
+		if (m_VertexArray && m_Material && m_VertexBuffer)
 		{
-			m_Shader->Bind();
+			m_Material->UploadData();
 			m_VertexArray->Bind();
 			m_VertexBuffer->SetData(m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.data(), m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.size() * sizeof(Vertex));
 			Renderer::SetModelUniforms(m_GameObject.GetComponent<Transform>());
@@ -50,6 +50,10 @@ namespace GEngine
 		{
 			GE_CORE_ERROR("{0} :There is no vertex array attached to the mesh renderer.", m_GameObject.GetComponent<Attribute>().m_Name);
 		}
+	}
+	void MeshRenderer::SetMaterial(Ref<Material> material)
+	{
+		m_Material = material;
 	}
 }
 

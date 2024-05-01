@@ -1,5 +1,11 @@
 
-#name Sphere3D
+#name NormalWS3D
+
+#properties
+
+p0: vector
+
+p1: vector
 
 #type vertex
 #version 450 core

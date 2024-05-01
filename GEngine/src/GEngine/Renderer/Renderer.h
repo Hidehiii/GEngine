@@ -29,9 +29,11 @@ namespace GEngine
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static void SetRenererAPI(RendererAPI::API api);
 		static void SetModelUniforms(Transform& transform);
+		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
 	private:
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
+		
 	};
 }
 

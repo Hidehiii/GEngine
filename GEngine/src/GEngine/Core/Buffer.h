@@ -64,16 +64,25 @@ namespace GEngine
 		template<typename T>
 		T& Read(uint64_t offset = 0)
 		{
-			return *(T*)((byte*)Data + offset);
+			return *(T*)((std::byte*)Data + offset);
 		}
 
 		template<typename T>
 		const T& Read(uint64_t offset = 0) const
 		{
-			return *(T*)((byte*)Data + offset);
+			return *(T*)((std::byte*)Data + offset);
 		}
 
-		std::byte* ReadBytes(uint64_t size, uint64_t offset) const
+		template<typename T>
+		T& Read(uint64_t offset, uint64_t size)
+		{
+			GE_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
+			void* data = new std::byte[size];
+			memcpy(data, (std::byte*)Data + offset, size);
+			return *(T*)((std::byte*)data);
+		}
+
+		std::byte* ReadBytes(uint64_t size, uint64_t offset = 0) const
 		{
 			GE_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
 			std::byte* buffer = new std::byte[size];

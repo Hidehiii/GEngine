@@ -17,7 +17,9 @@ namespace GEngine
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual const std::string GetShaderName() const override { return m_Name; }
+
+		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
+		virtual const std::string& GetShaderName() const override { return m_Name; }
 		virtual void SetShaderName(std::string name) override { m_Name = name; }
 
 		virtual void SetInt1(const std::string& name, int value) override;
@@ -52,6 +54,8 @@ namespace GEngine
 		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
 
 		std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
+
+		std::vector<ShaderUniform> m_UniformCache;
 	};
 }
 

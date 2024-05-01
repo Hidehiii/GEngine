@@ -9,6 +9,7 @@
 #include "Renderer/CircleRenderer/CircleRenderer.h"
 #include "2D/CircleCollider2D/CircleCollider2D.h"
 #include "3D/MeshFilter/MeshFilter.h"
+#include "Light/DirectionalLight.h"
 #include "Renderer/MeshRenderer/MeshRenderer.h"
 namespace GEngine
 {
@@ -23,5 +24,5 @@ namespace GEngine
 		ComponentGroup<Transform, ImageRenderer,
 		Camera, NativeScript, RigidBody2D, BoxCollider2D,
 		Attribute, CircleRenderer, CircleCollider2D, MeshFilter,
-		MeshRenderer>;
+		MeshRenderer, DirectionalLight>;
 }

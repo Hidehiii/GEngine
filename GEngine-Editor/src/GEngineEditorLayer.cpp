@@ -4,6 +4,8 @@
 namespace GEngine
 {
 	static std::filesystem::path s_ModelPath = "Resources\\Model";
+	static std::filesystem::path s_ShaderPath_2D = "Assets\\Shaders\\2D";
+	static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
 
 
 	GEngineEditorLayer::GEngineEditorLayer()
@@ -53,9 +55,31 @@ namespace GEngine
 			}
 			GE_TRACE("Model Count: {0}", MeshLibrary::GetMeshNames().size());
 		}
-
-		Ref<Shader> shader = Shader::Create("Assets/Shaders/2D/Quad2D.glsl");
-		Ref<Material> material = Material::Create(shader);
+		// Read all shader files
+		{
+			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
+			{
+				const auto& path = shaderFile.path();
+				std::string filenameString = path.filename().string();
+				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
+				{
+					GE_TRACE("Shader: {0} loading", path);
+					ShaderLibrary::Load(path.string());
+					GE_TRACE("Shader: {0} loaded", path);
+				}
+			}
+			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
+			{
+				const auto& path = shaderFile.path();
+				std::string filenameString = path.filename().string();
+				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
+				{
+					GE_TRACE("Shader: {0} loading", path);
+					ShaderLibrary::Load(path.string());
+					GE_TRACE("Shader: {0} loaded", path);
+				}
+			}
+		}
 
 	}
 
@@ -65,7 +89,6 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnUpdate()
 	{
-
 		GE_PROFILE_FUNCTION();
 
 		// Scene update ( logic and physics )
@@ -102,8 +125,8 @@ namespace GEngine
 
 
 				Renderer::BeginScene(m_EditorCamera);
-				m_ActiveScene->OnRender(); 
 				OnOverlayRender();
+				m_ActiveScene->OnRender(); 
 				Renderer::EndScene();
 			}
 			{
@@ -652,9 +675,12 @@ namespace GEngine
 	{
 		// Grid
 		{
-			Renderer2D::DrawLine(Vector3(-10000.0f, 0.0f, 0.0f), Vector3(10000.0f, 0.0f, 0.0f), Vector4(0.4f, 0.0f, 0.0f, 1.0f));
-			Renderer2D::DrawLine(Vector3(0.0f, -10000.0f, 0.0f), Vector3(0.0f, 10000.0f, 0.0f), Vector4(0.0f, 0.4f, 0.0f, 1.0f));
-			Renderer2D::DrawLine(Vector3(0.0f, 0.0f, -10000.0f), Vector3(0.0f, 0.0f, 10000.0f), Vector4(0.0f, 0.0f, 0.4f, 1.0f));
+			float dis = 500.0f;
+			for(int i = -dis; i <= dis; i += 10)
+			{
+				Renderer2D::DrawLine(Vector3(-dis, 0.0f, i), Vector3(dis, 0.0f, i), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
+				Renderer2D::DrawLine(Vector3(i, 0.0f, -dis), Vector3(i, 0.0f, dis), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
+			}
 		}
 		// Camera View
 		{
@@ -701,6 +727,22 @@ namespace GEngine
 					Renderer2D::DrawLine(coords[2], coords[6], Vector4(1.0f));
 					Renderer2D::DrawLine(coords[3], coords[7], Vector4(1.0f));
 				}
+			}
+		}
+		// Main light direction
+		{
+			auto mainLight = m_ActiveScene->MainDirectionalLight();
+			if (mainLight.m_GameObject)
+			{
+				auto transform = mainLight.m_GameObject.GetComponent<Transform>();
+				Vector3 position = transform.m_Position;
+				Vector3 direction = transform.Forward();
+				Renderer2D::DrawCircle(transform, Vector4(1.0f, 1.0f, 0.0f, 1.0f), 0.1f, 0.1f);
+				Renderer2D::DrawLine(position, direction , 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1 * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1 * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 		GameObject gameObject = m_Hierarchy.GetSelectedGameObject();

@@ -11,6 +11,19 @@ namespace GEngine
 {
 	namespace Utils {
 
+		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
+		{
+			if (type == "int") return ShaderUniformType::Int;
+			if (type == "float") return ShaderUniformType::Float;
+			if (type == "vector") return ShaderUniformType::Vector;
+			if (type == "color") return ShaderUniformType::Color;
+			if (type == "mat3") return ShaderUniformType::Mat3;
+			if (type == "mat4") return ShaderUniformType::Mat4;
+
+			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
+			return ShaderUniformType::None;
+		}
+
 		static GLenum ShaderTypeFromString(const std::string& type)
 		{
 			if (type == "vertex")
@@ -90,7 +103,31 @@ namespace GEngine
 			return "";
 		}
 
+		static std::vector<std::string> SplitString(const std::string& string, char delimiter)
+		{
+			std::vector<std::string> result;
+			std::stringstream ss(string);
+			std::string item;
+			while (std::getline(ss, item, delimiter))
+			{
+				item = item.substr(0, item.size());
+				result.push_back(item);
+			}
+			return result;
+		}
 
+		static std::string RemoveCharFromString(const std::string& string, char character)
+		{
+			std::string result = string;
+			for(auto it = result.begin(); it != result.end();)
+			{
+				if (*it == character)
+					it = result.erase(it);
+				else
+					++it;
+			}
+			return result;
+		}
 	}
 
 	
@@ -318,9 +355,17 @@ namespace GEngine
 	{
 		std::unordered_map<GLenum, std::string> shaderSources;
 
-		// find name 
 		const char* nameToken = "#name";
 		size_t nameTokenLength = strlen(nameToken);
+
+		const char* propertyToken = "#properties";
+		size_t propertyTokenLength = strlen(propertyToken);
+
+		const char* typeToken = "#type";
+		size_t typeTokenLength = strlen(typeToken);
+
+		// find name 
+		
 		size_t pos = source.find(nameToken, 0);
 		if (pos != std::string::npos)
 		{
@@ -336,10 +381,54 @@ namespace GEngine
 			m_Name = name;
 			GE_CORE_TRACE("Shader name: {0}", m_Name);
 		}
+		
+		// find properties
+		pos = source.find(propertyToken, 0);
+		if (pos != std::string::npos)
+		{
+			// split properties by \n
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			size_t end = source.find(typeToken, pos);
+			std::string properties = source.substr(nextLinePos, end - nextLinePos);
+			std::vector<std::string> props = Utils::SplitString(properties, '\n');
+			for (auto& prop : props)
+			{
+				prop = Utils::RemoveCharFromString(prop, ' ');
+				prop = Utils::RemoveCharFromString(prop, '\r');
+				prop = Utils::RemoveCharFromString(prop, '\n');
+				prop = Utils::RemoveCharFromString(prop, '\t');
+			}
+			for(auto it = props.begin(); it != props.end();)
+			{
+				if (it->empty())
+					it = props.erase(it);
+				else
+					++it;
+			}
+			uint32_t location = 0;
+			// split properties by :
+			for (auto& prop : props)
+			{
+				std::vector<std::string> propData = Utils::SplitString(prop, ':');
+				GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
+				std::string propName = propData[0];
+				std::string propType = propData[1];
+				ShaderUniform uniform;
+				uniform.Name = propName;
+				uniform.Type = Utils::ShaderUniformTypeFromString(propType);
+				uniform.Size = ShaderUniformTypeSize(uniform.Type);
+				uniform.Location = location;
+				location += uniform.Size;
+				m_UniformCache.push_back(uniform);
+				GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
+			}
+		}
+
 
 		// find type
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
+		
 		pos = source.find(typeToken, 0);
 
 		while (pos != std::string::npos)

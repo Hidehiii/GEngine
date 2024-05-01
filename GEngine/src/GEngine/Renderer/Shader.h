@@ -3,10 +3,38 @@
 #include <string>
 #include <unordered_map>
 #include "GEngine/Math/Math.h"
+#include "GEngine/Core/Buffer.h"
 
 
 namespace GEngine
 {
+	enum class ShaderUniformType
+	{
+		None = 0, Int, Float, Vector, Color, Mat3, Mat4, Sampler2D
+	};
+	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
+	{
+		switch (type)
+		{
+		case ShaderUniformType::Int: return 4;
+		case ShaderUniformType::Float: return 4;
+		case ShaderUniformType::Vector: return 4 * 4;
+		case ShaderUniformType::Color: return 4 * 4;
+		case ShaderUniformType::Mat3: return 4 * 4 * 3;
+		case ShaderUniformType::Mat4: return 4 * 4 * 4;
+		}
+		return 0;
+	}
+	struct ShaderUniform
+	{
+		ShaderUniform() = default;
+		ShaderUniform(const ShaderUniform&) = default;
+
+		std::string Name = "";
+		ShaderUniformType Type = ShaderUniformType::None;
+		uint32_t Size = 0;
+		uint32_t Location = 0;
+	};
 	class GENGINE_API Shader
 	{
 	public:
@@ -24,8 +52,10 @@ namespace GEngine
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
 
-		virtual const std::string GetShaderName() const = 0;
+		virtual const std::string& GetShaderName() const = 0;
 		virtual void SetShaderName(std::string name) = 0;
+
+		virtual std::vector<ShaderUniform> GetUniforms() = 0;
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
@@ -34,12 +64,14 @@ namespace GEngine
 	class GENGINE_API ShaderLibrary
 	{
 	public:
-		void Add(Ref<Shader>& shader);
-		void Add(const std::string& name, Ref<Shader>& shader);
-		Ref<Shader> Load(const std::string& path);
-		Ref<Shader> Get(const std::string& name);
-		bool Exists(const std::string& name) { return m_Shaders.find(name) != m_Shaders.end(); }
+		static std::string Add(Ref<Shader>& shader);
+		static Ref<Shader> Load(const std::string& path);
+		static Ref<Shader> Get(const std::string& name);
+		static Ref<Shader> GetShader(const std::string& name) { return Get(name);}
+		static size_t Size() { return m_Shaders.size(); }
+		static std::vector<std::string> GetShaderNames();
+		static bool Exists(const std::string& name) { return m_Shaders.find(name) != m_Shaders.end(); }
 	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 }

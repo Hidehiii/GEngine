@@ -133,7 +133,7 @@ namespace GEngine
                 vertex.Normal.value.x = normal->GetDirectArray().GetAt(index).mData[0];
                 vertex.Normal.value.y = normal->GetDirectArray().GetAt(index).mData[1];
                 vertex.Normal.value.z = normal->GetDirectArray().GetAt(index).mData[2];
-                vertex.Normal.value.w = 1.0f;
+                vertex.Normal.value.w = 0.0f;
             }
             break;
 
@@ -143,7 +143,7 @@ namespace GEngine
                 vertex.Normal.value.x = normal->GetDirectArray().GetAt(id).mData[0];
                 vertex.Normal.value.y = normal->GetDirectArray().GetAt(id).mData[1];
                 vertex.Normal.value.z = normal->GetDirectArray().GetAt(id).mData[2];
-                vertex.Normal.value.w = 1.0f;
+                vertex.Normal.value.w = 0.0f;
             }
             break;
 
@@ -162,7 +162,7 @@ namespace GEngine
                 vertex.Normal.value.x = normal->GetDirectArray().GetAt(vertexCounter).mData[0];
                 vertex.Normal.value.y = normal->GetDirectArray().GetAt(vertexCounter).mData[1];
                 vertex.Normal.value.z = normal->GetDirectArray().GetAt(vertexCounter).mData[2];
-                vertex.Normal.value.w = 1.0f;
+                vertex.Normal.value.w = 0.0f;
             }
             break;
 
@@ -172,7 +172,7 @@ namespace GEngine
                 vertex.Normal.value.x = normal->GetDirectArray().GetAt(id).mData[0];
                 vertex.Normal.value.y = normal->GetDirectArray().GetAt(id).mData[1];
                 vertex.Normal.value.z = normal->GetDirectArray().GetAt(id).mData[2];
-                vertex.Normal.value.w = 1.0f;
+                vertex.Normal.value.w = 0.0f;
             }
             break;
 

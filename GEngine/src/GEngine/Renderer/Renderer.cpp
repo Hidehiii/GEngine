@@ -23,6 +23,12 @@ namespace GEngine
 		Matrix4x4 GE_MATRIX_M;
 	};
 
+	struct LigthData
+	{
+		Vector4 GE_MAIN_LIGHT_DIRECTION;
+		Vector4 GE_MAIN_LIGHT_COLOR;
+	};
+
 	struct ShaderUniformData
 	{
 		CameraData CameraDataBuffer;
@@ -33,6 +39,9 @@ namespace GEngine
 
 		ModelData ModelDataBuffer;
 		Ref<UniformBuffer> ModelUniformBuffer;
+
+		LigthData LigthDataBuffer;
+		Ref<UniformBuffer> LigthUniformBuffer;
 	};
 
 	static ShaderUniformData s_ShaderUniformData;
@@ -47,6 +56,7 @@ namespace GEngine
 		s_ShaderUniformData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
 		s_ShaderUniformData.TimeUniformBuffer = UniformBuffer::Create(sizeof(TimeData), 1);
 		s_ShaderUniformData.ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 2);
+		s_ShaderUniformData.LigthUniformBuffer = UniformBuffer::Create(sizeof(LigthData), 3);
 	}
 
 	void Renderer::Shutdown()
@@ -117,5 +127,13 @@ namespace GEngine
 		s_ShaderUniformData.ModelDataBuffer.GE_MATRIX_M = transform.GetModelMatrix();
 
 		s_ShaderUniformData.ModelUniformBuffer->SetData(&s_ShaderUniformData.ModelDataBuffer, sizeof(ModelData));
+	}
+	void Renderer::SetLightUniforms(Vector3& main_dir, Vector3& main_color)
+	{
+		s_ShaderUniformData.LigthDataBuffer.GE_MAIN_LIGHT_DIRECTION = { main_dir, 0.0f };
+		s_ShaderUniformData.LigthDataBuffer.GE_MAIN_LIGHT_COLOR = { main_color, 1.0f };
+
+
+		s_ShaderUniformData.LigthUniformBuffer->SetData(&s_ShaderUniformData.LigthDataBuffer, sizeof(LigthData));
 	}
 }

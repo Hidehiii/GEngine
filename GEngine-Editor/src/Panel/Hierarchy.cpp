@@ -157,6 +157,86 @@ namespace GEngine
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
+	static void DrawVector4Control(const std::string& label, Vector4& val, Vector4 restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
+	{
+		ImGui::Columns(1);
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, size);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
+		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			val.value.x = restVal.value.x;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+		ImGui::DragFloat("##X", &val.value.x, speed);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			val.value.y = restVal.value.y;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &val.value.y, speed);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.35f, 0.9f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Z", buttonSize))
+		{
+			val.value.z = restVal.value.z;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+		ImGui::DragFloat("##Z", &val.value.z, speed);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.35f, 0.9f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("W", buttonSize))
+		{
+			val.value.w = restVal.value.w;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+		ImGui::DragFloat("##W", &val.value.w, speed);
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
 
 	template <typename T>
 	static void DrawAddComponentOption(const std::string& label, GameObject& gameObject)
@@ -170,6 +250,7 @@ namespace GEngine
 			ImGui::CloseCurrentPopup();
 		}
 	}
+
 	static void DrawAddComponentButton(GameObject gameObject)
 	{
 		// 按钮显示在中间
@@ -194,6 +275,7 @@ namespace GEngine
 			DrawAddComponentOption<CircleCollider2D>("Circle Collider 2D", gameObject);
 			DrawAddComponentOption<MeshFilter>("Mesh Filter", gameObject);
 			DrawAddComponentOption<MeshRenderer>("Mesh Renderer", gameObject);
+			DrawAddComponentOption<DirectionalLight>("Directional Light", gameObject);
 			ImGui::EndPopup();
 		}
 	}
@@ -320,6 +402,13 @@ namespace GEngine
 					DrawFloatControl("Near clip", component.m_PerspectiveNear);
 					DrawFloatControl("Far clip", component.m_PerspectiveFar);
 				}
+			}
+		);
+
+		DrawComponent<DirectionalLight>("Directional Light", gameObject, true, [](auto& component)
+			{
+				ImGui::ColorEdit4("Color", component.m_Color.ValuePtr());
+				ImGui::Checkbox("Is Main", &component.m_IsMain);
 			}
 		);
 
@@ -506,9 +595,71 @@ namespace GEngine
 
 		DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
 			{
-				//ImGui::Text(component.m_Shader ? "None" : component.m_Shader->GetShaderName().c_str());
+				auto shaderString = ShaderLibrary::GetShaderNames();
+				const char* currentShader = component.m_Material ? component.m_Material->GetShader()->GetShaderName().c_str() : "None";
+				if (ImGui::BeginCombo("##2", currentShader))
+				{
+					for (int i = 0; i < shaderString.size(); i++)
+					{
+						bool isSelected = currentShader == shaderString[i].c_str();
+						if (ImGui::Selectable(shaderString[i].c_str(), isSelected))
+						{
+							component.SetMaterial(Material::Create(ShaderLibrary::GetShader(shaderString[i])));
+						}
+						if (isSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				
+				if (component.m_Material)
+				{
+					ImGui::Text(component.m_Material->GetName().c_str());
+					auto& uniforms = component.m_Material->GetUniforms();
+					for (auto& uniform : uniforms)
+					{
+						switch (uniform.Type)
+						{
+						case ShaderUniformType::Float:
+						{
+							break;
+						}
+						case ShaderUniformType::Int:
+						{
+							break;
+						}
+						case ShaderUniformType::Vector:
+						{
+							Vector4 v = component.m_Material->GetVector(uniform.Name);
+							DrawVector4Control(uniform.Name.c_str(), v);
+							component.m_Material->SetVector(uniform.Name, v);
+							break;
+						}
+						case ShaderUniformType::Color:
+						{
+							Vector4 v = component.m_Material->GetVector(uniform.Name);
+							ImGui::ColorEdit4(uniform.Name.c_str(), v.ValuePtr());
+							component.m_Material->SetVector(uniform.Name, v);
+							break;
+						}
+						case ShaderUniformType::Mat3:
+						{
+							break;
+						}
+						case ShaderUniformType::Mat4 :
+						{
+							break;
+						}
+						default:
+							break;
+						}
+					}
+				}
 			}
 		);
+
 	}
 	void Hierarchy::OnGuiRender()
 	{

@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "Scene.h"
 #include "GEngine/Core/Time.h"
+#include "GEngine/Renderer/Renderer.h"
 #include "GEngine/Renderer/Renderer2D.h"
 #include "GEngine/Editor/Renderer/EditorRenderer2D.h"
 #include "GEngine/Components/Components.h"
@@ -150,6 +151,29 @@ namespace GEngine
 			return camera;
 		}
 	}
+	DirectionalLight& Scene::MainDirectionalLight()
+	{
+		auto view = m_Registry.view<DirectionalLight>();
+		if (view.size() == 0)
+		{
+			return DirectionalLight();
+		}
+		for (auto entity : view)
+		{
+			auto& light = m_Registry.get<DirectionalLight>(entity);
+			if (light.m_IsMain)
+			{
+				return light;
+			}
+		}
+		for (auto entity : view)
+		{
+			auto& light = m_Registry.get<DirectionalLight>(entity);
+			light.m_IsMain = true;
+			return light;
+		}
+		// TODO: 在此处插入 return 语句
+	}
 	void Scene::OnAwake()
 	{
 		// Awake Scripts
@@ -278,6 +302,18 @@ namespace GEngine
 	}
 	void Scene::OnRender()
 	{
+		auto view_Light = m_Registry.view<Transform, DirectionalLight>();
+		Vector3 main_dir = { -1.0f, -1.0f, 0.0f };
+		Vector3 main_color = { 1.0f, 1.0f, 1.0f };
+		DirectionalLight mainLight = MainDirectionalLight();
+		if (mainLight.m_GameObject)
+		{
+			main_dir = Math::Rotate(mainLight.m_GameObject.GetComponent<Transform>().m_Rotation, { 0.0f, 0.0f, -1.0f });
+			main_color = mainLight.m_Color;
+		}
+		Renderer::SetLightUniforms(main_dir, main_color);
+
+		Renderer::SetLightUniforms(main_dir, main_color);
 		auto view_ImagerRenderer = m_Registry.view<Transform, ImageRenderer>();
 		for (auto entity : view_ImagerRenderer)
 		{
@@ -366,5 +402,9 @@ namespace GEngine
 	void GENGINE_API Scene::OnComponentAdded<MeshRenderer>(GameObject gameObject, MeshRenderer& component)
 	{
 		component.Init();
+	}
+	template <>
+	void GENGINE_API Scene::OnComponentAdded<DirectionalLight>(GameObject gameObject, DirectionalLight& component)
+	{
 	}
 }

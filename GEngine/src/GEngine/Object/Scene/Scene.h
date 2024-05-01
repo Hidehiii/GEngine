@@ -9,6 +9,7 @@ namespace GEngine
 {
 	class GameObject;
 	class Camera;
+	class DirectionalLight;
 
 
 	class GENGINE_API Scene : private Object
@@ -24,6 +25,7 @@ namespace GEngine
 		void DuplicateGameObject(GameObject gameObject);
 		void DestroyGameObject(GameObject gameObject);
 		Camera& MainCamera();
+		DirectionalLight& MainDirectionalLight();
 		// Logic and physics 
 		void OnAwake();
 		void OnStart();
