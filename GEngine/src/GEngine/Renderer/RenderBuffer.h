@@ -57,12 +57,26 @@ namespace GEngine
 		return 0;
 	}
 
+	// Buffer Element
+	// contain the name, type, offset, size and normalized
 	struct GENGINE_API BufferElement
 	{
+		// Name of the buffer element
 		std::string Name;
+		// Type of the buffer element
 		ShaderDataType Type;
+		// Offset of the buffer element
+		// Offset is the offset of the buffer element in the buffer
+		// For example
+		// {float3 position, float2 texCoord}
+		// the offset of position is 0
+		// the offset of texCoord is 3 * 4 = 12
 		uint32_t Offset;
+		// Size of the buffer element
+		// Size is the size of the buffer element
+		// For example, float1 is 4 bytes, float2 is 4 * 2 bytes
 		uint32_t Size;
+		// Is the buffer element normalized
 		bool Normalized;
 
 		BufferElement() {}
@@ -70,7 +84,7 @@ namespace GEngine
 		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
 			: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized){}
 
-		uint32_t GetComponentCount() const
+		uint32_t GetElementDataSize() const
 		{
 			switch (Type) {
 				case ShaderDataType::float1: return 1;
@@ -89,6 +103,7 @@ namespace GEngine
 		}
 	};
 
+	// Buffer Layout
 	class GENGINE_API BufferLayout
 	{
 	public:

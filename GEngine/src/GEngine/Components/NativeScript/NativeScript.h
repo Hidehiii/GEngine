@@ -4,6 +4,9 @@
 #include "GEngine/Components/Component.h"
 namespace GEngine
 {
+	// Base class for all native scripts
+	// Each native script is attached to a game object
+	// The native script is used to create custom scripts
 	class GENGINE_API NativeScript : public Component
 	{
 	public:

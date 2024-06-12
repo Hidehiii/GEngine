@@ -533,6 +533,26 @@ namespace GEngine
 
 		s_Data.stats.QuadCount++;
 	}
+	void Renderer2D::DrawCircle(Transform& transform, const float& radius, const Vector4& lineColor, const int& segmentCount)
+	{
+		GE_PROFILE_FUNCTION();
+
+		if (s_Data.LineVertexCount >= Renderer2DData::MaxVertices)
+		{
+			NextBatch();
+		}
+
+		for (int i = 0; i < segmentCount; i++)
+		{
+			float angle = (float)i / (float)segmentCount * Math::PI * 2.0f;
+			float nextAngle = (float)(i + 1) / (float)segmentCount * Math::PI * 2.0f;
+
+			Vector4 start = { Math::Cos(angle) * radius, Math::Sin(angle) * radius, 0.0f, 1.0f };
+			Vector4 end = { Math::Cos(nextAngle) * radius, Math::Sin(nextAngle) * radius, 0.0f, 1.0f };
+
+			DrawLine(transform.GetModelMatrix() * start, transform.GetModelMatrix() * end, lineColor);
+		}
+	}
 	void Renderer2D::DrawLine(const Vector3& start, const Vector3& direction, const float length, const Vector4& color)
 	{
 		GE_PROFILE_FUNCTION();

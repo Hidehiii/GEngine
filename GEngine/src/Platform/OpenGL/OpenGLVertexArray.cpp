@@ -48,7 +48,7 @@ namespace GEngine
 				case ShaderDataType::float4:
 				{
 					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, vertexBuffer->GetLayout().GetStride(), (const void*)element.Offset);
 					index++;
 					break;
@@ -59,19 +59,20 @@ namespace GEngine
 				case ShaderDataType::int4:
 				{
 					glEnableVertexAttribArray(index);
-					glVertexAttribIPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						vertexBuffer->GetLayout().GetStride(), (const void*)element.Offset);
 					index++;
 					break;
 				}
+				// temporary has some issues
 				case ShaderDataType::mat3:
 				case ShaderDataType::mat4:
 				{
-					for (uint8_t i = 0; i < element.GetComponentCount(); i++)
+					for (uint8_t i = 0; i < element.GetElementDataSize(); i++)
 					{
 						glEnableVertexAttribArray(index);
-						glVertexAttribPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type),
-											element.Normalized ? GL_TRUE : GL_FALSE, vertexBuffer->GetLayout().GetStride(), (const void*)(element.Offset + sizeof(float) * i * element.GetComponentCount()));
+						glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+											element.Normalized ? GL_TRUE : GL_FALSE, vertexBuffer->GetLayout().GetStride(), (const void*)(element.Offset + sizeof(float) * i * element.GetElementDataSize()));
 						glVertexAttribDivisor(index, 1);
 						index++;
 					}

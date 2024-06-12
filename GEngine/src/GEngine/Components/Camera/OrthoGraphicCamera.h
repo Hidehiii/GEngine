@@ -5,6 +5,8 @@
 #include "GEngine/Math/Vector3.h"
 namespace GEngine
 {
+	// This class is abandoned
+	// Orthographic camera could be set up in the camera component
 	class GENGINE_API OrthoGraphicCamera
 	{
 	public:

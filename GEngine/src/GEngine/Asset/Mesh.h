@@ -9,9 +9,9 @@ namespace GEngine
 {
 	struct Vertex
 	{
-		Vector4 Position;
-		Vector4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		Vector4 Normal;
+		Vector4 m_Position;
+		Vector4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Vector4 m_Normal;
 		//Vector4 Tangent;
 		//Vector4 UV;
 	};

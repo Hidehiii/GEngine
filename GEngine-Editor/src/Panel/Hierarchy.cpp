@@ -1,243 +1,10 @@
 #include "Hierarchy.h"
-#include <imgui_internal.h>
 #include <filesystem>
+#include "Utils/GUIPainter.h"
 
 
 namespace GEngine
 {
-	static void DrawFloatControl(const std::string& label, float& val, float restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
-	{
-		ImGui::Columns(1);
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, size);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
-		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize))
-		{
-			val = restVal;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val, speed);
-		ImGui::PopItemWidth();
-
-
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-	static void DrawVector2Control(const std::string& label, Vector2& val, Vector2 restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
-	{
-		ImGui::Columns(1);
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, size);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
-		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize))
-		{
-			val.value.x = restVal.value.x;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize))
-		{
-			val.value.y = restVal.value.y;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
-		ImGui::PopItemWidth();
-
-
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-	static void DrawVector3Control(const std::string& label, Vector3& val, Vector3 restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
-	{
-		ImGui::Columns(1);
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, size);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
-		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if(ImGui::Button("X", buttonSize))
-		{
-			val.value.x = restVal.value.x;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize))
-		{
-			val.value.y = restVal.value.y;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize))
-		{
-			val.value.z = restVal.value.z;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &val.value.z, speed);
-		ImGui::PopItemWidth();
-
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-	static void DrawVector4Control(const std::string& label, Vector4& val, Vector4 restVal = 0.0f, float speed = 0.1f, float size = 100.0f)
-	{
-		ImGui::Columns(1);
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, size);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
-		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize))
-		{
-			val.value.x = restVal.value.x;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize))
-		{
-			val.value.y = restVal.value.y;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize))
-		{
-			val.value.z = restVal.value.z;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &val.value.z, speed);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("W", buttonSize))
-		{
-			val.value.w = restVal.value.w;
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine();
-		ImGui::DragFloat("##W", &val.value.w, speed);
-		ImGui::PopItemWidth();
-
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-
 	template <typename T>
 	static void DrawAddComponentOption(const std::string& label, GameObject& gameObject)
 	{
@@ -352,17 +119,17 @@ namespace GEngine
 
 		DrawComponent<Transform>("Transform", gameObject, false, [](auto& component)
 			{
-				DrawVector3Control("Position", component.m_Position);
+				GUIPainter::DrawVector3Control("Position", component.m_Position);
 				Vector3 r = Math::Degrees(component.GetEulerAngles());
-				DrawVector3Control("Rotation", r); 
+				GUIPainter::DrawVector3Control("Rotation", r);
 				component.SetEulerAngle(r);
-				DrawVector3Control("Scale", component.m_Scale, 1.0f);
+				GUIPainter::DrawVector3Control("Scale", component.m_Scale, 1.0f);
 			}
 		);
 		
 		DrawComponent<Camera>("Camera", gameObject, true, [](auto& component)
 			{
-				ImGui::Checkbox("Is main camera", &component.isPrimary);
+				GUIPainter::DrawCheckbox("Is main camera", component.isPrimary);
 
 
 				std::string currentType = component.GetCameraTypeString(component.GetCameraType());
@@ -391,30 +158,30 @@ namespace GEngine
 
 				if (component.GetCameraType() == CameraType::OrthoGraphic)
 				{
-					DrawFloatControl("Size", component.m_OrthoGraphicSize);
-					DrawFloatControl("Near clip", component.m_OrthoGraphicNear);
-					DrawFloatControl("Far clip", component.m_OrthoGraphicFar);
+					GUIPainter::DrawFloatControl("Size", component.m_OrthoGraphicSize);
+					GUIPainter::DrawFloatControl("Near clip", component.m_OrthoGraphicNear);
+					GUIPainter::DrawFloatControl("Far clip", component.m_OrthoGraphicFar);
 				}
 
 				if (component.GetCameraType() == CameraType::Perspective)
 				{
-					DrawFloatControl("FOV", component.m_PerspectiveFOV, 45.0f, 0.05f);
-					DrawFloatControl("Near clip", component.m_PerspectiveNear);
-					DrawFloatControl("Far clip", component.m_PerspectiveFar);
+					GUIPainter::DrawFloatControl("FOV", component.m_PerspectiveFOV, 45.0f, 0.05f);
+					GUIPainter::DrawFloatControl("Near clip", component.m_PerspectiveNear);
+					GUIPainter::DrawFloatControl("Far clip", component.m_PerspectiveFar);
 				}
 			}
 		);
 
 		DrawComponent<DirectionalLight>("Directional Light", gameObject, true, [](auto& component)
 			{
-				ImGui::ColorEdit4("Color", component.m_Color.ValuePtr());
-				ImGui::Checkbox("Is Main", &component.m_IsMain);
+				GUIPainter::DrawColor4Control("Color", component.m_Color);
+				GUIPainter::DrawCheckbox("Is Main", component.m_IsMain);
 			}
 		);
 
 		DrawComponent<ImageRenderer>("Image Renderer", gameObject, true, [](auto& component)
 			{
-				ImGui::ColorEdit4("Color", component.m_Color.ValuePtr());
+				GUIPainter::DrawColor4Control("Color", component.m_Color);
 				std::string texName = component.m_Texture ? component.m_Texture->GetPath() : "None";
 				float size = 100.0f;
 				ImGui::Columns(2);
@@ -446,13 +213,13 @@ namespace GEngine
 					component.m_Texture = nullptr;
 				}
 				ImGui::Columns(1);
-				DrawVector2Control("Tiling", component.m_Tiling, 1.0f);
+				GUIPainter::DrawVector2Control("Tiling", component.m_Tiling, 1.0f);
 			}
 		);
 
 		DrawComponent<CircleRenderer>("Circle Renderer", gameObject, true, [](auto& component)
 			{
-				ImGui::ColorEdit4("Color", component.m_Color.ValuePtr());
+				GUIPainter::DrawColor4Control("Color", component.m_Color);
 				std::string texName = component.m_Texture ? component.m_Texture->GetPath() : "None";
 				float size = 100.0f;
 				ImGui::Columns(2);
@@ -484,9 +251,9 @@ namespace GEngine
 					component.m_Texture = nullptr;
 				}
 				ImGui::Columns(1);
-				DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
-				DrawFloatControl("Thickness", component.m_Thickness, 0.1f, 0.01f);
-				DrawFloatControl("Fade", component.m_Fade, 0.0f, 0.01f);
+				GUIPainter::DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
+				GUIPainter::DrawFloatControl("Thickness", component.m_Thickness, 0.1f, 0.01f);
+				GUIPainter::DrawFloatControl("Fade", component.m_Fade, 0.0f, 0.01f);
 			}
 		);
 
@@ -532,26 +299,26 @@ namespace GEngine
 
 		DrawComponent<BoxCollider2D>("Box Collider 2D", gameObject, true, [](auto& component)
 			{
-				DrawVector2Control("Offset", component.m_Offset);
-				DrawVector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
-				DrawFloatControl("Rotation", component.m_Rotation);
-				DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
-				DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
-				DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
-				DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
-				ImGui::Checkbox("Is Trigger", &component.m_IsTrigger);
+				GUIPainter::DrawVector2Control("Offset", component.m_Offset);
+				GUIPainter::DrawVector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
+				GUIPainter::DrawFloatControl("Rotation", component.m_Rotation);
+				GUIPainter::DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
+				GUIPainter::DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
+				GUIPainter::DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
+				GUIPainter::DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
+				GUIPainter::DrawCheckbox("Is Trigger", component.m_IsTrigger);
 			}
 		);
 
 		DrawComponent<CircleCollider2D>("Circle Collider 2D", gameObject, true, [](auto& component)
 			{
-				DrawVector2Control("Offset", component.m_Offset);
-				DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
-				DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
-				DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
-				DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
-				DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
-				ImGui::Checkbox("Is Trigger", &component.m_IsTrigger);
+				GUIPainter::DrawVector2Control("Offset", component.m_Offset);
+				GUIPainter::DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
+				GUIPainter::DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
+				GUIPainter::DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
+				GUIPainter::DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
+				GUIPainter::DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
+				GUIPainter::DrawCheckbox("Is Trigger", component.m_IsTrigger);
 			}
 		);
 
@@ -633,14 +400,14 @@ namespace GEngine
 						case ShaderUniformType::Vector:
 						{
 							Vector4 v = component.m_Material->GetVector(uniform.Name);
-							DrawVector4Control(uniform.Name.c_str(), v);
+							GUIPainter::DrawVector4Control(uniform.Name.c_str(), v);
 							component.m_Material->SetVector(uniform.Name, v);
 							break;
 						}
 						case ShaderUniformType::Color:
 						{
 							Vector4 v = component.m_Material->GetVector(uniform.Name);
-							ImGui::ColorEdit4(uniform.Name.c_str(), v.ValuePtr());
+							GUIPainter::DrawColor4Control(uniform.Name.c_str(), v);
 							component.m_Material->SetVector(uniform.Name, v);
 							break;
 						}

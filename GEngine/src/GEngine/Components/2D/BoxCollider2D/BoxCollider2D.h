@@ -6,6 +6,8 @@
 
 namespace GEngine
 {
+	// Contains the box collider of a game object
+	// The box collider is used to create a collider for the game object
 	class GENGINE_API BoxCollider2D : public Component
 	{
 	public:
@@ -23,11 +25,15 @@ namespace GEngine
 		Vector2 m_Size = { 1.0f, 1.0f };
 		float m_Rotation = 0.0f;
 
+
+		// Physics material of the box collider
 		float m_Density = 1.0f;
 		float m_Friction = 0.0f;
 		float m_Restitution = 0.0f;
 		float m_RestitutionThreshold = 0.5f;
 
+
+		// Is the box collider a trigger
 		bool m_IsTrigger = false;
 	};
 }

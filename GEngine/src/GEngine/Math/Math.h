@@ -54,6 +54,34 @@ namespace GEngine
 		static float Sqrt(float value);
 		static float Tan(float angle);
 		static Matrix4x4 IdentityMatrix();
+		static float Sin(float angle);
+		static float Cos(float angle);
+
+		template<typename T>
+		static T Max(std::initializer_list<T> list)
+		{
+			T max = *list.begin();
+			for (auto& value : list)
+			{
+				if (value > max)
+					max = value;
+			}
+			return max;
+		}
+		template<typename T>
+		static T Min(std::initializer_list<T> list)
+		{
+			T min = *list.begin();
+			for (auto& value : list)
+			{
+				if (value < min)
+					min = value;
+			}
+			return min;
+		}
+
+	public:
+		static float PI;
 	};
 }
 

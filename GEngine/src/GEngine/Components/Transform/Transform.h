@@ -7,6 +7,7 @@
 
 namespace GEngine
 {
+	// Contains the transform of a game object
 	class GENGINE_API Transform : public Component
 	{
 	public:
@@ -23,6 +24,10 @@ namespace GEngine
 
 		Matrix4x4 GetModelMatrix() { RecalculateModelMatrix(); return m_ModelMatrix; }
 		Matrix4x4 GetTransformMatrix() { RecalculateModelMatrix(); return m_ModelMatrix; }
+
+		Matrix4x4 GetTransformMatrix() const;
+		Matrix4x4 GetRotationMatrix() const;
+		Matrix4x4 GetScaleMatrix() const;
 
 		Vector3 GetPosition() const { return m_Position; }
 		Quaternion GetRotation() const { return m_Rotation; }

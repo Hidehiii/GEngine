@@ -20,7 +20,8 @@ namespace GEngine
 		Depth = DEPTH24STENCIL8
 	};
 
-
+	// Frame buffer texture specification
+	// Contains the texture format
 	struct FrameBufferTextureSpecification
 	{
 		FrameBufferTextureSpecification() = default;
@@ -30,6 +31,9 @@ namespace GEngine
 		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
 	};
 
+	// Frame buffer attachment specification
+	// Contains the frame buffer texture specification
+	// Contains the frame buffer texture format
 	struct FrameBufferAttachmentSpecification
 	{
 		FrameBufferAttachmentSpecification() = default;

@@ -69,6 +69,9 @@
 
 namespace GEngine {
 
+	// Scope and Ref
+
+	// Scope is a unique pointer
 	template<typename T>
 	using Scope = std::unique_ptr<T>;
 	template<typename T, typename ... Args>
@@ -77,6 +80,8 @@ namespace GEngine {
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
+
+	// Ref is a shared pointer
 	template<typename T>
 	using Ref = std::shared_ptr<T>;
 	template<typename T, typename ... Args>

@@ -23,7 +23,7 @@ namespace GEngine
 		static float m_RunTime;
 	};
 
-	template<typename T>
+template<typename T>
 class Timer
 {
 public:

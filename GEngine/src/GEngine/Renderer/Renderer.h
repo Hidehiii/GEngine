@@ -30,6 +30,8 @@ namespace GEngine
 		static void SetRenererAPI(RendererAPI::API api);
 		static void SetModelUniforms(Transform& transform);
 		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
+
+		static void DrawCubeWireframe(Transform& transform, Vector4 color);
 	private:
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();

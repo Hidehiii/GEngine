@@ -4,6 +4,8 @@
 
 namespace GEngine
 {
+    float Math::PI = glm::pi<float>();
+
     Matrix4x4 Math::Orthographic(float left, float right, float bottom, float top, float nearValue, float farValue)
     {
         return glm::ortho(left, right, bottom, top, nearValue, farValue);
@@ -356,6 +358,16 @@ namespace GEngine
     Matrix4x4 Math::IdentityMatrix()
     {
         return Matrix4x4(1.0f);
+    }
+
+    float Math::Sin(float angle)
+    {
+        return glm::sin(angle);
+    }
+
+    float Math::Cos(float angle)
+    {
+        return glm::cos(angle);
     }
 
 }

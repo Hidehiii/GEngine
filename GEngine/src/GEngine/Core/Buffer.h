@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	// Contains a buffer of data
+	// The buffer can be used to store data in memory
 	struct Buffer
 	{
 		void* Data;

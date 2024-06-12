@@ -81,6 +81,7 @@ namespace GEngine
 			}
 		}
 
+
 	}
 
 	void GEngineEditorLayer::OnDetach()
@@ -737,7 +738,7 @@ namespace GEngine
 				auto transform = mainLight.m_GameObject.GetComponent<Transform>();
 				Vector3 position = transform.m_Position;
 				Vector3 direction = transform.Forward();
-				Renderer2D::DrawCircle(transform, Vector4(1.0f, 1.0f, 0.0f, 1.0f), 0.1f, 0.1f);
+				Renderer2D::DrawCircle(transform, 0.1f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				Renderer2D::DrawLine(position, direction , 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				Renderer2D::DrawLine(position - 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				Renderer2D::DrawLine(position + 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
@@ -756,8 +757,7 @@ namespace GEngine
 				Vector3 position = transform.m_Position + Vector3(circleCollider.m_Offset, 0.0f);
 				Vector3 scale = Vector3(circleCollider.m_Radius * 2.0f) * Math::Max(transform.m_Scale);
 				transform = Transform(position, Vector3(0.0f), scale);
-				float thickness = 0.035f * std::min(0.5f / circleCollider.m_Radius, 1.0f / Math::Max(transform.m_Scale));
-				Renderer2D::DrawCircle(transform, Vector4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, thickness);
+				Renderer2D::DrawCircle(transform, 0.5f,  Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
 			// visualize the box collider 2D
 			if (gameObject.HasComponent<BoxCollider2D>())

@@ -6,6 +6,7 @@
 
 namespace GEngine
 {
+	// Contains the base attributes of a game object
 	class GENGINE_API Attribute : public Component
 	{
 	public:
@@ -15,6 +16,7 @@ namespace GEngine
 		UUID GetUUID() const { return m_UUID; }
 	public:
 		bool m_IsActive = true;
+		// Name of the game object
 		std::string m_Name = "";
 	private:
 		UUID m_UUID;

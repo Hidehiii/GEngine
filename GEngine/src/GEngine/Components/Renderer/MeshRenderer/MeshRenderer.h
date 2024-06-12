@@ -10,7 +10,8 @@
 namespace GEngine
 {
 
-
+	// Contains the mesh renderer of a game object
+	// Renders the mesh of the game object
 	class GENGINE_API MeshRenderer : public Component
 	{
 	public:

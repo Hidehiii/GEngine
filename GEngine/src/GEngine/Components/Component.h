@@ -3,6 +3,8 @@
 #include "GEngine/Object/GameObject.h"
 namespace GEngine
 {
+	// Base class for all components
+	// Each component is attached to a game object
 	class GENGINE_API Component
 	{
 	public:

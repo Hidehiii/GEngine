@@ -342,7 +342,7 @@ namespace GEngine
 		std::string src;
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 
-		GE_CORE_ASSERT(file, "Shader file {0} not found", path);
+		GE_CORE_ASSERT(file, "Shader file " + path +" not found");
 
 		file.seekg(0, std::ios::end);
 		src.resize(file.tellg());

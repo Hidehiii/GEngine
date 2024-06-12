@@ -6,6 +6,10 @@
 
 namespace GEngine
 {
+	// The input class is used to get input from the user
+	// The input class can be used to get keyboard and mouse input
+	// The input class is a static class
+	// The input class is implemented in the platform folder
 	class GENGINE_API Input
 	{
 	public:

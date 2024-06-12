@@ -7,6 +7,9 @@
 #include "GEngine/Components/Transform/Transform.h"
 namespace GEngine
 {
+	// This class is abandoned
+	// Orthographic camera could be set up in the camera component
+	// The camera controller will be written in a additional class to control the camera component rather than the orthographic camera
 	struct OrthoGraphicCameraBounds
 	{
 		float Left, Right;

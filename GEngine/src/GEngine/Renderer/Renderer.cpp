@@ -136,4 +136,9 @@ namespace GEngine
 
 		s_ShaderUniformData.LigthUniformBuffer->SetData(&s_ShaderUniformData.LigthDataBuffer, sizeof(LigthData));
 	}
+
+	void Renderer::DrawCubeWireframe(Transform& transform, Vector4 color)
+	{
+		
+	}
 }
