@@ -2,7 +2,6 @@
 
 A game engine.
 
-The available version is in dev branch.
 
 It is  support 2D graph, containing image renderer, circle renderer, line renderer.
 About 2D physics, it has box collider 2D, circle collider 2D and rigidbody 2D.
