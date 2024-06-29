@@ -14,7 +14,7 @@ layout(location = 1) in vec2 i_uv;
 layout(location = 2) in vec2 i_tiling;
 layout(location = 3) in vec4 i_color;
 layout(location = 4) in int i_texIndex;
-layout(std140, binding = 0) uniform CAMERA
+layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
 	mat4 GE_MATRIX_P;
@@ -43,14 +43,14 @@ void main()
 #type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 0) uniform CAMERA
+layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
 	mat4 GE_MATRIX_P;
 	mat4 GE_MATRIX_VP;
 	vec4 GE_CAMERA_POSITION;
 };
-layout(std140, binding = 1) uniform TIME
+layout(std140, binding = 2) uniform TIME
 {
 	float GE_TIME;
 };

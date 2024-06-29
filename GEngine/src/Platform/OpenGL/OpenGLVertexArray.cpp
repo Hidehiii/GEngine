@@ -65,9 +65,11 @@ namespace GEngine
 					break;
 				}
 				// temporary has some issues
+				// 之后需要看看怎么把mat3和mat4的数据传进顶点属性
 				case ShaderDataType::mat3:
 				case ShaderDataType::mat4:
 				{
+					GE_CORE_ASSERT(false, "mat3 and mat4 is not supported yet!");
 					for (uint8_t i = 0; i < element.GetElementDataSize(); i++)
 					{
 						glEnableVertexAttribArray(index);

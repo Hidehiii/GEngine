@@ -174,6 +174,7 @@ namespace GEngine
 		}
 		// TODO: 在此处插入 return 语句
 	}
+	// 在场景第一帧之前调用
 	void Scene::OnAwake()
 	{
 		// Awake Scripts
@@ -238,6 +239,7 @@ namespace GEngine
 			}
 		}
 	}
+	// 场景第一帧调用
 	void Scene::OnStart()
 	{
 		// Start Scripts
@@ -252,6 +254,8 @@ namespace GEngine
 				script.Instance->OnStart();
 			});
 	}
+	// 场景中的所有对象在每一帧开始时调用
+	// 更新物理和脚本
 	void Scene::OnUpdate()
 	{
 
@@ -292,14 +296,39 @@ namespace GEngine
 			}
 		}
 	}
+	// 场景中的所有对象在每一帧结束时调用
+	void Scene::OnLateUpdate()
+	{
+		// Update Scripts
+		{
+			m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+				{
+					if (!script.Instance)
+					{
+						script.Instance = script.InstantiateFunc();
+						script.Instance->m_GameObject = GameObject{ entity, this };
+						script.Instance->OnAwake();
+						script.Instance->OnStart();
+					}
+					script.Instance->OnLateUpdate();
+				});
+		}
+	}
+	// 场景中的所有对象在每一帧结束后调用
 	void Scene::OnEndFrame()
 	{
 		for(auto object : m_DeletedGameObject)
 		{
+			auto script = object.TryGetComponent<NativeScript>();
+			if (script)
+			{
+				script->Instance->OnDestroy();
+			}
 			m_Registry.destroy(object);
 		}
 		m_DeletedGameObject.clear();
 	}
+	// 渲染场景中的所有对象
 	void Scene::OnRender()
 	{
 		auto view_Light = m_Registry.view<Transform, DirectionalLight>();

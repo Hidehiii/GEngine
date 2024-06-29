@@ -11,5 +11,7 @@ namespace GEngine
 		Component() = default;
 		void SetGameObject(GameObject gameObject) { m_GameObject = gameObject; }
 		GameObject m_GameObject;
+
+		operator bool() { return this != nullptr; }
 	};
 }

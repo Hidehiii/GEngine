@@ -80,8 +80,6 @@ namespace GEngine
 				}
 			}
 		}
-
-
 	}
 
 	void GEngineEditorLayer::OnDetach()

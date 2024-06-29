@@ -53,10 +53,12 @@ namespace GEngine
 		RenderCommand::Init();
 		Renderer2D::Init();
 
-		s_ShaderUniformData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
-		s_ShaderUniformData.TimeUniformBuffer = UniformBuffer::Create(sizeof(TimeData), 1);
-		s_ShaderUniformData.ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 2);
-		s_ShaderUniformData.LigthUniformBuffer = UniformBuffer::Create(sizeof(LigthData), 3);
+		// Uniform Buffers的位置是固定的，所以这里直接创建
+		// 0 的位置留给自定义
+		s_ShaderUniformData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 1);
+		s_ShaderUniformData.TimeUniformBuffer = UniformBuffer::Create(sizeof(TimeData), 2);
+		s_ShaderUniformData.ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 3);
+		s_ShaderUniformData.LigthUniformBuffer = UniformBuffer::Create(sizeof(LigthData), 4);
 	}
 
 	void Renderer::Shutdown()

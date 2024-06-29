@@ -17,7 +17,9 @@ namespace GEngine
 			}
 			m_UniformStorageBuffer.Allocate(size);
 			m_UniformStorageBuffer.ZeroInitialize();
-			m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 4));
+			// Create uniform buffer
+			// 0 is reserved for custom uniform buffer
+			m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
 			if(!m_UniformBuffer)
 			{
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);

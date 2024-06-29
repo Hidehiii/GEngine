@@ -399,6 +399,7 @@ namespace GEngine
 				prop = Utils::RemoveCharFromString(prop, '\r');
 				prop = Utils::RemoveCharFromString(prop, '\n');
 				prop = Utils::RemoveCharFromString(prop, '\t');
+				prop = Utils::RemoveCharFromString(prop, ';');
 			}
 			for(auto it = props.begin(); it != props.end();)
 			{

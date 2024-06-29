@@ -30,6 +30,7 @@ namespace GEngine
 		void OnAwake();
 		void OnStart();
 		void OnUpdate();
+		void OnLateUpdate();
 		void OnEndFrame();
 
 		// Render
