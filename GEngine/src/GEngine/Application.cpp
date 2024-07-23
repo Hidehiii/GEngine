@@ -1,0 +1,134 @@
+#include "GEpch.h"
+#include "Application.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/Renderer.h"
+#include "GEngine/Scripting/ScriptEngine.h"
+
+
+
+namespace GEngine
+{
+	Application* Application::s_Instance = nullptr;
+
+	Application::Application(const ApplicationSpecification& spec)
+	{
+		GE_PROFILE_FUNCTION();
+
+		GE_CORE_ASSERT(!s_Instance, "Application already exists!");
+		
+		s_Instance = this;
+		m_Specification = spec;
+
+		if (m_Specification.WorkingDirectory.empty() == false)
+		{
+			std::filesystem::current_path(m_Specification.WorkingDirectory);
+		}
+
+		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.value.x, (uint32_t)m_Specification.Size.value.y)));
+		m_Window->SetEventCallback(GE_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetVSync(false);
+
+		Time::SetFixedTime(1.0f / 60.0f);
+
+		Renderer::Init();
+		ScriptEngine::Init();
+
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
+	}
+
+	Application::~Application()
+	{
+		ScriptEngine::Shutdown();
+		Renderer::Shutdown();
+	}
+
+	void Application::Run()
+	{
+		GE_PROFILE_FUNCTION();
+
+		while (m_Running) {
+			GE_PROFILE_SCOPE("RunLoop");
+
+			Time::SetDeltaTime(m_Window->GetTime() - Time::GetRunTime());
+			Time::SetRunTime(m_Window->GetTime());
+
+			if (m_Minimized == false)
+			{
+				{
+					GE_PROFILE_SCOPE("LayerStack OnUpdate");
+
+					for (auto layer : m_LayerStack) {
+						layer->OnUpdate();
+					}
+				}
+				{
+					m_ImGuiLayer->Begin();
+					{
+						GE_PROFILE_SCOPE("ImguiStack OnUpdate");
+
+						for (auto layer : m_LayerStack) {
+							layer->OnGuiRender();
+						}
+					}
+					m_ImGuiLayer->End();
+				}
+				{
+					GE_PROFILE_SCOPE("OnEndFrame");
+					for (auto layer : m_LayerStack) {
+						layer->OnEndFrame();
+					}
+				}
+			}
+			
+
+			m_Window->OnUpdate();
+		}
+	}
+	void Application::Close()
+	{
+		m_Running = false;
+	}
+	void Application::OnEvent(Event& e)
+	{
+		GE_PROFILE_FUNCTION();
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_EVENT_FN(Application::OnWindowResize));
+
+		for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+		{
+			(*--it)->OnEvent(e);
+			if (e.Handled)
+			{
+				break;
+			}
+		}
+	}
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_Running = false;
+		return true;
+	}
+	bool Application::OnWindowResize(WindowResizeEvent& e)
+	{
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
+			m_Minimized = true;
+			return false;
+		}
+		m_Minimized = false;
+		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		return false;
+	}
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+	}
+	void Application::PushOverlay(Layer* overlay)
+	{
+		m_LayerStack.PushOverlay(overlay);
+	}
+}

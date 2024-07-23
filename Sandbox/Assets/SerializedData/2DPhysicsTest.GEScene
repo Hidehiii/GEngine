@@ -1,0 +1,473 @@
+Scene: Untitled
+GameObjects:
+  - GameObject: 2454994113
+    Name: circle
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [6.04619503, 1.91016424, 0]
+      Rotation: [0, 0, 0, 1]
+      Rotation_Angles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRenderer:
+      Color: [1, 0, 0.752475262, 1]
+      Texture: None
+      Radius: 0.5
+      Thickness: 0.310000002
+      Fade: 0
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    CircleCollider2D:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1622957613
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-1.72018194, 1.6008358, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999981523, 0.999981523, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 3760072071
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [7.9195385, 3.43289518, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999964893, 0.999964893, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1973630975
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-5.39465237, 3.53631735, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999966741, 0.999966741, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 2078060215
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [5.1214056, 4.28982496, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999955058, 0.999955058, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 41524345
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [1.00107861, 4.33414984, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999970198, 0.999970198, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 2525278557
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-1.41269469, 4.03865623, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999971986, 0.999971986, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 2553485290
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-3.58047867, 4.49667072, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999970078, 0.999970078, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 4130739100
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0.70426333, 0.813480973, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999964893, 0.999964893, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1705776085
+    Name: obj3
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [1.30399394, 1.95906317, -1.9081067e-06]
+      Rotation: [0, 0, 0.706980228, 0.70723331]
+      Rotation_Angles: [0, -0, 89.9794922]
+      Scale: [0.999999046, 0.999999046, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: Assets\Textures\01.png
+      Tiling: [2.4000001, 1.70000005]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.00999999978
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 3897993244
+    Name: Floor2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0.992557764, -14.0056744, 0]
+      Rotation: [0, -0, -0.0188246313, 0.999822795]
+      Rotation_Angles: [0, -0, -2.15727139]
+      Scale: [39.4000015, 0.29999578, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 2830189580
+    Name: obj2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [4.24060965, 1.59280157, 1.90566482e-06]
+      Rotation: [0, 0, 0.999943554, 0.0106221391]
+      Rotation_Angles: [0, -0, 178.782776]
+      Scale: [0.999951124, 0.999951124, 1]
+    ImageRenderer:
+      Color: [0.541254163, 0.241152838, 0.241152838, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.439999998
+      Restitution: 0.980000019
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 4245948410
+    Name: obj1
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-3.4605732, 2.40452147, 1.3549286e-06]
+      Rotation: [0, -0, -0.815523505, 0.578723907]
+      Rotation_Angles: [0, -0, -109.27832]
+      Scale: [1.60000002, 0.999896884, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: Assets\Textures\02.png
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.439999998
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 938027553
+    Name: Camera
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-0.150520802, -5.69999981, 18.1739998]
+      Rotation: [0, 0, 0, 1]
+      Rotation_Angles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      CameraParameters:
+        CameraType: 1
+        OrthoGraphicSize: 10
+        OrthoGraphicNear: -1
+        OrthoGraphicFar: 1
+        PerspectiveFOV: 45
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+      RenderOrder: 0
+      isPrimary: true
+  - GameObject: 2071098295
+    Name: Floor1
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-5.00307465, -3.46538496, 0]
+      Rotation: [0, -0, -0.276904881, 0.960897326]
+      Rotation_Angles: [0, -0, -32.1511269]
+      Scale: [12.1999998, 0.699999988, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1771664388
+    Name: Floor3
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [9.2484684, -1.67424083, 0]
+      Rotation: [0, 0, 0.145553842, 0.989350319]
+      Rotation_Angles: [0, -0, 16.7387047]
+      Scale: [16.699995, 0.599999964, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1510725569
+    Name: Floor3
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [9.25777149, -7.37283087, 0]
+      Rotation: [0, 0, 0.145553842, 0.989350319]
+      Rotation_Angles: [0, -0, 16.7387047]
+      Scale: [16.699995, 0.599999964, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1204594295
+    Name: Floor2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-4.09750748, 0.801969171, 0]
+      Rotation: [0, -0, -0.161342531, 0.986898482]
+      Rotation_Angles: [0, -0, -18.5696602]
+      Scale: [13.0999928, 0.300000131, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 318825507
+    Name: Floor2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-6.60988712, -9.53733444, 0]
+      Rotation: [0, -0, -0.161342531, 0.986898482]
+      Rotation_Angles: [0, -0, -18.5696602]
+      Scale: [13.0999928, 0.300000131, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
