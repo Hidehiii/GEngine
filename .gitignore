@@ -25,3 +25,6 @@ GEngine-Editor/GEngineProfile-StartUp.json
 /GEngine/vendor/GLAD/bin-int
 /GEngine/vendor/GLAD/bin
 *.sln
+/Sandbox/GEngineProfile-RunTime.json
+/Sandbox/GEngineProfile-StartUp.json
+/Sandbox/GEngineProfile-ShutDown.json
