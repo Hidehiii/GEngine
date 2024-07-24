@@ -26,9 +26,9 @@ namespace GEngine
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.value.x, (uint32_t)m_Specification.Size.value.y)));
 		m_Window->SetEventCallback(GE_BIND_EVENT_FN(Application::OnEvent));
-		m_Window->SetVSync(false);
+		m_Window->SetVSync(true);
 
-		Time::SetFixedTime(1.0f / 60.0f);
+		Time::SetFixedTime(0.02f);
 
 		Renderer::Init();
 		ScriptEngine::Init();

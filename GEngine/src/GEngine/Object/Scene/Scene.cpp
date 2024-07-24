@@ -61,6 +61,7 @@ namespace GEngine
 	{
 		delete m_PhysicsWorld2D;
 		delete m_PhysicalContactListener2D;
+		delete m_TimerWheel;
 	}
 	Ref<Scene> Scene::Copy(Ref<Scene> scene)
 	{
@@ -154,11 +155,13 @@ namespace GEngine
 			light.m_IsMain = true;
 			return light;
 		}
-		// TODO: 在此处插入 return 语句
 	}
 	// 在场景第一帧之前调用
 	void Scene::OnAwake()
 	{
+		// Create TimerWheel
+		m_TimerWheel = new TimerWheel(10, 1);
+
 		// Awake Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
 			{
@@ -244,12 +247,45 @@ namespace GEngine
 				}
 				script.Instance->OnStart();
 			});
+
+		// Start timerwheel
+		m_TimerWheel->Start();
+		// Add physics update
+		m_TimerWheel->AddTask(Time::GetFixedTime() * 60.0f, [=]() {
+				//m_PhysicsWorld2D->Step(Time::GetFixedTime());
+
+				//// retrieve transform
+				//auto view = m_Registry.view<RigidBody2D>();
+				//for (auto entity : view)
+				//{
+				//	GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
+				//	auto& transform = gameObject.GetComponent<Transform>();
+				//	auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
+
+				//	Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
+				//	const auto& pos = body->GetPosition();
+				//	transform.m_Position.value.x = pos.value.x;
+				//	transform.m_Position.value.y = pos.value.y;
+				//	transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
+				//}
+				m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+					{
+						if (!script.Instance)
+						{
+							script.Instance = script.InstantiateFunc();
+							script.Instance->m_GameObject = GameObject{ entity, this };
+							script.Instance->OnAwake();
+							script.Instance->OnStart();
+						}
+						script.Instance->OnFixedUpdate();
+					});
+			});
+		
 	}
 	// 场景中的所有对象在每一帧开始时调用
 	// 更新物理和脚本
 	void Scene::OnUpdate()
 	{
-
 		// Update Scripts
 		{
 			m_Registry.view<NativeScript>().each([=](auto entity, auto& script)

@@ -32,11 +32,12 @@ namespace GEngine
 			GE_CORE_ASSERT(m_GameObject.HasComponent<T>(), "GameObject does not have component!");
 			m_GameObject.RemoveComponent<T>();
 		}
-	protected:
+	public:
 		// time logic
 		virtual void OnAwake() {};
 		virtual void OnStart() {};
 		virtual void OnUpdate() {};
+		virtual void OnFixedUpdate() {};
 		virtual void OnLateUpdate() {};
 		virtual void OnDestroy() {};
 
@@ -46,8 +47,6 @@ namespace GEngine
 		virtual void OnCollisionExit2D(Ref<Physics2DContactInfo> info) {};
 	public:
 		GameObject m_GameObject;
-		friend class Scene;
-		friend class PhysicalContactListener2D;
 	};
 }
 

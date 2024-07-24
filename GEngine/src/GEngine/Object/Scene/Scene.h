@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Object/Object.h"
+#include "GEngine/Core/Time.h"
 #include <entt.hpp>
 
 namespace GEngine
@@ -54,8 +55,13 @@ namespace GEngine
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		std::vector<GameObject> m_DeletedGameObject;
 
+		// 多线程会导致渲染有问题
+		TimerWheel* m_TimerWheel = nullptr;
+
 		Physics2DWorld* m_PhysicsWorld2D = nullptr;
 		PhysicalContactListener2D* m_PhysicalContactListener2D = nullptr;
+
+		std::mutex m_Mutex;
 
 
 		friend class GameObject;

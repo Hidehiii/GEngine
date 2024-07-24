@@ -2,6 +2,13 @@
 
 #include "GEngine/Core/Core.h"
 
+#include <chrono>
+#include <functional>
+#include <list>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 namespace GEngine
 {
 	class GENGINE_API Time
@@ -23,44 +30,144 @@ namespace GEngine
 		static float m_RunTime;
 	};
 
-template<typename T>
-class Timer
-{
-public:
-	Timer(const char* name, T&& func)
-		: m_Name(name), m_Func(func), m_Stopped(false)
+	template<typename T>
+	class GENGINE_API Timer
 	{
-		m_StartTimePoint = std::chrono::high_resolution_clock::now();
-	}
-
-	~Timer()
-	{
-		if (!m_Stopped)
+	public:
+		Timer(const char* name, T&& func)
+			: m_Name(name), m_Func(func), m_Stopped(false)
 		{
-			Stop();
+			m_StartTimePoint = std::chrono::high_resolution_clock::now();
 		}
-	}
 
-	void Stop()
-	{
-		auto endTimePoint = std::chrono::high_resolution_clock::now();
+		~Timer()
+		{
+			if (!m_Stopped)
+			{
+				Stop();
+			}
+		}
 
-		long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
-		long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimePoint).time_since_epoch().count();
+		void Stop()
+		{
+			auto endTimePoint = std::chrono::high_resolution_clock::now();
 
-		m_Stopped = true;
+			long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
+			long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimePoint).time_since_epoch().count();
 
-		float duration = (end - start) * 0.001f;
+			m_Stopped = true;
 
-		m_Func({ m_Name, duration });
-	}
+			float duration = (end - start) * 0.001f;
 
-private:
-	const char* m_Name;
-	bool m_Stopped;
-	T m_Func;
-	std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
-};
+			m_Func({ m_Name, duration });
+		}
+
+	private:
+		const char* m_Name;
+		bool m_Stopped;
+		T m_Func;
+		std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
+	};
+
+    class GENGINE_API TimerWheel {
+    public:
+        using Task = std::function<void()>;
+
+        explicit TimerWheel(size_t wheel_size, int interval_ms)
+            : wheel_size_(wheel_size),
+            interval_ms_(interval_ms),
+            wheel_(wheel_size),
+            current_index_(0) {}
+
+        ~TimerWheel() {
+            Stop();
+        }
+
+        void Start() {
+            if (running_) {
+                return;
+            }
+            running_ = true;
+            thread_ = std::thread([this]() {
+                while (running_) {
+                    if (pausing_)
+                    {
+                        continue;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms_));
+                    Tick();
+                }
+                std::cout << "timer oooops!" << std::endl;
+                });
+            thread_.detach();
+        }
+
+        void Pause()
+        {
+            if (!running_)
+            {
+                return;
+            }
+            pausing_ = true;
+        }
+
+        void Continue()
+        {
+            if (!running_)
+            {
+                return;
+            }
+            pausing_ = false;
+        }
+
+        void Stop() {
+            if (!running_) {
+                return;
+            }
+            running_ = false;
+            if (thread_.joinable()) {
+                thread_.join();
+            }
+        }
+
+        void AddTask(int timeout_ms, Task task) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            size_t ticks = timeout_ms / interval_ms_;
+            size_t index = (current_index_ + ticks) % wheel_size_;
+            size_t allindex = index;
+            for (size_t i = 1; allindex < wheel_size_; i++)
+            {
+                allindex = index * i;
+                if (allindex >= wheel_size_)
+                    break;
+                wheel_[allindex].push_back(task);
+            }
+
+        }
+
+    private:
+        void Tick() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto& tasks = wheel_[current_index_];
+            for (const auto& task : tasks) {
+                task();
+            }
+            //tasks.clear();
+            current_index_ = (current_index_ + 1) % wheel_size_;
+        }
+
+    private:
+        size_t wheel_size_;
+        int interval_ms_;
+        std::vector<std::list<Task>> wheel_;
+        size_t current_index_;
+        bool running_ = false;
+        bool pausing_ = false;
+        std::thread thread_;
+        std::mutex mutex_;
+    };
+
+
 }
 
 

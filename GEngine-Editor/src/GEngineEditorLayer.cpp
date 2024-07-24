@@ -87,9 +87,17 @@ namespace GEngine
 			class TestScript : public ScriptableObject
 			{
 			public:
-				virtual void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
+				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
 				{
 					GE_TRACE("OnCollisionEnter2D: {0}", info->GetOtherGameObject().GetComponent<Attribute>().m_Name);
+				}
+				void OnFixedUpdate()
+				{
+					GE_WARN("fixedUpdate");
+				}
+				void OnUpdate()
+				{
+					GE_WARN("update");
 				}
 			};
 			auto testObj = m_ActiveScene->CreateGameObject("Test");

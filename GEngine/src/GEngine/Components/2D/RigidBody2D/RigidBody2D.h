@@ -47,8 +47,10 @@ namespace GEngine
 		// Is the rigid body could be rotated
 		// This would only affect Z rotation
 		bool m_FixedRotation = false;
+	private:
 		// The box2d body of the rigid body
 		void* m_Body = nullptr;
+		friend class Scene;
 	};
 
 
