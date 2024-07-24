@@ -26,7 +26,7 @@ namespace GEngine
 
 		ApplicationSpecification spec;
 		spec.Name = "GEngine Editor";
-		spec.Size = { 2560, 1920 };
+		spec.Size = { 1920, 1080 };
 		spec.CommandLineArgs = args;
 		return new GEngineEditor(spec);
 	}

@@ -4,3 +4,9 @@ E:\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCo
 E:\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCore.pdb
 E:\GEngine\GEngine-Editor\Resources\Scripts\GEngine-ScriptCore.dll
 E:\GEngine\GEngine-Editor\Resources\Scripts\GEngine-ScriptCore.pdb
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCore.dll
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCore.pdb
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCore.csproj.AssemblyReference.cache
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\Intermediates\Debug\GEngine-ScriptCore.csproj.CoreCompileInputs.cache
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\GEngine-ScriptCore.dll
+D:\MyProject\GE\GEngine\GEngine-Editor\Resources\Scripts\GEngine-ScriptCore.pdb
