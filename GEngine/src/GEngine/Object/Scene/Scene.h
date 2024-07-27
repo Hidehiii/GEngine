@@ -55,13 +55,11 @@ namespace GEngine
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		std::vector<GameObject> m_DeletedGameObject;
 
-		// ¶àÏß³Ì»áµ¼ÖÂäÖÈ¾ÓÐÎÊÌâ
-		TimerWheel* m_TimerWheel = nullptr;
+		// å¤šçº¿ç¨‹ä¼šå¯¼è‡´æ¸²æŸ“æœ‰é—®é¢˜
+		Ref<TimerWheel> m_TimerWheel = nullptr;
 
-		Physics2DWorld* m_PhysicsWorld2D = nullptr;
-		PhysicalContactListener2D* m_PhysicalContactListener2D = nullptr;
-
-		std::mutex m_Mutex;
+		Ref<Physics2DWorld> m_PhysicsWorld2D = nullptr;
+		Ref<PhysicalContactListener2D> m_PhysicalContactListener2D = nullptr;
 
 
 		friend class GameObject;

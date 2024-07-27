@@ -59,9 +59,10 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
-		delete m_PhysicsWorld2D;
-		delete m_PhysicalContactListener2D;
-		delete m_TimerWheel;
+		if (m_TimerWheel != nullptr)
+		{
+			m_TimerWheel->Stop();
+		}
 	}
 	Ref<Scene> Scene::Copy(Ref<Scene> scene)
 	{
@@ -160,7 +161,7 @@ namespace GEngine
 	void Scene::OnAwake()
 	{
 		// Create TimerWheel
-		m_TimerWheel = new TimerWheel(10, 1);
+		m_TimerWheel =  CreateRef<TimerWheel>(10, 1);
 
 		// Awake Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
@@ -173,10 +174,10 @@ namespace GEngine
 				}
 			});
 		// Add physics world 2D
-		m_PhysicsWorld2D = new Physics2DWorld(Vector2(0.0f, -9.8f), this);
+		m_PhysicsWorld2D = CreateRef<Physics2DWorld>(Vector2(0.0f, -9.8f), this);
 		// Add physical contact listener 2D
-		m_PhysicalContactListener2D = new PhysicalContactListener2D(this);
-		m_PhysicsWorld2D->SetContactListener(m_PhysicalContactListener2D);
+		m_PhysicalContactListener2D = CreateRef<PhysicalContactListener2D>(this);
+		m_PhysicsWorld2D->SetContactListener(m_PhysicalContactListener2D.get());
 
 
 		auto view = m_Registry.view<RigidBody2D>();
@@ -252,22 +253,22 @@ namespace GEngine
 		m_TimerWheel->Start();
 		// Add physics update
 		m_TimerWheel->AddTask(Time::GetFixedTime() * 60.0f, [=]() {
-				//m_PhysicsWorld2D->Step(Time::GetFixedTime());
+				m_PhysicsWorld2D->Step(Time::GetFixedTime());
 
-				//// retrieve transform
-				//auto view = m_Registry.view<RigidBody2D>();
-				//for (auto entity : view)
-				//{
-				//	GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
-				//	auto& transform = gameObject.GetComponent<Transform>();
-				//	auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
+				// retrieve transform
+				auto view = m_Registry.view<RigidBody2D>();
+				for (auto entity : view)
+				{
+					GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
+					auto& transform = gameObject.GetComponent<Transform>();
+					auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
 
-				//	Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
-				//	const auto& pos = body->GetPosition();
-				//	transform.m_Position.value.x = pos.value.x;
-				//	transform.m_Position.value.y = pos.value.y;
-				//	transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
-				//}
+					Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
+					const auto& pos = body->GetPosition();
+					transform.m_Position.value.x = pos.value.x;
+					transform.m_Position.value.y = pos.value.y;
+					transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
+				}
 				m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
 					{
 						if (!script.Instance)
@@ -304,22 +305,22 @@ namespace GEngine
 		// Physics 2D
 		{
 			
-			m_PhysicsWorld2D->Step(Time::GetDeltaTime());
+			//m_PhysicsWorld2D->Step(Time::GetDeltaTime());
 
-			// retrieve transform
-			auto view = m_Registry.view<RigidBody2D>();
-			for (auto entity : view)
-			{
-				GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
-				auto& transform = gameObject.GetComponent<Transform>();
-				auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
+			//// retrieve transform
+			//auto view = m_Registry.view<RigidBody2D>();
+			//for (auto entity : view)
+			//{
+			//	GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
+			//	auto& transform = gameObject.GetComponent<Transform>();
+			//	auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
 
-				Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
-				const auto& pos = body->GetPosition();
-				transform.m_Position.value.x = pos.value.x;
-				transform.m_Position.value.y = pos.value.y;
-				transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
-			}
+			//	Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
+			//	const auto& pos = body->GetPosition();
+			//	transform.m_Position.value.x = pos.value.x;
+			//	transform.m_Position.value.y = pos.value.y;
+			//	transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
+			//}
 		}
 	}
 	// 场景中的所有对象在每一帧结束时调用
@@ -357,6 +358,8 @@ namespace GEngine
 	// 渲染场景中的所有对象
 	void Scene::OnRender()
 	{
+		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
+
 		auto view_Light = m_Registry.view<Transform, DirectionalLight>();
 		Vector3 main_dir = { -1.0f, -1.0f, 0.0f };
 		Vector3 main_color = { 1.0f, 1.0f, 1.0f };

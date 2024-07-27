@@ -1,12 +1,11 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Core/CoreThread.h"
 
 #include <chrono>
 #include <functional>
 #include <list>
-#include <mutex>
-#include <thread>
 #include <vector>
 
 namespace GEngine
@@ -97,7 +96,7 @@ namespace GEngine
                     std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms_));
                     Tick();
                 }
-                std::cout << "timer oooops!" << std::endl;
+                GE_CORE_INFO("timer oooops!");
                 });
             thread_.detach();
         }
@@ -131,7 +130,7 @@ namespace GEngine
         }
 
         void AddTask(int timeout_ms, Task task) {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
             size_t ticks = timeout_ms / interval_ms_;
             size_t index = (current_index_ + ticks) % wheel_size_;
             size_t allindex = index;
@@ -147,12 +146,15 @@ namespace GEngine
 
     private:
         void Tick() {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
+            if(running_ == false || pausing_ == true)
+			{
+				return;
+			}
             auto& tasks = wheel_[current_index_];
             for (const auto& task : tasks) {
                 task();
             }
-            //tasks.clear();
             current_index_ = (current_index_ + 1) % wheel_size_;
         }
 
@@ -161,10 +163,9 @@ namespace GEngine
         int interval_ms_;
         std::vector<std::list<Task>> wheel_;
         size_t current_index_;
-        bool running_ = false;
-        bool pausing_ = false;
+        static bool running_;
+        static bool pausing_;
         std::thread thread_;
-        std::mutex mutex_;
     };
 
 
