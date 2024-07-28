@@ -3,10 +3,11 @@
 
 namespace GEngine
 {
-	float Time::m_DeltaTime = 0.0f;
-	float Time::m_FixedTime = 0.0f;
-	float Time::m_RunTime = 0.0f;
+	float Time::s_DeltaTime = 0.0f;
+	float Time::s_FixedTime = 0.02f;
+	float Time::s_RunTime = 0.0f;
+	float Time::s_PhysicsDeltaTime = 0.0f;
 
-	bool TimerWheel::running_ = false;
-	bool TimerWheel::pausing_ = false;
+	bool PhysicsTimerWheel::s_Running = false;
+	bool PhysicsTimerWheel::s_Pausing = false;
 }

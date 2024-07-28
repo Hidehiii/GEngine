@@ -21,8 +21,9 @@ namespace GEngine
 		virtual void OnDetach() override;
 
 		virtual void OnUpdate() override;
+		virtual void OnRender() override;
 		virtual void OnGuiRender() override;
-
+		virtual void OnLateUpdate() override;
 		virtual void OnEndFrame() override;
 
 		void OnEvent(GEngine::Event& e) override;

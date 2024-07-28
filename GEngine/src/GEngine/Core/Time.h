@@ -15,18 +15,27 @@ namespace GEngine
 	public:
 		Time() = default;
 
-		static float GetDeltaTime() { return m_DeltaTime; }
-		static void SetDeltaTime(float deltaTime) { m_DeltaTime = deltaTime; }
+		static float GetDeltaTime() { return s_DeltaTime; }
+		static void SetDeltaTime(float deltaTime) { s_DeltaTime = deltaTime; }
 
-		static float GetFixedTime() { return m_FixedTime; }
-		static void SetFixedTime(float fixedTime) { m_FixedTime = fixedTime; }
+		static float GetFixedTime() { return s_FixedTime; }
+		
 
-		static float GetRunTime() { return m_RunTime; }
-		static void SetRunTime(float runTime) { m_RunTime = runTime; }
+		static float GetRunTime() { return s_RunTime; }
+		static void SetRunTime(float runTime) { s_RunTime = runTime; }
+
+        static float GetPhysicsDeltaTime() { return s_PhysicsDeltaTime; }
+        static void SetPhysicsDeltaTime(float physicsDeltaTime) { s_PhysicsDeltaTime = physicsDeltaTime; }
+
+    private:
+        static void SetFixedTime(float fixedTime) { s_FixedTime = fixedTime; }
+
 	public:
-		static float m_DeltaTime;
-		static float m_FixedTime;
-		static float m_RunTime;
+		static float s_DeltaTime;
+		static float s_RunTime;
+        static float s_PhysicsDeltaTime;
+    private:         
+        static float s_FixedTime;
 	};
 
 	template<typename T>
@@ -68,78 +77,89 @@ namespace GEngine
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
 	};
 
-    class GENGINE_API TimerWheel {
+    class GENGINE_API PhysicsTimerWheel {
     public:
         using Task = std::function<void()>;
 
-        explicit TimerWheel(size_t wheel_size, int interval_ms)
-            : wheel_size_(wheel_size),
-            interval_ms_(interval_ms),
-            wheel_(wheel_size),
-            current_index_(0) {}
+        explicit PhysicsTimerWheel(size_t wheelSize, int interval_ms)
+            : m_WheelSize(wheelSize),
+            m_Interval_ms(interval_ms),
+            m_Wheel(wheelSize),
+            m_CurrentIndex(0) {}
 
-        ~TimerWheel() {
+        ~PhysicsTimerWheel() {
             Stop();
         }
 
         void Start() {
-            if (running_) {
+            if (s_Running) {
                 return;
             }
-            running_ = true;
-            thread_ = std::thread([this]() {
-                while (running_) {
-                    if (pausing_)
+            s_Running = true;
+            s_Pausing = false;
+            m_Thread = std::thread([this]() {
+                while (s_Running) {
+                    if (s_Pausing)
                     {
                         continue;
                     }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms_));
+                    auto startTimePoint = std::chrono::high_resolution_clock::now();
+                    std::this_thread::sleep_for(std::chrono::microseconds(m_Interval_ms));
+                   
                     Tick();
+                    auto endTimePoint = std::chrono::high_resolution_clock::now();
+
+                    long long start = std::chrono::time_point_cast<std::chrono::microseconds>(startTimePoint).time_since_epoch().count();
+                    long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimePoint).time_since_epoch().count();
+
+                    float duration = (end - start) * 0.001f * 0.001f;
+                    Time::SetPhysicsDeltaTime(duration);
                 }
-                GE_CORE_INFO("timer oooops!");
                 });
-            thread_.detach();
+            m_Thread.detach();
         }
 
         void Pause()
         {
-            if (!running_)
+            if (!s_Running)
             {
                 return;
             }
-            pausing_ = true;
+            s_Pausing = true;
         }
 
         void Continue()
         {
-            if (!running_)
+            if (!s_Running)
             {
                 return;
             }
-            pausing_ = false;
+            s_Pausing = false;
         }
 
         void Stop() {
-            if (!running_) {
+            if (!s_Running) {
                 return;
             }
-            running_ = false;
-            if (thread_.joinable()) {
-                thread_.join();
+            s_Running = false;
+            s_Pausing = false;
+            if (m_Thread.joinable()) {
+                m_Thread.join();
             }
         }
 
         void AddTask(int timeout_ms, Task task) {
             std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
-            size_t ticks = timeout_ms / interval_ms_;
-            size_t index = (current_index_ + ticks) % wheel_size_;
+            GE_CORE_ASSERT(m_WheelSize * m_Interval_ms >= timeout_ms, "Out of range");
+            size_t ticks = timeout_ms / m_Interval_ms;
+            size_t index = (m_CurrentIndex + ticks) % m_WheelSize;
             size_t allindex = index;
-            for (size_t i = 1; allindex < wheel_size_; i++)
+            for (size_t i = 0; allindex < m_WheelSize; i++)
             {
                 allindex = index * i;
-                if (allindex >= wheel_size_)
+                if (allindex >= m_WheelSize)
                     break;
-                wheel_[allindex].push_back(task);
+                m_Wheel[allindex].push_back(task);
             }
 
         }
@@ -147,25 +167,25 @@ namespace GEngine
     private:
         void Tick() {
             std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
-            if(running_ == false || pausing_ == true)
+            if(s_Running == false || s_Pausing == true)
 			{
 				return;
 			}
-            auto& tasks = wheel_[current_index_];
+            auto& tasks = m_Wheel[m_CurrentIndex];
             for (const auto& task : tasks) {
                 task();
             }
-            current_index_ = (current_index_ + 1) % wheel_size_;
+            m_CurrentIndex = (m_CurrentIndex + 1) % m_WheelSize;
         }
 
     private:
-        size_t wheel_size_;
-        int interval_ms_;
-        std::vector<std::list<Task>> wheel_;
-        size_t current_index_;
-        static bool running_;
-        static bool pausing_;
-        std::thread thread_;
+        size_t m_WheelSize;
+        int m_Interval_ms;
+        std::vector<std::list<Task>> m_Wheel;
+        size_t m_CurrentIndex;
+        static bool s_Running;
+        static bool s_Pausing;
+        std::thread m_Thread;
     };
 
 

@@ -59,9 +59,9 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
-		if (m_TimerWheel != nullptr)
+		if (m_PhysicsTimerWheel != nullptr)
 		{
-			m_TimerWheel->Stop();
+			m_PhysicsTimerWheel->Stop();
 		}
 	}
 	Ref<Scene> Scene::Copy(Ref<Scene> scene)
@@ -161,7 +161,7 @@ namespace GEngine
 	void Scene::OnAwake()
 	{
 		// Create TimerWheel
-		m_TimerWheel =  CreateRef<TimerWheel>(10, 1);
+		m_PhysicsTimerWheel =  CreateRef<PhysicsTimerWheel>(10, 1000 * Time::GetFixedTime());
 
 		// Awake Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
@@ -250,10 +250,10 @@ namespace GEngine
 			});
 
 		// Start timerwheel
-		m_TimerWheel->Start();
+		m_PhysicsTimerWheel->Start();
 		// Add physics update
-		m_TimerWheel->AddTask(Time::GetFixedTime() * 60.0f, [=]() {
-				m_PhysicsWorld2D->Step(Time::GetFixedTime());
+		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [=]() {
+				m_PhysicsWorld2D->Step(Time::GetPhysicsDeltaTime());
 
 				// retrieve transform
 				auto view = m_Registry.view<RigidBody2D>();
@@ -271,14 +271,11 @@ namespace GEngine
 				}
 				m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
 					{
-						if (!script.Instance)
+						if (script.Instance)
 						{
-							script.Instance = script.InstantiateFunc();
-							script.Instance->m_GameObject = GameObject{ entity, this };
-							script.Instance->OnAwake();
-							script.Instance->OnStart();
+							script.Instance->OnPhysicsUpdate();
 						}
-						script.Instance->OnFixedUpdate();
+						
 					});
 			});
 		
@@ -300,27 +297,6 @@ namespace GEngine
 					}
 					script.Instance->OnUpdate();
 				});
-		}
-
-		// Physics 2D
-		{
-			
-			//m_PhysicsWorld2D->Step(Time::GetDeltaTime());
-
-			//// retrieve transform
-			//auto view = m_Registry.view<RigidBody2D>();
-			//for (auto entity : view)
-			//{
-			//	GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
-			//	auto& transform = gameObject.GetComponent<Transform>();
-			//	auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
-
-			//	Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
-			//	const auto& pos = body->GetPosition();
-			//	transform.m_Position.value.x = pos.value.x;
-			//	transform.m_Position.value.y = pos.value.y;
-			//	transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
-			//}
 		}
 	}
 	// 场景中的所有对象在每一帧结束时调用
@@ -354,6 +330,20 @@ namespace GEngine
 			m_Registry.destroy(object);
 		}
 		m_DeletedGameObject.clear();
+	}
+	void Scene::OnPause()
+	{
+		if (m_PhysicsTimerWheel)
+		{
+			m_PhysicsTimerWheel->Pause();
+		}
+	}
+	void Scene::OnResume()
+	{
+		if (m_PhysicsTimerWheel)
+		{
+			m_PhysicsTimerWheel->Continue();
+		}
 	}
 	// 渲染场景中的所有对象
 	void Scene::OnRender()

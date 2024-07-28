@@ -87,17 +87,21 @@ namespace GEngine
 			class TestScript : public ScriptableObject
 			{
 			public:
+				void OnStart()
+				{
+					GE_TRACE("OnStart");
+				}
 				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
 				{
 					GE_TRACE("OnCollisionEnter2D: {0}", info->GetOtherGameObject().GetComponent<Attribute>().m_Name);
 				}
-				void OnFixedUpdate()
+				void OnPhysicsUpdate()
 				{
-					GE_WARN("fixedUpdate");
+					GE_TRACE("OnPhysicsUpdate");
 				}
 				void OnUpdate()
 				{
-					GE_WARN("update");
+					GE_TRACE("OnUpdate");
 				}
 			};
 			auto testObj = m_ActiveScene->CreateGameObject("Test");
@@ -131,27 +135,12 @@ namespace GEngine
 				m_SceneViewportFrameBuffer->Resize(m_SceneViewportSize);
 			}
 
-			m_SceneViewportFrameBuffer->Bind();			
-
+			if (m_SceneViewportFocused && m_SceneViewportHovered)
 			{
-				GE_PROFILE_SCOPE("Render: EditorOnRender");
-				// temporary
-				RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
-				RenderCommand::Clear();
-
-
-				if (m_SceneViewportFocused && m_SceneViewportHovered)
-				{
-					m_EditorCamera.OnUpdate();
-				}
-
-
-				Renderer::BeginScene(m_EditorCamera);
-				OnOverlayRender();
-				m_ActiveScene->OnRender(); 
-				Renderer::EndScene();
+				m_EditorCamera.OnUpdate();
 			}
-			m_SceneViewportFrameBuffer->Unbind();
+
+			
 
 		}
 
@@ -165,25 +154,46 @@ namespace GEngine
 			{
 				m_GameViewportFrameBuffer->Resize(m_GameViewportSize);
 			}
-			m_GameViewportFrameBuffer->Bind();
-
-			{
-				GE_PROFILE_SCOPE("Render: OnRender");
-				// temporary
-				RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
-				RenderCommand::Clear();
-
-				
-				auto camera =  m_ActiveScene->MainCamera();
-				if (camera.m_GameObject)
-				{
-					Renderer::BeginScene(camera); 
-					m_ActiveScene->OnRender();
-					Renderer::EndScene();
-				}
-			}
-			m_GameViewportFrameBuffer->Unbind();
+			
 		}
+	}
+
+	void GEngineEditorLayer::OnRender()
+	{
+		m_SceneViewportFrameBuffer->Bind();
+
+		{
+			GE_PROFILE_SCOPE("Render: EditorOnRender");
+			// temporary
+			RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
+			RenderCommand::Clear();
+
+			Renderer::BeginScene(m_EditorCamera);
+			OnOverlayRender();
+			m_ActiveScene->OnRender();
+			Renderer::EndScene();
+		}
+		m_SceneViewportFrameBuffer->Unbind();
+
+
+		m_GameViewportFrameBuffer->Bind();
+
+		{
+			GE_PROFILE_SCOPE("Render: OnRender");
+			// temporary
+			RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
+			RenderCommand::Clear();
+
+
+			auto camera = m_ActiveScene->MainCamera();
+			if (camera.m_GameObject)
+			{
+				Renderer::BeginScene(camera);
+				m_ActiveScene->OnRender();
+				Renderer::EndScene();
+			}
+		}
+		m_GameViewportFrameBuffer->Unbind();
 	}
 
 	void GEngineEditorLayer::OnGuiRender()
@@ -272,7 +282,7 @@ namespace GEngine
 				}
 				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 				{
-					OpenScene();
+					OpenDialogToOpenScene();
 				}
 
 				ImGui::Separator();
@@ -536,6 +546,11 @@ namespace GEngine
 
 
 		ImGui::End();
+	}
+
+	void GEngineEditorLayer::OnLateUpdate()
+	{
+		m_ActiveScene->OnLateUpdate();
 	}
 
 	void GEngineEditorLayer::OnEndFrame()
@@ -817,11 +832,13 @@ namespace GEngine
 		if (m_SceneState == EditorSceneState::Play)
 		{
 			m_SceneState = EditorSceneState::Pause;
+			m_ActiveScene->OnPause();
 			m_PauseButtonIcon_DisPlay = m_PausingButtonIcon;
 		}
 		else if (m_SceneState == EditorSceneState::Pause)
 		{
 			m_SceneState = EditorSceneState::Play;
+			m_ActiveScene->OnResume();
 			m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
 		}
 	}

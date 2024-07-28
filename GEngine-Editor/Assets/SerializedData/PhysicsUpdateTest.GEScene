@@ -1,0 +1,52 @@
+Scene: Untitled
+GameObjects:
+  - GameObject: 396514007
+    Name: Empty GameObject
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0, -1.29999995, 0]
+      Rotation: [0, 0, 0, 1]
+      Rotation_Angles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 0
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - GameObject: 1538722185
+    Name: Test
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0, 0.899999976, 0]
+      Rotation: [0, 0, 0, 1]
+      Rotation_Angles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+    RigidBody2D:
+      RigidBodyType: 1
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Rotation: 0
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false

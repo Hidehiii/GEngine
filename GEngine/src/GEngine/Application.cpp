@@ -28,7 +28,6 @@ namespace GEngine
 		m_Window->SetEventCallback(GE_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(true);
 
-		Time::SetFixedTime(0.02f);
 
 		Renderer::Init();
 		ScriptEngine::Init();
@@ -64,6 +63,12 @@ namespace GEngine
 					}
 				}
 				{
+					GE_PROFILE_SCOPE("LayerStack OnRender");
+					for (auto layer : m_LayerStack) {
+						layer->OnRender();
+					}
+				}
+				{
 					m_ImGuiLayer->Begin();
 					{
 						GE_PROFILE_SCOPE("ImguiStack OnUpdate");
@@ -75,7 +80,13 @@ namespace GEngine
 					m_ImGuiLayer->End();
 				}
 				{
-					GE_PROFILE_SCOPE("OnEndFrame");
+					GE_PROFILE_SCOPE("LayerStack OnLateUpdate");
+					for (auto layer : m_LayerStack) {
+						layer->OnLateUpdate();
+					}
+				}
+				{
+					GE_PROFILE_SCOPE("LayerStack OnEndFrame");
 					for (auto layer : m_LayerStack) {
 						layer->OnEndFrame();
 					}

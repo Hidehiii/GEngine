@@ -37,7 +37,7 @@ namespace GEngine
 		virtual void OnAwake() {};
 		virtual void OnStart() {};
 		virtual void OnUpdate() {};
-		virtual void OnFixedUpdate() {};
+		virtual void OnPhysicsUpdate() {};
 		virtual void OnLateUpdate() {};
 		virtual void OnDestroy() {};
 

@@ -34,6 +34,9 @@ namespace GEngine
 		void OnLateUpdate();
 		void OnEndFrame();
 
+		void OnPause();
+		void OnResume();
+
 		// Render
 		void OnRender();
 
@@ -55,8 +58,7 @@ namespace GEngine
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		std::vector<GameObject> m_DeletedGameObject;
 
-		// 多线程会导致渲染有问题
-		Ref<TimerWheel> m_TimerWheel = nullptr;
+		Ref<PhysicsTimerWheel> m_PhysicsTimerWheel = nullptr;
 
 		Ref<Physics2DWorld> m_PhysicsWorld2D = nullptr;
 		Ref<PhysicalContactListener2D> m_PhysicalContactListener2D = nullptr;
