@@ -13,7 +13,7 @@ namespace GEngine {
 		BoxCollider(Vector3 size, Vector3 offset = {0, 0, 0}, Vector3 rotation = {0, 0, 0})
 			: m_Size(size), m_Offset(offset), m_Rotation(rotation) {}
 
-	private:
+	public:
 		Vector3 m_Size;
 		Vector3 m_Offset;
 		Vector3 m_Rotation;
