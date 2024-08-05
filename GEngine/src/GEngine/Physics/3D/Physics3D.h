@@ -4,15 +4,17 @@
 
 #include <filesystem>
 
-#include <PxPhysicsAPI.h>
-#include <PxPhysics.h>
-#include <foundation/PxAllocatorCallback.h>
-#include <pvd/PxPvd.h>
-#include <cooking/PxCooking.h>
+#include <PhysX/include/PxPhysicsAPI.h>
+
+
 
 
 namespace GEngine
 {
+	class PhysicsAllocatorCallBack3D;
+	class PhysicsErrorCallback3D;
+
+
 	class GENGINE_API Physics3D
 	{
 	public:
@@ -24,7 +26,6 @@ namespace GEngine
 
 	private:
 		physx::PxFoundation* m_Foundation = nullptr;
-		physx::PxPvd* m_Pvd = nullptr;
 		physx::PxPhysics* m_Physics = nullptr;
 	};
 
@@ -83,6 +84,41 @@ namespace GEngine
 				break;
 			}
 		}
+	};
+
+	class GENGINE_API Physics3DSphere
+	{
+	public:
+		Physics3DSphere(float radius = 0);
+		Physics3DSphere(const Physics3DSphere& other);
+
+		bool IsValid() const;
+
+		inline void operator=(const Physics3DSphere& other);
+
+	public:
+		float m_Radius;
+
+	private:
+		physx::PxSphereGeometry m_Sphere;
+	};
+
+	class GENGINE_API Physics3DCapsule
+	{
+	public:
+		Physics3DCapsule(float radius = 0.0f, float halfHeight = 0.0f);
+		Physics3DCapsule(const Physics3DCapsule& other);
+
+		bool IsValid() const;
+
+		inline void operator=(const Physics3DCapsule& other);
+
+	public:
+		float m_Radius;
+		float m_HalfHeight;
+
+	private:
+		physx::PxCapsuleGeometry m_Capsule;
 	};
 }
 

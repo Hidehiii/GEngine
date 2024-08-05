@@ -66,3 +66,5 @@
 // Physics
 #include "GEngine/Physics/2D/Physics2D.h"
 #include "GEngine/Physics/2D/PhysicalContactListener2D.h"
+
+#include "GEngine/Physics/3D/Physics3D.h"
