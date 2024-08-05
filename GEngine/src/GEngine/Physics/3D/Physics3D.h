@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Math/Math.h"
 
 #include <filesystem>
 
@@ -119,6 +120,22 @@ namespace GEngine
 
 	private:
 		physx::PxCapsuleGeometry m_Capsule;
+	};
+
+	class GENGINE_API Physics3DCube
+	{
+	public:
+		Physics3DCube(float hx = 0, float hy = 0, float hz = 0);
+		Physics3DCube(const Vector3& halfExtents);
+		Physics3DCube(const Physics3DCube& other);
+
+		bool IsValid() const;
+
+		inline void operator=(const Physics3DCube& other);
+	public:
+		Vector3 m_HalfExtents;
+	private:
+		physx::PxBoxGeometry m_Cube;
 	};
 }
 

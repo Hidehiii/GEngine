@@ -57,7 +57,7 @@ namespace GEngine
 	{
 		m_Radius = other.m_Radius;
 		m_HalfHeight = other.m_HalfHeight;
-		m_Capsule = physx::PxCapsuleGeometry(m_Radius, m_HalfHeight);
+		m_Capsule = physx::PxCapsuleGeometry(other.m_Capsule);
 	}
 
 	bool Physics3DCapsule::IsValid() const
@@ -70,5 +70,31 @@ namespace GEngine
 		this->m_Capsule = other.m_Capsule;
 		this->m_Radius = other.m_Radius;
 		this->m_HalfHeight = other.m_HalfHeight;
+	}
+
+
+	Physics3DCube::Physics3DCube(float hx, float hy, float hz)
+	{
+		m_HalfExtents = Vector3(hx, hy, hz);
+		m_Cube = physx::PxBoxGeometry(hx, hy, hz);
+	}
+	Physics3DCube::Physics3DCube(const Vector3& halfExtents)
+	{
+		m_HalfExtents = halfExtents;
+		m_Cube = physx::PxBoxGeometry(halfExtents.value.x, halfExtents.value.y, halfExtents.value.z);
+	}
+	Physics3DCube::Physics3DCube(const Physics3DCube& other)
+	{
+		m_HalfExtents = other.m_HalfExtents;
+		m_Cube = physx::PxBoxGeometry(other.m_Cube);
+	}
+	bool Physics3DCube::IsValid() const
+	{
+		return m_Cube.isValid();
+	}
+	inline void Physics3DCube::operator=(const Physics3DCube& other)
+	{
+		this->m_HalfExtents = other.m_HalfExtents;
+		this->m_Cube = other.m_Cube;
 	}
 }
