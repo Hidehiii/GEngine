@@ -97,4 +97,20 @@ namespace GEngine
 		this->m_HalfExtents = other.m_HalfExtents;
 		this->m_Cube = other.m_Cube;
 	}
+	Physics3DPlane::Physics3DPlane()
+	{
+		m_Plane = physx::PxPlaneGeometry();
+	}
+	Physics3DPlane::Physics3DPlane(const Physics3DPlane& other)
+	{
+		m_Plane = physx::PxPlaneGeometry(other.m_Plane);
+	}
+	bool Physics3DPlane::IsValid() const
+	{
+		return m_Plane.isValid();
+	}
+	inline void Physics3DPlane::operator=(const Physics3DPlane& other)
+	{
+		this->m_Plane = other.m_Plane;
+	}
 }

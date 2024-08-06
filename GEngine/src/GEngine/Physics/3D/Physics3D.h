@@ -137,6 +137,19 @@ namespace GEngine
 	private:
 		physx::PxBoxGeometry m_Cube;
 	};
+
+	class GENGINE_API Physics3DPlane
+	{
+	public:
+		Physics3DPlane();
+		Physics3DPlane(const Physics3DPlane& other);
+
+		bool IsValid() const;
+
+		inline void operator=(const Physics3DPlane& other);
+	private:
+		physx::PxPlaneGeometry m_Plane;
+	};
 }
 
 
