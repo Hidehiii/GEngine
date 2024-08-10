@@ -12,6 +12,7 @@
 #include "Light/DirectionalLight.h"
 #include "Renderer/MeshRenderer/MeshRenderer.h"
 #include "3D/BoxCollider/BoxCollider.h"
+#include "3D/RigidBody/RigidBody.h"
 namespace GEngine
 {
 	template<typename... Component>
@@ -25,5 +26,5 @@ namespace GEngine
 		ComponentGroup<Transform, ImageRenderer,
 		Camera, NativeScript, RigidBody2D, BoxCollider2D,
 		Attribute, CircleRenderer, CircleCollider2D, MeshFilter,
-		MeshRenderer, DirectionalLight, BoxCollider>;
+		MeshRenderer, DirectionalLight, BoxCollider, RigidBody>;
 }
