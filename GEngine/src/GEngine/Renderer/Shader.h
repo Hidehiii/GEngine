@@ -10,18 +10,25 @@ namespace GEngine
 {
 	enum class ShaderUniformType
 	{
-		None = 0, Int, Float, Vector, Color, Mat3, Mat4, Sampler2D
+		None		= 0, 
+		Int			= 1,
+		Float		= 2,
+		Vector		= 3,
+		Color		= 4,
+		Mat3		= 5,
+		Mat4		= 6,
+		Sampler2D	= 7
 	};
 	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
 	{
 		switch (type)
 		{
-		case ShaderUniformType::Int: return 4;
-		case ShaderUniformType::Float: return 4;
+		case ShaderUniformType::Int:	return 4;
+		case ShaderUniformType::Float:	return 4;
 		case ShaderUniformType::Vector: return 4 * 4;
-		case ShaderUniformType::Color: return 4 * 4;
-		case ShaderUniformType::Mat3: return 4 * 4 * 3;
-		case ShaderUniformType::Mat4: return 4 * 4 * 4;
+		case ShaderUniformType::Color:	return 4 * 4;
+		case ShaderUniformType::Mat3:	return 4 * 4 * 3;
+		case ShaderUniformType::Mat4:	return 4 * 4 * 4;
 		}
 		return 0;
 	}

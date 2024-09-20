@@ -49,6 +49,9 @@ namespace GEngine
 		virtual Ref<Shader>& GetShader() = 0;
 		virtual std::string GetName() = 0;
 
+		virtual void SetShader(const Ref<Shader>& shader) = 0;
+		virtual void SetName(const std::string& name) = 0;
+
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
 
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) = 0;

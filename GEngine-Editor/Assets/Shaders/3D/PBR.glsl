@@ -6,6 +6,8 @@
 p0: color;
 
 p1: vector
+p2: float
+
 
 #type vertex
 #version 450 core
@@ -60,6 +62,7 @@ layout(std140, binding = 0) uniform MATERIAL
 {
 	vec4 p0;
 	vec4 p1;
+	float p2;
 };
 struct VertexOutput
 {
@@ -71,5 +74,5 @@ void main()
 {
 	vec4 c = IN.normal;
 	c.xyz = p0.xyz;
-	o_color = vec4(c.x, c.y, c.z, 1.0);
+	o_color = vec4(c.x, c.y, c.z, p2);
 }

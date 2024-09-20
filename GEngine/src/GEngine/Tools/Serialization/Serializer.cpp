@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Math/Math.h"
+#include "GEngine/Renderer/Material.h"
 
 namespace YAML
 {
@@ -289,6 +290,44 @@ namespace GEngine
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 	}
+	// 编码材质的YAML数据
+	template <>
+	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Material>& material)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Material";
+		out << YAML::Value << material->GetName();
+		out << YAML::Key << "Shader";
+		out << YAML::Value << YAML::BeginSeq;
+
+		out << YAML::Key << YAML::BeginMap;
+		out << YAML::Key << "Name" << YAML::Value << material->GetShader()->GetShaderName();
+		out << YAML::Key << "Properties";
+		out << YAML::Value << YAML::BeginMap;
+		std::vector<ShaderUniform>& uniforms = material->GetUniforms();
+		for (auto uniform : uniforms)
+		{
+			out << YAML::Key << uniform.Name;
+			out << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Type" << YAML::Value << (int)uniform.Type;
+			switch (uniform.Type)
+			{
+			case ShaderUniformType::Int:		out << YAML::Key << "Value" << YAML::Value << material->GetInt(uniform.Name); break;
+			case ShaderUniformType::Float:		out << YAML::Key << "Value" << YAML::Value << material->GetFloat(uniform.Name); break;
+			case ShaderUniformType::Vector:
+			case ShaderUniformType::Color:		out << YAML::Key << "Value" << YAML::Value << material->GetVector(uniform.Name); break;
+			default: GE_CORE_CRITICAL("There is an unknown uniform type try to be writen into YAML file.");
+			}
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+		out << YAML::EndMap;
+
+		out << YAML::EndMap;
+		std::ofstream fout(filepath);
+		fout << out.c_str();
+	}
 
 	template<typename T>
 	static void Serializer::Deserialize(const std::string& filepath, Ref<T>& data)
@@ -442,6 +481,33 @@ namespace GEngine
 					newGameObject.GetComponent<CircleCollider2D>().m_IsTrigger = isTrigger;
 				}
 			}
+		}
+	}
+	// 解码材质的YAML数据
+	template <>
+	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Material>& material)
+	{
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			GE_CORE_ERROR("Failed to load scene file: {0}, \n{1}", filepath, e.what());
+			return;
+		}
+		if (!data["Material"])
+			return;
+
+		std::string materialName = data["Material"].as<std::string>();
+		material->SetName(materialName);
+
+		auto shader = data["Shader"];
+		if (shader)
+		{
+			// TODO 
+			GE_CORE_CRITICAL("这里的材质解码还没写");
 		}
 	}
 }

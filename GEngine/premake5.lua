@@ -102,6 +102,8 @@ project "GEngine"
 			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
+			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
+			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 		}
 
 	filter "configurations:Debug"

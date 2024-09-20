@@ -28,8 +28,10 @@ namespace GEngine
 		virtual Vector4 GetVector(const std::string& name) override;
 
 		virtual std::string GetName() override { return m_Name; };
-
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
+
+		virtual void SetName(const std::string& name) override;
+		virtual void SetShader(const Ref<Shader>& shader) override;
 
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) override;
 

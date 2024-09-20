@@ -28,3 +28,5 @@ GEngine-Editor/GEngineProfile-StartUp.json
 /Sandbox/GEngineProfile-RunTime.json
 /Sandbox/GEngineProfile-StartUp.json
 /Sandbox/GEngineProfile-ShutDown.json
+*.frag
+*.vert

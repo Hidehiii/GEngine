@@ -391,6 +391,9 @@ namespace GEngine
 						{
 						case ShaderUniformType::Float:
 						{
+							float f = component.m_Material->GetFloat(uniform.Name);
+							GUIPainter::DrawFloatControl(uniform.Name.c_str(), f);
+							component.m_Material->SetFloat(uniform.Name, f);
 							break;
 						}
 						case ShaderUniformType::Int:
