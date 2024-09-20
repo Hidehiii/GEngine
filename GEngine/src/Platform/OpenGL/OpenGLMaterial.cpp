@@ -103,7 +103,7 @@ namespace GEngine
 	}
 	Vector4 OpenGLMaterial::GetVector(const std::string& name)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
+		ShaderUniform& uniform = GetUniformByName(name);
 		if (uniform.Size)
 		{
 			Vector4 value;
@@ -127,7 +127,7 @@ namespace GEngine
 	void OpenGLMaterial::SetTexture2D(const std::string& name, const Ref<Texture2D>& texture)
 	{
 	}
-	ShaderUniform& OpenGLMaterial::GetUniformByName(const std::string& name) const
+	ShaderUniform OpenGLMaterial::GetUniformByName(const std::string& name) const
 	{
 		for(auto uniform : m_Uniforms)
 		{

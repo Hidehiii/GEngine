@@ -40,7 +40,7 @@ namespace GEngine
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; };
 
 	private:
-		ShaderUniform& GetUniformByName(const std::string& name) const;
+		ShaderUniform GetUniformByName(const std::string& name) const;
 	private:
 		Ref<OpenGLShader> m_Shader;
 		Ref<OpenGLUniformBuffer> m_UniformBuffer;
