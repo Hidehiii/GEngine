@@ -39,6 +39,22 @@ namespace GEngine
 		if(m_UniformStorageBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
 	}
+	Material_CullMode OpenGLMaterial::GetCullMode()
+	{
+		return m_CullMode;
+	}
+	Material_BlendMode OpenGLMaterial::GetBlendMode()
+	{
+		return m_BlendMode;
+	}
+	void OpenGLMaterial::SetCullMode(Material_CullMode mode)
+	{
+		m_CullMode = mode;
+	}
+	void OpenGLMaterial::SetBlendMode(Material_BlendMode mode)
+	{
+		m_BlendMode = mode;
+	}
 	void OpenGLMaterial::SetFloat(const std::string& name, float value)
 	{
 		ShaderUniform uniform = GetUniformByName(name);

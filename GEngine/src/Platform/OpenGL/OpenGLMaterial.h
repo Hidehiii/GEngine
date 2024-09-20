@@ -15,6 +15,12 @@ namespace GEngine
 
 		virtual void UploadData() override;
 
+		virtual Material_CullMode GetCullMode() = 0;
+		virtual Material_BlendMode GetBlendMode() = 0;
+
+		virtual void SetCullMode(Material_CullMode mode) = 0;
+		virtual void SetBlendMode(Material_BlendMode mode) = 0;
+
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetUInt(const std::string& name, uint32_t value) override;

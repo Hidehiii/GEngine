@@ -33,6 +33,11 @@ namespace GEngine
 
 		virtual void UploadData() = 0;
 
+		virtual Material_CullMode GetCullMode() = 0;
+		virtual Material_BlendMode GetBlendMode() = 0;
+
+		virtual void SetCullMode(Material_CullMode mode) = 0;
+		virtual void SetBlendMode(Material_BlendMode mode) = 0;
 
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;
