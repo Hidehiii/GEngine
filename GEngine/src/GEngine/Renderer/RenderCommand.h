@@ -24,6 +24,8 @@ namespace GEngine
 		inline static float GetTime();
 		inline static void SetCull(Material_CullMode mode);
 		inline static void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest);
+		inline static void EnableDepthMask(bool enabled);
+		inline static void EnableDepthTest(bool enabled);
 		inline static void SetRendererAPI(RendererAPI::API api);
 	private:
 		inline static RendererAPI* s_RendererAPI;

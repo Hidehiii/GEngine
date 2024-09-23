@@ -46,6 +46,8 @@ namespace GEngine
 			Renderer::SetModelUniforms(m_GameObject.GetComponent<Transform>());
 			RenderCommand::SetCull(m_Material->GetCullMode());
 			RenderCommand::SetBlend(m_Material->GetBlendMode(), m_Material->GetBlendSourceFactor(), m_Material->GetBlendDestinationFactor());
+			RenderCommand::EnableDepthTest(m_Material->GetEnableDepthTest());
+			RenderCommand::EnableDepthMask(m_Material->GetEnableDepthMask());
 			RenderCommand::DrawTriangles(m_VertexArray);
 		}
 		else

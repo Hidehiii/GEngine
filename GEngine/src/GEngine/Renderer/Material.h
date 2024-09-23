@@ -39,6 +39,12 @@ namespace GEngine
 		virtual uint32_t GetBlendSourceFactor() = 0;
 		virtual uint32_t GetBlendDestinationFactor() = 0;
 
+		virtual void EnableDepthMask(bool enabled) = 0;
+		virtual bool GetEnableDepthMask() = 0;
+
+		virtual void EnableDepthTest(bool enabled) = 0;
+		virtual bool GetEnableDepthTest() = 0;
+
 		virtual void SetCullMode(Material_CullMode mode) = 0;
 		virtual void SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest) = 0;
 

@@ -1,7 +1,9 @@
 
-#name PBR
-#blend Customized SrcAlpha OneMinusSrcAlpha
-#properties
+#Name PBR
+#Blend Customized SrcAlpha OneMinusSrcAlpha
+#DepthTest On
+#DepthMask Off
+#Properties
 
 p0: color;
 
@@ -9,7 +11,7 @@ p1: vector
 p2: float
 
 
-#type vertex
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
@@ -48,7 +50,7 @@ void main()
 	gl_Position = GE_MATRIX_VP * GE_MATRIX_M * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
 layout(std140, binding = 1) uniform CAMERA

@@ -1,9 +1,9 @@
 
-#name Quad2D
+#Name Quad2D
 
-#properties
+#Properties
 
-#type vertex
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
@@ -34,7 +34,7 @@ void main()
 	gl_Position = GE_MATRIX_VP * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
 layout(std140, binding = 2) uniform TIME

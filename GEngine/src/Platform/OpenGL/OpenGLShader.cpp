@@ -22,6 +22,13 @@ namespace GEngine
 			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
 			return string;
 		}
+		static bool ShaderBoolFromString(const std::string& value)
+		{
+			if (ToLower(value) == "on")				return true;
+			if (ToLower(value) == "1")				return true;
+			if (ToLower(value) == "true")			return true;
+			return false;
+		}
 		static uint32_t ShaderBlendFactorFromString(const std::string& factor)
 		{
 			if (ToUpper(factor) == "SRCALPHA")			return (uint32_t)GL_SRC_ALPHA;
@@ -418,19 +425,25 @@ namespace GEngine
 	{
 		std::unordered_map<GLenum, std::string> shaderSources;
 
-		const char* nameToken = "#name";
-		size_t nameTokenLength = strlen(nameToken);
+		const char* nameToken			= "#Name";
+		size_t nameTokenLength			= strlen(nameToken);
 
-		const char* blendToken = "#blend";
-		size_t blendTokenLength = strlen(blendToken);
+		const char* blendToken			= "#Blend";
+		size_t blendTokenLength			= strlen(blendToken);
 
-		const char* propertyToken = "#properties";
-		size_t propertyTokenLength = strlen(propertyToken);
+		const char* depthMaskToken		= "#DepthMask";
+		size_t depthMaskTokenLength		= strlen(depthMaskToken);
 
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
+		const char* depthTestToken		= "#DepthTest";
+		size_t depthTestTokenLength		= strlen(depthTestToken);
 
-		// find name 
+		const char* propertyToken		= "#Properties";
+		size_t propertyTokenLength		= strlen(propertyToken);
+
+		const char* typeToken			= "#Type";
+		size_t typeTokenLength			= strlen(typeToken);
+
+		// find Name 
 		
 		size_t pos = source.find(nameToken, 0);
 		if (pos != std::string::npos)
@@ -448,26 +461,67 @@ namespace GEngine
 			GE_CORE_TRACE("Shader name: {0}", m_Name);
 		}
 
-		// find blend
+		// find Blend
 		pos = source.find(blendToken, 0);
 		if (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + nameTokenLength + 1;
+			size_t begin = pos + blendTokenLength + 1;
 			std::string blendString = source.substr(begin, eol - begin);
 			blendString = Utils::RemoveCharFromString(blendString, ';');
 			blendString = Utils::RemoveCharFromString(blendString, '\r');
 			blendString = Utils::RemoveCharFromString(blendString, '\n');
 			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3, "Syntax error");
+			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1, "Syntax error");
 			m_BlendType					= (int)Utils::ShaderBlendTypeFromString(blends.at(0));
-			m_BlendSourceFactor			= Utils::ShaderBlendFactorFromString(blends.at(1));
-			m_BlendDestinationFactor	= Utils::ShaderBlendFactorFromString(blends.at(2));
-			GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
+			if (blends.size() ==3)
+			{
+				m_BlendSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				m_BlendDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
+			}
+			else
+			{
+				GE_CORE_TRACE("Blend type: {0}", blends.at(0));
+			}
+		}
+
+		// find DepthMask
+		pos = source.find(depthMaskToken, 0);
+		if (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + depthMaskTokenLength + 1;
+			std::string depthMaskProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
+			{
+				depthMaskProp.erase(index, 1);
+			}
+			m_EnableDepthMask = Utils::ShaderBoolFromString(depthMaskProp);
+			GE_CORE_TRACE("DepthMask: {0}", m_EnableDepthMask);
+		}
+
+		// find DepthTest
+		pos = source.find(depthTestToken, 0);
+		if (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + depthTestTokenLength + 1;
+			std::string depthTestProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
+			{
+				depthTestProp.erase(index, 1);
+			}
+			m_EnableDepthTest = Utils::ShaderBoolFromString(depthTestProp);
+			GE_CORE_TRACE("DepthTest: {0}", m_EnableDepthTest);
 		}
 		
-		// find properties
+		// find Properties
 		pos = source.find(propertyToken, 0);
 		if (pos != std::string::npos)
 		{
@@ -514,7 +568,7 @@ namespace GEngine
 
 		
 
-		// find type
+		// find Type
 		
 		pos = source.find(typeToken, 0);
 

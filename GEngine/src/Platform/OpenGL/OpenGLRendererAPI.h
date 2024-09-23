@@ -20,6 +20,7 @@ namespace GEngine
 
 		virtual void DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount) override;
 
+		virtual void EnableDepthMask(bool enabled) override;
 		virtual void EnableDepthTest(bool enabled) override;
 		virtual void SetCull(Material_CullMode mode) override;
 		virtual void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest) override;

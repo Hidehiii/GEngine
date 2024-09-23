@@ -61,6 +61,14 @@ namespace GEngine
 	{
 		s_RendererAPI->SetBlend(mode, source, dest);
 	}
+	inline void RenderCommand::EnableDepthMask(bool enabled)
+	{
+		s_RendererAPI->EnableDepthTest(enabled);
+	}
+	inline void RenderCommand::EnableDepthTest(bool enabled)
+	{
+		s_RendererAPI->EnableDepthTest(enabled);
+	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{
 		switch (api)

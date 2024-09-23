@@ -65,6 +65,8 @@ namespace GEngine
 		virtual int GetCullMode() = 0;
 		virtual uint32_t GetBlendSourceFactor() = 0;
 		virtual uint32_t GetBlendDestinationFactor() = 0;
+		virtual bool GetEnableDepthMask() = 0;
+		virtual bool GetEnableDepthTest() = 0;
 
 		virtual std::vector<ShaderUniform> GetUniforms() = 0;
 

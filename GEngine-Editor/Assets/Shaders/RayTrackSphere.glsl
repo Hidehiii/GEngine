@@ -1,13 +1,13 @@
 
-#name NormalWS3D
+#Name NormalWS3D
 
-#properties
+#Properties
 
 p0: vector
 
 p1: vector
 
-#type vertex
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
@@ -40,7 +40,7 @@ void main()
 	gl_Position = GE_MATRIX_VP * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
 layout(std140, binding = 1) uniform CAMERA

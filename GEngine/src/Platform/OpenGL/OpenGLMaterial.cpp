@@ -28,6 +28,9 @@ namespace GEngine
 			m_BlendMode					= (Material_BlendMode)m_Shader->GetBlendMode();
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
+			// Read depth test and depth mask
+			m_EnableDepthMask			= m_Shader->GetEnableDepthMask();
+			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
 		}
 		else
 		{
