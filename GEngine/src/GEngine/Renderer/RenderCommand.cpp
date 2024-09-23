@@ -53,6 +53,14 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetTime();
 	}
+	inline void RenderCommand::SetCull(Material_CullMode mode)
+	{
+		s_RendererAPI->SetCull(mode);
+	}
+	inline void RenderCommand::SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest)
+	{
+		s_RendererAPI->SetBlend(mode, source, dest);
+	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{
 		switch (api)

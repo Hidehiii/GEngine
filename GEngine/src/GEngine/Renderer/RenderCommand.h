@@ -5,6 +5,7 @@
 #include "GEngine/Math/Math.h"
 
 
+
 namespace GEngine
 {
 	class GENGINE_API RenderCommand
@@ -21,6 +22,8 @@ namespace GEngine
 		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		inline static float GetTime();
+		inline static void SetCull(Material_CullMode mode);
+		inline static void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest);
 		inline static void SetRendererAPI(RendererAPI::API api);
 	private:
 		inline static RendererAPI* s_RendererAPI;

@@ -17,6 +17,10 @@ namespace GEngine
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
+		virtual int GetBlendMode() override { return m_BlendType; }
+		virtual int GetCullMode() override { return m_CullMode; }
+		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
+		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
 
 		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
 		virtual const std::string& GetShaderName() const override { return m_Name; }
@@ -46,16 +50,21 @@ namespace GEngine
 		void CreateProgram();
 		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
-		uint32_t m_RendererID;
-		std::string m_FilePath;
-		std::string m_Name;
+		uint32_t											m_RendererID;
+		std::string											m_FilePath;
+		std::string											m_Name;
 
-		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
-		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<GLenum, std::vector<uint32_t>>	m_VulkanSPIRV;
+		std::unordered_map<GLenum, std::vector<uint32_t>>	m_OpenGLSPIRV;
 
-		std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
+		std::unordered_map<GLenum, std::string>				m_OpenGLSourceCode;
 
-		std::vector<ShaderUniform> m_UniformCache;
+		std::vector<ShaderUniform>							m_UniformCache;
+
+		int													m_BlendType;
+		int													m_CullMode;
+		uint32_t											m_BlendSourceFactor;
+		uint32_t											m_BlendDestinationFactor;
 	};
 }
 

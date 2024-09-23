@@ -1,8 +1,10 @@
 #include "GEpch.h"
 #include "OpenGLShader.h"
+#include "GEngine/Renderer/Material.h"
 #include <glad/glad.h>
 
 #include <filesystem>
+#include <algorithm>
 #include <shaderc/shaderc.hpp>
 #include <SPIRVCross/spirv_cross.hpp>
 #include <SPIRVCross/spirv_glsl.hpp>
@@ -10,15 +12,50 @@
 namespace GEngine
 {
 	namespace Utils {
+		static std::string ToLower(std::string string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
+			return string;
+		}
+		static std::string ToUpper(std::string string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
+			return string;
+		}
+		static uint32_t ShaderBlendFactorFromString(const std::string& factor)
+		{
+			if (ToUpper(factor) == "SRCALPHA")			return (uint32_t)GL_SRC_ALPHA;
+			if (ToUpper(factor) == "DSTALPHA")			return (uint32_t)GL_DST_ALPHA;
+			if (ToUpper(factor) == "SRCCOLOR")			return (uint32_t)GL_SRC_COLOR;
+			if (ToUpper(factor) == "DSTCOLOR")			return (uint32_t)GL_DST_COLOR;
+			if (ToUpper(factor) == "ONEMINUSSRCALPHA")	return (uint32_t)GL_ONE_MINUS_SRC_ALPHA;
+			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return (uint32_t)GL_ONE_MINUS_DST_ALPHA;
+			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return (uint32_t)GL_ONE_MINUS_SRC_COLOR;
+			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return (uint32_t)GL_ONE_MINUS_DST_COLOR;
+			if (ToUpper(factor) == "ONE")				return (uint32_t)GL_ONE;
+			if (ToUpper(factor) == "ZERO")				return (uint32_t)GL_ZERO;
 
+			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
+		}
+		static Material_BlendMode ShaderBlendTypeFromString(const std::string& type)
+		{
+			if (ToLower(type) == "none")		return Material_BlendMode::None;
+			if (ToLower(type) == "alpha")		return Material_BlendMode::Alpha;
+			if (ToLower(type) == "additive")	return Material_BlendMode::Additive;
+			if (ToLower(type) == "multiply")	return Material_BlendMode::Multiply;
+			if (ToLower(type) == "customized")	return Material_BlendMode::Customized;
+
+			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
+			return Material_BlendMode::None;
+		}
 		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
 		{
-			if (type == "int") return ShaderUniformType::Int;
-			if (type == "float") return ShaderUniformType::Float;
-			if (type == "vector") return ShaderUniformType::Vector;
-			if (type == "color") return ShaderUniformType::Color;
-			if (type == "mat3") return ShaderUniformType::Mat3;
-			if (type == "mat4") return ShaderUniformType::Mat4;
+			if (ToLower(type) == "int")		return ShaderUniformType::Int;
+			if (ToLower(type) == "float")	return ShaderUniformType::Float;
+			if (ToLower(type) == "vector")	return ShaderUniformType::Vector;
+			if (ToLower(type) == "color")	return ShaderUniformType::Color;
+			if (ToLower(type) == "mat3")	return ShaderUniformType::Mat3;
+			if (ToLower(type) == "mat4")	return ShaderUniformType::Mat4;
 
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
@@ -26,9 +63,9 @@ namespace GEngine
 
 		static GLenum ShaderTypeFromString(const std::string& type)
 		{
-			if (type == "vertex")
+			if (ToLower(type) == "vertex")
 				return GL_VERTEX_SHADER;
-			if (type == "fragment" || type == "pixel")
+			if (ToLower(type) == "fragment" || ToLower(type) == "pixel")
 				return GL_FRAGMENT_SHADER;
 
 			GE_CORE_ASSERT(false, "Unknown shader type!");
@@ -39,8 +76,8 @@ namespace GEngine
 		{
 			switch (type)
 			{
-			case GL_VERTEX_SHADER: return "vertex";
-			case GL_FRAGMENT_SHADER: return "fragment";
+			case GL_VERTEX_SHADER:		return "vertex";
+			case GL_FRAGMENT_SHADER:	return "fragment";
 			}
 			GE_CORE_ASSERT(false, "Unknown shader type");
 			return 0;
@@ -111,7 +148,8 @@ namespace GEngine
 			while (std::getline(ss, item, delimiter))
 			{
 				item = item.substr(0, item.size());
-				result.push_back(item);
+				if(item.empty() == false)
+					result.push_back(item);
 			}
 			return result;
 		}
@@ -125,6 +163,31 @@ namespace GEngine
 					it = result.erase(it);
 				else
 					++it;
+			}
+			return result;
+		}
+
+		static std::string RemoveCharFromStringInHead(const std::string& string, char character)
+		{
+			std::string result = string;
+			for (auto it = result.begin(); it != result.end();)
+			{
+				if (*it == character)
+					it = result.erase(it);
+				else
+					return result;
+			}
+			return result;
+		}
+		static std::string RemoveCharFromStringInTail(const std::string& string, char character)
+		{
+			std::string result = string;
+			for (int i = result.size() - 1; i >= 0; i--)
+			{
+				if (result.at(i) == character)
+					result.erase(i);
+				else
+					return result;
 			}
 			return result;
 		}
@@ -358,6 +421,9 @@ namespace GEngine
 		const char* nameToken = "#name";
 		size_t nameTokenLength = strlen(nameToken);
 
+		const char* blendToken = "#blend";
+		size_t blendTokenLength = strlen(blendToken);
+
 		const char* propertyToken = "#properties";
 		size_t propertyTokenLength = strlen(propertyToken);
 
@@ -380,6 +446,25 @@ namespace GEngine
 			}
 			m_Name = name;
 			GE_CORE_TRACE("Shader name: {0}", m_Name);
+		}
+
+		// find blend
+		pos = source.find(blendToken, 0);
+		if (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + nameTokenLength + 1;
+			std::string blendString = source.substr(begin, eol - begin);
+			blendString = Utils::RemoveCharFromString(blendString, ';');
+			blendString = Utils::RemoveCharFromString(blendString, '\r');
+			blendString = Utils::RemoveCharFromString(blendString, '\n');
+			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
+			GE_CORE_ASSERT(blends.size() == 3, "Syntax error");
+			m_BlendType					= (int)Utils::ShaderBlendTypeFromString(blends.at(0));
+			m_BlendSourceFactor			= Utils::ShaderBlendFactorFromString(blends.at(1));
+			m_BlendDestinationFactor	= Utils::ShaderBlendFactorFromString(blends.at(2));
+			GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
 		}
 		
 		// find properties
@@ -427,6 +512,7 @@ namespace GEngine
 			}
 		}
 
+		
 
 		// find type
 		

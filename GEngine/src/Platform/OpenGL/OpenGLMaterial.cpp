@@ -24,6 +24,10 @@ namespace GEngine
 			{
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
+			// Read blend type and factor
+			m_BlendMode					= (Material_BlendMode)m_Shader->GetBlendMode();
+			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
+			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
 		}
 		else
 		{
@@ -39,21 +43,15 @@ namespace GEngine
 		if(m_UniformStorageBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
 	}
-	Material_CullMode OpenGLMaterial::GetCullMode()
-	{
-		return m_CullMode;
-	}
-	Material_BlendMode OpenGLMaterial::GetBlendMode()
-	{
-		return m_BlendMode;
-	}
 	void OpenGLMaterial::SetCullMode(Material_CullMode mode)
 	{
 		m_CullMode = mode;
 	}
-	void OpenGLMaterial::SetBlendMode(Material_BlendMode mode)
+	void OpenGLMaterial::SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest)
 	{
-		m_BlendMode = mode;
+		m_BlendMode					= mode;
+		m_BlendSourceFactor			= source;
+		m_BlendDestinationFactor	= dest;
 	}
 	void OpenGLMaterial::SetFloat(const std::string& name, float value)
 	{

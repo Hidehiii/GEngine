@@ -15,11 +15,13 @@ namespace GEngine
 
 		virtual void UploadData() override;
 
-		virtual Material_CullMode GetCullMode() = 0;
-		virtual Material_BlendMode GetBlendMode() = 0;
+		virtual Material_CullMode GetCullMode() override { return m_CullMode; }
+		virtual Material_BlendMode GetBlendMode() override { return m_BlendMode; }
+		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
+		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
 
-		virtual void SetCullMode(Material_CullMode mode) = 0;
-		virtual void SetBlendMode(Material_BlendMode mode) = 0;
+		virtual void SetCullMode(Material_CullMode mode) override;
+		virtual void SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
@@ -48,13 +50,15 @@ namespace GEngine
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
 	private:
-		Ref<OpenGLShader> m_Shader;
-		Ref<OpenGLUniformBuffer> m_UniformBuffer;
-		std::string m_Name;
-		Material_BlendMode m_BlendMode = Material_BlendMode::None;
-		Material_CullMode m_CullMode = Material_CullMode::Back;
-		Buffer m_UniformStorageBuffer;
-		std::vector<ShaderUniform> m_Uniforms;
+		Ref<OpenGLShader>									m_Shader;
+		Ref<OpenGLUniformBuffer>							m_UniformBuffer;
+		std::string											m_Name;
+		Material_BlendMode									m_BlendMode				=		Material_BlendMode::None;
+		uint32_t											m_BlendSourceFactor;
+		uint32_t											m_BlendDestinationFactor;
+		Material_CullMode									m_CullMode				=		Material_CullMode::Back;
+		Buffer												m_UniformStorageBuffer;
+		std::vector<ShaderUniform>							m_Uniforms;
 	};
 }
 

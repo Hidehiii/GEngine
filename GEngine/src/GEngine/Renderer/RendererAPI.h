@@ -3,6 +3,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
 #include "VertexArray.h"
+#include "Material.h"
 
 namespace GEngine
 {
@@ -31,9 +32,9 @@ namespace GEngine
 		virtual void SetPointSize(float size) = 0;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
-		virtual void SetDepthTest(bool enabled) = 0;
-		virtual void SetBlend(bool enabled) = 0;
-		virtual void SetBlendFunction(uint32_t source, uint32_t destination) = 0;
+		virtual void EnableDepthTest(bool enabled) = 0;
+		virtual void SetCull(Material_CullMode mode) = 0;
+		virtual void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest) = 0;
 
 		virtual float GetTime() = 0;
 

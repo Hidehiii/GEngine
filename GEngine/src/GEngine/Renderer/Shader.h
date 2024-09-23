@@ -61,6 +61,10 @@ namespace GEngine
 
 		virtual const std::string& GetShaderName() const = 0;
 		virtual void SetShaderName(std::string name) = 0;
+		virtual int GetBlendMode() = 0;
+		virtual int GetCullMode() = 0;
+		virtual uint32_t GetBlendSourceFactor() = 0;
+		virtual uint32_t GetBlendDestinationFactor() = 0;
 
 		virtual std::vector<ShaderUniform> GetUniforms() = 0;
 

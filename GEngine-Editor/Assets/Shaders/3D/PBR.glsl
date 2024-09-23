@@ -1,6 +1,6 @@
 
 #name PBR
-
+#blend Customized SrcAlpha OneMinusSrcAlpha
 #properties
 
 p0: color;

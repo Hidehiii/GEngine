@@ -21,13 +21,13 @@ namespace GEngine
     void VulkanRendererAPI::DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
     }
-    void VulkanRendererAPI::SetDepthTest(bool enabled)
+    void VulkanRendererAPI::EnableDepthTest(bool enabled)
     {
     }
-    void VulkanRendererAPI::SetBlend(bool enabled)
+    void VulkanRendererAPI::SetCull(Material_CullMode mode)
     {
     }
-    void VulkanRendererAPI::SetBlendFunction(uint32_t source, uint32_t destination)
+    void VulkanRendererAPI::SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest)
     {
     }
     void VulkanRendererAPI::DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)

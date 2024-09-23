@@ -19,9 +19,9 @@ namespace GEngine
 		virtual void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
 		virtual void DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
 
-		virtual void SetDepthTest(bool enabled) override;
-		virtual void SetBlend(bool enabled) override;
-		virtual void SetBlendFunction(uint32_t source, uint32_t destination) override;
+		virtual void EnableDepthTest(bool enabled) override;
+		virtual void SetCull(Material_CullMode mode) override;
+		virtual void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest) override;
 
 
 		virtual void DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount) override;

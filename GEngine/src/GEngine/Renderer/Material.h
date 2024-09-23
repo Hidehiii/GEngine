@@ -21,7 +21,8 @@ namespace GEngine
 		None = 0,
 		Alpha = 1,
 		Additive = 2,
-		Multiply = 3
+		Multiply = 3,
+		Customized = 4
 	};
 	class GENGINE_API Material
 	{
@@ -35,9 +36,11 @@ namespace GEngine
 
 		virtual Material_CullMode GetCullMode() = 0;
 		virtual Material_BlendMode GetBlendMode() = 0;
+		virtual uint32_t GetBlendSourceFactor() = 0;
+		virtual uint32_t GetBlendDestinationFactor() = 0;
 
 		virtual void SetCullMode(Material_CullMode mode) = 0;
-		virtual void SetBlendMode(Material_BlendMode mode) = 0;
+		virtual void SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest) = 0;
 
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;
