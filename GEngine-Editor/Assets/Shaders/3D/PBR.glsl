@@ -1,8 +1,8 @@
 
 #Name PBR
-#Blend Customized SrcAlpha OneMinusSrcAlpha
+#Blend None SrcAlpha OneMinusSrcAlpha
 #DepthTest On
-#DepthMask Off
+#DepthMask On
 #Properties
 
 p0: color;

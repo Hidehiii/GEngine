@@ -13,11 +13,11 @@ namespace GEngine
 		RGBA8,
 		RED_INTEGER,
 
-		// Depth/Stencil
+		// Depth,Stencil
 		DEPTH24STENCIL8,
 
 		// Defaults
-		Depth = DEPTH24STENCIL8
+		Depth
 	};
 
 	// Frame buffer texture specification
@@ -64,6 +64,7 @@ namespace GEngine
 		virtual void Resize(Vector2 size) = 0;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) = 0;
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
 

@@ -448,6 +448,7 @@ namespace GEngine
 				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.value.x, m_GameViewportSize.value.y);
 			}
 			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachmentRendererID();
+			tex = m_GameViewportFrameBuffer->GetDepthAttachmentRendererID();
 			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.value.x, m_GameViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();

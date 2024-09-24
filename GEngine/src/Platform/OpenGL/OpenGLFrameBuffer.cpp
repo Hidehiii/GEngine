@@ -13,6 +13,8 @@ namespace GEngine
             {
 				case FrameBufferTextureFormat::DEPTH24STENCIL8:
 					return true;
+                case FrameBufferTextureFormat::Depth:
+                    return true;
 			default:
 				return false;
 			}
@@ -76,6 +78,8 @@ namespace GEngine
                     return GL_RED_INTEGER;
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                     return GL_DEPTH24_STENCIL8;
+                case FrameBufferTextureFormat::Depth:
+                    return GL_DEPTH_COMPONENT;
             }
             GE_CORE_ASSERT(false, "Unknown FrameBufferTextureFormat");
             return GL_NONE;
@@ -153,9 +157,14 @@ namespace GEngine
             {
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                 {
-                   Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
-					break;
+                    Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+				    break;
 				}
+                case FrameBufferTextureFormat::Depth:
+                {
+                    Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+                    break;
+                }
             }
         }
 
@@ -170,7 +179,7 @@ namespace GEngine
             glDrawBuffers(GL_NONE, GL_NONE);
         }
 
-
+        
         GE_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

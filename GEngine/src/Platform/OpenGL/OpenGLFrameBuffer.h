@@ -24,13 +24,14 @@ namespace GEngine
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { GE_CORE_ASSERT(index < m_ColorAttachments.size(), "Out of range"); return m_ColorAttachments[index]; }
+		virtual uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
 	private:
-		uint32_t m_RendererID = 0;
-		uint32_t m_DepthAttachment = 0;
-		FrameBufferSpecification m_Specification;
-		FrameBufferTextureSpecification m_DepthAttachmentSpec = FrameBufferTextureFormat::None;
-		std::vector<FrameBufferTextureSpecification> m_ColorAttachmentsSpecs;
-		std::vector<uint32_t> m_ColorAttachments;
+		uint32_t										m_RendererID = 0;
+		uint32_t										m_DepthAttachment = 0;
+		FrameBufferSpecification						m_Specification;
+		FrameBufferTextureSpecification					m_DepthAttachmentSpec = FrameBufferTextureFormat::None;
+		std::vector<FrameBufferTextureSpecification>	m_ColorAttachmentsSpecs;
+		std::vector<uint32_t>							m_ColorAttachments;
 	};
 }
 
