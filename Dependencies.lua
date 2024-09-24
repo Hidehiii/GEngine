@@ -2,7 +2,8 @@
 
 -- GEngine Dep
 
-VULKAN_SDK = "%{wks.location}/GEngine/vendor/VulkanSDK"
+-- VULKAN_SDK = "%{wks.location}/GEngine/vendor/VulkanSDK"
+VULKAN_SDK = os.getenv("VULKAN_SDK")
 FBX_SDK = "%{wks.location}/GEngine/vendor/FBXSDK"
 
 IncludeDir = {}
