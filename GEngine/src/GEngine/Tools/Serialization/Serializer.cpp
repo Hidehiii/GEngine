@@ -162,7 +162,7 @@ namespace GEngine
 			auto& transform = gameObject.GetComponent<Transform>();
 			out << YAML::Key << "Position" << YAML::Value << transform.m_Position;
 			out << YAML::Key << "Rotation" << YAML::Value << transform.m_Rotation;
-			out << YAML::Key << "Rotation_Angles" << YAML::Value << Math::Degrees(transform.GetEulerAngles());
+			out << YAML::Key << "Rotation_Angles" << YAML::Value << Math::Degrees(transform.GetEulerAngle());
 			out << YAML::Key << "Scale" << YAML::Value << transform.m_Scale;
 			out << YAML::EndMap;
 		}

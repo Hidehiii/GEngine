@@ -17,7 +17,7 @@ namespace GEngine
 		DEPTH24STENCIL8,
 
 		// Defaults
-		Depth
+		DEPTH
 	};
 
 	// Frame buffer texture specification

@@ -3,9 +3,9 @@
 
 namespace GEngine
 {
-	static std::filesystem::path s_ModelPath = "Resources\\Model";
-	static std::filesystem::path s_ShaderPath_2D = "Assets\\Shaders\\2D";
-	static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
+	static std::filesystem::path s_ModelPath		= "Resources\\Model";
+	static std::filesystem::path s_ShaderPath_2D	= "Assets\\Shaders\\2D";
+	static std::filesystem::path s_ShaderPath_3D	= "Assets\\Shaders\\3D";
 
 
 	GEngineEditorLayer::GEngineEditorLayer()
@@ -18,24 +18,24 @@ namespace GEngine
 	{
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
-		m_PlayButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/playButtonIcon.png");
-		m_PlayingButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/playingButtonIcon.png");
-		m_StopButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/stopButtonIcon.png");
-		m_PauseButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/pauseButtonIcon.png");
-		m_PausingButtonIcon = Texture2D::Create("Resources/Icons/ToolBar/pausingButtonIcon.png");
+		m_PlayButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playButtonIcon.png");
+		m_PlayingButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playingButtonIcon.png");
+		m_StopButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/stopButtonIcon.png");
+		m_PauseButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/pauseButtonIcon.png");
+		m_PausingButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/pausingButtonIcon.png");
 
 		m_PlayButtonIcon_Display = m_PlayButtonIcon;
 		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
 
 		FrameBufferSpecification fspec;
-		fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
-		fspec.Width = 1280;
-		fspec.Height = 720;
-		m_SceneViewportFrameBuffer = FrameBuffer::Create(fspec);
-		m_GameViewportFrameBuffer = FrameBuffer::Create(fspec);
-		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
-		m_EditorScene = CreateRef<Scene>();
-		m_ActiveScene = m_EditorScene;
+		fspec.Attachments				= { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
+		fspec.Width						= 1280;
+		fspec.Height					= 720;
+		m_SceneViewportFrameBuffer		= FrameBuffer::Create(fspec);
+		m_GameViewportFrameBuffer		= FrameBuffer::Create(fspec);
+		m_EditorCamera					= Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
+		m_EditorScene					= CreateRef<Scene>();
+		m_ActiveScene					= m_EditorScene;
 		
 		m_Hierarchy.SetContext(m_ActiveScene);
 
@@ -191,6 +191,11 @@ namespace GEngine
 				Renderer::BeginScene(camera);
 				m_ActiveScene->OnRender();
 				Renderer::EndScene();
+			}
+
+			// test shadow
+			{
+
 			}
 		}
 		m_GameViewportFrameBuffer->Unbind();
@@ -448,7 +453,6 @@ namespace GEngine
 				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.value.x, m_GameViewportSize.value.y);
 			}
 			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachmentRendererID();
-			tex = m_GameViewportFrameBuffer->GetDepthAttachmentRendererID();
 			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.value.x, m_GameViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();
@@ -784,7 +788,7 @@ namespace GEngine
 				// This transform of the collider is should be multiplied by the scale transform of the game object
 				// Otherwise, the collider will not be scaled with the game object
 				auto t = Math::Translate(Matrix4x4(1.0f), transform.m_Position)
-					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngles().value.z), Vector3(0.0f, 0.0f, 1.0f))
+					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().value.z), Vector3(0.0f, 0.0f, 1.0f))
 					* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
 					* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
 					* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)

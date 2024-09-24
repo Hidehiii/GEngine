@@ -190,7 +190,7 @@ namespace GEngine
 			Physics2DBodyDef bodyDef;
 			bodyDef.SetType(rigidBody.m_RigidBodyType);
 			bodyDef.SetPosition({ transform.m_Position.value.x, transform.m_Position.value.y });
-			bodyDef.SetAngle(transform.GetEulerAngles().value.z);
+			bodyDef.SetAngle(transform.GetEulerAngle().value.z);
 
 			Physics2DBody* body = m_PhysicsWorld2D->CreateBody(&bodyDef);
 			body->SetFixedRotation(rigidBody.m_FixedRotation);

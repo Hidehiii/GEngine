@@ -8,6 +8,7 @@
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/UniformBuffer.h"
+#include "GEngine/Renderer/FrameBuffer.h"
 
 namespace GEngine
 {

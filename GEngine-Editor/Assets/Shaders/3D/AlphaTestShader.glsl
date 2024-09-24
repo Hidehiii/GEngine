@@ -1,8 +1,8 @@
 
-#Name PBR
-#Blend None SrcAlpha OneMinusSrcAlpha
+#Name AlphaTestShader
+#Blend Alpha SrcAlpha OneMinusSrcAlpha
 #DepthTest On
-#DepthMask On
+#DepthMask Off
 #Properties
 
 p0: color;

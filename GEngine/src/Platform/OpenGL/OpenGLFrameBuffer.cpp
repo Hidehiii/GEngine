@@ -13,7 +13,7 @@ namespace GEngine
             {
 				case FrameBufferTextureFormat::DEPTH24STENCIL8:
 					return true;
-                case FrameBufferTextureFormat::Depth:
+                case FrameBufferTextureFormat::DEPTH:
                     return true;
 			default:
 				return false;
@@ -78,7 +78,7 @@ namespace GEngine
                     return GL_RED_INTEGER;
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                     return GL_DEPTH24_STENCIL8;
-                case FrameBufferTextureFormat::Depth:
+                case FrameBufferTextureFormat::DEPTH:
                     return GL_DEPTH_COMPONENT;
             }
             GE_CORE_ASSERT(false, "Unknown FrameBufferTextureFormat");
@@ -160,7 +160,7 @@ namespace GEngine
                     Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 				    break;
 				}
-                case FrameBufferTextureFormat::Depth:
+                case FrameBufferTextureFormat::DEPTH:
                 {
                     Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;

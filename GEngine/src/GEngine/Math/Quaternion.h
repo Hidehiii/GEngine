@@ -19,6 +19,8 @@ namespace GEngine
 		Quaternion(float w, float x, float y, float z);
 		Quaternion(float x, float y, float z);
 
+		Quaternion Normalized();
+
 		Quaternion operator+(const Quaternion& q);
 
 		Quaternion operator+=(const Quaternion& q);

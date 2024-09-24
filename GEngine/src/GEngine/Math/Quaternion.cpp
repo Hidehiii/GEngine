@@ -19,6 +19,10 @@ namespace GEngine
     {
         value = glm::quat(glm::vec3(x, y, z));
     }
+    Quaternion Quaternion::Normalized()
+    {
+        return glm::normalize(value);
+    }
     Quaternion Quaternion::operator+(const Quaternion& q)
     {
         return value + q.value;

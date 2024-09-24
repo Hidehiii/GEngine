@@ -120,7 +120,7 @@ namespace GEngine
 		DrawComponent<Transform>("Transform", gameObject, false, [](auto& component)
 			{
 				GUIPainter::DrawVector3Control("Position", component.m_Position);
-				Vector3 r = Math::Degrees(component.GetEulerAngles());
+				Vector3 r = Math::Degrees(Math::EulerAngles(component.m_Rotation));
 				GUIPainter::DrawVector3Control("Rotation", r);
 				component.SetEulerAngle(r);
 				GUIPainter::DrawVector3Control("Scale", component.m_Scale, 1.0f);
