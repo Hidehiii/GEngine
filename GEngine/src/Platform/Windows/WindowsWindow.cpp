@@ -1,7 +1,8 @@
 #include "GEpch.h"
 #include "WindowsWindow.h"
+#include "GEngine/Renderer/RendererAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
-
+#include "Platform/Vulkan/VulkanContext.h"
 
 
 namespace GEngine
@@ -51,7 +52,12 @@ namespace GEngine
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
-		m_Context = new OpenGLContext(m_Window);
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			m_Context = new OpenGLContext(m_Window);
+		else if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			m_Context = new VulkanContext(m_Window);
+		else
+			GE_CORE_ASSERT(false, "Renderer API not supported");
 		m_Context->Init();
 
 		

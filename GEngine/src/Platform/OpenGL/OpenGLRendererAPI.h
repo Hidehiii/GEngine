@@ -10,6 +10,7 @@ namespace GEngine
 	{
 	public:
 		virtual void Init() override;
+		virtual void Uninit() override;
 
 		virtual void SetClearColor(const Vector4& color) override;
 		virtual void Clear() override;

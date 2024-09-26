@@ -2,14 +2,18 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/RendererAPI.h"
 
+#include <optional>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
 {
+	
+
 	class GENGINE_API VulkanRendererAPI : public RendererAPI
 	{
 	public:
 		virtual void Init() override;
+		virtual void Uninit() override;
 
 		virtual void SetClearColor(const Vector4& color) override;
 		virtual void Clear() override;

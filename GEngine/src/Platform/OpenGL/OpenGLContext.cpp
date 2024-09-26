@@ -27,6 +27,9 @@ namespace GEngine
 		GE_CORE_INFO("    OpenGL Renderer {0}:", (char*)glGetString(GL_RENDERER));
 		GE_CORE_INFO("    OpenGL Version {0}:", (char*)glGetString(GL_VERSION));
 	}
+	void OpenGLContext::Uninit()
+	{
+	}
 	void OpenGLContext::SwapBuffers()
 	{
 		GE_PROFILE_FUNCTION();

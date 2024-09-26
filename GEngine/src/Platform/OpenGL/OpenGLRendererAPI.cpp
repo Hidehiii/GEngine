@@ -37,6 +37,9 @@ namespace GEngine
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 	}
+	void OpenGLRendererAPI::Uninit()
+	{
+	}
 	void OpenGLRendererAPI::SetClearColor(const Vector4& color)
 	{
 		glClearColor(color.value.r, color.value.g, color.value.b, color.value.a);

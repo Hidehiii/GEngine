@@ -29,7 +29,7 @@ IncludeDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/include"
 LibraryDir = {}
 
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["VulkanSDK_Bin"] = "%{VULKAN_SDK}/Bin/"
+LibraryDir["VulkanSDK_Bin"] = "%{VULKAN_SDK}/Bin/"   
 LibraryDir["FBX_SDK"] = "%{FBX_SDK}/lib"
 LibraryDir["mono"] = "%{wks.location}/GEngine/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/lib/%{cfg.buildcfg}/"

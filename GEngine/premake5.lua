@@ -63,6 +63,7 @@ project "GEngine"
 		"Box2D",
 		"opengl32.lib",
 		"%{Library.mono}",
+		"%{Library.Vulkan}",
 	}
 
 	filter "files:vendor/ImGuizmo/**.cpp"
@@ -94,6 +95,8 @@ project "GEngine"
 			"%{Library.PhysXFoundation_64}",
 			"%{Library.PhysXCooking_64}",
 			"%{Library.PhysXGPU_64}",
+
+			
 		}
 
 		postbuildcommands
