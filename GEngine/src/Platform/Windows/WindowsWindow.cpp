@@ -50,14 +50,21 @@ namespace GEngine
 			s_GLFWInitialized = true;
 		}
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-
 		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
 			m_Context = new OpenGLContext(m_Window);
+		}
 		else if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			m_Context = new VulkanContext(m_Window);
+		}
 		else
 			GE_CORE_ASSERT(false, "Renderer API not supported");
+
+		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+
+		
 		m_Context->Init();
 
 		

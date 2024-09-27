@@ -39,6 +39,7 @@ namespace GEngine
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		void CreateLogicalDevice();
 		void CreateSurface();
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -51,6 +52,8 @@ namespace GEngine
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
+		const std::vector<const char*>		m_DeviceExtensions =
+		{ "VK_KHR_SWAPCHAIN_EXTENSION_NAME" };
 	};
 }
 

@@ -58,6 +58,7 @@ namespace GEngine
 	{
         CreateInstance();
         SetupDebugMessenger();
+        CreateSurface();
         SetPhysicalDevice();
         CreateLogicalDevice();
 	}
@@ -264,5 +265,21 @@ namespace GEngine
         {
 			GE_CORE_ERROR("Failed to create window surface!");
 		}
+    }
+    bool VulkanContext::CheckDeviceExtensionSupport(VkPhysicalDevice device)
+    {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
+
+		for (const auto& extension : availableExtensions) {
+			requiredExtensions.erase(extension.extensionName);
+		}
+
+		return requiredExtensions.empty();
     }
 }
