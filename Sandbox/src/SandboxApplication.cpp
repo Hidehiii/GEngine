@@ -51,10 +51,10 @@ public:
 
 GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args)
 {
-	Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
+	Renderer::SetRenererAPI(RendererAPI::API::Vulkan);
 
 	ApplicationSpecification spec;
-	spec.Name = "Ray Tracing";
+	spec.Name = "Sandbox";
 	spec.Size = { 1080, 1080 };
 	spec.CommandLineArgs = args;
 	return new Sandbox(spec);

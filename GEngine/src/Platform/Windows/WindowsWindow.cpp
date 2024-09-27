@@ -48,7 +48,9 @@ namespace GEngine
 			GE_CORE_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
-		}
+		}	
+
+		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
 		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
 		{
@@ -62,10 +64,8 @@ namespace GEngine
 		else
 			GE_CORE_ASSERT(false, "Renderer API not supported");
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-
 		
-		m_Context->Init();
+		m_Context->Init(m_Data.Width, m_Data.Height);
 
 		
 		glfwSetWindowUserPointer(m_Window, &m_Data);

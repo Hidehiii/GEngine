@@ -54,16 +54,18 @@ namespace GEngine
 	VulkanContext::~VulkanContext()
 	{
 	}
-	void VulkanContext::Init()
+	void VulkanContext::Init(const unsigned int width, const unsigned int height)
 	{
         CreateInstance();
         SetupDebugMessenger();
         CreateSurface();
         SetPhysicalDevice();
         CreateLogicalDevice();
+        CreateSwapChain(width, height);
 	}
     void VulkanContext::Uninit()
     {
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 #endif
@@ -84,27 +86,27 @@ namespace GEngine
         }
 #endif
         VkApplicationInfo                       appInfo = {};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "GEngine";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "GEngine";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.sType                           = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName                = "GEngine";
+        appInfo.applicationVersion              = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName                     = "GEngine";
+        appInfo.engineVersion                   = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion                      = VK_API_VERSION_1_0;
 
         VkInstanceCreateInfo                    createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = 0;
+        createInfo.sType                        = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo             = &appInfo;
+        createInfo.enabledExtensionCount        = 0;
 #ifdef GE_DEBUG
-        createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
-        createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+        createInfo.enabledLayerCount            = static_cast<uint32_t>(m_ValidationLayers.size());
+        createInfo.ppEnabledLayerNames          = m_ValidationLayers.data();
 
         VkDebugUtilsMessengerCreateInfoEXT       debugCreateInfo;
         PopulateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 #else 
-        createInfo.ppEnabledExtensionNames = nullptr;
-        createInfo.enabledLayerCount = 0;
+        createInfo.ppEnabledExtensionNames      = nullptr;
+        createInfo.enabledLayerCount            = 0;
 #endif
 
         if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
@@ -159,14 +161,14 @@ namespace GEngine
     void VulkanContext::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
         createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-            | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-            | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        createInfo.pfnUserCallback = DebugCallback;
+        createInfo.sType            = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity  = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType      = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback   = DebugCallback;
     }
     void VulkanContext::SetPhysicalDevice()
     {
@@ -193,8 +195,16 @@ namespace GEngine
     }
     bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
     {
-        QueueFamilyIndices                  indices = FindQueueFamilies(device);
-        return indices.IsComplete();
+        QueueFamilyIndices          indices                 = FindQueueFamilies(device);
+
+        bool                        extensionsSupported     = CheckDeviceExtensionSupport(device);
+        bool                        swapChainAdequate       = false;
+        if (extensionsSupported)
+        {
+            SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(device);
+            swapChainAdequate                               = !swapChainSupportDetails.Formats.empty() && !swapChainSupportDetails.PresentModes.empty();
+        }
+        return indices.IsComplete() && extensionsSupported && swapChainAdequate;
     }
     QueueFamilyIndices VulkanContext::FindQueueFamilies(VkPhysicalDevice device)
     {
@@ -209,13 +219,13 @@ namespace GEngine
         {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
-                indices.graphicsFamily = i;
+                indices.GraphicsFamily = i;
             }
             VkBool32                        presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
             if (presentSupport)
             {
-                indices.presentFamily = i;
+                indices.PresentFamily = i;
             }
             if (indices.IsComplete())
             {
@@ -229,35 +239,35 @@ namespace GEngine
     {
         QueueFamilyIndices                  indices = FindQueueFamilies(m_PhysicalDevice);
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t>                  uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+        std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
         float                               queuePriority = 1.0f;
         for (uint32_t queueFamily : uniqueQueueFamilies)
         {
             VkDeviceQueueCreateInfo         queueCreateInfo = {};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.sType           = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueCreateInfo.queueFamilyIndex = queueFamily;
-            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.queueCount      = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
         VkPhysicalDeviceFeatures            deviceFeatures = {};
         VkDeviceCreateInfo                  createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = 0;
+        createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos        = queueCreateInfos.data();
+        createInfo.pEnabledFeatures         = &deviceFeatures;
+        createInfo.enabledExtensionCount    = 0;
 #ifdef GE_DEBUG
-        createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
-        createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+        createInfo.enabledLayerCount        = static_cast<uint32_t>(m_ValidationLayers.size());
+        createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
 #else
-        createInfo.enabledLayerCount = 0;
+        createInfo.enabledLayerCount        = 0;
 #endif
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             GE_CORE_ERROR("Failed to create logical device!");
         }
-        vkGetDeviceQueue(m_Device, indices.graphicsFamily.value(), 0, &m_GraphicsQueue);
+        vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
     }
     void VulkanContext::CreateSurface()
     {
@@ -281,5 +291,115 @@ namespace GEngine
 		}
 
 		return requiredExtensions.empty();
+    }
+    SwapChainSupportDetails VulkanContext::QuerySwapChainSupport(VkPhysicalDevice device)
+    {
+        SwapChainSupportDetails             details;
+        uint32_t                            formatCount;
+        uint32_t                            presentModeCount;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.Capabilities);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
+        if (formatCount != 0)
+        {
+            details.Formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.Formats.data());
+        }
+        if (presentModeCount != 0)
+        {
+            details.PresentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.PresentModes.data());
+        }
+        return details;
+    }
+    VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    {
+		for (const auto& availableFormat : availableFormats) {
+			if (availableFormat.format          == VK_FORMAT_B8G8R8A8_SRGB 
+                && availableFormat.colorSpace   == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) 
+            {
+				return availableFormat;
+			}
+		}
+        return availableFormats[0];
+    }
+    VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+    {
+		for (const auto& availablePresentMode : availablePresentModes) {
+			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+				return availablePresentMode;
+			}
+		}
+
+		return VK_PRESENT_MODE_FIFO_KHR;
+    }
+    VkExtent2D VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height)
+    {
+		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
+        {
+			return capabilities.currentExtent;
+		}
+		VkExtent2D      actualExtent = {
+			static_cast<uint32_t>(width),
+			static_cast<uint32_t>(height)
+		};
+		actualExtent.width      = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actualExtent.height     = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		return actualExtent;
+    }
+    void VulkanContext::CreateSwapChain(const unsigned int width, const unsigned int height)
+    {
+        SwapChainSupportDetails     swapChainSupportDetails = QuerySwapChainSupport(m_PhysicalDevice);
+
+        VkSurfaceFormatKHR          surfaceFormat           = ChooseSwapSurfaceFormat(swapChainSupportDetails.Formats);
+        VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
+        VkExtent2D                  extent                  = ChooseSwapExtent(swapChainSupportDetails.Capabilities, width, height);
+
+        uint32_t                    imageCount              = swapChainSupportDetails.Capabilities.minImageCount + 1;
+        if (swapChainSupportDetails.Capabilities.maxImageCount > 0 &&
+            imageCount > swapChainSupportDetails.Capabilities.maxImageCount)
+        {
+            imageCount                                      = swapChainSupportDetails.Capabilities.maxImageCount;
+        }
+
+        VkSwapchainCreateInfoKHR    createInfo{};
+		createInfo.sType                                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		createInfo.surface                                  = m_Surface;
+		createInfo.minImageCount                            = imageCount;
+		createInfo.imageFormat                              = surfaceFormat.format;
+		createInfo.imageColorSpace                          = surfaceFormat.colorSpace;
+		createInfo.imageExtent                              = extent;
+		createInfo.imageArrayLayers                         = 1;
+		createInfo.imageUsage                               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		QueueFamilyIndices          indices                 = FindQueueFamilies(m_PhysicalDevice);
+		uint32_t                    queueFamilyIndices[]    = { 
+                                                            indices.GraphicsFamily.value(), 
+                                                            indices.PresentFamily.value() };
+
+		if (indices.GraphicsFamily != indices.PresentFamily)
+        {
+			createInfo.imageSharingMode                     = VK_SHARING_MODE_CONCURRENT;
+			createInfo.queueFamilyIndexCount                = 2;
+			createInfo.pQueueFamilyIndices                  = queueFamilyIndices;
+		}
+		else 
+        {
+			createInfo.imageSharingMode                     = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount                = 0; // Optional
+			createInfo.pQueueFamilyIndices                  = nullptr; // Optional
+		}
+
+        createInfo.preTransform                             = swapChainSupportDetails.Capabilities.currentTransform;
+        createInfo.compositeAlpha                           = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		createInfo.presentMode                              = presentMode;
+		createInfo.clipped                                  = VK_TRUE;
+        createInfo.oldSwapchain                             = VK_NULL_HANDLE;
+
+        if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
+        {
+            GE_CORE_ERROR("fail to create swap chain!");
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace GEngine
 	OpenGLContext::~OpenGLContext()
 	{
 	}
-	void OpenGLContext::Init()
+	void OpenGLContext::Init(const unsigned int width, const unsigned int height)
 	{
 		GE_PROFILE_FUNCTION();
 

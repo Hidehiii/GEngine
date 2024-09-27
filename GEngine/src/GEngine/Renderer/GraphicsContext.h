@@ -7,7 +7,7 @@ namespace GEngine
 	{
 	public:
 		virtual ~GraphicsContext() = default;
-		virtual void Init() = 0;
+		virtual void Init(const unsigned int width, const unsigned int height) = 0;
 		virtual void Uninit() = 0;
 		virtual void SwapBuffers() = 0;
 	};

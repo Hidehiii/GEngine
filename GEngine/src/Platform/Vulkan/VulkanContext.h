@@ -10,13 +10,20 @@ namespace GEngine
 {
 	struct QueueFamilyIndices
 	{
-		std::optional<uint32_t> graphicsFamily;
-		std::optional<uint32_t> presentFamily;
+		std::optional<uint32_t> GraphicsFamily;
+		std::optional<uint32_t> PresentFamily;
 
 		bool IsComplete()
 		{
-			return graphicsFamily.has_value() && presentFamily.has_value();
+			return GraphicsFamily.has_value() && PresentFamily.has_value();
 		}
+	};
+
+	struct SwapChainSupportDetails 
+	{
+		VkSurfaceCapabilitiesKHR		Capabilities;
+		std::vector<VkSurfaceFormatKHR> Formats;
+		std::vector<VkPresentModeKHR>	PresentModes;
 	};
 
 	class VulkanContext : public GraphicsContext
@@ -25,7 +32,7 @@ namespace GEngine
 		VulkanContext(GLFWwindow* windowHandle);
 		virtual ~VulkanContext() override;
 
-		virtual void Init() override;
+		virtual void Init(const unsigned int width, const unsigned int height) override;
 		virtual void Uninit() override;
 		virtual void SwapBuffers() override;
 
@@ -40,12 +47,18 @@ namespace GEngine
 		void CreateLogicalDevice();
 		void CreateSurface();
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
+		void CreateSwapChain(const unsigned int width, const unsigned int height);
 	private:
 		GLFWwindow*							m_WindowHandle;
 
 		VkInstance							m_Instance;
 		const std::vector<const char*>		m_ValidationLayers =
-		{ "VK_LAYER_KHRONOS_validation" };
+		{ "VK_LAYER_KHRONOS_validation"
+		};
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
 		VkPhysicalDevice					m_PhysicalDevice = VK_NULL_HANDLE;
 		VkDevice							m_Device;
@@ -54,6 +67,8 @@ namespace GEngine
 		VkSurfaceKHR						m_Surface;
 		const std::vector<const char*>		m_DeviceExtensions =
 		{ "VK_KHR_SWAPCHAIN_EXTENSION_NAME" };
+		VkSwapchainKHR						m_SwapChain;
+		std::vector<VkImage>				m_SwapChainImages;
 	};
 }
 

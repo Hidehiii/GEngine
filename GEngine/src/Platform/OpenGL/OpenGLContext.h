@@ -11,7 +11,7 @@ namespace GEngine
 		OpenGLContext(GLFWwindow* windowHandle);
 		virtual ~OpenGLContext() override;
 
-		virtual void Init() override;
+		virtual void Init(const unsigned int width, const unsigned int height) override;
 		virtual void Uninit() override;
 		virtual void SwapBuffers() override;
 
