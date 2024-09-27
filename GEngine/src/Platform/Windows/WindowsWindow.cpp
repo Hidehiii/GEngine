@@ -35,9 +35,9 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		m_Data.Title = props.Title;
-		m_Data.Width = props.Width;
-		m_Data.Height = props.Height;
+		m_Data.Title	= props.Title;
+		m_Data.Width	= props.Width;
+		m_Data.Height	= props.Height;
 
 		GE_CORE_TRACE("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
@@ -49,7 +49,10 @@ namespace GEngine
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 		}	
-
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		}
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
 		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
@@ -58,8 +61,8 @@ namespace GEngine
 		}
 		else if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			m_Context = new VulkanContext(m_Window);
+			m_Context->SetRequiredExtensions(GetRequiredExtensions());
 		}
 		else
 			GE_CORE_ASSERT(false, "Renderer API not supported");
@@ -177,6 +180,22 @@ namespace GEngine
 		
 
 		m_Context->SwapBuffers();
+	}
+
+	// used for Vulkan
+	std::vector<const char*> WindowsWindow::GetRequiredExtensions()
+	{
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions;
+		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+#ifdef GE_DEBUG
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
+		return extensions;
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)

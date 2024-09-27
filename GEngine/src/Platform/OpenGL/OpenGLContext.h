@@ -14,7 +14,7 @@ namespace GEngine
 		virtual void Init(const unsigned int width, const unsigned int height) override;
 		virtual void Uninit() override;
 		virtual void SwapBuffers() override;
-
+		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { }
 	private:
 		GLFWwindow* m_WindowHandle;
 	};

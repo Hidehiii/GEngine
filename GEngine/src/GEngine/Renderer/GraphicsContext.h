@@ -10,5 +10,6 @@ namespace GEngine
 		virtual void Init(const unsigned int width, const unsigned int height) = 0;
 		virtual void Uninit() = 0;
 		virtual void SwapBuffers() = 0;
+		virtual void SetRequiredExtensions(std::vector<const char*> extensions) = 0;
 	};
 }

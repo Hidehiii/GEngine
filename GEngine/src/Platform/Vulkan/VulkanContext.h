@@ -36,6 +36,7 @@ namespace GEngine
 		virtual void Uninit() override;
 		virtual void SwapBuffers() override;
 
+		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -55,6 +56,7 @@ namespace GEngine
 	private:
 		GLFWwindow*							m_WindowHandle;
 
+		std::vector<const char*>			m_Extensions;
 		VkInstance							m_Instance;
 		const std::vector<const char*>		m_ValidationLayers =
 		{ "VK_LAYER_KHRONOS_validation"
@@ -66,7 +68,7 @@ namespace GEngine
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
 		const std::vector<const char*>		m_DeviceExtensions =
-		{ "VK_KHR_SWAPCHAIN_EXTENSION_NAME" };
+		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		VkSwapchainKHR						m_SwapChain;
 		std::vector<VkImage>				m_SwapChainImages;
 	};

@@ -96,7 +96,8 @@ namespace GEngine
         VkInstanceCreateInfo                    createInfo = {};
         createInfo.sType                        = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo             = &appInfo;
-        createInfo.enabledExtensionCount        = 0;
+        createInfo.enabledExtensionCount        = static_cast<uint32_t>(m_Extensions.size());
+        createInfo.ppEnabledExtensionNames      = m_Extensions.data();
 #ifdef GE_DEBUG
         createInfo.enabledLayerCount            = static_cast<uint32_t>(m_ValidationLayers.size());
         createInfo.ppEnabledLayerNames          = m_ValidationLayers.data();
@@ -113,9 +114,6 @@ namespace GEngine
         {
             GE_CORE_ERROR("Failed to create Vulkan Instance!");
         }
-
-        uint32_t                                extensionCount = 0;
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     }
     bool VulkanContext::CheckValidationLayerSupport()
     {
@@ -256,7 +254,8 @@ namespace GEngine
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos        = queueCreateInfos.data();
         createInfo.pEnabledFeatures         = &deviceFeatures;
-        createInfo.enabledExtensionCount    = 0;
+        createInfo.enabledExtensionCount    = static_cast<uint32_t>(m_DeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames  = m_DeviceExtensions.data();
 #ifdef GE_DEBUG
         createInfo.enabledLayerCount        = static_cast<uint32_t>(m_ValidationLayers.size());
         createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
@@ -268,6 +267,7 @@ namespace GEngine
             GE_CORE_ERROR("Failed to create logical device!");
         }
         vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
+        vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
     void VulkanContext::CreateSurface()
     {

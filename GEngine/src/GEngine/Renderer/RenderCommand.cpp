@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "RenderCommand.h"
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
 
 namespace GEngine
 {
@@ -79,6 +80,8 @@ namespace GEngine
 		case GEngine::RendererAPI::API::OpenGL:
 			s_RendererAPI = new OpenGLRendererAPI();
 			break;
+		case GEngine::RendererAPI::API::Vulkan:
+			s_RendererAPI = new VulkanRendererAPI();
 		default:
 			break;
 		}

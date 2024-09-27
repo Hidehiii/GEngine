@@ -36,6 +36,8 @@ namespace GEngine
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
+		virtual std::vector<const char*> GetRequiredExtensions() = 0;
+
 		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
