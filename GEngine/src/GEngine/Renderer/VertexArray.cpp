@@ -16,6 +16,9 @@ namespace GEngine
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLVertexArray>();
 			}
+		case RendererAPI::API::Vulkan: {
+			return nullptr;
+			}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

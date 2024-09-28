@@ -55,7 +55,7 @@ GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args
 
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
-	spec.Size = { 1080, 1080 };
+	spec.Size = { 1920, 1080 };
 	spec.CommandLineArgs = args;
 	return new Sandbox(spec);
 }

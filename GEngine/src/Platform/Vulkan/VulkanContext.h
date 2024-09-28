@@ -53,6 +53,7 @@ namespace GEngine
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
+		void CreateImageViews();
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -71,6 +72,9 @@ namespace GEngine
 		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		VkSwapchainKHR						m_SwapChain;
 		std::vector<VkImage>				m_SwapChainImages;
+		VkFormat							m_SwapChainImageFormat;
+		VkExtent2D							m_SwapChainExtent;
+		std::vector<VkImageView>			m_SwapChainImageViews;
 	};
 }
 
