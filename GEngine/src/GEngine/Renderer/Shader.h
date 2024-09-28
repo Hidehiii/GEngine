@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Buffer.h"
+#include <algorithm>
 
 
 namespace GEngine
@@ -19,6 +20,23 @@ namespace GEngine
 		Mat4		= 6,
 		Sampler2D	= 7
 	};
+	namespace ShaderDataFlag
+	{
+		std::string			None		= "#None";
+		std::string			Name		= "#Name";
+		std::string         Blend       = "#Blend";
+		std::string         DepthMask   = "#DepthMask";
+		std::string         DepthTest   = "#DepthTest";
+		std::string         Properties  = "#Properties";
+		std::string         Type		= "#Type";
+		
+	};
+	namespace ShaderStage
+	{
+		std::string         Vertex		= "vertex";
+		std::string         Fragment	= "fragment";
+		std::string         Pixel		= "pixel";
+	}
 	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
 	{
 		switch (type)
@@ -87,4 +105,98 @@ namespace GEngine
 	private:
 		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
+
+
+
+
+
+
+
+	namespace Utils
+	{
+		static std::string ToLower(std::string string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
+			return string;
+		}
+		static std::string ToUpper(std::string string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
+			return string;
+		}
+
+		static bool ShaderBoolFromString(const std::string& value)
+		{
+			if (ToLower(value) == "on")				return true;
+			if (ToLower(value) == "1")				return true;
+			if (ToLower(value) == "true")				return true;
+			return false;
+		}
+
+		static std::vector<std::string> SplitString(const std::string& string, char delimiter)
+		{
+			std::vector<std::string> result;
+			std::stringstream ss(string);
+			std::string item;
+			while (std::getline(ss, item, delimiter))
+			{
+				item = item.substr(0, item.size());
+				if (item.empty() == false)
+					result.push_back(item);
+			}
+			return result;
+		}
+
+		static std::string RemoveCharFromString(const std::string& string, char character)
+		{
+			std::string result = string;
+			for (auto it = result.begin(); it != result.end();)
+			{
+				if (*it == character)
+					it = result.erase(it);
+				else
+					++it;
+			}
+			return result;
+		}
+
+		static std::string RemoveCharFromStringInHead(const std::string& string, char character)
+		{
+			std::string result = string;
+			for (auto it = result.begin(); it != result.end();)
+			{
+				if (*it == character)
+					it = result.erase(it);
+				else
+					return result;
+			}
+			return result;
+		}
+		static std::string RemoveCharFromStringInTail(const std::string& string, char character)
+		{
+			std::string result = string;
+			for (int i = result.size() - 1; i >= 0; i--)
+			{
+				if (result.at(i) == character)
+					result.erase(i);
+				else
+					return result;
+			}
+			return result;
+		}
+
+		
+		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
+		{
+			if (ToLower(type) == "int")		return ShaderUniformType::Int;
+			if (ToLower(type) == "float")		return ShaderUniformType::Float;
+			if (ToLower(type) == "vector")	return ShaderUniformType::Vector;
+			if (ToLower(type) == "color")		return ShaderUniformType::Color;
+			if (ToLower(type) == "mat3")		return ShaderUniformType::Mat3;
+			if (ToLower(type) == "mat4")		return ShaderUniformType::Mat4;
+
+			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
+			return ShaderUniformType::None;
+		}
+	}
 }

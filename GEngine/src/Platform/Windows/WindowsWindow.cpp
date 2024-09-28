@@ -182,7 +182,7 @@ namespace GEngine
 		m_Context->SwapBuffers();
 	}
 
-	// used for Vulkan
+	// only used for Vulkan
 	std::vector<const char*> WindowsWindow::GetRequiredExtensions()
 	{
 		uint32_t glfwExtensionCount = 0;
@@ -198,16 +198,25 @@ namespace GEngine
 		return extensions;
 	}
 
+	// only used for OpenGL
 	void WindowsWindow::SetVSync(bool enabled)
 	{
-		if (enabled)
-			glfwSwapInterval(1);
-		else
-			glfwSwapInterval(0);
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			if (enabled)
+				glfwSwapInterval(1);
+			else
+				glfwSwapInterval(0);
 
-		m_Data.VSync = enabled;
+			m_Data.VSync = enabled;
+		}
+		else
+		{
+			m_Data.VSync = false;
+		}
 	}
 
+	// only used for OpenGL
 	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;

@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 
 #include <filesystem>
-#include <algorithm>
+
 #include <shaderc/shaderc.hpp>
 #include <SPIRVCross/spirv_cross.hpp>
 #include <SPIRVCross/spirv_glsl.hpp>
@@ -12,23 +12,8 @@
 namespace GEngine
 {
 	namespace Utils {
-		static std::string ToLower(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
-			return string;
-		}
-		static std::string ToUpper(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
-			return string;
-		}
-		static bool ShaderBoolFromString(const std::string& value)
-		{
-			if (ToLower(value) == "on")				return true;
-			if (ToLower(value) == "1")				return true;
-			if (ToLower(value) == "true")			return true;
-			return false;
-		}
+		
+		
 		static uint32_t ShaderBlendFactorFromString(const std::string& factor)
 		{
 			if (ToUpper(factor) == "SRCALPHA")			return (uint32_t)GL_SRC_ALPHA;
@@ -39,40 +24,28 @@ namespace GEngine
 			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return (uint32_t)GL_ONE_MINUS_DST_ALPHA;
 			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return (uint32_t)GL_ONE_MINUS_SRC_COLOR;
 			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return (uint32_t)GL_ONE_MINUS_DST_COLOR;
-			if (ToUpper(factor) == "ONE")				return (uint32_t)GL_ONE;
+			if (ToUpper(factor) == "ONE")					return (uint32_t)GL_ONE;
 			if (ToUpper(factor) == "ZERO")				return (uint32_t)GL_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
 		}
 		static Material_BlendMode ShaderBlendTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "none")		return Material_BlendMode::None;
-			if (ToLower(type) == "alpha")		return Material_BlendMode::Alpha;
-			if (ToLower(type) == "additive")	return Material_BlendMode::Additive;
-			if (ToLower(type) == "multiply")	return Material_BlendMode::Multiply;
+			if (ToLower(type) == "none")			return Material_BlendMode::None;
+			if (ToLower(type) == "alpha")			return Material_BlendMode::Alpha;
+			if (ToLower(type) == "additive")		return Material_BlendMode::Additive;
+			if (ToLower(type) == "multiply")		return Material_BlendMode::Multiply;
 			if (ToLower(type) == "customized")	return Material_BlendMode::Customized;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return Material_BlendMode::None;
 		}
-		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
-		{
-			if (ToLower(type) == "int")		return ShaderUniformType::Int;
-			if (ToLower(type) == "float")	return ShaderUniformType::Float;
-			if (ToLower(type) == "vector")	return ShaderUniformType::Vector;
-			if (ToLower(type) == "color")	return ShaderUniformType::Color;
-			if (ToLower(type) == "mat3")	return ShaderUniformType::Mat3;
-			if (ToLower(type) == "mat4")	return ShaderUniformType::Mat4;
-
-			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
-			return ShaderUniformType::None;
-		}
 
 		static GLenum ShaderTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "vertex")
+			if (ToLower(type) == ShaderStage::Vertex)
 				return GL_VERTEX_SHADER;
-			if (ToLower(type) == "fragment" || ToLower(type) == "pixel")
+			if (ToLower(type) == ShaderStage::Fragment || ToLower(type) == ShaderStage::Pixel)
 				return GL_FRAGMENT_SHADER;
 
 			GE_CORE_ASSERT(false, "Unknown shader type!");
@@ -83,8 +56,8 @@ namespace GEngine
 		{
 			switch (type)
 			{
-			case GL_VERTEX_SHADER:		return "vertex";
-			case GL_FRAGMENT_SHADER:	return "fragment";
+			case GL_VERTEX_SHADER:		return ShaderStage::Vertex;
+			case GL_FRAGMENT_SHADER:	return ShaderStage::Fragment;
 			}
 			GE_CORE_ASSERT(false, "Unknown shader type");
 			return 0;
@@ -145,58 +118,6 @@ namespace GEngine
 			}
 			GE_CORE_ASSERT(false, "");
 			return "";
-		}
-
-		static std::vector<std::string> SplitString(const std::string& string, char delimiter)
-		{
-			std::vector<std::string> result;
-			std::stringstream ss(string);
-			std::string item;
-			while (std::getline(ss, item, delimiter))
-			{
-				item = item.substr(0, item.size());
-				if(item.empty() == false)
-					result.push_back(item);
-			}
-			return result;
-		}
-
-		static std::string RemoveCharFromString(const std::string& string, char character)
-		{
-			std::string result = string;
-			for(auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					++it;
-			}
-			return result;
-		}
-
-		static std::string RemoveCharFromStringInHead(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					return result;
-			}
-			return result;
-		}
-		static std::string RemoveCharFromStringInTail(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (int i = result.size() - 1; i >= 0; i--)
-			{
-				if (result.at(i) == character)
-					result.erase(i);
-				else
-					return result;
-			}
-			return result;
 		}
 	}
 
@@ -791,7 +712,7 @@ namespace GEngine
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
 	{
 		spirv_cross::Compiler compiler(shaderData);
-		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+		spirv_cross::ShaderResources resources				= compiler.get_shader_resources();
 
 		GE_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
 		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
@@ -800,10 +721,10 @@ namespace GEngine
 		GE_CORE_TRACE("Uniform buffers:");
 		for (const auto& resource : resources.uniform_buffers)
 		{
-			const auto& bufferType = compiler.get_type(resource.base_type_id);
-			uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			int memberCount = bufferType.member_types.size();
+			const auto& bufferType	= compiler.get_type(resource.base_type_id);
+			uint32_t bufferSize								= compiler.get_declared_struct_size(bufferType);
+			uint32_t binding								= compiler.get_decoration(resource.id, spv::DecorationBinding);
+			int memberCount									= bufferType.member_types.size();
 
 			GE_CORE_TRACE("  {0}", resource.name);
 			GE_CORE_TRACE("    Size = {0}", bufferSize);

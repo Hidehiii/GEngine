@@ -12,17 +12,17 @@ namespace GEngine
 {
 	enum class Material_CullMode
 	{
-		None = 0,
-		Front = 1,
-		Back = 2
+		None	= 0,
+		Front	= 1,
+		Back	= 2
 	};
 	enum class Material_BlendMode
 	{
-		None = 0,
-		Alpha = 1,
-		Additive = 2,
-		Multiply = 3,
-		Customized = 4
+		None		= 0,
+		Alpha		= 1,
+		Additive	= 2,
+		Multiply	= 3,
+		Customized	= 4
 	};
 	class GENGINE_API Material
 	{

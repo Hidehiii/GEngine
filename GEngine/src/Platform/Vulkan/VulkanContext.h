@@ -26,7 +26,7 @@ namespace GEngine
 		std::vector<VkPresentModeKHR>	PresentModes;
 	};
 
-	class VulkanContext : public GraphicsContext
+	class GENGINE_API VulkanContext : public GraphicsContext
 	{
 		public:
 		VulkanContext(GLFWwindow* windowHandle);
