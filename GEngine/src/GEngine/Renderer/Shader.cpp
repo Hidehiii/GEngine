@@ -2,10 +2,23 @@
 #include "Shader.h"
 #include "GEngine/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 
 namespace GEngine
 {
 	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
+
+	std::string		ShaderDataFlag::None		= "#None";
+	std::string		ShaderDataFlag::Name		= "#Name";
+	std::string		ShaderDataFlag::Blend		= "#Blend";
+	std::string		ShaderDataFlag::DepthMask	= "#DepthMask";
+	std::string		ShaderDataFlag::DepthTest	= "#DepthTest";
+	std::string		ShaderDataFlag::Properties	= "#Properties";
+	std::string		ShaderDataFlag::Type		= "#Type";
+
+	std::string     ShaderStage::Vertex			= "vertex";
+	std::string     ShaderStage::Fragment		= "fragment";
+	std::string     ShaderStage::Pixel			= "pixel";
 
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
@@ -17,6 +30,10 @@ namespace GEngine
 		}
 		case RendererAPI::API::OpenGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
+			return shader;
+		}
+		case RendererAPI::API::Vulkan: {
+			Ref<Shader> shader = CreateRef<VulkanShader>(path);
 			return shader;
 		}
 		}
@@ -34,6 +51,11 @@ namespace GEngine
 		}
 		case RendererAPI::API::OpenGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
+			return shader;
+		}
+		case RendererAPI::API::Vulkan: {
+			GE_CORE_ASSERT(false, "Vulkan Shader not supported to be created in this way!");
+			Ref<Shader> shader = CreateRef<VulkanShader>(name, vertexSrc, fragmentSrc);
 			return shader;
 		}
 		}

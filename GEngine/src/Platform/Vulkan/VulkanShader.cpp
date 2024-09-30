@@ -141,9 +141,6 @@ namespace GEngine
 		file.read(&src[0], src.size());
 		file.close();
 		return src;
-		VkPipelineShaderStageCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	}
 	std::unordered_map<std::string, std::string> VulkanShader::PreProcess(const std::string& source)
 	{
@@ -321,36 +318,36 @@ namespace GEngine
 	}
 	void VulkanShader::CompileOrGetVulkanBinaries(const std::unordered_map<std::string, std::string>& shaderSources)
 	{
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
+		shaderc::Compiler			compiler;
+		shaderc::CompileOptions		options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		const bool optimize = false;
+		const bool optimize			= false;
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+		std::filesystem::path cacheDirectory		= Utils::GetCacheDirectory();
 
-		auto& shaderData = m_VulkanSPIRV;
+		auto& shaderData			= m_VulkanSPIRV;
 		shaderData.clear();
 		for (auto&& [stage, source] : shaderSources)
 		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
+			std::filesystem::path shaderFilePath	= m_FilePath;
+			std::filesystem::path cachedPath		= cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 			if (in.is_open())
 			{
 				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
+				auto size		= in.tellg();
 				in.seekg(0, std::ios::beg);
 
-				auto& data = shaderData[stage];
+				auto& data		= shaderData[stage];
 				data.resize(size / sizeof(uint32_t));
 				in.read((char*)data.data(), size);
 			}
 			else
 			{
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
@@ -471,8 +468,8 @@ namespace GEngine
 	}
 	void VulkanShader::Reflect(const std::string stage, const std::vector<uint32_t>& shaderData)
 	{
-		spirv_cross::Compiler compiler(shaderData);
-		spirv_cross::ShaderResources resources				= compiler.get_shader_resources();
+		spirv_cross::Compiler			compiler(shaderData);
+		spirv_cross::ShaderResources	resources			= compiler.get_shader_resources();
 
 		GE_CORE_TRACE("VulkanShader::Reflect - {0} {1}", stage, m_FilePath);
 		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
@@ -481,7 +478,7 @@ namespace GEngine
 		GE_CORE_TRACE("Uniform buffers:");
 		for (const auto& resource : resources.uniform_buffers)
 		{
-			const auto& bufferType	= compiler.get_type(resource.base_type_id);
+			const auto& bufferType							= compiler.get_type(resource.base_type_id);
 			uint32_t bufferSize								= compiler.get_declared_struct_size(bufferType);
 			uint32_t binding								= compiler.get_decoration(resource.id, spv::DecorationBinding);
 			int memberCount									= bufferType.member_types.size();

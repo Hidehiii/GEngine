@@ -1,7 +1,9 @@
 
-#name Circle2D
+#Name Circle2D
 
-#type vertex
+#Properties
+
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
@@ -11,7 +13,7 @@ layout(location = 4) in float  i_thickness;
 layout(location = 5) in int  i_texIndex;
 layout(location = 6) in float  i_fade;
 
-layout(std140, binding = 0) uniform CAMERA
+layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
 	mat4 GE_MATRIX_P;
@@ -39,10 +41,10 @@ void main()
 	gl_Position = GE_MATRIX_VP * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 1) uniform TIME
+layout(std140, binding = 2) uniform TIME
 {
 	float GE_TIME;
 };

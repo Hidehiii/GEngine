@@ -20,23 +20,24 @@ namespace GEngine
 		Mat4		= 6,
 		Sampler2D	= 7
 	};
-	namespace ShaderDataFlag
+	class GENGINE_API ShaderDataFlag
 	{
-		std::string			None		= "#None";
-		std::string			Name		= "#Name";
-		std::string         Blend       = "#Blend";
-		std::string         DepthMask   = "#DepthMask";
-		std::string         DepthTest   = "#DepthTest";
-		std::string         Properties  = "#Properties";
-		std::string         Type		= "#Type";
-		
+	public:
+		static std::string			None;
+		static std::string			Name;
+		static std::string			Blend;
+		static std::string			DepthMask;
+		static std::string			DepthTest;
+		static std::string			Properties;
+		static std::string			Type;
 	};
-	namespace ShaderStage
+	class GENGINE_API ShaderStage
 	{
-		std::string         Vertex		= "vertex";
-		std::string         Fragment	= "fragment";
-		std::string         Pixel		= "pixel";
-	}
+	public:
+		static	std::string         Vertex;
+		static	std::string         Fragment;
+		static	std::string         Pixel;
+	};
 	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
 	{
 		switch (type)

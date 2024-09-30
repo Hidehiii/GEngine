@@ -1,6 +1,8 @@
 #include "GEpch.h"
 #include "OpenGLMaterial.h"
 
+#include "GEngine/Renderer/RenderCommand.h"
+
 namespace GEngine
 {
 	OpenGLMaterial::OpenGLMaterial(const Ref<Shader>& shader, const std::string& name)
@@ -45,6 +47,10 @@ namespace GEngine
 		m_Shader->Bind();
 		if(m_UniformStorageBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
+		RenderCommand::SetCull(m_CullMode);
+		RenderCommand::SetBlend(m_BlendMode, m_BlendSourceFactor, m_BlendDestinationFactor);
+		RenderCommand::EnableDepthTest(m_EnableDepthTest);
+		RenderCommand::EnableDepthMask(m_EnableDepthMask);
 	}
 	void OpenGLMaterial::SetCullMode(Material_CullMode mode)
 	{
@@ -74,7 +80,7 @@ namespace GEngine
 	}
 	void OpenGLMaterial::SetUInt(const std::string& name, uint32_t value)
 	{
-		GE_CORE_CRITICAL("暂时没有uint类型");
+		GE_CORE_CRITICAL("鏆傛椂娌℃湁uint绫诲瀷");
 	}
 	void OpenGLMaterial::SetVector(const std::string& name, const Vector2& value)
 	{
@@ -115,7 +121,7 @@ namespace GEngine
 	}
 	uint32_t OpenGLMaterial::GetUInt(const std::string& name)
 	{
-		GE_CORE_CRITICAL("暂时还没有写uint");
+		GE_CORE_CRITICAL("鏆傛椂杩樻病鏈夊啓uint");
 		return 0;
 	}
 	Vector4 OpenGLMaterial::GetVector(const std::string& name)
@@ -135,7 +141,7 @@ namespace GEngine
 	}
 	void OpenGLMaterial::SetShader(const Ref<Shader>& shader)
 	{
-		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
+		GE_CORE_CRITICAL("鏆傛椂杩樻病鏈夊啓鏉愯川鐨凷hader鏇存崲");
 	}
 	void OpenGLMaterial::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
 	{

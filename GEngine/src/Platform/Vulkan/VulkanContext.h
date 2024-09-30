@@ -28,7 +28,7 @@ namespace GEngine
 
 	class GENGINE_API VulkanContext : public GraphicsContext
 	{
-		public:
+	public:
 		VulkanContext(GLFWwindow* windowHandle);
 		virtual ~VulkanContext() override;
 
@@ -37,6 +37,11 @@ namespace GEngine
 		virtual void SwapBuffers() override;
 
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
+
+
+		VkDevice GetDevice() { return m_Device; }
+		VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
+		VkRenderPass GetRenderPass() { return m_RenderPass; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -54,6 +59,7 @@ namespace GEngine
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
 		void CreateImageViews();
+		void CreateRenderPass();
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -69,12 +75,16 @@ namespace GEngine
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
 		const std::vector<const char*>		m_DeviceExtensions =
-		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		  "VK_EXT_extended_dynamic_state3"
+		};
 		VkSwapchainKHR						m_SwapChain;
 		std::vector<VkImage>				m_SwapChainImages;
 		VkFormat							m_SwapChainImageFormat;
 		VkExtent2D							m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
+
+		VkRenderPass						m_RenderPass;
 	};
 }
 

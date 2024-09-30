@@ -7,6 +7,8 @@
 #include "GEngine/Events/KeyEvent.h"
 #include "GEngine/Events/MouseEvent.h"
 
+#include "GEngine/Renderer/GraphicsContext.h"
+
 namespace GEngine
 {
 	struct WindowProps
@@ -42,6 +44,7 @@ namespace GEngine
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
+		virtual GraphicsContext* GetContext() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
 

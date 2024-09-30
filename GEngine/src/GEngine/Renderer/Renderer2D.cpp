@@ -47,41 +47,41 @@ namespace GEngine
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxtTiangle = 20000;
-		static const uint32_t MaxVertices = MaxtTiangle * 3;
-		static const uint32_t MaxIndices = MaxtTiangle * 3;
-		static const uint32_t MaxTextureSlots = 32;
+		static const uint32_t MaxtTiangle		= 20000;
+		static const uint32_t MaxVertices		= MaxtTiangle * 3;
+		static const uint32_t MaxIndices		= MaxtTiangle * 3;
+		static const uint32_t MaxTextureSlots	= 32;
 
-		Ref<VertexArray> QuadVertexArray;
-		Ref<VertexBuffer> QuadVertexBuffer;
-		Ref<Shader> QuadShader;
-		uint32_t QuadIndexCount = 0;
-		QuadVertex* QuadVertexBufferBase = nullptr;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
+		Ref<VertexArray>	QuadVertexArray;
+		Ref<VertexBuffer>	QuadVertexBuffer;
+		Ref<Shader>			QuadShader;
+		uint32_t			QuadIndexCount			= 0;
+		QuadVertex*			QuadVertexBufferBase	= nullptr;
+		QuadVertex*			QuadVertexBufferPtr		= nullptr;
 
-		Ref<VertexArray> CircleVertexArray;
-		Ref<VertexBuffer> CircleVertexBuffer;
-		Ref<Shader> CircleShader;
-		uint32_t CircleIndexCount = 0;
-		CircleVertex* CircleVertexBufferBase = nullptr;
-		CircleVertex* CircleVertexBufferPtr = nullptr;
+		Ref<VertexArray>	CircleVertexArray;
+		Ref<VertexBuffer>	CircleVertexBuffer;
+		Ref<Shader>			CircleShader;
+		uint32_t			CircleIndexCount = 0;
+		CircleVertex*		CircleVertexBufferBase	= nullptr;
+		CircleVertex*		CircleVertexBufferPtr	= nullptr;
 
-		Ref<VertexArray> LineVertexArray;
-		Ref<VertexBuffer> LineVertexBuffer;
-		Ref<Shader> LineShader;
-		uint32_t LineVertexCount = 0;
-		LineVertex* LineVertexBufferBase = nullptr;
-		LineVertex* LineVertexBufferPtr = nullptr;
+		Ref<VertexArray>	LineVertexArray;
+		Ref<VertexBuffer>	LineVertexBuffer;
+		Ref<Shader>			LineShader;
+		uint32_t			LineVertexCount = 0;
+		LineVertex*			LineVertexBufferBase	= nullptr;
+		LineVertex*			LineVertexBufferPtr		= nullptr;
 
-		Ref<VertexArray> PointVertexArray;
-		Ref<VertexBuffer> PointVertexBuffer;
-		Ref<Shader> PointShader;
-		uint32_t PointVertexCount = 0;
-		PointVertex* PointVertexBufferBase = nullptr;
-		PointVertex* PointVertexBufferPtr = nullptr;
+		Ref<VertexArray>	PointVertexArray;
+		Ref<VertexBuffer>	PointVertexBuffer;
+		Ref<Shader>			PointShader;
+		uint32_t			PointVertexCount = 0;
+		PointVertex*		PointVertexBufferBase	= nullptr;
+		PointVertex*		PointVertexBufferPtr	= nullptr;
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1; // 0 = white texture
+		uint32_t TextureSlotIndex					= 1; // 0 = white texture
 
 		Vector4 QuadVertexPositions[4];
 		Vector2 QuadVertexUVs[4];
@@ -102,25 +102,25 @@ namespace GEngine
 			// Quad
 			{
 				// Vertex Array
-				s_Data.QuadVertexArray = (VertexArray::Create());
+				s_Data.QuadVertexArray		= (VertexArray::Create());
 
-
-				s_Data.QuadVertexBuffer = (VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex)));
+				s_Data.QuadShader = Shader::Create("Assets/Shaders/RayTrackSphere.glsl");
+				s_Data.QuadVertexBuffer		= (VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex)));
 
 				// Vertex Buffer Object
 				s_Data.QuadVertexBuffer->SetLayout({
-					{ShaderDataType::float4, "PositionOS"},
-					{ShaderDataType::float2, "UV"},
-					{ShaderDataType::float2, "Tiling"},
-					{ShaderDataType::float4, "Color"},
-					{ShaderDataType::int1, "TexIndex"}
+					{ShaderDataType::float4,	"PositionOS"},
+					{ShaderDataType::float2,	"UV"},
+					{ShaderDataType::float2,	"Tiling"},
+					{ShaderDataType::float4,	"Color"},
+					{ShaderDataType::int1,		"TexIndex"}
 					});
 
 
 
 				s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
-				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
+				uint32_t* quadIndices		= new uint32_t[s_Data.MaxIndices];
 
 				s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 

@@ -101,7 +101,7 @@ namespace GEngine
             }
 		}
 
-        Invalidate();
+        CreateBuffer();
     }
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
@@ -109,7 +109,7 @@ namespace GEngine
         glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
         glDeleteTextures(1, &m_DepthAttachment);
     }
-    void OpenGLFrameBuffer::Invalidate()
+    void OpenGLFrameBuffer::CreateBuffer()
     {
         if (m_RendererID != 0)
         {
@@ -203,7 +203,7 @@ namespace GEngine
 
         m_Specification.Width = width;
         m_Specification.Height = height;
-        Invalidate();
+        CreateBuffer();
     }
     void OpenGLFrameBuffer::Resize(Vector2 size)
     {

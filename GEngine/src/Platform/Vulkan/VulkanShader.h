@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/Shader.h"
+#include "Platform/Vulkan/VulkanPipeline.h"
 
 #include <vulkan/vulkan.h>
 namespace GEngine
@@ -50,7 +51,7 @@ namespace GEngine
 		std::unordered_map<std::string, std::vector<uint32_t>>	m_VulkanSPIRV;
 		std::unordered_map<std::string, std::vector<uint32_t>>	m_OpenGLSPIRV;
 
-		std::unordered_map<std::string, std::string>				m_OpenGLSourceCode;
+		std::unordered_map<std::string, std::string>		m_OpenGLSourceCode;
 
 		std::vector<ShaderUniform>							m_UniformCache;
 
@@ -60,6 +61,8 @@ namespace GEngine
 		uint32_t											m_BlendDestinationFactor;
 		bool												m_EnableDepthMask = true;
 		bool												m_EnableDepthTest = true;
+
+		Ref<VulkanPipeline>									m_Pipeline;
 	};
 }
 

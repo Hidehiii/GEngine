@@ -1,14 +1,20 @@
 
-#name Sphere3D
+#Name NormalWS3D
 
-#type vertex
+#Properties
+
+p0: vector
+
+p1: vector
+
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
 layout(location = 2) in vec2 i_tiling;
 layout(location = 3) in vec4 i_color;
 layout(location = 4) in int i_texIndex;
-layout(std140, binding = 0) uniform CAMERA
+layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
 	mat4 GE_MATRIX_P;
@@ -34,17 +40,17 @@ void main()
 	gl_Position = GE_MATRIX_VP * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 0) uniform CAMERA
+layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
 	mat4 GE_MATRIX_P;
 	mat4 GE_MATRIX_VP;
 	vec4 GE_CAMERA_POSITION;
 };
-layout(std140, binding = 1) uniform TIME
+layout(std140, binding = 2) uniform TIME
 {
 	float GE_TIME;
 };
@@ -59,42 +65,82 @@ layout (location = 0) in VertexOutput IN;
 layout (location = 4) in flat int v_TexIndex;
 layout (binding = 0) uniform sampler2D _Textures[32];
 
+struct Sphere
+{
+	vec3 origin;
+	float radius;
+	vec4 color;
+};
+
+struct Ray
+{
+	vec3 origin;
+	vec3 direction;
+};
+
+struct Hit
+{
+	int isHit;
+	vec3 position;
+	vec3 normal;
+	Sphere sphere;
+};
+
+
 void main()
 {
-	int hit = 0;
 	vec3 lightDir = vec3(1,1,1);
 	vec3 normal;
 	vec3 pos;
-	float sphereR[] = { 2, 2, 100 };
-	vec3 sphereOrigin[] = { vec3(-3,0,0), vec3(3,0,0), vec3(0, -102.5, 0)};
-	vec4 sphereCol[] = { vec4(0.8,0.1,0.2,1), vec4(0.2,0.8,0.2,1), vec4(0.2,0.2,0.8,1)};
+	
+
+	Sphere _1;
+	_1.origin = vec3(-3,0,0);
+	_1.radius = 2;
+	_1.color = vec4(0.8,0.1,0.2,1);
+
+	Sphere _2;
+	_2.origin = vec3(3,0,0);
+	_2.radius = 2;
+	_2.color = vec4(0.2,0.8,0.2,1);
+
+	Sphere _3;
+	_3.origin = vec3(0, -102.5, 0);
+	_3.radius = 100;
+	_3.color = vec4(0.2,0.2,0.8,1);
+
+	Sphere spheres[] = { _1, _2, _3};
 
 	vec4 finCol = vec4(0,0,0,1);
-	int bounds = 5;
+	int bounds = 8;
 	float multiplater = 0.5f;
 
 
-	vec3 castPos = GE_CAMERA_POSITION.xyz;
-	vec3 dir = IN.positionWS.xyz - castPos;
-	dir = normalize(dir);
+	Ray ray;
+	ray.origin = GE_CAMERA_POSITION.xyz;
+	ray.direction = IN.positionWS.xyz - ray.origin;
+	ray.direction = normalize(ray.direction);
 
+	Hit hit;
+	hit.isHit = 0;
+	float closeDis = -1;
+	int cloestIndex = -1;
 	for(int k = 0;k < bounds;k++)
 	{
-		float closeDis = -1;
-		int cloestIndex = -1;
-	
+		cloestIndex = -1;
+		closeDis = -1;
 		for(int i = 0;i < 3;i++)
 		{
-			float r = sphereR[i];
-			vec3 sphereOri = sphereOrigin[i];
+			float r = spheres[i].radius;
+			vec3 sphereOri = spheres[i].origin;
 			// (bx^2 + by^2 + bz^2)t^2 + (2(axbx + ayby + azbz))t + (ax^2 + ay^2 + az^2 - r^2) = 0
 			// a = ray origin
 			// b = ray direction
 			// r = radius
 			// t = hit distance
-			vec3 castDir = (castPos - sphereOrigin[i]);
-			float a = dot(dir, dir);
-			float b = 2 * dot(castDir, dir);
+			vec3 castDir = (ray.origin - spheres[i].origin);
+			float a = dot(ray.direction, ray.direction);
+			float b = 2 * dot(castDir, ray.direction);
 			float c = dot(castDir, castDir) - r * r;
 
 			// b^2 - 4ac
@@ -106,21 +152,27 @@ void main()
 				t0 = min(t0,(-b + sqrt(d)) / (2 * a));
 				if(cloestIndex == -1)
 				{
-					pos = castPos + dir * t0;
-					normal = pos - sphereOri;
+					pos = ray.origin + ray.direction * t0;
+					normal = pos - spheres[i].origin;
 					normal = normalize(normal);
 					cloestIndex = i;
 					closeDis = t0;
-					hit = 1;
+					hit.position = pos;
+					hit.normal = normal;
+					hit.isHit = 1;
+					hit.sphere = spheres[i];
 				}
 				else if(t0  < closeDis)
 				{
-					pos = castPos + dir * t0;
-					normal = pos - sphereOri;
+					pos = ray.origin + ray.direction * t0;
+					normal = pos - spheres[i].origin;
 					normal = normalize(normal);
 					cloestIndex = i;
 					closeDis = t0;
-					hit = 1;
+					hit.position = pos;
+					hit.normal = normal;
+					hit.isHit = 1;
+					hit.sphere = spheres[i];
 				}
 			}
 		}
@@ -128,10 +180,10 @@ void main()
 		if(cloestIndex != -1)
 		{
 			float Lightintensity = max(0,dot(lightDir, normal));
-			finCol += sphereCol[cloestIndex] * Lightintensity * multiplater;
-			castPos = pos + normal*0.000001f;
-			dir = reflect(-dir,normal);
-			dir = normalize(dir);
+			finCol += spheres[cloestIndex].color * Lightintensity * multiplater;
+			ray.origin = pos + normal*0.000001f;
+			ray.direction = reflect(-ray.direction,normal);
+			ray.direction = normalize(ray.direction);
 			multiplater *= multiplater;
 		}
 		else
@@ -141,7 +193,7 @@ void main()
 	}
 	
 	o_color = finCol;
-	if(hit == 0)
+	if(hit.isHit != 1)
 	{
 		discard;
 	}

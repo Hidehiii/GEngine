@@ -12,7 +12,7 @@ namespace GEngine
 		OpenGLFrameBuffer(const FrameBufferSpecification& spec);
 		virtual ~OpenGLFrameBuffer() override;
 
-		void Invalidate();
+		void CreateBuffer();
 
 		virtual void Bind() override;
 		virtual void Unbind() override;
