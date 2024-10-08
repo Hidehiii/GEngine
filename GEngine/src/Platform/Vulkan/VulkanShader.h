@@ -1,7 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/Shader.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
 
 #include <vulkan/vulkan.h>
 namespace GEngine
@@ -27,6 +26,9 @@ namespace GEngine
 		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
 		virtual const std::string& GetShaderName() const override { return m_Name; }
 		virtual void SetShaderName(std::string name) override { m_Name = name; }
+
+		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_OpenGLSPIRV[ShaderStage::Vertex]; }
+		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_OpenGLSPIRV[ShaderStage::Fragment]; }
 
 		virtual void SetInt1(const std::string& name, int value) override;
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
@@ -61,8 +63,6 @@ namespace GEngine
 		uint32_t											m_BlendDestinationFactor;
 		bool												m_EnableDepthMask = true;
 		bool												m_EnableDepthTest = true;
-
-		Ref<VulkanPipeline>									m_Pipeline;
 	};
 }
 

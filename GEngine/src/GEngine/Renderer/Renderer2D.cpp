@@ -8,6 +8,7 @@
 #include "GEngine/Renderer/UniformBuffer.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Time.h"
+#include "GEngine/Renderer/Pipeline.h"
 
 namespace GEngine
 {
@@ -52,30 +53,22 @@ namespace GEngine
 		static const uint32_t MaxIndices		= MaxtTiangle * 3;
 		static const uint32_t MaxTextureSlots	= 32;
 
-		Ref<VertexArray>	QuadVertexArray;
-		Ref<VertexBuffer>	QuadVertexBuffer;
-		Ref<Shader>			QuadShader;
+		Ref<Pipeline>		QuadPipeline;
 		uint32_t			QuadIndexCount			= 0;
 		QuadVertex*			QuadVertexBufferBase	= nullptr;
 		QuadVertex*			QuadVertexBufferPtr		= nullptr;
 
-		Ref<VertexArray>	CircleVertexArray;
-		Ref<VertexBuffer>	CircleVertexBuffer;
-		Ref<Shader>			CircleShader;
+		Ref<Pipeline>		CirclePipeline;
 		uint32_t			CircleIndexCount = 0;
 		CircleVertex*		CircleVertexBufferBase	= nullptr;
 		CircleVertex*		CircleVertexBufferPtr	= nullptr;
 
-		Ref<VertexArray>	LineVertexArray;
-		Ref<VertexBuffer>	LineVertexBuffer;
-		Ref<Shader>			LineShader;
+		Ref<Pipeline>		LinePipeline;
 		uint32_t			LineVertexCount = 0;
 		LineVertex*			LineVertexBufferBase	= nullptr;
 		LineVertex*			LineVertexBufferPtr		= nullptr;
 
-		Ref<VertexArray>	PointVertexArray;
-		Ref<VertexBuffer>	PointVertexBuffer;
-		Ref<Shader>			PointShader;
+		Ref<Pipeline>		PointPipeline;
 		uint32_t			PointVertexCount = 0;
 		PointVertex*		PointVertexBufferBase	= nullptr;
 		PointVertex*		PointVertexBufferPtr	= nullptr;
@@ -101,29 +94,21 @@ namespace GEngine
 		{
 			// Quad
 			{
-				// Vertex Array
-				s_Data.QuadVertexArray		= (VertexArray::Create());
-
-				s_Data.QuadShader = Shader::Create("Assets/Shaders/RayTrackSphere.glsl");
-				s_Data.QuadVertexBuffer		= (VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex)));
-
-				// Vertex Buffer Object
-				s_Data.QuadVertexBuffer->SetLayout({
+				s_Data.QuadPipeline = Pipeline::Create(
+					Material::Create(Shader::Create("Assets/Shaders/2D/Quad2D.glsl")),
+					VertexArray::Create(),
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex))
+				);
+				s_Data.QuadPipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4,	"PositionOS"},
 					{ShaderDataType::float2,	"UV"},
 					{ShaderDataType::float2,	"Tiling"},
 					{ShaderDataType::float4,	"Color"},
 					{ShaderDataType::int1,		"TexIndex"}
 					});
-
-
-
-				s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
-
-				uint32_t* quadIndices		= new uint32_t[s_Data.MaxIndices];
-
+				s_Data.QuadPipeline->GetVertexArray()->AddVertexBuffer(s_Data.QuadPipeline->GetVertexBuffer());
+				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 				s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
-
 				uint32_t offset = 0;
 				for (uint32_t i = 0; i < s_Data.MaxIndices; i += 6)
 				{
@@ -137,26 +122,14 @@ namespace GEngine
 
 					offset += 4;
 				}
-
-				// Index Buffer Object
-				Ref<IndexBuffer> indexBuffer;
-				indexBuffer = (IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
-
-				s_Data.QuadVertexArray->SetIndexBuffer(indexBuffer);
-
+				s_Data.QuadPipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
 				delete[] quadIndices;
-
-
-
-				s_Data.QuadShader = Shader::Create("Assets/Shaders/2D/Quad2D.glsl");
-				//s_Data.QuadShader = Shader::Create("Assets/Shaders/RayTrackSphere.glsl");
 
 
 				s_Data.WhiteTexture = Texture2D::Create(1, 1);
 				uint32_t whiteTextureData = 0xffffffff;
 				s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 				s_Data.TextureSlots[0] = s_Data.WhiteTexture;
-
 
 
 				s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -171,14 +144,13 @@ namespace GEngine
 			}
 			// Circle
 			{
-				// Vertex Array
-				s_Data.CircleVertexArray = (VertexArray::Create());
 
-
-				s_Data.CircleVertexBuffer = (VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex)));
-
-				// Vertex Buffer Object
-				s_Data.CircleVertexBuffer->SetLayout({
+				s_Data.CirclePipeline = Pipeline::Create(
+					Material::Create(Shader::Create("Assets/Shaders/2D/Circle2D.glsl")),
+					VertexArray::Create(),
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex))
+				);
+				s_Data.CirclePipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
 					{ShaderDataType::float4, "Color"},
 					{ShaderDataType::float2, "UV"},
@@ -187,10 +159,7 @@ namespace GEngine
 					{ShaderDataType::int1, "TexIndex"},
 					{ShaderDataType::float1, "Fade"}
 					});
-
-
-
-				s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
+				s_Data.CirclePipeline->GetVertexArray()->AddVertexBuffer(s_Data.CirclePipeline->GetVertexBuffer());
 
 				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
@@ -209,60 +178,40 @@ namespace GEngine
 
 					offset += 4;
 				}
-
-				// Index Buffer Object
-				Ref<IndexBuffer> indexBuffer;
-				indexBuffer = (IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
-
-				s_Data.CircleVertexArray->SetIndexBuffer(indexBuffer);
+				s_Data.CirclePipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
 
 				delete[] quadIndices;
-
-
-
-				s_Data.CircleShader = Shader::Create("Assets/Shaders/2D/Circle2D.glsl");
 			}
 
 			// Line
 			{
-				// Vertex Array
-				s_Data.LineVertexArray = (VertexArray::Create());
-
-
-				s_Data.LineVertexBuffer = (VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex)));
-
-				// Vertex Buffer Object
-				s_Data.LineVertexBuffer->SetLayout({
+				s_Data.LinePipeline = Pipeline::Create(
+					Material::Create(Shader::Create("Assets/Shaders/2D/Line2D.glsl")),
+					VertexArray::Create(),
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex))
+				);
+				s_Data.LinePipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
 					{ShaderDataType::float4, "Color"}
 					});
 
 				s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
-
-				s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
-
-				s_Data.LineShader = Shader::Create("Assets/Shaders/2D/Line2D.glsl");
+				s_Data.LinePipeline->GetVertexArray()->AddVertexBuffer(s_Data.LinePipeline->GetVertexBuffer());
 			}
 
 			// Point
 			{
-				// Vertex Array
-				s_Data.PointVertexArray = (VertexArray::Create());
-
-
-				s_Data.PointVertexBuffer = (VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex)));
-
-				// Vertex Buffer Object
-				s_Data.PointVertexBuffer->SetLayout({
+				s_Data.PointPipeline = Pipeline::Create(
+					Material::Create(Shader::Create("Assets/Shaders/2D/Point2D.glsl")),
+					VertexArray::Create(),
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex))
+				);
+				s_Data.PointPipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
 					{ShaderDataType::float4, "Color"}
 					});
-
 				s_Data.PointVertexBufferBase = new PointVertex[s_Data.MaxVertices];
-
-				s_Data.PointVertexArray->AddVertexBuffer(s_Data.PointVertexBuffer);
-
-				s_Data.PointShader = Shader::Create("Assets/Shaders/2D/Point2D.glsl");
+				s_Data.PointPipeline->GetVertexArray()->AddVertexBuffer(s_Data.PointPipeline->GetVertexBuffer());
 			}
 		}
 		
@@ -284,9 +233,9 @@ namespace GEngine
 				s_Data.TextureSlots[i]->Bind(i);
 			}
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
-			s_Data.QuadShader->Bind();
-			RenderCommand::DrawTriangles(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+			s_Data.QuadPipeline->GetVertexBuffer()->SetData(s_Data.QuadVertexBufferBase, dataSize);
+			s_Data.QuadPipeline->Bind();
+			RenderCommand::DrawTriangles(s_Data.QuadPipeline->GetVertexArray(), s_Data.QuadIndexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -297,27 +246,27 @@ namespace GEngine
 				s_Data.TextureSlots[i]->Bind(i);
 			}
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
-			s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
-			s_Data.CircleShader->Bind();
-			RenderCommand::DrawTriangles(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+			s_Data.CirclePipeline->GetVertexBuffer()->SetData(s_Data.CircleVertexBufferBase, dataSize);
+			s_Data.CirclePipeline->Bind();
+			RenderCommand::DrawTriangles(s_Data.CirclePipeline->GetVertexArray(), s_Data.CircleIndexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
 		if (s_Data.LineVertexCount)
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
-			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
-			s_Data.LineShader->Bind();
-			RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+			s_Data.LinePipeline->GetVertexBuffer()->SetData(s_Data.LineVertexBufferBase, dataSize);
+			s_Data.LinePipeline->Bind();
+			RenderCommand::DrawLines(s_Data.LinePipeline->GetVertexArray(), s_Data.LineVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
 		if (s_Data.PointVertexCount)
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.PointVertexBufferPtr - (uint8_t*)s_Data.PointVertexBufferBase);
-			s_Data.PointVertexBuffer->SetData(s_Data.PointVertexBufferBase, dataSize);
-			s_Data.PointShader->Bind();
-			RenderCommand::DrawPoints(s_Data.PointVertexArray, s_Data.PointVertexCount);
+			s_Data.PointPipeline->GetVertexBuffer()->SetData(s_Data.PointVertexBufferBase, dataSize);
+			s_Data.PointPipeline->Bind();
+			RenderCommand::DrawPoints(s_Data.PointPipeline->GetVertexArray(), s_Data.PointVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 	}
@@ -715,11 +664,9 @@ namespace GEngine
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.QuadShader->Bind();
-		s_Data.QuadShader->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
+		s_Data.QuadPipeline->GetMaterial()->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
 
-		s_Data.CircleShader->Bind();
-		s_Data.CircleShader->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
+		s_Data.CirclePipeline->GetMaterial()->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
 
 
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;

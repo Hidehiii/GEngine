@@ -30,6 +30,9 @@ namespace GEngine
 		static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name = "");
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
 
+		bool HasChanged() { return m_HasChanged; }
+		void ResetHasChanged() { m_HasChanged = false; }
+
 		virtual ~Material() {}
 
 		virtual void UploadData() = 0;
@@ -50,6 +53,7 @@ namespace GEngine
 
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;
+		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
 		virtual void SetUInt(const std::string& name, uint32_t value) = 0;
 		virtual void SetVector(const std::string& name, const Vector2& value) = 0;
 		virtual void SetVector(const std::string& name, const Vector3& value) = 0;
@@ -71,6 +75,9 @@ namespace GEngine
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) = 0;
 
 		virtual std::vector<ShaderUniform>& GetUniforms() = 0;
+
+	protected:
+		bool m_HasChanged = false;
 	};
 }
 

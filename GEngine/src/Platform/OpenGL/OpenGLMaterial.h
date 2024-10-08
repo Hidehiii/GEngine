@@ -35,7 +35,7 @@ namespace GEngine
 		virtual void SetVector(const std::string& name, const Vector2& value) override;
 		virtual void SetVector(const std::string& name, const Vector3& value) override;
 		virtual void SetVector(const std::string& name, const Vector4& value) override;
-
+		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
 		virtual float GetFloat(const std::string& name) override;
 		virtual int GetInt(const std::string& name) override;
 		virtual uint32_t GetUInt(const std::string& name) override;
@@ -51,7 +51,7 @@ namespace GEngine
 
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) override;
 
-		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; };
+		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
 
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;

@@ -41,6 +41,9 @@ namespace GEngine
 
 		virtual float GetTime() = 0;
 
+		virtual void BeginCommand(int index = 0) = 0;
+		virtual void EndCommand(int index = 0) = 0;
+
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }
 		inline static API Current() { return s_API; }

@@ -69,9 +69,9 @@ namespace GEngine
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
-		static Ref<FrameBuffer> GetCurrentFrameBuffer() { return s_CurrentFrameBuffer; }
-	public:
-		static Ref<FrameBuffer>		s_CurrentFrameBuffer;
+		static FrameBuffer* GetCurrentFrameBuffer() { return s_CurrentFrameBuffer; }
+	protected:
+		static FrameBuffer*								s_CurrentFrameBuffer;
 
 	protected:
 		FrameBufferSpecification						m_Specification;

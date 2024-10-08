@@ -98,6 +98,11 @@ namespace GEngine
 			m_UniformStorageBuffer.Write((const void*)value.ValuePtr(), uniform.Size, uniform.Location);
 		}
 	}
+	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
+	{
+		m_Shader->Bind();
+		m_Shader->SetIntArray(name, value, count);
+	}
 	float OpenGLMaterial::GetFloat(const std::string& name)
 	{
 		ShaderUniform uniform = GetUniformByName(name);

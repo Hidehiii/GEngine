@@ -1,20 +1,32 @@
 #pragma once
-#include "GEngine/Core/Core.h"
-#include <vulkan/vulkan.h>
+#include "GEngine/Renderer/Pipeline.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanVertexArray.h"
+#include "Platform/Vulkan/VulkanMaterial.h"
+
+
 
 namespace GEngine
 {
-	class GENGINE_API VulkanPipeline
+	class GENGINE_API VulkanPipeline : public Pipeline
 	{
 	public:
-		VulkanPipeline(const std::vector<uint32_t>& vertex, const std::vector<uint32_t>& fragment);
-		~VulkanPipeline();
-		static Ref<VulkanPipeline> Create(const std::vector<uint32_t>& vertex, const std::vector<uint32_t>& fragment);
+		VulkanPipeline(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Ref<VertexBuffer>& vertexBuffer);
+		virtual ~VulkanPipeline() override;
+		virtual void Bind() override;
+		virtual void Unbind() override;
 
+		virtual Ref<VertexArray> GetVertexArray() override { return std::static_pointer_cast<VertexArray>(m_VertexArray); }
+		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
+		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 
 	private:
+		Ref<VulkanMaterial>			m_Material;
+		Ref<VulkanVertexArray>		m_VertexArray;
+		Ref<VulkanVertexBuffer>		m_VertexBuffer;
+
 		VkShaderModule				m_VertexShaderModule;
 		VkShaderModule				m_FragmentShaderModule;
 		std::vector<VkDynamicState> m_DynamicStates = {

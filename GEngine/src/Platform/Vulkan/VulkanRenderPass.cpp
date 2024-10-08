@@ -32,7 +32,6 @@ namespace GEngine
 	void VulkanRenderPass::CreateRenderPass(const VulkanRenderPassSpecification& spec)
 	{
 		VkAttachmentDescription			colorAttachment{};
-		colorAttachment.format			= spec.ColorAttachmentFormat;
 		
 		colorAttachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;

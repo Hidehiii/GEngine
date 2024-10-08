@@ -8,6 +8,7 @@ namespace GEngine
     VkDevice                VulkanContext::s_Device;
     VkExtent2D              VulkanContext::s_SwapChainExtent;
     std::vector<VkImage>    VulkanContext::s_SwapChainImages;
+    VkPhysicalDevice        VulkanContext::s_PhysicalDevice;
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -68,6 +69,7 @@ namespace GEngine
         CreateLogicalDevice();
         CreateSwapChain(width, height);
         CreateImageViews();
+        CreateCommandBuffers();
 	}
     void VulkanContext::Uninit()
     {
@@ -192,11 +194,11 @@ namespace GEngine
         {
             if (IsDeviceSuitable(device))
             {
-                m_PhysicalDevice = device;
+                s_PhysicalDevice = device;
                 break;
             }
         }
-        if (m_PhysicalDevice == VK_NULL_HANDLE)
+        if (s_PhysicalDevice == VK_NULL_HANDLE)
         {
             GE_CORE_ERROR("Failed to find a suitable GPU!");
         }
@@ -245,7 +247,7 @@ namespace GEngine
     }
     void VulkanContext::CreateLogicalDevice()
     {
-        QueueFamilyIndices                  indices = FindQueueFamilies(m_PhysicalDevice);
+        QueueFamilyIndices                  indices = FindQueueFamilies(s_PhysicalDevice);
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
         float                               queuePriority = 1.0f;
@@ -272,7 +274,7 @@ namespace GEngine
 #else
         createInfo.enabledLayerCount        = 0;
 #endif
-        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &s_Device) != VK_SUCCESS)
+        if (vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device) != VK_SUCCESS)
         {
             GE_CORE_ERROR("Failed to create logical device!");
         }
@@ -360,7 +362,7 @@ namespace GEngine
     }
     void VulkanContext::CreateSwapChain(const unsigned int width, const unsigned int height)
     {
-        SwapChainSupportDetails     swapChainSupportDetails = QuerySwapChainSupport(m_PhysicalDevice);
+        SwapChainSupportDetails     swapChainSupportDetails = QuerySwapChainSupport(s_PhysicalDevice);
 
         VkSurfaceFormatKHR          surfaceFormat           = ChooseSwapSurfaceFormat(swapChainSupportDetails.Formats);
         VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
@@ -383,7 +385,7 @@ namespace GEngine
 		createInfo.imageArrayLayers                         = 1;
 		createInfo.imageUsage                               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices          indices                 = FindQueueFamilies(m_PhysicalDevice);
+		QueueFamilyIndices          indices                 = FindQueueFamilies(s_PhysicalDevice);
 		uint32_t                    queueFamilyIndices[]    = { 
                                                             indices.GraphicsFamily.value(), 
                                                             indices.PresentFamily.value() };
@@ -444,5 +446,9 @@ namespace GEngine
 				GE_CORE_ERROR("failed to create image views!");
 			}
         }
+    }
+    void VulkanContext::CreateCommandBuffers()
+    {
+        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice));
     }
 }

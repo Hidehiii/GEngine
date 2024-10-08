@@ -74,13 +74,18 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Bind()
 	{
-		VkRenderPassBeginInfo		renderPassInfo{};
-		renderPassInfo.sType		= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass	= m_RenderPass->GetRenderPass();
-		renderPassInfo.framebuffer	= m_FrameBuffer;
+		VkRenderPassBeginInfo					renderPassInfo{};
+		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
+		renderPassInfo.framebuffer				= m_FrameBuffer;
+		renderPassInfo.renderArea.offset		= { 0, 0 };
+		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
+		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
+		s_CurrentFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::Unbind()
 	{
+		s_CurrentFrameBuffer = nullptr;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
 	{

@@ -1,23 +1,15 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/GraphicsContext.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
-#include <optional>
+
 
 namespace GEngine
 {
-	struct QueueFamilyIndices
-	{
-		std::optional<uint32_t> GraphicsFamily;
-		std::optional<uint32_t> PresentFamily;
-
-		bool IsComplete()
-		{
-			return GraphicsFamily.has_value() && PresentFamily.has_value();
-		}
-	};
+	
 
 	struct SwapChainSupportDetails 
 	{
@@ -42,6 +34,8 @@ namespace GEngine
 		static VkDevice GetDevice() { return s_Device; }
 		static VkExtent2D GetSwapChainExtent() { return s_SwapChainExtent; }
 		static std::vector<VkImage> GetSwapChainImage() { return s_SwapChainImages; }
+		static VkPhysicalDevice GetPhysicalDevice() { return s_PhysicalDevice; }
+		static VulkanCommandBuffer GetCommandBubffers() { return s_CommandBuffer; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -49,16 +43,17 @@ namespace GEngine
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void SetPhysicalDevice();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		void CreateLogicalDevice();
 		void CreateSurface();
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
 		void CreateImageViews();
+		void CreateCommandBuffers();
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -68,7 +63,7 @@ namespace GEngine
 		{ "VK_LAYER_KHRONOS_validation"
 		};
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
-		VkPhysicalDevice					m_PhysicalDevice = VK_NULL_HANDLE;
+		static VkPhysicalDevice				s_PhysicalDevice;
 		static VkDevice						s_Device;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
@@ -82,7 +77,7 @@ namespace GEngine
 		VkFormat							m_SwapChainImageFormat;
 		static VkExtent2D					s_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
-
+		static VulkanCommandBuffer			s_CommandBuffer;
 		
 	};
 }

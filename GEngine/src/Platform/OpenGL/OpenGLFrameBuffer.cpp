@@ -176,7 +176,7 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
-        s_CurrentFrameBuffer = ToRef<FrameBuffer>(this);
+        s_CurrentFrameBuffer = this;
     }
     void OpenGLFrameBuffer::Unbind()
     {

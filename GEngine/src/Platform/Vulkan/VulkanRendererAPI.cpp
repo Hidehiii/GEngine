@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "VulkanRendererAPI.h"
-
+#include "Platform/Vulkan/VulkanContext.h"
 #include <set>
 
 namespace GEngine
@@ -53,6 +53,22 @@ namespace GEngine
     }
     void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
+    }
+    void VulkanRendererAPI::BeginCommand(int index)
+    {
+        VkCommandBufferBeginInfo    beginInfo{};
+        beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags             = 0; // Optional
+        beginInfo.pInheritanceInfo  = nullptr; // Optional
+        if (vkBeginCommandBuffer(VulkanContext::GetCommandBubffers().GetCommandBuffer(index), &beginInfo) != VK_SUCCESS) {
+            GE_CORE_ERROR("failed to begin recording command buffer!");
+        }
+    }
+    void VulkanRendererAPI::EndCommand(int index)
+    {
+        if (vkEndCommandBuffer(VulkanContext::GetCommandBubffers().GetCommandBuffer(index)) != VK_SUCCESS) {
+            GE_CORE_ERROR("failed to record command buffer!");
+        }
     }
     float VulkanRendererAPI::GetTime()
     {

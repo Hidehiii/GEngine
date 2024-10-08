@@ -5,18 +5,14 @@
 
 namespace GEngine
 {
-    Ref<VulkanPipeline> VulkanPipeline::Create(const std::vector<uint32_t>& vertex, const std::vector<uint32_t>& fragment)
+    VulkanPipeline::VulkanPipeline(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Ref<VertexBuffer>& vertexBuffer)
     {
-        Ref<VulkanPipeline> pipeline = CreateRef<VulkanPipeline>(vertex, fragment);
-        return pipeline;
-    }
+        m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
+        m_VertexArray           = std::dynamic_pointer_cast<VulkanVertexArray>(vertexArray);
+        m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
 
-    
-
-    VulkanPipeline::VulkanPipeline(const std::vector<uint32_t>& vertex, const std::vector<uint32_t>& fragment)
-    {
-        m_VertexShaderModule    = CreateShaderModule(vertex);
-        m_FragmentShaderModule  = CreateShaderModule(fragment);
+        m_VertexShaderModule    = CreateShaderModule(material->GetShader()->GetVertexShaderSource());
+        m_FragmentShaderModule  = CreateShaderModule(material->GetShader()->GetFragmentShaderSource());
 
         VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
         vertexShaderStageInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -123,7 +119,7 @@ namespace GEngine
 		pipelineInfo.pColorBlendState       = &m_ColorBlending;
         pipelineInfo.pDynamicState          = &dynamicStateCreateInfo;
         pipelineInfo.layout                 = m_PipelineLayout;
-		pipelineInfo.renderPass             = std::dynamic_pointer_cast<VulkanFrameBuffer>(FrameBuffer::GetCurrentFrameBuffer())->GetRenderPass();
+		pipelineInfo.renderPass             = ((VulkanFrameBuffer*)(FrameBuffer::GetCurrentFrameBuffer()))->GetRenderPass();
 		pipelineInfo.subpass                = 0;
 		pipelineInfo.basePipelineHandle     = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex      = -1; // Optional
@@ -140,6 +136,14 @@ namespace GEngine
     {
         vkDestroyPipeline(VulkanContext::GetDevice(), m_GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
+    }
+
+    void VulkanPipeline::Bind()
+    {
+    }
+
+    void VulkanPipeline::Unbind()
+    {
     }
 
 

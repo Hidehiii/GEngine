@@ -49,7 +49,7 @@ namespace GEngine
 		Vector3 Right();
 		Vector3 Up();
 
-		Vector3 GetEulerAngle() { return Math::Degrees(Math::EulerAngles(m_Rotation)); }
+		Vector3 GetEulerAngle() { return Math::EulerAngles(m_Rotation); }
 		void SetEulerAngleInRadians(const Vector3 radians) { m_Rotation = Quaternion(radians);  RecalculateModelMatrix(); }
 		void SetEulerAngle(const Vector3 angles) { m_Rotation = Quaternion(Math::Radians(angles)); RecalculateModelMatrix(); }
 	public:

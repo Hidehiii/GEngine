@@ -88,6 +88,8 @@ namespace GEngine
 		virtual bool GetEnableDepthTest() = 0;
 
 		virtual std::vector<ShaderUniform> GetUniforms() = 0;
+		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
+		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
