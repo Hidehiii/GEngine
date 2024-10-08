@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "VulkanFrameBuffer.h"
 
 namespace GEngine
 {
@@ -109,12 +110,35 @@ namespace GEngine
             GE_CORE_ERROR("Failed to create pipeline layout!");
         } 
 
+		VkGraphicsPipelineCreateInfo        pipelineInfo{};
+		pipelineInfo.sType                  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.stageCount             = 2;
+		pipelineInfo.pStages                = m_ShaderStages.data();
+		pipelineInfo.pVertexInputState      = &m_VertexInputInfo;
+		pipelineInfo.pInputAssemblyState    = &m_InputAssembly;
+		pipelineInfo.pViewportState         = &m_ViewportState;
+		pipelineInfo.pRasterizationState    = &m_Rasterizer;
+		pipelineInfo.pMultisampleState      = &m_Multisampling;
+		pipelineInfo.pDepthStencilState     = nullptr; // Optional
+		pipelineInfo.pColorBlendState       = &m_ColorBlending;
+        pipelineInfo.pDynamicState          = &dynamicStateCreateInfo;
+        pipelineInfo.layout                 = m_PipelineLayout;
+		pipelineInfo.renderPass             = std::dynamic_pointer_cast<VulkanFrameBuffer>(FrameBuffer::GetCurrentFrameBuffer())->GetRenderPass();
+		pipelineInfo.subpass                = 0;
+		pipelineInfo.basePipelineHandle     = VK_NULL_HANDLE; // Optional
+		pipelineInfo.basePipelineIndex      = -1; // Optional
+
+		if (vkCreateGraphicsPipelines(VulkanContext::GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
+			GE_CORE_ERROR("failed to create graphics pipeline!");
+		}
+
         vkDestroyShaderModule(VulkanContext::GetDevice(), m_VertexShaderModule, nullptr);
         vkDestroyShaderModule(VulkanContext::GetDevice(), m_FragmentShaderModule, nullptr);
     }
 
     VulkanPipeline::~VulkanPipeline()
     {
+        vkDestroyPipeline(VulkanContext::GetDevice(), m_GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
     }
 

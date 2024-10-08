@@ -7,19 +7,7 @@ namespace GEngine
 
     namespace Utils
     {
-        static bool isDepthFormat(FrameBufferTextureFormat format)
-        {
-            switch (format)
-            {
-				case FrameBufferTextureFormat::DEPTH24STENCIL8:
-					return true;
-                case FrameBufferTextureFormat::DEPTH:
-                    return true;
-			default:
-				return false;
-			}
-            return false;
-		}
+        
 
         static void CreateTextures(bool multisample, uint32_t* outID, uint32_t count)
         {
@@ -87,8 +75,8 @@ namespace GEngine
     }
 
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& spec)
-        : m_Specification(spec)
     {
+        m_Specification = spec;
         for (auto format : m_Specification.Attachments.Attachments)
         {
             if (Utils::isDepthFormat(format.TextureFormat))
@@ -188,10 +176,12 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+        s_CurrentFrameBuffer = ToRef<FrameBuffer>(this);
     }
     void OpenGLFrameBuffer::Unbind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        s_CurrentFrameBuffer = nullptr;
     }
     void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
     {

@@ -63,13 +63,38 @@ namespace GEngine
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2 size) = 0;
 
-		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
-		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+		virtual uint32_t GetColorAttachment(uint32_t index = 0) const = 0;
+		virtual uint32_t GetDepthAttachment() const = 0;
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) = 0;
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
+		static Ref<FrameBuffer> GetCurrentFrameBuffer() { return s_CurrentFrameBuffer; }
+	public:
+		static Ref<FrameBuffer>		s_CurrentFrameBuffer;
+
+	protected:
+		FrameBufferSpecification						m_Specification;
+		FrameBufferTextureSpecification					m_DepthAttachmentSpec = FrameBufferTextureFormat::None;
+		std::vector<FrameBufferTextureSpecification>	m_ColorAttachmentsSpecs;
 	};
+
+	namespace Utils
+	{
+		static bool isDepthFormat(FrameBufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				return true;
+			case FrameBufferTextureFormat::DEPTH:
+				return true;
+			default:
+				return false;
+			}
+			return false;
+		}
+	}
 }
 
 

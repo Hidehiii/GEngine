@@ -360,7 +360,7 @@ namespace GEngine
 				m_SceneViewportSize = viewportPanelSize;
 				m_EditorCamera.SetViewportSize(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y);
 			}
-			uint32_t tex = m_SceneViewportFrameBuffer->GetColorAttachmentRendererID();
+			uint32_t tex = m_SceneViewportFrameBuffer->GetColorAttachment();
 			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			Vector2 windowRegionMin = { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
@@ -452,7 +452,7 @@ namespace GEngine
 				m_GameViewportSize = viewportPanelSize;
 				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.value.x, m_GameViewportSize.value.y);
 			}
-			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachmentRendererID();
+			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachment();
 			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.value.x, m_GameViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();

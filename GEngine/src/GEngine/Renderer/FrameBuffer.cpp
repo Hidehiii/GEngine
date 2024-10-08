@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	Ref<FrameBuffer>	FrameBuffer::s_CurrentFrameBuffer;
+
     Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& spec)
     {
         switch (Renderer::GetAPI())

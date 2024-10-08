@@ -39,8 +39,9 @@ namespace GEngine
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
 
-		static VkDevice GetDevice() { return m_Device; }
-		static VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
+		static VkDevice GetDevice() { return s_Device; }
+		static VkExtent2D GetSwapChainExtent() { return s_SwapChainExtent; }
+		static std::vector<VkImage> GetSwapChainImage() { return s_SwapChainImages; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -68,7 +69,7 @@ namespace GEngine
 		};
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
 		VkPhysicalDevice					m_PhysicalDevice = VK_NULL_HANDLE;
-		static VkDevice						m_Device;
+		static VkDevice						s_Device;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
@@ -77,9 +78,9 @@ namespace GEngine
 		  "VK_EXT_extended_dynamic_state3"
 		};
 		VkSwapchainKHR						m_SwapChain;
-		std::vector<VkImage>				m_SwapChainImages;
+		static std::vector<VkImage>			s_SwapChainImages;
 		VkFormat							m_SwapChainImageFormat;
-		static VkExtent2D					m_SwapChainExtent;
+		static VkExtent2D					s_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
 
 		

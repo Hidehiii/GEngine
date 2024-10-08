@@ -5,6 +5,11 @@
 
 namespace GEngine
 {
+    VkDevice                VulkanContext::s_Device;
+    VkExtent2D              VulkanContext::s_SwapChainExtent;
+    std::vector<VkImage>    VulkanContext::s_SwapChainImages;
+
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -68,19 +73,19 @@ namespace GEngine
     {
         for (auto imageView : m_SwapChainImageViews)
 		{
-			vkDestroyImageView(m_Device, imageView, nullptr);
+			vkDestroyImageView(s_Device, imageView, nullptr);
 		}
-        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+        vkDestroySwapchainKHR(s_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 #endif
-        vkDestroyDevice(m_Device, nullptr);
+        vkDestroyDevice(s_Device, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
     }
 	void VulkanContext::SwapBuffers()
 	{
-
+        
 	}
     void VulkanContext::CreateInstance()
     {
@@ -267,12 +272,12 @@ namespace GEngine
 #else
         createInfo.enabledLayerCount        = 0;
 #endif
-        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
+        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &s_Device) != VK_SUCCESS)
         {
             GE_CORE_ERROR("Failed to create logical device!");
         }
-        vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
-        vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
+		vkGetDeviceQueue(s_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(s_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
     void VulkanContext::CreateSurface()
     {
@@ -402,26 +407,26 @@ namespace GEngine
 		createInfo.clipped                                  = VK_TRUE;
         createInfo.oldSwapchain                             = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
+        if (vkCreateSwapchainKHR(s_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
         {
             GE_CORE_ERROR("fail to create swap chain!");
         }
 
-        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
-        m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(s_Device, m_SwapChain, &imageCount, nullptr);
+        s_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(s_Device, m_SwapChain, &imageCount, s_SwapChainImages.data());
 
         m_SwapChainImageFormat                              = surfaceFormat.format;
-        m_SwapChainExtent                                   = extent;
+        s_SwapChainExtent                                   = extent;
     }
     void VulkanContext::CreateImageViews()
     {
-        m_SwapChainImageViews.resize(m_SwapChainImages.size());
-        for (size_t i = 0; i < m_SwapChainImages.size(); i++)
+        m_SwapChainImageViews.resize(s_SwapChainImages.size());
+        for (size_t i = 0; i < s_SwapChainImages.size(); i++)
         {
             VkImageViewCreateInfo                           createInfo{};
             createInfo.sType                                = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image                                = m_SwapChainImages[i];
+            createInfo.image                                = s_SwapChainImages[i];
             createInfo.viewType                             = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format                               = m_SwapChainImageFormat;
             createInfo.components.r                         = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -434,7 +439,7 @@ namespace GEngine
             createInfo.subresourceRange.baseArrayLayer      = 0;
             createInfo.subresourceRange.layerCount          = 1;
 
-            if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS)
+            if (vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS)
             {
 				GE_CORE_ERROR("failed to create image views!");
 			}

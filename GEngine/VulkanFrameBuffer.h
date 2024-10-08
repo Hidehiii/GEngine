@@ -9,8 +9,27 @@ namespace GEngine
 	{
 	public:
 		VulkanFrameBuffer(const FrameBufferSpecification& spec);
+		virtual ~VulkanFrameBuffer() override;
+
+		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
+		virtual void Bind() override;
+		virtual void Unbind() override;
+
+		virtual void Resize(uint32_t width, uint32_t height) override;
+		virtual void Resize(Vector2 size) override;
+
+		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
+		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
+		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
+		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { return 0; }
+		virtual uint32_t GetDepthAttachment() const override { return 0; }
 	private:
+		void CreateBuffer();
+	private:
+		VkFramebuffer				m_FrameBuffer = nullptr;
 		Ref<VulkanRenderPass>		m_RenderPass = nullptr;
+		std::vector<VkImage>		m_Images;
+		std::vector<VkImageView>	m_Attachments;
 	};
 }
 
