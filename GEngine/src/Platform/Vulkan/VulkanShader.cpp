@@ -32,7 +32,7 @@ namespace GEngine
 			if (ToLower(type) == "alpha")			return Material_BlendMode::Alpha;
 			if (ToLower(type) == "additive")		return Material_BlendMode::Additive;
 			if (ToLower(type) == "multiply")		return Material_BlendMode::Multiply;
-			if (ToLower(type) == "customized")	return Material_BlendMode::Customized;
+			if (ToLower(type) == "customized")		return Material_BlendMode::Customized;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return Material_BlendMode::None;

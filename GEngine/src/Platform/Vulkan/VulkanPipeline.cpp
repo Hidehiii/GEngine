@@ -1,7 +1,6 @@
 #include "GEpch.h"
 #include "VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Application.h"
 
 namespace GEngine
 {
@@ -49,13 +48,13 @@ namespace GEngine
 
         m_Viewport.x          = 0.0f;
         m_Viewport.y          = 0.0f;
-        m_Viewport.width      = (float)((VulkanContext*)Application::Get().GetWindow().GetContext())->GetSwapChainExtent().width;
-        m_Viewport.height     = (float)((VulkanContext*)Application::Get().GetWindow().GetContext())->GetSwapChainExtent().height;
+        m_Viewport.width      = (float)VulkanContext::GetSwapChainExtent().width;
+        m_Viewport.height     = (float)VulkanContext::GetSwapChainExtent().height;
         m_Viewport.minDepth   = 0.0f;
         m_Viewport.maxDepth   = 1.0f;
 
         m_Scissor.offset      = {0, 0};
-        m_Scissor.extent      = ((VulkanContext*)Application::Get().GetWindow().GetContext())->GetSwapChainExtent();
+        m_Scissor.extent      = VulkanContext::GetSwapChainExtent();
 
         m_ViewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         m_ViewportState.viewportCount = 1;
@@ -105,19 +104,18 @@ namespace GEngine
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges    = nullptr;
 
-        if (vkCreatePipelineLayout(((VulkanContext*)(Application::Get().GetWindow().GetContext()))->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(VulkanContext::GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
         {
             GE_CORE_ERROR("Failed to create pipeline layout!");
-        }
+        } 
 
-
-        vkDestroyShaderModule(((VulkanContext*)(Application::Get().GetWindow().GetContext()))->GetDevice(), m_VertexShaderModule, nullptr);
-        vkDestroyShaderModule(((VulkanContext*)(Application::Get().GetWindow().GetContext()))->GetDevice(), m_FragmentShaderModule, nullptr);
+        vkDestroyShaderModule(VulkanContext::GetDevice(), m_VertexShaderModule, nullptr);
+        vkDestroyShaderModule(VulkanContext::GetDevice(), m_FragmentShaderModule, nullptr);
     }
 
     VulkanPipeline::~VulkanPipeline()
     {
-        vkDestroyPipelineLayout(((VulkanContext*)(Application::Get().GetWindow().GetContext()))->GetDevice(), m_PipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
     }
 
 
@@ -128,7 +126,7 @@ namespace GEngine
         createInfo.codeSize = code.size() * sizeof(uint32_t);
         createInfo.pCode    = code.data();
         VkShaderModule      shaderModule;
-        if (vkCreateShaderModule(((VulkanContext*)(Application::Get().GetWindow().GetContext()))->GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(VulkanContext::GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
         {
 			GE_CORE_ERROR("Failed to create shader module!");
 			return VkShaderModule();

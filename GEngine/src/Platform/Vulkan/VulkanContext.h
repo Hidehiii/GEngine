@@ -39,9 +39,8 @@ namespace GEngine
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
 
-		VkDevice GetDevice() { return m_Device; }
-		VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
-		VkRenderPass GetRenderPass() { return m_RenderPass; }
+		static VkDevice GetDevice() { return m_Device; }
+		static VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -59,7 +58,6 @@ namespace GEngine
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
 		void CreateImageViews();
-		void CreateRenderPass();
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -70,7 +68,7 @@ namespace GEngine
 		};
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
 		VkPhysicalDevice					m_PhysicalDevice = VK_NULL_HANDLE;
-		VkDevice							m_Device;
+		static VkDevice						m_Device;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
@@ -81,10 +79,10 @@ namespace GEngine
 		VkSwapchainKHR						m_SwapChain;
 		std::vector<VkImage>				m_SwapChainImages;
 		VkFormat							m_SwapChainImageFormat;
-		VkExtent2D							m_SwapChainExtent;
+		static VkExtent2D					m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
 
-		VkRenderPass						m_RenderPass;
+		
 	};
 }
 
