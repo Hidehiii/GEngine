@@ -64,7 +64,7 @@ namespace GEngine
 	}
 	inline void RenderCommand::EnableDepthMask(bool enabled)
 	{
-		s_RendererAPI->EnableDepthTest(enabled);
+		s_RendererAPI->EnableDepthMask(enabled);
 	}
 	inline void RenderCommand::EnableDepthTest(bool enabled)
 	{
