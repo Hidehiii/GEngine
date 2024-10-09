@@ -20,8 +20,8 @@ namespace GEngine
 		virtual const std::vector<Ref<GEngine::VertexBuffer>>& GetVertexBuffers() const override { return m_VertexBuffers; }
 		virtual const Ref<GEngine::IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
 
-		std::vector<VkVertexInputBindingDescription> GetVertexInputBindingDescriptions() const { return m_VertexInputBindingDescriptions; }
-		std::vector<VkVertexInputAttributeDescription> GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
+		const std::vector<VkVertexInputBindingDescription>& GetVertexInputBindingDescriptions() const { return m_VertexInputBindingDescriptions; }
+		const std::vector<VkVertexInputAttributeDescription>& GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
 	private:
 		uint32_t										m_RendererID;
 		uint32_t										m_VertexBufferIndex = 0;

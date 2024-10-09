@@ -50,10 +50,23 @@ namespace GEngine
 			case ShaderDataType::float4:
 				attributeDescription.format			= VK_FORMAT_R32G32B32A32_SFLOAT;
 				break;
+			case ShaderDataType::int1:
+				attributeDescription.format			= VK_FORMAT_R32_SINT;
+				break;
+			case ShaderDataType::int2:
+				attributeDescription.format			= VK_FORMAT_R32G32_SINT;
+				break;
+			case ShaderDataType::int3:
+				attributeDescription.format			= VK_FORMAT_R32G32B32_SINT;
+				break;
+			case ShaderDataType::int4:
+				attributeDescription.format			= VK_FORMAT_R32G32B32A32_SINT;
+				break;
 			default:
 				GE_CORE_ASSERT(false, "Unkonw Shader Date Type");
 				break;
 			}
+			m_VertexInputAttributeDescriptions.push_back(attributeDescription);
 		}
 
 		m_VertexInputBindingDescriptions.push_back(bindingDescription);

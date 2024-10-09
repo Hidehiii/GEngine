@@ -21,7 +21,7 @@ namespace GEngine
 		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
-
+		void CreatePipeline();
 	private:
 		Ref<VulkanMaterial>			m_Material;
 		Ref<VulkanVertexArray>		m_VertexArray;
