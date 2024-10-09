@@ -9,6 +9,9 @@ namespace GEngine
     VkExtent2D              VulkanContext::s_SwapChainExtent;
     std::vector<VkImage>    VulkanContext::s_SwapChainImages;
     VkPhysicalDevice        VulkanContext::s_PhysicalDevice;
+	VulkanCommandBuffer		VulkanContext::s_CommandBuffer;
+	std::vector<int>		VulkanContext::s_PushedCommandBufferIndexs;
+    Vector4                 VulkanContext::s_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -449,6 +452,24 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice));
+        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 5);
+    }
+
+    void VulkanContext::PushCommandBuffer()
+    {
+        for (int i = 0; i < s_CommandBuffer.GetCommandBuffersSize(); i++)
+        {
+            if (std::find(s_PushedCommandBufferIndexs.begin(), s_PushedCommandBufferIndexs.end(), i) == s_PushedCommandBufferIndexs.end())
+            {
+                s_PushedCommandBufferIndexs.push_back(i);
+                return;
+            }
+        }
+        GE_CORE_ERROR("There are not CommandBuffer Could be use");
+    }
+    VkCommandBuffer VulkanContext::PopCommandBuffer()
+    {
+        GE_CORE_ASSERT(s_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!");
+        s_PushedCommandBufferIndexs.erase(s_PushedCommandBufferIndexs.end() - 1);
     }
 }

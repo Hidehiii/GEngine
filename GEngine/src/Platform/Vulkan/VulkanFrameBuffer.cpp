@@ -81,10 +81,19 @@ namespace GEngine
 		renderPassInfo.renderArea.offset		= { 0, 0 };
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
 		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
+
+		VkClearValue							clearColor = { {{VulkanContext::GetClearColor().value.r,
+																VulkanContext::GetClearColor().value.g,
+																VulkanContext::GetClearColor().value.b,
+																VulkanContext::GetClearColor().value.a}} };
+		renderPassInfo.clearValueCount			= 1;
+		renderPassInfo.pClearValues				= &clearColor;
+		vkCmdBeginRenderPass(VulkanContext::GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		s_CurrentFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::Unbind()
 	{
+		vkCmdEndRenderPass(VulkanContext::GetCurrentCommandBuffer());
 		s_CurrentFrameBuffer = nullptr;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)

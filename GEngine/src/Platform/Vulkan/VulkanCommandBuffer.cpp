@@ -3,20 +3,23 @@
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
-	VulkanCommandBuffer::VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices)
+	VulkanCommandBuffer::VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count)
 	{
 		CreateCommandPool(queueFamilyIndices);
-		VkCommandBuffer					buffer;
-		VkCommandBufferAllocateInfo		allocInfo{};
-		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool			= m_CommandPool;
-		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount	= 1;
+		for (int i = 0; i < count; i++)
+		{
+			VkCommandBuffer					buffer;
+			VkCommandBufferAllocateInfo		allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			allocInfo.commandPool = m_CommandPool;
+			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			allocInfo.commandBufferCount = 1;
 
-		if (vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &buffer) != VK_SUCCESS) {
-			GE_CORE_ERROR("failed to allocate command buffers!");
+			if (vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &buffer) != VK_SUCCESS) {
+				GE_CORE_ERROR("failed to allocate command buffers!");
+			}
+			m_CommandBuffers.push_back(buffer);
 		}
-		m_CommandBuffers.push_back(buffer);
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{

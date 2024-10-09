@@ -19,10 +19,11 @@ namespace GEngine
 	class GENGINE_API VulkanCommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices);
+		VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count = 10);
 		~VulkanCommandBuffer();
 
 		VkCommandBuffer GetCommandBuffer(int index = 0) { GE_CORE_ASSERT(index < m_CommandBuffers.size(), "Out of range!"); return m_CommandBuffers.at(index); }
+		uint32_t GetCommandBuffersSize() { return m_CommandBuffers.size(); }
 	private:
 		void CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:

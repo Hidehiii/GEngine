@@ -2,7 +2,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
-
+#include "GEngine/Math/Math.h"
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -35,7 +35,10 @@ namespace GEngine
 		static VkExtent2D GetSwapChainExtent() { return s_SwapChainExtent; }
 		static std::vector<VkImage> GetSwapChainImage() { return s_SwapChainImages; }
 		static VkPhysicalDevice GetPhysicalDevice() { return s_PhysicalDevice; }
-		static VulkanCommandBuffer GetCommandBubffers() { return s_CommandBuffer; }
+		static VkCommandBuffer GetCurrentCommandBuffer() { GE_CORE_ASSERT(s_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return s_CommandBuffer.GetCommandBuffer(s_PushedCommandBufferIndexs[s_PushedCommandBufferIndexs.size() - 1]); }
+		static void PushCommandBuffer();
+		static VkCommandBuffer PopCommandBuffer();
+		static Vector4 GetClearColor() { return s_ClearColor; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -78,7 +81,8 @@ namespace GEngine
 		static VkExtent2D					s_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		static VulkanCommandBuffer			s_CommandBuffer;
-		
+		static std::vector<int>				s_PushedCommandBufferIndexs;
+		static Vector4						s_ClearColor;
 	};
 }
 

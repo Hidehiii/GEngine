@@ -160,6 +160,7 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnRender()
 	{
+		RenderCommand::BeginCommand();
 		m_SceneViewportFrameBuffer->Bind();
 
 		{
@@ -174,8 +175,9 @@ namespace GEngine
 			Renderer::EndScene();
 		}
 		m_SceneViewportFrameBuffer->Unbind();
+		RenderCommand::EndCommand();
 
-
+		RenderCommand::BeginCommand();
 		m_GameViewportFrameBuffer->Bind();
 
 		{
@@ -199,6 +201,7 @@ namespace GEngine
 			}
 		}
 		m_GameViewportFrameBuffer->Unbind();
+		RenderCommand::EndCommand();
 	}
 
 	void GEngineEditorLayer::OnGuiRender()

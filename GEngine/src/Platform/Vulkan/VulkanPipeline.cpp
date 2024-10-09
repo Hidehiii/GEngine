@@ -140,6 +140,7 @@ namespace GEngine
 
     void VulkanPipeline::Bind()
     {
+        vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
     }
 
     void VulkanPipeline::Unbind()
