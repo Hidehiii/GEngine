@@ -470,6 +470,8 @@ namespace GEngine
     VkCommandBuffer VulkanContext::PopCommandBuffer()
     {
         GE_CORE_ASSERT(s_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!");
+        VkCommandBuffer     buffer = s_CommandBuffer.GetCommandBuffer(s_PushedCommandBufferIndexs[s_PushedCommandBufferIndexs.size() - 1]);
         s_PushedCommandBufferIndexs.erase(s_PushedCommandBufferIndexs.end() - 1);
+        return buffer;
     }
 }

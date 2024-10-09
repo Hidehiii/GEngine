@@ -19,6 +19,7 @@ namespace GEngine
 	class GENGINE_API VulkanCommandBuffer
 	{
 	public:
+		VulkanCommandBuffer() = default;
 		VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count = 10);
 		~VulkanCommandBuffer();
 
