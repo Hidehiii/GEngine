@@ -49,6 +49,7 @@ namespace GEngine
 		void CreateLogicalDevice();
 		void CreateSurface();
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		void CheckInstanceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -71,9 +72,16 @@ namespace GEngine
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
-		const std::vector<const char*>		m_DeviceExtensions =
-		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		  VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME
+		std::vector<const char*>			m_DeviceExtensions =
+		{ 
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+		std::vector<const char*>			m_InstanceExtensions =
+		{
+			VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,
+			VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
+			VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME,
+			VK_EXT_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_EXTENSION_NAME
 		};
 		VkSwapchainKHR						m_SwapChain;
 		static std::vector<VkImage>			s_SwapChainImages;

@@ -263,14 +263,25 @@ namespace GEngine
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
+
+        CheckInstanceExtensionSupport(s_PhysicalDevice);
+
         VkPhysicalDeviceFeatures            deviceFeatures = {};
         VkDeviceCreateInfo                  createInfo = {};
         createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos        = queueCreateInfos.data();
         createInfo.pEnabledFeatures         = &deviceFeatures;
-        createInfo.enabledExtensionCount    = static_cast<uint32_t>(m_DeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames  = m_DeviceExtensions.data();
+
+        std::vector<const char*>            extensions = m_InstanceExtensions;
+        for (const auto& extension : m_DeviceExtensions)
+        {
+            if(std::find(extensions.begin(), extensions.end(), extension) == extensions.end())
+			    extensions.push_back(extension);
+        }
+
+        createInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
+        createInfo.ppEnabledExtensionNames  = extensions.data();
 #ifdef GE_DEBUG
         createInfo.enabledLayerCount        = static_cast<uint32_t>(m_ValidationLayers.size());
         createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
@@ -306,6 +317,42 @@ namespace GEngine
 		}
 
 		return requiredExtensions.empty();
+    }
+    void VulkanContext::CheckInstanceExtensionSupport(VkPhysicalDevice device)
+    {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        for (int i = m_InstanceExtensions.size() - 1; i >= 0; i--)
+        {
+            bool found = false;
+            for (const auto& extension : availableExtensions)
+            {
+                if (strcmp(m_InstanceExtensions[i], extension.extensionName) == 0)
+                {
+					found = true;
+					break;
+				}
+			}
+            if (found)
+            {
+                continue;
+            }
+            else
+            {
+				m_InstanceExtensions.erase(m_InstanceExtensions.begin() + i);
+            }
+        }
+
+#ifdef GE_DEBUG
+        for (const auto& extension : m_InstanceExtensions)
+        {
+			GE_CORE_INFO("Instance Extension Support: {0}", extension);
+		}
+#endif
     }
     SwapChainSupportDetails VulkanContext::QuerySwapChainSupport(VkPhysicalDevice device)
     {
