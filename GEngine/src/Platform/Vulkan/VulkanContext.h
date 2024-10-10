@@ -73,7 +73,7 @@ namespace GEngine
 		VkSurfaceKHR						m_Surface;
 		const std::vector<const char*>		m_DeviceExtensions =
 		{ VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		  "VK_EXT_extended_dynamic_state3"
+		  VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME
 		};
 		VkSwapchainKHR						m_SwapChain;
 		static std::vector<VkImage>			s_SwapChainImages;
