@@ -65,7 +65,7 @@ namespace GEngine
 				m_ColorAttachmentsSpecs.emplace_back(format);
 			}
 		}
-
+		CreateRenderPass();
 		CreateBuffer();
 	}
 	VulkanFrameBuffer::~VulkanFrameBuffer()
@@ -74,6 +74,8 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Bind()
 	{
+		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
@@ -89,6 +91,7 @@ namespace GEngine
 		renderPassInfo.clearValueCount			= 1;
 		renderPassInfo.pClearValues				= &clearColor;
 		vkCmdBeginRenderPass(VulkanContext::GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
 		s_CurrentFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::Unbind()
@@ -107,6 +110,9 @@ namespace GEngine
 		return 0;
 	}
 	void VulkanFrameBuffer::ClearAttachmentInt(int attachmentIndex, int val)
+	{
+	}
+	void VulkanFrameBuffer::CreateRenderPass()
 	{
 	}
 	void VulkanFrameBuffer::CreateBuffer()

@@ -100,6 +100,7 @@ namespace GEngine
 	}
 	void VulkanShader::Bind() const
 	{
+		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 	}
 	void VulkanShader::Unbind() const
 	{

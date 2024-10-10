@@ -37,7 +37,22 @@ namespace GEngine
 
     void VulkanPipeline::Bind()
     {
+		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
+
         vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+
+		m_Viewport.x		= 0.0f;
+		m_Viewport.y		= 0.0f;
+		m_Viewport.width	= FrameBuffer::GetCurrentFrameBuffer()->GetWidth();
+		m_Viewport.height	= FrameBuffer::GetCurrentFrameBuffer()->GetHeight();
+		m_Viewport.minDepth = 0.0f;
+		m_Viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
+
+		m_Scissor.offset = { 0, 0 };
+		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
+		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
     }
 
     void VulkanPipeline::Unbind()

@@ -67,10 +67,9 @@ namespace GEngine
     }
     void VulkanRendererAPI::EndCommand()
     {
-        if (vkEndCommandBuffer(VulkanContext::GetCurrentCommandBuffer()) != VK_SUCCESS) {
+        if (vkEndCommandBuffer(VulkanContext::PopCommandBuffer()) != VK_SUCCESS) {
             GE_CORE_ERROR("failed to record command buffer!");
         }
-        VulkanContext::PopCommandBuffer();
     }
     float VulkanRendererAPI::GetTime()
     {

@@ -24,6 +24,7 @@ namespace GEngine
 		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { return 0; }
 		virtual uint32_t GetDepthAttachment() const override { return 0; }
 	private:
+		void CreateRenderPass();
 		void CreateBuffer();
 	private:
 		VkFramebuffer				m_FrameBuffer = nullptr;
