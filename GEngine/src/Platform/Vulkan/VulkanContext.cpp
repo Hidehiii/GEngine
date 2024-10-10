@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "VulkanContext.h"
-
+#include "GEngine/Application.h"
 #include <set>
 
 namespace GEngine
@@ -121,7 +121,7 @@ namespace GEngine
         PopulateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 #else 
-        createInfo.ppEnabledExtensionNames      = nullptr;
+        createInfo.ppEnabledLayerNames = nullptr;
         createInfo.enabledLayerCount            = 0;
 #endif
 
@@ -287,6 +287,7 @@ namespace GEngine
         createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
 #else
         createInfo.enabledLayerCount        = 0;
+        createInfo.ppEnabledLayerNames      = nullptr;
 #endif
         if (vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device) != VK_SUCCESS)
         {

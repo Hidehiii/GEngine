@@ -161,7 +161,7 @@ namespace GEngine
 	void GEngineEditorLayer::OnRender()
 	{
 		RenderCommand::BeginCommand();
-		m_SceneViewportFrameBuffer->Bind();
+		m_SceneViewportFrameBuffer->Begin();
 
 		{
 			GE_PROFILE_SCOPE("Render: EditorOnRender");
@@ -174,11 +174,11 @@ namespace GEngine
 			m_ActiveScene->OnRender();
 			Renderer::EndScene();
 		}
-		m_SceneViewportFrameBuffer->Unbind();
+		m_SceneViewportFrameBuffer->End();
 		RenderCommand::EndCommand();
 
 		RenderCommand::BeginCommand();
-		m_GameViewportFrameBuffer->Bind();
+		m_GameViewportFrameBuffer->Begin();
 
 		{
 			GE_PROFILE_SCOPE("Render: OnRender");
@@ -200,7 +200,7 @@ namespace GEngine
 
 			}
 		}
-		m_GameViewportFrameBuffer->Unbind();
+		m_GameViewportFrameBuffer->End();
 		RenderCommand::EndCommand();
 	}
 

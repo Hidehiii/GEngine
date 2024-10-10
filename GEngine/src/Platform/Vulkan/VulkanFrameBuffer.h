@@ -12,8 +12,8 @@ namespace GEngine
 		virtual ~VulkanFrameBuffer() override;
 
 		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
-		virtual void Bind() override;
-		virtual void Unbind() override;
+		virtual void Begin() override;
+		virtual void End() override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Resize(Vector2 size) override;

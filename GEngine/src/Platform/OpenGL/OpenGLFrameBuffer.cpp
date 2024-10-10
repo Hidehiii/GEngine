@@ -172,13 +172,13 @@ namespace GEngine
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void OpenGLFrameBuffer::Bind()
+    void OpenGLFrameBuffer::Begin()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
         s_CurrentFrameBuffer = this;
     }
-    void OpenGLFrameBuffer::Unbind()
+    void OpenGLFrameBuffer::End()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         s_CurrentFrameBuffer = nullptr;

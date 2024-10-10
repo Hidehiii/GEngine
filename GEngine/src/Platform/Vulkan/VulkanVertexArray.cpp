@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "VulkanVertexArray.h"
-
+#include "Platform/Vulkan/VulkanContext.h"
 
 
 namespace GEngine

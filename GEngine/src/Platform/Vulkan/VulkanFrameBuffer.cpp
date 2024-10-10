@@ -72,7 +72,7 @@ namespace GEngine
 	{
 		vkDestroyFramebuffer(VulkanContext::GetDevice(), m_FrameBuffer, nullptr);
 	}
-	void VulkanFrameBuffer::Bind()
+	void VulkanFrameBuffer::Begin()
 	{
 		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 
@@ -94,7 +94,7 @@ namespace GEngine
 
 		s_CurrentFrameBuffer = this;
 	}
-	void VulkanFrameBuffer::Unbind()
+	void VulkanFrameBuffer::End()
 	{
 		vkCmdEndRenderPass(VulkanContext::GetCurrentCommandBuffer());
 		s_CurrentFrameBuffer = nullptr;

@@ -28,6 +28,7 @@ namespace GEngine
 
 	WindowsWindow::~WindowsWindow()
 	{
+		
 		Shutdown();
 	}
 
@@ -168,7 +169,7 @@ namespace GEngine
 	void WindowsWindow::Shutdown()
 	{
 		GE_PROFILE_FUNCTION();
-
+		m_Context->Uninit();
 		glfwDestroyWindow(m_Window);
 	}
 

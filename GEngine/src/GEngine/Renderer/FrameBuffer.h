@@ -57,8 +57,8 @@ namespace GEngine
 		virtual ~FrameBuffer() = default;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+		virtual void Begin() = 0;
+		virtual void End() = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2 size) = 0;
