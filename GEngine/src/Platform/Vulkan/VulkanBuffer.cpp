@@ -22,6 +22,7 @@ namespace GEngine
     }
     void VulkanVertexBuffer::Bind() const
     {
+        GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
     }
     void VulkanVertexBuffer::Unbind() const
     {

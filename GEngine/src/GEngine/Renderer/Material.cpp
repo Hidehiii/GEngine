@@ -19,6 +19,10 @@ namespace GEngine
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLMaterial>(shader, name);
 		}
+		case RendererAPI::API::Vulkan: {
+			GE_CORE_ASSERT(false, "RendererAPI::Vulkan is currently not supported!");
+			return nullptr;
+		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

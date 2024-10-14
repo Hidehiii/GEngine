@@ -6,7 +6,7 @@ namespace GEngine
 {
 	namespace Utils
 	{
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format)
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, int samples = 1)
 		{
 			VkAttachmentDescription		Attachment{};
 			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
@@ -18,20 +18,20 @@ namespace GEngine
 			switch (format)
 			{
 			case GEngine::FrameBufferTextureFormat::None:
-				GE_CORE_ASSERT(false, "");
-				GE_CORE_ERROR("Unknown framebuffer texture format");
+				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
 				Attachment.format		= VK_FORMAT_R8G8B8A8_SRGB;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
+				Attachment.format		= VK_FORMAT_R8_SINT;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Attachment.format		= VK_FORMAT_D24_UNORM_S8_UINT;
+				Attachment.format			= VK_FORMAT_D24_UNORM_S8_UINT;
 				Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
 				Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_STORE;
-				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
 				Attachment.format		= VK_FORMAT_D32_SFLOAT;
@@ -112,6 +112,7 @@ namespace GEngine
 			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachmentFormat);
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
+		subpass.pDepthStencilAttachment	= &depthAttachmentRef;
 
 		VkRenderPassCreateInfo          renderPassInfo{};
 		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

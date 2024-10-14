@@ -57,8 +57,8 @@ namespace GEngine
 		virtual ~FrameBuffer() = default;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+		virtual void Begin() = 0;
+		virtual void End() = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2 size) = 0;
@@ -67,6 +67,10 @@ namespace GEngine
 		virtual uint32_t GetDepthAttachment() const = 0;
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) = 0;
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
+
+		virtual Vector2 GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
+		virtual float GetWidth() const { return (float)GetSpecification().Width; }
+		virtual float GetHeight() const { return (float)GetSpecification().Height; }
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 		static FrameBuffer* GetCurrentFrameBuffer() { return s_CurrentFrameBuffer; }

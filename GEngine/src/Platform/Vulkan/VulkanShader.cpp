@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "VulkanShader.h"
 #include "GEngine/Renderer/Material.h"
+#include "Platform/Vulkan/VulkanContext.h"
 #include <filesystem>
 
 #include <shaderc/shaderc.hpp>
@@ -100,6 +101,7 @@ namespace GEngine
 	}
 	void VulkanShader::Bind() const
 	{
+		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 	}
 	void VulkanShader::Unbind() const
 	{
