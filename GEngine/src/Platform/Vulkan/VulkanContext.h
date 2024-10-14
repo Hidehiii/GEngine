@@ -39,6 +39,7 @@ namespace GEngine
 		static void PushCommandBuffer();
 		static VkCommandBuffer PopCommandBuffer();
 		static Vector4 GetClearColor() { return s_ClearColor; }
+		static VkInstance GetInstance() { return s_Instance; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -62,7 +63,7 @@ namespace GEngine
 		GLFWwindow*							m_WindowHandle;
 
 		std::vector<const char*>			m_Extensions;
-		VkInstance							m_Instance;
+		static VkInstance					s_Instance;
 		const std::vector<const char*>		m_ValidationLayers =
 		{ "VK_LAYER_KHRONOS_validation"
 		};

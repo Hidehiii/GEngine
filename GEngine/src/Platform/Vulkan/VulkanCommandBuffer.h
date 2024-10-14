@@ -22,6 +22,7 @@ namespace GEngine
 		VulkanCommandBuffer() = default;
 		VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count = 10);
 		~VulkanCommandBuffer();
+		void Release();
 
 		VkCommandBuffer GetCommandBuffer(int index = 0) { GE_CORE_ASSERT(index < m_CommandBuffers.size(), "Out of range!"); return m_CommandBuffers.at(index); }
 		uint32_t GetCommandBuffersSize() { return m_CommandBuffers.size(); }

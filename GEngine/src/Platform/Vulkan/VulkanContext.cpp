@@ -12,6 +12,7 @@ namespace GEngine
 	VulkanCommandBuffer		VulkanContext::s_CommandBuffer;
 	std::vector<int>		VulkanContext::s_PushedCommandBufferIndexs;
     Vector4                 VulkanContext::s_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+    VkInstance              VulkanContext::s_Instance;
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -80,13 +81,14 @@ namespace GEngine
 		{
 			vkDestroyImageView(s_Device, imageView, nullptr);
 		}
+        s_CommandBuffer.Release();
         vkDestroySwapchainKHR(s_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
-        DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(s_Instance, m_DebugMessenger, nullptr);
 #endif
         vkDestroyDevice(s_Device, nullptr);
-        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-        vkDestroyInstance(m_Instance, nullptr);
+        vkDestroySurfaceKHR(s_Instance, m_Surface, nullptr);
+        vkDestroyInstance(s_Instance, nullptr);
     }
 	void VulkanContext::SwapBuffers()
 	{
@@ -125,7 +127,7 @@ namespace GEngine
         createInfo.enabledLayerCount            = 0;
 #endif
 
-        if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
+        if (vkCreateInstance(&createInfo, nullptr, &s_Instance) != VK_SUCCESS)
         {
             GE_CORE_ERROR("Failed to create Vulkan Instance!");
         }
@@ -166,7 +168,7 @@ namespace GEngine
         VkDebugUtilsMessengerCreateInfoEXT       createInfo;
         PopulateDebugMessengerCreateInfo(createInfo);
 
-        if (CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS)
+        if (CreateDebugUtilsMessengerEXT(s_Instance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS)
         {
             GE_CORE_ERROR("failed to set up debug messenger!");
         }
@@ -186,13 +188,13 @@ namespace GEngine
     void VulkanContext::SetPhysicalDevice()
     {
         uint32_t                            deviceCount = 0;
-        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(s_Instance, &deviceCount, nullptr);
         if (deviceCount == 0)
         {
             GE_CORE_ERROR("Failed to find GPUs with Vulkan support!");
         }
         std::vector<VkPhysicalDevice>       devices(deviceCount);
-        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(s_Instance, &deviceCount, devices.data());
         for (const auto& device : devices)
         {
             if (IsDeviceSuitable(device))
@@ -298,7 +300,7 @@ namespace GEngine
     }
     void VulkanContext::CreateSurface()
     {
-        if (glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface) != VK_SUCCESS)
+        if (glfwCreateWindowSurface(s_Instance, m_WindowHandle, nullptr, &m_Surface) != VK_SUCCESS)
         {
 			GE_CORE_ERROR("Failed to create window surface!");
 		}
@@ -500,7 +502,7 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 5);
+        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 10);
     }
 
     void VulkanContext::PushCommandBuffer()

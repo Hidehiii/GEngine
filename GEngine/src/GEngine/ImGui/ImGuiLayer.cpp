@@ -3,6 +3,9 @@
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_opengl3.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
+#include "ImGui/backends/imgui_impl_vulkan.h"
+#include "GEngine/Renderer/RenderCommand.h"
+#include "Platform/Vulkan/VulkanContext.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -54,15 +57,42 @@ namespace GEngine
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 		
 		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			ImGui_ImplGlfw_InitForOpenGL(window, true);
+			ImGui_ImplOpenGL3_Init("#version 410");
+			break;
+		case RendererAPI::API::Vulkan:
+			ImGui_ImplGlfw_InitForVulkan(window, true);
+			ImGui_ImplVulkan_InitInfo		info{};
+			info.Instance					= VulkanContext::GetInstance();
+			info.PhysicalDevice				= VulkanContext::GetPhysicalDevice();
+			info.Device						= VulkanContext::GetDevice();
+			//ImGui_ImplVulkan_Init(&info, )
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown render api");
+			break;
+		}
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
 		GE_PROFILE_FUNCTION();
-
-		ImGui_ImplOpenGL3_Shutdown();
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			ImGui_ImplOpenGL3_Shutdown();
+			break;
+		case RendererAPI::API::Vulkan:
+			ImGui_ImplVulkan_Shutdown();
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown render api");
+			break;
+		}
+		
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	
@@ -87,8 +117,18 @@ namespace GEngine
 	void ImGuiLayer::Begin()
 	{
 		GE_PROFILE_FUNCTION();
-
-		ImGui_ImplOpenGL3_NewFrame();
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			ImGui_ImplOpenGL3_NewFrame();
+			break;
+		case RendererAPI::API::Vulkan:
+			ImGui_ImplVulkan_NewFrame();
+			break;
+		default:
+			break;
+		}
+		
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
@@ -102,8 +142,21 @@ namespace GEngine
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 		
 		// Rendering
+		RenderCommand::BeginCommand();
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			break;
+		case RendererAPI::API::Vulkan:
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::GetCurrentCommandBuffer());
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown render api");
+			break;
+		}
+		RenderCommand::EndCommand();
 		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

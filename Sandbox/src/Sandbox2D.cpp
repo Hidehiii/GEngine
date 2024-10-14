@@ -12,7 +12,7 @@ void Sandbox2D::OnAttach()
 	/*m_EditorCamera = GEngine::Editor::EditorCamera(30.0f, 1.0f, 0.1f, 1000.0f);
 	m_Camera = GEngine::Editor::EditorCamera(30.0f, 1.0f, 0.1f, 1000.0f);*/
 	//m_RayTracing.Init();
-
+	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 }
 
 void Sandbox2D::OnDetach()
@@ -47,9 +47,9 @@ void Sandbox2D::OnUpdate()
 void Sandbox2D::OnGuiRender()
 {
 	GE_PROFILE_FUNCTION();
-	
-
-	
+	ImGui::Begin("Profile");
+	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
+	ImGui::End();
 }
 
 void Sandbox2D::OnEvent(GEngine::Event& e)

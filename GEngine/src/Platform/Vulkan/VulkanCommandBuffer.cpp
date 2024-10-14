@@ -23,6 +23,10 @@ namespace GEngine
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
+		Release();
+	}
+	void VulkanCommandBuffer::Release()
+	{
 		vkDestroyCommandPool(VulkanContext::GetDevice(), m_CommandPool, nullptr);
 	}
 	void VulkanCommandBuffer::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
