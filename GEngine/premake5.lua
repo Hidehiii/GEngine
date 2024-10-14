@@ -1,7 +1,7 @@
 project "GEngine"
 	kind "SharedLib"
 	staticruntime "off"
-	cppdialect "C++17"	
+	--cppdialect "C++20"	
 	language "C++"
 	
 

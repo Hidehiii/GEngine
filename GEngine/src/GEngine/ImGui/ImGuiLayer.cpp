@@ -1,9 +1,10 @@
 #include "GEpch.h"
 #include "ImGuiLayer.h"
 #include "GEngine/Application.h"
+#include "ImGui/backends/imgui_impl_vulkan.h"
 #include "ImGui/backends/imgui_impl_opengl3.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_vulkan.h"
+#include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "GEngine/Renderer/RenderCommand.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include <glad/glad.h>
@@ -64,13 +65,15 @@ namespace GEngine
 			ImGui_ImplOpenGL3_Init("#version 410");
 			break;
 		case RendererAPI::API::Vulkan:
+		{
 			ImGui_ImplGlfw_InitForVulkan(window, true);
 			ImGui_ImplVulkan_InitInfo		info{};
-			info.Instance					= VulkanContext::GetInstance();
-			info.PhysicalDevice				= VulkanContext::GetPhysicalDevice();
-			info.Device						= VulkanContext::GetDevice();
+			info.Instance = VulkanContext::GetInstance();
+			info.PhysicalDevice = VulkanContext::GetPhysicalDevice();
+			info.Device = VulkanContext::GetDevice();
 			//ImGui_ImplVulkan_Init(&info, )
 			break;
+		}
 		default:
 			GE_CORE_ASSERT(false, "Unknown render api");
 			break;

@@ -6,6 +6,14 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
+#ifdef GE_PLATFORM_WINDOWS
+#define VK_CHECK_RESULT(f)																								\
+	{																													\
+		VkResult res = f;																								\
+		GE_CORE_ASSERT(res == VK_SUCCESS, "Fatal : VkResult is {0}", res, " in ", __FILE__, " at line ", __LINE__);		\
+	}
+#endif
+
 
 namespace GEngine
 {

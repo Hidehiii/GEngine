@@ -39,8 +39,7 @@ public:
 	Sandbox(const GEngine::ApplicationSpecification& spec)
 		: Application(spec)
 	{
-		//PushLayer(new ExplameLayer());
-		PushLayer(new Sandbox2D());
+		PushLayer(new Sandbox2D()); GE_CORE_ASSERT(false, );
 	}
 
 	~Sandbox()
