@@ -1,6 +1,11 @@
 #pragma once
 #include <memory>
 
+#define BIT(x) (1 << x)
+#define GE_BIND_EVENT_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(std::forward<decltype(args)>(args)...); }
+#define VAR_NAME(x) #x
+#define EXPAND(...) __VA_ARGS__
+
 #ifdef _WIN32
 	#ifdef _WIN64
 		#define GE_PLATFORM_WINDOWS
@@ -60,20 +65,18 @@
 			if(!(x)) {														\
 				GE_CRITICAL("Assertion Failed In File: {0}", __FILE__);		\
 				GE_CRITICAL("At Line : {0}",__LINE__);						\
-				GE_CRITICAL("Message : {}", ## __VA_ARGS__); GE_DEBUGBREAK(); } }
+				GE_CRITICAL("Message : {}" , ## EXPAND(__VA_ARGS__)); GE_DEBUGBREAK(); } }
 	#define GE_CORE_ASSERT(x, ...) {										\
 			if(!(x)) {														\
 				GE_CORE_CRITICAL("Assertion Failed In File: {0}", __FILE__);\
 				GE_CORE_CRITICAL("At Line : {0}",__LINE__);					\
-				GE_CORE_CRITICAL("Message : {}", ## __VA_ARGS__); GE_DEBUGBREAK(); } }
+				GE_CORE_CRITICAL("Message : {}" , ## EXPAND(__VA_ARGS__)); GE_DEBUGBREAK(); } }
 #else
 	#define GE_ASSERT(x, ...)
 	#define GE_CORE_ASSERT(x, ...)
 #endif
 
-#define BIT(x) (1 << x)
-#define GE_BIND_EVENT_FN(x) [this](auto&&... args) -> decltype(auto) { return this->x(std::forward<decltype(args)>(args)...); }
-#define VAR_NAME(x) #x
+
 
 namespace GEngine {
 
