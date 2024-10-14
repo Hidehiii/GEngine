@@ -127,10 +127,7 @@ namespace GEngine
         createInfo.enabledLayerCount            = 0;
 #endif
 
-        if (vkCreateInstance(&createInfo, nullptr, &s_Instance) != VK_SUCCESS)
-        {
-            GE_CORE_ERROR("Failed to create Vulkan Instance!");
-        }
+        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &s_Instance));
     }
     bool VulkanContext::CheckValidationLayerSupport()
     {
@@ -168,10 +165,7 @@ namespace GEngine
         VkDebugUtilsMessengerCreateInfoEXT       createInfo;
         PopulateDebugMessengerCreateInfo(createInfo);
 
-        if (CreateDebugUtilsMessengerEXT(s_Instance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS)
-        {
-            GE_CORE_ERROR("failed to set up debug messenger!");
-        }
+        VK_CHECK_RESULT(CreateDebugUtilsMessengerEXT(s_Instance, &createInfo, nullptr, &m_DebugMessenger));
     }
     void VulkanContext::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
@@ -291,19 +285,14 @@ namespace GEngine
         createInfo.enabledLayerCount        = 0;
         createInfo.ppEnabledLayerNames      = nullptr;
 #endif
-        if (vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device) != VK_SUCCESS)
-        {
-            GE_CORE_ERROR("Failed to create logical device!");
-        }
+        VK_CHECK_RESULT(vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device));
+
 		vkGetDeviceQueue(s_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(s_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
     void VulkanContext::CreateSurface()
     {
-        if (glfwCreateWindowSurface(s_Instance, m_WindowHandle, nullptr, &m_Surface) != VK_SUCCESS)
-        {
-			GE_CORE_ERROR("Failed to create window surface!");
-		}
+        VK_CHECK_RESULT(glfwCreateWindowSurface(s_Instance, m_WindowHandle, nullptr, &m_Surface));
     }
     bool VulkanContext::CheckDeviceExtensionSupport(VkPhysicalDevice device)
     {
@@ -462,10 +451,7 @@ namespace GEngine
 		createInfo.clipped                                  = VK_TRUE;
         createInfo.oldSwapchain                             = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(s_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
-        {
-            GE_CORE_ERROR("fail to create swap chain!");
-        }
+        VK_CHECK_RESULT(vkCreateSwapchainKHR(s_Device, &createInfo, nullptr, &m_SwapChain));
 
         vkGetSwapchainImagesKHR(s_Device, m_SwapChain, &imageCount, nullptr);
         s_SwapChainImages.resize(imageCount);
@@ -494,10 +480,7 @@ namespace GEngine
             createInfo.subresourceRange.baseArrayLayer      = 0;
             createInfo.subresourceRange.layerCount          = 1;
 
-            if (vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS)
-            {
-				GE_CORE_ERROR("failed to create image views!");
-			}
+            VK_CHECK_RESULT(vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));
         }
     }
     void VulkanContext::CreateCommandBuffers()

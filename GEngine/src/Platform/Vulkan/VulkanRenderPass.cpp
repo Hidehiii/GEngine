@@ -21,7 +21,7 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
-				Attachment.format		= VK_FORMAT_R8G8B8A8_SRGB;
+				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
@@ -74,24 +74,29 @@ namespace GEngine
 	}
 
 
+	VulkanRenderPass::VulkanRenderPass(const VulkanRenderPassSpecification& spec)
+	{
+		CreateRenderPass(spec);
+	}
+
 	void VulkanRenderPass::CreateRenderPass(const VulkanRenderPassSpecification& spec)
 	{
 		std::vector<VkAttachmentDescription>  attachments;
-		for (int i = 0; i < spec.ColorAttachmentFormats.size(); i++)
+		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.ColorAttachmentFormats.at(i));
+			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat);
 			attachments.push_back(des);
 		}
-		if (spec.DepthAttachmentFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.DepthAttachmentFormat);
+			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat);
 			attachments.push_back(des);
 		}
 
 		std::vector<VkAttachmentReference> colorAttachmentRefs;
-		for (int i = 0; i < spec.ColorAttachmentFormats.size(); i++)
+		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachmentFormats.at(i));
+			VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat);
 			colorAttachmentRefs.push_back(ref);
 		}
 		if (colorAttachmentRefs.size() == 0)
@@ -107,12 +112,20 @@ namespace GEngine
 		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
-		if (spec.DepthAttachmentFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachmentFormat);
+			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat);
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
 		subpass.pDepthStencilAttachment	= &depthAttachmentRef;
+
+		VkSubpassDependency			 dependency{};
+		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass			= 0;
+		dependency.srcStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask		= 0;
+		dependency.dstStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 		VkRenderPassCreateInfo          renderPassInfo{};
 		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -120,12 +133,9 @@ namespace GEngine
 		renderPassInfo.pAttachments		= attachments.data();
 		renderPassInfo.subpassCount		= 1;
 		renderPassInfo.pSubpasses		= &subpass;
+		renderPassInfo.dependencyCount	= 1;
+		renderPassInfo.pDependencies	= &dependency;
 
-		
-
-		if (vkCreateRenderPass(VulkanContext::GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
-		{
-			GE_CORE_ERROR("failed to create render pass!");
-		}
+		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 	}
 }

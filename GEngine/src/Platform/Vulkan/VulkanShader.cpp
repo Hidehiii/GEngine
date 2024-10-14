@@ -353,7 +353,7 @@ namespace GEngine
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false, "");
+					GE_CORE_ASSERT(false);
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -414,7 +414,7 @@ namespace GEngine
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false, "");
+					GE_CORE_ASSERT(false);
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -452,7 +452,7 @@ namespace GEngine
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false, "");
+					GE_CORE_ASSERT(false);
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());

@@ -59,8 +59,8 @@ namespace GEngine
 
 		int													m_BlendType;
 		int													m_CullMode;
-		uint32_t											m_BlendSourceFactor;
-		uint32_t											m_BlendDestinationFactor;
+		uint32_t											m_BlendSourceFactor = (uint32_t)VK_BLEND_FACTOR_ONE;
+		uint32_t											m_BlendDestinationFactor = (uint32_t)VK_BLEND_FACTOR_ZERO;
 		bool												m_EnableDepthMask = true;
 		bool												m_EnableDepthTest = true;
 	};

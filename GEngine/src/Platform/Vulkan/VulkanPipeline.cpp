@@ -25,8 +25,6 @@ namespace GEngine
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
         m_VertexArray           = std::dynamic_pointer_cast<VulkanVertexArray>(vertexArray);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
-
-		CreatePipeline();
     }
 
     VulkanPipeline::~VulkanPipeline()
@@ -39,7 +37,7 @@ namespace GEngine
     {
 		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
-
+		CreatePipeline();
         vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
@@ -67,11 +65,7 @@ namespace GEngine
         createInfo.codeSize = code.size() * sizeof(uint32_t);
         createInfo.pCode    = code.data();
         VkShaderModule      shaderModule;
-        if (vkCreateShaderModule(VulkanContext::GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-        {
-			GE_CORE_ERROR("Failed to create shader module!");
-			return VkShaderModule();
-		}
+		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::GetDevice(), &createInfo, nullptr, &shaderModule));
         return shaderModule;
     }
     void VulkanPipeline::CreatePipeline()
@@ -144,11 +138,11 @@ namespace GEngine
 
 		m_ColorBlendAttachment.colorWriteMask		= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		m_ColorBlendAttachment.blendEnable			= VK_FALSE;
-		m_ColorBlendAttachment.srcColorBlendFactor	= VK_BLEND_FACTOR_ONE;
-		m_ColorBlendAttachment.dstColorBlendFactor	= VK_BLEND_FACTOR_ZERO;
+		m_ColorBlendAttachment.srcColorBlendFactor	= (VkBlendFactor)m_Material->GetBlendSourceFactor();
+		m_ColorBlendAttachment.dstColorBlendFactor	= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
 		m_ColorBlendAttachment.colorBlendOp			= VK_BLEND_OP_ADD;
-		m_ColorBlendAttachment.srcAlphaBlendFactor	= VK_BLEND_FACTOR_ONE;
-		m_ColorBlendAttachment.dstAlphaBlendFactor	= VK_BLEND_FACTOR_ZERO;
+		m_ColorBlendAttachment.srcAlphaBlendFactor	= (VkBlendFactor)m_Material->GetBlendSourceFactor();
+		m_ColorBlendAttachment.dstAlphaBlendFactor	= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
 		m_ColorBlendAttachment.alphaBlendOp			= VK_BLEND_OP_ADD;
 
 		m_ColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -168,10 +162,7 @@ namespace GEngine
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-		if (vkCreatePipelineLayout(VulkanContext::GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
-		{
-			GE_CORE_ERROR("Failed to create pipeline layout!");
-		}
+		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 
 		VkGraphicsPipelineCreateInfo        pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -191,9 +182,7 @@ namespace GEngine
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
 
-		if (vkCreateGraphicsPipelines(VulkanContext::GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
-			GE_CORE_ERROR("failed to create graphics pipeline!");
-		}
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
 		vkDestroyShaderModule(VulkanContext::GetDevice(), m_VertexShaderModule, nullptr);
 		vkDestroyShaderModule(VulkanContext::GetDevice(), m_FragmentShaderModule, nullptr);

@@ -4,7 +4,7 @@
 #include "GEngine/Renderer/RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLMaterial.h"
-
+#include "Platform/Vulkan/VulkanMaterial.h"
 
 namespace GEngine
 {
@@ -20,7 +20,7 @@ namespace GEngine
 			return CreateRef<OpenGLMaterial>(shader, name);
 		}
 		case RendererAPI::API::Vulkan: {
-			GE_CORE_ASSERT(false, "RendererAPI::Vulkan is currently not supported!");
+			return CreateRef<VulkanMaterial>(shader, name);
 			return nullptr;
 		}
 		}

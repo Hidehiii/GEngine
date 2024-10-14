@@ -21,9 +21,7 @@ namespace GEngine
 			imageInfo.samples		= VK_SAMPLE_COUNT_1_BIT;
 			imageInfo.flags			= 0; // Optional
 
-			if (vkCreateImage(VulkanContext::GetDevice(), &imageInfo, nullptr, &outImage) != VK_SUCCESS) {
-				GE_CORE_ERROR("failed to create image!");
-			}
+			VK_CHECK_RESULT(vkCreateImage(VulkanContext::GetDevice(), &imageInfo, nullptr, &outImage));
 		}
 
 		static void CreateImageViews(VkImage image, VkFormat format, VkImageAspectFlags aspectMask, VkImageView& outImageView)
@@ -43,10 +41,7 @@ namespace GEngine
 			createInfo.subresourceRange.baseArrayLayer		= 0;
 			createInfo.subresourceRange.layerCount			= 1;
 
-			if (vkCreateImageView(VulkanContext::GetDevice(), &createInfo, nullptr, &outImageView) != VK_SUCCESS)
-			{
-				GE_CORE_ERROR("failed to create image views!");
-			}
+			VK_CHECK_RESULT(vkCreateImageView(VulkanContext::GetDevice(), &createInfo, nullptr, &outImageView));
 		}
 	}
 
@@ -114,6 +109,10 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::CreateRenderPass()
 	{
+		VulkanRenderPassSpecification		spec;
+		spec.ColorAttachments				= m_ColorAttachmentsSpecs;
+		spec.DepthAttachment				= m_DepthAttachmentSpec;
+		m_RenderPass = CreateRef<VulkanRenderPass>(spec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()
 	{
@@ -122,6 +121,40 @@ namespace GEngine
 			vkDestroyFramebuffer(VulkanContext::GetDevice(), m_FrameBuffer, nullptr);
 			m_Attachments.clear();
 		}
+
+		for (int i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
+		{
+			VkImage						image;
+			VkImageView					imageView;
+			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
+			{
+			case FrameBufferTextureFormat::RGBA8:
+				Utils::CreateImages(m_Specification.Width, m_Specification.Height, VK_FORMAT_R8G8B8A8_UNORM, 1, image);
+				Utils::CreateImageViews(image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
+				break;
+			default:
+				GE_CORE_ASSERT(false, "Unknown format");
+				break;
+			}
+			m_Attachments.push_back(imageView);
+		}
+		VkImage							image;
+		VkImageView						imageView;
+		switch (m_DepthAttachmentSpec.TextureFormat)
+		{
+		case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			Utils::CreateImages(m_Specification.Width, m_Specification.Height, VK_FORMAT_D24_UNORM_S8_UINT, 1, image);
+			Utils::CreateImageViews(image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			break;
+		case FrameBufferTextureFormat::DEPTH:
+			Utils::CreateImages(m_Specification.Width, m_Specification.Height, VK_FORMAT_D32_SFLOAT, 1, image);
+			Utils::CreateImageViews(image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown format");
+			break;
+		}
+		m_Attachments.push_back(imageView);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -132,8 +165,6 @@ namespace GEngine
 		framebufferInfo.height			= m_Specification.Height;
 		framebufferInfo.layers			= 1;
 
-		if (vkCreateFramebuffer(VulkanContext::GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer) != VK_SUCCESS) {
-			GE_CORE_ERROR("failed to create framebuffer!");
-		}
+		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
 	}
 }

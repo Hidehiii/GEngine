@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "RenderBuffer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
 #include "Renderer.h"
 
 namespace GEngine
@@ -17,7 +18,7 @@ namespace GEngine
 			return CreateRef<OpenGLVertexBuffer>(size);
 		}
 		case RendererAPI::API::Vulkan: {
-			return nullptr;
+			return CreateRef<VulkanVertexBuffer>(size);
 		}
 		}
 
@@ -35,6 +36,9 @@ namespace GEngine
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLVertexBuffer>(vertices, size);
 			}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanVertexBuffer>(vertices, size);
+		}
 		}
 		
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -52,6 +56,9 @@ namespace GEngine
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLIndexBuffer>(indices, count);
 			}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanIndexBuffer>(indices, count);
+		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

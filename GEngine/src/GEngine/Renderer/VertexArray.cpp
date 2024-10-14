@@ -2,6 +2,7 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Platform/Vulkan/VulkanVertexArray.h"
 
 namespace GEngine
 {
@@ -17,7 +18,7 @@ namespace GEngine
 			return CreateRef<OpenGLVertexArray>();
 			}
 		case RendererAPI::API::Vulkan: {
-			return nullptr;
+			return CreateRef<VulkanVertexArray>();
 			}
 		}
 

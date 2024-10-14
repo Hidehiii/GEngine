@@ -550,7 +550,7 @@ namespace GEngine
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false,"");
+					GE_CORE_ASSERT(false);
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -650,7 +650,7 @@ namespace GEngine
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false, "");
+					GE_CORE_ASSERT(false);
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -692,7 +692,7 @@ namespace GEngine
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 			GE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
-			GE_CORE_ASSERT(false, "");
+			GE_CORE_ASSERT(false);
 
 			glDeleteProgram(program);
 

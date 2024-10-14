@@ -22,16 +22,26 @@ namespace GEngine
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 	private:
-		void CreateBuffer(uint32_t size);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-	private:
 		VkBuffer		m_VertexBuffer;
 		VkDeviceMemory	m_VertexBufferMemory;
 		BufferLayout	m_Layout;
+		uint32_t		m_Offset = 0;
 	};
 
 	class GENGINE_API VulkanIndexBuffer : public IndexBuffer
 	{
+	public:
+		VulkanIndexBuffer(uint32_t* indices, uint32_t count);
+		virtual ~VulkanIndexBuffer();
+
+		virtual void Bind() const override;
+		virtual void Unbind() const override;
+		virtual uint32_t GetCount() const override { return m_Count; };
+	private:
+		uint32_t m_RendererID;
+		uint32_t m_Count;
+		VkBuffer		m_IndexBuffer;
+		VkDeviceMemory	m_IndexBufferMemory;
 	};
 }
 

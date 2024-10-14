@@ -23,6 +23,9 @@ namespace GEngine
     }
     void VulkanRendererAPI::DrawTriangles(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
+        uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+        vertexArray->Bind();
+        vkCmdDrawIndexed(VulkanContext::GetCurrentCommandBuffer(), count, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
@@ -61,15 +64,11 @@ namespace GEngine
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
         VulkanContext::PushCommandBuffer();
-        if (vkBeginCommandBuffer(VulkanContext::GetCurrentCommandBuffer(), &beginInfo) != VK_SUCCESS) {
-            GE_CORE_ERROR("failed to begin recording command buffer!");
-        }
+        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::GetCurrentCommandBuffer(), &beginInfo));
     }
     void VulkanRendererAPI::EndCommand()
     {
-        if (vkEndCommandBuffer(VulkanContext::PopCommandBuffer()) != VK_SUCCESS) {
-            GE_CORE_ERROR("failed to record command buffer!");
-        }
+        VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::PopCommandBuffer()));
     }
     float VulkanRendererAPI::GetTime()
     {

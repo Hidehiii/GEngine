@@ -15,9 +15,7 @@ namespace GEngine
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = 1;
 
-			if (vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &buffer) != VK_SUCCESS) {
-				GE_CORE_ERROR("failed to allocate command buffers!");
-			}
+			VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &buffer));
 			m_CommandBuffers.push_back(buffer);
 		}
 	}
@@ -36,8 +34,6 @@ namespace GEngine
 		poolInfo.flags				= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		poolInfo.queueFamilyIndex	= queueFamilyIndices.GraphicsFamily.value();
 
-		if (vkCreateCommandPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
-			GE_CORE_ERROR("failed to create command pool!");
-		}
+		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &m_CommandPool));
 	}
 }
