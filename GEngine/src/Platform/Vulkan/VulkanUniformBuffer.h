@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/UniformBuffer.h"
+#include <vulkan/vulkan.h>
 
 namespace GEngine
 {
@@ -13,6 +14,13 @@ namespace GEngine
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+
+	private:
+		VkDescriptorSetLayout		m_DescriptorSetLayout;
+		VkBuffer					m_UniformBuffer;
+		VkDeviceMemory				m_UniformBufferMemory;
+		void*						m_MapData;
+		uint32_t					m_Offset = 0;
 	};
 }
 
