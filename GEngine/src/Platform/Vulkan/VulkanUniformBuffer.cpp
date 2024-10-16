@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	std::vector<VkDescriptorSetLayout>		VulkanUniformBuffer::s_DescriptorSetLayouts;
+
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
 	{
 		VkDescriptorSetLayoutBinding	uboLayoutBinding{};
@@ -20,12 +22,17 @@ namespace GEngine
 		layoutInfo.pBindings			= &uboLayoutBinding;
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
-
+		if(binding != 0)
+			s_DescriptorSetLayouts.push_back(m_DescriptorSetLayout);
 		Utils::CreateBuffer(VulkanContext::GetDevice(), size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffer, m_UniformBufferMemory);
 		vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
+		if (std::find(s_DescriptorSetLayouts.begin(), s_DescriptorSetLayouts.end(), m_DescriptorSetLayout) != s_DescriptorSetLayouts.end())
+		{
+			s_DescriptorSetLayouts.erase(std::find(s_DescriptorSetLayouts.begin(), s_DescriptorSetLayouts.end(), m_DescriptorSetLayout));
+		}
 		vkDestroyBuffer(VulkanContext::GetDevice(), m_UniformBuffer, nullptr);
 		vkFreeMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, nullptr);
 		vkDestroyDescriptorSetLayout(VulkanContext::GetDevice(), m_DescriptorSetLayout, nullptr);

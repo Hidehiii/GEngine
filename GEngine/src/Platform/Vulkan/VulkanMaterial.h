@@ -50,7 +50,7 @@ namespace GEngine
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) override;
 
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
-
+		Ref<VulkanUniformBuffer> GetUniformBuffer() { return m_UniformBuffer; }
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
 	private:

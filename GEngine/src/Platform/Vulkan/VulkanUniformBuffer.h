@@ -15,12 +15,20 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 
+		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; }
 	private:
 		VkDescriptorSetLayout		m_DescriptorSetLayout;
 		VkBuffer					m_UniformBuffer;
 		VkDeviceMemory				m_UniformBufferMemory;
 		void*						m_MapData;
 		uint32_t					m_Offset = 0;
+
+		// static func
+		// use for global uniform buffer
+	public:
+		static std::vector<VkDescriptorSetLayout> GetDescriptorSetlayouts() { return s_DescriptorSetLayouts; }
+	private:
+		static std::vector<VkDescriptorSetLayout>	s_DescriptorSetLayouts;
 	};
 }
 

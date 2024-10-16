@@ -158,8 +158,11 @@ namespace GEngine
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		// TODO :需要获取所有UBO的数量
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		std::vector<VkDescriptorSetLayout>		descriptorSetLayouts = VulkanUniformBuffer::GetDescriptorSetlayouts();
+		descriptorSetLayouts.emplace(descriptorSetLayouts.begin(), m_Material->GetUniformBuffer()->GetDescriptorSetLayout());
+
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
