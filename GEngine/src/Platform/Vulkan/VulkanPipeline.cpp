@@ -51,6 +51,11 @@ namespace GEngine
 		m_Scissor.offset = { 0, 0 };
 		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
+
+		// TODO ： 这里可能要绑定所有的ubo？得想想怎么弄
+		std::vector<VkDescriptorSet>	descriptorSets = VulkanUniformBuffer::GetDescriptorSets();
+		descriptorSets.push_back(m_Material->GetUniformBuffer()->GetDescriptorSet());
+		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
     }
 
     void VulkanPipeline::Unbind()

@@ -2,6 +2,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanDescriptor.h"
 #include "GEngine/Math/Math.h"
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -49,6 +50,7 @@ namespace GEngine
 		static VkCommandBuffer PopCommandBuffer();
 		static Vector4 GetClearColor() { return s_ClearColor; }
 		static VkInstance GetInstance() { return s_Instance; }
+		static VkDescriptorPool GetDescriptorPool() { return s_Descriptor.GetDescriptorPool(); }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -68,6 +70,7 @@ namespace GEngine
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
 		void CreateImageViews();
 		void CreateCommandBuffers();
+		void CreateDescriptor();
 	private:
 		GLFWwindow*							m_WindowHandle;
 
@@ -101,6 +104,7 @@ namespace GEngine
 		static VulkanCommandBuffer			s_CommandBuffer;
 		static std::vector<int>				s_PushedCommandBufferIndexs;
 		static Vector4						s_ClearColor;
+		static VulkanDescriptor				s_Descriptor;
 	};
 }
 

@@ -13,6 +13,7 @@ namespace GEngine
 	std::vector<int>		VulkanContext::s_PushedCommandBufferIndexs;
     Vector4                 VulkanContext::s_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
     VkInstance              VulkanContext::s_Instance;
+    VulkanDescriptor        VulkanContext::s_Descriptor;
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -74,14 +75,17 @@ namespace GEngine
         CreateSwapChain(width, height);
         CreateImageViews();
         CreateCommandBuffers();
+        CreateDescriptor();
 	}
     void VulkanContext::Uninit()
     {
+        s_Descriptor.Release();
+        s_CommandBuffer.Release();
         for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(s_Device, imageView, nullptr);
 		}
-        s_CommandBuffer.Release();
+        
         vkDestroySwapchainKHR(s_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
         DestroyDebugUtilsMessengerEXT(s_Instance, m_DebugMessenger, nullptr);
@@ -507,4 +511,8 @@ namespace GEngine
         s_PushedCommandBufferIndexs.erase(s_PushedCommandBufferIndexs.end() - 1);
         return buffer;
     }
+	void VulkanContext::CreateDescriptor()
+	{
+        s_Descriptor            = VulkanDescriptor(1, 1, 10);
+	}
 }
