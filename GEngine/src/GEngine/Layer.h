@@ -21,10 +21,10 @@ namespace GEngine
 		virtual void OnLateUpdate() {}
 		virtual void OnEndFrame() {}
 
-		inline const std::string& GetName() const { return m_DebugName; }
+		inline const std::string& GetName() const { return m_Name; }
 
 	protected:
-		std::string m_DebugName;
+		std::string m_Name;
 	};
 }
 

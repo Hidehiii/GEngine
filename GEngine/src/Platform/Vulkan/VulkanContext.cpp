@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "VulkanContext.h"
 #include "GEngine/Application.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include <set>
 
 namespace GEngine
@@ -125,7 +126,7 @@ namespace GEngine
 
         VkDebugUtilsMessengerCreateInfoEXT       debugCreateInfo;
         PopulateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        createInfo.pNext                        = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 #else 
         createInfo.ppEnabledLayerNames = nullptr;
         createInfo.enabledLayerCount            = 0;

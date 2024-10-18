@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "VulkanMaterial.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 
 namespace GEngine
 {

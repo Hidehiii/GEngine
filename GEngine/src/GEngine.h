@@ -53,8 +53,9 @@
 #include "GEngine/Tools/Serialization/Serializer.h"
 #include "GEngine/Tools/ModelImporter.h"
 
-// Dialogss
+// Utils
 #include "GEngine/Utils/PlatformUtils.h"
+#include "GEngine/Utils/GUIUtils.h"
 
 // Asset
 #include "GEngine/Asset/Mesh.h"

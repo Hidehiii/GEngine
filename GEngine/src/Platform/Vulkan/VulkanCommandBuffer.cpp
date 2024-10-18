@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
@@ -25,7 +26,8 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Release()
 	{
-		vkDestroyCommandPool(VulkanContext::GetDevice(), m_CommandPool, nullptr);
+		if(m_CommandPool != VK_NULL_HANDLE)
+			vkDestroyCommandPool(VulkanContext::GetDevice(), m_CommandPool, nullptr);
 	}
 	void VulkanCommandBuffer::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
 	{

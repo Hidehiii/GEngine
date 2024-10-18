@@ -11,31 +11,31 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		int width, height, channels;
-		stbi_uc* data;
+		int				width, height, channels;
+		stbi_uc*		data;
 		stbi_set_flip_vertically_on_load(1);
 		{
 			GE_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)")
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			data		= stbi_load(path.c_str(), &width, &height, &channels, 0);
 		}
 		GE_CORE_ASSERT(data, "Failed to load image!");
-		m_Width = width;
-		m_Height = height;
+		m_Width			= width;
+		m_Height		= height;
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
 		{
-			internalFormat = GL_RGBA8;
-			dataFormat = GL_RGBA;
+			internalFormat	= GL_RGBA8;
+			dataFormat		= GL_RGBA;
 		}
 		else if (channels == 3)
 		{
-			internalFormat = GL_RGB8;
-			dataFormat = GL_RGB;
+			internalFormat	= GL_RGB8;
+			dataFormat		= GL_RGB;
 		}
 
 		GE_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
-		m_InternalFormat = internalFormat;
-		m_DataFormat = dataFormat;
+		m_InternalFormat	= internalFormat;
+		m_DataFormat		= dataFormat;
 
 		
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
@@ -52,8 +52,8 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
+		m_InternalFormat	= GL_RGBA8;
+		m_DataFormat		= GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);

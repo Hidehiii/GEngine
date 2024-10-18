@@ -8,6 +8,7 @@
 
 namespace GEngine
 {
+
 	class GENGINE_API VulkanPipeline : public Pipeline
 	{
 	public:

@@ -59,6 +59,7 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
+		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 		if (m_PhysicsTimerWheel != nullptr)
 		{
 			m_PhysicsTimerWheel->Stop();
@@ -252,7 +253,7 @@ namespace GEngine
 		// Start timerwheel
 		m_PhysicsTimerWheel->Start();
 		// Add physics update
-		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [=]() {
+		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [&]() {
 				m_PhysicsWorld2D->Step(Time::GetPhysicsDeltaTime());
 
 				// retrieve transform

@@ -1,7 +1,8 @@
 #include "GEpch.h"
 #include "VulkanUniformBuffer.h"
-#include "VulkanContext.h"
-#include "VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanContext.h"
 
 namespace GEngine
 {
@@ -39,7 +40,13 @@ namespace GEngine
 			s_DescriptorSetLayouts.push_back(m_DescriptorSetLayout);
 			s_DescriptorSets.push_back(m_DescriptorSet);
 		}
-		Utils::CreateBuffer(VulkanContext::GetDevice(), size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffer, m_UniformBufferMemory);
+		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
+							VulkanContext::GetDevice(), 
+							size, 
+							VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+							m_UniformBuffer, 
+							m_UniformBufferMemory);
 		vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()

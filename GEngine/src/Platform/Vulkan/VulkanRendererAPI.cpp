@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "VulkanRendererAPI.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include <set>
 

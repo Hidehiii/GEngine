@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "VulkanDescriptor.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 
 namespace GEngine
@@ -14,8 +15,8 @@ namespace GEngine
 		for (int i = 0; i < poolSizeCount; i++)
 		{
 			VkDescriptorPoolSize		poolSize{};
-			poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSize.descriptorCount = descriptorCount;
+			poolSize.type				= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSize.descriptorCount	= descriptorCount;
 
 			poolSizes.push_back(poolSize);
 		}

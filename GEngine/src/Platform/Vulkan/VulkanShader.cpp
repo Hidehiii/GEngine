@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "VulkanShader.h"
 #include "GEngine/Renderer/Material.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include <filesystem>
 

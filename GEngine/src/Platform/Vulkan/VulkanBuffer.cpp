@@ -1,19 +1,30 @@
 #include "GEpch.h"
 #include "VulkanBuffer.h"
-#include "VulkanContext.h"
+#include "Platform/Vulkan/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanContext.h"
+
 
 namespace GEngine
 {
-    
-
-
     VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size)
     {
-        Utils::CreateBuffer(VulkanContext::GetDevice(), size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VertexBuffer, m_VertexBufferMemory);
+        Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
+                            VulkanContext::GetDevice(), 
+                            size, 
+                            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                            m_VertexBuffer, 
+                            m_VertexBufferMemory);
     }
     VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size)
     {
-        Utils::CreateBuffer(VulkanContext::GetDevice(), size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VertexBuffer, m_VertexBufferMemory);
+        Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
+                            VulkanContext::GetDevice(), 
+                            size, 
+                            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                            m_VertexBuffer, 
+                            m_VertexBufferMemory);
         SetData(vertices, size);
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
@@ -41,7 +52,7 @@ namespace GEngine
     {
 		m_Count = count;
 		VkDeviceSize bufferSize = sizeof(uint32_t) * count;
-		Utils::CreateBuffer(VulkanContext::GetDevice(), bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_IndexBuffer, m_IndexBufferMemory);
+		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), VulkanContext::GetDevice(), bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_IndexBuffer, m_IndexBufferMemory);
 
 		void* data;
 		vkMapMemory(VulkanContext::GetDevice(), m_IndexBufferMemory, 0, bufferSize, 0, &data);

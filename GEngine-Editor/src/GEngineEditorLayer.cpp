@@ -324,19 +324,19 @@ namespace GEngine
 			ImGui::Begin("##ToolBar",nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			float size = ImGui::GetWindowHeight() - 1.0f;
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)m_PlayButtonIcon_Display->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
 				OnScenePlay();
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
-			if (ImGui::ImageButton((ImTextureID)m_PauseButtonIcon_DisPlay->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
 				OnScenePause();
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)m_StopButtonIcon->GetRendererID(), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
 				OnSceneStop();
 			}

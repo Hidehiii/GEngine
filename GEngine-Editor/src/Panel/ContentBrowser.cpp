@@ -66,7 +66,7 @@ namespace GEngine
 				icon = m_FileIcon;
 			}
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(icon), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 			if (ImGui::BeginDragDropSource())
 			{
@@ -116,7 +116,7 @@ namespace GEngine
 			ImGui::Text(m_SelectedFile.string().c_str());
 			if (m_SelectedFile_Texture)
 			{
-				ImGui::Image((ImTextureID)m_SelectedFile_Texture->GetRendererID(), { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x }, {0.0f, 1.0f}, {1.0f, 0.0f});
+				ImGui::Image((ImTextureID)GUIUtils::GetTextureID(m_SelectedFile_Texture), { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x }, {0.0f, 1.0f}, {1.0f, 0.0f});
 			}
 		}
 		else

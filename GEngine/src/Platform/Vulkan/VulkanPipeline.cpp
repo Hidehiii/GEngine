@@ -1,7 +1,9 @@
 #include "GEpch.h"
 #include "VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "VulkanFrameBuffer.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+
 
 namespace GEngine
 {
@@ -52,7 +54,7 @@ namespace GEngine
 		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
-		// TODO £º ÕâÀï¿ÉÄÜÒª°ó¶¨ËùÓĞµÄubo£¿µÃÏëÏëÔõÃ´Åª
+		// TODO ï¼š è¿™é‡Œå¯èƒ½è¦ç»‘å®šæ‰€æœ‰çš„uboï¼Ÿå¾—æƒ³æƒ³æ€ä¹ˆå¼„
 		std::vector<VkDescriptorSet>	descriptorSets = VulkanUniformBuffer::GetDescriptorSets();
 		descriptorSets.push_back(m_Material->GetUniformBuffer()->GetDescriptorSet());
 		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
@@ -162,7 +164,7 @@ namespace GEngine
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		// TODO :ĞèÒª»ñÈ¡ËùÓĞUBOµÄÊıÁ¿
+		// TODO :éœ€è¦è·å–æ‰€æœ‰UBOçš„æ•°é‡
 		std::vector<VkDescriptorSetLayout>		descriptorSetLayouts = VulkanUniformBuffer::GetDescriptorSetlayouts();
 		descriptorSetLayouts.emplace(descriptorSetLayouts.begin(), m_Material->GetUniformBuffer()->GetDescriptorSetLayout());
 
