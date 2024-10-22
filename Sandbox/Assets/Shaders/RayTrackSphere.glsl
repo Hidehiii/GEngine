@@ -86,6 +86,9 @@ struct Hit
 	Sphere sphere;
 };
 
+layout (binding = 1) uniform sampler _sampler;
+layout (binding = 2) uniform texture2D _texture;
+
 
 void main()
 {

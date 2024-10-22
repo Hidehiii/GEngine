@@ -1,7 +1,7 @@
 
-#name PBR
+#Name PBR
 
-#type vertex
+#Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
@@ -36,7 +36,7 @@ void main()
 	gl_Position = GE_MATRIX_VP * GE_MATRIX_M * i_position;
 }
 
-#type fragment
+#Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
 layout(std140, binding = 0) uniform CAMERA
