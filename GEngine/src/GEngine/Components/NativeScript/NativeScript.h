@@ -23,6 +23,7 @@ namespace GEngine
 		}
 	public:
 		ScriptableObject* Instance = nullptr;
+		std::vector<ScriptableObject*>		m_Scripts;
 	};
 }
 

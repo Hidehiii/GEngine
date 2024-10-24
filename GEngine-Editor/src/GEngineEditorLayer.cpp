@@ -90,6 +90,7 @@ namespace GEngine
 				void OnStart()
 				{
 					GE_TRACE("OnStart");
+					GE_TRACE(m_GameObject.GetComponent<Attribute>().m_Name);
 				}
 				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
 				{
@@ -104,8 +105,15 @@ namespace GEngine
 					GE_TRACE("OnUpdate");
 				}
 			};
+			class SubTestScript : public TestScript
+			{
+
+			};
 			auto testObj = m_ActiveScene->CreateGameObject("Test");
-			testObj.AddComponent<NativeScript>().Bind<TestScript>();
+			
+			//testObj.AddComponent<NativeScript>().Bind<TestScript>();
+			//testObj.AddComponent<TestScript>();
+			testObj.AddComponent<SubTestScript>();
 		}
 	}
 
@@ -225,9 +233,9 @@ namespace GEngine
    //         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
    //     }
 
-		static bool opt_fullscreen = true;
-		static bool opt_padding = false;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		static bool opt_fullscreen					= true;
+		static bool opt_padding						= false;
+		static ImGuiDockNodeFlags dockspace_flags	= ImGuiDockNodeFlags_None;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
@@ -268,9 +276,9 @@ namespace GEngine
 			ImGui::PopStyleVar(2);
 
 		// Submit the DockSpace
-		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowMinSize.x = 350.0f;
+		ImGuiIO& io				= ImGui::GetIO();
+		ImGuiStyle& style		= ImGui::GetStyle();
+		style.WindowMinSize.x	= 150.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -352,25 +360,25 @@ namespace GEngine
 			ImGui::Begin("Scene Viewport");
 			
 			// Set Viewport Focused and Hovered
-			m_SceneViewportFocused = ImGui::IsWindowFocused();
-			m_SceneViewportHovered = ImGui::IsWindowHovered();
+			m_SceneViewportFocused		= ImGui::IsWindowFocused();
+			m_SceneViewportHovered		= ImGui::IsWindowHovered();
 			Application::Get().GetImGuiLayer()->SetBlockEvent(!m_SceneViewportFocused || !m_SceneViewportHovered);
 
 			// Update viewport size
-			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			Vector2 viewportPanelSize	= { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			if (m_SceneViewportSize != viewportPanelSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
-				m_SceneViewportSize = viewportPanelSize;
+				m_SceneViewportSize		= viewportPanelSize;
 				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
-			uint32_t tex = m_SceneViewportFrameBuffer->GetColorAttachment();
+			uint32_t tex				= m_SceneViewportFrameBuffer->GetColorAttachment();
 			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
-			Vector2 windowRegionMin = { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
-			Vector2 windowRegionMax = { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
-			Vector2 viewportOffset = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
-			m_SceneViewportBounds[0] = windowRegionMin + viewportOffset;
-			m_SceneViewportBounds[1] = windowRegionMax + viewportOffset;
+			Vector2 windowRegionMin		= { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
+			Vector2 windowRegionMax		= { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
+			Vector2 viewportOffset		= { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
+			m_SceneViewportBounds[0]	= windowRegionMin + viewportOffset;
+			m_SceneViewportBounds[1]	= windowRegionMax + viewportOffset;
 
 
 			// Gizmos
@@ -381,25 +389,25 @@ namespace GEngine
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
 
-				Matrix4x4 cameraProjection = m_EditorCamera.GetProjectionMatrix();
-				Matrix4x4 cameraView = m_EditorCamera.GetViewMatrix();
+				Matrix4x4 cameraProjection	= m_EditorCamera.GetProjectionMatrix();
+				Matrix4x4 cameraView		= m_EditorCamera.GetViewMatrix();
 
-				auto& tc = selectedObj.GetComponent<Transform>();
-				Matrix4x4 objTransform = tc.GetModelMatrix();
+				auto& tc					= selectedObj.GetComponent<Transform>();
+				Matrix4x4 objTransform		= tc.GetModelMatrix();
 				
 
 				// Snap
-				bool isSnap = Input::IsKeyPressed(KeyCode::LeftControl);
+				bool isSnap					= Input::IsKeyPressed(KeyCode::LeftControl);
 				// for Scale and Position
-				float snapVal = 0.5f;
+				float snapVal				= 0.5f;
 				// for Rotation
 				if (m_GizmoOperationType == ImGuizmo::OPERATION::ROTATE)
 				{
 					snapVal = 15.0f;
 				}
-				float snapArr[3] = { snapVal, snapVal , snapVal };
+				float snapArr[3]			= { snapVal, snapVal , snapVal };
 
-				Matrix4x4 deltaMatrix = objTransform;
+				Matrix4x4 deltaMatrix		= objTransform;
 
 
 				ImGuizmo::Manipulate(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, Math::ValuePtr(objTransform), Math::ValuePtr(deltaMatrix), isSnap ? snapArr : nullptr);
@@ -452,10 +460,10 @@ namespace GEngine
 			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
-				m_GameViewportSize = viewportPanelSize;
+				m_GameViewportSize	= viewportPanelSize;
 				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 			}
-			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachment();
+			uint32_t tex			= m_GameViewportFrameBuffer->GetColorAttachment();
 			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();
@@ -479,8 +487,8 @@ namespace GEngine
 
 			// Gizmo operation
 			{
-				const char* gizmoOperationTypeString[] = { "None", "Translate", "Rotate", "Scale" };
-				const char* currentGizmoOperationType = gizmoOperationTypeString[m_GizmoOperationType + 1];
+				const char* gizmoOperationTypeString[]	= { "None", "Translate", "Rotate", "Scale" };
+				const char* currentGizmoOperationType	= gizmoOperationTypeString[m_GizmoOperationType + 1];
 				if (ImGui::BeginCombo("Gizmo operation", currentGizmoOperationType))
 				{
 					int size = 4;
@@ -507,8 +515,8 @@ namespace GEngine
 
 			// Gizmo mode
 			{
-				const char* gizmoModeTypeString[] = { "Local", "Global" };
-				const char* currentGizmoModeType = gizmoModeTypeString[m_GizmoModeType];
+				const char* gizmoModeTypeString[]	= { "Local", "Global" };
+				const char* currentGizmoModeType	= gizmoModeTypeString[m_GizmoModeType];
 				if (ImGui::BeginCombo("Gizmo mode", currentGizmoModeType))
 				{
 					int size = 2;
@@ -518,7 +526,7 @@ namespace GEngine
 					}
 					for (int i = 0; i < size; i++)
 					{
-						bool isSelected = m_GizmoModeType == i;
+						bool isSelected		= m_GizmoModeType == i;
 						if (ImGui::Selectable(gizmoModeTypeString[i], isSelected))
 						{
 							m_GizmoModeType = i;
@@ -539,12 +547,12 @@ namespace GEngine
 			ImGui::NewLine();
 			ImGui::Separator();
 			ImGui::Text("Stats:");
-			ImGui::Text("Triangles: %d", Renderer2D::GetStats().m_TriangleCount);
-			ImGui::Text("Lines: %d", Renderer2D::GetStats().m_LineCount);
-			ImGui::Text("Points: %d", Renderer2D::GetStats().m_PointCount);
-			ImGui::Text("Draw Calls: %d", Renderer2D::GetStats().m_DrawCalls);
+			ImGui::Text("Triangles: %d",	Renderer2D::GetStats().m_TriangleCount);
+			ImGui::Text("Lines: %d",		Renderer2D::GetStats().m_LineCount);
+			ImGui::Text("Points: %d",		Renderer2D::GetStats().m_PointCount);
+			ImGui::Text("Draw Calls: %d",	Renderer2D::GetStats().m_DrawCalls);
 			ImGui::Text("Vertex Count: %d", Renderer2D::GetStats().GetTotalVertexCount());
-			ImGui::Text("Index Count: %d", Renderer2D::GetStats().GetTotalIndexCount());
+			ImGui::Text("Index Count: %d",	Renderer2D::GetStats().GetTotalIndexCount());
 
 			
 
@@ -583,8 +591,8 @@ namespace GEngine
 			return false;
 		}
 
-		bool controlPressed = Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
-		bool shiftPressed = Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
+		bool controlPressed		= Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
+		bool shiftPressed		= Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
 
 		switch (e.GetKeyCode())
 		{
@@ -642,11 +650,11 @@ namespace GEngine
 
 	void GEngineEditorLayer::NewScene()
 	{
-		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene		= CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
 		m_Hierarchy.SetContext(m_ActiveScene);
 		m_HoveredGameObject = {};
-		m_SceneFilePath = "";
+		m_SceneFilePath		= "";
 	}
 
 
@@ -655,11 +663,11 @@ namespace GEngine
 		
 		if (m_SceneFilePath.empty() == false && m_SceneFilePath.extension() == ".GEScene")
 		{
-			std::string filePath = m_SceneFilePath.string();
-			m_ActiveScene = CreateRef<Scene>();
+			std::string filePath	= m_SceneFilePath.string();
+			m_ActiveScene			= CreateRef<Scene>();
 			m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
 			m_Hierarchy.SetContext(m_ActiveScene);
-			m_HoveredGameObject = {};
+			m_HoveredGameObject		= {};
 			Serializer::Deserialize(filePath, m_ActiveScene);
 		}
 	}
@@ -688,10 +696,10 @@ namespace GEngine
 
 	void GEngineEditorLayer::SaveSceneAs()
 	{
-		std::string filePath = FileDialogs::SaveFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
+		std::string filePath	= FileDialogs::SaveFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
 		if (filePath.empty() == false)
 		{
-			m_SceneFilePath = filePath;
+			m_SceneFilePath		= filePath;
 			Serializer::Serialize(filePath, m_ActiveScene);
 		}
 	}
@@ -764,10 +772,10 @@ namespace GEngine
 				Vector3 direction = transform.Forward();
 				Renderer2D::DrawCircle(transform, 0.1f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				Renderer2D::DrawLine(position, direction , 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1f * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1f * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1f * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1f * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1f * transform.Right(),	direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1f * transform.Right(),	direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1f * transform.Up(),		direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1f * transform.Up(),		direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 		GameObject gameObject = m_Hierarchy.GetSelectedGameObject();
@@ -776,26 +784,26 @@ namespace GEngine
 			// visualize the circle collider 2D
 			if (gameObject.HasComponent<CircleCollider2D>())
 			{
-				auto circleCollider = gameObject.GetComponent<CircleCollider2D>();
-				auto transform = gameObject.GetComponent<Transform>();
-				Vector3 position = transform.m_Position + Vector3(circleCollider.m_Offset, 0.0f);
-				Vector3 scale = Vector3(circleCollider.m_Radius * 2.0f) * Math::Max(transform.m_Scale);
-				transform = Transform(position, Vector3(0.0f), scale);
+				auto circleCollider		= gameObject.GetComponent<CircleCollider2D>();
+				auto transform			= gameObject.GetComponent<Transform>();
+				Vector3 position		= transform.m_Position + Vector3(circleCollider.m_Offset, 0.0f);
+				Vector3 scale			= Vector3(circleCollider.m_Radius * 2.0f) * Math::Max(transform.m_Scale);
+				transform				= Transform(position, Vector3(0.0f), scale);
 				Renderer2D::DrawCircle(transform, 0.5f,  Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
 			// visualize the box collider 2D
 			if (gameObject.HasComponent<BoxCollider2D>())
 			{
-				auto boxCollider = gameObject.GetComponent<BoxCollider2D>();
-				auto transform = gameObject.GetComponent<Transform>();
+				auto boxCollider	= gameObject.GetComponent<BoxCollider2D>();
+				auto transform		= gameObject.GetComponent<Transform>();
 				// This transform of the collider is should be multiplied by the scale transform of the game object
 				// Otherwise, the collider will not be scaled with the game object
-				auto t = Math::Translate(Matrix4x4(1.0f), transform.m_Position)
-					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().z), Vector3(0.0f, 0.0f, 1.0f))
-					* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
-					* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
-					* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)
-					* Math::Scale(Matrix4x4(1.0f), Vector3(boxCollider.m_Size, 1.0f));
+				auto t				= Math::Translate(Matrix4x4(1.0f), transform.m_Position)
+									* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().z), Vector3(0.0f, 0.0f, 1.0f))
+									* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
+									* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
+									* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)
+									* Math::Scale(Matrix4x4(1.0f), Vector3(boxCollider.m_Size, 1.0f));
 				Renderer2D::SetLineWidth(0.065f);
 				Renderer2D::DrawRect(t, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
@@ -812,15 +820,15 @@ namespace GEngine
 		if (m_SceneState == EditorSceneState::Edit)
 		{
 			//TOOO: copy scene
-			m_EditorScene = m_ActiveScene;
-			m_ActiveScene = Scene::Copy(m_ActiveScene);
+			m_EditorScene	= m_ActiveScene;
+			m_ActiveScene	= Scene::Copy(m_ActiveScene);
 			m_ActiveScene->OnAwake();
 			m_ActiveScene->OnStart();
 			m_Hierarchy.SetContext(m_ActiveScene);
 		}
-		m_SceneState = EditorSceneState::Play;
-		m_PlayButtonIcon_Display = m_PlayingButtonIcon;
-		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+		m_SceneState				= EditorSceneState::Play;
+		m_PlayButtonIcon_Display	= m_PlayingButtonIcon;
+		m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 	}
 
 	void GEngineEditorLayer::OnSceneStop()
@@ -830,24 +838,24 @@ namespace GEngine
 			m_ActiveScene = m_EditorScene;
 			m_Hierarchy.SetContext(m_ActiveScene);
 		}
-		m_SceneState = EditorSceneState::Edit;
-		m_PlayButtonIcon_Display = m_PlayButtonIcon;
-		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+		m_SceneState				= EditorSceneState::Edit;
+		m_PlayButtonIcon_Display	= m_PlayButtonIcon;
+		m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 	}
 
 	void GEngineEditorLayer::OnScenePause()
 	{
 		if (m_SceneState == EditorSceneState::Play)
 		{
-			m_SceneState = EditorSceneState::Pause;
+			m_SceneState				= EditorSceneState::Pause;
 			m_ActiveScene->OnPause();
-			m_PauseButtonIcon_DisPlay = m_PausingButtonIcon;
+			m_PauseButtonIcon_DisPlay	= m_PausingButtonIcon;
 		}
 		else if (m_SceneState == EditorSceneState::Pause)
 		{
-			m_SceneState = EditorSceneState::Play;
+			m_SceneState				= EditorSceneState::Play;
 			m_ActiveScene->OnResume();
-			m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+			m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 		}
 	}
 

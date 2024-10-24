@@ -24,10 +24,10 @@ namespace GEngine
 	{
 		Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
 
-		ApplicationSpecification spec;
-		spec.Name = "GEngine Editor";
-		spec.Size = { 1920, 1080 };
-		spec.CommandLineArgs = args;
+		ApplicationSpecification	spec;
+		spec.Name					= "GEngine Editor";
+		spec.Size					= { 1920, 1080 };
+		spec.CommandLineArgs		= args;
 		return new GEngineEditor(spec);
 	}
 }

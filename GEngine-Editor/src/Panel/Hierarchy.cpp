@@ -34,15 +34,15 @@ namespace GEngine
 		ImGui::PopStyleVar();
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			DrawAddComponentOption<ImageRenderer>("Image Renderer", gameObject);
-			DrawAddComponentOption<CircleRenderer>("Circle Renderer", gameObject);
-			DrawAddComponentOption<Camera>("Camera", gameObject);
-			DrawAddComponentOption<RigidBody2D>("RigidBody 2D", gameObject);
-			DrawAddComponentOption<BoxCollider2D>("Box Collider 2D", gameObject);
-			DrawAddComponentOption<CircleCollider2D>("Circle Collider 2D", gameObject);
-			DrawAddComponentOption<MeshFilter>("Mesh Filter", gameObject);
-			DrawAddComponentOption<MeshRenderer>("Mesh Renderer", gameObject);
-			DrawAddComponentOption<DirectionalLight>("Directional Light", gameObject);
+			DrawAddComponentOption<ImageRenderer>	("Image Renderer",		gameObject);
+			DrawAddComponentOption<CircleRenderer>	("Circle Renderer",		gameObject);
+			DrawAddComponentOption<Camera>			("Camera",				gameObject);
+			DrawAddComponentOption<RigidBody2D>		("RigidBody 2D",		gameObject);
+			DrawAddComponentOption<BoxCollider2D>	("Box Collider 2D",		gameObject);
+			DrawAddComponentOption<CircleCollider2D>("Circle Collider 2D",	gameObject);
+			DrawAddComponentOption<MeshFilter>		("Mesh Filter",			gameObject);
+			DrawAddComponentOption<MeshRenderer>	("Mesh Renderer",		gameObject);
+			DrawAddComponentOption<DirectionalLight>("Directional Light",	gameObject);
 			ImGui::EndPopup();
 		}
 	}
@@ -53,12 +53,12 @@ namespace GEngine
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
 		if (gameObject.HasComponent<T>())
 		{
-			auto& component = gameObject.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+			auto& component					= gameObject.GetComponent<T>();
+			ImVec2 contentRegionAvailable	= ImGui::GetContentRegionAvail();
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4, 4 });
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			float lineHeight				= GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImGui::Separator();
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+			bool open						= ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
 			if (ImGui::Button("+", { lineHeight, lineHeight }))
 			{
@@ -98,15 +98,15 @@ namespace GEngine
 	}
 	void Hierarchy::SetContext(const Ref<Scene> scene)
 	{
-		m_Context = scene;
-		m_SelectionContext = {};
+		m_Context			= scene;
+		m_SelectionContext	= {};
 	}
 	void Hierarchy::DrawComponents(GameObject gameObject)
 	{
 		if (gameObject.HasComponent<Attribute>())
 		{
-			auto& attribute = gameObject.GetComponent<Attribute>();
-			char buf[256] = { 0 };
+			auto& attribute		= gameObject.GetComponent<Attribute>();
+			char buf[256]		= { 0 };
 			memset(buf, 0, sizeof(buf));
 			strcpy_s(buf, sizeof(buf), attribute.m_Name.c_str());
 			if (ImGui::InputText("##Name", buf, sizeof(buf)))

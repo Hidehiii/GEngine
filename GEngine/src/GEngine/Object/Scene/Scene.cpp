@@ -102,6 +102,7 @@ namespace GEngine
 		object.GetComponent<Attribute>().m_UUID = uuid;
 		object.GetComponent<Attribute>().m_Name = name.empty() ? "GameObject" : name;
 		object.AddComponent<Transform>();
+		object.AddComponent<NativeScript>();
 		return object;
 	}
 	void Scene::DuplicateGameObject(GameObject gameObject)
@@ -404,56 +405,4 @@ namespace GEngine
 		}
 	}
 
-
-	template <typename T>
-	void Scene::OnComponentAdded(GameObject gameObject, T& component)
-	{
-		//static_assert(false);
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<Transform>(GameObject gameObject, Transform& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<Camera>(GameObject gameObject, Camera& component)
-	{
-		component.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<ImageRenderer>(GameObject gameObject, ImageRenderer& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<RigidBody2D>(GameObject gameObject, RigidBody2D& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<BoxCollider2D>(GameObject gameObject, BoxCollider2D& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<CircleCollider2D>(GameObject gameObject, CircleCollider2D& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<NativeScript>(GameObject gameObject, NativeScript& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<CircleRenderer>(GameObject gameObject, CircleRenderer& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<MeshFilter>(GameObject gameObject, MeshFilter& component)
-	{
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<MeshRenderer>(GameObject gameObject, MeshRenderer& component)
-	{
-		component.Init();
-	}
-	template <>
-	void GENGINE_API Scene::OnComponentAdded<DirectionalLight>(GameObject gameObject, DirectionalLight& component)
-	{
-	}
 }

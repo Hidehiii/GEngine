@@ -8,7 +8,7 @@ namespace GEngine
 		: m_BaseDirectory(std::filesystem::path("Assets")), m_CurrentDirectory(m_BaseDirectory)
 	{
 		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/folderIcon.png");
-		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/documentIcon.png");
+		m_FileIcon		= Texture2D::Create("Resources/Icons/ContentBrowser/documentIcon.png");
 	}
 
 	void ContentBrowser::OnGuiRender()
@@ -39,12 +39,12 @@ namespace GEngine
 		ImGui::NewLine();
 		ImGui::Separator();
 
-		static float padding = 10.0f;
-		static float thumbnailSize = 100.0f;
-		float cellSize = thumbnailSize + padding;
+		static float padding		= 10.0f;
+		static float thumbnailSize	= 100.0f;
+		float cellSize				= thumbnailSize + padding;
 
-		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)(panelWidth / cellSize);
+		float panelWidth			= ImGui::GetContentRegionAvail().x;
+		int columnCount				= (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 			columnCount = 1;
 
@@ -52,8 +52,8 @@ namespace GEngine
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
-			const auto& path = directoryEntry.path();
-			std::string filenameString = path.filename().string();
+			const auto& path			= directoryEntry.path();
+			std::string filenameString	= path.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
 			Ref<Texture2D> icon;

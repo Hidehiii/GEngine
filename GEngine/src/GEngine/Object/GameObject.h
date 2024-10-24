@@ -22,9 +22,19 @@ namespace GEngine
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
+			if constexpr (std::is_base_of<ScriptableObject, T>::value)
+			{
+				GE_TRACE("add script!");
+			}
+			else
+			{
+				GE_TRACE("no add script");
+				T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+				component.SetGameObject((*this));
+				m_Scene->OnComponentAdded<T>(*this, component);
+				return component;
+			}
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			component.SetGameObject((*this));
-			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 		template<typename T, typename... Args>

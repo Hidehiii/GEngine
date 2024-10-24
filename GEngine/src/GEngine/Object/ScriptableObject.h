@@ -9,7 +9,7 @@
 
 namespace GEngine
 {
-	class GENGINE_API ScriptableObject : private Object
+	class GENGINE_API ScriptableObject : public Object
 	{
 	public:
 		virtual ~ScriptableObject() {};
@@ -31,6 +31,11 @@ namespace GEngine
 		{
 			GE_CORE_ASSERT(m_GameObject.HasComponent<T>(), "GameObject does not have component!");
 			m_GameObject.RemoveComponent<T>();
+		}
+		template<typename T>
+		T* TryGetComponent()
+		{
+			return m_GameObject.TryGetComponent<T>();
 		}
 	public:
 		// time logic
