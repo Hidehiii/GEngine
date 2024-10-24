@@ -10,6 +10,7 @@ namespace GEngine
 	class GENGINE_API NativeScript : public Component
 	{
 	public:
+		NativeScript() = default;
 		NativeScript(const NativeScript&) = default;
 
 		ScriptableObject*(*InstantiateFunc)();
@@ -23,28 +24,44 @@ namespace GEngine
 		}
 
 		template<typename T>
-		void AddInstance()
+		T* AddInstance()
 		{
-			m_Functions.emplace_back([]() { return static_cast<ScriptableObject*>(new T()); }, 
-									[](NativeScript* ns) { delete ns->Instance; ns->Instance = nullptr; });
-			m_Scripts.emplace_back(nullptr);
+			GE_CORE_ASSERT(GetInstance<T>() == nullptr, "There is a same script has been added!");
+			T* script = new T();
+			m_Scripts.emplace_back(static_cast<ScriptableObject*>(new T()));
+			return script;
 		}
 
 		template<typename T>
-		void GetInstance()
+		T* GetInstance()
 		{
-
+			for (auto script : m_Scripts)
+			{
+				if (typeid(script).name() == typeid(T).name())
+				{
+					return dynamic_cast<T*>(script);
+				}
+			}
+			return nullptr;
 		}
 
 		template<typename T>
 		void RemoveInstance()
 		{
-
+			int index = -1;
+			for (auto script : m_Scripts)
+			{
+				index++;
+				if (typeid(script).name() == typeid(T).name())
+				{
+					m_Scripts.erase(m_Scripts.begin() + index);
+					break;
+				}
+			}
 		}
 	public:
 		ScriptableObject* Instance = nullptr;
-		std::vector < std::pair<ScriptableObject* (*)(), void (*)(NativeScript*)>>		m_Functions;
-		std::vector<ScriptableObject*>													m_Scripts;
+		std::vector<ScriptableObject*>		m_Scripts;
 	};
 }
 

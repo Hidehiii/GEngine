@@ -12,6 +12,7 @@ namespace GEngine
 	class GENGINE_API ScriptableObject : public Object
 	{
 	public:
+		ScriptableObject() = default;
 		virtual ~ScriptableObject() {};
 
 		template<typename T>

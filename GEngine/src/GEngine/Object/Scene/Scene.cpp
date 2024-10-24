@@ -244,11 +244,11 @@ namespace GEngine
 			{
 				if (!script.Instance)
 				{
-					script.Instance = script.InstantiateFunc();
-					script.Instance->m_GameObject = GameObject{ entity, this };
-					script.Instance->OnAwake();
+					//script.Instance = script.InstantiateFunc();
+					//script.Instance->m_GameObject = GameObject{ entity, this };
+					//script.Instance->OnAwake();
 				}
-				script.Instance->OnStart();
+				//script.Instance->OnStart();
 			});
 
 		// Start timerwheel
@@ -275,7 +275,7 @@ namespace GEngine
 					{
 						if (script.Instance)
 						{
-							script.Instance->OnPhysicsUpdate();
+							//script.Instance->OnPhysicsUpdate();
 						}
 						
 					});
@@ -292,12 +292,12 @@ namespace GEngine
 				{
 					if (!script.Instance)
 					{
-						script.Instance = script.InstantiateFunc();
-						script.Instance->m_GameObject = GameObject{ entity, this };
-						script.Instance->OnAwake();
-						script.Instance->OnStart();
+						//script.Instance = script.InstantiateFunc();
+						//script.Instance->m_GameObject = GameObject{ entity, this };
+						//script.Instance->OnAwake();
+						//script.Instance->OnStart();
 					}
-					script.Instance->OnUpdate();
+					//script.Instance->OnUpdate();
 				});
 		}
 	}
@@ -310,12 +310,12 @@ namespace GEngine
 				{
 					if (!script.Instance)
 					{
-						script.Instance = script.InstantiateFunc();
-						script.Instance->m_GameObject = GameObject{ entity, this };
-						script.Instance->OnAwake();
-						script.Instance->OnStart();
+						//script.Instance = script.InstantiateFunc();
+						//script.Instance->m_GameObject = GameObject{ entity, this };
+						//script.Instance->OnAwake();
+						//script.Instance->OnStart();
 					}
-					script.Instance->OnLateUpdate();
+					//script.Instance->OnLateUpdate();
 				});
 		}
 	}

@@ -25,17 +25,16 @@ namespace GEngine
 			if constexpr (std::is_base_of<ScriptableObject, T>::value)
 			{
 				GE_TRACE("add script!");
+				T* component = m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).AddInstance<T>();
+				return *component;
 			}
 			else
 			{
-				GE_TRACE("no add script");
 				T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 				component.SetGameObject((*this));
 				m_Scene->OnComponentAdded<T>(*this, component);
 				return component;
 			}
-			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			return component;
 		}
 		template<typename T, typename... Args>
 		T& AddOrReplaceComponent(Args&&... args)
@@ -48,7 +47,14 @@ namespace GEngine
 		template<typename T>
 		T& GetComponent()
 		{
-			return m_Scene->m_Registry.get<T>(m_EntityHandle);
+			if constexpr (std::is_base_of<ScriptableObject, T>::value)
+			{
+				return *(m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).GetInstance<T>());
+			}
+			else
+			{
+				return m_Scene->m_Registry.get<T>(m_EntityHandle);
+			}
 		}
 		template<typename T>
 		T* TryGetComponent()
