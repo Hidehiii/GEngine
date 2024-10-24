@@ -4,6 +4,15 @@
 
 #include "RayTracing.h"
 
+using namespace GEngine;
+
+struct TestVertex
+{
+	Vector4	Pos;
+	Vector2 UV;
+	int		index;
+};
+
 
 class Sandbox2D : public GEngine::Layer
 {
@@ -21,5 +30,9 @@ private:
 	/*GEngine::Editor::EditorCamera m_Camera;
 	GEngine::Editor::EditorCamera m_EditorCamera;
 	RayTracing m_RayTracing;*/
+
+
+	Ref<Pipeline>	m_Pipeline;
+	std::vector<TestVertex> m_vertex;
 };
 

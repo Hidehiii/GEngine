@@ -16,31 +16,31 @@ namespace GEngine
     }
     Matrix4x4 Math::Translate(const Vector3& translation)
     {
-        return glm::translate(glm::mat4(1.0f), translation.value);
+        return glm::translate(glm::mat4(1.0f), translation);
     }
     Matrix4x4 Math::Translate(const Matrix4x4& transform, const Vector3& translation)
     {
-        return glm::translate(transform.value, translation.value);
+        return glm::translate(transform, translation);
     }
     Matrix4x4 Math::Rotate(float angle, const Vector3& axis)
     {
-        return glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis.value);
+        return glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
     }
     Vector3 Math::Rotate(Quaternion quat, Vector3 v)
     {
-        return glm::rotate(quat.value, v.value);
+        return glm::rotate(quat, v);
     }
     Matrix4x4 Math::Rotate(const Matrix4x4& transform, float angle, const Vector3& axis)
     {
-        return glm::rotate(transform.value, glm::radians(angle), axis.value);
+        return glm::rotate(transform, glm::radians(angle), axis);
     }
     Matrix4x4 Math::Scale(const Vector3& scale)
     {
-		return glm::scale(glm::mat4(1.0f), scale.value);
+		return glm::scale(glm::mat4(1.0f), scale);
 	}
     Matrix4x4 Math::Scale(const Matrix4x4& transform, const Vector3& scale)
     {
-        return glm::scale(transform.value, scale.value);
+        return glm::scale(transform, scale);
     }
     float Math::Radians(const float angle)
     {
@@ -48,19 +48,19 @@ namespace GEngine
     }
     Vector2 Math::Radians(const Vector2 angle)
     {
-        return glm::radians(angle.value);
+        return glm::radians(angle);
     }
     Vector3 Math::Radians(const Vector3 angle)
     {
-        return glm::radians(angle.value);
+        return glm::radians(angle);
     }
     Vector4 Math::Radians(const Vector4 angle)
     {
-        return glm::radians(angle.value);
+        return glm::radians(angle);
     }
     Matrix4x4 Math::Inverse(const Matrix4x4& matrix)
     {
-        return glm::inverse(matrix.value);
+        return glm::inverse(matrix);
     }
     float Math::Degrees(const float angle)
     {
@@ -68,23 +68,23 @@ namespace GEngine
     }
     Vector2 Math::Degrees(const Vector2 angle)
     {
-        return glm::degrees(angle.value);
+        return glm::degrees(angle);
     }
     Vector3 Math::Degrees(const Vector3 angle)
     {
-        return glm::degrees(angle.value);
+        return glm::degrees(angle);
     }
     Vector4 Math::Degrees(const Vector4 angle)
     {
-        return glm::degrees(angle.value);
+        return glm::degrees(angle);
     }
     Matrix4x4 Math::ToMatrix4x4(Quaternion quat)
     {
-        return Matrix4x4(glm::toMat4(quat.value));
+        return Matrix4x4(glm::toMat4(quat));
     }
     Matrix4x4 Math::ToMatrix4x4(Vector3 rotation)
     {
-        return Matrix4x4(glm::toMat4(Quaternion(rotation).value));
+        return Matrix4x4(glm::toMat4(Quaternion(rotation)));
     }
     bool Math::DecomposeTransformMatrix(const Matrix4x4 transformMatrix, Vector3& outPosition, Quaternion& outRotation, Vector3& outScale)
     {
@@ -92,7 +92,7 @@ namespace GEngine
         using namespace glm;
         using T = float;
 
-        mat4 LocalMatrix(transformMatrix.value);
+        mat4 LocalMatrix(transformMatrix);
 
 		// Normalize the matrix.
 		if (epsilonEqual(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>()))
@@ -122,17 +122,17 @@ namespace GEngine
 				Row[i][j] = LocalMatrix[i][j];
 
 		// Compute X scale factor and normalize first row.
-		outScale.value.x = length(Row[0]);// v3Length(Row[0]);
+		outScale.x = length(Row[0]);// v3Length(Row[0]);
 
 		Row[0] = detail::scale(Row[0], static_cast<T>(1));
 
 		// Now, compute Y scale and normalize 2nd row.
-		outScale.value.y = length(Row[1]);
+		outScale.y = length(Row[1]);
 		Row[1] = detail::scale(Row[1], static_cast<T>(1));
 
 
 		// Next, get Z scale and normalize 3rd row.
-		outScale.value.z = length(Row[2]);
+		outScale.z = length(Row[2]);
 		Row[2] = detail::scale(Row[2], static_cast<T>(1));
 
 
@@ -145,22 +145,22 @@ namespace GEngine
 		{
 			for (length_t i = 0; i < 3; i++)
 			{
-                outScale.value[i] *= static_cast<T>(-1);
+                outScale[i] *= static_cast<T>(-1);
 				Row[i] *= static_cast<T>(-1);
 			}
 		}
 
 
-        //outRotation.value.y = asin(-Row[0][2]);
-        //if (cos(outRotation.value.y) != 0)
+        //outRotation.y = asin(-Row[0][2]);
+        //if (cos(outRotation.y) != 0)
         //{
-        //    outRotation.value.x = atan2(Row[1][2], Row[2][2]);
-        //    outRotation.value.z = atan2(Row[0][1], Row[0][0]);
+        //    outRotation.x = atan2(Row[1][2], Row[2][2]);
+        //    outRotation.z = atan2(Row[0][1], Row[0][0]);
         //}
         //else
         //{
-        //    outRotation.value.x = atan2(-Row[2][0], Row[1][1]);
-        //    outRotation.value.z = 0;
+        //    outRotation.x = atan2(-Row[2][0], Row[1][1]);
+        //    outRotation.z = 0;
         //}
 
         int i, j, k = 0;
@@ -168,11 +168,11 @@ namespace GEngine
         if (trace > static_cast<T>(0))
         {
             root = sqrt(trace + static_cast<T>(1.0));
-            outRotation.value.w = static_cast<T>(0.5) * root;
+            outRotation.w = static_cast<T>(0.5) * root;
             root = static_cast<T>(0.5) / root;
-            outRotation.value.x = root * (Row[1].z - Row[2].y);
-            outRotation.value.y = root * (Row[2].x - Row[0].z);
-            outRotation.value.z = root * (Row[0].y - Row[1].x);
+            outRotation.x = root * (Row[1].z - Row[2].y);
+            outRotation.y = root * (Row[2].x - Row[0].z);
+            outRotation.z = root * (Row[0].y - Row[1].x);
         } // End if > 0
         else
         {
@@ -192,11 +192,11 @@ namespace GEngine
 
             root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
 
-            outRotation.value[i + off] = static_cast<T>(0.5) * root;
+            outRotation[i + off] = static_cast<T>(0.5) * root;
             root = static_cast<T>(0.5) / root;
-            outRotation.value[j + off] = root * (Row[i][j] + Row[j][i]);
-            outRotation.value[k + off] = root * (Row[i][k] + Row[k][i]);
-            outRotation.value.w = root * (Row[j][k] - Row[k][j]);
+            outRotation[j + off] = root * (Row[i][j] + Row[j][i]);
+            outRotation[k + off] = root * (Row[i][k] + Row[k][i]);
+            outRotation.w = root * (Row[j][k] - Row[k][j]);
         } // End if <= 0
 
         return true;
@@ -207,7 +207,7 @@ namespace GEngine
         using namespace glm;
         using T = float;
 
-        mat4 LocalMatrix(transformMatrix.value);
+        mat4 LocalMatrix(transformMatrix);
 
         // Normalize the matrix.
         if (epsilonEqual(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>()))
@@ -237,17 +237,17 @@ namespace GEngine
                 Row[i][j] = LocalMatrix[i][j];
 
         // Compute X scale factor and normalize first row.
-        outScale.value.x = length(Row[0]);// v3Length(Row[0]);
+        outScale.x = length(Row[0]);// v3Length(Row[0]);
 
         Row[0] = detail::scale(Row[0], static_cast<T>(1));
 
         // Now, compute Y scale and normalize 2nd row.
-        outScale.value.y = length(Row[1]);
+        outScale.y = length(Row[1]);
         Row[1] = detail::scale(Row[1], static_cast<T>(1));
 
 
         // Next, get Z scale and normalize 3rd row.
-        outScale.value.z = length(Row[2]);
+        outScale.z = length(Row[2]);
         Row[2] = detail::scale(Row[2], static_cast<T>(1));
 
 
@@ -260,79 +260,79 @@ namespace GEngine
         {
             for (length_t i = 0; i < 3; i++)
             {
-                outScale.value[i] *= static_cast<T>(-1);
+                outScale[i] *= static_cast<T>(-1);
                 Row[i] *= static_cast<T>(-1);
             }
         }
 
 
-        outRotation.value.y = asin(-Row[0][2]);
-        if (cos(outRotation.value.y) != 0)
+        outRotation.y = asin(-Row[0][2]);
+        if (cos(outRotation.y) != 0)
         {
-            outRotation.value.x = atan2(Row[1][2], Row[2][2]);
-            outRotation.value.z = atan2(Row[0][1], Row[0][0]);
+            outRotation.x = atan2(Row[1][2], Row[2][2]);
+            outRotation.z = atan2(Row[0][1], Row[0][0]);
         }
         else
         {
-            outRotation.value.x = atan2(-Row[2][0], Row[1][1]);
-            outRotation.value.z = 0;
+            outRotation.x = atan2(-Row[2][0], Row[1][1]);
+            outRotation.z = 0;
         }
 
         return true;
     }
     Vector3 Math::EulerAngles(Quaternion quat)
     {
-        return Vector3(glm::eulerAngles(quat.value));
+        return Vector3(glm::eulerAngles(quat));
     }
 
     float Math::Length(const Vector2& v)
     {
-        return glm::length(v.value);
+        return glm::length((v));
     }
 
     float Math::Length(const Vector3& v)
     {
-        return glm::length(v.value);
+        return glm::length((v));
     }
 
     float Math::Length(const Vector4& v)
     {
-        return glm::length(v.value);
+        return glm::length((v));
     }
 
     float Math::Max(const Vector2& v)
     {
-        return glm::max(v.value.x, v.value.y);
+        return glm::max(v.x, v.y);
     }
 
     float Math::Max(const Vector3& v)
     {
-        return glm::max(v.value.x, v.value.y, v.value.z);
+        return glm::max(v.x, v.y, v.z);
     }
 
     float Math::Max(const Vector4& v)
     {
-        return glm::max(v.value.x, v.value.y, v.value.z, v.value.w);
+        return glm::max(v.x, v.y, v.z, v.w);
     }
 
     float Math::Dot(const Vector2& v1, const Vector2& v2)
     {
-        return glm::dot(v1.value, v2.value);
+        return glm::dot((v1), (v2));
     }
 
     float Math::Dot(const Vector3& v1, const Vector3& v2)
     {
-        return glm::dot(v1.value, v2.value);
+        return glm::dot((v1), (v2));
     }
 
     float Math::Dot(const Vector4& v1, const Vector4& v2)
     {
-        return glm::dot(v1.value, v2.value);
+        return glm::dot((v1), (v2));
     }
 
     Vector3 Math::Clamp(const Vector3& value, const Vector3& min, const Vector3& max)
     {
-        return glm::clamp(value.value, min.value, max.value);
+        return glm::clamp(value, min, max);
     }
 
     float Math::Clamp(float value, float min, float max)
@@ -342,7 +342,7 @@ namespace GEngine
 
     Vector3 Math::Reflect(const Vector3& v, const Vector3& normal)
     {
-        return glm::reflect(v.value, normal.value);
+        return glm::reflect(v, normal);
     }
 
     float Math::Sqrt(float value)
@@ -368,6 +368,46 @@ namespace GEngine
     float Math::Cos(float angle)
     {
         return glm::cos(angle);
+    }
+
+    Vector2 Math::Normalized(const Vector2& v)
+    {
+        return glm::normalize(v);
+    }
+
+    Vector3 Math::Normalized(const Vector3& v)
+    {
+        return glm::normalize(v);
+    }
+
+    Vector4 Math::Normalized(const Vector4& v)
+    {
+        return glm::normalize(v);
+    }
+
+    Quaternion Math::Normalized(const Quaternion& v)
+    {
+        return glm::normalize(v);
+    }
+
+    float* Math::ValuePtr(const Vector2& v)
+    {
+        return (float*)glm::value_ptr(v);
+    }
+
+    float* Math::ValuePtr(const Vector3& v)
+    {
+        return (float*)glm::value_ptr(v);
+    }
+
+    float* Math::ValuePtr(const Vector4& v)
+    {
+        return (float*)glm::value_ptr(v);
+    }
+
+    float* Math::ValuePtr(const Matrix4x4& v)
+    {
+        return (float*)glm::value_ptr(v);
     }
 
 }

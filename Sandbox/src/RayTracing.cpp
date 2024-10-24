@@ -4,10 +4,10 @@
 
 static uint32_t ConvertToRGBA(GEngine::Vector4 col)
 {
-	uint8_t r = (uint8_t)(GEngine::Math::Clamp(col.value.x, 0.0f, 1.0f) * 255);
-	uint8_t g = (uint8_t)(GEngine::Math::Clamp(col.value.y, 0.0f, 1.0f) * 255);
-	uint8_t b = (uint8_t)(GEngine::Math::Clamp(col.value.z, 0.0f, 1.0f) * 255);
-	uint8_t a = (uint8_t)(GEngine::Math::Clamp(col.value.w, 0.0f, 1.0f) * 255);
+	uint8_t r = (uint8_t)(GEngine::Math::Clamp(col.x, 0.0f, 1.0f) * 255);
+	uint8_t g = (uint8_t)(GEngine::Math::Clamp(col.y, 0.0f, 1.0f) * 255);
+	uint8_t b = (uint8_t)(GEngine::Math::Clamp(col.z, 0.0f, 1.0f) * 255);
+	uint8_t a = (uint8_t)(GEngine::Math::Clamp(col.w, 0.0f, 1.0f) * 255);
 	return (a << 24) | (b << 16) | (g << 8) | r;
 }
 
@@ -26,10 +26,10 @@ static float RandomFloat(uint32_t& input)
 static GEngine::Vector3 RandomInUnitSphere(uint32_t& input)
 {
 	GEngine::Vector3 p;
-	p.value.x = RandomFloat(input) * 2.0f - 1.0f;
-	p.value.y = RandomFloat(input) * 2.0f - 1.0f;
-	p.value.z = RandomFloat(input) * 2.0f - 1.0f;
-	p = p.Normalized();
+	p.x = RandomFloat(input) * 2.0f - 1.0f;
+	p.y = RandomFloat(input) * 2.0f - 1.0f;
+	p.z = RandomFloat(input) * 2.0f - 1.0f;
+	p = GEngine::Math::Normalized( p);
 	return p;
 }
 
@@ -37,7 +37,7 @@ void RayTracing::Init()
 {
 	srand(time(0));
 	m_Distribution = std::uniform_real_distribution<float>(-1.0, 1.0);
-	m_Texture = GEngine::Texture2D::Create(m_ScreenSize.value.x, m_ScreenSize.value.y);
+	m_Texture = GEngine::Texture2D::Create(m_ScreenSize.x, m_ScreenSize.y);
 	m_Texture->SetData(m_TextureData.data(), m_TextureData.size() * 4);
 
 	m_Spheres.emplace_back(GEngine::Vector3(-23.0f, 10.0f, -20.0f), 10.0f, GEngine::Vector3(0.2f, 0.2f, 0.4f), 0.25f, 0.0f, GEngine::Vector3(0.4f, 0.3f, 0.2f), 10.0f);
@@ -48,7 +48,7 @@ void RayTracing::Init()
 	m_Spheres.emplace_back(GEngine::Vector3(-2.0f, 2.0f, 0.0f), 2.0f, GEngine::Vector3(0.4f, 0.1f, 0.3f), 0.1f, 0.0f);
 	m_Spheres.emplace_back(GEngine::Vector3(0.0f, -101.0f, 0.0f), 100.0f, GEngine::Vector3(0.2f, 0.25f, 0.75f), 0.5f, 0.0f);
 
-	for(uint32_t i = 0; i < m_ScreenSize.value.x; i++)
+	for(uint32_t i = 0; i < m_ScreenSize.x; i++)
 	{
 		m_PixelsInOneLine.at(i) = i;
 	}
@@ -66,12 +66,12 @@ void RayTracing::OnUpdate(GEngine::Editor::EditorCamera& camera)
 				std::for_each(std::execution::par, m_PixelsInOneLine.begin(), m_PixelsInOneLine.end(),
 				[this, y, &camera](uint32_t x)
 					{
-						GEngine::Vector2 uv = GEngine::Vector2(float(x) / m_ScreenSize.value.x, float(y) / m_ScreenSize.value.y);
-						uv = uv * 2 - 1;
+						GEngine::Vector2 uv = GEngine::Vector2(float(x) / m_ScreenSize.x, float(y) / m_ScreenSize.y);
+						uv = uv * 2.0f - 1.0f;
 						GEngine::Vector4 target = GEngine::Math::Inverse(camera.GetProjectionMatrix()) * GEngine::Vector4(uv, 1.0f, 1.0f);
-						m_RayDir[x + y * m_ScreenSize.value.x] = { GEngine::Math::Inverse(camera.GetViewMatrix()) * GEngine::Vector4((GEngine::Vector3(target) / target.value.w).Normalized(), 0.0f) };
+						m_RayDir[x + y * m_ScreenSize.x] = { GEngine::Math::Inverse(camera.GetViewMatrix()) * GEngine::Vector4(GEngine::Math::Normalized(GEngine::Vector3(target) / target.w), 0.0f) };
 
-						m_Accumulation[x + y * m_ScreenSize.value.x] = GEngine::Vector4();
+						m_Accumulation[x + y * m_ScreenSize.x] = GEngine::Vector4();
 					}
 				);
 
@@ -84,10 +84,10 @@ void RayTracing::OnUpdate(GEngine::Editor::EditorCamera& camera)
 			std::for_each(std::execution::par, m_PixelsInOneLine.begin(), m_PixelsInOneLine.end(),
 			[this, y, &camera](uint32_t x)
 				{
-					m_Accumulation[x + y * m_ScreenSize.value.x] += PerPixelRayTrace(x, y, camera);
+					m_Accumulation[x + y * m_ScreenSize.x] += PerPixelRayTrace(x, y, camera);
 
-					GEngine::Vector4 color = m_Accumulation[x + y * m_ScreenSize.value.x] / (float)m_FrameCount;
-					m_TextureData[x + y * m_ScreenSize.value.x] = ConvertToRGBA(color);
+					GEngine::Vector4 color = m_Accumulation[x + y * m_ScreenSize.x] / (float)m_FrameCount;
+					m_TextureData[x + y * m_ScreenSize.x] = ConvertToRGBA(color);
 
 				}
 			);
@@ -103,12 +103,12 @@ GEngine::Vector4 RayTracing::PerPixelRayTrace(uint32_t x, uint32_t y, GEngine::E
 {
 	Ray ray;
 	ray.origin = camera.GetPosition();
-	ray.direction = m_RayDir[(x + y * m_ScreenSize.value.x)].value;
+	ray.direction = m_RayDir[(x + y * m_ScreenSize.x)];
 
 	GEngine::Vector3 light = { 0.0f, 0.0f, 0.0f };
 	GEngine::Vector3 multiplier = { 1.0f, 1.0f, 1.0f };
 
-	uint32_t seed = x + y * m_ScreenSize.value.x;
+	uint32_t seed = x + y * m_ScreenSize.x;
 	seed *= m_FrameCount;
 	
 	HitRecord hitRecord;
@@ -132,7 +132,7 @@ GEngine::Vector4 RayTracing::PerPixelRayTrace(uint32_t x, uint32_t y, GEngine::E
 
 		ray.origin = hitRecord.position + (hitRecord.normal * 0.0001f);
 		ray.direction = GEngine::Math::Reflect(ray.direction,
-			(hitRecord.normal + hitRecord.roughness * GEngine::Vector3(m_Distribution(m_Engine), m_Distribution(m_Engine), m_Distribution(m_Engine)).Normalized()));
+			(hitRecord.normal + hitRecord.roughness * GEngine::Math::Normalized(GEngine::Vector3(m_Distribution(m_Engine), m_Distribution(m_Engine), m_Distribution(m_Engine)))));
 		//ray.direction = (hitRecord.normal + GEngine::Vector3(m_Distribution(m_Engine), m_Distribution(m_Engine), m_Distribution(m_Engine)).Normalized()).Normalized();
 		//ray.direction = (hitRecord.normal + RandomInUnitSphere(seed)).Normalized();
 	}
@@ -166,7 +166,7 @@ HitRecord RayTracing::RayTrace(Ray& ray)
 				hitRecord.position = hitPoint;
 
 				//GEngine::Vector3 normal = ((hitPoint).Normalized());
-				GEngine::Vector3 normal = ((hitPoint - sphere.position).Normalized());
+				GEngine::Vector3 normal = GEngine::Math::Normalized((hitPoint - sphere.position));
 				hitRecord.normal = normal;
 				hitRecord.color = sphere.color;
 				hitRecord.roughness = sphere.roughness;

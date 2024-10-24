@@ -197,7 +197,7 @@ namespace GEngine
     }
     void OpenGLFrameBuffer::Resize(Vector2 size)
     {
-        Resize((uint32_t)size.value.x, (uint32_t)size.value.y);
+        Resize((uint32_t)size.x, (uint32_t)size.y);
     }
     int OpenGLFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
     {

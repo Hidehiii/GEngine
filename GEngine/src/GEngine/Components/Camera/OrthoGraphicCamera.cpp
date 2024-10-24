@@ -18,9 +18,9 @@ namespace GEngine
 	void OrthoGraphicCamera::RecalculateViewMatrix()
 	{
 		Matrix4x4 transform = Math::Translate(m_Position) *
-			Math::Rotate(m_Rotation.value.x, { 1, 0, 0 }) *
-			Math::Rotate(m_Rotation.value.y, { 0, 1, 0 }) *
-			Math::Rotate(m_Rotation.value.z, { 0, 0, 1 });
+			Math::Rotate(m_Rotation.x, { 1, 0, 0 }) *
+			Math::Rotate(m_Rotation.y, { 0, 1, 0 }) *
+			Math::Rotate(m_Rotation.z, { 0, 0, 1 });
 
 		m_ViewMatrix = Math::Inverse(transform);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;

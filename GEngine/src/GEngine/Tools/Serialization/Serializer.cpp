@@ -15,8 +15,8 @@ namespace YAML
 		static Node encode(const GEngine::Vector2& rhs)
 		{
 			Node node;
-			node.push_back(rhs.value.x);
-			node.push_back(rhs.value.y);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
 			return node;
 		}
 
@@ -25,8 +25,8 @@ namespace YAML
 			if (!node.IsSequence() || node.size() != 2)
 				return false;
 
-			rhs.value.x = node[0].as<float>();
-			rhs.value.y = node[1].as<float>();
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
 			return true;
 		}
 	};
@@ -37,9 +37,9 @@ namespace YAML
 		static Node encode(const GEngine::Vector3& rhs)
 		{
 			Node node;
-			node.push_back(rhs.value.x);
-			node.push_back(rhs.value.y);
-			node.push_back(rhs.value.z);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
 			return node;
 		}
 
@@ -48,9 +48,9 @@ namespace YAML
 			if (!node.IsSequence() || node.size() != 3)
 				return false;
 
-			rhs.value.x = node[0].as<float>();
-			rhs.value.y = node[1].as<float>();
-			rhs.value.z = node[2].as<float>();
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
 			return true;
 		}
 	};
@@ -61,10 +61,10 @@ namespace YAML
 		static Node encode(const GEngine::Vector4& rhs)
 		{
 			Node node;
-			node.push_back(rhs.value.x);
-			node.push_back(rhs.value.y);
-			node.push_back(rhs.value.z);
-			node.push_back(rhs.value.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			node.push_back(rhs.w);
 			return node;
 		}
 
@@ -73,10 +73,10 @@ namespace YAML
 			if (!node.IsSequence() || node.size() != 4)
 				return false;
 
-			rhs.value.x = node[0].as<float>();
-			rhs.value.y = node[1].as<float>();
-			rhs.value.z = node[2].as<float>();
-			rhs.value.w = node[3].as<float>();
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			rhs.w = node[3].as<float>();
 			return true;
 		}
 	};
@@ -88,10 +88,10 @@ namespace YAML
 		{
 			Node node;
 			
-			node.push_back(rhs.value.x);
-			node.push_back(rhs.value.y);
-			node.push_back(rhs.value.z);
-			node.push_back(rhs.value.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			node.push_back(rhs.w);
 			return node;
 		}
 
@@ -100,10 +100,10 @@ namespace YAML
 			if (!node.IsSequence() || node.size() != 4)
 				return false;
 
-			rhs.value.x = node[0].as<float>();
-			rhs.value.y = node[1].as<float>();
-			rhs.value.z = node[2].as<float>();
-			rhs.value.w = node[3].as<float>();
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			rhs.w = node[3].as<float>();
 			return true;
 		}
 	};
@@ -114,25 +114,25 @@ namespace GEngine
 	YAML::Emitter& operator<< (YAML::Emitter& out, const Vector2& v)
 	{
 		out << YAML::Flow;
-		out << YAML::BeginSeq << v.value.x << v.value.y << YAML::EndSeq;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
 	YAML::Emitter& operator<< (YAML::Emitter& out, const Vector3& v)
 	{
 		out << YAML::Flow;
-		out << YAML::BeginSeq << v.value.x << v.value.y << v.value.z << YAML::EndSeq;
+		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 	YAML::Emitter& operator<< (YAML::Emitter& out, const Vector4& v)
 	{
 		out << YAML::Flow;
-		out << YAML::BeginSeq << v.value.x << v.value.y << v.value.z <<v.value.w << YAML::EndSeq;
+		out << YAML::BeginSeq << v.x << v.y << v.z <<v.w << YAML::EndSeq;
 		return out;
 	}
 	YAML::Emitter& operator<< (YAML::Emitter& out, const Quaternion& v)
 	{
 		out << YAML::Flow;
-		out << YAML::BeginSeq << v.value.x << v.value.y << v.value.z << v.value.w << YAML::EndSeq;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 	// 编码游戏对象和组件的数据

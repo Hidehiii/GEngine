@@ -14,14 +14,14 @@ struct Ray
 
 struct Sphere
 {
-	GEngine::Vector3 position = { 0.0f };
+	GEngine::Vector3 position = GEngine::Vector3(0.0f);
 	float radius;
 
-	GEngine::Vector3 color = { 0.0f };
+	GEngine::Vector3 color = GEngine::Vector3(0.0f);
 	float roughness = 0.0f;
 	float metalness = 0.0f;
 
-	GEngine::Vector3 emissionColor = { 0.0f };
+	GEngine::Vector3 emissionColor = GEngine::Vector3(0.0f);
 	float emissionIntensity = 0.0f;
 
 	Sphere() = default;
@@ -41,7 +41,7 @@ struct HitRecord
 	float roughness = 0.0f;
 	float metalness = 0.0f;
 
-	GEngine::Vector3 emissionColor = { 0.0f };
+	GEngine::Vector3 emissionColor = GEngine::Vector3(0.0f);
 	float emissionIntensity = 0.0f;
 	bool hit = false;
 };
@@ -58,13 +58,13 @@ private:
 	HitRecord RayTrace(Ray& ray);
 private:
 	GEngine::Vector2 m_ScreenSize = { 800, 800 };
-	std::vector<uint32_t> m_PixelsInOneLine = std::vector<uint32_t>(m_ScreenSize.value.x, 0);
-	std::vector<uint32_t> m_TextureData = std::vector<uint32_t>(m_ScreenSize.value.x * m_ScreenSize.value.y, 0xffff00ff);
-	std::vector<GEngine::Vector4> m_Accumulation = std::vector<GEngine::Vector4>(m_ScreenSize.value.x * m_ScreenSize.value.y, GEngine::Vector4());
-	std::vector<GEngine::Vector3> m_RayDir = std::vector<GEngine::Vector3>(m_ScreenSize.value.x * m_ScreenSize.value.y, { 0, 0, 1 });
+	std::vector<uint32_t> m_PixelsInOneLine = std::vector<uint32_t>(m_ScreenSize.x, 0);
+	std::vector<uint32_t> m_TextureData = std::vector<uint32_t>(m_ScreenSize.x * m_ScreenSize.y, 0xffff00ff);
+	std::vector<GEngine::Vector4> m_Accumulation = std::vector<GEngine::Vector4>(m_ScreenSize.x * m_ScreenSize.y, GEngine::Vector4());
+	std::vector<GEngine::Vector3> m_RayDir = std::vector<GEngine::Vector3>(m_ScreenSize.x * m_ScreenSize.y, { 0, 0, 1 });
 	std::vector<Sphere> m_Spheres;
 	GEngine::Ref<GEngine::Texture2D> m_Texture;
-	float m_AspectRatio = m_ScreenSize.value.x / m_ScreenSize.value.y;
+	float m_AspectRatio = m_ScreenSize.x / m_ScreenSize.y;
 	GEngine::Vector3 m_LightDir = { 1, 1, 0 };
 	float m_Bounce = 3;
 	std::uniform_real_distribution<float> m_Distribution;

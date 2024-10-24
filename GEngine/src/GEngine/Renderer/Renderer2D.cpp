@@ -470,11 +470,11 @@ namespace GEngine
 			NextBatch();
 		}
 
-		s_Data.LineVertexBufferPtr->Position = { start.value.x, start.value.y, start.value.z, 1.0f };
+		s_Data.LineVertexBufferPtr->Position = { start.x, start.y, start.z, 1.0f };
 		s_Data.LineVertexBufferPtr->Color = color;
 		s_Data.LineVertexBufferPtr++;
 
-		s_Data.LineVertexBufferPtr->Position = { end.value.x, end.value.y, end.value.z, 1.0f };
+		s_Data.LineVertexBufferPtr->Position = { end.x, end.y, end.z, 1.0f };
 		s_Data.LineVertexBufferPtr->Color = color;
 		s_Data.LineVertexBufferPtr++;
 
@@ -511,13 +511,13 @@ namespace GEngine
 			NextBatch();
 		}
 
-		Vector4 startPos = { start.value.x, start.value.y, start.value.z, 1.0f };
+		Vector4 startPos = { start.x, start.y, start.z, 1.0f };
 
 		s_Data.LineVertexBufferPtr->Position = startPos;
 		s_Data.LineVertexBufferPtr->Color = color;
 		s_Data.LineVertexBufferPtr++;
 
-		s_Data.LineVertexBufferPtr->Position = startPos + Vector4(direction.value.x, direction.value.y, direction.value.z, 0.0f) * length;
+		s_Data.LineVertexBufferPtr->Position = startPos + Vector4(direction.x, direction.y, direction.z, 0.0f) * length;
 		s_Data.LineVertexBufferPtr->Color = color;
 		s_Data.LineVertexBufferPtr++;
 
@@ -534,7 +534,7 @@ namespace GEngine
 			NextBatch();
 		}
 
-		s_Data.PointVertexBufferPtr->Position = { position.value.x, position.value.y, position.value.z, 1.0f };
+		s_Data.PointVertexBufferPtr->Position = { position.x, position.y, position.z, 1.0f };
 		s_Data.PointVertexBufferPtr->Color = color;
 		s_Data.PointVertexBufferPtr++;
 
@@ -565,7 +565,7 @@ namespace GEngine
 	}
 	void Renderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color);
 	}
 	void Renderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color)
 	{
@@ -574,7 +574,7 @@ namespace GEngine
 	}
 	void Renderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, tex, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, tex, tiling);
 	}
 	void Renderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling)
 	{
@@ -584,7 +584,7 @@ namespace GEngine
 	}
 	void Renderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, tex, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, tex, tiling);
 	}
 	void Renderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const Vector2 tiling)
 	{
@@ -595,7 +595,7 @@ namespace GEngine
 	}
 	void Renderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, spriteSheet, spriteSheetSize, spriteSize, offset, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, spriteSheet, spriteSheetSize, spriteSize, offset, tiling);
 	}
 	void Renderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const Vector2 tiling)
 	{
@@ -625,10 +625,10 @@ namespace GEngine
 		// New UV
 		Vector2 uv[4] =
 		{
-			{ (offset.value.x * spriteSize.value.x) / spriteSheetSize.value.x, (offset.value.y * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ ((offset.value.x + 1) * spriteSize.value.x) / spriteSheetSize.value.x, (offset.value.y * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ ((offset.value.x + 1) * spriteSize.value.x) / spriteSheetSize.value.x, ((offset.value.y + 1) * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ (offset.value.x * spriteSize.value.x) / spriteSheetSize.value.x, ((offset.value.y + 1) * spriteSize.value.y) / spriteSheetSize.value.y}
+			{ (offset.x * spriteSize.x) / spriteSheetSize.x, (offset.y * spriteSize.y) / spriteSheetSize.y},
+			{ ((offset.x + 1) * spriteSize.x) / spriteSheetSize.x, (offset.y * spriteSize.y) / spriteSheetSize.y},
+			{ ((offset.x + 1) * spriteSize.x) / spriteSheetSize.x, ((offset.y + 1) * spriteSize.y) / spriteSheetSize.y},
+			{ (offset.x * spriteSize.x) / spriteSheetSize.x, ((offset.y + 1) * spriteSize.y) / spriteSheetSize.y}
 		};
 
 		Transform transform = Transform(position, rotation, size);

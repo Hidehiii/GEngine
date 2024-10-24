@@ -130,7 +130,7 @@ namespace GEngine
 		{			
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
 			FrameBufferSpecification fbspsc = m_SceneViewportFrameBuffer->GetSpecification();
-			if (m_SceneViewportSize.value.x > 0 && m_SceneViewportSize.value.y > 0 && (fbspsc.Width != m_SceneViewportSize.value.x || fbspsc.Height != m_SceneViewportSize.value.y))
+			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspsc.Width != m_SceneViewportSize.x || fbspsc.Height != m_SceneViewportSize.y))
 			{
 				m_SceneViewportFrameBuffer->Resize(m_SceneViewportSize);
 			}
@@ -150,7 +150,7 @@ namespace GEngine
 			
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
 			FrameBufferSpecification fbspsc = m_GameViewportFrameBuffer->GetSpecification();
-			if (m_GameViewportSize.value.x > 0 && m_GameViewportSize.value.y > 0 && (fbspsc.Width != m_GameViewportSize.value.x || fbspsc.Height != m_GameViewportSize.value.y))
+			if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspsc.Width != m_GameViewportSize.x || fbspsc.Height != m_GameViewportSize.y))
 			{
 				m_GameViewportFrameBuffer->Resize(m_GameViewportSize);
 			}
@@ -358,13 +358,13 @@ namespace GEngine
 
 			// Update viewport size
 			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
-			if (m_SceneViewportSize != viewportPanelSize && viewportPanelSize.value.x > 0 && viewportPanelSize.value.y > 0)
+			if (m_SceneViewportSize != viewportPanelSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
 				m_SceneViewportSize = viewportPanelSize;
-				m_EditorCamera.SetViewportSize(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y);
+				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
 			uint32_t tex = m_SceneViewportFrameBuffer->GetColorAttachment();
-			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.value.x, m_SceneViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			Vector2 windowRegionMin = { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
 			Vector2 windowRegionMax = { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
@@ -402,7 +402,7 @@ namespace GEngine
 				Matrix4x4 deltaMatrix = objTransform;
 
 
-				ImGuizmo::Manipulate(cameraView.ValuePtr(), cameraProjection.ValuePtr(), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, objTransform.ValuePtr(), deltaMatrix.ValuePtr(), isSnap ? snapArr : nullptr);
+				ImGuizmo::Manipulate(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, Math::ValuePtr(objTransform), Math::ValuePtr(deltaMatrix), isSnap ? snapArr : nullptr);
 
 				if (ImGuizmo::IsUsing())
 				{
@@ -450,13 +450,13 @@ namespace GEngine
 
 			// Update viewport size
 			Vector2 viewportPanelSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
-			if (viewportPanelSize.value.x > 0 && viewportPanelSize.value.y > 0)
+			if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
 				m_GameViewportSize = viewportPanelSize;
-				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.value.x, m_GameViewportSize.value.y);
+				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 			}
 			uint32_t tex = m_GameViewportFrameBuffer->GetColorAttachment();
-			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.value.x, m_GameViewportSize.value.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();
 			ImGui::PopStyleVar();
@@ -643,7 +643,7 @@ namespace GEngine
 	void GEngineEditorLayer::NewScene()
 	{
 		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.value.x, (uint32_t)m_SceneViewportSize.value.y);
+		m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
 		m_Hierarchy.SetContext(m_ActiveScene);
 		m_HoveredGameObject = {};
 		m_SceneFilePath = "";
@@ -657,7 +657,7 @@ namespace GEngine
 		{
 			std::string filePath = m_SceneFilePath.string();
 			m_ActiveScene = CreateRef<Scene>();
-			m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.value.x, (uint32_t)m_SceneViewportSize.value.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
 			m_Hierarchy.SetContext(m_ActiveScene);
 			m_HoveredGameObject = {};
 			Serializer::Deserialize(filePath, m_ActiveScene);
@@ -764,10 +764,10 @@ namespace GEngine
 				Vector3 direction = transform.Forward();
 				Renderer2D::DrawCircle(transform, 0.1f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				Renderer2D::DrawLine(position, direction , 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1 * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1 * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1 * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1f * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1f * transform.Right(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position + 0.1f * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+				Renderer2D::DrawLine(position - 0.1f * transform.Up(), direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 		GameObject gameObject = m_Hierarchy.GetSelectedGameObject();
@@ -791,7 +791,7 @@ namespace GEngine
 				// This transform of the collider is should be multiplied by the scale transform of the game object
 				// Otherwise, the collider will not be scaled with the game object
 				auto t = Math::Translate(Matrix4x4(1.0f), transform.m_Position)
-					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().value.z), Vector3(0.0f, 0.0f, 1.0f))
+					* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().z), Vector3(0.0f, 0.0f, 1.0f))
 					* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
 					* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
 					* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)

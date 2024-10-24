@@ -123,7 +123,7 @@ namespace GEngine
 				Vector3 r = Math::Degrees(Math::EulerAngles(component.m_Rotation));
 				GUIPainter::DrawVector3Control("Rotation", r);
 				component.SetEulerAngle(r);
-				GUIPainter::DrawVector3Control("Scale", component.m_Scale, 1.0f);
+				GUIPainter::DrawVector3Control("Scale", component.m_Scale, Vector3(1.0f));
 			}
 		);
 		
@@ -213,7 +213,7 @@ namespace GEngine
 					component.m_Texture = nullptr;
 				}
 				ImGui::Columns(1);
-				GUIPainter::DrawVector2Control("Tiling", component.m_Tiling, 1.0f);
+				GUIPainter::DrawVector2Control("Tiling", component.m_Tiling, Vector2(1.0f));
 			}
 		);
 

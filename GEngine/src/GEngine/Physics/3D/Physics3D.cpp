@@ -81,7 +81,7 @@ namespace GEngine
 	Physics3DCube::Physics3DCube(const Vector3& halfExtents)
 	{
 		m_HalfExtents = halfExtents;
-		m_Cube = physx::PxBoxGeometry(halfExtents.value.x, halfExtents.value.y, halfExtents.value.z);
+		m_Cube = physx::PxBoxGeometry(halfExtents.x, halfExtents.y, halfExtents.z);
 	}
 	Physics3DCube::Physics3DCube(const Physics3DCube& other)
 	{

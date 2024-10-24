@@ -42,7 +42,7 @@ namespace GEngine
 	}
 	void OpenGLRendererAPI::SetClearColor(const Vector4& color)
 	{
-		glClearColor(color.value.r, color.value.g, color.value.b, color.value.a);
+		glClearColor(color.r, color.g, color.b, color.a);
 	}
 	void OpenGLRendererAPI::Clear()
 	{

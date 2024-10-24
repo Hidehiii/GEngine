@@ -22,7 +22,7 @@ namespace GEngine
 
 	Physics2DWorld::Physics2DWorld(Vector2 gravity, Scene* scene)
 	{
-		this->m_PhysicsWorld2D = new b2World(b2Vec2(gravity.value.x, gravity.value.y));
+		this->m_PhysicsWorld2D = new b2World(b2Vec2(gravity.x, gravity.y));
 		this->m_Scene = scene;
 	}
 
@@ -54,7 +54,7 @@ namespace GEngine
 
 	void Physics2DBodyDef::SetPosition(Vector2 position)
 	{
-		this->m_BodyDef.position.Set(position.value.x, position.value.y);
+		this->m_BodyDef.position.Set(position.x, position.y);
 	}
 
 	void Physics2DBodyDef::SetAngle(float angle)
@@ -74,7 +74,7 @@ namespace GEngine
 
 	void Physics2DPolygonShape::SetAsBox(float hx, float hy, const Vector2& center, float angle)
 	{
-		this->m_Shape.SetAsBox(hx, hy, b2Vec2(center.value.x, center.value.y), angle);
+		this->m_Shape.SetAsBox(hx, hy, b2Vec2(center.x, center.y), angle);
 	}
 
 	void Physics2DPolygonShape::SetAsBox(float hx, float hy)
@@ -84,7 +84,7 @@ namespace GEngine
 
 	void Physics2DCircleShape::SetPosition(Vector2 pos)
 	{
-		this->m_Shape.m_p.Set(pos.value.x, pos.value.y);
+		this->m_Shape.m_p.Set(pos.x, pos.y);
 	}
 	void Physics2DCircleShape::SetRadius(float radius)
 	{

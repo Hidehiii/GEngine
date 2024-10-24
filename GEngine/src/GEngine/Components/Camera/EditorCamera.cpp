@@ -64,7 +64,7 @@ namespace GEngine::Editor
 			else if (Input::IsMouseButtonPressed(MouseCode::ButtonLeft))
 				MouseRotate(delta);
 			else if (Input::IsMouseButtonPressed(MouseCode::ButtonRight))
-				MouseZoom(delta.value.x);
+				MouseZoom(delta.x);
 		}
 		else if (Input::IsMouseButtonPressed(MouseCode::ButtonMiddle))
 		{
@@ -129,15 +129,15 @@ namespace GEngine::Editor
 	void EditorCamera::MousePan(const Vector2& delta)
 	{
 		auto [xSpeed, ySpeed] = PanSpeed();
-		m_FocalPoint += -GetRightDirection() * delta.value.x * xSpeed * m_Distance;
-		m_FocalPoint += GetUpDirection() * delta.value.y * ySpeed * m_Distance;
+		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
+		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
 	}
 
 	void EditorCamera::MouseRotate(const Vector2& delta)
 	{
-		float yawSign = GetUpDirection().value.y < 0 ? -1.0f : 1.0f;
-		m_Yaw += yawSign * delta.value.x * RotationSpeed();
-		m_Pitch += delta.value.y * RotationSpeed();
+		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		m_Yaw += yawSign * delta.x * RotationSpeed();
+		m_Pitch += delta.y * RotationSpeed();
 	}
 
 	void EditorCamera::MouseZoom(float delta)

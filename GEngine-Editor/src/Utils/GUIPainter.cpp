@@ -62,12 +62,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
-			val.value.x = restVal.value.x;
+			val.x = restVal.x;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
+		ImGui::DragFloat("##X", &val.x, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -77,12 +77,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
-			val.value.y = restVal.value.y;
+			val.y = restVal.y;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
+		ImGui::DragFloat("##Y", &val.y, speed);
 		ImGui::PopItemWidth();
 
 
@@ -114,12 +114,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
-			val.value.x = restVal.value.x;
+			val.x = restVal.x;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
+		ImGui::DragFloat("##X", &val.x, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -129,12 +129,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
-			val.value.y = restVal.value.y;
+			val.y = restVal.y;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
+		ImGui::DragFloat("##Y", &val.y, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -144,12 +144,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z", buttonSize))
 		{
-			val.value.z = restVal.value.z;
+			val.z = restVal.z;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &val.value.z, speed);
+		ImGui::DragFloat("##Z", &val.z, speed);
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -180,12 +180,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
-			val.value.x = restVal.value.x;
+			val.x = restVal.x;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &val.value.x, speed);
+		ImGui::DragFloat("##X", &val.x, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -195,12 +195,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
-			val.value.y = restVal.value.y;
+			val.y = restVal.y;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &val.value.y, speed);
+		ImGui::DragFloat("##Y", &val.y, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -210,12 +210,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z", buttonSize))
 		{
-			val.value.z = restVal.value.z;
+			val.z = restVal.z;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &val.value.z, speed);
+		ImGui::DragFloat("##Z", &val.z, speed);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -225,12 +225,12 @@ namespace GEngine
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("W", buttonSize))
 		{
-			val.value.w = restVal.value.w;
+			val.w = restVal.w;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::SameLine();
-		ImGui::DragFloat("##W", &val.value.w, speed);
+		ImGui::DragFloat("##W", &val.w, speed);
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -248,7 +248,7 @@ namespace GEngine
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
-		ImGui::ColorEdit4("##color", color.ValuePtr(), ImGuiColorEditFlags_NoLabel);
+		ImGui::ColorEdit4("##color", Math::ValuePtr(color), ImGuiColorEditFlags_NoLabel);
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}

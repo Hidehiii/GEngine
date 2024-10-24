@@ -23,13 +23,13 @@ namespace GEngine
 				// Calculate the AABB of the mesh
 				for (auto& vertex : mesh.m_Vertices)
 				{
-					m_Min.value.x = Math::Min({ m_Min.value.x, vertex.m_Position.value.x});
-					m_Min.value.y = Math::Min({ m_Min.value.y, vertex.m_Position.value.y});
-					m_Min.value.z = Math::Min({ m_Min.value.z, vertex.m_Position.value.z});
+					m_Min.x = Math::Min({ m_Min.x, vertex.m_Position.x });
+					m_Min.y = Math::Min({ m_Min.y, vertex.m_Position.y });
+					m_Min.z = Math::Min({ m_Min.z, vertex.m_Position.z });
 
-					m_Max.value.x = Math::Max({ m_Max.value.x, vertex.m_Position.value.x});
-					m_Max.value.y = Math::Max({ m_Max.value.y, vertex.m_Position.value.y});
-					m_Max.value.z = Math::Max({ m_Max.value.z, vertex.m_Position.value.z});
+					m_Max.x = Math::Max({ m_Max.x, vertex.m_Position.x });
+					m_Max.y = Math::Max({ m_Max.y, vertex.m_Position.y });
+					m_Max.z = Math::Max({ m_Max.z, vertex.m_Position.z });
 				}
 			}
 		}

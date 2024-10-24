@@ -190,8 +190,8 @@ namespace GEngine
 
 			Physics2DBodyDef bodyDef;
 			bodyDef.SetType(rigidBody.m_RigidBodyType);
-			bodyDef.SetPosition({ transform.m_Position.value.x, transform.m_Position.value.y });
-			bodyDef.SetAngle(transform.GetEulerAngle().value.z);
+			bodyDef.SetPosition({ transform.m_Position.x, transform.m_Position.y });
+			bodyDef.SetAngle(transform.GetEulerAngle().z);
 
 			Physics2DBody* body = m_PhysicsWorld2D->CreateBody(&bodyDef);
 			body->SetFixedRotation(rigidBody.m_FixedRotation);
@@ -202,8 +202,8 @@ namespace GEngine
 				auto& boxCollider = gameObject.GetComponent<BoxCollider2D>();
 
 				Physics2DPolygonShape shape; 
-				shape.SetAsBox(boxCollider.m_Size.value.x / 2.0f * transform.m_Scale.value.x, boxCollider.m_Size.value.y / 2.0f * transform.m_Scale.value.y, 
-					Vector2(boxCollider.m_Offset.value.x, boxCollider.m_Offset.value.y), Math::Radians(boxCollider.m_Rotation));
+				shape.SetAsBox(boxCollider.m_Size.x / 2.0f * transform.m_Scale.x, boxCollider.m_Size.y / 2.0f * transform.m_Scale.y, 
+					Vector2(boxCollider.m_Offset.x, boxCollider.m_Offset.y), Math::Radians(boxCollider.m_Rotation));
 
 				Physics2DFixtureDef fixtureDef;
 				fixtureDef.SetPolygonShape(&shape);
@@ -266,8 +266,8 @@ namespace GEngine
 
 					Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
 					const auto& pos = body->GetPosition();
-					transform.m_Position.value.x = pos.value.x;
-					transform.m_Position.value.y = pos.value.y;
+					transform.m_Position.x = pos.x;
+					transform.m_Position.y = pos.y;
 					transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
 				}
 				m_Registry.view<NativeScript>().each([=](auto entity, auto& script)

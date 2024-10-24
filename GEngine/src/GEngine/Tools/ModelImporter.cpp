@@ -110,10 +110,10 @@ namespace GEngine
     {
         FbxVector4* pCtrlPoint = mesh->GetControlPoints();
 
-        vertex.m_Position.value.x = pCtrlPoint[index].mData[0];
-        vertex.m_Position.value.y = pCtrlPoint[index].mData[1];
-        vertex.m_Position.value.z = pCtrlPoint[index].mData[2];
-        vertex.m_Position.value.w = 1.0f;
+        vertex.m_Position.x = pCtrlPoint[index].mData[0];
+        vertex.m_Position.y = pCtrlPoint[index].mData[1];
+        vertex.m_Position.z = pCtrlPoint[index].mData[2];
+        vertex.m_Position.w = 1.0f;
     }
     void ModelImporter::ReadNormal(FbxMesh* mesh, int index, int vertexCounter, Vertex& vertex)
     {
@@ -130,20 +130,20 @@ namespace GEngine
             {
             case FbxGeometryElement::eDirect:
             {
-                vertex.m_Normal.value.x = normal->GetDirectArray().GetAt(index).mData[0];
-                vertex.m_Normal.value.y = normal->GetDirectArray().GetAt(index).mData[1];
-                vertex.m_Normal.value.z = normal->GetDirectArray().GetAt(index).mData[2];
-                vertex.m_Normal.value.w = 0.0f;
+                vertex.m_Normal.x = normal->GetDirectArray().GetAt(index).mData[0];
+                vertex.m_Normal.y = normal->GetDirectArray().GetAt(index).mData[1];
+                vertex.m_Normal.z = normal->GetDirectArray().GetAt(index).mData[2];
+                vertex.m_Normal.w = 0.0f;
             }
             break;
 
             case FbxGeometryElement::eIndexToDirect:
             {
                 int id = normal->GetIndexArray().GetAt(index);
-                vertex.m_Normal.value.x = normal->GetDirectArray().GetAt(id).mData[0];
-                vertex.m_Normal.value.y = normal->GetDirectArray().GetAt(id).mData[1];
-                vertex.m_Normal.value.z = normal->GetDirectArray().GetAt(id).mData[2];
-                vertex.m_Normal.value.w = 0.0f;
+                vertex.m_Normal.x = normal->GetDirectArray().GetAt(id).mData[0];
+                vertex.m_Normal.y = normal->GetDirectArray().GetAt(id).mData[1];
+                vertex.m_Normal.z = normal->GetDirectArray().GetAt(id).mData[2];
+                vertex.m_Normal.w = 0.0f;
             }
             break;
 
@@ -159,20 +159,20 @@ namespace GEngine
             {
             case FbxGeometryElement::eDirect:
             {
-                vertex.m_Normal.value.x = normal->GetDirectArray().GetAt(vertexCounter).mData[0];
-                vertex.m_Normal.value.y = normal->GetDirectArray().GetAt(vertexCounter).mData[1];
-                vertex.m_Normal.value.z = normal->GetDirectArray().GetAt(vertexCounter).mData[2];
-                vertex.m_Normal.value.w = 0.0f;
+                vertex.m_Normal.x = normal->GetDirectArray().GetAt(vertexCounter).mData[0];
+                vertex.m_Normal.y = normal->GetDirectArray().GetAt(vertexCounter).mData[1];
+                vertex.m_Normal.z = normal->GetDirectArray().GetAt(vertexCounter).mData[2];
+                vertex.m_Normal.w = 0.0f;
             }
             break;
 
             case FbxGeometryElement::eIndexToDirect:
             {
                 int id = normal->GetIndexArray().GetAt(vertexCounter);
-                vertex.m_Normal.value.x = normal->GetDirectArray().GetAt(id).mData[0];
-                vertex.m_Normal.value.y = normal->GetDirectArray().GetAt(id).mData[1];
-                vertex.m_Normal.value.z = normal->GetDirectArray().GetAt(id).mData[2];
-                vertex.m_Normal.value.w = 0.0f;
+                vertex.m_Normal.x = normal->GetDirectArray().GetAt(id).mData[0];
+                vertex.m_Normal.y = normal->GetDirectArray().GetAt(id).mData[1];
+                vertex.m_Normal.z = normal->GetDirectArray().GetAt(id).mData[2];
+                vertex.m_Normal.w = 0.0f;
             }
             break;
 

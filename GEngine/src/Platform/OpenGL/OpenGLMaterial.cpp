@@ -84,18 +84,18 @@ namespace GEngine
 	}
 	void OpenGLMaterial::SetVector(const std::string& name, const Vector2& value)
 	{
-		SetVector(name, Vector4(value));
+		SetVector(name, Vector4(value, 0.0f, 0.0f));
 	}
 	void OpenGLMaterial::SetVector(const std::string& name, const Vector3& value)
 	{
-		SetVector(name, Vector4(value));
+		SetVector(name, Vector4(value, 0.0f));
 	}
 	void OpenGLMaterial::SetVector(const std::string& name, const Vector4& value)
 	{
 		ShaderUniform uniform = GetUniformByName(name);
 		if (uniform.Size)
 		{
-			m_UniformStorageBuffer.Write((const void*)value.ValuePtr(), uniform.Size, uniform.Location);
+			m_UniformStorageBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
 		}
 	}
 	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)

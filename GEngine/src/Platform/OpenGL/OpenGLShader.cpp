@@ -290,27 +290,27 @@ namespace GEngine
 	}
 	void OpenGLShader::SetFloat2(const std::string& name, const Vector2& value)
 	{
-		glUniform2f(glGetUniformLocation(m_RendererID, name.c_str()), value.value.x, value.value.y);
+		glUniform2f(glGetUniformLocation(m_RendererID, name.c_str()), value.x, value.y);
 	}
 	void OpenGLShader::SetFloat3(const std::string& name, const Vector3& value)
 	{
-		glUniform3f(glGetUniformLocation(m_RendererID, name.c_str()), value.value.x, value.value.y, value.value.z);
+		glUniform3f(glGetUniformLocation(m_RendererID, name.c_str()), value.x, value.y, value.z);
 	}
 	void OpenGLShader::SetFloat4(const std::string& name, const Vector4& value)
 	{
-		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), value.value.x, value.value.y, value.value.z, value.value.w);
+		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), value.x, value.y, value.z, value.w);
 	}
 	void OpenGLShader::SetMat4x4(const std::string& name, const Matrix4x4& value)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, value.ValuePtr());
+		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, Math::ValuePtr(value));
 	}
 	void OpenGLShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), count, GL_FALSE, value->ValuePtr());
+		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
 	}
 	void OpenGLShader::SetUniformMat4(const std::string& name, const Matrix4x4& matrix)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, matrix.ValuePtr());
+		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, Math::ValuePtr(matrix));
 	}
 	void OpenGLShader::SetUniformInt(const std::string& name, int value)
 	{
@@ -322,7 +322,7 @@ namespace GEngine
 	}
 	void OpenGLShader::SetUniformFloat4(const std::string& name, const Vector4& vector)
 	{
-		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), vector.value.x, vector.value.y, vector.value.z, vector.value.w);
+		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), vector.x, vector.y, vector.z, vector.w);
 	}
 	void OpenGLShader::SetUniformTexture2D(const std::string& name, int slot)
 	{

@@ -287,7 +287,7 @@ namespace GEngine::Editor
 	}
 	void EditorRenderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const int GameObjctID)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, GameObjctID);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, GameObjctID);
 	}
 	void EditorRenderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const int GameObjctID)
 	{
@@ -296,7 +296,7 @@ namespace GEngine::Editor
 	}
 	void EditorRenderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const int GameObjctID, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, tex, GameObjctID, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, tex, GameObjctID, tiling);
 	}
 	void EditorRenderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const int GameObjctID, const Vector2 tiling)
 	{
@@ -306,7 +306,7 @@ namespace GEngine::Editor
 	}
 	void EditorRenderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const int GameObjctID, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, tex, GameObjctID, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, tex, GameObjctID, tiling);
 	}
 	void EditorRenderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const int GameObjctID, const Vector2 tiling)
 	{
@@ -317,7 +317,7 @@ namespace GEngine::Editor
 	}
 	void EditorRenderer2D::DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const int GameObjctID, const Vector2 tiling)
 	{
-		DrawQuad({ position.value.x, position.value.y, 0.0f }, rotation, size, color, spriteSheet, spriteSheetSize, spriteSize, offset, GameObjctID, tiling);
+		DrawQuad({ position.x, position.y, 0.0f }, rotation, size, color, spriteSheet, spriteSheetSize, spriteSize, offset, GameObjctID, tiling);
 	}
 	void EditorRenderer2D::DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const int GameObjctID, const Vector2 tiling)
 	{
@@ -347,10 +347,10 @@ namespace GEngine::Editor
 		// New UV
 		Vector2 uv[4] =
 		{
-			{ (offset.value.x * spriteSize.value.x) / spriteSheetSize.value.x, (offset.value.y * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ ((offset.value.x + 1) * spriteSize.value.x) / spriteSheetSize.value.x, (offset.value.y * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ ((offset.value.x + 1) * spriteSize.value.x) / spriteSheetSize.value.x, ((offset.value.y + 1) * spriteSize.value.y) / spriteSheetSize.value.y},
-			{ (offset.value.x * spriteSize.value.x) / spriteSheetSize.value.x, ((offset.value.y + 1) * spriteSize.value.y) / spriteSheetSize.value.y}
+			{ (offset.x * spriteSize.x) / spriteSheetSize.x, (offset.y * spriteSize.y) / spriteSheetSize.y},
+			{ ((offset.x + 1) * spriteSize.x) / spriteSheetSize.x, (offset.y * spriteSize.y) / spriteSheetSize.y},
+			{ ((offset.x + 1) * spriteSize.x) / spriteSheetSize.x, ((offset.y + 1) * spriteSize.y) / spriteSheetSize.y},
+			{ (offset.x * spriteSize.x) / spriteSheetSize.x, ((offset.y + 1) * spriteSize.y) / spriteSheetSize.y}
 		};
 
 		Transform transform = Transform(position, rotation, size);

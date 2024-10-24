@@ -56,6 +56,14 @@ namespace GEngine
 		static Matrix4x4 IdentityMatrix();
 		static float Sin(float angle);
 		static float Cos(float angle);
+		static Vector2 Normalized(const Vector2& v);
+		static Vector3 Normalized(const Vector3& v);
+		static Vector4 Normalized(const Vector4& v);
+		static Quaternion Normalized(const Quaternion& v);
+		static float* ValuePtr(const Vector2& v);
+		static float* ValuePtr(const Vector3& v);
+		static float* ValuePtr(const Vector4& v);
+		static float* ValuePtr(const Matrix4x4& v);
 
 		template<typename T>
 		static T Max(std::initializer_list<T> list)
@@ -95,29 +103,29 @@ namespace GEngine
 template<typename OStream>
 inline OStream& operator<<(OStream& os, const GEngine::Vector2 vector)
 {
-	return os << glm::to_string(vector.value);
+	return os << glm::to_string((vector));
 }
 
 template<typename OStream>
 inline OStream& operator<<(OStream& os, const GEngine::Vector3 vector)
 {
-	return os << glm::to_string(vector.value);
+	return os << glm::to_string((vector));
 }
 
 template<typename OStream>
 inline OStream& operator<<(OStream& os, const GEngine::Vector4 vector)
 {
-	return os << glm::to_string(vector.value);
+	return os << glm::to_string((vector));
 }
 
 template<typename OStream>
 inline OStream& operator<<(OStream& os, const GEngine::Matrix4x4& matrix)
 {
-	return os << glm::to_string(matrix.value);
+	return os << glm::to_string((matrix));
 }
 
 template<typename OStream>
 inline OStream& operator<<(OStream& os, GEngine::Quaternion quaternion)
 {
-	return os << glm::to_string(quaternion.value);
+	return os << glm::to_string((quaternion));
 }

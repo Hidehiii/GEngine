@@ -80,10 +80,10 @@ namespace GEngine
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
 		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
 
-		VkClearValue							clearColor = { {{VulkanContext::GetClearColor().value.r,
-																VulkanContext::GetClearColor().value.g,
-																VulkanContext::GetClearColor().value.b,
-																VulkanContext::GetClearColor().value.a}} };
+		VkClearValue							clearColor = { {{VulkanContext::GetClearColor().r,
+																VulkanContext::GetClearColor().g,
+																VulkanContext::GetClearColor().b,
+																VulkanContext::GetClearColor().a}} };
 		renderPassInfo.clearValueCount			= 1;
 		renderPassInfo.pClearValues				= &clearColor;
 		vkCmdBeginRenderPass(VulkanContext::GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);

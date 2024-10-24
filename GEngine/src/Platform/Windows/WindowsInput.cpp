@@ -28,11 +28,11 @@ namespace GEngine
 	float Input::GetMouseX()
 	{
 		Vector2 pos = GetMousePosition();
-		return pos.value.x;
+		return pos.x;
 	}
 	float Input::GetMouseY()
 	{
 		Vector2 pos = GetMousePosition();
-		return pos.value.y;
+		return pos.y;
 	}
 }

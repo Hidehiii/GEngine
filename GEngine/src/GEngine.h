@@ -27,6 +27,7 @@
 #include "GEngine/Renderer/VertexArray.h"
 #include "GEngine/Renderer/RenderBuffer.h"
 #include "GEngine/Renderer/Shader.h"
+#include "GEngine/Renderer/Pipeline.h"
 #include "GEngine/Renderer/Texture.h"
 #include "GEngine/Renderer/SubTexture2D.h"
 #include "GEngine/Renderer/FrameBuffer.h"
