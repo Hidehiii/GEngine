@@ -8,7 +8,9 @@ namespace GEngine
 {
 	enum class EditorSceneState
 	{
-		Edit = 0, Play = 1, Pause = 2
+		Edit	= 0, 
+		Play	= 1, 
+		Pause	= 2
 	};
 
 	class GEngineEditorLayer : public Layer
@@ -79,6 +81,9 @@ namespace GEngine
 		EditorSceneState m_SceneState = EditorSceneState::Edit;
 
 		ModelImporter m_ModelImporter;
+
+	private:
+		std::function<void()> m_SceneStateFunction = [&]() {};
 	};
 
 }

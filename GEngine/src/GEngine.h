@@ -47,7 +47,6 @@
 // Object
 #include "GEngine/Object/Scene/Scene.h"
 #include "GEngine/Object/GameObject.h"
-#include "GEngine/Object/ScriptableObject.h"
 
 
 // Tools

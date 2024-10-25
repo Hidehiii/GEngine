@@ -166,14 +166,20 @@ namespace GEngine
 		m_PhysicsTimerWheel =  CreateRef<PhysicsTimerWheel>(10, 1000 * Time::GetFixedTime());
 
 		// Awake Scripts
-		m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
-				if (!script.Instance)
+				GE_TRACE("Awake");
+				nativeScript.Excute();
+				for (auto& script : nativeScript.m_Scripts)
 				{
-					script.Instance = script.InstantiateFunc();
-					script.Instance->m_GameObject = GameObject{ entity, this };
-					script.Instance->OnAwake();
+					if (script.first == nullptr)
+					{
+						script.first = script.second();
+						script.first->m_GameObject = GameObject(entity, this);
+					}
+					script.first->OnAwake();
 				}
+				nativeScript.Excute();
 			});
 		// Add physics world 2D
 		m_PhysicsWorld2D = CreateRef<Physics2DWorld>(Vector2(0.0f, -9.8f), this);
@@ -240,15 +246,21 @@ namespace GEngine
 	void Scene::OnStart()
 	{
 		// Start Scripts
-		m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
-				if (!script.Instance)
-				{
-					//script.Instance = script.InstantiateFunc();
-					//script.Instance->m_GameObject = GameObject{ entity, this };
-					//script.Instance->OnAwake();
-				}
 				//script.Instance->OnStart();
+				GE_TRACE("start");
+				for (auto& script : nativeScript.m_Scripts)
+				{
+					if (script.first == nullptr)
+					{
+						script.first = script.second();
+						script.first->m_GameObject = GameObject(entity, this);
+						script.first->OnAwake();
+					}
+					script.first->OnStart();
+				}
+				nativeScript.Excute();
 			});
 
 		// Start timerwheel
@@ -271,12 +283,20 @@ namespace GEngine
 					transform.m_Position.y = pos.y;
 					transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
 				}
-				m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+				m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 					{
-						if (script.Instance)
+						for (auto& script : nativeScript.m_Scripts)
 						{
-							//script.Instance->OnPhysicsUpdate();
+							if (script.first == nullptr)
+							{
+								script.first = script.second();
+								script.first->m_GameObject = GameObject(entity, this);
+								script.first->OnAwake();
+								script.first->OnStart();
+							}
+							script.first->OnPhysicsUpdate();
 						}
+						nativeScript.Excute();
 						
 					});
 			});
@@ -288,16 +308,20 @@ namespace GEngine
 	{
 		// Update Scripts
 		{
-			m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 				{
-					if (!script.Instance)
+					for (auto& script : nativeScript.m_Scripts)
 					{
-						//script.Instance = script.InstantiateFunc();
-						//script.Instance->m_GameObject = GameObject{ entity, this };
-						//script.Instance->OnAwake();
-						//script.Instance->OnStart();
+						if (script.first == nullptr)
+						{
+							script.first = script.second();
+							script.first->m_GameObject = GameObject(entity, this);
+							script.first->OnAwake();
+							script.first->OnStart();
+						}
+						script.first->OnUpdate();
 					}
-					//script.Instance->OnUpdate();
+					nativeScript.Excute();
 				});
 		}
 	}
@@ -306,16 +330,20 @@ namespace GEngine
 	{
 		// Update Scripts
 		{
-			m_Registry.view<NativeScript>().each([=](auto entity, auto& script)
+			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 				{
-					if (!script.Instance)
+					for (auto& script : nativeScript.m_Scripts)
 					{
-						//script.Instance = script.InstantiateFunc();
-						//script.Instance->m_GameObject = GameObject{ entity, this };
-						//script.Instance->OnAwake();
-						//script.Instance->OnStart();
+						if (script.first == nullptr)
+						{
+							script.first = script.second();
+							script.first->m_GameObject = GameObject(entity, this);
+							script.first->OnAwake();
+							script.first->OnStart();
+						}
+						script.first->OnLateUpdate();
 					}
-					//script.Instance->OnLateUpdate();
+					nativeScript.Excute();
 				});
 		}
 	}
@@ -324,10 +352,22 @@ namespace GEngine
 	{
 		for(auto object : m_DeletedGameObject)
 		{
-			auto script = object.TryGetComponent<NativeScript>();
-			if (script)
+			auto nativeScript = object.TryGetComponent<NativeScript>();
+			if (nativeScript)
 			{
-				script->Instance->OnDestroy();
+				for(auto& script : nativeScript->m_Scripts)
+				{
+					if (script.first == nullptr)
+					{
+						script.first = script.second();
+						script.first->m_GameObject = object;
+						script.first->OnAwake();
+						script.first->OnStart();
+					}
+					script.first->OnDestroy();
+					delete script.first;
+					script.first = nullptr;
+				}
 			}
 			m_Registry.destroy(object);
 		}

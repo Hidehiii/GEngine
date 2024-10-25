@@ -1,6 +1,5 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Object/ScriptableObject.h"
 #include "GEngine/Components/Component.h"
 namespace GEngine
 {
@@ -13,23 +12,12 @@ namespace GEngine
 		NativeScript() = default;
 		NativeScript(const NativeScript&) = default;
 
-		ScriptableObject*(*InstantiateFunc)();
-		void (*DestroyFunc)(NativeScript*);
-
 		template<typename T>
-		void Bind()
+		void AddInstance()
 		{
-			InstantiateFunc = [](){ return static_cast<ScriptableObject*>(new T()); };
-			DestroyFunc = [](NativeScript* ns) { delete ns->Instance; ns->Instance = nullptr; };
-		}
-
-		template<typename T>
-		T* AddInstance()
-		{
-			GE_CORE_ASSERT(GetInstance<T>() == nullptr, "There is a same script has been added!");
-			T* script = new T();
-			m_Scripts.emplace_back(static_cast<ScriptableObject*>(new T()));
-			return script;
+			GE_CORE_ASSERT(HasInstance<T>() == false, "There is a same script has been added!");
+			m_TempAddScripts.emplace_back(nullptr, []() { return static_cast<ScriptableObject*>(new T()); });
+			//m_Scripts.emplace_back(nullptr, []() { return static_cast<ScriptableObject*>(new T()); });
 		}
 
 		template<typename T>
@@ -37,9 +25,14 @@ namespace GEngine
 		{
 			for (auto script : m_Scripts)
 			{
-				if (typeid(script).name() == typeid(T).name())
+				if (script.first == nullptr)
 				{
-					return dynamic_cast<T*>(script);
+					GE_CORE_INFO("nullptr script found!");
+					continue;
+				}
+				if (typeid(*(script.first)).name() == typeid(T).name())
+				{
+					return dynamic_cast<T*>(script.first);
 				}
 			}
 			return nullptr;
@@ -52,16 +45,55 @@ namespace GEngine
 			for (auto script : m_Scripts)
 			{
 				index++;
-				if (typeid(script).name() == typeid(T).name())
+				if (typeid(*script.first).name() == typeid(T).name())
 				{
-					m_Scripts.erase(m_Scripts.begin() + index);
+					m_TempRemoveScripts.push_back(script.first);
+					//m_Scripts.erase(m_Scripts.begin() + index);
 					break;
 				}
 			}
 		}
+
+		template<typename T>
+		bool HasInstance()
+		{
+			for (auto script : m_Scripts)
+			{
+				if (typeid(*(script.second())).name() == typeid(T).name())
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		void Excute()
+		{
+			for (auto& removeScript : m_TempRemoveScripts)
+			{
+				for (int i = 0; i < m_Scripts.size(); i++)
+				{
+					if (m_Scripts[i].first == removeScript)
+					{
+						delete m_Scripts[i].first;
+						m_Scripts[i].first = nullptr;
+						m_Scripts.erase(m_Scripts.begin() + i);
+						break;
+					}
+				}
+			}
+			m_TempRemoveScripts.clear();
+			for (int i = 0; i < m_TempAddScripts.size(); i++)
+			{
+				m_Scripts.emplace(m_Scripts.begin(), m_TempAddScripts[i]);
+			}
+			m_TempAddScripts.clear();
+		}
 	public:
-		ScriptableObject* Instance = nullptr;
-		std::vector<ScriptableObject*>		m_Scripts;
+		std::vector<std::pair<ScriptableObject*, ScriptableObject* (*)()>>		m_Scripts;
+	private:
+		std::vector<std::pair<ScriptableObject*, ScriptableObject* (*)()>>		m_TempAddScripts;
+		std::vector<ScriptableObject*>											m_TempRemoveScripts;
 	};
 }
 

@@ -1,7 +1,14 @@
 #pragma once
 #include "GEngine/Object/Scene/Scene.h"
+
+// temp 
+//#include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 namespace GEngine
 {
+	class ScriptableObject;
+
+	
+
 	class GENGINE_API GameObject :	public Object
 	{
 	public:
@@ -17,32 +24,35 @@ namespace GEngine
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.any_of<T>(m_EntityHandle);
+			if constexpr (std::is_base_of<ScriptableObject, T>::value)
+			{
+				return m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).HasInstance<T>();
+			}
+			else
+			{
+				return m_Scene->m_Registry.any_of<T>(m_EntityHandle);
+			}
 		}
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+		void AddComponent(Args&&... args)
 		{
 			if constexpr (std::is_base_of<ScriptableObject, T>::value)
 			{
-				GE_TRACE("add script!");
-				T* component = m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).AddInstance<T>();
-				return *component;
+				m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).AddInstance<T>();
 			}
 			else
 			{
 				T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 				component.SetGameObject((*this));
 				m_Scene->OnComponentAdded<T>(*this, component);
-				return component;
 			}
 		}
 		template<typename T, typename... Args>
-		T& AddOrReplaceComponent(Args&&... args)
+		void AddOrReplaceComponent(Args&&... args)
 		{
 			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			component.SetGameObject((*this));
 			m_Scene->OnComponentAdded<T>(*this, component);
-			return component;
 		}
 		template<typename T>
 		T& GetComponent()
@@ -59,12 +69,26 @@ namespace GEngine
 		template<typename T>
 		T* TryGetComponent()
 		{
-			return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
+			if constexpr (std::is_base_of<ScriptableObject, T>::value)
+			{
+				return m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).GetInstance<T>();
+			}
+			else
+			{
+				return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
+			}
 		}
 		template<typename T>
 		void RemoveComponent()
 		{
-			m_Scene->m_Registry.remove<T>(m_EntityHandle);
+			if constexpr (std::is_base_of<ScriptableObject, T>::value)
+			{
+				m_Scene->m_Registry.get<NativeScript>(m_EntityHandle).RemoveInstance<T>();
+			}
+			else
+			{
+				m_Scene->m_Registry.remove<T>(m_EntityHandle);
+			}
 		}
 
 		bool operator==(const GameObject& other) const
@@ -77,6 +101,53 @@ namespace GEngine
 		}
 	private:
 		Scene* m_Scene = nullptr;
+	};
+
+
+	class GENGINE_API ScriptableObject : public Object
+	{
+	public:
+		ScriptableObject() = default;
+		virtual ~ScriptableObject() {};
+
+		template<typename T>
+		void AddComponent()
+		{
+			GE_CORE_ASSERT(!m_GameObject.HasComponent<T>(), "GameObject already has component!");
+			m_GameObject.AddComponent<T>();
+		}
+		template<typename T>
+		T& GetComponent()
+		{
+			GE_CORE_ASSERT(m_GameObject.HasComponent<T>(), "GameObject does not have component!");
+			return m_GameObject.GetComponent<T>();
+		}
+		template<typename T>
+		void RemoveComponent()
+		{
+			GE_CORE_ASSERT(m_GameObject.HasComponent<T>(), "GameObject does not have component!");
+			m_GameObject.RemoveComponent<T>();
+		}
+		template<typename T>
+		T* TryGetComponent()
+		{
+			return m_GameObject.TryGetComponent<T>();
+		}
+	public:
+		// time logic
+		virtual void OnAwake() {};
+		virtual void OnStart() {};
+		virtual void OnUpdate() {};
+		virtual void OnPhysicsUpdate() {};
+		virtual void OnLateUpdate() {};
+		virtual void OnDestroy() {};
+
+		// physics
+		/*virtual void OnCollisionEnter2D(Ref<Physics2DContactInfo> info) {};
+		virtual void OnCollisionStay2D(Ref<Physics2DContactInfo> info) {};
+		virtual void OnCollisionExit2D(Ref<Physics2DContactInfo> info) {};*/
+	public:
+		GameObject m_GameObject;
 	};
 }
 

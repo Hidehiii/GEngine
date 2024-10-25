@@ -92,28 +92,44 @@ namespace GEngine
 					GE_TRACE("OnStart");
 					GE_TRACE(m_GameObject.GetComponent<Attribute>().m_Name);
 				}
-				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
+				/*void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
 				{
 					GE_TRACE("OnCollisionEnter2D: {0}", info->GetOtherGameObject().GetComponent<Attribute>().m_Name);
-				}
+				}*/
 				void OnPhysicsUpdate()
 				{
-					GE_TRACE("OnPhysicsUpdate");
+					//GE_TRACE("OnPhysicsUpdate");
 				}
 				void OnUpdate()
 				{
-					GE_TRACE("OnUpdate");
+					//GE_TRACE("OnUpdate");
 				}
 			};
 			class SubTestScript : public TestScript
 			{
-
+			public:
+				int i = 10;
+			};
+			class TestScript2 : public ScriptableObject
+			{
+			public:
+				void OnAwake()
+				{
+					AddComponent<SubTestScript>();
+				}
+				void OnStart()
+				{
+					GE_TRACE("OnStart");
+					GetComponent<SubTestScript>().i = 20;
+					GE_CRITICAL(GetComponent<SubTestScript>().i);
+				}
 			};
 			auto testObj = m_ActiveScene->CreateGameObject("Test");
 			
 			//testObj.AddComponent<NativeScript>().Bind<TestScript>();
 			//testObj.AddComponent<TestScript>();
-			testObj.AddComponent<SubTestScript>();
+			//testObj.AddComponent<SubTestScript>();
+			testObj.AddComponent<TestScript2>();
 		}
 	}
 
@@ -334,19 +350,19 @@ namespace GEngine
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				OnScenePlay();
+				m_SceneStateFunction = [&]() {OnScenePlay(); };
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				OnScenePause();
+				m_SceneStateFunction = [&]() {OnScenePause(); };
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				OnSceneStop();
+				m_SceneStateFunction = [&]() {OnSceneStop(); };
 			}
 			ImGui::PopStyleVar(2);
 			ImGui::End();
@@ -566,12 +582,15 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnLateUpdate()
 	{
-		m_ActiveScene->OnLateUpdate();
+		if(m_SceneState == EditorSceneState::Play)
+			m_ActiveScene->OnLateUpdate();
 	}
 
 	void GEngineEditorLayer::OnEndFrame()
 	{
 		m_ActiveScene->OnEndFrame();
+		m_SceneStateFunction();
+		m_SceneStateFunction = []() {};
 	}
 
 

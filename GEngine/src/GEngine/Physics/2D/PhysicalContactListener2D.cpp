@@ -40,7 +40,7 @@ namespace GEngine
             info_A->m_Contact = info->m_Contact;
             info_A->m_Scene = info->m_Scene;
             info_A->m_OtherGameObject = gameObjectB;
-            scriptA->Instance->OnCollisionEnter2D(info_A);
+            //scriptA->Instance->OnCollisionEnter2D(info_A);
         }
 
         auto scriptB = gameObjectB.TryGetComponent<NativeScript>();
@@ -50,7 +50,7 @@ namespace GEngine
             info_B->m_Contact = info->m_Contact;
             info_B->m_Scene = info->m_Scene;
             info_B->m_OtherGameObject = gameObjectA;
-            scriptB->Instance->OnCollisionEnter2D(info_B);
+            //scriptB->Instance->OnCollisionEnter2D(info_B);
         }
     }
     // 碰撞体结束接触
@@ -62,13 +62,13 @@ namespace GEngine
 		auto scriptA = gameObjectA.TryGetComponent<NativeScript>();
 		if (scriptA)
 		{
-			scriptA->Instance->OnCollisionExit2D(info);
+			//scriptA->Instance->OnCollisionExit2D(info);
 		}
 
 		auto scriptB = gameObjectB.TryGetComponent<NativeScript>();
 		if (scriptB)
 		{
-			scriptB->Instance->OnCollisionExit2D(info);
+			//scriptB->Instance->OnCollisionExit2D(info);
 		}
     }
     GameObject Physics2DContactInfo::GetOtherGameObject()
