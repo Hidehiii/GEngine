@@ -427,46 +427,6 @@ namespace GEngine
 		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
-
-		auto view_Light = m_Registry.view<Transform, DirectionalLight>();
-		Vector3 main_dir = { -1.0f, -1.0f, 0.0f };
-		Vector3 main_color = { 1.0f, 1.0f, 1.0f };
-		DirectionalLight mainLight = MainDirectionalLight();
-		if (mainLight.m_GameObject)
-		{
-			main_dir = Math::Rotate(mainLight.m_GameObject.GetComponent<Transform>().m_Rotation, { 0.0f, 0.0f, -1.0f });
-			main_color = mainLight.m_Color;
-		}
-		Renderer::SetLightUniforms(main_dir, main_color);
-
-		Renderer::SetLightUniforms(main_dir, main_color);
-		auto view_ImagerRenderer = m_Registry.view<Transform, ImageRenderer>();
-		for (auto entity : view_ImagerRenderer)
-		{
-			GameObject& gameObject = m_Registry.get<ImageRenderer>(entity).m_GameObject;
-			if (gameObject.GetComponent<Attribute>().m_IsActive)
-			{
-				Renderer2D::RenderImage(gameObject.GetComponent<Transform>(), gameObject.GetComponent<ImageRenderer>());
-			}
-		}
-		auto view_CircleRenderer = m_Registry.view<Transform, CircleRenderer>();
-		for (auto entity : view_CircleRenderer)
-		{
-			GameObject& gameObject = m_Registry.get<CircleRenderer>(entity).m_GameObject;
-			if (gameObject.GetComponent<Attribute>().m_IsActive)
-			{
-				Renderer2D::RenderCircle(gameObject.GetComponent<Transform>(), gameObject.GetComponent<CircleRenderer>());
-			}
-		}
-		auto view_MeshRenderer = m_Registry.view<Transform, MeshFilter, MeshRenderer>();
-		for(auto entity : view_MeshRenderer)
-		{
-			GameObject& gameObject = m_Registry.get<MeshRenderer>(entity).m_GameObject;
-			if (gameObject.GetComponent<Attribute>().m_IsActive)
-			{
-				gameObject.GetComponent<MeshRenderer>().OnRender();
-			}
-		}
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{

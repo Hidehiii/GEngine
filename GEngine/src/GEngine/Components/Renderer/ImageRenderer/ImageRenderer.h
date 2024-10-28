@@ -24,6 +24,8 @@ namespace GEngine
 
 		ImageRenderer(const ImageRenderer&) = default;
 
+		void OnRender();
+
 		operator bool() { return this == NULL; }
 	public:
 		// If a texture is used, the color will be multiplied by the texture color

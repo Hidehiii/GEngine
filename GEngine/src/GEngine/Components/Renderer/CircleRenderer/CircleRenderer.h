@@ -16,6 +16,8 @@ namespace GEngine
 		CircleRenderer() = default;
 		CircleRenderer(const CircleRenderer&) = default;
 
+		void OnRender();
+
 	public:
 		// If a texture is used, the color will be multiplied by the texture color
 		Vector4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };

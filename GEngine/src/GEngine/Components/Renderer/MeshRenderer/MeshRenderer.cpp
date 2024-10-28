@@ -8,7 +8,6 @@ namespace GEngine
 {
 	void MeshRenderer::Init()
 	{
-		GE_TRACE("MeshRenderer::Init() called");
 		if (m_GameObject.HasComponent<MeshFilter>() && m_GameObject.GetComponent<MeshFilter>().GetMesh())
 		{
 			Mesh mesh = m_GameObject.GetComponent<MeshFilter>().GetMesh();

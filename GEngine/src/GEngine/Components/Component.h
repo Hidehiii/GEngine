@@ -18,6 +18,8 @@ namespace GEngine
 		virtual void OnLateUpdate() {};
 		virtual void OnDestroy() {};
 
+
+
 		void SetGameObject(GameObject gameObject) { m_GameObject = gameObject; }
 		GameObject m_GameObject;
 
