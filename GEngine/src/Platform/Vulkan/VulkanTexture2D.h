@@ -24,6 +24,11 @@ namespace GEngine
 		std::string			m_Path;
 		uint32_t			m_Width, m_Height;
 		uint32_t			m_RendererID;
+		VkBuffer			m_Buffer;
+		VkDeviceMemory		m_BufferMemory;
+		VkBuffer			m_StagingBuffer;
+		VkDeviceMemory		m_StagingBufferMemory;
+		VkFormat			m_DataFormat;
 	};
 }
 
