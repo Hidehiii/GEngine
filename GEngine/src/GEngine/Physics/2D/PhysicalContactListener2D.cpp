@@ -40,7 +40,17 @@ namespace GEngine
             info_A->m_Contact = info->m_Contact;
             info_A->m_Scene = info->m_Scene;
             info_A->m_OtherGameObject = gameObjectB;
-            //scriptA->Instance->OnCollisionEnter2D(info_A);
+            for (int i = 0; i < scriptA->m_Scripts.size(); i++)
+            {
+                if (scriptA->m_Scripts.at(i).first == nullptr)
+                {
+                    scriptA->m_Scripts.at(i).first = scriptA->m_Scripts.at(i).second();
+                    scriptA->m_Scripts.at(i).first->m_GameObject = gameObjectA;
+                    scriptA->m_Scripts.at(i).first->OnAwake();
+                    scriptA->m_Scripts.at(i).first->OnStart();
+                }
+                scriptA->m_Scripts.at(i).first->OnCollisionEnter2D(info_A);
+            }
         }
 
         auto scriptB = gameObjectB.TryGetComponent<NativeScript>();
@@ -50,7 +60,17 @@ namespace GEngine
             info_B->m_Contact = info->m_Contact;
             info_B->m_Scene = info->m_Scene;
             info_B->m_OtherGameObject = gameObjectA;
-            //scriptB->Instance->OnCollisionEnter2D(info_B);
+			for (int i = 0; i < scriptB->m_Scripts.size(); i++)
+			{
+				if (scriptB->m_Scripts.at(i).first == nullptr)
+				{
+                    scriptB->m_Scripts.at(i).first = scriptB->m_Scripts.at(i).second();
+                    scriptB->m_Scripts.at(i).first->m_GameObject = gameObjectB;
+                    scriptB->m_Scripts.at(i).first->OnAwake();
+                    scriptB->m_Scripts.at(i).first->OnStart();
+				}
+                scriptB->m_Scripts.at(i).first->OnCollisionEnter2D(info_B);
+			}
         }
     }
     // 碰撞体结束接触
@@ -62,13 +82,33 @@ namespace GEngine
 		auto scriptA = gameObjectA.TryGetComponent<NativeScript>();
 		if (scriptA)
 		{
-			//scriptA->Instance->OnCollisionExit2D(info);
+			for (int i = 0; i < scriptA->m_Scripts.size(); i++)
+			{
+				if (scriptA->m_Scripts.at(i).first == nullptr)
+				{
+					scriptA->m_Scripts.at(i).first = scriptA->m_Scripts.at(i).second();
+					scriptA->m_Scripts.at(i).first->m_GameObject = gameObjectA;
+					scriptA->m_Scripts.at(i).first->OnAwake();
+					scriptA->m_Scripts.at(i).first->OnStart();
+				}
+				scriptA->m_Scripts.at(i).first->OnCollisionEnter2D(info);
+			}
 		}
 
 		auto scriptB = gameObjectB.TryGetComponent<NativeScript>();
 		if (scriptB)
 		{
-			//scriptB->Instance->OnCollisionExit2D(info);
+			for (int i = 0; i < scriptB->m_Scripts.size(); i++)
+			{
+				if (scriptB->m_Scripts.at(i).first == nullptr)
+				{
+					scriptB->m_Scripts.at(i).first = scriptB->m_Scripts.at(i).second();
+					scriptB->m_Scripts.at(i).first->m_GameObject = gameObjectB;
+					scriptB->m_Scripts.at(i).first->OnAwake();
+					scriptB->m_Scripts.at(i).first->OnStart();
+				}
+				scriptB->m_Scripts.at(i).first->OnCollisionEnter2D(info);
+			}
 		}
     }
     GameObject Physics2DContactInfo::GetOtherGameObject()

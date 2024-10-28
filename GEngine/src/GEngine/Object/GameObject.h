@@ -5,8 +5,20 @@
 //#include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 namespace GEngine
 {
-	class ScriptableObject;
+	enum class ComponentFunction
+	{
+		OnAwake,
+		OnStart,
+		OnUpdate,
+		OnPhysicsUpdate,
+		OnLateUpdate,
+		OnDestroy,
+		OnRender
+	};
 
+
+	class ScriptableObject;
+	class Physics2DContactInfo;
 	
 
 	class GENGINE_API GameObject :	public Object
@@ -110,11 +122,11 @@ namespace GEngine
 		ScriptableObject() = default;
 		virtual ~ScriptableObject() {};
 
-		template<typename T>
-		void AddComponent()
+		template<typename T, typename... Args>
+		void AddComponent(Args&&... args)
 		{
 			GE_CORE_ASSERT(!m_GameObject.HasComponent<T>(), "GameObject already has component!");
-			m_GameObject.AddComponent<T>();
+			m_GameObject.AddComponent<T>(std::forward<Args>(args)...);
 		}
 		template<typename T>
 		T& GetComponent()
@@ -143,9 +155,12 @@ namespace GEngine
 		virtual void OnDestroy() {};
 
 		// physics
-		/*virtual void OnCollisionEnter2D(Ref<Physics2DContactInfo> info) {};
+		virtual void OnCollisionEnter2D(Ref<Physics2DContactInfo> info) {};
 		virtual void OnCollisionStay2D(Ref<Physics2DContactInfo> info) {};
-		virtual void OnCollisionExit2D(Ref<Physics2DContactInfo> info) {};*/
+		virtual void OnCollisionExit2D(Ref<Physics2DContactInfo> info) {};
+
+		// graphsics
+		virtual void OnRender() {};
 	public:
 		GameObject m_GameObject;
 	};

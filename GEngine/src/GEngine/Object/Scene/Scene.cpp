@@ -12,7 +12,34 @@
 
 namespace GEngine
 {
-
+	template<typename... Component>
+	static void CallComponentFunction(entt::registry& reg, ComponentFunction function)
+	{
+		([&]()
+			{
+				auto view = reg.view<Component>();
+				for (auto entity : view)
+				{
+					switch (function)
+					{
+					case ComponentFunction::OnAwake:		reg.get<Component>(entity).OnAwake(); break;
+					case ComponentFunction::OnStart:		reg.get<Component>(entity).OnStart(); break;
+					case ComponentFunction::OnUpdate:		reg.get<Component>(entity).OnUpdate(); break;
+					case ComponentFunction::OnPhysicsUpdate:reg.get<Component>(entity).OnPhysicsUpdate(); break;
+					case ComponentFunction::OnLateUpdate:	reg.get<Component>(entity).OnLateUpdate(); break;
+					case ComponentFunction::OnDestroy:		reg.get<Component>(entity).OnDestroy(); break;
+					case ComponentFunction::OnRender:		reg.get<Component>(entity).OnRender(); break;
+					default:
+						break;
+					}
+				}
+			}(), ...);
+	}
+	template<typename... Component>
+	static void CallComponentFunction(ComponentGroup<Component...>, entt::registry& reg, ComponentFunction function)
+	{
+		CallComponentFunction<Component...>(reg, function);
+	}
 	template<typename... Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap, const Ref<Scene> scene)
 	{
@@ -165,6 +192,7 @@ namespace GEngine
 		// Create TimerWheel
 		m_PhysicsTimerWheel =  CreateRef<PhysicsTimerWheel>(10, 1000 * Time::GetFixedTime());
 
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnAwake);
 		// Awake Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
@@ -245,6 +273,8 @@ namespace GEngine
 	// 场景第一帧调用
 	void Scene::OnStart()
 	{
+
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnStart);
 		// Start Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
@@ -283,6 +313,8 @@ namespace GEngine
 					transform.m_Position.y = pos.y;
 					transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
 				}
+
+				CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnPhysicsUpdate);
 				m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 					{
 						for (auto& script : nativeScript.m_Scripts)
@@ -306,6 +338,7 @@ namespace GEngine
 	// 更新物理和脚本
 	void Scene::OnUpdate()
 	{
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnUpdate);
 		// Update Scripts
 		{
 			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
@@ -328,6 +361,7 @@ namespace GEngine
 	// 场景中的所有对象在每一帧结束时调用
 	void Scene::OnLateUpdate()
 	{
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnLateUpdate);
 		// Update Scripts
 		{
 			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
@@ -391,6 +425,8 @@ namespace GEngine
 	void Scene::OnRender()
 	{
 		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
+
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
 
 		auto view_Light = m_Registry.view<Transform, DirectionalLight>();
 		Vector3 main_dir = { -1.0f, -1.0f, 0.0f };

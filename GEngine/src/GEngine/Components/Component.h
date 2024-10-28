@@ -9,6 +9,15 @@ namespace GEngine
 	{
 	public:
 		Component() = default;
+
+		virtual void OnRender() {};
+		virtual void OnAwake() {};
+		virtual void OnStart() {};
+		virtual void OnUpdate() {};
+		virtual void OnPhysicsUpdate() {};
+		virtual void OnLateUpdate() {};
+		virtual void OnDestroy() {};
+
 		void SetGameObject(GameObject gameObject) { m_GameObject = gameObject; }
 		GameObject m_GameObject;
 
