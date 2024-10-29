@@ -7,6 +7,23 @@ namespace GEngine
 {
 	namespace Utils
 	{
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+		{
+			for (VkFormat format : candidates) {
+				VkFormatProperties props;
+				vkGetPhysicalDeviceFormatProperties(VulkanContext::GetPhysicalDevice(), format, &props);
+
+				if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+					return format;
+				}
+				else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+					return format;
+				}
+			}
+
+			GE_CORE_CRITICAL("failed to find supported format!");
+		}
+
 		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, int samples = 1)
 		{
 			VkAttachmentDescription		Attachment{};
@@ -30,14 +47,16 @@ namespace GEngine
 				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Attachment.format			= VK_FORMAT_D24_UNORM_S8_UINT;
+				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
 				Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_STORE;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
-				Attachment.format		= VK_FORMAT_D32_SFLOAT;
+				Attachment.format		=  FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				Attachment.format		= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			default:
 				break;
@@ -46,14 +65,14 @@ namespace GEngine
 			return Attachment;
 		}
 
-		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format)
+		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index)
 		{
 			VkAttachmentReference		Ref{};
-			Ref.attachment				= 1;
+			Ref.attachment				= index;
 			switch (format)
 			{
 			case GEngine::FrameBufferTextureFormat::None:
-				GE_CORE_ASSERT(false, "");
+				GE_CORE_ASSERT(false);
 				GE_CORE_ERROR("Unknown framebuffer texture format");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
@@ -66,6 +85,7 @@ namespace GEngine
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
 				Ref.layout				= VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				Ref.layout				= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			default:
 				break;
@@ -98,36 +118,32 @@ namespace GEngine
 		std::vector<VkAttachmentReference> colorAttachmentRefs;
 		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat);
-			colorAttachmentRefs.push_back(ref);
-		}
-		if (colorAttachmentRefs.size() == 0)
-		{
-			VkAttachmentReference		ref{};
-			ref.attachment				= 0;
+			VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, i);
 			colorAttachmentRefs.push_back(ref);
 		}
 
 		VkAttachmentReference			depthAttachmentRef{};
 
+
 		VkSubpassDescription			 subpass{};
 		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
+		subpass.pDepthStencilAttachment = nullptr;
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat);
+			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
-		subpass.pDepthStencilAttachment	= &depthAttachmentRef;
+		
 
 		VkSubpassDependency			 dependency{};
 		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass			= 0;
-		dependency.srcStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask		= 0;
-		dependency.dstStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency.srcStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		dependency.srcAccessMask		= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		VkRenderPassCreateInfo          renderPassInfo{};
 		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -140,4 +156,5 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 	}
+	
 }

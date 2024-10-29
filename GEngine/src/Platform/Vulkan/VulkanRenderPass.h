@@ -18,7 +18,6 @@ namespace GEngine
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
 	private:
 		void CreateRenderPass(const VulkanRenderPassSpecification& spec);
-
 		
 	private:
 		VkRenderPass						m_RenderPass;

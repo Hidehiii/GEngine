@@ -7,22 +7,19 @@ namespace GEngine
 	VulkanCommandBuffer::VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count)
 	{
 		CreateCommandPool(queueFamilyIndices);
-		for (int i = 0; i < count; i++)
-		{
-			VkCommandBuffer					buffer;
-			VkCommandBufferAllocateInfo		allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			allocInfo.commandPool = m_CommandPool;
-			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			allocInfo.commandBufferCount = 1;
+		m_CommandBuffers.resize(count);
 
-			VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &buffer));
-			m_CommandBuffers.push_back(buffer);
-		}
+		VkCommandBufferAllocateInfo		allocInfo{};
+		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool			= m_CommandPool;
+		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount	= count;
+
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, m_CommandBuffers.data()));
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		Release();
+		
 	}
 	void VulkanCommandBuffer::Release()
 	{
@@ -33,8 +30,8 @@ namespace GEngine
 	{
 		VkCommandBufferAllocateInfo			allocInfo{};
 		allocInfo.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level						= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandPool				= m_CommandPool;
+		allocInfo.level						= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount		= 1;
 
 		VkCommandBuffer commandBuffer;
@@ -52,10 +49,10 @@ namespace GEngine
 	{
 		vkEndCommandBuffer(commandBuffer);
 
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
+		VkSubmitInfo					submitInfo{};
+		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount	= 1;
+		submitInfo.pCommandBuffers		= &commandBuffer;
 
 		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(queue);

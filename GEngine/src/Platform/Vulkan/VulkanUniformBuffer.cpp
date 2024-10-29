@@ -23,18 +23,13 @@ namespace GEngine
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
 	{
 		m_Binding						= binding;
+		size = size <= 0 ? 1 : size;
 
 		m_DescriptorSetLayoutBinding.binding		= binding;
 		m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount = 1;
 		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-		if (size <= 0)
-		{
-			GE_CORE_INFO("Zero memory uniform buffer!");
-			return;
-		}
 		
 		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
 							VulkanContext::GetDevice(), 
@@ -46,7 +41,7 @@ namespace GEngine
 		vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 
 
-		// 公共ubo不会每次更新
+		// 鍏叡ubo涓嶄細姣忔鏇存柊
 		if (binding != 0)
 		{
 			AddDescriptorSetLayoutBinding(m_DescriptorSetLayoutBinding);
@@ -59,10 +54,6 @@ namespace GEngine
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		if (size <= 0)
-		{
-			return;
-		}
 		if (offset != m_Offset)
 		{
 			m_Offset = offset;

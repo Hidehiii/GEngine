@@ -38,12 +38,16 @@ namespace GEngine
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
 		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
 
-		VkClearValue							clearColor = { {{VulkanContext::GetClearColor().r,
+		VkClearValue							clearColor = { {VulkanContext::GetClearColor().r,
 																VulkanContext::GetClearColor().g,
 																VulkanContext::GetClearColor().b,
-																VulkanContext::GetClearColor().a}} };
-		renderPassInfo.clearValueCount			= 1;
-		renderPassInfo.pClearValues				= &clearColor;
+																VulkanContext::GetClearColor().a} };
+		clearColor.depthStencil.depth			= 1.0f;
+		clearColor.depthStencil.stencil			= 0;
+
+		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
+		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		s_CurrentFrameBuffer = this;
@@ -96,7 +100,7 @@ namespace GEngine
 					VK_FORMAT_R8G8B8A8_UNORM, 
 					VK_IMAGE_TILING_OPTIMAL, 
 					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 
-					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					image,
 					imageMemory);
 				Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
@@ -123,7 +127,7 @@ namespace GEngine
 				VK_FORMAT_D24_UNORM_S8_UINT, 
 				VK_IMAGE_TILING_OPTIMAL, 
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image,
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
@@ -138,7 +142,7 @@ namespace GEngine
 				VK_FORMAT_D32_SFLOAT, 
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image, 
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);

@@ -34,5 +34,6 @@ private:
 
 	Ref<Pipeline>	m_Pipeline;
 	std::vector<TestVertex> m_vertex;
+	Ref<FrameBuffer> m_FrameBuffer;
 };
 

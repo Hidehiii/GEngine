@@ -16,12 +16,13 @@ namespace GEngine
                 }
             }
 
-            GE_CORE_ERROR("failed to find suitable memory type!");
+            GE_CORE_ASSERT(false, "failed to find suitable memory type!");
             return 0;
         }
 
         void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) 
         {
+
             VkBufferCreateInfo      bufferInfo{};
             bufferInfo.sType        = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             bufferInfo.size         = size;

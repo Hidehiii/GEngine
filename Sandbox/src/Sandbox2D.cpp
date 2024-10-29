@@ -19,6 +19,12 @@ void Sandbox2D::OnAttach()
 	//m_RayTracing.Init();
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
+	FrameBufferSpecification fspec;
+	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
+	fspec.Width = 1280;
+	fspec.Height = 720;
+	m_FrameBuffer = FrameBuffer::Create(fspec);
+
 	// Read all shader files
 	{
 		for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
@@ -48,7 +54,7 @@ void Sandbox2D::OnAttach()
 
 	m_vertex.resize(4);
 	m_Pipeline = Pipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/2D/TestSperateTexture.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/2D/ttt.glsl")),
 		VertexArray::Create(),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
@@ -109,6 +115,7 @@ void Sandbox2D::OnUpdate()
 	//	GE_PROFILE_SCOPE("Render: OnUpdate");
 	//	// temporary
 	RenderCommand::BeginCommand();
+	m_FrameBuffer->Begin();
 		GEngine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		GEngine::RenderCommand::Clear();
 
@@ -123,6 +130,7 @@ void Sandbox2D::OnUpdate()
 		m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
 		m_Pipeline->Bind();
 		RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+		m_FrameBuffer->End();
 		RenderCommand::EndCommand();
 }
 

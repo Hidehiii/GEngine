@@ -32,7 +32,7 @@ namespace GEngine
 	private:
 		void CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:
-		VkCommandPool					m_CommandPool;
+		VkCommandPool					m_CommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer>	m_CommandBuffers;
 	};
 }
