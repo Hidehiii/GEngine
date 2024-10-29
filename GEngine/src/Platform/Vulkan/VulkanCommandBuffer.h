@@ -26,6 +26,9 @@ namespace GEngine
 
 		VkCommandBuffer GetCommandBuffer(int index = 0) { GE_CORE_ASSERT(index < m_CommandBuffers.size(), "Out of range!"); return m_CommandBuffers.at(index); }
 		uint32_t GetCommandBuffersSize() { return m_CommandBuffers.size(); }
+
+		VkCommandBuffer BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue queue);
 	private:
 		void CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:

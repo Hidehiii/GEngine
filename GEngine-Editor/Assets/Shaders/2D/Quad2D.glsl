@@ -49,7 +49,7 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 3) in flat int v_TexIndex;
-layout (binding = 0) uniform sampler2D _Textures[32];
+layout (binding = 10) uniform sampler2D _Textures[32];
 void main()
 {
 	o_color = texture(_Textures[v_TexIndex], IN.uv * IN.tiling) * IN.color;

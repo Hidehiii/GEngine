@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Renderer/Texture.h"
+#include <vulkan/vulkan.h>
 
 namespace GEngine
 {
@@ -18,7 +19,9 @@ namespace GEngine
 		virtual std::string GetPath() const override { return m_Path; };
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象（晚点改）
-		virtual bool operator==(const Texture& other) const override { return m_RendererID == ((VulkanTexture2D&)other).m_RendererID; };
+		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
+	private:
+		void CreateSampler();
 
 	private:
 		std::string			m_Path;
@@ -26,9 +29,11 @@ namespace GEngine
 		uint32_t			m_RendererID;
 		VkBuffer			m_Buffer;
 		VkDeviceMemory		m_BufferMemory;
-		VkBuffer			m_StagingBuffer;
-		VkDeviceMemory		m_StagingBufferMemory;
 		VkFormat			m_DataFormat;
+		VkImage				m_Image;
+		VkDeviceMemory		m_ImageMemory;
+		VkImageView			m_ImageView;
+		VkSampler			m_Sampler;
 	};
 }
 

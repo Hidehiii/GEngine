@@ -41,6 +41,8 @@ namespace GEngine
 		static Vector4 GetClearColor() { return s_ClearColor; }
 		static VkInstance GetInstance() { return s_Instance; }
 		static VkDescriptorPool GetDescriptorPool() { return s_Descriptor.GetDescriptorPool(); }
+		static VkCommandBuffer BeginSingleTimeCommands();
+		static void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -72,7 +74,7 @@ namespace GEngine
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
 		static VkPhysicalDevice				s_PhysicalDevice;
 		static VkDevice						s_Device;
-		VkQueue								m_GraphicsQueue;
+		static VkQueue						s_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkSurfaceKHR						m_Surface;
 		std::vector<const char*>			m_DeviceExtensions =

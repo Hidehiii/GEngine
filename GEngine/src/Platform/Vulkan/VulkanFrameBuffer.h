@@ -31,6 +31,7 @@ namespace GEngine
 		Ref<VulkanRenderPass>		m_RenderPass = nullptr;
 		std::vector<VkImage>		m_Images;
 		std::vector<VkImageView>	m_Attachments;
+		std::vector<VkDeviceMemory> m_ImagesMemory;
 	};
 }
 

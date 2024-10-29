@@ -15,6 +15,7 @@ namespace GEngine
     Vector4                 VulkanContext::s_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
     VkInstance              VulkanContext::s_Instance;
     VulkanDescriptor        VulkanContext::s_Descriptor;
+    VkQueue                 VulkanContext::s_GraphicsQueue;
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -217,8 +218,13 @@ namespace GEngine
         {
             SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(device);
             swapChainAdequate                               = !swapChainSupportDetails.Formats.empty() && !swapChainSupportDetails.PresentModes.empty();
+
         }
-        return indices.IsComplete() && extensionsSupported && swapChainAdequate;
+
+		VkPhysicalDeviceFeatures supportedFeatures;
+		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+        return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
     }
     QueueFamilyIndices VulkanContext::FindQueueFamilies(VkPhysicalDevice device)
     {
@@ -292,7 +298,7 @@ namespace GEngine
 #endif
         VK_CHECK_RESULT(vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device));
 
-		vkGetDeviceQueue(s_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(s_Device, indices.GraphicsFamily.value(), 0, &s_GraphicsQueue);
 		vkGetDeviceQueue(s_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
     void VulkanContext::CreateSurface()
@@ -470,7 +476,9 @@ namespace GEngine
         m_SwapChainImageViews.resize(s_SwapChainImages.size());
         for (size_t i = 0; i < s_SwapChainImages.size(); i++)
         {
-            VkImageViewCreateInfo                           createInfo{};
+            Utils::CreateImageViews(s_Device, s_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_SwapChainImageViews[i]);
+
+            /*VkImageViewCreateInfo                           createInfo{};
             createInfo.sType                                = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image                                = s_SwapChainImages[i];
             createInfo.viewType                             = VK_IMAGE_VIEW_TYPE_2D;
@@ -485,7 +493,7 @@ namespace GEngine
             createInfo.subresourceRange.baseArrayLayer      = 0;
             createInfo.subresourceRange.layerCount          = 1;
 
-            VK_CHECK_RESULT(vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));
+            VK_CHECK_RESULT(vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));*/
         }
     }
     void VulkanContext::CreateCommandBuffers()
@@ -515,5 +523,15 @@ namespace GEngine
 	void VulkanContext::CreateDescriptor()
 	{
         s_Descriptor            = VulkanDescriptor(1, 1, 10);
+	}
+
+	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
+	{
+        return s_CommandBuffer.BeginSingleTimeCommands();
+	}
+
+	void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+	{
+        s_CommandBuffer.EndSingleTimeCommands(commandBuffer, s_GraphicsQueue);
 	}
 }

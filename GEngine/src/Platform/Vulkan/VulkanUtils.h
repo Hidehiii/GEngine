@@ -17,8 +17,10 @@ namespace GEngine
 	{
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDvice);
 		void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void CreateImages(VkDevice device, uint32_t width, uint32_t height, VkFormat format, int samples, VkImage& outImage);
+		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& outImage, VkDeviceMemory& imageMemory);
 		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask, VkImageView& outImageView);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 	
 }

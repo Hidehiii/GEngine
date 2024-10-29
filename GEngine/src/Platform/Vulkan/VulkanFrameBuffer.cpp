@@ -5,9 +5,6 @@
 
 namespace GEngine
 {
-	
-
-
 	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecification& spec)
 	{
 		m_Specification = spec;
@@ -88,35 +85,71 @@ namespace GEngine
 		{
 			VkImage						image;
 			VkImageView					imageView;
+			VkDeviceMemory				imageMemory;
 			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				Utils::CreateImages(VulkanContext::GetDevice(), m_Specification.Width, m_Specification.Height, VK_FORMAT_R8G8B8A8_UNORM, 1, image);
+				Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
+					VulkanContext::GetDevice(), 
+					m_Specification.Width, 
+					m_Specification.Height, 
+					VK_FORMAT_R8G8B8A8_UNORM, 
+					VK_IMAGE_TILING_OPTIMAL, 
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+					image,
+					imageMemory);
 				Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 				break;
 			default:
 				GE_CORE_ASSERT(false, "Unknown format");
 				break;
 			}
+			m_Images.push_back(image);
 			m_Attachments.push_back(imageView);
+			m_ImagesMemory.push_back(imageMemory);
 		}
+		VkDeviceMemory					imageMemory;
 		VkImage							image;
 		VkImageView						imageView;
 		switch (m_DepthAttachmentSpec.TextureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			Utils::CreateImages(VulkanContext::GetDevice(), m_Specification.Width, m_Specification.Height, VK_FORMAT_D24_UNORM_S8_UINT, 1, image);
+		{
+			Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
+				VulkanContext::GetDevice(), 
+				m_Specification.Width, 
+				m_Specification.Height, 
+				VK_FORMAT_D24_UNORM_S8_UINT, 
+				VK_IMAGE_TILING_OPTIMAL, 
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				image,
+				imageMemory);
 			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
 			break;
+		}
+			
 		case FrameBufferTextureFormat::DEPTH:
-			Utils::CreateImages(VulkanContext::GetDevice(), m_Specification.Width, m_Specification.Height, VK_FORMAT_D32_SFLOAT, 1, image);
+			Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
+				VulkanContext::GetDevice(), 
+				m_Specification.Width, 
+				m_Specification.Height, 
+				VK_FORMAT_D32_SFLOAT, 
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 
+				image, 
+				imageMemory);
 			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
 			break;
 		}
+		m_Images.push_back(image);
 		m_Attachments.push_back(imageView);
+		m_ImagesMemory.push_back(imageMemory);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
