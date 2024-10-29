@@ -505,7 +505,7 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 10);
+        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 5);
     }
 
     void VulkanContext::PushCommandBuffer()

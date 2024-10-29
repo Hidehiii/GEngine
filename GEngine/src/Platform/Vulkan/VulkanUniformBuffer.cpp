@@ -30,6 +30,11 @@ namespace GEngine
 		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
+		if (size <= 0)
+		{
+			GE_CORE_INFO("Zero memory uniform buffer!");
+			return;
+		}
 		
 		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
 							VulkanContext::GetDevice(), 
@@ -54,6 +59,10 @@ namespace GEngine
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
+		if (size <= 0)
+		{
+			return;
+		}
 		if (offset != m_Offset)
 		{
 			m_Offset = offset;

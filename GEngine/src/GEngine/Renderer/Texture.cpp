@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
 
 namespace GEngine
 {
@@ -19,6 +20,9 @@ namespace GEngine
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2D>(width, height);
 		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanTexture2D>(width, height);
+		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -34,6 +38,9 @@ namespace GEngine
 		}
 		case RendererAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2D>(path);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanTexture2D>(path);
 		}
 		}
 

@@ -71,7 +71,7 @@ namespace GEngine
     }
     void VulkanTexture2D::SetData(void* data, uint32_t size)
     {
-        uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_SNORM ? 4 : 3;
+        uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_SRGB ? 4 : 3;
         GE_CORE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 
 		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(),

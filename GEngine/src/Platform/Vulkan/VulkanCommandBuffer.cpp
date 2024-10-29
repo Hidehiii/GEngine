@@ -38,7 +38,7 @@ namespace GEngine
 		allocInfo.commandBufferCount		= 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &commandBuffer);
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &commandBuffer));
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
