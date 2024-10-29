@@ -5,21 +5,27 @@
 
 namespace GEngine
 {
-	VulkanDescriptor::VulkanDescriptor(uint32_t descriptorCount, uint32_t poolSizeCount, uint32_t maxSets)
+	VulkanDescriptor::VulkanDescriptor(uint32_t descriptorCount, uint32_t maxSets)
 	{
-		CreateDescriptorPool(descriptorCount, poolSizeCount, maxSets);
+		CreateDescriptorPool(descriptorCount, maxSets);
 	}
-	void VulkanDescriptor::CreateDescriptorPool(uint32_t descriptorCount, uint32_t poolSizeCount, uint32_t maxSets)
+	void VulkanDescriptor::CreateDescriptorPool(uint32_t descriptorCount, uint32_t maxSets)
 	{
-		std::vector<VkDescriptorPoolSize>	poolSizes;
-		for (int i = 0; i < poolSizeCount; i++)
+		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			VkDescriptorPoolSize		poolSize{};
-			poolSize.type				= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSize.descriptorCount	= descriptorCount;
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, descriptorCount }
+		};
 
-			poolSizes.push_back(poolSize);
-		}
 
 		VkDescriptorPoolCreateInfo	poolInfo{};
 		poolInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

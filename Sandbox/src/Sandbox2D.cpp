@@ -108,6 +108,7 @@ void Sandbox2D::OnUpdate()
 	//{
 	//	GE_PROFILE_SCOPE("Render: OnUpdate");
 	//	// temporary
+	RenderCommand::BeginCommand();
 		GEngine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		GEngine::RenderCommand::Clear();
 
@@ -122,7 +123,7 @@ void Sandbox2D::OnUpdate()
 		m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
 		m_Pipeline->Bind();
 		RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
-	
+		RenderCommand::EndCommand();
 }
 
 void Sandbox2D::OnGuiRender()

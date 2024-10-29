@@ -6,6 +6,7 @@
 #include "ImGui/backends/imgui_impl_glfw.h"
 #include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "GEngine/Renderer/RenderCommand.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -67,11 +68,46 @@ namespace GEngine
 		case RendererAPI::API::Vulkan:
 		{
 			ImGui_ImplGlfw_InitForVulkan(window, true);
+
+			VkDescriptorPool descriptorPool;
+
+			std::vector<VkDescriptorPoolSize> poolSizes =
+			{
+				{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
+				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
+				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
+				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
+			};
+
+
+			VkDescriptorPoolCreateInfo	poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
+			poolInfo.maxSets = 100;
+
+			VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &descriptorPool));
+
 			ImGui_ImplVulkan_InitInfo		info{};
 			info.Instance = VulkanContext::GetInstance();
 			info.PhysicalDevice = VulkanContext::GetPhysicalDevice();
 			info.Device = VulkanContext::GetDevice();
-			//ImGui_ImplVulkan_Init(&info, )
+			info.QueueFamily = VulkanContext::GetQueueFamily().GraphicsFamily.value();
+			info.Queue = VulkanContext::GetGraphicsQueue();
+			info.PipelineCache = nullptr;
+			info.MinImageCount = 2;
+			info.ImageCount = VulkanContext::GetSwapChainImage().size();
+			info.DescriptorPool = descriptorPool;
+			info.Allocator = nullptr;
+			info.CheckVkResultFn = nullptr;
+			ImGui_ImplVulkan_Init(&info, VulkanContext::GetSwapChainRenderPass());
 			break;
 		}
 		default:

@@ -55,13 +55,14 @@ namespace GEngine
 		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
 		// TODO ： 这里可能要绑定所有的ubo？得想想怎么弄
-		std::vector<VkDescriptorSet>	descriptorSets = VulkanUniformBuffer::GetDescriptorSets();
-		descriptorSets.push_back(m_Material->GetUniformBuffer()->GetDescriptorSet());
-		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+		VulkanUniformBuffer::AddDescriptorSetLayoutBinding(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
+		VkDescriptorSet	set = VulkanUniformBuffer::GetDescriptorSet();
+		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &set, 0, nullptr);
     }
 
     void VulkanPipeline::Unbind()
     {
+		VulkanUniformBuffer::RemoveDescriptorSetLayoutBinding(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
     }
 
 
@@ -164,12 +165,9 @@ namespace GEngine
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		// TODO :需要获取所有UBO的数量
-		std::vector<VkDescriptorSetLayout>		descriptorSetLayouts = VulkanUniformBuffer::GetDescriptorSetlayouts();
-		descriptorSetLayouts.emplace(descriptorSetLayouts.begin(), m_Material->GetUniformBuffer()->GetDescriptorSetLayout());
-
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.setLayoutCount = 1;
+		VkDescriptorSetLayout setLayout = VulkanUniformBuffer::GetDescriptorSetLayout();
+		pipelineLayoutInfo.pSetLayouts = &setLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 

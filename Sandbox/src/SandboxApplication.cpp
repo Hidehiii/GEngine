@@ -50,11 +50,11 @@ public:
 
 GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args)
 {
-	Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
+	Renderer::SetRenererAPI(RendererAPI::API::Vulkan);
 
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
-	spec.Size = { 1920, 1080 };
+	spec.Size = { 1080, 720 };
 	spec.CommandLineArgs = args;
 	return new Sandbox(spec);
 }

@@ -3,6 +3,7 @@
 #include "GEngine/Renderer/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanDescriptor.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Math/Math.h"
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -43,6 +44,9 @@ namespace GEngine
 		static VkDescriptorPool GetDescriptorPool() { return s_Descriptor.GetDescriptorPool(); }
 		static VkCommandBuffer BeginSingleTimeCommands();
 		static void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		static QueueFamilyIndices GetQueueFamily() { return s_QueueFamily; }
+		static VkQueue GetGraphicsQueue() { return s_GraphicsQueue; }
+		static VkRenderPass GetSwapChainRenderPass() { return s_SwapChainRenderPass; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -61,6 +65,8 @@ namespace GEngine
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void CreateSwapChain(const unsigned int width, const unsigned int height);
 		void CreateImageViews();
+		void CreateRenderPass();
+		void CreateFrameBuffer();
 		void CreateCommandBuffers();
 		void CreateDescriptor();
 	private:
@@ -93,10 +99,13 @@ namespace GEngine
 		VkFormat							m_SwapChainImageFormat;
 		static VkExtent2D					s_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
+		static VkRenderPass					s_SwapChainRenderPass;
+		static std::vector<VkFramebuffer>	s_SwapChainFrameBuffers;
 		static VulkanCommandBuffer			s_CommandBuffer;
 		static std::vector<int>				s_PushedCommandBufferIndexs;
 		static Vector4						s_ClearColor;
 		static VulkanDescriptor				s_Descriptor;
+		static QueueFamilyIndices			s_QueueFamily;
 	};
 	
 }

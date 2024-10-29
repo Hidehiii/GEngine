@@ -27,6 +27,7 @@ namespace GEngine
 				break;
 			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
 				Attachment.format		= VK_FORMAT_R8_SINT;
+				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
 				Attachment.format			= VK_FORMAT_D24_UNORM_S8_UINT;

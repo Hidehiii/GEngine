@@ -5,6 +5,9 @@
 
 namespace GEngine
 {
+	uint32_t Texture2D::s_Texture2DBindingOffset = 10;
+
+
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 	{
 		switch (Renderer::GetAPI())

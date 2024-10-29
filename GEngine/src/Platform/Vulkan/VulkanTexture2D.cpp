@@ -2,6 +2,7 @@
 #include "VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "stb_image.h"
 
 namespace GEngine
@@ -47,6 +48,18 @@ namespace GEngine
     {
         m_Height    = height;
         m_Width     = width;
+        m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		Utils::CreateImages(VulkanContext::GetPhysicalDevice(),
+			VulkanContext::GetDevice(),
+			m_Width,
+			m_Height,
+			m_DataFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_Image,
+			m_ImageMemory);
+		Utils::CreateImageViews(VulkanContext::GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
@@ -82,8 +95,35 @@ namespace GEngine
         vkDestroyBuffer(VulkanContext::GetDevice(), m_Buffer, nullptr);
         vkFreeMemory(VulkanContext::GetDevice(), m_BufferMemory, nullptr);
     }
-    void VulkanTexture2D::Bind(const uint32_t slot) const
+    void VulkanTexture2D::Bind(const uint32_t slot)
     {
+		m_DescriptorSetLayoutBinding.binding            = s_Texture2DBindingOffset + slot;
+		m_DescriptorSetLayoutBinding.descriptorCount    = 1;
+		m_DescriptorSetLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+		m_DescriptorSetLayoutBinding.stageFlags         = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+        VulkanUniformBuffer::AddDescriptorSetLayoutBinding(m_DescriptorSetLayoutBinding);
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = m_ImageView;
+		imageInfo.sampler = m_Sampler;
+
+        VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = VulkanUniformBuffer::GetDescriptorSet();
+		descriptorWrite.dstBinding = s_Texture2DBindingOffset + slot;
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+    }
+    void VulkanTexture2D::Unbind()
+    {
+        VulkanUniformBuffer::RemoveDescriptorSetLayoutBinding(m_DescriptorSetLayoutBinding);
     }
     void VulkanTexture2D::CreateSampler()
     {

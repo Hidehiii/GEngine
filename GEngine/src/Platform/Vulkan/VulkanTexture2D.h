@@ -15,14 +15,14 @@ namespace GEngine
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual void SetData(void* data, uint32_t size) override;
-		virtual void Bind(const uint32_t slot = 0) const override;
+		virtual void Bind(const uint32_t slot = 0) override;
+		virtual void Unbind() override;
 		virtual std::string GetPath() const override { return m_Path; };
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象（晚点改）
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
 	private:
 		void CreateSampler();
-
 	private:
 		std::string			m_Path;
 		uint32_t			m_Width, m_Height;
@@ -34,6 +34,7 @@ namespace GEngine
 		VkDeviceMemory		m_ImageMemory;
 		VkImageView			m_ImageView;
 		VkSampler			m_Sampler;
+		VkDescriptorSetLayoutBinding m_DescriptorSetLayoutBinding;
 	};
 }
 

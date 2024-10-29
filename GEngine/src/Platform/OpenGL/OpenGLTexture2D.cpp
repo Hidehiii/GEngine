@@ -75,10 +75,13 @@ namespace GEngine
 		GE_CORE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
-	void OpenGLTexture2D::Bind(const uint32_t slot) const
+	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	
 		GE_PROFILE_FUNCTION();
 
 		glBindTextureUnit(slot, m_RendererID);
+	}
+	void OpenGLTexture2D::Unbind()
+	{
 	}
 }
