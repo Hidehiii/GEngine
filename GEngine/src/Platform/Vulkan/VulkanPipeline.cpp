@@ -34,13 +34,13 @@ namespace GEngine
 
     VulkanPipeline::~VulkanPipeline()
     {
-        vkDestroyPipeline(VulkanContext::GetDevice(), m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
+        vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
     }
 
     void VulkanPipeline::Bind()
     {
-		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
 
 		if (m_NeedToRecreatePipeline)
@@ -49,7 +49,7 @@ namespace GEngine
 			m_NeedToRecreatePipeline = false;
 		}
 		
-        vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
 		m_Viewport.y		= 0.0f;
@@ -57,13 +57,13 @@ namespace GEngine
 		m_Viewport.height	= FrameBuffer::GetCurrentFrameBuffer()->GetHeight();
 		m_Viewport.minDepth = 0.0f;
 		m_Viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
+		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
 
 		m_Scissor.offset = { 0, 0 };
 		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
-		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
+		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
-		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
     void VulkanPipeline::Unbind()
@@ -79,7 +79,7 @@ namespace GEngine
         createInfo.codeSize = code.size() * sizeof(uint32_t);
         createInfo.pCode    = code.data();
         VkShaderModule      shaderModule;
-		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::GetDevice(), &createInfo, nullptr, &shaderModule));
+		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::Get()->GetDevice(), &createInfo, nullptr, &shaderModule));
         return shaderModule;
     }
 	void VulkanPipeline::CreateDescriptorSetAndLayout()
@@ -99,16 +99,16 @@ namespace GEngine
 		layoutInfo.bindingCount			= static_cast<uint32_t>(layoutBindings.size());
 		layoutInfo.pBindings			= layoutBindings.data();
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::Get()->GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
 
 		// 只有一个set，需要兼容gl没有set的概念
 		VkDescriptorSetAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool		= VulkanContext::GetDescriptorPool();
+		allocInfo.descriptorPool		= VulkanContext::Get()->GetDescriptorPool();
 		allocInfo.descriptorSetCount	= 1;
 		allocInfo.pSetLayouts			= &m_DescriptorSetLayout;
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::GetDevice(), &allocInfo, &m_DescriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSet));
 	}
 	void VulkanPipeline::UpdateDescriptorSet()
 	{
@@ -129,7 +129,7 @@ namespace GEngine
 			descriptorWrite.pImageInfo		= nullptr; // Optional
 			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 		}
 		// 更新材质的uniform buffer
 		{
@@ -146,7 +146,7 @@ namespace GEngine
 			descriptorWrite.pImageInfo		= nullptr; // Optional
 			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 		}
 		// TODO: 后面贴图也要放进材质，由这里统一获取进行绑定更新
 	}
@@ -188,13 +188,13 @@ namespace GEngine
 
 		m_Viewport.x			= 0.0f;
 		m_Viewport.y			= 0.0f;
-		m_Viewport.width		= (float)VulkanContext::GetSwapChainExtent().width;
-		m_Viewport.height		= (float)VulkanContext::GetSwapChainExtent().height;
+		m_Viewport.width		= (float)VulkanContext::Get()->GetSwapChainExtent().width;
+		m_Viewport.height		= (float)VulkanContext::Get()->GetSwapChainExtent().height;
 		m_Viewport.minDepth		= 0.0f;
 		m_Viewport.maxDepth		= 1.0f;
 
 		m_Scissor.offset = { 0, 0 };
-		m_Scissor.extent = VulkanContext::GetSwapChainExtent();
+		m_Scissor.extent = VulkanContext::Get()->GetSwapChainExtent();
 
 		m_ViewportState.sType			= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		m_ViewportState.viewportCount	= 1;
@@ -244,7 +244,7 @@ namespace GEngine
 		pipelineLayoutInfo.pushConstantRangeCount	= 0;
 		pipelineLayoutInfo.pPushConstantRanges		= nullptr;
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::Get()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 
 		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
 		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -276,9 +276,9 @@ namespace GEngine
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
-		vkDestroyShaderModule(VulkanContext::GetDevice(), m_VertexShaderModule, nullptr);
-		vkDestroyShaderModule(VulkanContext::GetDevice(), m_FragmentShaderModule, nullptr);
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
     }
 }

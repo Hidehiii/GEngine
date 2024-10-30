@@ -29,8 +29,8 @@ namespace GEngine
             m_DataFormat = VK_FORMAT_R8G8B8_SRGB;
         }
 
-		Utils::CreateImages(VulkanContext::GetPhysicalDevice(),
-			VulkanContext::GetDevice(),
+		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
 			m_Width,
 			m_Height,
 			m_DataFormat,
@@ -39,7 +39,7 @@ namespace GEngine
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_Image,
 			m_ImageMemory);
-        Utils::CreateImageViews(VulkanContext::GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+        Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
         stbi_image_free(data);
         
@@ -50,8 +50,8 @@ namespace GEngine
         m_Height    = height;
         m_Width     = width;
         m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
-		Utils::CreateImages(VulkanContext::GetPhysicalDevice(),
-			VulkanContext::GetDevice(),
+		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
 			m_Width,
 			m_Height,
 			m_DataFormat,
@@ -60,16 +60,16 @@ namespace GEngine
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-        vkDestroyImage(VulkanContext::GetDevice(), m_Image, nullptr);
-        vkFreeMemory(VulkanContext::GetDevice(), m_ImageMemory, nullptr);
-        vkDestroySampler(VulkanContext::GetDevice(), m_Sampler, nullptr);
-        vkDestroyImageView(VulkanContext::GetDevice(), m_ImageView, nullptr);
+        vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
+        vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+        vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
+        vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
         
     }
     void VulkanTexture2D::SetData(void* data, uint32_t size)
@@ -77,8 +77,8 @@ namespace GEngine
         uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_SRGB ? 4 : 3;
         GE_CORE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 
-		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(),
-			VulkanContext::GetDevice(),
+		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
 			static_cast<uint32_t>(m_Width * m_Height * bpp),
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -87,16 +87,16 @@ namespace GEngine
 		
 
         void* tempData;
-        vkMapMemory(VulkanContext::GetDevice(), m_BufferMemory, 0, size, 0, &tempData);
+        vkMapMemory(VulkanContext::Get()->GetDevice(), m_BufferMemory, 0, size, 0, &tempData);
         memcpy(tempData, data, static_cast<size_t>(size));
-        vkUnmapMemory(VulkanContext::GetDevice(), m_BufferMemory);
+        vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_BufferMemory);
 
         Utils::TransitionImageLayout(m_Image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(m_Buffer, m_Image, m_Width, m_Height);
         Utils::TransitionImageLayout(m_Image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        vkDestroyBuffer(VulkanContext::GetDevice(), m_Buffer, nullptr);
-        vkFreeMemory(VulkanContext::GetDevice(), m_BufferMemory, nullptr);
+        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_Buffer, nullptr);
+        vkFreeMemory(VulkanContext::Get()->GetDevice(), m_BufferMemory, nullptr);
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
@@ -127,7 +127,7 @@ namespace GEngine
         samplerInfo.anisotropyEnable = VK_TRUE;
 
 		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(VulkanContext::GetPhysicalDevice(), &properties);
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &properties);
 
         samplerInfo.maxAnisotropy   = properties.limits.maxSamplerAnisotropy;
         samplerInfo.borderColor     = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
@@ -139,6 +139,6 @@ namespace GEngine
 		samplerInfo.minLod          = 0.0f;
 		samplerInfo.maxLod          = 0.0f;
 
-        VK_CHECK_RESULT(vkCreateSampler(VulkanContext::GetDevice(), &samplerInfo, nullptr, &m_Sampler));
+        VK_CHECK_RESULT(vkCreateSampler(VulkanContext::Get()->GetDevice(), &samplerInfo, nullptr, &m_Sampler));
     }
 }

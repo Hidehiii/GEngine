@@ -97,7 +97,7 @@ namespace GEngine
 		}
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkFlags aspectFlag)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::BeginSingleTimeCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
 			VkImageMemoryBarrier		barrier{};
 			barrier.sType				= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -145,11 +145,11 @@ namespace GEngine
 				1, &barrier
 			);
 
-			VulkanContext::EndSingleTimeCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkFlags aspectFlag)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::BeginSingleTimeCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
 			VkBufferImageCopy					region{};
 			region.bufferOffset					= 0;
@@ -177,7 +177,7 @@ namespace GEngine
 				&region
 			);
 
-			VulkanContext::EndSingleTimeCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
     }
 }

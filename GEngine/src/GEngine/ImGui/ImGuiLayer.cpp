@@ -93,21 +93,21 @@ namespace GEngine
 			poolInfo.pPoolSizes = poolSizes.data();
 			poolInfo.maxSets = 100;
 
-			VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &descriptorPool));
+			VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &descriptorPool));
 
 			ImGui_ImplVulkan_InitInfo		info{};
-			info.Instance					= VulkanContext::GetInstance();
-			info.PhysicalDevice				= VulkanContext::GetPhysicalDevice();
-			info.Device						= VulkanContext::GetDevice();
-			info.QueueFamily				= VulkanContext::GetQueueFamily().GraphicsFamily.value();
-			info.Queue						= VulkanContext::GetGraphicsQueue();
+			info.Instance					= VulkanContext::Get()->GetInstance();
+			info.PhysicalDevice				= VulkanContext::Get()->GetPhysicalDevice();
+			info.Device						= VulkanContext::Get()->GetDevice();
+			info.QueueFamily				= VulkanContext::Get()->GetQueueFamily().GraphicsFamily.value();
+			info.Queue						= VulkanContext::Get()->GetGraphicsQueue();
 			info.PipelineCache				= nullptr;
 			info.MinImageCount				= 2;
-			info.ImageCount					= VulkanContext::GetSwapChainImage().size();
+			info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
 			info.DescriptorPool				= descriptorPool;
 			info.Allocator					= nullptr;
 			info.CheckVkResultFn			= nullptr;
-			ImGui_ImplVulkan_Init(&info, VulkanContext::GetSwapChainRenderPass());
+			ImGui_ImplVulkan_Init(&info, VulkanContext::Get()->GetFrameBuffer(0)->GetRenderPass());
 			break;
 		}
 		default:
@@ -191,7 +191,7 @@ namespace GEngine
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			break;
 		case RendererAPI::API::Vulkan:
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::GetCurrentCommandBuffer());
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown render api");

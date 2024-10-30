@@ -5,10 +5,20 @@
 
 namespace GEngine
 {
+	struct FrameBufferSpecificationForVulkan
+	{
+		std::vector<VkImageView>	ColorAttachments;
+		uint32_t					Width, Height;
+		std::vector<VkFormat>		ColorAttachmentsFormat;
+		std::vector<VkImageLayout>	ColorAttachmentsFinalLayout;
+		bool						EnableDepthStencilAttachment;
+	};
+
 	class GENGINE_API VulkanFrameBuffer : public FrameBuffer
 	{
 	public:
 		VulkanFrameBuffer(const FrameBufferSpecification& spec);
+		VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
 		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
@@ -25,8 +35,8 @@ namespace GEngine
 		virtual uint32_t GetDepthAttachment() const override { return 0; }
 
 	public:
-		//用于给交换链创建使用
-		static Ref<VulkanFrameBuffer> CreateSwapChainFrameBuffer();
+		//鐢ㄤ簬缁欎氦鎹㈤摼鍒涘缓浣跨敤
+		static Ref<VulkanFrameBuffer> Create(const FrameBufferSpecificationForVulkan spec);
 	private:
 		void CreateRenderPass();
 		void CreateBuffer();
@@ -36,6 +46,10 @@ namespace GEngine
 		std::vector<VkImage>		m_Images;
 		std::vector<VkImageView>	m_Attachments;
 		std::vector<VkDeviceMemory> m_ImagesMemory;
+		FrameBufferSpecificationForVulkan m_SpecificationForVulkan;
+		VkImage						m_DepthStencilImage = nullptr;
+		VkImageView					m_DepthStencilImageView = nullptr;
+		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;
 	};
 }
 

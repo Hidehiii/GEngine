@@ -26,7 +26,7 @@ namespace GEngine
     {
         uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
         vertexArray->Bind();
-        vkCmdDrawIndexed(VulkanContext::GetCurrentCommandBuffer(), count, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), count, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
@@ -64,12 +64,20 @@ namespace GEngine
         beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
-        VulkanContext::PushCommandBuffer();
-        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::GetCurrentCommandBuffer(), &beginInfo));
+        VulkanContext::Get()->PushCommandBuffer();
+        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
     }
     void VulkanRendererAPI::EndCommand()
     {
-        VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::PopCommandBuffer()));
+        VkCommandBuffer commandBuffer = VulkanContext::Get()->GetCurrentCommandBuffer();
+        VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::Get()->PopCommandBuffer()));
+
+        VkSubmitInfo    submitInfo{};
+        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount   = 1;
+        submitInfo.pCommandBuffers      = &commandBuffer;
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
     float VulkanRendererAPI::GetTime()
     {

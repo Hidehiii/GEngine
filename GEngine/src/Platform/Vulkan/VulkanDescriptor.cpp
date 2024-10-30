@@ -33,11 +33,11 @@ namespace GEngine
 		poolInfo.pPoolSizes			= poolSizes.data();
 		poolInfo.maxSets			= maxSets;
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &m_DescriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_DescriptorPool));
 	}
 
 	void VulkanDescriptor::Release()
 	{
-		vkDestroyDescriptorPool(VulkanContext::GetDevice(), m_DescriptorPool, nullptr);
+		vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), m_DescriptorPool, nullptr);
 	}
 }

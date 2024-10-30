@@ -8,8 +8,8 @@ namespace GEngine
 {
     VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size)
     {
-        Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
-                            VulkanContext::GetDevice(), 
+        Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
+                            VulkanContext::Get()->GetDevice(),
                             size, 
                             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -18,8 +18,8 @@ namespace GEngine
     }
     VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size)
     {
-        Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
-                            VulkanContext::GetDevice(), 
+        Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+                            VulkanContext::Get()->GetDevice(),
                             size, 
                             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -29,21 +29,21 @@ namespace GEngine
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
-        vkDestroyBuffer(VulkanContext::GetDevice(), m_VertexBuffer, nullptr);
-        vkFreeMemory(VulkanContext::GetDevice(), m_VertexBufferMemory, nullptr);
+        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_VertexBuffer, nullptr);
+        vkFreeMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, nullptr);
     }
     void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
     {
 		void* mappedData;
-		vkMapMemory(VulkanContext::GetDevice(), m_VertexBufferMemory, 0, size, 0, &mappedData);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, 0, size, 0, &mappedData);
 		memcpy(mappedData, data, size);
-		vkUnmapMemory(VulkanContext::GetDevice(), m_VertexBufferMemory);
+		vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory);
     }
     void VulkanVertexBuffer::Bind() const
     {
-        GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+        GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
+        vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
     }
     void VulkanVertexBuffer::Unbind() const
     {
@@ -53,24 +53,24 @@ namespace GEngine
     {
 		m_Count = count;
 		VkDeviceSize bufferSize = sizeof(uint32_t) * count;
-		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), VulkanContext::GetDevice(), bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_IndexBuffer, m_IndexBufferMemory);
+		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), VulkanContext::Get()->GetDevice(), bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_IndexBuffer, m_IndexBufferMemory);
 
 		void* data;
-		vkMapMemory(VulkanContext::GetDevice(), m_IndexBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, indices, (size_t)bufferSize);
-		vkUnmapMemory(VulkanContext::GetDevice(), m_IndexBufferMemory);
+		vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory);
     }
 
     VulkanIndexBuffer::~VulkanIndexBuffer()
     {
-        vkDestroyBuffer(VulkanContext::GetDevice(), m_IndexBuffer, nullptr);
-		vkFreeMemory(VulkanContext::GetDevice(), m_IndexBufferMemory, nullptr);
+        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_IndexBuffer, nullptr);
+		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, nullptr);
     }
 
     void VulkanIndexBuffer::Bind() const
     {
-		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-		vkCmdBindIndexBuffer(VulkanContext::GetCurrentCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
     void VulkanIndexBuffer::Unbind() const

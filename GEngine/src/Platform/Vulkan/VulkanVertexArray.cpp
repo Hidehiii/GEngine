@@ -14,7 +14,7 @@ namespace GEngine
 	}
 	void VulkanVertexArray::Bind() const
 	{
-		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		m_VertexBuffer->Bind();
 		m_IndexBuffer->Bind();
 	}

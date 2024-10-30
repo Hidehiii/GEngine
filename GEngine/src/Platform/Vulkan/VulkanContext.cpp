@@ -6,20 +6,7 @@
 
 namespace GEngine
 {
-    VkDevice                VulkanContext::s_Device;
-    VkExtent2D              VulkanContext::s_SwapChainExtent;
-    std::vector<VkImage>    VulkanContext::s_SwapChainImages;
-    VkPhysicalDevice        VulkanContext::s_PhysicalDevice;
-	VulkanCommandBuffer		VulkanContext::s_CommandBuffer;
-	std::vector<int>		VulkanContext::s_PushedCommandBufferIndexs;
-    Vector4                 VulkanContext::s_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-    VkInstance              VulkanContext::s_Instance;
-    VulkanDescriptor        VulkanContext::s_Descriptor;
-    VkQueue                 VulkanContext::s_GraphicsQueue;
-    QueueFamilyIndices      VulkanContext::s_QueueFamily;
-    VkRenderPass            VulkanContext::s_SwapChainRenderPass;
-    std::vector<VkFramebuffer>	VulkanContext::s_SwapChainFrameBuffers;
-
+    VulkanContext* VulkanContext::s_ContextInstance = nullptr;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -66,6 +53,7 @@ namespace GEngine
         : m_WindowHandle(windowHandle)
 	{
 		m_Surface = nullptr;
+        s_ContextInstance = this;
 	}
 	VulkanContext::~VulkanContext()
 	{
@@ -81,25 +69,24 @@ namespace GEngine
         CreateImageViews();
         CreateCommandBuffers();
         CreateDescriptor();
-        CreateRenderPass();
         CreateFrameBuffer();
 	}
     void VulkanContext::Uninit()
     {
-        s_Descriptor.Release();
-        s_CommandBuffer.Release();
+        m_Descriptor.Release();
+        m_CommandBuffer.Release();
         for (auto imageView : m_SwapChainImageViews)
 		{
-			vkDestroyImageView(s_Device, imageView, nullptr);
+			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
         
-        vkDestroySwapchainKHR(s_Device, m_SwapChain, nullptr);
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
-        DestroyDebugUtilsMessengerEXT(s_Instance, m_DebugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 #endif
-        vkDestroyDevice(s_Device, nullptr);
-        vkDestroySurfaceKHR(s_Instance, m_Surface, nullptr);
-        vkDestroyInstance(s_Instance, nullptr);
+        vkDestroyDevice(m_Device, nullptr);
+        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+        vkDestroyInstance(m_Instance, nullptr);
     }
 	void VulkanContext::SwapBuffers()
 	{
@@ -138,7 +125,7 @@ namespace GEngine
         createInfo.enabledLayerCount            = 0;
 #endif
 
-        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &s_Instance));
+        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &m_Instance));
     }
     bool VulkanContext::CheckValidationLayerSupport()
     {
@@ -176,7 +163,7 @@ namespace GEngine
         VkDebugUtilsMessengerCreateInfoEXT       createInfo;
         PopulateDebugMessengerCreateInfo(createInfo);
 
-        VK_CHECK_RESULT(CreateDebugUtilsMessengerEXT(s_Instance, &createInfo, nullptr, &m_DebugMessenger));
+        VK_CHECK_RESULT(CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger));
     }
     void VulkanContext::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
@@ -193,22 +180,22 @@ namespace GEngine
     void VulkanContext::SetPhysicalDevice()
     {
         uint32_t                            deviceCount = 0;
-        vkEnumeratePhysicalDevices(s_Instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
         if (deviceCount == 0)
         {
             GE_CORE_ERROR("Failed to find GPUs with Vulkan support!");
         }
         std::vector<VkPhysicalDevice>       devices(deviceCount);
-        vkEnumeratePhysicalDevices(s_Instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
         for (const auto& device : devices)
         {
             if (IsDeviceSuitable(device))
             {
-                s_PhysicalDevice = device;
+                m_PhysicalDevice = device;
                 break;
             }
         }
-        if (s_PhysicalDevice == VK_NULL_HANDLE)
+        if (m_PhysicalDevice == VK_NULL_HANDLE)
         {
             GE_CORE_ERROR("Failed to find a suitable GPU!");
         }
@@ -262,9 +249,9 @@ namespace GEngine
     }
     void VulkanContext::CreateLogicalDevice()
     {
-        QueueFamilyIndices                  indices = FindQueueFamilies(s_PhysicalDevice);
+        QueueFamilyIndices                  indices = FindQueueFamilies(m_PhysicalDevice);
 
-        s_QueueFamily                               = FindQueueFamilies(s_PhysicalDevice);
+        m_QueueFamily                               = FindQueueFamilies(m_PhysicalDevice);
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
         float                               queuePriority = 1.0f;
@@ -278,7 +265,7 @@ namespace GEngine
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        CheckInstanceExtensionSupport(s_PhysicalDevice);
+        CheckInstanceExtensionSupport(m_PhysicalDevice);
 
         VkPhysicalDeviceFeatures            deviceFeatures = {};
         deviceFeatures.samplerAnisotropy    = VK_TRUE;
@@ -304,14 +291,14 @@ namespace GEngine
         createInfo.enabledLayerCount        = 0;
         createInfo.ppEnabledLayerNames      = nullptr;
 #endif
-        VK_CHECK_RESULT(vkCreateDevice(s_PhysicalDevice, &createInfo, nullptr, &s_Device));
+        VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device));
 
-		vkGetDeviceQueue(s_Device, indices.GraphicsFamily.value(), 0, &s_GraphicsQueue);
-		vkGetDeviceQueue(s_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
+		vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
     void VulkanContext::CreateSurface()
     {
-        VK_CHECK_RESULT(glfwCreateWindowSurface(s_Instance, m_WindowHandle, nullptr, &m_Surface));
+        VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface));
     }
     bool VulkanContext::CheckDeviceExtensionSupport(VkPhysicalDevice device)
     {
@@ -423,7 +410,7 @@ namespace GEngine
     }
     void VulkanContext::CreateSwapChain(const unsigned int width, const unsigned int height)
     {
-        SwapChainSupportDetails     swapChainSupportDetails = QuerySwapChainSupport(s_PhysicalDevice);
+        SwapChainSupportDetails     swapChainSupportDetails = QuerySwapChainSupport(m_PhysicalDevice);
 
         VkSurfaceFormatKHR          surfaceFormat           = ChooseSwapSurfaceFormat(swapChainSupportDetails.Formats);
         VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
@@ -446,7 +433,7 @@ namespace GEngine
 		createInfo.imageArrayLayers                         = 1;
 		createInfo.imageUsage                               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices          indices                 = FindQueueFamilies(s_PhysicalDevice);
+		QueueFamilyIndices          indices                 = FindQueueFamilies(m_PhysicalDevice);
 		uint32_t                    queueFamilyIndices[]    = { 
                                                             indices.GraphicsFamily.value(), 
                                                             indices.PresentFamily.value() };
@@ -470,25 +457,25 @@ namespace GEngine
 		createInfo.clipped                                  = VK_TRUE;
         createInfo.oldSwapchain                             = VK_NULL_HANDLE;
 
-        VK_CHECK_RESULT(vkCreateSwapchainKHR(s_Device, &createInfo, nullptr, &m_SwapChain));
+        VK_CHECK_RESULT(vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain));
 
-        vkGetSwapchainImagesKHR(s_Device, m_SwapChain, &imageCount, nullptr);
-        s_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(s_Device, m_SwapChain, &imageCount, s_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
+        m_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
 
         m_SwapChainImageFormat                              = surfaceFormat.format;
-        s_SwapChainExtent                                   = extent;
+        m_SwapChainExtent                                   = extent;
     }
     void VulkanContext::CreateImageViews()
     {
-        m_SwapChainImageViews.resize(s_SwapChainImages.size());
-        for (size_t i = 0; i < s_SwapChainImages.size(); i++)
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++)
         {
-            Utils::CreateImageViews(s_Device, s_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_SwapChainImageViews[i]);
+            Utils::CreateImageViews(m_Device, m_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_SwapChainImageViews[i]);
 
             /*VkImageViewCreateInfo                           createInfo{};
             createInfo.sType                                = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image                                = s_SwapChainImages[i];
+            createInfo.image                                = m_SwapChainImages[i];
             createInfo.viewType                             = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format                               = m_SwapChainImageFormat;
             createInfo.components.r                         = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -501,21 +488,21 @@ namespace GEngine
             createInfo.subresourceRange.baseArrayLayer      = 0;
             createInfo.subresourceRange.layerCount          = 1;
 
-            VK_CHECK_RESULT(vkCreateImageView(s_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));*/
+            VK_CHECK_RESULT(vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));*/
         }
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        s_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(s_PhysicalDevice), 5);
+        m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), 5);
     }
 
     void VulkanContext::PushCommandBuffer()
     {
-        for (int i = 0; i < s_CommandBuffer.GetCommandBuffersSize(); i++)
+        for (int i = 0; i < m_CommandBuffer.GetCommandBuffersSize(); i++)
         {
-            if (std::find(s_PushedCommandBufferIndexs.begin(), s_PushedCommandBufferIndexs.end(), i) == s_PushedCommandBufferIndexs.end())
+            if (std::find(m_PushedCommandBufferIndexs.begin(), m_PushedCommandBufferIndexs.end(), i) == m_PushedCommandBufferIndexs.end())
             {
-                s_PushedCommandBufferIndexs.push_back(i);
+                m_PushedCommandBufferIndexs.push_back(i);
                 return;
             }
         }
@@ -523,79 +510,42 @@ namespace GEngine
     }
     VkCommandBuffer VulkanContext::PopCommandBuffer()
     {
-        GE_CORE_ASSERT(s_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!");
-        VkCommandBuffer     buffer = s_CommandBuffer.GetCommandBuffer(s_PushedCommandBufferIndexs[s_PushedCommandBufferIndexs.size() - 1]);
-        s_PushedCommandBufferIndexs.erase(s_PushedCommandBufferIndexs.end() - 1);
+        GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!");
+        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]);
+        m_PushedCommandBufferIndexs.erase(m_PushedCommandBufferIndexs.end() - 1);
         return buffer;
     }
 	void VulkanContext::CreateDescriptor()
 	{
-        s_Descriptor            = VulkanDescriptor(1000, 100);
+        m_Descriptor            = VulkanDescriptor(1000, 100);
 	}
 
 	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
 	{
-        return s_CommandBuffer.BeginSingleTimeCommands();
+        return m_CommandBuffer.BeginSingleTimeCommands();
 	}
 
 	void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 	{
-        s_CommandBuffer.EndSingleTimeCommands(commandBuffer, s_GraphicsQueue);
-	}
-
-	void VulkanContext::CreateRenderPass()
-	{
-		VkAttachmentDescription         colorAttachment{};
-		colorAttachment.format          = m_SwapChainImageFormat;
-		colorAttachment.samples         = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp          = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp   = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp  = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout   = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference           colorAttachmentRef{};
-		colorAttachmentRef.attachment   = 0;
-		colorAttachmentRef.layout       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription            subpass{};
-		subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount    = 1;
-		subpass.pColorAttachments       = &colorAttachmentRef;
-
-		VkRenderPassCreateInfo          renderPassInfo{};
-		renderPassInfo.sType            = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount  = 1;
-		renderPassInfo.pAttachments     = &colorAttachment;
-		renderPassInfo.subpassCount     = 1;
-		renderPassInfo.pSubpasses       = &subpass;
-
-		if (vkCreateRenderPass(s_Device, &renderPassInfo, nullptr, &s_SwapChainRenderPass) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create render pass!");
-		}
+        m_CommandBuffer.EndSingleTimeCommands(commandBuffer, m_GraphicsQueue);
 	}
 
 	void VulkanContext::CreateFrameBuffer()
 	{
-        s_SwapChainFrameBuffers.resize(m_SwapChainImageViews.size());
+        m_SwapChainFrameBuffers.resize(m_SwapChainImageViews.size());
 		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
-			VkImageView attachments[] = {
-                m_SwapChainImageViews[i]
-			};
+            std::vector<VkImageView> attachmentsVec = { m_SwapChainImageViews[i] };
 
-			VkFramebufferCreateInfo         framebufferInfo{};
-			framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass      = s_SwapChainRenderPass;
-			framebufferInfo.attachmentCount = 1;
-			framebufferInfo.pAttachments    = attachments;
-			framebufferInfo.width           = s_SwapChainExtent.width;
-			framebufferInfo.height          = s_SwapChainExtent.height;
-			framebufferInfo.layers          = 1;
+            FrameBufferSpecificationForVulkan spec;
+            spec.ColorAttachments = attachmentsVec;
+            spec.ColorAttachmentsFormat = { m_SwapChainImageFormat };
+            spec.Width = m_SwapChainExtent.width;
+            spec.Height = m_SwapChainExtent.height;
+            spec.ColorAttachmentsFinalLayout = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
+            spec.EnableDepthStencilAttachment = true;
 
-			if (vkCreateFramebuffer(s_Device, &framebufferInfo, nullptr, &s_SwapChainFrameBuffers[i]) != VK_SUCCESS) {
-				throw std::runtime_error("failed to create framebuffer!");
-			}
+			Ref<VulkanFrameBuffer> frameBuffer = CreateRef<VulkanFrameBuffer>(spec);
+			m_SwapChainFrameBuffers[i] = frameBuffer;
 		}
 	}
 }

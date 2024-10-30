@@ -22,14 +22,14 @@ namespace GEngine
 		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 		
-		Utils::CreateBuffer(VulkanContext::GetPhysicalDevice(), 
-							VulkanContext::GetDevice(), 
+		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
+							VulkanContext::Get()->GetDevice(), 
 							size, 
 							VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
 							m_UniformBuffer, 
 							m_UniformBufferMemory);
-		vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 
 		m_BufferInfo.buffer		= m_UniformBuffer;
 		m_BufferInfo.offset		= m_Offset;
@@ -42,16 +42,16 @@ namespace GEngine
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
-		vkDestroyBuffer(VulkanContext::GetDevice(), m_UniformBuffer, nullptr);
-		vkFreeMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, nullptr);
+		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_UniformBuffer, nullptr);
+		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, nullptr);
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		if (offset != m_Offset)
 		{
 			m_Offset = offset;
-			vkUnmapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory);
-			vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
+			vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory);
+			vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 		}
 		memcpy(m_MapData, data, size);
 

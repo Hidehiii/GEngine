@@ -22,13 +22,62 @@ namespace GEngine
 		CreateRenderPass();
 		CreateBuffer();
 	}
+	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec)
+	{
+		m_SpecificationForVulkan		= spec;
+		m_Specification.Width			= spec.Width;
+		m_Specification.Height			= spec.Height;
+		
+		RenderPassSpecificationForVulkan renderPassSpec;
+		renderPassSpec.ColorAttachmentsFinalLayout	= spec.ColorAttachmentsFinalLayout;
+		renderPassSpec.ColorAttachmentsFormat		= spec.ColorAttachmentsFormat;
+		renderPassSpec.EnableDepthStencilAttachment = spec.EnableDepthStencilAttachment;
+
+		m_RenderPass = CreateRef<VulkanRenderPass>(renderPassSpec);
+
+		m_Attachments = spec.ColorAttachments;
+		if (spec.EnableDepthStencilAttachment)
+		{
+			VkDeviceMemory					imageMemory;
+			VkImage							image;
+			VkImageView						imageView;
+			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+				VulkanContext::Get()->GetDevice(),
+				m_Specification.Width,
+				m_Specification.Height,
+				VK_FORMAT_D24_UNORM_S8_UINT,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				image,
+				imageMemory);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+
+			m_DepthStencilImage = image;
+			m_DepthStencilImageView = imageView;
+			m_DepthStencilImageMemory = imageMemory;
+
+			m_Attachments.push_back(imageView);
+		}
+
+		VkFramebufferCreateInfo         framebufferInfo{};
+		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass		= m_RenderPass->GetRenderPass();
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(m_Attachments.size());
+		framebufferInfo.pAttachments	= m_Attachments.data();
+		framebufferInfo.width			= spec.Width;
+		framebufferInfo.height			= spec.Height;
+		framebufferInfo.layers			= 1;
+
+		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
+	}
 	VulkanFrameBuffer::~VulkanFrameBuffer()
 	{
-		vkDestroyFramebuffer(VulkanContext::GetDevice(), m_FrameBuffer, nullptr);
+		vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
 	}
 	void VulkanFrameBuffer::Begin()
 	{
-		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -38,23 +87,23 @@ namespace GEngine
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
 		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
 
-		VkClearValue							clearColor = { {VulkanContext::GetClearColor().r,
-																VulkanContext::GetClearColor().g,
-																VulkanContext::GetClearColor().b,
-																VulkanContext::GetClearColor().a} };
+		VkClearValue							clearColor = { {VulkanContext::Get()->GetClearColor().r,
+																VulkanContext::Get()->GetClearColor().g,
+																VulkanContext::Get()->GetClearColor().b,
+																VulkanContext::Get()->GetClearColor().a} };
 		clearColor.depthStencil.depth			= 1.0f;
 		clearColor.depthStencil.stencil			= 0;
 
 		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
-		vkCmdBeginRenderPass(VulkanContext::GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		s_CurrentFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::End()
 	{
-		vkCmdEndRenderPass(VulkanContext::GetCurrentCommandBuffer());
+		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
 		s_CurrentFrameBuffer = nullptr;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
@@ -70,13 +119,13 @@ namespace GEngine
 	void VulkanFrameBuffer::ClearAttachmentInt(int attachmentIndex, int val)
 	{
 	}
-	Ref<VulkanFrameBuffer> VulkanFrameBuffer::CreateSwapChainFrameBuffer()
+	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const FrameBufferSpecificationForVulkan spec)
 	{
-		return Ref<VulkanFrameBuffer>();
+		return CreateRef<VulkanFrameBuffer>(spec);
 	}
 	void VulkanFrameBuffer::CreateRenderPass()
 	{
-		VulkanRenderPassSpecification		spec;
+		RenderPassSpecification				spec;
 		spec.ColorAttachments				= m_ColorAttachmentsSpecs;
 		spec.DepthAttachment				= m_DepthAttachmentSpec;
 		m_RenderPass = CreateRef<VulkanRenderPass>(spec);
@@ -85,7 +134,7 @@ namespace GEngine
 	{
 		if (m_FrameBuffer)
 		{
-			vkDestroyFramebuffer(VulkanContext::GetDevice(), m_FrameBuffer, nullptr);
+			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
 			m_Attachments.clear();
 		}
 
@@ -97,8 +146,8 @@ namespace GEngine
 			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
-					VulkanContext::GetDevice(), 
+				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width, 
 					m_Specification.Height, 
 					VK_FORMAT_R8G8B8A8_UNORM, 
@@ -107,7 +156,7 @@ namespace GEngine
 					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					image,
 					imageMemory);
-				Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 				break;
 			default:
 				GE_CORE_ASSERT(false, "Unknown format");
@@ -124,8 +173,8 @@ namespace GEngine
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 		{
-			Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
-				VulkanContext::GetDevice(), 
+			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width, 
 				m_Specification.Height, 
 				VK_FORMAT_D24_UNORM_S8_UINT, 
@@ -134,13 +183,13 @@ namespace GEngine
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
 			break;
 		}
 			
 		case FrameBufferTextureFormat::DEPTH:
-			Utils::CreateImages(VulkanContext::GetPhysicalDevice(), 
-				VulkanContext::GetDevice(), 
+			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width, 
 				m_Specification.Height, 
 				VK_FORMAT_D32_SFLOAT, 
@@ -149,7 +198,7 @@ namespace GEngine
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image, 
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::GetDevice(), image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
@@ -158,6 +207,10 @@ namespace GEngine
 		m_Images.push_back(image);
 		m_Attachments.push_back(imageView);
 		m_ImagesMemory.push_back(imageMemory);
+
+		m_DepthStencilImage = image;
+		m_DepthStencilImageView = imageView;
+		m_DepthStencilImageMemory = imageMemory;
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -168,6 +221,6 @@ namespace GEngine
 		framebufferInfo.height			= m_Specification.Height;
 		framebufferInfo.layers			= 1;
 
-		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
+		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
 	}
 }

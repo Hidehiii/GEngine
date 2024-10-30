@@ -5,19 +5,29 @@
 
 namespace GEngine
 {
-	struct VulkanRenderPassSpecification
+	struct RenderPassSpecification
 	{
 		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
 		FrameBufferTextureSpecification					DepthAttachment;
 	};
 
+	struct RenderPassSpecificationForVulkan
+	{
+		std::vector<VkFormat>						ColorAttachmentsFormat;
+		std::vector<VkImageLayout>					ColorAttachmentsFinalLayout;
+		bool 										EnableDepthStencilAttachment;
+	};
+
 	class GENGINE_API VulkanRenderPass
 	{
 	public:
-		VulkanRenderPass(const VulkanRenderPassSpecification& spec);
+		VulkanRenderPass(const RenderPassSpecification& spec);
+		VulkanRenderPass(const RenderPassSpecificationForVulkan& spec);
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
+
+		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);
 	private:
-		void CreateRenderPass(const VulkanRenderPassSpecification& spec);
+		void CreateRenderPass(const RenderPassSpecification& spec);
 		
 	private:
 		VkRenderPass						m_RenderPass;

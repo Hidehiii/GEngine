@@ -145,9 +145,8 @@ void Sandbox2D::OnUpdate()
 	RenderCommand::EndCommand();
 
 #else
-	// Ö±½Ó³ÊÏÖ
+	// ç›´æ¥å‘ˆç°
 	m_Graphics->Begin();
-	RenderCommand::BeginCommand();
 	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	RenderCommand::Clear();
 
@@ -158,7 +157,6 @@ void Sandbox2D::OnUpdate()
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 	Renderer::EndScene();
-	RenderCommand::EndCommand();
 	m_Graphics->End();
 #endif
 }
