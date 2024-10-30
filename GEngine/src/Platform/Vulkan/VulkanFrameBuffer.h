@@ -23,6 +23,10 @@ namespace GEngine
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
 		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { return 0; }
 		virtual uint32_t GetDepthAttachment() const override { return 0; }
+
+	public:
+		//用于给交换链创建使用
+		static Ref<VulkanFrameBuffer> CreateSwapChainFrameBuffer();
 	private:
 		void CreateRenderPass();
 		void CreateBuffer();

@@ -59,7 +59,7 @@ namespace GEngine
 		VkPipelineColorBlendStateCreateInfo					m_ColorBlending{};
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_GraphicsPipeline;
-
+		bool												m_NeedToRecreatePipeline = true;
 	};
 }
 

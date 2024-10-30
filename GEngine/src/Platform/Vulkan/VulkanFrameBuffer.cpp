@@ -70,6 +70,10 @@ namespace GEngine
 	void VulkanFrameBuffer::ClearAttachmentInt(int attachmentIndex, int val)
 	{
 	}
+	Ref<VulkanFrameBuffer> VulkanFrameBuffer::CreateSwapChainFrameBuffer()
+	{
+		return Ref<VulkanFrameBuffer>();
+	}
 	void VulkanFrameBuffer::CreateRenderPass()
 	{
 		VulkanRenderPassSpecification		spec;

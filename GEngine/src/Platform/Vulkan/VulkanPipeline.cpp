@@ -43,7 +43,12 @@ namespace GEngine
 		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
 
-		CreatePipeline();
+		if (m_NeedToRecreatePipeline)
+		{
+			CreatePipeline();
+			m_NeedToRecreatePipeline = false;
+		}
+		
         vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
@@ -63,8 +68,7 @@ namespace GEngine
 
     void VulkanPipeline::Unbind()
     {
-		vkDestroyPipeline(VulkanContext::GetDevice(), m_GraphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
+
     }
 
 

@@ -9,7 +9,7 @@ static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
 Sandbox2D::Sandbox2D()
 	: Layer("Sandbox2D")
 {
-
+	m_Graphics = Graphics::Create();
 }
 
 void Sandbox2D::OnAttach()
@@ -115,15 +115,11 @@ void Sandbox2D::OnUpdate()
 	//m_EditorCamera.OnUpdate();
 
 	//GEngine::Renderer2D::ResetStats();
+	
 
 	//{
 	//	GE_PROFILE_SCOPE("Render: OnUpdate");
 	//	// temporary
-	RenderCommand::BeginCommand();
-	m_FrameBuffer->Begin();
-	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-	RenderCommand::Clear();
-
 	//	GEngine::Renderer::BeginScene(m_Camera);
 
 	//	m_RayTracing.OnUpdate(m_EditorCamera);
@@ -131,6 +127,14 @@ void Sandbox2D::OnUpdate()
 	//	GEngine::Renderer::EndScene();
 	//	
 	//}
+
+#if 0
+	RenderCommand::BeginCommand();
+	m_FrameBuffer->Begin();
+	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::Clear();
+
+	
 	Renderer::BeginScene(m_EditorCamera);
 	m_Texture->Bind(0);
 	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
@@ -139,7 +143,24 @@ void Sandbox2D::OnUpdate()
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndCommand();
-	m_Pipeline->Unbind();
+
+#else
+	// Ö±½Ó³ÊÏÖ
+	m_Graphics->Begin();
+	RenderCommand::BeginCommand();
+	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::Clear();
+
+
+	Renderer::BeginScene(m_EditorCamera);
+	m_Texture->Bind(0);
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
+	m_Pipeline->Bind();
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	Renderer::EndScene();
+	RenderCommand::EndCommand();
+	m_Graphics->End();
+#endif
 }
 
 void Sandbox2D::OnGuiRender()
@@ -147,6 +168,8 @@ void Sandbox2D::OnGuiRender()
 	GE_PROFILE_FUNCTION();
 	/*ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
+	uint32_t tex = m_FrameBuffer->GetColorAttachment();
+	ImGui::Image((void*)tex, ImVec2(128, 72), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 	ImGui::End();*/
 }
 
