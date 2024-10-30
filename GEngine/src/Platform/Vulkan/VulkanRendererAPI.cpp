@@ -34,7 +34,7 @@ namespace GEngine
     void VulkanRendererAPI::DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
     }
-    void VulkanRendererAPI::EnableDepthMask(bool enabled)
+    void VulkanRendererAPI::EnableDepthWrite(bool enabled)
     {
     }
     void VulkanRendererAPI::EnableDepthTest(bool enabled)

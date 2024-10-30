@@ -6,8 +6,8 @@
 #define VK_CHECK_RESULT(f)																								\
 	{																													\
 		VkResult res = f;																								\
-		GE_CORE_ASSERT(res == VK_SUCCESS, ("Fatal : VkResult is {0}, In File : {1}, At Line : {2}, Statement : {4}",		\
-						res, __FILE__, __LINE__, VAR_NAME(f)));															\
+		GE_CORE_ASSERT(res == VK_SUCCESS, "Fatal : VkResult is {0}, In File : {1}, At Line : {2}, Statement : {4}",		\
+						VK_FALSE, __FILE__, __LINE__, VAR_NAME(f));															\
 	}
 #endif
 

@@ -421,8 +421,8 @@ namespace GEngine
 			{
 				depthMaskProp.erase(index, 1);
 			}
-			m_EnableDepthMask = Utils::ShaderBoolFromString(depthMaskProp);
-			GE_CORE_TRACE("DepthMask: {0}", m_EnableDepthMask);
+			m_EnableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
+			GE_CORE_TRACE("DepthMask: {0}", m_EnableDepthWrite);
 		}
 
 		// find DepthTest

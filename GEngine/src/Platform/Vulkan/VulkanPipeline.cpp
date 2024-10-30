@@ -27,6 +27,9 @@ namespace GEngine
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
         m_VertexArray           = std::dynamic_pointer_cast<VulkanVertexArray>(vertexArray);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
+
+		CreateDescriptorSetAndLayout();
+		UpdateDescriptorSet();
     }
 
     VulkanPipeline::~VulkanPipeline()
@@ -39,6 +42,7 @@ namespace GEngine
     {
 		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
+
 		CreatePipeline();
         vkCmdBindPipeline(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
@@ -54,15 +58,13 @@ namespace GEngine
 		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
-		// TODO ： 这里可能要绑定所有的ubo？得想想怎么弄
-		VulkanUniformBuffer::AddDescriptorSetLayoutBinding(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
-		VkDescriptorSet	set = VulkanUniformBuffer::GetDescriptorSet();
-		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &set, 0, nullptr);
+		vkCmdBindDescriptorSets(VulkanContext::GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
     void VulkanPipeline::Unbind()
     {
-		VulkanUniformBuffer::RemoveDescriptorSetLayoutBinding(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
+		vkDestroyPipeline(VulkanContext::GetDevice(), m_GraphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(VulkanContext::GetDevice(), m_PipelineLayout, nullptr);
     }
 
 
@@ -76,6 +78,74 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::GetDevice(), &createInfo, nullptr, &shaderModule));
         return shaderModule;
     }
+	void VulkanPipeline::CreateDescriptorSetAndLayout()
+	{
+		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
+		std::vector<VulkanUniformBuffer*> publicUniformBuffer		= VulkanUniformBuffer::GetPublicUniformBuffer();
+		for (auto buffer : publicUniformBuffer)
+		{
+			layoutBindings.push_back(buffer->GetDescriptorSetLayoutBinding());
+		}
+		layoutBindings.push_back(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
+		// TODO : 后面贴图需要放在材质里而不是外部绑定
+		// xxx = m_Material->GetTexture2D()...
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount			= static_cast<uint32_t>(layoutBindings.size());
+		layoutInfo.pBindings			= layoutBindings.data();
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
+
+		// 只有一个set，需要兼容gl没有set的概念
+		VkDescriptorSetAllocateInfo		allocInfo{};
+		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool		= VulkanContext::GetDescriptorPool();
+		allocInfo.descriptorSetCount	= 1;
+		allocInfo.pSetLayouts			= &m_DescriptorSetLayout;
+
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::GetDevice(), &allocInfo, &m_DescriptorSet));
+	}
+	void VulkanPipeline::UpdateDescriptorSet()
+	{
+		// 更新公共uniform buffer
+		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
+		for (auto buffer : publicUniformBuffer)
+		{
+			VkDescriptorBufferInfo			bufferInfo = buffer->GetDescriptorBufferInfo();
+
+			VkWriteDescriptorSet			descriptorWrite{};
+			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstBinding		= buffer->GetBinding();
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo		= &bufferInfo;
+			descriptorWrite.pImageInfo		= nullptr; // Optional
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+			vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+		}
+		// 更新材质的uniform buffer
+		{
+			VkDescriptorBufferInfo			bufferInfo = m_Material->GetUniformBuffer()->GetDescriptorBufferInfo();
+
+			VkWriteDescriptorSet			descriptorWrite{};
+			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstBinding		= m_Material->GetUniformBuffer()->GetBinding();
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo		= &bufferInfo;
+			descriptorWrite.pImageInfo		= nullptr; // Optional
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+			vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+		}
+		// TODO: 后面贴图也要放进材质，由这里统一获取进行绑定更新
+	}
     void VulkanPipeline::CreatePipeline()
     {
 		m_VertexShaderModule		= CreateShaderModule(m_Material->GetShader()->GetVertexShaderSource());
@@ -153,43 +223,54 @@ namespace GEngine
 		m_ColorBlendAttachment.dstAlphaBlendFactor	= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
 		m_ColorBlendAttachment.alphaBlendOp			= VK_BLEND_OP_ADD;
 
-		m_ColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		m_ColorBlending.logicOpEnable = VK_FALSE;
-		m_ColorBlending.logicOp = VK_LOGIC_OP_COPY;
-		m_ColorBlending.attachmentCount = 1;
-		m_ColorBlending.pAttachments = &m_ColorBlendAttachment;
-		m_ColorBlending.blendConstants[0] = 0.0f;
-		m_ColorBlending.blendConstants[1] = 0.0f;
-		m_ColorBlending.blendConstants[2] = 0.0f;
-		m_ColorBlending.blendConstants[3] = 0.0f;
+		m_ColorBlending.sType						= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		m_ColorBlending.logicOpEnable				= VK_FALSE;
+		m_ColorBlending.logicOp						= VK_LOGIC_OP_COPY;
+		m_ColorBlending.attachmentCount				= 1;
+		m_ColorBlending.pAttachments				= &m_ColorBlendAttachment;
+		m_ColorBlending.blendConstants[0]			= 0.0f;
+		m_ColorBlending.blendConstants[1]			= 0.0f;
+		m_ColorBlending.blendConstants[2]			= 0.0f;
+		m_ColorBlending.blendConstants[3]			= 0.0f;
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		VkDescriptorSetLayout setLayout = VulkanUniformBuffer::GetDescriptorSetLayout();
-		pipelineLayoutInfo.pSetLayouts = &setLayout;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		VkPipelineLayoutCreateInfo					pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount			= 1;
+		pipelineLayoutInfo.pSetLayouts				= &m_DescriptorSetLayout;
+		pipelineLayoutInfo.pushConstantRangeCount	= 0;
+		pipelineLayoutInfo.pPushConstantRanges		= nullptr;
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 
+		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
+		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable			= m_Material->GetEnableDepthTest() ? VK_TRUE : VK_FALSE;
+		depthStencil.depthWriteEnable			= m_Material->GetEnableDepthWrite() ? VK_TRUE : VK_FALSE;
+		depthStencil.depthCompareOp				= VK_COMPARE_OP_LESS;
+		depthStencil.depthBoundsTestEnable		= VK_FALSE;
+		depthStencil.minDepthBounds				= 0.0f; // Optional
+		depthStencil.maxDepthBounds				= 1.0f; // Optional
+		depthStencil.stencilTestEnable			= VK_FALSE;
+		depthStencil.front						= {}; // Optional
+		depthStencil.back						= {}; // Optional
+
 		VkGraphicsPipelineCreateInfo        pipelineInfo{};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = m_ShaderStages.data();
-		pipelineInfo.pVertexInputState = &m_VertexInputInfo;
-		pipelineInfo.pInputAssemblyState = &m_InputAssembly;
-		pipelineInfo.pViewportState = &m_ViewportState;
-		pipelineInfo.pRasterizationState = &m_Rasterizer;
-		pipelineInfo.pMultisampleState = &m_Multisampling;
-		pipelineInfo.pDepthStencilState = nullptr; // Optional
-		pipelineInfo.pColorBlendState = &m_ColorBlending;
-		pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
-		pipelineInfo.layout = m_PipelineLayout;
-		pipelineInfo.renderPass = ((VulkanFrameBuffer*)(FrameBuffer::GetCurrentFrameBuffer()))->GetRenderPass();
-		pipelineInfo.subpass = 0;
-		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-		pipelineInfo.basePipelineIndex = -1; // Optional
+		pipelineInfo.sType					= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.stageCount				= static_cast<uint32_t>(m_ShaderStages.size());
+		pipelineInfo.pStages				= m_ShaderStages.data();
+		pipelineInfo.pVertexInputState		= &m_VertexInputInfo;
+		pipelineInfo.pInputAssemblyState	= &m_InputAssembly;
+		pipelineInfo.pViewportState			= &m_ViewportState;
+		pipelineInfo.pRasterizationState	= &m_Rasterizer;
+		pipelineInfo.pMultisampleState		= &m_Multisampling;
+		pipelineInfo.pDepthStencilState		= &depthStencil;
+		pipelineInfo.pColorBlendState		= &m_ColorBlending;
+		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
+		pipelineInfo.layout					= m_PipelineLayout;
+		pipelineInfo.renderPass				= ((VulkanFrameBuffer*)(FrameBuffer::GetCurrentFrameBuffer()))->GetRenderPass();
+		pipelineInfo.subpass				= 0;
+		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
+		pipelineInfo.basePipelineIndex		= -1; // Optional
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 

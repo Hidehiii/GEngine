@@ -30,7 +30,7 @@ namespace GEngine
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
 			// Read depth test and depth mask
-			m_EnableDepthMask			= m_Shader->GetEnableDepthMask();
+			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
 		}
 		else

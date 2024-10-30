@@ -42,7 +42,8 @@ namespace GEngine
     void VulkanVertexBuffer::Bind() const
     {
         GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-        vkCmdBindVertexBuffers(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, 0);
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(VulkanContext::GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
     }
     void VulkanVertexBuffer::Unbind() const
     {

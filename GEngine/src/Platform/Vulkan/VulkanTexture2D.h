@@ -35,6 +35,7 @@ namespace GEngine
 		VkImageView			m_ImageView;
 		VkSampler			m_Sampler;
 		VkDescriptorSetLayoutBinding m_DescriptorSetLayoutBinding;
+		VkDescriptorImageInfo m_ImageInfo{};
 	};
 }
 

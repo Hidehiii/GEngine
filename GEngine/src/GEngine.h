@@ -37,7 +37,7 @@
 // Camera
 #include "GEngine/Components/Camera/OrthoGraphicCamera.h"
 #include "GEngine/Components/Camera/OrthoGraphicCameraController.h"
-#include "GEngine/Components/Camera/EditorCamera.h"
+
 
 // Components
 #include "GEngine/Components/Components.h"
@@ -61,7 +61,7 @@
 #include "GEngine/Asset/Mesh.h"
 
 // Editor only
-#include "GEngine/Editor/Renderer/EditorRenderer2D.h"
+#include "GEngine/Components/Camera/EditorCamera.h"
 
 
 // Physics

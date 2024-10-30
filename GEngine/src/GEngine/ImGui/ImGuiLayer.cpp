@@ -96,17 +96,17 @@ namespace GEngine
 			VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &poolInfo, nullptr, &descriptorPool));
 
 			ImGui_ImplVulkan_InitInfo		info{};
-			info.Instance = VulkanContext::GetInstance();
-			info.PhysicalDevice = VulkanContext::GetPhysicalDevice();
-			info.Device = VulkanContext::GetDevice();
-			info.QueueFamily = VulkanContext::GetQueueFamily().GraphicsFamily.value();
-			info.Queue = VulkanContext::GetGraphicsQueue();
-			info.PipelineCache = nullptr;
-			info.MinImageCount = 2;
-			info.ImageCount = VulkanContext::GetSwapChainImage().size();
-			info.DescriptorPool = descriptorPool;
-			info.Allocator = nullptr;
-			info.CheckVkResultFn = nullptr;
+			info.Instance					= VulkanContext::GetInstance();
+			info.PhysicalDevice				= VulkanContext::GetPhysicalDevice();
+			info.Device						= VulkanContext::GetDevice();
+			info.QueueFamily				= VulkanContext::GetQueueFamily().GraphicsFamily.value();
+			info.Queue						= VulkanContext::GetGraphicsQueue();
+			info.PipelineCache				= nullptr;
+			info.MinImageCount				= 2;
+			info.ImageCount					= VulkanContext::GetSwapChainImage().size();
+			info.DescriptorPool				= descriptorPool;
+			info.Allocator					= nullptr;
+			info.CheckVkResultFn			= nullptr;
 			ImGui_ImplVulkan_Init(&info, VulkanContext::GetSwapChainRenderPass());
 			break;
 		}
@@ -114,6 +114,8 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown render api");
 			break;
 		}
+
+		io.Fonts->Build();
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -181,8 +183,8 @@ namespace GEngine
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 		
 		// Rendering
-		RenderCommand::BeginCommand();
 		ImGui::Render();
+		RenderCommand::BeginCommand();
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::OpenGL:

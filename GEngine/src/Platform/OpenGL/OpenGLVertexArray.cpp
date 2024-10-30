@@ -26,7 +26,7 @@ namespace GEngine
 
 		glBindVertexArray(0);
 	}
-	void OpenGLVertexArray::AddVertexBuffer(const Ref<GEngine::VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::SetVertexBuffer(const Ref<GEngine::VertexBuffer>& vertexBuffer)
 	{
 		GE_PROFILE_FUNCTION();
 
@@ -84,7 +84,7 @@ namespace GEngine
 			}
 			
 		}
-		m_VertexBuffers.push_back(vertexBuffer);
+		m_VertexBuffer = (vertexBuffer);
 	}
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
 	{

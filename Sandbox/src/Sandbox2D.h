@@ -35,5 +35,8 @@ private:
 	Ref<Pipeline>	m_Pipeline;
 	std::vector<TestVertex> m_vertex;
 	Ref<FrameBuffer> m_FrameBuffer;
+	Ref<Texture2D> m_Texture;
+
+	Editor::EditorCamera m_EditorCamera;
 };
 

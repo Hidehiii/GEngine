@@ -106,7 +106,7 @@ namespace GEngine
 					{ShaderDataType::float4,	"Color"},
 					{ShaderDataType::int1,		"TexIndex"}
 					});
-				s_Data.QuadPipeline->GetVertexArray()->AddVertexBuffer(s_Data.QuadPipeline->GetVertexBuffer());
+				s_Data.QuadPipeline->GetVertexArray()->SetVertexBuffer(s_Data.QuadPipeline->GetVertexBuffer());
 				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 				s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 				uint32_t offset = 0;
@@ -159,7 +159,7 @@ namespace GEngine
 					{ShaderDataType::int1, "TexIndex"},
 					{ShaderDataType::float1, "Fade"}
 					});
-				s_Data.CirclePipeline->GetVertexArray()->AddVertexBuffer(s_Data.CirclePipeline->GetVertexBuffer());
+				s_Data.CirclePipeline->GetVertexArray()->SetVertexBuffer(s_Data.CirclePipeline->GetVertexBuffer());
 
 				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
@@ -196,7 +196,7 @@ namespace GEngine
 					});
 
 				s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
-				s_Data.LinePipeline->GetVertexArray()->AddVertexBuffer(s_Data.LinePipeline->GetVertexBuffer());
+				s_Data.LinePipeline->GetVertexArray()->SetVertexBuffer(s_Data.LinePipeline->GetVertexBuffer());
 			}
 
 			// Point
@@ -211,7 +211,7 @@ namespace GEngine
 					{ShaderDataType::float4, "Color"}
 					});
 				s_Data.PointVertexBufferBase = new PointVertex[s_Data.MaxVertices];
-				s_Data.PointPipeline->GetVertexArray()->AddVertexBuffer(s_Data.PointPipeline->GetVertexBuffer());
+				s_Data.PointPipeline->GetVertexArray()->SetVertexBuffer(s_Data.PointPipeline->GetVertexBuffer());
 			}
 		}
 		

@@ -25,6 +25,8 @@ void Sandbox2D::OnAttach()
 	fspec.Height = 720;
 	m_FrameBuffer = FrameBuffer::Create(fspec);
 
+	m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
+
 	// Read all shader files
 	{
 		for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
@@ -63,7 +65,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"},
 		{ShaderDataType::int1,		"TexIndex"}
 		});
-	m_Pipeline->GetVertexArray()->AddVertexBuffer(m_Pipeline->GetVertexBuffer());
+	m_Pipeline->GetVertexArray()->SetVertexBuffer(m_Pipeline->GetVertexBuffer());
 	uint32_t* quadIndices = new uint32_t[6];
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < 6; i += 6)
@@ -98,6 +100,9 @@ void Sandbox2D::OnAttach()
 	m_vertex[2].index = 0;
 	m_vertex[3].index = 0;
 
+	m_Texture = Texture2D::Create(1, 1);
+	uint32_t whiteTextureData = 0xffffffff;
+	m_Texture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 }
 
 void Sandbox2D::OnDetach()
@@ -116,8 +121,8 @@ void Sandbox2D::OnUpdate()
 	//	// temporary
 	RenderCommand::BeginCommand();
 	m_FrameBuffer->Begin();
-		GEngine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-		GEngine::RenderCommand::Clear();
+	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::Clear();
 
 	//	GEngine::Renderer::BeginScene(m_Camera);
 
@@ -126,20 +131,23 @@ void Sandbox2D::OnUpdate()
 	//	GEngine::Renderer::EndScene();
 	//	
 	//}
-
-		m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
-		m_Pipeline->Bind();
-		RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
-		m_FrameBuffer->End();
-		RenderCommand::EndCommand();
+	Renderer::BeginScene(m_EditorCamera);
+	m_Texture->Bind(0);
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
+	m_Pipeline->Bind();
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	Renderer::EndScene();
+	m_FrameBuffer->End();
+	RenderCommand::EndCommand();
+	m_Pipeline->Unbind();
 }
 
 void Sandbox2D::OnGuiRender()
 {
 	GE_PROFILE_FUNCTION();
-	ImGui::Begin("Profile");
+	/*ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	ImGui::End();
+	ImGui::End();*/
 }
 
 void Sandbox2D::OnEvent(GEngine::Event& e)

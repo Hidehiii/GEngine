@@ -19,7 +19,7 @@ namespace GEngine
 				{ShaderDataType::float4, "Normal"}
 				});
 
-			m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+			m_VertexArray->SetVertexBuffer(m_VertexBuffer);
 			m_VertexArray->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
 			if(m_Material == nullptr)
 				m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));

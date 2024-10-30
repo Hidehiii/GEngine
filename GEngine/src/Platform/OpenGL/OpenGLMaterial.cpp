@@ -31,7 +31,7 @@ namespace GEngine
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
 			// Read depth test and depth mask
-			m_EnableDepthMask			= m_Shader->GetEnableDepthMask();
+			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
 		}
 		else
@@ -50,7 +50,7 @@ namespace GEngine
 		RenderCommand::SetCull(m_CullMode);
 		RenderCommand::SetBlend(m_BlendMode, m_BlendSourceFactor, m_BlendDestinationFactor);
 		RenderCommand::EnableDepthTest(m_EnableDepthTest);
-		RenderCommand::EnableDepthMask(m_EnableDepthMask);
+		RenderCommand::EnableDepthWrite(m_EnableDepthWrite);
 	}
 	void OpenGLMaterial::SetCullMode(Material_CullMode mode)
 	{

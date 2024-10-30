@@ -16,26 +16,23 @@ namespace GEngine
 		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
+		VkDescriptorBufferInfo GetDescriptorBufferInfo() { return m_BufferInfo; }
+		int GetBinding() { return m_Binding; }
 	private:
 		VkBuffer					m_UniformBuffer;
 		VkDeviceMemory				m_UniformBufferMemory;
 		void*						m_MapData;
 		uint32_t					m_Offset = 0;
 		int							m_Binding;
+		VkDescriptorBufferInfo		m_BufferInfo{};
 		VkDescriptorSetLayoutBinding m_DescriptorSetLayoutBinding;
 
 	public:
-		static void AddDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding layoutBinding);
-		static void RemoveDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding layoutBinding);
-		static VkDescriptorSetLayout GetDescriptorSetLayout() { return s_DescriptorSetLayout; }
-		static VkDescriptorSet GetDescriptorSet() { return s_DescriptorSet; }
+		static void AddPublicUniformBuffer(VulkanUniformBuffer* buffer);
+		static void RemovePublicUniformBuffer(VulkanUniformBuffer* buffer);
+		static std::vector<VulkanUniformBuffer*> GetPublicUniformBuffer() { return s_PublicUniformBuffer; }
 	private:
-		static void CreateDescriptorSet();
-		static void CreateDescriptorSetLayout();
-	private:
-		static std::vector<VkDescriptorSetLayoutBinding> s_DescriptorSetLayoutBindings;
-		static VkDescriptorSetLayout	s_DescriptorSetLayout;
-		static VkDescriptorSet			s_DescriptorSet;
+		static std::vector<VulkanUniformBuffer*> s_PublicUniformBuffer;
 	};
 }
 

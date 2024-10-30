@@ -15,17 +15,20 @@ namespace GEngine
 	void VulkanVertexArray::Bind() const
 	{
 		GE_CORE_ASSERT(VulkanContext::GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-		m_VertexBuffers.at(0)->Bind();
+		m_VertexBuffer->Bind();
 		m_IndexBuffer->Bind();
 	}
 	void VulkanVertexArray::Unbind() const
 	{
 	}
-	void VulkanVertexArray::AddVertexBuffer(const Ref<GEngine::VertexBuffer>& vertexBuffer)
+	void VulkanVertexArray::SetVertexBuffer(const Ref<GEngine::VertexBuffer>& vertexBuffer)
 	{
 		GE_PROFILE_FUNCTION();
 
 		GE_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
+
+		m_VertexInputAttributeDescriptions.clear();
+		m_VertexInputBindingDescriptions.clear();
 
 		VkVertexInputBindingDescription		bindingDescription{};
 		bindingDescription.binding			= static_cast<uint32_t>(m_VertexInputBindingDescriptions.size());
@@ -70,9 +73,11 @@ namespace GEngine
 				break;
 			}
 			m_VertexInputAttributeDescriptions.push_back(attributeDescription);
+			index++;
 		}
 
 		m_VertexInputBindingDescriptions.push_back(bindingDescription);
+		m_VertexBuffer = (vertexBuffer);
 	}
 	void VulkanVertexArray::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
 	{

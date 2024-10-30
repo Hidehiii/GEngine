@@ -22,11 +22,17 @@ namespace GEngine
 		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
+		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次，现在先每次更新看看能不能跑
+		void CreateDescriptorSetAndLayout();
+		void UpdateDescriptorSet();
 		void CreatePipeline();
 	private:
 		Ref<VulkanMaterial>			m_Material;
 		Ref<VulkanVertexArray>		m_VertexArray;
 		Ref<VulkanVertexBuffer>		m_VertexBuffer;
+
+		VkDescriptorSetLayout		m_DescriptorSetLayout;
+		VkDescriptorSet				m_DescriptorSet;
 
 		VkShaderModule				m_VertexShaderModule;
 		VkShaderModule				m_FragmentShaderModule;

@@ -72,7 +72,7 @@ namespace GEngine
 		glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr, instanceCount);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	void OpenGLRendererAPI::EnableDepthMask(bool enabled)
+	void OpenGLRendererAPI::EnableDepthWrite(bool enabled)
 	{
 		if (enabled)
 			glDepthMask(GL_TRUE);

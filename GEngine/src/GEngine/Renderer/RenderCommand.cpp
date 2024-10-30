@@ -62,9 +62,9 @@ namespace GEngine
 	{
 		s_RendererAPI->SetBlend(mode, source, dest);
 	}
-	inline void RenderCommand::EnableDepthMask(bool enabled)
+	inline void RenderCommand::EnableDepthWrite(bool enabled)
 	{
-		s_RendererAPI->EnableDepthMask(enabled);
+		s_RendererAPI->EnableDepthWrite(enabled);
 	}
 	inline void RenderCommand::EnableDepthTest(bool enabled)
 	{

@@ -5,20 +5,11 @@
 #include "Platform/Vulkan/VulkanContext.h"
 
 
-bool operator == (VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b)
-{
-	return a.binding == b.binding
-		&& a.descriptorType == b.descriptorType
-		&& a.descriptorCount == b.descriptorCount
-		&& a.stageFlags == b.stageFlags
-		&& a.pImmutableSamplers == b.pImmutableSamplers;
-}
+
 
 namespace GEngine
 {
-	std::vector<VkDescriptorSetLayoutBinding>	VulkanUniformBuffer::s_DescriptorSetLayoutBindings;
-	VkDescriptorSetLayout						VulkanUniformBuffer::s_DescriptorSetLayout;
-	VkDescriptorSet								VulkanUniformBuffer::s_DescriptorSet;
+	std::vector<VulkanUniformBuffer*>	VulkanUniformBuffer::s_PublicUniformBuffer;
 
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
 	{
@@ -40,11 +31,13 @@ namespace GEngine
 							m_UniformBufferMemory);
 		vkMapMemory(VulkanContext::GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
 
-
+		m_BufferInfo.buffer		= m_UniformBuffer;
+		m_BufferInfo.offset		= m_Offset;
+		m_BufferInfo.range		= size;
 		// 公共ubo不会每次更新
 		if (binding != 0)
 		{
-			AddDescriptorSetLayoutBinding(m_DescriptorSetLayoutBinding);
+			AddPublicUniformBuffer(this);
 		}
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()
@@ -62,59 +55,22 @@ namespace GEngine
 		}
 		memcpy(m_MapData, data, size);
 
-		VkDescriptorBufferInfo			bufferInfo{};
-		bufferInfo.buffer				= m_UniformBuffer;
-		bufferInfo.offset				= m_Offset;
-		bufferInfo.range				= size;
-
-		VkWriteDescriptorSet			descriptorWrite{};
-		descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet			= s_DescriptorSet;
-		descriptorWrite.dstBinding		= m_Binding;
-		descriptorWrite.dstArrayElement = 0;
-		descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrite.descriptorCount = 1;
-		descriptorWrite.pBufferInfo		= &bufferInfo;
-		descriptorWrite.pImageInfo		= nullptr; // Optional
-		descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-		vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &descriptorWrite, 0, nullptr);
+		m_BufferInfo.buffer				= m_UniformBuffer;
+		m_BufferInfo.offset				= m_Offset;
+		m_BufferInfo.range				= size;
 	}
 	void VulkanUniformBuffer::RT_SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 	}
-	void VulkanUniformBuffer::AddDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding layoutBinding)
+	void VulkanUniformBuffer::AddPublicUniformBuffer(VulkanUniformBuffer* buffer)
 	{
-		s_DescriptorSetLayoutBindings.push_back(layoutBinding);
-		CreateDescriptorSetLayout();
-		CreateDescriptorSet();
+		s_PublicUniformBuffer.push_back(buffer);
 	}
-	void VulkanUniformBuffer::RemoveDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding layoutBinding)
+	void VulkanUniformBuffer::RemovePublicUniformBuffer(VulkanUniformBuffer* buffer)
 	{
-		if (std::find(s_DescriptorSetLayoutBindings.begin(), s_DescriptorSetLayoutBindings.end(), layoutBinding) != s_DescriptorSetLayoutBindings.end())
+		if (std::find(s_PublicUniformBuffer.begin(), s_PublicUniformBuffer.end(), buffer) != s_PublicUniformBuffer.end())
 		{
-			s_DescriptorSetLayoutBindings.erase(std::find(s_DescriptorSetLayoutBindings.begin(), s_DescriptorSetLayoutBindings.end(), layoutBinding));
+			s_PublicUniformBuffer.erase(std::find(s_PublicUniformBuffer.begin(), s_PublicUniformBuffer.end(), buffer));
 		}
-		CreateDescriptorSetLayout();
-		CreateDescriptorSet();
-	}
-	void VulkanUniformBuffer::CreateDescriptorSet()
-	{
-		VkDescriptorSetAllocateInfo		allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = VulkanContext::GetDescriptorPool();
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &s_DescriptorSetLayout;
-
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::GetDevice(), &allocInfo, &s_DescriptorSet));
-	}
-	void VulkanUniformBuffer::CreateDescriptorSetLayout()
-	{
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = static_cast<uint32_t>(s_DescriptorSetLayoutBindings.size());
-		layoutInfo.pBindings = s_DescriptorSetLayoutBindings.data();
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::GetDevice(), &layoutInfo, nullptr, &s_DescriptorSetLayout));
 	}
 }

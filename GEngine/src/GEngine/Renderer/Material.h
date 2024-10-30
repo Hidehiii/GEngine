@@ -42,8 +42,8 @@ namespace GEngine
 		virtual uint32_t GetBlendSourceFactor() = 0;
 		virtual uint32_t GetBlendDestinationFactor() = 0;
 
-		virtual void EnableDepthMask(bool enabled) = 0;
-		virtual bool GetEnableDepthMask() = 0;
+		virtual void EnableDepthWrite(bool enabled) = 0;
+		virtual bool GetEnableDepthWrite() = 0;
 
 		virtual void EnableDepthTest(bool enabled) = 0;
 		virtual bool GetEnableDepthTest() = 0;

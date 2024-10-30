@@ -3,7 +3,6 @@
 #include "GEngine/Core/Time.h"
 #include "GEngine/Renderer/Renderer.h"
 #include "GEngine/Renderer/Renderer2D.h"
-#include "GEngine/Editor/Renderer/EditorRenderer2D.h"
 #include "GEngine/Components/Components.h"
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Physics/2D/Physics2D.h"

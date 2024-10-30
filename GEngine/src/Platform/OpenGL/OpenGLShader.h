@@ -22,7 +22,7 @@ namespace GEngine
 		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
 		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
 
-		virtual bool GetEnableDepthMask() override { return m_EnableDepthMask; }
+		virtual bool GetEnableDepthWrite() override { return m_EnableDepthWrite; }
 		virtual bool GetEnableDepthTest() override { return m_EnableDepthTest; }
 
 		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
@@ -71,7 +71,7 @@ namespace GEngine
 		int													m_CullMode;
 		uint32_t											m_BlendSourceFactor;
 		uint32_t											m_BlendDestinationFactor;
-		bool												m_EnableDepthMask = true;
+		bool												m_EnableDepthWrite = true;
 		bool												m_EnableDepthTest = true;
 	};
 }
