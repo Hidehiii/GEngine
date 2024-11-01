@@ -70,9 +70,23 @@ namespace GEngine
         CreateCommandBuffers();
         CreateDescriptor();
         CreateFrameBuffer();
+        CreateSyncObjects();
 	}
     void VulkanContext::Uninit()
     {
+        vkDeviceWaitIdle(m_Device);
+        for(int i = 0;i < m_ImageAvailableSemaphores.size();i++)
+        {
+            vkDestroySemaphore(m_Device, m_ImageAvailableSemaphores[i], nullptr);
+		}
+        for (int i = 0; i < m_RenderFinishedSemaphores.size(); i++)
+        {
+            vkDestroySemaphore(m_Device, m_RenderFinishedSemaphores[i], nullptr);
+        }
+        for (int i = 0; i < m_InFlightFences.size(); i++)
+		{
+			vkDestroyFence(m_Device, m_InFlightFences[i], nullptr);
+		}
         m_Descriptor.Release();
         m_CommandBuffer.Release();
         for (auto imageView : m_SwapChainImageViews)
@@ -472,23 +486,6 @@ namespace GEngine
         for (size_t i = 0; i < m_SwapChainImages.size(); i++)
         {
             Utils::CreateImageViews(m_Device, m_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_SwapChainImageViews[i]);
-
-            /*VkImageViewCreateInfo                           createInfo{};
-            createInfo.sType                                = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image                                = m_SwapChainImages[i];
-            createInfo.viewType                             = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format                               = m_SwapChainImageFormat;
-            createInfo.components.r                         = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g                         = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b                         = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a                         = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.subresourceRange.aspectMask          = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel        = 0;
-            createInfo.subresourceRange.levelCount          = 1;
-            createInfo.subresourceRange.baseArrayLayer      = 0;
-            createInfo.subresourceRange.layerCount          = 1;
-
-            VK_CHECK_RESULT(vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]));*/
         }
     }
     void VulkanContext::CreateCommandBuffers()
@@ -519,6 +516,35 @@ namespace GEngine
 	{
         m_Descriptor            = VulkanDescriptor(1000, 100);
 	}
+
+    void VulkanContext::CreateSyncObjects()
+    {
+        // 暂时都创建一个
+        size_t size = 1;
+        m_ImageAvailableSemaphores.resize(size);
+        m_RenderFinishedSemaphores.resize(size);
+        m_InFlightFences.resize(size);
+
+        for (int i = 0; i < m_ImageAvailableSemaphores.size(); i++)
+        {
+            VkSemaphoreCreateInfo   semaphoreInfo{};
+            semaphoreInfo.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
+        }
+        for (int i = 0; i < m_RenderFinishedSemaphores.size(); i++)
+        {
+            VkSemaphoreCreateInfo   semaphoreInfo{};
+            semaphoreInfo.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
+        }
+        for (int i = 0; i < m_InFlightFences.size(); i++)
+        {
+            VkFenceCreateInfo       fenceInfo{};
+            fenceInfo.sType         = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceInfo.flags         = VK_FENCE_CREATE_SIGNALED_BIT;
+            VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]));
+        }
+    }
 
 	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
 	{

@@ -87,14 +87,15 @@ namespace GEngine
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
 		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
 
-		VkClearValue							clearColor = { {VulkanContext::Get()->GetClearColor().r,
-																VulkanContext::Get()->GetClearColor().g,
-																VulkanContext::Get()->GetClearColor().b,
-																VulkanContext::Get()->GetClearColor().a} };
-		clearColor.depthStencil.depth			= 1.0f;
-		clearColor.depthStencil.stencil			= 0;
+		Vector4									setClearColor = VulkanContext::Get()->GetClearColor();
+		VkClearValue							clearColor = {};
+		clearColor.color						= { { setClearColor.r, setClearColor.g, setClearColor.b, setClearColor.a} };
 
 		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
+		if (m_DepthStencilImage != nullptr)
+		{
+			clearValues.at(clearValues.size() - 1) = { 1.0f, 0 };
+		}
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);

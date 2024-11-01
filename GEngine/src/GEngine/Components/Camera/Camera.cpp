@@ -2,6 +2,8 @@
 #include "Camera.h"
 #include "GEngine/Components/Components.h"
 
+#include "GEngine/Renderer/Renderer.h"
+
 namespace GEngine
 {
     Camera::Camera()
@@ -51,6 +53,7 @@ namespace GEngine
         default:
             break;
         }
+
     }
     void Camera::SetOrthoGraphic(float size, float nearClip, float farClip)
     {

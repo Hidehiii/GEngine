@@ -163,7 +163,7 @@ namespace GEngine
 				return uniform;
 		}
 		GE_CORE_CRITICAL("There is no uniform with name {0} in the shader!", name);
-		GE_CORE_ASSERT(false, "");
+		GE_CORE_ASSERT(false);
 		return ShaderUniform();
 	}
 }

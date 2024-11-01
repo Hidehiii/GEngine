@@ -9,13 +9,14 @@ namespace GEngine
 {
 	namespace Utils
 	{
+		// front和back要反过来，适应viewport的反转
 		VkCullModeFlagBits MaterialCullModeToVkCullMode(Material_CullMode mode)
 		{
 			switch (mode)
 			{
 			case Material_CullMode::None:	return VK_CULL_MODE_NONE;
-			case Material_CullMode::Front:	return VK_CULL_MODE_FRONT_BIT;
-			case Material_CullMode::Back:	return VK_CULL_MODE_BACK_BIT;
+			case Material_CullMode::Front:	return VK_CULL_MODE_BACK_BIT;
+			case Material_CullMode::Back:	return VK_CULL_MODE_FRONT_BIT; 
 			default:
 				break;
 			}
@@ -52,16 +53,18 @@ namespace GEngine
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
-		m_Viewport.y		= 0.0f;
+		m_Viewport.y		= FrameBuffer::GetCurrentFrameBuffer()->GetHeight();
 		m_Viewport.width	= FrameBuffer::GetCurrentFrameBuffer()->GetWidth();
-		m_Viewport.height	= FrameBuffer::GetCurrentFrameBuffer()->GetHeight();
+		m_Viewport.height	= -(FrameBuffer::GetCurrentFrameBuffer()->GetHeight());
 		m_Viewport.minDepth = 0.0f;
 		m_Viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
 
 		m_Scissor.offset = { 0, 0 };
-		m_Scissor.extent = { (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
+		m_Scissor.extent = { (unsigned int)(int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)(int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
+
+		m_Material->UploadData();
 
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }

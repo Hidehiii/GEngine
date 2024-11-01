@@ -184,20 +184,20 @@ namespace GEngine
 		
 		// Rendering
 		ImGui::Render();
-		RenderCommand::BeginCommand();
+		//RenderCommand::BeginCommand();
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::OpenGL:
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			break;
 		case RendererAPI::API::Vulkan:
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
+			//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown render api");
 			break;
 		}
-		RenderCommand::EndCommand();
+		//RenderCommand::EndCommand();
 		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

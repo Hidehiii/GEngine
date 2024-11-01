@@ -18,6 +18,7 @@ namespace GEngine
     }
     void VulkanRendererAPI::SetClearColor(const Vector4& color)
     {
+        VulkanContext::Get()->SetClearColor(color);
     }
     void VulkanRendererAPI::Clear()
     {
@@ -65,6 +66,7 @@ namespace GEngine
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
         VulkanContext::Get()->PushCommandBuffer();
+        vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
         VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
     }
     void VulkanRendererAPI::EndCommand()
@@ -72,12 +74,21 @@ namespace GEngine
         VkCommandBuffer commandBuffer = VulkanContext::Get()->GetCurrentCommandBuffer();
         VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::Get()->PopCommandBuffer()));
 
+        VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetImageAvailableSemaphores()[0] };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetRenderFinishedSemaphores()[0] };
+
         VkSubmitInfo    submitInfo{};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;
         submitInfo.pCommandBuffers      = &commandBuffer;
+        submitInfo.waitSemaphoreCount   = 1;
+        submitInfo.pWaitSemaphores      = waitSemaphores;
+        submitInfo.pWaitDstStageMask    = waitStages;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores    = signalSemaphores;
 
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VulkanContext::Get()->GetInFlightFences()[0]));
     }
     float VulkanRendererAPI::GetTime()
     {

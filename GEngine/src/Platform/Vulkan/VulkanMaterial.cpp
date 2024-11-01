@@ -43,6 +43,8 @@ namespace GEngine
 	}
 	void VulkanMaterial::UploadData()
 	{
+		if(m_UniformStorageBuffer.Size > 0)
+			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
 	}
 	void VulkanMaterial::SetCullMode(Material_CullMode mode)
 	{
@@ -82,6 +84,13 @@ namespace GEngine
 	}
 	float VulkanMaterial::GetFloat(const std::string& name)
 	{
+		ShaderUniform uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			float value;
+			value = m_UniformStorageBuffer.Read<float>(uniform.Location, uniform.Size);
+			return value;
+		}
 		return 0.0f;
 	}
 	int VulkanMaterial::GetInt(const std::string& name)
@@ -110,6 +119,13 @@ namespace GEngine
 	}
 	ShaderUniform VulkanMaterial::GetUniformByName(const std::string& name) const
 	{
+		for (auto uniform : m_Uniforms)
+		{
+			if (uniform.Name == name)
+				return uniform;
+		}
+		GE_CORE_CRITICAL("There is no uniform with name {0} in the shader!", name);
+		GE_CORE_ASSERT(false);
 		return ShaderUniform();
 	}
 }

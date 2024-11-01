@@ -125,7 +125,7 @@ namespace GEngine
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_STORE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-			Attachment.format			= Utils::FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+			Attachment.format			= Utils::FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 			Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			attachments.push_back(Attachment);
 		}

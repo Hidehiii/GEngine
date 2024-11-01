@@ -31,25 +31,29 @@ namespace GEngine
 
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
-		static VulkanContext* Get() { return s_ContextInstance; }
-		VkDevice GetDevice() { return m_Device; }
-		VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
-		std::vector<VkImage> GetSwapChainImage() { return m_SwapChainImages; }
-		VkPhysicalDevice GetPhysicalDevice() { return m_PhysicalDevice; }
-		VkCommandBuffer GetCurrentCommandBuffer() { GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]); }
-		void PushCommandBuffer();
-		VkCommandBuffer PopCommandBuffer();
-		Vector4 GetClearColor() { return m_ClearColor; }
-		VkInstance GetInstance() { return m_Instance; }
-		VkDescriptorPool GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
-		VkCommandBuffer BeginSingleTimeCommands();
-		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-		QueueFamilyIndices GetQueueFamily() { return m_QueueFamily; }
-		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
-		VkQueue GetPresentQueue() { return m_PresentQueue; }
+		static VulkanContext*			Get() { return s_ContextInstance; }
+		VkDevice						GetDevice() { return m_Device; }
+		VkExtent2D						GetSwapChainExtent() { return m_SwapChainExtent; }
+		std::vector<VkImage>			GetSwapChainImage() { return m_SwapChainImages; }
+		VkPhysicalDevice				GetPhysicalDevice() { return m_PhysicalDevice; }
+		VkCommandBuffer					GetCurrentCommandBuffer() { GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]); }
+		void							PushCommandBuffer();
+		VkCommandBuffer					PopCommandBuffer();
+		void							SetClearColor(Vector4 color) { m_ClearColor = color;  }
+		Vector4							GetClearColor() { return m_ClearColor; }
+		VkInstance						GetInstance() { return m_Instance; }
+		VkDescriptorPool				GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
+		VkCommandBuffer					BeginSingleTimeCommands();
+		void							EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		QueueFamilyIndices				GetQueueFamily() { return m_QueueFamily; }
+		VkQueue							GetGraphicsQueue() { return m_GraphicsQueue; }
+		VkQueue							GetPresentQueue() { return m_PresentQueue; }
 
-		VkSwapchainKHR GetSwapChain() { return m_SwapChain; }
-		Ref<VulkanFrameBuffer> GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
+		VkSwapchainKHR					GetSwapChain() { return m_SwapChain; }
+		Ref<VulkanFrameBuffer>			GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
+		std::vector<VkFence>&			GetInFlightFences() { return m_InFlightFences; }
+		std::vector<VkSemaphore>&		GetImageAvailableSemaphores() { return m_ImageAvailableSemaphores; }
+		std::vector<VkSemaphore>&		GetRenderFinishedSemaphores() { return m_RenderFinishedSemaphores; }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();
@@ -71,6 +75,7 @@ namespace GEngine
 		void CreateFrameBuffer();
 		void CreateCommandBuffers();
 		void CreateDescriptor();
+		void CreateSyncObjects();
 	private:
 		GLFWwindow*							m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;
@@ -88,7 +93,8 @@ namespace GEngine
 		VkSurfaceKHR						m_Surface;
 		std::vector<const char*>			m_DeviceExtensions =
 		{ 
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+			VK_KHR_MAINTENANCE1_EXTENSION_NAME
 		};
 		std::vector<const char*>			m_InstanceExtensions =
 		{
@@ -107,9 +113,13 @@ namespace GEngine
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBuffer					m_CommandBuffer;
 		std::vector<int>					m_PushedCommandBufferIndexs;
-		Vector4								m_ClearColor;
+		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
+
+		std::vector<VkSemaphore>			m_ImageAvailableSemaphores;
+		std::vector<VkSemaphore>			m_RenderFinishedSemaphores;
+		std::vector<VkFence>				m_InFlightFences;
 	};
 	
 }

@@ -21,11 +21,11 @@ void Sandbox2D::OnAttach()
 
 	FrameBufferSpecification fspec;
 	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
-	fspec.Width = 1280;
+	fspec.Width = 720;
 	fspec.Height = 720;
 	m_FrameBuffer = FrameBuffer::Create(fspec);
 
-	m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
+	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
 
 	// Read all shader files
 	{
@@ -84,7 +84,7 @@ void Sandbox2D::OnAttach()
 	delete[] quadIndices;
 
 	
-
+	
 	m_vertex[0].Pos = { -0.5f, -0.5f, 0.0f, 1.0f };
 	m_vertex[1].Pos = { 0.5f, -0.5f, 0.0f, 1.0f };
 	m_vertex[2].Pos = { 0.5f,  0.5f, 0.0f, 1.0f };
@@ -128,6 +128,7 @@ void Sandbox2D::OnUpdate()
 	//	
 	//}
 
+	m_EditorCamera.OnUpdate();
 #if 0
 	RenderCommand::BeginCommand();
 	m_FrameBuffer->Begin();
@@ -137,7 +138,7 @@ void Sandbox2D::OnUpdate()
 	
 	Renderer::BeginScene(m_EditorCamera);
 	m_Texture->Bind(0);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 	Renderer::EndScene();
@@ -145,15 +146,23 @@ void Sandbox2D::OnUpdate()
 	RenderCommand::EndCommand();
 
 #else
+	RenderCommand::SetClearColor(Vector4( 0.0f, 0.0f, 0.0f, 1.0f ));
+	RenderCommand::Clear();
 	// 直接呈现
 	m_Graphics->Begin();
-	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	RenderCommand::Clear();
 
 
 	Renderer::BeginScene(m_EditorCamera);
+	m_Pipeline->GetMaterial()->SetCullMode(Material_CullMode::Front);
+	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
+	if (Input::IsKeyPressed(KeyCode::A))
+	{
+		m_Pipeline->GetMaterial()->SetFloat("prop1", -1.0f);
+	}
 	m_Texture->Bind(0);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(m_vertex));
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 	Renderer::EndScene();
@@ -173,5 +182,5 @@ void Sandbox2D::OnGuiRender()
 
 void Sandbox2D::OnEvent(GEngine::Event& e)
 {
-	//m_EditorCamera.OnEvent(e);
+	m_EditorCamera.OnEvent(e);
 }
