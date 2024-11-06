@@ -89,11 +89,14 @@ namespace GEngine
 		}
         m_Descriptor.Release();
         m_CommandBuffer.Release();
+        for (auto frameBuffer : m_SwapChainFrameBuffers)
+        {
+            vkDestroyFramebuffer(m_Device, frameBuffer->GetFrameBuffer(), nullptr);
+        }
         for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
-        
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 #ifdef GE_DEBUG
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
@@ -546,6 +549,30 @@ namespace GEngine
         }
     }
 
+    void VulkanContext::CleanUpSwapChain()
+    {
+        vkDeviceWaitIdle(m_Device);
+		for (auto frameBuffer : m_SwapChainFrameBuffers)
+		{
+			vkDestroyFramebuffer(m_Device, frameBuffer->GetFrameBuffer(), nullptr);
+		}
+		for (auto imageView : m_SwapChainImageViews)
+		{
+			vkDestroyImageView(m_Device, imageView, nullptr);
+		}
+		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+    }
+
+    void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)
+    {
+        vkDeviceWaitIdle(m_Device);
+        CleanUpSwapChain();
+
+        CreateSwapChain(width, height);
+        CreateImageViews();
+        CreateFrameBuffer();
+    }
+
 	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
 	{
         return m_CommandBuffer.BeginSingleTimeCommands();
@@ -562,16 +589,16 @@ namespace GEngine
 		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
             std::vector<VkImageView> attachmentsVec = { m_SwapChainImageViews[i] };
 
-            FrameBufferSpecificationForVulkan spec;
-            spec.ColorAttachments = attachmentsVec;
-            spec.ColorAttachmentsFormat = { m_SwapChainImageFormat };
-            spec.Width = m_SwapChainExtent.width;
-            spec.Height = m_SwapChainExtent.height;
-            spec.ColorAttachmentsFinalLayout = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
-            spec.EnableDepthStencilAttachment = true;
+            FrameBufferSpecificationForVulkan   spec;
+            spec.ColorAttachments               = attachmentsVec;
+            spec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
+            spec.Width                          = m_SwapChainExtent.width;
+            spec.Height                         = m_SwapChainExtent.height;
+            spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
+            spec.EnableDepthStencilAttachment   = true;
 
-			Ref<VulkanFrameBuffer> frameBuffer = CreateRef<VulkanFrameBuffer>(spec);
-			m_SwapChainFrameBuffers[i] = frameBuffer;
+			Ref<VulkanFrameBuffer> frameBuffer  = CreateRef<VulkanFrameBuffer>(spec);
+			m_SwapChainFrameBuffers[i]          = frameBuffer;
 		}
 	}
 }

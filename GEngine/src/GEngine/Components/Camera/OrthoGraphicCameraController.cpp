@@ -44,8 +44,8 @@ namespace GEngine
 	void OrthoGraphicCameraController::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(GE_BIND_EVENT_FN(OrthoGraphicCameraController::OnMouseScrolled));
-		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_EVENT_FN(OrthoGraphicCameraController::OnWindowResized));
+		dispatcher.Dispatch<MouseScrolledEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(OrthoGraphicCameraController::OnMouseScrolled));
+		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(OrthoGraphicCameraController::OnWindowResized));
 	}
 	void OrthoGraphicCameraController::OnResize(float width, float height)
 	{

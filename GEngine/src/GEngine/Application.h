@@ -8,6 +8,7 @@
 #include "GEngine/Core/Time.h"
 #include "Renderer/RenderCommand.h"
 #include "GEngine/Math/Math.h"
+#include "GEngine/Renderer/GraphicsPresent.h"
 
 #include <filesystem>
 
@@ -55,12 +56,13 @@ namespace GEngine
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
-		ApplicationSpecification m_Specification;
-		Scope<Window> m_Window;
-		ImGuiLayer* m_ImGuiLayer;
-		bool m_Running = true;
-		bool m_Minimized = false;
-		LayerStack m_LayerStack;
+		ApplicationSpecification	m_Specification;
+		Scope<Window>				m_Window;
+		ImGuiLayer*					m_ImGuiLayer;
+		bool						m_Running = true;
+		bool						m_Minimized = false;
+		LayerStack					m_LayerStack;
+		Scope<GraphicsPresent>		m_GraphicsPresent;
 	private:
 		static Application* s_Instance;
 	};

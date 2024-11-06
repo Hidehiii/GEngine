@@ -26,6 +26,7 @@ namespace GEngine
 		virtual void OnRender() override;
 		virtual void OnGuiRender() override;
 		virtual void OnLateUpdate() override;
+		virtual void OnPresent() override;
 		virtual void OnEndFrame() override;
 
 		void OnEvent(GEngine::Event& e) override;
@@ -52,6 +53,7 @@ namespace GEngine
 		// Editor
 		Ref<FrameBuffer> m_SceneViewportFrameBuffer;
 		Ref<FrameBuffer> m_GameViewportFrameBuffer;
+		Ref<FrameBuffer> m_PresentFrameBuffer;
 		Vector2 m_SceneViewportSize = { 0.0f, 0.0f };
 		Vector2 m_GameViewportSize = { 0.0f, 0.0f };
 		bool m_SceneViewportFocused = false, m_SceneViewportHovered = false;

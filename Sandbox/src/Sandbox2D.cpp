@@ -9,7 +9,7 @@ static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
 Sandbox2D::Sandbox2D()
 	: Layer("Sandbox2D")
 {
-	m_Graphics = Graphics::Create();
+
 }
 
 void Sandbox2D::OnAttach()
@@ -123,6 +123,23 @@ void Sandbox2D::OnDetach()
 {
 }
 
+void Sandbox2D::OnPresent()
+{
+	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	RenderCommand::Clear();
+	// 直接呈现
+	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	RenderCommand::Clear();
+
+	Renderer::BeginScene(m_EditorCamera);
+	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::None);
+	m_Texture->Bind(0);
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
+	m_Pipeline->Bind();
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	Renderer::EndScene();
+}
+
 void Sandbox2D::OnUpdate()
 {
 	GE_PROFILE_FUNCTION();
@@ -158,23 +175,6 @@ void Sandbox2D::OnUpdate()
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndCommand();
-
-#else
-	RenderCommand::SetClearColor(Vector4( 0.0f, 0.0f, 0.0f, 1.0f ));
-	RenderCommand::Clear();
-	// 直接呈现
-	m_Graphics->Begin();
-	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-	RenderCommand::Clear();
-
-	Renderer::BeginScene(m_EditorCamera);
-	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::None);
-	m_Texture->Bind(0);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
-	m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
-	Renderer::EndScene();
-	m_Graphics->End();
 #endif
 }
 
@@ -192,8 +192,8 @@ void Sandbox2D::OnEvent(GEngine::Event& e)
 {
 	m_EditorCamera.OnEvent(e);
 	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_EVENT_FN(Sandbox2D::OnKeyPressed));
-	GE_INFO(e.ToString());
+	dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Sandbox2D::OnKeyPressed));
+	//GE_INFO(e.ToString());
 }
 
 bool Sandbox2D::OnKeyPressed(GEngine::KeyPressedEvent& e)

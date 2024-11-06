@@ -25,57 +25,60 @@ namespace GEngine
 		VulkanContext(GLFWwindow* windowHandle);
 		virtual ~VulkanContext() override;
 
-		virtual void Init(const unsigned int width, const unsigned int height) override;
-		virtual void Uninit() override;
-		virtual void SwapBuffers() override;
+		virtual void				Init(const unsigned int width, const unsigned int height) override;
+		virtual void				Uninit() override;
+		virtual void				SwapBuffers() override;
 
-		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
+		virtual void				SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
+		virtual void				RecreateSwapChain(unsigned int width, unsigned int height) override;
 
-		static VulkanContext*			Get() { return s_ContextInstance; }
-		VkDevice						GetDevice() { return m_Device; }
-		VkExtent2D						GetSwapChainExtent() { return m_SwapChainExtent; }
-		std::vector<VkImage>			GetSwapChainImage() { return m_SwapChainImages; }
-		VkPhysicalDevice				GetPhysicalDevice() { return m_PhysicalDevice; }
-		VkCommandBuffer					GetCurrentCommandBuffer() { GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]); }
-		void							PushCommandBuffer();
-		VkCommandBuffer					PopCommandBuffer();
-		void							SetClearColor(Vector4 color) { m_ClearColor = color;  }
-		Vector4							GetClearColor() { return m_ClearColor; }
-		VkInstance						GetInstance() { return m_Instance; }
-		VkDescriptorPool				GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
-		VkCommandBuffer					BeginSingleTimeCommands();
-		void							EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-		QueueFamilyIndices				GetQueueFamily() { return m_QueueFamily; }
-		VkQueue							GetGraphicsQueue() { return m_GraphicsQueue; }
-		VkQueue							GetPresentQueue() { return m_PresentQueue; }
+		static VulkanContext*		Get() { return s_ContextInstance; }
+		VkDevice					GetDevice() { return m_Device; }
+		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
+		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
+		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
+		VkCommandBuffer				GetCurrentCommandBuffer() { GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]); }
+		void						PushCommandBuffer();
+		VkCommandBuffer				PopCommandBuffer();
+		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
+		Vector4						GetClearColor() { return m_ClearColor; }
+		VkInstance					GetInstance() { return m_Instance; }
+		VkDescriptorPool			GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
+		VkCommandBuffer				BeginSingleTimeCommands();
+		void						EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		QueueFamilyIndices			GetQueueFamily() { return m_QueueFamily; }
+		VkQueue						GetGraphicsQueue() { return m_GraphicsQueue; }
+		VkQueue						GetPresentQueue() { return m_PresentQueue; }
 
-		VkSwapchainKHR					GetSwapChain() { return m_SwapChain; }
-		Ref<VulkanFrameBuffer>			GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		VkFence&						GetInFlightFences(int index) { return m_InFlightFences.at(index % m_InFlightFences.size()); }
-		VkSemaphore&					GetImageAvailableSemaphores(int index) { return m_ImageAvailableSemaphores.at(index % m_ImageAvailableSemaphores.size()); }
-		VkSemaphore&					GetRenderFinishedSemaphores(int index) { return m_RenderFinishedSemaphores.at(index % m_RenderFinishedSemaphores.size()); }
+		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
+		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
+		VkFence&					GetInFlightFences(int index) { return m_InFlightFences.at(index % m_InFlightFences.size()); }
+		VkSemaphore&				GetImageAvailableSemaphores(int index) { return m_ImageAvailableSemaphores.at(index % m_ImageAvailableSemaphores.size()); }
+		VkSemaphore&				GetRenderFinishedSemaphores(int index) { return m_RenderFinishedSemaphores.at(index % m_RenderFinishedSemaphores.size()); }
+		
 	private:
-		void CreateInstance();
-		bool CheckValidationLayerSupport();
-		void SetupDebugMessenger();
-		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void SetPhysicalDevice();
-		bool IsDeviceSuitable(VkPhysicalDevice device);
-		void CreateLogicalDevice();
-		void CreateSurface();
-		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		void CheckInstanceExtensionSupport(VkPhysicalDevice device);
-		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
-		void CreateSwapChain(const unsigned int width, const unsigned int height);
-		void CreateImageViews();
-		void CreateFrameBuffer();
-		void CreateCommandBuffers();
-		void CreateDescriptor();
-		void CreateSyncObjects();
+		void						CreateInstance();
+		bool						CheckValidationLayerSupport();
+		void						SetupDebugMessenger();
+		void						PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+		void						SetPhysicalDevice();
+		bool						IsDeviceSuitable(VkPhysicalDevice device);
+		void						CreateLogicalDevice();
+		void						CreateSurface();
+		bool						CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		void						CheckInstanceExtensionSupport(VkPhysicalDevice device);
+		SwapChainSupportDetails		QuerySwapChainSupport(VkPhysicalDevice device);
+		QueueFamilyIndices			FindQueueFamilies(VkPhysicalDevice device);
+		VkSurfaceFormatKHR			ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR			ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D					ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
+		void						CreateSwapChain(const unsigned int width, const unsigned int height);
+		void						CreateImageViews();
+		void						CreateFrameBuffer();
+		void						CreateCommandBuffers();
+		void						CreateDescriptor();
+		void						CreateSyncObjects();
+		void						CleanUpSwapChain();
 	private:
 		GLFWwindow*							m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;

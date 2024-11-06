@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	VulkanFrameBuffer* VulkanFrameBuffer::s_CurrentVulkanFrameBuffer = nullptr;
+
 	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecification& spec)
 	{
 		m_Specification = spec;
@@ -100,18 +102,28 @@ namespace GEngine
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		s_CurrentFrameBuffer = this;
+		s_CurrentVulkanFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::End()
 	{
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
-		s_CurrentFrameBuffer = nullptr;
+		s_CurrentVulkanFrameBuffer = nullptr;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
 	{
+		if (width <= 0 || height <= 0)
+		{
+			GE_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
+			return;
+		}
+
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		CreateBuffer();
 	}
 	void VulkanFrameBuffer::Resize(Vector2 size)
 	{
+		Resize((uint32_t)size.x, (uint32_t)size.y);
 	}
 	int VulkanFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
 	{

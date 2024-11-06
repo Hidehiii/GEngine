@@ -73,9 +73,7 @@ namespace GEngine
 		virtual float GetHeight() const { return (float)GetSpecification().Height; }
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
-		static FrameBuffer* GetCurrentFrameBuffer() { return s_CurrentFrameBuffer; }
-	protected:
-		static FrameBuffer*								s_CurrentFrameBuffer;
+		operator bool() const { return this != nullptr; }
 
 	protected:
 		FrameBufferSpecification						m_Specification;

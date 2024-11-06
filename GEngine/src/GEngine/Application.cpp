@@ -25,8 +25,10 @@ namespace GEngine
 		}
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
-		m_Window->SetEventCallback(GE_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
 		m_Window->SetVSync(false);
+
+		m_GraphicsPresent = GraphicsPresent::Create();
 
 
 		Renderer::Init();
@@ -86,11 +88,20 @@ namespace GEngine
 					}
 				}
 				{
+					m_GraphicsPresent->Begin();
+					GE_PROFILE_SCOPE("LayerStack OnPresent");
+					for (auto layer : m_LayerStack) {
+						layer->OnPresent();
+					}
+					m_GraphicsPresent->End();
+				}
+				{
 					GE_PROFILE_SCOPE("LayerStack OnEndFrame");
 					for (auto layer : m_LayerStack) {
 						layer->OnEndFrame();
 					}
 				}
+
 			}
 			
 
@@ -106,8 +117,8 @@ namespace GEngine
 		GE_PROFILE_FUNCTION();
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_EVENT_FN(Application::OnWindowResize));
+		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowResize));
 
 		for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -132,6 +143,7 @@ namespace GEngine
 		}
 		m_Minimized = false;
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		m_GraphicsPresent->OnWindowResize(Vector2(e.GetWidth(), e.GetHeight()));
 		return false;
 	}
 	void Application::PushLayer(Layer* layer)

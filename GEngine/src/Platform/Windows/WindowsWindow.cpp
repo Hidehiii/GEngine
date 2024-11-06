@@ -78,11 +78,11 @@ namespace GEngine
 		//set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Width = width;
-			data.Height = height;
+			WindowData& data	= *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width			= width;
+			data.Height			= height;
 
-			WindowResizeEvent event(width, height);
+			WindowResizeEvent	event(width, height);
 			data.EventCallback(event);
 		});
 

@@ -55,7 +55,7 @@ namespace GEngine
 			else
 			{
 				T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
-				component.SetGameObject((*this));
+				component.AttachGameObject((*this));
 				m_Scene->OnComponentAdded<T>(*this, component);
 			}
 		}
@@ -63,7 +63,7 @@ namespace GEngine
 		void AddOrReplaceComponent(Args&&... args)
 		{
 			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			component.SetGameObject((*this));
+			component.AttachGameObject((*this));
 			m_Scene->OnComponentAdded<T>(*this, component);
 		}
 		template<typename T>

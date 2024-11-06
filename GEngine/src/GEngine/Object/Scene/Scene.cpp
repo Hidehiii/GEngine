@@ -52,7 +52,7 @@ namespace GEngine
 
 					auto& srcComponent = src.get<Component>(srcEntity);
 					Component& component = dst.emplace_or_replace<Component>(dstEntity, srcComponent);
-					component.SetGameObject({ dstEntity, scene.get() });
+					component.AttachGameObject({ dstEntity, scene.get() });
 				}
 			}(), ...);
 	};
@@ -141,48 +141,48 @@ namespace GEngine
 	{
 		m_DeletedGameObject.push_back(gameObject);
 	}
-	Camera& Scene::MainCamera()
+	Camera* Scene::MainCamera()
 	{
 		auto view = m_Registry.view<Camera>();
 		if (view.size() == 0)
 		{
-			return Camera();
+			return nullptr;
 		}
 		for (auto entity : view)
 		{
 			auto& camera = m_Registry.get<Camera>(entity);
 			if (camera.isPrimary)
 			{
-				return camera;
+				return &camera;
 			}
 		}
 		for (auto entity : view)
 		{
 			auto& camera = m_Registry.get<Camera>(entity);
 			camera.isPrimary = true;
-			return camera;
+			return &camera;
 		}
 	}
-	DirectionalLight& Scene::MainDirectionalLight()
+	DirectionalLight* Scene::MainDirectionalLight()
 	{
 		auto view = m_Registry.view<DirectionalLight>();
 		if (view.size() == 0)
 		{
-			return DirectionalLight();
+			return nullptr;
 		}
 		for (auto entity : view)
 		{
 			auto& light = m_Registry.get<DirectionalLight>(entity);
 			if (light.m_IsMain)
 			{
-				return light;
+				return &light;
 			}
 		}
 		for (auto entity : view)
 		{
 			auto& light = m_Registry.get<DirectionalLight>(entity);
 			light.m_IsMain = true;
-			return light;
+			return &light;
 		}
 	}
 	// 在场景第一帧之前调用
@@ -195,7 +195,6 @@ namespace GEngine
 		// Awake Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
-				GE_TRACE("Awake");
 				nativeScript.Excute();
 				for (auto& script : nativeScript.m_Scripts)
 				{
@@ -277,8 +276,6 @@ namespace GEngine
 		// Start Scripts
 		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
-				//script.Instance->OnStart();
-				GE_TRACE("start");
 				for (auto& script : nativeScript.m_Scripts)
 				{
 					if (script.first == nullptr)

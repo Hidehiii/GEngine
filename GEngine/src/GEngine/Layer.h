@@ -19,7 +19,9 @@ namespace GEngine
 		virtual void OnEvent(Event& event) {}
 		virtual void OnRender() {}
 		virtual void OnLateUpdate() {}
+		virtual void OnPresent() {}
 		virtual void OnEndFrame() {}
+		
 
 		inline const std::string& GetName() const { return m_Name; }
 

@@ -42,7 +42,7 @@ namespace GEngine
     void VulkanPipeline::Bind()
     {
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
+		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
 
 		if (m_FirstCreatePipeline)
 		{
@@ -60,15 +60,15 @@ namespace GEngine
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
-		m_Viewport.y		= FrameBuffer::GetCurrentFrameBuffer()->GetHeight();
-		m_Viewport.width	= FrameBuffer::GetCurrentFrameBuffer()->GetWidth();
-		m_Viewport.height	= -(FrameBuffer::GetCurrentFrameBuffer()->GetHeight());
+		m_Viewport.y		= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
+		m_Viewport.width	= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth();
+		m_Viewport.height	= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
 		m_Viewport.minDepth = 0.0f;
 		m_Viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
 
 		m_Scissor.offset = { 0, 0 };
-		m_Scissor.extent = { (unsigned int)(int)FrameBuffer::GetCurrentFrameBuffer()->GetWidth(), (unsigned int)(int)FrameBuffer::GetCurrentFrameBuffer()->GetHeight() };
+		m_Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
 		m_Material->UploadData();
@@ -281,7 +281,7 @@ namespace GEngine
 		pipelineInfo.pColorBlendState		= &m_ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
 		pipelineInfo.layout					= m_PipelineLayout;
-		pipelineInfo.renderPass				= ((VulkanFrameBuffer*)(FrameBuffer::GetCurrentFrameBuffer()))->GetRenderPass();
+		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional

@@ -115,7 +115,7 @@ namespace GEngine::Editor
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(GE_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
+		dispatcher.Dispatch<MouseScrolledEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(EditorCamera::OnMouseScroll));
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)

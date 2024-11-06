@@ -33,14 +33,16 @@ namespace GEngine
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
 		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { return 0; }
 		virtual uint32_t GetDepthAttachment() const override { return 0; }
-
+		VkFramebuffer GetFrameBuffer() { return m_FrameBuffer; }
 	public:
 		//用于给交换链创建使用
 		static Ref<VulkanFrameBuffer> Create(const FrameBufferSpecificationForVulkan spec);
+		static VulkanFrameBuffer* GetCurrentVulkanFrameBuffer() { return s_CurrentVulkanFrameBuffer; }
 	private:
 		void CreateRenderPass();
 		void CreateBuffer();
 	private:
+		static VulkanFrameBuffer*	s_CurrentVulkanFrameBuffer;
 		VkFramebuffer				m_FrameBuffer = nullptr;
 		Ref<VulkanRenderPass>		m_RenderPass = nullptr;
 		std::vector<VkImage>		m_Images;

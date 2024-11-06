@@ -33,6 +33,7 @@ namespace GEngine
 		fspec.Height					= 720;
 		m_SceneViewportFrameBuffer		= FrameBuffer::Create(fspec);
 		m_GameViewportFrameBuffer		= FrameBuffer::Create(fspec);
+		m_PresentFrameBuffer			= FrameBuffer::Create(fspec);
 		m_EditorCamera					= Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
 		m_EditorScene					= CreateRef<Scene>();
 		m_ActiveScene					= m_EditorScene;
@@ -212,9 +213,9 @@ namespace GEngine
 
 
 			auto camera = m_ActiveScene->MainCamera();
-			if (camera.m_GameObject)
+			if (camera)
 			{
-				Renderer::BeginScene(camera);
+				Renderer::BeginScene(*camera);
 				m_ActiveScene->OnRender();
 				Renderer::EndScene();
 			}
@@ -231,9 +232,6 @@ namespace GEngine
 	void GEngineEditorLayer::OnGuiRender()
 	{
 		GE_PROFILE_FUNCTION();
-
-
-
 
 		bool dockSpace = true;
 		// If you strip some features of, this demo is pretty much equivalent to calling DockSpaceOverViewport()!
@@ -350,19 +348,22 @@ namespace GEngine
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				m_SceneStateFunction = [&]() {OnScenePlay(); };
+				//m_SceneStateFunction = [&]() {OnScenePlay(); };
+				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePlay);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				m_SceneStateFunction = [&]() {OnScenePause(); };
+				//m_SceneStateFunction = [&]() {OnScenePause(); };
+				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePause);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				m_SceneStateFunction = [&]() {OnSceneStop(); };
+				//m_SceneStateFunction = [&]() {OnSceneStop(); };
+				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnSceneStop);
 			}
 			ImGui::PopStyleVar(2);
 			ImGui::End();
@@ -477,7 +478,10 @@ namespace GEngine
 			if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
 				m_GameViewportSize	= viewportPanelSize;
-				m_ActiveScene->MainCamera().SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
+				if (m_ActiveScene->MainCamera())
+				{
+					m_ActiveScene->MainCamera()->SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
+				}
 			}
 			uint32_t tex			= m_GameViewportFrameBuffer->GetColorAttachment();
 			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
@@ -586,6 +590,10 @@ namespace GEngine
 			m_ActiveScene->OnLateUpdate();
 	}
 
+	void GEngineEditorLayer::OnPresent()
+	{
+	}
+
 	void GEngineEditorLayer::OnEndFrame()
 	{
 		m_ActiveScene->OnEndFrame();
@@ -598,8 +606,8 @@ namespace GEngine
 	{
 		m_EditorCamera.OnEvent(e);
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_EVENT_FN(GEngineEditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(GE_BIND_EVENT_FN(GEngineEditorLayer::OnMouseButtonPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnMouseButtonPressed));
 	}
 
 	bool GEngineEditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -718,6 +726,10 @@ namespace GEngine
 		std::string filePath	= FileDialogs::SaveFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
 		if (filePath.empty() == false)
 		{
+			if(filePath.rfind(".GEScene") != 0)
+			{ 
+				filePath += ".GEScene";
+			}
 			m_SceneFilePath		= filePath;
 			Serializer::Serialize(filePath, m_ActiveScene);
 		}
@@ -737,12 +749,12 @@ namespace GEngine
 		// Camera View
 		{
 			auto camera = m_ActiveScene->MainCamera();
-			if (camera.m_GameObject)
+			if (camera)
 			{
-				if (camera.GetCameraType() == CameraType::Perspective)
+				if (camera->GetCameraType() == CameraType::Perspective)
 				{
 					// order: NLB NLT NRT NRB FLB FLT FRT FRB
-					Vector3* coords = camera.GetPerspectiveClipCoord();
+					Vector3* coords = camera->GetPerspectiveClipCoord();
 
 					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
 					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
@@ -762,7 +774,7 @@ namespace GEngine
 				else
 				{
 					// order: NLB NLT NRT NRB FLB FLT FRT FRB
-					Vector3* coords = camera.GetOrthoGraphicClipCoord();
+					Vector3* coords = camera->GetOrthoGraphicClipCoord();
 
 					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
 					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
@@ -784,9 +796,9 @@ namespace GEngine
 		// Main light direction
 		{
 			auto mainLight = m_ActiveScene->MainDirectionalLight();
-			if (mainLight.m_GameObject)
+			if (mainLight)
 			{
-				auto transform = mainLight.m_GameObject.GetComponent<Transform>();
+				auto transform = mainLight->m_GameObject.GetComponent<Transform>();
 				Vector3 position = transform.m_Position;
 				Vector3 direction = transform.Forward();
 				Renderer2D::DrawCircle(transform, 0.1f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));

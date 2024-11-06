@@ -22,6 +22,7 @@ public:
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
+	virtual void OnPresent() override;
 
 	void OnUpdate() override;
 	virtual void OnGuiRender() override;
@@ -32,7 +33,6 @@ private:
 	/*GEngine::Editor::EditorCamera m_Camera;
 	GEngine::Editor::EditorCamera m_EditorCamera;
 	RayTracing m_RayTracing;*/
-	Ref<Graphics>	m_Graphics;
 
 	Ref<Pipeline>	m_Pipeline;
 	std::vector<TestVertex> m_vertex;

@@ -49,6 +49,7 @@ namespace GEngine
 		}
 
 		inline bool IsHandled() const { return Handled; }
+		operator bool() const { return this != nullptr; }
 	public:
 		bool Handled = false;
 	};

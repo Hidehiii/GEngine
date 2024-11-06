@@ -20,9 +20,9 @@ namespace GEngine
 
 
 
-		void SetGameObject(GameObject gameObject) { m_GameObject = gameObject; }
+		void AttachGameObject(GameObject gameObject) { m_GameObject = gameObject; }
 		GameObject m_GameObject;
 
-		operator bool() { return this != nullptr; }
+		operator bool() { return bool(m_GameObject); }
 	};
 }

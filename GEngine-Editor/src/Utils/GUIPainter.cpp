@@ -2,7 +2,7 @@
 
 namespace GEngine
 {
-	void GUIPainter::DrawFloatControl(const std::string& label, float& val, float restVal, float speed, float size)
+	void GUI::FloatControl(const std::string& label, float& val, float restVal, float speed, float size)
 	{
 		ImGui::Columns(1);
 		ImGuiIO& io = ImGui::GetIO();
@@ -39,7 +39,7 @@ namespace GEngine
 		ImGui::PopID();
 	}
 
-	void GUIPainter::DrawVector2Control(const std::string& label, Vector2& val, Vector2 restVal, float speed, float size)
+	void GUI::Vector2Control(const std::string& label, Vector2& val, Vector2 restVal, float speed, float size)
 	{
 		ImGui::Columns(1);
 		ImGuiIO& io = ImGui::GetIO();
@@ -91,7 +91,7 @@ namespace GEngine
 		ImGui::PopID();
 	}
 
-	void GUIPainter::DrawVector3Control(const std::string& label, Vector3& val, Vector3 restVal, float speed, float size)
+	void GUI::Vector3Control(const std::string& label, Vector3& val, Vector3 restVal, float speed, float size)
 	{
 		ImGui::Columns(1);
 		ImGuiIO& io = ImGui::GetIO();
@@ -157,7 +157,7 @@ namespace GEngine
 		ImGui::PopID();
 	}
 
-	void GUIPainter::DrawVector4Control(const std::string& label, Vector4& val, Vector4 restVal, float speed, float size)
+	void GUI::Vector4Control(const std::string& label, Vector4& val, Vector4 restVal, float speed, float size)
 	{
 		ImGui::Columns(1);
 		ImGuiIO& io = ImGui::GetIO();
@@ -238,7 +238,7 @@ namespace GEngine
 		ImGui::PopID();
 	}
 
-	void GUIPainter::DrawColor4Control(const std::string& label, Vector4& color, float size)
+	void GUI::Color4Control(const std::string& label, Vector4& color, float size)
 	{
 		ImGui::Columns(1);
 		ImGui::PushID(label.c_str());
@@ -252,7 +252,7 @@ namespace GEngine
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
-	void GUIPainter::DrawCheckbox(const std::string& label, bool& val, float size)
+	void GUI::Checkbox(const std::string& label, bool& val, float size)
 	{
 		ImGui::Columns(1);
 		ImGui::PushID(label.c_str());

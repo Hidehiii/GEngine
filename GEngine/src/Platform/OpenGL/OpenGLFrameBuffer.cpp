@@ -3,8 +3,6 @@
 #include <glad/glad.h>
 namespace GEngine
 {
-    static uint32_t s_MaxFrameBufferSize = 8192;
-
     namespace Utils
     {
         
@@ -176,16 +174,14 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
-        s_CurrentFrameBuffer = this;
     }
     void OpenGLFrameBuffer::End()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        s_CurrentFrameBuffer = nullptr;
     }
     void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
     {
-        if (width <= 0 || height <= 0 || width > s_MaxFrameBufferSize || height > s_MaxFrameBufferSize)
+        if (width <= 0 || height <= 0)
         {
 			GE_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
 			return;

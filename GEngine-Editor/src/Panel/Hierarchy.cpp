@@ -119,17 +119,17 @@ namespace GEngine
 
 		DrawComponent<Transform>("Transform", gameObject, false, [](auto& component)
 			{
-				GUIPainter::DrawVector3Control("Position", component.m_Position);
+				GUI::Vector3Control("Position", component.m_Position);
 				Vector3 r = Math::Degrees(Math::EulerAngles(component.m_Rotation));
-				GUIPainter::DrawVector3Control("Rotation", r);
+				GUI::Vector3Control("Rotation", r);
 				component.SetEulerAngle(r);
-				GUIPainter::DrawVector3Control("Scale", component.m_Scale, Vector3(1.0f));
+				GUI::Vector3Control("Scale", component.m_Scale, Vector3(1.0f));
 			}
 		);
 		
 		DrawComponent<Camera>("Camera", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawCheckbox("Is main camera", component.isPrimary);
+				GUI::Checkbox("Is main camera", component.isPrimary);
 
 
 				std::string currentType = component.GetCameraTypeString(component.GetCameraType());
@@ -158,30 +158,30 @@ namespace GEngine
 
 				if (component.GetCameraType() == CameraType::OrthoGraphic)
 				{
-					GUIPainter::DrawFloatControl("Size", component.m_OrthoGraphicSize);
-					GUIPainter::DrawFloatControl("Near clip", component.m_OrthoGraphicNear);
-					GUIPainter::DrawFloatControl("Far clip", component.m_OrthoGraphicFar);
+					GUI::FloatControl("Size", component.m_OrthoGraphicSize);
+					GUI::FloatControl("Near clip", component.m_OrthoGraphicNear);
+					GUI::FloatControl("Far clip", component.m_OrthoGraphicFar);
 				}
 
 				if (component.GetCameraType() == CameraType::Perspective)
 				{
-					GUIPainter::DrawFloatControl("FOV", component.m_PerspectiveFOV, 45.0f, 0.05f);
-					GUIPainter::DrawFloatControl("Near clip", component.m_PerspectiveNear);
-					GUIPainter::DrawFloatControl("Far clip", component.m_PerspectiveFar);
+					GUI::FloatControl("FOV", component.m_PerspectiveFOV, 45.0f, 0.05f);
+					GUI::FloatControl("Near clip", component.m_PerspectiveNear);
+					GUI::FloatControl("Far clip", component.m_PerspectiveFar);
 				}
 			}
 		);
 
 		DrawComponent<DirectionalLight>("Directional Light", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawColor4Control("Color", component.m_Color);
-				GUIPainter::DrawCheckbox("Is Main", component.m_IsMain);
+				GUI::Color4Control("Color", component.m_Color);
+				GUI::Checkbox("Is Main", component.m_IsMain);
 			}
 		);
 
 		DrawComponent<ImageRenderer>("Image Renderer", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawColor4Control("Color", component.m_Color);
+				GUI::Color4Control("Color", component.m_Color);
 				std::string texName = component.m_Texture ? component.m_Texture->GetPath() : "None";
 				float size = 100.0f;
 				ImGui::Columns(2);
@@ -213,13 +213,13 @@ namespace GEngine
 					component.m_Texture = nullptr;
 				}
 				ImGui::Columns(1);
-				GUIPainter::DrawVector2Control("Tiling", component.m_Tiling, Vector2(1.0f));
+				GUI::Vector2Control("Tiling", component.m_Tiling, Vector2(1.0f));
 			}
 		);
 
 		DrawComponent<CircleRenderer>("Circle Renderer", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawColor4Control("Color", component.m_Color);
+				GUI::Color4Control("Color", component.m_Color);
 				std::string texName = component.m_Texture ? component.m_Texture->GetPath() : "None";
 				float size = 100.0f;
 				ImGui::Columns(2);
@@ -251,9 +251,9 @@ namespace GEngine
 					component.m_Texture = nullptr;
 				}
 				ImGui::Columns(1);
-				GUIPainter::DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
-				GUIPainter::DrawFloatControl("Thickness", component.m_Thickness, 0.1f, 0.01f);
-				GUIPainter::DrawFloatControl("Fade", component.m_Fade, 0.0f, 0.01f);
+				GUI::FloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
+				GUI::FloatControl("Thickness", component.m_Thickness, 0.1f, 0.01f);
+				GUI::FloatControl("Fade", component.m_Fade, 0.0f, 0.01f);
 			}
 		);
 
@@ -299,26 +299,26 @@ namespace GEngine
 
 		DrawComponent<BoxCollider2D>("Box Collider 2D", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawVector2Control("Offset", component.m_Offset);
-				GUIPainter::DrawVector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
-				GUIPainter::DrawFloatControl("Rotation", component.m_Rotation);
-				GUIPainter::DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
-				GUIPainter::DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
-				GUIPainter::DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
-				GUIPainter::DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
-				GUIPainter::DrawCheckbox("Is Trigger", component.m_IsTrigger);
+				GUI::Vector2Control("Offset", component.m_Offset);
+				GUI::Vector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
+				GUI::FloatControl("Rotation", component.m_Rotation);
+				GUI::FloatControl("Density", component.m_Density, 1.0f, 0.01f);
+				GUI::FloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
+				GUI::FloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
+				GUI::FloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
+				GUI::Checkbox("Is Trigger", component.m_IsTrigger);
 			}
 		);
 
 		DrawComponent<CircleCollider2D>("Circle Collider 2D", gameObject, true, [](auto& component)
 			{
-				GUIPainter::DrawVector2Control("Offset", component.m_Offset);
-				GUIPainter::DrawFloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
-				GUIPainter::DrawFloatControl("Density", component.m_Density, 1.0f, 0.01f);
-				GUIPainter::DrawFloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
-				GUIPainter::DrawFloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
-				GUIPainter::DrawFloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
-				GUIPainter::DrawCheckbox("Is Trigger", component.m_IsTrigger);
+				GUI::Vector2Control("Offset", component.m_Offset);
+				GUI::FloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
+				GUI::FloatControl("Density", component.m_Density, 1.0f, 0.01f);
+				GUI::FloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
+				GUI::FloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
+				GUI::FloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
+				GUI::Checkbox("Is Trigger", component.m_IsTrigger);
 			}
 		);
 
@@ -392,7 +392,7 @@ namespace GEngine
 						case ShaderUniformType::Float:
 						{
 							float f = component.m_Material->GetFloat(uniform.Name);
-							GUIPainter::DrawFloatControl(uniform.Name.c_str(), f);
+							GUI::FloatControl(uniform.Name.c_str(), f);
 							component.m_Material->SetFloat(uniform.Name, f);
 							break;
 						}
@@ -403,14 +403,14 @@ namespace GEngine
 						case ShaderUniformType::Vector:
 						{
 							Vector4 v = component.m_Material->GetVector(uniform.Name);
-							GUIPainter::DrawVector4Control(uniform.Name.c_str(), v);
+							GUI::Vector4Control(uniform.Name.c_str(), v);
 							component.m_Material->SetVector(uniform.Name, v);
 							break;
 						}
 						case ShaderUniformType::Color:
 						{
 							Vector4 v = component.m_Material->GetVector(uniform.Name);
-							GUIPainter::DrawColor4Control(uniform.Name.c_str(), v);
+							GUI::Color4Control(uniform.Name.c_str(), v);
 							component.m_Material->SetVector(uniform.Name, v);
 							break;
 						}

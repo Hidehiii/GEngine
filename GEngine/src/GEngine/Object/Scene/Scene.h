@@ -25,8 +25,8 @@ namespace GEngine
 		GameObject CreateGameObject(uint32_t uuid, const std::string& name);
 		void DuplicateGameObject(GameObject gameObject);
 		void DestroyGameObject(GameObject gameObject);
-		Camera& MainCamera();
-		DirectionalLight& MainDirectionalLight();
+		Camera* MainCamera();
+		DirectionalLight* MainDirectionalLight();
 		// Logic and physics 
 		void OnAwake();
 		void OnStart();

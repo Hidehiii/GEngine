@@ -6,7 +6,6 @@
 
 namespace GEngine
 {
-	FrameBuffer*				FrameBuffer::s_CurrentFrameBuffer = nullptr;
 
     Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& spec)
     {

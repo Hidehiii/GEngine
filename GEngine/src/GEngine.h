@@ -33,7 +33,7 @@
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/UniformBuffer.h"
 #include "GEngine/Renderer/Material.h"
-#include "GEngine/Renderer/Graphics.h"
+#include "GEngine/Renderer/GraphicsPresent.h"
 
 // Camera
 #include "GEngine/Components/Camera/OrthoGraphicCamera.h"

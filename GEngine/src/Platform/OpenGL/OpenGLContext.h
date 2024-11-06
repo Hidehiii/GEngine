@@ -15,6 +15,7 @@ namespace GEngine
 		virtual void Uninit() override;
 		virtual void SwapBuffers() override;
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { }
+		virtual void RecreateSwapChain(unsigned int width, unsigned int height) override { }
 	private:
 		GLFWwindow* m_WindowHandle;
 	};
