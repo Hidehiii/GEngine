@@ -71,8 +71,7 @@ namespace GEngine
 			switch (format)
 			{
 			case GEngine::FrameBufferTextureFormat::None:
-				GE_CORE_ASSERT(false);
-				GE_CORE_ERROR("Unknown framebuffer texture format");
+				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
 				Ref.layout				= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;

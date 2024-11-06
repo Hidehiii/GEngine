@@ -17,12 +17,12 @@ namespace GEngine
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
-		virtual Ref<VertexArray> GetVertexArray() override { return std::static_pointer_cast<VertexArray>(m_VertexArray); }
-		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
-		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
+		virtual Ref<VertexArray> GetVertexArray() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexArray>(m_VertexArray); }
+		virtual Ref<VertexBuffer> GetVertexBuffer() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
+		virtual Ref<Material> GetMaterial() override { m_RecreatePipeline = true; return std::static_pointer_cast<Material>(m_Material);}
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
-		// ÀíÂÛÉÏÖ»ÒªºóÃæ²»¸Ä¶¯uboºÍÌùÍ¼Ö»ĞèÒª´´½¨ºÍ¸üĞÂÒ»´Î£¬ÏÖÔÚÏÈÃ¿´Î¸üĞÂ¿´¿´ÄÜ²»ÄÜÅÜ
+		// ç†è®ºä¸Šåªè¦åé¢ä¸æ”¹åŠ¨uboå’Œè´´å›¾åªéœ€è¦åˆ›å»ºå’Œæ›´æ–°ä¸€æ¬¡ï¼Œç°åœ¨å…ˆæ¯æ¬¡æ›´æ–°çœ‹çœ‹èƒ½ä¸èƒ½è·‘
 		void CreateDescriptorSetAndLayout();
 		void UpdateDescriptorSet();
 		void CreatePipeline();
@@ -59,7 +59,8 @@ namespace GEngine
 		VkPipelineColorBlendStateCreateInfo					m_ColorBlending{};
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_GraphicsPipeline;
-		bool												m_NeedToRecreatePipeline = true;
+		bool												m_FirstCreatePipeline = true;
+		bool												m_RecreatePipeline = false;
 	};
 }
 

@@ -10,13 +10,13 @@ namespace GEngine
 	namespace Utils
 	{
 		// front和back要反过来，适应viewport的反转
-		VkCullModeFlagBits MaterialCullModeToVkCullMode(Material_CullMode mode)
+		VkCullModeFlagBits MaterialCullModeToVkCullMode(MaterialCullMode mode)
 		{
 			switch (mode)
 			{
-			case Material_CullMode::None:	return VK_CULL_MODE_NONE;
-			case Material_CullMode::Front:	return VK_CULL_MODE_BACK_BIT;
-			case Material_CullMode::Back:	return VK_CULL_MODE_FRONT_BIT; 
+			case MaterialCullMode::None:	return VK_CULL_MODE_NONE;
+			case MaterialCullMode::Front:	return VK_CULL_MODE_BACK_BIT;
+			case MaterialCullMode::Back:	return VK_CULL_MODE_FRONT_BIT; 
 			default:
 				break;
 			}
@@ -44,10 +44,17 @@ namespace GEngine
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(FrameBuffer::GetCurrentFrameBuffer(), "There is no framebuffer be using");
 
-		if (m_NeedToRecreatePipeline)
+		if (m_FirstCreatePipeline)
 		{
 			CreatePipeline();
-			m_NeedToRecreatePipeline = false;
+			m_FirstCreatePipeline = false;
+		}
+		if (m_RecreatePipeline)
+		{
+			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
+			CreatePipeline();
+			m_RecreatePipeline = false;
 		}
 		
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);

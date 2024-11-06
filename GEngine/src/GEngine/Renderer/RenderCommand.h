@@ -22,8 +22,8 @@ namespace GEngine
 		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		inline static float GetTime();
-		inline static void SetCull(Material_CullMode mode);
-		inline static void SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest);
+		inline static void SetCull(MaterialCullMode mode);
+		inline static void SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest);
 		inline static void EnableDepthWrite(bool enabled);
 		inline static void EnableDepthTest(bool enabled);
 		inline static void BeginCommand();

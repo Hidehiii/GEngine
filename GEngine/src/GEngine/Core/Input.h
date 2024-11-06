@@ -14,8 +14,11 @@ namespace GEngine
 	{
 	public:
 		inline static bool IsKeyPressed(int keycode);
+		inline static bool IsKeyReleased(int keycode);
 
 		inline static bool IsMouseButtonPressed(int button);
+		inline static bool IsMouseButtonReleased(int button);
+
 		inline static Vector2 GetMousePosition();
 		inline static float GetMouseX();
 		inline static float GetMouseY();

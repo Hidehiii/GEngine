@@ -53,8 +53,8 @@ void Sandbox2D::OnAttach()
 		}
 	}
 
-
-	m_vertex.resize(4);
+	int count = 8;
+	m_vertex.resize(count);
 	m_Pipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/2D/ttt.glsl")),
 		VertexArray::Create(),
@@ -66,9 +66,9 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::int1,		"TexIndex"}
 		});
 	m_Pipeline->GetVertexArray()->SetVertexBuffer(m_Pipeline->GetVertexBuffer());
-	uint32_t* quadIndices = new uint32_t[6];
+	uint32_t* quadIndices = new uint32_t[6 * count / 4];
 	uint32_t offset = 0;
-	for (uint32_t i = 0; i < 6; i += 6)
+	for (uint32_t i = 0; i < 6 * count / 4; i += 6)
 	{
 		quadIndices[i + 0] = offset + 0;
 		quadIndices[i + 1] = offset + 1;
@@ -80,7 +80,7 @@ void Sandbox2D::OnAttach()
 
 		offset += 4;
 	}
-	m_Pipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6));
+	m_Pipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
 	delete[] quadIndices;
 
 	
@@ -89,20 +89,34 @@ void Sandbox2D::OnAttach()
 	m_vertex[1].Pos = { 0.5f, -0.5f, 0.0f, 1.0f };
 	m_vertex[2].Pos = { 0.5f,  0.5f, 0.0f, 1.0f };
 	m_vertex[3].Pos = { -0.5f,  0.5f, 0.0f, 1.0f };
+	m_vertex[4].Pos = { -1.0f, -0.5f, -1.0f, 1.0f };
+	m_vertex[5].Pos = { 0.0f, -0.5f, -1.0f, 1.0f };
+	m_vertex[6].Pos = { 0.0f,  0.5f, -1.0f, 1.0f };
+	m_vertex[7].Pos = { -1.0f,  0.5f, -1.0f, 1.0f };
 
 	m_vertex[0].UV = { 0.0f, 0.0f };
 	m_vertex[1].UV = { 1.0f, 0.0f };
 	m_vertex[2].UV = { 1.0f, 1.0f };
 	m_vertex[3].UV = { 0.0f, 1.0f };
+	m_vertex[4].UV = { 0.0f, 0.0f };
+	m_vertex[5].UV = { 1.0f, 0.0f };
+	m_vertex[6].UV = { 1.0f, 1.0f };
+	m_vertex[7].UV = { 0.0f, 1.0f };
 
 	m_vertex[0].index = 0;
 	m_vertex[1].index = 0;
 	m_vertex[2].index = 0;
 	m_vertex[3].index = 0;
+	m_vertex[4].index = 0;
+	m_vertex[5].index = 0;
+	m_vertex[6].index = 0;
+	m_vertex[7].index = 0;
 
 	m_Texture = Texture2D::Create(1, 1);
 	uint32_t whiteTextureData = 0xffffffff;
 	m_Texture->SetData(&whiteTextureData, sizeof(whiteTextureData));
+
+	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
 }
 
 void Sandbox2D::OnDetach()
@@ -153,14 +167,8 @@ void Sandbox2D::OnUpdate()
 	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	RenderCommand::Clear();
 
-
 	Renderer::BeginScene(m_EditorCamera);
-	m_Pipeline->GetMaterial()->SetCullMode(Material_CullMode::Front);
-	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
-	if (Input::IsKeyPressed(KeyCode::A))
-	{
-		m_Pipeline->GetMaterial()->SetFloat("prop1", -1.0f);
-	}
+	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::None);
 	m_Texture->Bind(0);
 	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
 	m_Pipeline->Bind();
@@ -183,4 +191,19 @@ void Sandbox2D::OnGuiRender()
 void Sandbox2D::OnEvent(GEngine::Event& e)
 {
 	m_EditorCamera.OnEvent(e);
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_EVENT_FN(Sandbox2D::OnKeyPressed));
+	GE_INFO(e.ToString());
+}
+
+bool Sandbox2D::OnKeyPressed(GEngine::KeyPressedEvent& e)
+{
+	if (e.GetKeyCode() == KeyCode::A && e.IsRepeat() == false)
+	{	
+		if(m_Pipeline->GetMaterial()->GetFloat("prop1") == 1.0f)
+			m_Pipeline->GetMaterial()->SetFloat("prop1", -1.0f);
+		else
+			m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
+	}
+	return false;
 }

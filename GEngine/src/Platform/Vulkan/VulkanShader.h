@@ -26,6 +26,8 @@ namespace GEngine
 		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
 		virtual const std::string& GetShaderName() const override { return m_Name; }
 		virtual void SetShaderName(std::string name) override { m_Name = name; }
+		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() { return m_TexturesCache;}
+		virtual uint32_t GetTexture2DCount() override { return m_TexturesCache.size(); }
 
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_OpenGLSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_OpenGLSPIRV[ShaderStage::Fragment]; }
@@ -56,6 +58,7 @@ namespace GEngine
 		std::unordered_map<std::string, std::string>		m_OpenGLSourceCode;
 
 		std::vector<ShaderUniform>							m_UniformCache;
+		std::vector<ShaderUniformTexture2D>					m_TexturesCache;
 
 		int													m_BlendType;
 		int													m_CullMode;

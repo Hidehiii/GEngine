@@ -27,6 +27,8 @@ public:
 	virtual void OnGuiRender() override;
 	void OnEvent(GEngine::Event& e) override;
 private:
+	bool OnKeyPressed(GEngine::KeyPressedEvent& e);
+private:
 	/*GEngine::Editor::EditorCamera m_Camera;
 	GEngine::Editor::EditorCamera m_EditorCamera;
 	RayTracing m_RayTracing;*/

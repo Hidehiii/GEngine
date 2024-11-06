@@ -25,9 +25,12 @@ namespace GEngine
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::string& path);
 
-		// vulkan glsl ÖĞµÄlayout(binding)ÒªÓÃ
-		// ÓÉÓÚÏÖÔÚ²»ÖªµÀ»áÓĞ¶àÉÙ
-		static uint32_t s_Texture2DBindingOffset;
+		// vulkan glsl ä¸­çš„layout(binding)è¦ç”¨
+		// ç”±äºç°åœ¨ä¸çŸ¥é“ä¼šæœ‰å¤šå°‘
+		static uint32_t s_Texture2DBindingOffsetForVulkan;
+
+		// é»˜è®¤ç™½è‰²çº¹ç†
+		static Ref<Texture2D> WhiteTexture();
 	};
 }
 

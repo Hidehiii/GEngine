@@ -28,16 +28,16 @@ namespace GEngine
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
 		}
-		static Material_BlendMode ShaderBlendTypeFromString(const std::string& type)
+		static MaterialBlendMode ShaderBlendTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "none")			return Material_BlendMode::None;
-			if (ToLower(type) == "alpha")			return Material_BlendMode::Alpha;
-			if (ToLower(type) == "additive")		return Material_BlendMode::Additive;
-			if (ToLower(type) == "multiply")		return Material_BlendMode::Multiply;
-			if (ToLower(type) == "customized")		return Material_BlendMode::Customized;
+			if (ToLower(type) == "none")			return MaterialBlendMode::None;
+			if (ToLower(type) == "alpha")			return MaterialBlendMode::Alpha;
+			if (ToLower(type) == "additive")		return MaterialBlendMode::Additive;
+			if (ToLower(type) == "multiply")		return MaterialBlendMode::Multiply;
+			if (ToLower(type) == "customized")		return MaterialBlendMode::Customized;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return Material_BlendMode::None;
+			return MaterialBlendMode::None;
 		}
 		static const char* GetCacheDirectory()
 		{
@@ -272,6 +272,7 @@ namespace GEngine
 					++it;
 			}
 			uint32_t location = 0;
+			uint32_t textureSlot = Texture2D::s_Texture2DBindingOffsetForVulkan;
 			// split properties by :
 			for (auto& prop : props)
 			{
@@ -279,14 +280,32 @@ namespace GEngine
 				GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
 				std::string propName = propData[0];
 				std::string propType = propData[1];
-				ShaderUniform uniform;
-				uniform.Name = propName;
-				uniform.Type = Utils::ShaderUniformTypeFromString(propType);
-				uniform.Size = ShaderUniformTypeSize(uniform.Type);
-				uniform.Location = location;
-				location += uniform.Size;
-				m_UniformCache.push_back(uniform);
-				GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
+				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D &&
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube)
+				{
+					ShaderUniform			uniform;
+					uniform.Name			= propName;
+					uniform.Type			= Utils::ShaderUniformTypeFromString(propType);
+					uniform.Size			= ShaderUniformTypeSize(uniform.Type);
+					uniform.Location		= location;
+					location				+= uniform.Size;
+					m_UniformCache.push_back(uniform);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::Sampler2D)
+				{
+					ShaderUniformTexture2D	uniform;
+					uniform.Name			= propName;
+					uniform.Slot			= textureSlot;
+					uniform.Texture			= Texture2D::WhiteTexture();
+					textureSlot++;
+					m_TexturesCache.push_back(uniform);
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
+				{
+					GE_CORE_ASSERT(false, "Not implemented yet");
+				}
 			}
 		}
 
@@ -353,8 +372,7 @@ namespace GEngine
 				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -452,8 +470,7 @@ namespace GEngine
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());

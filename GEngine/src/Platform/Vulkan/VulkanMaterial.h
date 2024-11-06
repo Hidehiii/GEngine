@@ -13,8 +13,8 @@ namespace GEngine
 
 		virtual void UploadData() override;
 
-		virtual Material_CullMode GetCullMode() override { return m_CullMode; }
-		virtual Material_BlendMode GetBlendMode() override { return m_BlendMode; }
+		virtual MaterialCullMode GetCullMode() override { return m_CullMode; }
+		virtual MaterialBlendMode GetBlendMode() override { return m_BlendMode; }
 		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
 		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
 
@@ -24,8 +24,8 @@ namespace GEngine
 		virtual void EnableDepthTest(bool enabled) override { m_EnableDepthTest = enabled; }
 		virtual bool GetEnableDepthTest() override { return m_EnableDepthTest; }
 
-		virtual void SetCullMode(Material_CullMode mode) override;
-		virtual void SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest) override;
+		virtual void SetCullMode(MaterialCullMode mode) override;
+		virtual void SetBlendMode(MaterialBlendMode mode, uint32_t source, uint32_t dest) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
@@ -57,14 +57,15 @@ namespace GEngine
 		Ref<VulkanShader>									m_Shader;
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;
 		std::string											m_Name;
-		Material_BlendMode									m_BlendMode = Material_BlendMode::None;
+		MaterialBlendMode									m_BlendMode = MaterialBlendMode::None;
 		uint32_t											m_BlendSourceFactor = 0;
 		uint32_t											m_BlendDestinationFactor = 0;
-		Material_CullMode									m_CullMode = Material_CullMode::Back;
+		MaterialCullMode									m_CullMode = MaterialCullMode::Back;
 		Buffer												m_UniformStorageBuffer;
 		std::vector<ShaderUniform>							m_Uniforms;
 		bool												m_EnableDepthWrite = true;
 		bool												m_EnableDepthTest = true;
+		std::vector<ShaderUniformTexture2D>					m_Texture2D;
 	};
 
 }

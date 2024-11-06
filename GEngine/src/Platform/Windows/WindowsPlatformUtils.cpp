@@ -9,6 +9,7 @@
 
 namespace GEngine
 {
+#ifdef GE_PLATFORM_WINDOWS
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
 		OPENFILENAMEA ofn;
@@ -45,4 +46,5 @@ namespace GEngine
 		}
 		return std::string();
 	}
+#endif
 }

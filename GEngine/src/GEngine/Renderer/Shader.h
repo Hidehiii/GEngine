@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Buffer.h"
+#include "GEngine/Renderer/Texture.h"
 #include <algorithm>
 
 
@@ -18,7 +19,8 @@ namespace GEngine
 		Color		= 4,
 		Mat3		= 5,
 		Mat4		= 6,
-		Sampler2D	= 7
+		Sampler2D	= 7,
+		SamplerCube = 8
 	};
 	class GENGINE_API ShaderDataFlag
 	{
@@ -61,6 +63,13 @@ namespace GEngine
 		uint32_t Size = 0;
 		uint32_t Location = 0;
 	};
+
+	struct ShaderUniformTexture2D
+	{
+		std::string Name;
+		uint32_t Slot;
+		Ref<Texture2D> Texture;
+	};
 	class GENGINE_API Shader
 	{
 	public:
@@ -86,8 +95,10 @@ namespace GEngine
 		virtual uint32_t GetBlendDestinationFactor() = 0;
 		virtual bool GetEnableDepthWrite() = 0;
 		virtual bool GetEnableDepthTest() = 0;
+		virtual uint32_t GetTexture2DCount() = 0;
 
 		virtual std::vector<ShaderUniform> GetUniforms() = 0;
+		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() = 0;
 		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
 
@@ -132,7 +143,7 @@ namespace GEngine
 		{
 			if (ToLower(value) == "on")				return true;
 			if (ToLower(value) == "1")				return true;
-			if (ToLower(value) == "true")				return true;
+			if (ToLower(value) == "true")			return true;
 			return false;
 		}
 
@@ -191,13 +202,14 @@ namespace GEngine
 		
 		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "int")		return ShaderUniformType::Int;
+			if (ToLower(type) == "int")			return ShaderUniformType::Int;
 			if (ToLower(type) == "float")		return ShaderUniformType::Float;
-			if (ToLower(type) == "vector")	return ShaderUniformType::Vector;
+			if (ToLower(type) == "vector")		return ShaderUniformType::Vector;
 			if (ToLower(type) == "color")		return ShaderUniformType::Color;
 			if (ToLower(type) == "mat3")		return ShaderUniformType::Mat3;
 			if (ToLower(type) == "mat4")		return ShaderUniformType::Mat4;
-
+			if (ToLower(type) == "sampler2d")	return ShaderUniformType::Sampler2D;
+			if (ToLower(type) == "samplercube")	return ShaderUniformType::SamplerCube;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
 		}

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.h"
-
+#include "GEngine/Core/KeyCodes.h"
 
 
 namespace GEngine
@@ -30,7 +30,7 @@ namespace GEngine
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << " ( repeats : " << m_IsRepeat << ")";
+			ss << "KeyPressedEvent: " << KeyCodeString[m_KeyCode] << " ( repeats : " << m_IsRepeat << ")";
 			return ss.str();
 		}
 
@@ -48,7 +48,7 @@ namespace GEngine
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << m_KeyCode;
+			ss << "KeyReleasedEvent: " << KeyCodeString[m_KeyCode];
 			return ss.str();
 		}
 
@@ -66,7 +66,7 @@ namespace GEngine
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyTypedEvent: " << m_KeyCode;
+			ss << "KeyTypedEvent: " << KeyCodeString[m_KeyCode];
 			return ss.str();
 		}
 

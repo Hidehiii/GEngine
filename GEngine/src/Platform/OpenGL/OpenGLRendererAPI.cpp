@@ -86,36 +86,36 @@ namespace GEngine
 		else
 			glDisable(GL_DEPTH_TEST);
 	}
-	void OpenGLRendererAPI::SetCull(Material_CullMode mode)
+	void OpenGLRendererAPI::SetCull(MaterialCullMode mode)
 	{
 		switch (mode)
 		{
-		case Material_CullMode::None:	glDisable(GL_CULL_FACE); break;
-		case Material_CullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
-		case Material_CullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
+		case MaterialCullMode::None:	glDisable(GL_CULL_FACE); break;
+		case MaterialCullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
+		case MaterialCullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
 		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
 		}
 	}
-	void OpenGLRendererAPI::SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest)
+	void OpenGLRendererAPI::SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest)
 	{
 		switch (mode)
 		{
-		case Material_BlendMode::None:
+		case MaterialBlendMode::None:
 			glDisable(GL_BLEND);
 			break;
-		case Material_BlendMode::Alpha:
+		case MaterialBlendMode::Alpha:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
-		case Material_BlendMode::Additive:
+		case MaterialBlendMode::Additive:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR);
 			break;
-		case Material_BlendMode::Multiply:
+		case MaterialBlendMode::Multiply:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_DST_COLOR, GL_ZERO);
 			break;
-		case Material_BlendMode::Customized:
+		case MaterialBlendMode::Customized:
 			glEnable(GL_BLEND);
 			glBlendFunc(source, dest);
 			break;

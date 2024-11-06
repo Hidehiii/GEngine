@@ -100,7 +100,7 @@ namespace GEngine
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
-		m_DescriptorSetLayoutBinding.binding            = s_Texture2DBindingOffset + slot;
+		m_DescriptorSetLayoutBinding.binding            = slot;
 		m_DescriptorSetLayoutBinding.descriptorCount    = 1;
 		m_DescriptorSetLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;

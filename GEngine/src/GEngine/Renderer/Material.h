@@ -10,13 +10,13 @@
 
 namespace GEngine
 {
-	enum class Material_CullMode
+	enum class MaterialCullMode
 	{
 		None	= 0,
 		Front	= 1,
 		Back	= 2
 	};
-	enum class Material_BlendMode
+	enum class MaterialBlendMode
 	{
 		None		= 0,
 		Alpha		= 1,
@@ -37,8 +37,8 @@ namespace GEngine
 
 		virtual void UploadData() = 0;
 
-		virtual Material_CullMode GetCullMode() = 0;
-		virtual Material_BlendMode GetBlendMode() = 0;
+		virtual MaterialCullMode GetCullMode() = 0;
+		virtual MaterialBlendMode GetBlendMode() = 0;
 		virtual uint32_t GetBlendSourceFactor() = 0;
 		virtual uint32_t GetBlendDestinationFactor() = 0;
 
@@ -48,8 +48,8 @@ namespace GEngine
 		virtual void EnableDepthTest(bool enabled) = 0;
 		virtual bool GetEnableDepthTest() = 0;
 
-		virtual void SetCullMode(Material_CullMode mode) = 0;
-		virtual void SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest) = 0;
+		virtual void SetCullMode(MaterialCullMode mode) = 0;
+		virtual void SetBlendMode(MaterialBlendMode mode, uint32_t source, uint32_t dest) = 0;
 
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;

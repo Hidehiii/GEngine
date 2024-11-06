@@ -41,10 +41,10 @@ namespace GEngine
     void VulkanRendererAPI::EnableDepthTest(bool enabled)
     {
     }
-    void VulkanRendererAPI::SetCull(Material_CullMode mode)
+    void VulkanRendererAPI::SetCull(MaterialCullMode mode)
     {
     }
-    void VulkanRendererAPI::SetBlend(Material_BlendMode mode, uint32_t source, uint32_t dest)
+    void VulkanRendererAPI::SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest)
     {
     }
     void VulkanRendererAPI::DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)
@@ -74,9 +74,9 @@ namespace GEngine
         VkCommandBuffer commandBuffer = VulkanContext::Get()->GetCurrentCommandBuffer();
         VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::Get()->PopCommandBuffer()));
 
-        VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetImageAvailableSemaphores()[0] };
+        VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetImageAvailableSemaphores(0) };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetRenderFinishedSemaphores()[0] };
+        VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetRenderFinishedSemaphores(0) };
 
         VkSubmitInfo    submitInfo{};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -88,7 +88,7 @@ namespace GEngine
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores    = signalSemaphores;
 
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VulkanContext::Get()->GetInFlightFences()[0]));
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VulkanContext::Get()->GetInFlightFences(0)));
     }
     float VulkanRendererAPI::GetTime()
     {

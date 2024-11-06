@@ -24,21 +24,21 @@ namespace GEngine
 			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return (uint32_t)GL_ONE_MINUS_DST_ALPHA;
 			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return (uint32_t)GL_ONE_MINUS_SRC_COLOR;
 			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return (uint32_t)GL_ONE_MINUS_DST_COLOR;
-			if (ToUpper(factor) == "ONE")					return (uint32_t)GL_ONE;
+			if (ToUpper(factor) == "ONE")				return (uint32_t)GL_ONE;
 			if (ToUpper(factor) == "ZERO")				return (uint32_t)GL_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
 		}
-		static Material_BlendMode ShaderBlendTypeFromString(const std::string& type)
+		static MaterialBlendMode ShaderBlendTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "none")			return Material_BlendMode::None;
-			if (ToLower(type) == "alpha")			return Material_BlendMode::Alpha;
-			if (ToLower(type) == "additive")		return Material_BlendMode::Additive;
-			if (ToLower(type) == "multiply")		return Material_BlendMode::Multiply;
-			if (ToLower(type) == "customized")	return Material_BlendMode::Customized;
+			if (ToLower(type) == "none")			return MaterialBlendMode::None;
+			if (ToLower(type) == "alpha")			return MaterialBlendMode::Alpha;
+			if (ToLower(type) == "additive")		return MaterialBlendMode::Additive;
+			if (ToLower(type) == "multiply")		return MaterialBlendMode::Multiply;
+			if (ToLower(type) == "customized")		return MaterialBlendMode::Customized;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return Material_BlendMode::None;
+			return MaterialBlendMode::None;
 		}
 
 		static GLenum ShaderTypeFromString(const std::string& type)
@@ -469,6 +469,7 @@ namespace GEngine
 					++it;
 			}
 			uint32_t location = 0;
+			uint32_t textureSlot = 0;
 			// split properties by :
 			for (auto& prop : props)
 			{
@@ -476,14 +477,32 @@ namespace GEngine
 				GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
 				std::string propName = propData[0];
 				std::string propType = propData[1];
-				ShaderUniform uniform;
-				uniform.Name = propName;
-				uniform.Type = Utils::ShaderUniformTypeFromString(propType);
-				uniform.Size = ShaderUniformTypeSize(uniform.Type);
-				uniform.Location = location;
-				location += uniform.Size;
-				m_UniformCache.push_back(uniform);
-				GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
+				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D && 
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube)
+				{
+					ShaderUniform			uniform;
+					uniform.Name			= propName;
+					uniform.Type			= Utils::ShaderUniformTypeFromString(propType);
+					uniform.Size			= ShaderUniformTypeSize(uniform.Type);
+					uniform.Location		= location;
+					location				+= uniform.Size;
+					m_UniformCache.push_back(uniform);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::Sampler2D)
+				{
+					ShaderUniformTexture2D	uniform;
+					uniform.Name			= propName;
+					uniform.Slot			= textureSlot;
+					uniform.Texture			= Texture2D::WhiteTexture();
+					textureSlot++;
+					m_TexturesCache.push_back(uniform);
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
+				{
+					GE_CORE_ASSERT(false, "Not implemented yet");
+				}
 			}
 		}
 
@@ -549,8 +568,7 @@ namespace GEngine
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -649,8 +667,7 @@ namespace GEngine
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
 				}
 
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -691,8 +708,7 @@ namespace GEngine
 
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-			GE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
-			GE_CORE_ASSERT(false);
+			GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
 
 			glDeleteProgram(program);
 

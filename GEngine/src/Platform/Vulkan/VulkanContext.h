@@ -51,9 +51,9 @@ namespace GEngine
 
 		VkSwapchainKHR					GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>			GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		std::vector<VkFence>&			GetInFlightFences() { return m_InFlightFences; }
-		std::vector<VkSemaphore>&		GetImageAvailableSemaphores() { return m_ImageAvailableSemaphores; }
-		std::vector<VkSemaphore>&		GetRenderFinishedSemaphores() { return m_RenderFinishedSemaphores; }
+		VkFence&						GetInFlightFences(int index) { return m_InFlightFences.at(index % m_InFlightFences.size()); }
+		VkSemaphore&					GetImageAvailableSemaphores(int index) { return m_ImageAvailableSemaphores.at(index % m_ImageAvailableSemaphores.size()); }
+		VkSemaphore&					GetRenderFinishedSemaphores(int index) { return m_RenderFinishedSemaphores.at(index % m_RenderFinishedSemaphores.size()); }
 	private:
 		void CreateInstance();
 		bool CheckValidationLayerSupport();

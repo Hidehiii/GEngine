@@ -6,8 +6,8 @@
 
 namespace GEngine
 {
-	uint32_t Texture2D::s_Texture2DBindingOffset = 10;
-
+	// vulkan glsl 中的layout(binding)要用
+	uint32_t Texture2D::s_Texture2DBindingOffsetForVulkan = 10;
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 	{
@@ -46,5 +46,12 @@ namespace GEngine
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
+	}
+	Ref<Texture2D> Texture2D::WhiteTexture()
+	{
+		Ref<Texture2D> texture = Texture2D::Create(1, 1);
+		uint32_t whiteTextureData = 0xffffffff;
+		texture->SetData(&whiteTextureData, sizeof(uint32_t));
+		return texture;
 	}
 }

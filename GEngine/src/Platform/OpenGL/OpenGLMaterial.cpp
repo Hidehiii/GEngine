@@ -27,12 +27,14 @@ namespace GEngine
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
 			// Read blend type and factor
-			m_BlendMode					= (Material_BlendMode)m_Shader->GetBlendMode();
+			m_BlendMode					= (MaterialBlendMode)m_Shader->GetBlendMode();
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
 			// Read depth test and depth mask
 			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
+			// Texture2D
+			m_Texture2D					= m_Shader->GetTexture2D();
 		}
 		else
 		{
@@ -52,11 +54,11 @@ namespace GEngine
 		RenderCommand::EnableDepthTest(m_EnableDepthTest);
 		RenderCommand::EnableDepthWrite(m_EnableDepthWrite);
 	}
-	void OpenGLMaterial::SetCullMode(Material_CullMode mode)
+	void OpenGLMaterial::SetCullMode(MaterialCullMode mode)
 	{
 		m_CullMode = mode;
 	}
-	void OpenGLMaterial::SetBlendMode(Material_BlendMode mode, uint32_t source, uint32_t dest)
+	void OpenGLMaterial::SetBlendMode(MaterialBlendMode mode, uint32_t source, uint32_t dest)
 	{
 		m_BlendMode					= mode;
 		m_BlendSourceFactor			= source;
@@ -162,8 +164,7 @@ namespace GEngine
 			if(uniform.Name == name)
 				return uniform;
 		}
-		GE_CORE_CRITICAL("There is no uniform with name {0} in the shader!", name);
-		GE_CORE_ASSERT(false);
+		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
 		return ShaderUniform();
 	}
 }
