@@ -3,6 +3,15 @@
 
 #Properties
 
+Tex_0: sampler2D
+Tex_1: sampler2D
+Tex_2: sampler2D
+Tex_3: sampler2D
+Tex_4: sampler2D
+Tex_5: sampler2D
+Tex_6: sampler2D
+Tex_7: sampler2D
+
 #Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
@@ -58,10 +67,28 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 5) in flat int v_TexIndex;
-layout (binding = 0) uniform sampler2D _Textures[32];
+layout (binding = 10) uniform sampler2D Tex_0;
+layout (binding = 11) uniform sampler2D Tex_1;
+layout (binding = 12) uniform sampler2D Tex_2;
+layout (binding = 13) uniform sampler2D Tex_3;
+layout (binding = 14) uniform sampler2D Tex_4;
+layout (binding = 15) uniform sampler2D Tex_5;
+layout (binding = 16) uniform sampler2D Tex_6;
+layout (binding = 17) uniform sampler2D Tex_7;
 void main()
 {
-	o_color = texture(_Textures[v_TexIndex], IN.uv) * IN.color;
+	o_color = vec4(1.0f); 
+	switch(v_TexIndex)
+	{
+		case 0: o_color = texture(Tex_0, IN.uv) * IN.color; break;
+		case 1: o_color = texture(Tex_1, IN.uv) * IN.color; break;
+		case 2: o_color = texture(Tex_2, IN.uv) * IN.color; break;
+		case 3: o_color = texture(Tex_3, IN.uv) * IN.color; break;
+		case 4: o_color = texture(Tex_4, IN.uv) * IN.color; break;
+		case 5: o_color = texture(Tex_5, IN.uv) * IN.color; break;
+		case 6: o_color = texture(Tex_6, IN.uv) * IN.color; break;
+		case 7: o_color = texture(Tex_7, IN.uv) * IN.color; break;
+	}
 	float dist = length(IN.uv - vec2(0.5f, 0.5f));
 	if(dist > IN.radius || dist < IN.radius * (1 - IN.thickness))
 	{

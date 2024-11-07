@@ -1,7 +1,7 @@
 
 #Name Default
 #Blend None
-#DepthMask On
+#DepthWrite On
 #DepthTest On
 #Properties
 

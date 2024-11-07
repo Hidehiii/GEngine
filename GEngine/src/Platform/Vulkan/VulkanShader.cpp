@@ -3,7 +3,8 @@
 #include "GEngine/Renderer/Material.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include <filesystem>
+#include "Platform/Vulkan/VulkanTexture2D.h"
+
 
 #include <shaderc/shaderc.hpp>
 #include <SPIRVCross/spirv_cross.hpp>
@@ -38,17 +39,6 @@ namespace GEngine
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return MaterialBlendMode::None;
-		}
-		static const char* GetCacheDirectory()
-		{
-			// TODO: make sure the assets directory is valid
-			return "Assets/Cache/Shaders/Vulkan";
-		}
-		static void CreateCacheDirectoryIfNeeded()
-		{
-			std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
 		}
 		static std::string ShaderTypeFromString(const std::string& type)
 		{
@@ -89,8 +79,8 @@ namespace GEngine
 		GE_PROFILE_FUNCTION();
 
 		Utils::CreateCacheDirectoryIfNeeded();
-		std::string src = ReadFile(path);
-		auto shaderSources = PreProcess(src);
+		std::string src		= ReadFile(path);
+		auto shaderSources	= PreProcess(src);
 		CompileOrGetVulkanBinaries(shaderSources);
 		CompileOrGetOpenGLBinaries(shaderSources);
 	}
@@ -133,8 +123,8 @@ namespace GEngine
 	}
 	std::string VulkanShader::ReadFile(const std::string& path)
 	{
-		std::string src;
-		std::ifstream file(path, std::ios::in | std::ios::binary);
+		std::string		src;
+		std::ifstream	file(path, std::ios::in | std::ios::binary);
 
 		GE_CORE_ASSERT(file, "Shader file " + path + " not found");
 
@@ -149,59 +139,59 @@ namespace GEngine
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
-		const char* nameToken = "#Name";
-		size_t nameTokenLength = strlen(nameToken);
+		const char* nameToken			= "#Name";
+		size_t nameTokenLength			= strlen(nameToken);
 
-		const char* blendToken = "#Blend";
-		size_t blendTokenLength = strlen(blendToken);
+		const char* blendToken			= "#Blend";
+		size_t blendTokenLength			= strlen(blendToken);
 
-		const char* depthMaskToken = "#DepthMask";
-		size_t depthMaskTokenLength = strlen(depthMaskToken);
+		const char* depthWriteToken		= "#DepthWrite";
+		size_t depthWriteTokenLength	= strlen(depthWriteToken);
 
-		const char* depthTestToken = "#DepthTest";
-		size_t depthTestTokenLength = strlen(depthTestToken);
+		const char* depthTestToken		= "#DepthTest";
+		size_t depthTestTokenLength		= strlen(depthTestToken);
 
-		const char* propertyToken = "#Properties";
-		size_t propertyTokenLength = strlen(propertyToken);
+		const char* propertyToken		= "#Properties";
+		size_t propertyTokenLength		= strlen(propertyToken);
 
-		const char* typeToken = "#Type";
-		size_t typeTokenLength = strlen(typeToken);
+		const char* typeToken			= "#Type";
+		size_t typeTokenLength			= strlen(typeToken);
 
 		// find Name 
 
-		size_t pos = source.find(nameToken, 0);
+		size_t pos				= source.find(nameToken, 0);
 		if (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			size_t eol			= source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + nameTokenLength + 1;
-			std::string name = source.substr(begin, eol - begin);
-			int index = 0;
+			size_t begin		= pos + nameTokenLength + 1;
+			std::string name	= source.substr(begin, eol - begin);
+			int index			= 0;
 			while ((index = name.find(' ', index)) != std::string::npos)
 			{
 				name.erase(index, 1);
 			}
-			m_Name = name;
+			m_Name				= name;
 			GE_CORE_TRACE("Shader name: {0}", m_Name);
 		}
 
 		// find Blend
-		pos = source.find(blendToken, 0);
+		pos								= source.find(blendToken, 0);
 		if (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			size_t eol					= source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + blendTokenLength + 1;
+			size_t begin				= pos + blendTokenLength + 1;
 			std::string blendString = source.substr(begin, eol - begin);
-			blendString = Utils::RemoveCharFromString(blendString, ';');
-			blendString = Utils::RemoveCharFromString(blendString, '\r');
-			blendString = Utils::RemoveCharFromString(blendString, '\n');
-			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
+			blendString					= Utils::RemoveCharFromString(blendString, ';');
+			blendString					= Utils::RemoveCharFromString(blendString, '\r');
+			blendString					= Utils::RemoveCharFromString(blendString, '\n');
+			std::vector<std::string>	blends = Utils::SplitString(blendString, ' ');
 			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1, "Syntax error");
-			m_BlendType = (int)Utils::ShaderBlendTypeFromString(blends.at(0));
+			m_BlendType					= (int)Utils::ShaderBlendTypeFromString(blends.at(0));
 			if (blends.size() == 3)
 			{
-				m_BlendSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				m_BlendSourceFactor		= Utils::ShaderBlendFactorFromString(blends.at(1));
 				m_BlendDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
 				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
 			}
@@ -211,15 +201,15 @@ namespace GEngine
 			}
 		}
 
-		// find DepthMask
-		pos = source.find(depthMaskToken, 0);
+		// find DepthWrite
+		pos					= source.find(depthWriteToken, 0);
 		if (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			size_t eol		= source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + depthMaskTokenLength + 1;
-			std::string depthMaskProp = source.substr(begin, eol - begin);
-			int index = 0;
+			size_t begin	= pos + depthWriteTokenLength + 1;
+			std::string		depthMaskProp = source.substr(begin, eol - begin);
+			int index		= 0;
 			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
 			{
 				depthMaskProp.erase(index, 1);
@@ -229,13 +219,13 @@ namespace GEngine
 		}
 
 		// find DepthTest
-		pos = source.find(depthTestToken, 0);
+		pos					= source.find(depthTestToken, 0);
 		if (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			size_t eol		= source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + depthTestTokenLength + 1;
-			std::string depthTestProp = source.substr(begin, eol - begin);
+			size_t begin	= pos + depthTestTokenLength + 1;
+			std::string		depthTestProp = source.substr(begin, eol - begin);
 			int index = 0;
 			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
 			{
@@ -246,14 +236,14 @@ namespace GEngine
 		}
 
 		// find Properties
-		pos = source.find(propertyToken, 0);
+		pos						= source.find(propertyToken, 0);
 		if (pos != std::string::npos)
 		{
 			// split properties by \n
-			size_t eol = source.find_first_of("\r\n", pos);
+			size_t eol			= source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			size_t end = source.find(typeToken, pos);
+			size_t nextLinePos	= source.find_first_not_of("\r\n", eol);
+			size_t end			= source.find(typeToken, pos);
 			std::string properties = source.substr(nextLinePos, end - nextLinePos);
 			std::vector<std::string> props = Utils::SplitString(properties, '\n');
 			for (auto& prop : props)
@@ -272,7 +262,7 @@ namespace GEngine
 					++it;
 			}
 			uint32_t location = 0;
-			uint32_t textureSlot = Texture2D::s_Texture2DBindingOffsetForVulkan;
+			uint32_t textureSlot = VulkanTexture2D::s_Texture2DBindingOffset;
 			// split properties by :
 			for (auto& prop : props)
 			{
@@ -300,7 +290,8 @@ namespace GEngine
 					uniform.Slot			= textureSlot;
 					uniform.Texture			= Texture2D::WhiteTexture();
 					textureSlot++;
-					m_TexturesCache.push_back(uniform);
+					m_Texture2DCache.push_back(uniform);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
 				{
@@ -406,48 +397,6 @@ namespace GEngine
 
 		shaderData.clear();
 		m_OpenGLSourceCode.clear();
-		/*for (auto&& [stage, spirv] : m_VulkanSPIRV)
-		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
-
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
-			{
-				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data = shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
-			}
-			else
-			{
-				spirv_cross::CompilerGLSL glslCompiler(spirv);
-				m_OpenGLSourceCode[stage] = glslCompiler.compile();
-				auto& source = m_OpenGLSourceCode[stage];
-				GE_TRACE(source);
-
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false);
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}*/
 		for (auto&& [stage, source] : shaderSources)
 		{
 			std::filesystem::path shaderFilePath = m_FilePath;

@@ -50,11 +50,13 @@ namespace GEngine
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) override;
 
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) override;
+		virtual Ref<Texture2D> GetTexture2D(const std::string& name) override { return GetUniformTexture2DByName(name).Texture; }
 
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
-
+		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() override { return m_Texture2D; }
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
+		ShaderUniformTexture2D GetUniformTexture2DByName(const std::string& name) const;
 	private:
 		Ref<OpenGLShader>									m_Shader;
 		Ref<OpenGLUniformBuffer>							m_UniformBuffer;

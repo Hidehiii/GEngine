@@ -2,6 +2,7 @@
 #include "VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 
 
@@ -29,8 +30,7 @@ namespace GEngine
         m_VertexArray           = std::dynamic_pointer_cast<VulkanVertexArray>(vertexArray);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
 
-		CreateDescriptorSetAndLayout();
-		UpdateDescriptorSet();
+		
     }
 
     VulkanPipeline::~VulkanPipeline()
@@ -44,8 +44,12 @@ namespace GEngine
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
 
+		m_Material->UploadData();
+
 		if (m_FirstCreatePipeline)
 		{
+			CreateDescriptorSetAndLayout();
+			UpdateDescriptorSet();
 			CreatePipeline();
 			m_FirstCreatePipeline = false;
 		}
@@ -71,7 +75,7 @@ namespace GEngine
 		m_Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
 
-		m_Material->UploadData();
+		
 
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
@@ -102,7 +106,11 @@ namespace GEngine
 		}
 		layoutBindings.push_back(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
 		// TODO : 后面贴图需要放在材质里而不是外部绑定
-		// xxx = m_Material->GetTexture2D()...
+		auto texture2Ds		= m_Material->GetGetTexture2Ds();
+		for (auto& texture2D : texture2Ds)
+		{
+			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorSetLayoutBinding());
+		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -159,6 +167,25 @@ namespace GEngine
 			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 		}
 		// TODO: 后面贴图也要放进材质，由这里统一获取进行绑定更新
+		{
+			auto texture2Ds					= m_Material->GetGetTexture2Ds();
+			for (auto& texture2D : texture2Ds)
+			{
+				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorImageInfo();
+				VkWriteDescriptorSet			descriptorWrite{};
+				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet			= m_DescriptorSet;
+				descriptorWrite.dstBinding		= std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetBinding();
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo		= nullptr;
+				descriptorWrite.pImageInfo		= &imageInfo; 
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			}
+		}
 	}
     void VulkanPipeline::CreatePipeline()
     {

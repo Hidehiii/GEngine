@@ -51,15 +51,16 @@ namespace GEngine
 		static const uint32_t MaxtTiangle		= 20000;
 		static const uint32_t MaxVertices		= MaxtTiangle * 3;
 		static const uint32_t MaxIndices		= MaxtTiangle * 3;
-		static const uint32_t MaxTextureSlots	= 32;
 
 		Ref<Pipeline>		QuadPipeline;
 		uint32_t			QuadIndexCount			= 0;
+		uint32_t			QuadTextureIndex		= 1; // 0 = white texture
 		QuadVertex*			QuadVertexBufferBase	= nullptr;
 		QuadVertex*			QuadVertexBufferPtr		= nullptr;
 
 		Ref<Pipeline>		CirclePipeline;
-		uint32_t			CircleIndexCount = 0;
+		uint32_t			CircleIndexCount		= 0;
+		uint32_t			CircleTextureIndex		= 1; // 0 = white texture
 		CircleVertex*		CircleVertexBufferBase	= nullptr;
 		CircleVertex*		CircleVertexBufferPtr	= nullptr;
 
@@ -73,13 +74,8 @@ namespace GEngine
 		PointVertex*		PointVertexBufferBase	= nullptr;
 		PointVertex*		PointVertexBufferPtr	= nullptr;
 
-		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex					= 1; // 0 = white texture
-
 		Vector4 QuadVertexPositions[4];
 		Vector2 QuadVertexUVs[4];
-
-		Ref<Texture2D> WhiteTexture;
 
 		Renderer2D::Statistics stats;
 
@@ -124,12 +120,6 @@ namespace GEngine
 				}
 				s_Data.QuadPipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
 				delete[] quadIndices;
-
-
-				s_Data.WhiteTexture = Texture2D::Create(1, 1);
-				uint32_t whiteTextureData = 0xffffffff;
-				s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
-				s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
 
 				s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -228,10 +218,6 @@ namespace GEngine
 
 		if (s_Data.QuadIndexCount)
 		{
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-			{
-				s_Data.TextureSlots[i]->Bind(i);
-			}
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 			s_Data.QuadPipeline->GetVertexBuffer()->SetData(s_Data.QuadVertexBufferBase, dataSize);
 			s_Data.QuadPipeline->Bind();
@@ -241,10 +227,6 @@ namespace GEngine
 
 		if (s_Data.CircleIndexCount)
 		{
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-			{
-				s_Data.TextureSlots[i]->Bind(i);
-			}
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
 			s_Data.CirclePipeline->GetVertexBuffer()->SetData(s_Data.CircleVertexBufferBase, dataSize);
 			s_Data.CirclePipeline->Bind();
@@ -312,15 +294,15 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().size())
 		{
 			NextBatch();
 		}
 
 		int textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data.QuadTextureIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *tex.get())
+			if(*(s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(i).Texture.get()) == *tex.get())
 			{
 				textureIndex = i;
 				break;
@@ -328,9 +310,9 @@ namespace GEngine
 		}
 		if (textureIndex == 0)
 		{
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = tex;
-			s_Data.TextureSlotIndex++;
+			textureIndex = s_Data.QuadTextureIndex;
+			s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = tex;
+			s_Data.QuadTextureIndex++;
 		}
 
 
@@ -352,15 +334,15 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().size())
 		{
 			NextBatch();
 		}
 
 		int textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data.QuadTextureIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *(tex->GetTexture()).get())
+			if (*(s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(i).Texture.get()) == *(tex->GetTexture()).get())
 			{
 				textureIndex = i;
 				break;
@@ -368,9 +350,9 @@ namespace GEngine
 		}
 		if (textureIndex == 0)
 		{
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = tex->GetTexture();
-			s_Data.TextureSlotIndex++;
+			textureIndex = s_Data.QuadTextureIndex;
+			s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = tex->GetTexture();
+			s_Data.QuadTextureIndex++;
 		}
 
 
@@ -419,15 +401,15 @@ namespace GEngine
 	void Renderer2D::DrawCircle(Transform& transform, const Vector4& color, const Ref<Texture2D> tex, const float radius, const float thickness, const float fade)
 	{
 		GE_PROFILE_FUNCTION();
-		if (s_Data.CircleIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.CircleIndexCount >= Renderer2DData::MaxIndices || s_Data.CircleTextureIndex >= s_Data.CirclePipeline->GetMaterial()->GetGetTexture2Ds().size())
 		{
 			NextBatch();
 		}
 
 		int textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data.CircleTextureIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *(tex).get())
+			if (*(s_Data.CirclePipeline->GetMaterial()->GetGetTexture2Ds().at(i).Texture.get()) == *tex.get())
 			{
 				textureIndex = i;
 				break;
@@ -435,9 +417,9 @@ namespace GEngine
 		}
 		if (textureIndex == 0)
 		{
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = tex;
-			s_Data.TextureSlotIndex++;
+			textureIndex = s_Data.CircleTextureIndex;
+			s_Data.CirclePipeline->GetMaterial()->GetGetTexture2Ds().at(s_Data.CircleTextureIndex).Texture = tex;
+			s_Data.CircleTextureIndex++;
 		}
 
 
@@ -601,15 +583,15 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().size())
 		{
 			NextBatch();
 		}
 
 		int textureIndex = 0.0f;
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data.QuadTextureIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *spriteSheet.get())
+			if (*(s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(i).Texture.get()) == *spriteSheet.get())
 			{
 				textureIndex = i;
 				break;
@@ -617,9 +599,9 @@ namespace GEngine
 		}
 		if (textureIndex == 0)
 		{
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = spriteSheet;
-			s_Data.TextureSlotIndex++;
+			textureIndex = s_Data.QuadTextureIndex;
+			s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = spriteSheet;
+			s_Data.QuadTextureIndex++;
 		}
 
 		// New UV
@@ -659,16 +641,6 @@ namespace GEngine
 	}
 	void Renderer2D::ResetShaderData()
 	{
-		
-		int32_t samplers[s_Data.MaxTextureSlots];
-		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
-			samplers[i] = i;
-
-		s_Data.QuadPipeline->GetMaterial()->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
-
-		s_Data.CirclePipeline->GetMaterial()->SetIntArray("_Textures", samplers, s_Data.MaxTextureSlots);
-
-
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 		s_Data.QuadIndexCount = 0;
 		
@@ -684,7 +656,8 @@ namespace GEngine
 	void Renderer2D::StartBatch()
 	{
 		Flush();
-		s_Data.TextureSlotIndex = 1;
+		s_Data.QuadTextureIndex = 1;
+		s_Data.CircleTextureIndex = 1;
 
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 		s_Data.QuadIndexCount = 0;

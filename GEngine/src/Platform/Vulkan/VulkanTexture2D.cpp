@@ -15,11 +15,11 @@ namespace GEngine
         stbi_set_flip_vertically_on_load(1);
         {
             GE_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)")
-                data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+            data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         }
         GE_CORE_ASSERT(data, "Failed to load image!");
-        m_Width = width;
-        m_Height = height;
+        m_Width         = width;
+        m_Height        = height;
         if (channels == 4)
         {
             m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -30,15 +30,15 @@ namespace GEngine
         }
 
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			m_Width,
-			m_Height,
-			m_DataFormat,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_Image,
-			m_ImageMemory);
+			                    VulkanContext::Get()->GetDevice(),
+			                m_Width,
+			                m_Height,
+			                m_DataFormat,
+			                VK_IMAGE_TILING_OPTIMAL,
+			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			                m_Image,
+			                m_ImageMemory);
         Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
         stbi_image_free(data);
@@ -51,6 +51,25 @@ namespace GEngine
         m_Width     = width;
         m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+			                VulkanContext::Get()->GetDevice(),
+			                m_Width,
+			                m_Height,
+			                m_DataFormat,
+			                VK_IMAGE_TILING_OPTIMAL,
+			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			                m_Image,
+			                m_ImageMemory);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+
+        CreateSampler();
+    }
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size)
+    {
+		m_Height = height;
+		m_Width = width;
+		m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
 			m_Height,
@@ -62,7 +81,8 @@ namespace GEngine
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 
-        CreateSampler();
+		CreateSampler();
+        SetData(data, size);
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
@@ -78,12 +98,12 @@ namespace GEngine
         GE_CORE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			static_cast<uint32_t>(m_Width * m_Height * bpp),
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			m_Buffer,
-			m_BufferMemory);
+			                VulkanContext::Get()->GetDevice(),
+			                static_cast<uint32_t>(m_Width * m_Height * bpp),
+			                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			                m_Buffer,
+			                m_BufferMemory);
 		
 
         void* tempData;
@@ -100,6 +120,8 @@ namespace GEngine
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
+        m_Binding = slot;
+
 		m_DescriptorSetLayoutBinding.binding            = slot;
 		m_DescriptorSetLayoutBinding.descriptorCount    = 1;
 		m_DescriptorSetLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -117,27 +139,27 @@ namespace GEngine
     }
     void VulkanTexture2D::CreateSampler()
     {
-		VkSamplerCreateInfo         samplerInfo{};
-		samplerInfo.sType           = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter       = VK_FILTER_LINEAR;
-		samplerInfo.minFilter       = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU    = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV    = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW    = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = VK_TRUE;
+		VkSamplerCreateInfo             samplerInfo{};
+		samplerInfo.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter           = VK_FILTER_LINEAR;
+		samplerInfo.minFilter           = VK_FILTER_LINEAR;
+		samplerInfo.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable    = VK_TRUE;
 
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &properties);
 
-        samplerInfo.maxAnisotropy   = properties.limits.maxSamplerAnisotropy;
-        samplerInfo.borderColor     = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable   = VK_FALSE;
-		samplerInfo.compareOp       = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode      = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias      = 0.0f;
-		samplerInfo.minLod          = 0.0f;
-		samplerInfo.maxLod          = 0.0f;
+        samplerInfo.maxAnisotropy               = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor                 = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates     = VK_FALSE;
+		samplerInfo.compareEnable               = VK_FALSE;
+		samplerInfo.compareOp                   = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode                  = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias                  = 0.0f;
+		samplerInfo.minLod                      = 0.0f;
+		samplerInfo.maxLod                      = 0.0f;
 
         VK_CHECK_RESULT(vkCreateSampler(VulkanContext::Get()->GetDevice(), &samplerInfo, nullptr, &m_Sampler));
     }

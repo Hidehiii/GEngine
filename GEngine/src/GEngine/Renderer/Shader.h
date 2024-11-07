@@ -6,6 +6,7 @@
 #include "GEngine/Core/Buffer.h"
 #include "GEngine/Renderer/Texture.h"
 #include <algorithm>
+#include <filesystem>
 
 
 namespace GEngine
@@ -212,6 +213,19 @@ namespace GEngine
 			if (ToLower(type) == "samplercube")	return ShaderUniformType::SamplerCube;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
+		}
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: make sure the assets directory is valid
+			return "Assets/Cache/Shaders";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
 		}
 	}
 }

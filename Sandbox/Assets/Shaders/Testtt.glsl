@@ -1,9 +1,10 @@
 
-#Name ttt
+#Name Testtt
 
 #Properties
 
 prop1: float
+tex1: sampler2D
 
 #Type vertex
 #version 450 core
@@ -54,8 +55,9 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 2) in flat int v_TexIndex;
+layout (binding = 10) uniform sampler2D tex1;
 void main()
 {
 	o_color = vec4(IN.uv, 0.0f, 1.0f);
-	//o_color = vec4(0.0f, 0.0f, -IN.position.y / IN.position.w, 1.0f);
+	o_color = texture(tex1, IN.uv);
 }

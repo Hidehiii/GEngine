@@ -56,7 +56,7 @@ void Sandbox2D::OnAttach()
 	int count = 8;
 	m_vertex.resize(count);
 	m_Pipeline = Pipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/2D/ttt.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/Testtt.glsl")),
 		VertexArray::Create(),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
@@ -112,11 +112,9 @@ void Sandbox2D::OnAttach()
 	m_vertex[6].index = 0;
 	m_vertex[7].index = 0;
 
-	m_Texture = Texture2D::Create(1, 1);
-	uint32_t whiteTextureData = 0xffffffff;
-	m_Texture->SetData(&whiteTextureData, sizeof(whiteTextureData));
-
 	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
+
+	m_Texture = Texture2D::Create("Assets/Textures/02.png");
 }
 
 void Sandbox2D::OnDetach()
@@ -132,8 +130,8 @@ void Sandbox2D::OnPresent()
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(m_EditorCamera);
-	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::None);
-	m_Texture->Bind(0);
+	
+	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::Back);
 	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
@@ -200,10 +198,10 @@ bool Sandbox2D::OnKeyPressed(GEngine::KeyPressedEvent& e)
 {
 	if (e.GetKeyCode() == KeyCode::A && e.IsRepeat() == false)
 	{	
-		if(m_Pipeline->GetMaterial()->GetFloat("prop1") == 1.0f)
-			m_Pipeline->GetMaterial()->SetFloat("prop1", -1.0f);
+		if (m_Pipeline->GetMaterial()->GetTexture2D("tex1") == m_Texture)
+			m_Pipeline->GetMaterial()->SetTexture2D("tex1", Texture2D::WhiteTexture());
 		else
-			m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
+			m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
 	}
 	return false;
 }

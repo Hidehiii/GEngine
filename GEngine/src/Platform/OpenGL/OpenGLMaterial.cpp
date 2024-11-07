@@ -49,6 +49,12 @@ namespace GEngine
 		m_Shader->Bind();
 		if(m_UniformStorageBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
+
+		for (auto& texture2D : m_Texture2D)
+		{
+			m_Shader->SetInt1(texture2D.Name, texture2D.Slot);
+			texture2D.Texture->Bind(texture2D.Slot);
+		}
 		RenderCommand::SetCull(m_CullMode);
 		RenderCommand::SetBlend(m_BlendMode, m_BlendSourceFactor, m_BlendDestinationFactor);
 		RenderCommand::EnableDepthTest(m_EnableDepthTest);
@@ -156,6 +162,8 @@ namespace GEngine
 	}
 	void OpenGLMaterial::SetTexture2D(const std::string& name, const Ref<Texture2D>& texture)
 	{
+		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
+		uniform.Texture = texture;
 	}
 	ShaderUniform OpenGLMaterial::GetUniformByName(const std::string& name) const
 	{
@@ -166,5 +174,15 @@ namespace GEngine
 		}
 		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
 		return ShaderUniform();
+	}
+	ShaderUniformTexture2D OpenGLMaterial::GetUniformTexture2DByName(const std::string& name) const
+	{
+		for (auto& uniform : m_Texture2D)
+		{
+			if (uniform.Name == name)
+				return uniform;
+		}
+		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
+		return ShaderUniformTexture2D();
 	}
 }

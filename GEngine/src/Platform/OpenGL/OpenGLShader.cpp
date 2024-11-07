@@ -85,19 +85,6 @@ namespace GEngine
 			return nullptr;
 		}
 
-		static const char* GetCacheDirectory()
-		{
-			// TODO: make sure the assets directory is valid
-			return "Assets/Cache/Shaders/OpenGL";
-		}
-
-		static void CreateCacheDirectoryIfNeeded()
-		{
-			std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
-		}
-
 		static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
 		{
 			switch (stage)
@@ -352,8 +339,8 @@ namespace GEngine
 		const char* blendToken			= "#Blend";
 		size_t blendTokenLength			= strlen(blendToken);
 
-		const char* depthMaskToken		= "#DepthMask";
-		size_t depthMaskTokenLength		= strlen(depthMaskToken);
+		const char* depthWriteToken		= "#DepthWrite";
+		size_t depthWriteTokenLength		= strlen(depthWriteToken);
 
 		const char* depthTestToken		= "#DepthTest";
 		size_t depthTestTokenLength		= strlen(depthTestToken);
@@ -408,13 +395,13 @@ namespace GEngine
 			}
 		}
 
-		// find DepthMask
-		pos = source.find(depthMaskToken, 0);
+		// find DepthWrite
+		pos = source.find(depthWriteToken, 0);
 		if (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + depthMaskTokenLength + 1;
+			size_t begin = pos + depthWriteTokenLength + 1;
 			std::string depthMaskProp = source.substr(begin, eol - begin);
 			int index = 0;
 			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
@@ -497,7 +484,8 @@ namespace GEngine
 					uniform.Slot			= textureSlot;
 					uniform.Texture			= Texture2D::WhiteTexture();
 					textureSlot++;
-					m_TexturesCache.push_back(uniform);
+					m_Texture2DCache.push_back(uniform);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
 				{
@@ -603,48 +591,6 @@ namespace GEngine
 
 		shaderData.clear();
 		m_OpenGLSourceCode.clear();
-		/*for (auto&& [stage, spirv] : m_VulkanSPIRV)
-		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
-
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
-			{
-				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data = shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
-			}
-			else
-			{
-				spirv_cross::CompilerGLSL glslCompiler(spirv);
-				m_OpenGLSourceCode[stage] = glslCompiler.compile();
-				auto& source = m_OpenGLSourceCode[stage];
-				GE_TRACE(source);
-
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ERROR(module.GetErrorMessage());
-					GE_CORE_ASSERT(false, "");
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}*/
 		for (auto&& [stage, source] : shaderSources)
 		{
 			std::filesystem::path shaderFilePath = m_FilePath;

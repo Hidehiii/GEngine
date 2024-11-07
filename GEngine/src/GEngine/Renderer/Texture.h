@@ -24,13 +24,13 @@ namespace GEngine
 	public:
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::string& path);
-
-		// vulkan glsl 中的layout(binding)要用
-		// 由于现在不知道会有多少
-		static uint32_t s_Texture2DBindingOffsetForVulkan;
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size);
+		
 
 		// 默认白色纹理
 		static Ref<Texture2D> WhiteTexture();
+	private:
+		static Ref<Texture2D>	s_WhiteTexture2D;
 	};
 }
 

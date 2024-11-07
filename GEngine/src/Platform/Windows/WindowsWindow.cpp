@@ -44,11 +44,10 @@ namespace GEngine
 
 		if (!s_GLFWInitialized)
 		{
-			// TODO: glfwTerminate on system shutdown
-			int success = glfwInit();
+			int success			= glfwInit();
 			GE_CORE_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
-			s_GLFWInitialized = true;
+			s_GLFWInitialized	= true;
 		}	
 		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
 		{
@@ -186,11 +185,11 @@ namespace GEngine
 	// only used for Vulkan
 	std::vector<const char*> WindowsWindow::GetRequiredExtensions()
 	{
-		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions;
-		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		uint32_t					glfwExtensionCount = 0;
+		const char**				glfwExtensions;
+		glfwExtensions				= glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+		std::vector<const char*>	extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 #ifdef GE_DEBUG
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

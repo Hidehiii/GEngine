@@ -2,6 +2,7 @@
 #include "GEngine/Application.h"
 #include "GEngine/Utils/PlatformUtils.h"
 
+#ifdef GE_PLATFORM_WINDOWS
 #include <commdlg.h>
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -9,19 +10,18 @@
 
 namespace GEngine
 {
-#ifdef GE_PLATFORM_WINDOWS
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
-		OPENFILENAMEA ofn;
-		CHAR szFile[260] = { 0 };
+		OPENFILENAMEA		ofn;
+		CHAR szFile[260]	= { 0 };
 		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+		ofn.lStructSize		= sizeof(OPENFILENAMEA);
+		ofn.hwndOwner		= glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
+		ofn.lpstrFile		= szFile;
+		ofn.nMaxFile		= sizeof(szFile);
+		ofn.lpstrFilter		= filter;
+		ofn.nFilterIndex	= 1;
+		ofn.Flags			= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 		if (GetOpenFileNameA(&ofn) == TRUE)
 		{
 			return ofn.lpstrFile;
@@ -30,21 +30,21 @@ namespace GEngine
 	}
 	std::string FileDialogs::SaveFile(const char* filter)
 	{
-		OPENFILENAMEA ofn;
-		CHAR szFile[260] = { 0 };
+		OPENFILENAMEA		ofn;
+		CHAR szFile[260]	= { 0 };
 		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+		ofn.lStructSize		= sizeof(OPENFILENAMEA);
+		ofn.hwndOwner		= glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
+		ofn.lpstrFile		= szFile;
+		ofn.nMaxFile		= sizeof(szFile);
+		ofn.lpstrFilter		= filter;
+		ofn.nFilterIndex	= 1;
+		ofn.Flags			= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 		if (GetSaveFileNameA(&ofn) == TRUE)
 		{
 			return ofn.lpstrFile;
 		}
 		return std::string();
 	}
-#endif
 }
+#endif

@@ -73,8 +73,10 @@ namespace GEngine
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
 
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) = 0;
+		virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
 
 		virtual std::vector<ShaderUniform>& GetUniforms() = 0;
+		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() = 0;
 
 	protected:
 		bool m_HasChanged = false;

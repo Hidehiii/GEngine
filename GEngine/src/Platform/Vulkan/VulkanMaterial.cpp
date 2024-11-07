@@ -47,6 +47,11 @@ namespace GEngine
 	{
 		if(m_UniformStorageBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
+
+		for (auto& texture2D : m_Texture2D)
+		{
+			texture2D.Texture->Bind(texture2D.Slot);
+		}
 	}
 	void VulkanMaterial::SetCullMode(MaterialCullMode mode)
 	{
@@ -68,18 +73,30 @@ namespace GEngine
 	}
 	void VulkanMaterial::SetInt(const std::string& name, int value)
 	{
+		ShaderUniform uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			m_UniformStorageBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
+		}
 	}
 	void VulkanMaterial::SetUInt(const std::string& name, uint32_t value)
 	{
 	}
 	void VulkanMaterial::SetVector(const std::string& name, const Vector2& value)
 	{
+		SetVector(name, Vector4(value, 0.0f, 0.0f));
 	}
 	void VulkanMaterial::SetVector(const std::string& name, const Vector3& value)
 	{
+		SetVector(name, Vector4(value, 0.0f));
 	}
 	void VulkanMaterial::SetVector(const std::string& name, const Vector4& value)
 	{
+		ShaderUniform uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			m_UniformStorageBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
+		}
 	}
 	void VulkanMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
 	{
@@ -97,6 +114,12 @@ namespace GEngine
 	}
 	int VulkanMaterial::GetInt(const std::string& name)
 	{
+		ShaderUniform uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			int value;
+			value = m_UniformStorageBuffer.Read<int>(uniform.Location, uniform.Size);
+		}
 		return 0;
 	}
 	uint32_t VulkanMaterial::GetUInt(const std::string& name)
@@ -105,10 +128,18 @@ namespace GEngine
 	}
 	Vector4 VulkanMaterial::GetVector(const std::string& name)
 	{
+		ShaderUniform& uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			Vector4 value;
+			value = m_UniformStorageBuffer.Read<Vector4>(uniform.Location, uniform.Size);
+			return value;
+		}
 		return Vector4();
 	}
 	void VulkanMaterial::SetName(const std::string& name)
 	{
+		m_Name = name;
 	}
 	void VulkanMaterial::SetShader(const Ref<Shader>& shader)
 	{
@@ -118,6 +149,8 @@ namespace GEngine
 	}
 	void VulkanMaterial::SetTexture2D(const std::string& name, const Ref<Texture2D>& texture)
 	{
+		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
+		uniform.Texture = texture;
 	}
 	ShaderUniform VulkanMaterial::GetUniformByName(const std::string& name) const
 	{
@@ -128,5 +161,15 @@ namespace GEngine
 		}
 		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
 		return ShaderUniform();
+	}
+	ShaderUniformTexture2D VulkanMaterial::GetUniformTexture2DByName(const std::string& name) const
+	{
+		for (auto uniform : m_Texture2D)
+		{
+			if (uniform.Name == name)
+				return uniform;
+		}
+		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
+		return ShaderUniformTexture2D();
 	}
 }
