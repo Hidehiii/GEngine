@@ -32,6 +32,7 @@ namespace GEngine
 		poolInfo.poolSizeCount		= static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes			= poolSizes.data();
 		poolInfo.maxSets			= maxSets;
+		poolInfo.flags				= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_DescriptorPool));
 	}

@@ -175,12 +175,14 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
 		return ShaderUniform();
 	}
-	ShaderUniformTexture2D OpenGLMaterial::GetUniformTexture2DByName(const std::string& name) const
+	ShaderUniformTexture2D& OpenGLMaterial::GetUniformTexture2DByName(const std::string& name)
 	{
-		for (auto& uniform : m_Texture2D)
+		for (int i = 0; i < m_Texture2D.size(); i++)
 		{
-			if (uniform.Name == name)
-				return uniform;
+			if (m_Texture2D.at(i).Name == name)
+			{
+				return (m_Texture2D.at(i));
+			}
 		}
 		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
 		return ShaderUniformTexture2D();

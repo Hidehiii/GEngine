@@ -56,7 +56,7 @@ namespace GEngine
 		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() override { return m_Texture2D; }
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
-		ShaderUniformTexture2D GetUniformTexture2DByName(const std::string& name) const;
+		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);
 	private:
 		Ref<OpenGLShader>									m_Shader;
 		Ref<OpenGLUniformBuffer>							m_UniformBuffer;
