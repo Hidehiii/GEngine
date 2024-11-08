@@ -37,9 +37,9 @@ namespace GEngine
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
 		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
 		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
-		VkCommandBuffer				GetCurrentCommandBuffer() { GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!"); return m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]); }
-		void						PushCommandBuffer();
-		VkCommandBuffer				PopCommandBuffer();
+		void						BeginDrawCommandBuffer();
+		VkCommandBuffer				EndDrawCommandBuffer();
+		VkCommandBuffer				GetCurrentDrawCommandBuffer() { return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(m_DrawUsedCommandBufferIndexs.size() - 1)); }
 		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
@@ -115,11 +115,15 @@ namespace GEngine
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBuffer					m_CommandBuffer;
-		std::vector<int>					m_PushedCommandBufferIndexs;
+		std::vector<int>					m_DrawUsedCommandBufferIndexs;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
 
+		std::vector<VkSemaphore>			m_OpaqueRenderFinishedSemaphores;
+		std::vector<VkSemaphore>			m_TransparentRenderFinishedSemaphores;
+		std::vector<VkSemaphore>			m_ShadowRenderFinishedSemaphores;
+		std::vector<VkSemaphore>			m_GUIRenderFinishedSemaphores;
 		std::vector<VkSemaphore>			m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore>			m_RenderFinishedSemaphores;
 		std::vector<VkFence>				m_InFlightFences;

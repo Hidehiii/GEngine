@@ -41,7 +41,7 @@ namespace GEngine
 
     void VulkanPipeline::Bind()
     {
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
 
 		m_Material->UploadData();
@@ -64,7 +64,7 @@ namespace GEngine
 			m_RecreatePipeline = false;
 		}
 		
-        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		m_Viewport.x		= 0.0f;
 		m_Viewport.y		= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
@@ -72,15 +72,15 @@ namespace GEngine
 		m_Viewport.height	= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
 		m_Viewport.minDepth = 0.0f;
 		m_Viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Viewport);
+		vkCmdSetViewport(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_Viewport);
 
 		m_Scissor.offset = { 0, 0 };
 		m_Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
-		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_Scissor);
+		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_Scissor);
 
 		
 
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
     void VulkanPipeline::Unbind()

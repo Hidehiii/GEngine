@@ -2,6 +2,7 @@
 #include "VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
 
 namespace GEngine
 {
@@ -79,7 +80,7 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Begin()
 	{
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -100,14 +101,26 @@ namespace GEngine
 		}
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
-		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		s_CurrentVulkanFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::End()
 	{
-		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
+		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
 		s_CurrentVulkanFrameBuffer = nullptr;
+	}
+	Ref<Texture2D> VulkanFrameBuffer::GetColorAttachment(int index)
+	{
+		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
+		Ref<Texture2D> texture = CreateRef<VulkanTexture2D>(m_ColorImageViews[index]);
+		return texture;
+	}
+	Ref<Texture2D> VulkanFrameBuffer::GetDepthAttachment()
+	{
+		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
+		Ref<Texture2D> texture = CreateRef<VulkanTexture2D>(m_DepthStencilImageView);
+		return texture;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
 	{
@@ -178,6 +191,10 @@ namespace GEngine
 			m_Images.push_back(image);
 			m_Attachments.push_back(imageView);
 			m_ImagesMemory.push_back(imageMemory);
+
+			m_ColorImages.push_back(image);
+			m_ColorImageViews.push_back(imageView);
+			m_ColorImagesMemory.push_back(imageMemory);
 		}
 		VkDeviceMemory					imageMemory;
 		VkImage							image;

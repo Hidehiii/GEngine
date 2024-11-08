@@ -41,8 +41,8 @@ namespace GEngine
 
 		virtual float GetTime() = 0;
 
-		virtual void BeginCommand() = 0;
-		virtual void EndCommand() = 0;
+		virtual void BeginDrawCommand() = 0;
+		virtual void EndDrawCommand() = 0;
 
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }

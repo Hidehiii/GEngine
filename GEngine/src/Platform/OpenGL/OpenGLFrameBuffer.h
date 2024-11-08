@@ -16,6 +16,7 @@ namespace GEngine
 
 		virtual void Begin() override;
 		virtual void End() override;
+		virtual int GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Resize(Vector2 size) override;
@@ -23,8 +24,8 @@ namespace GEngine
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
-		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { GE_CORE_ASSERT(index < m_ColorAttachments.size(), "Out of range"); return m_ColorAttachments[index]; }
-		virtual uint32_t GetDepthAttachment() const override { return m_DepthAttachment; }
+		virtual Ref<Texture2D> GetColorAttachment(int index) override;
+		virtual Ref<Texture2D> GetDepthAttachment() override;
 
 	private:
 		void CreateBuffer();

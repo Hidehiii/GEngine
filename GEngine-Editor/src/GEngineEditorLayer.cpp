@@ -185,7 +185,7 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnRender()
 	{
-		RenderCommand::BeginCommand();
+		RenderCommand::BeginDrawCommand();
 		m_SceneViewportFrameBuffer->Begin();
 
 		{
@@ -200,9 +200,9 @@ namespace GEngine
 			Renderer::EndScene();
 		}
 		m_SceneViewportFrameBuffer->End();
-		RenderCommand::EndCommand();
+		RenderCommand::EndDrawCommand();
 
-		RenderCommand::BeginCommand();
+		RenderCommand::BeginDrawCommand();
 		m_GameViewportFrameBuffer->Begin();
 
 		{
@@ -226,7 +226,7 @@ namespace GEngine
 			}
 		}
 		m_GameViewportFrameBuffer->End();
-		RenderCommand::EndCommand();
+		RenderCommand::EndDrawCommand();
 	}
 
 	void GEngineEditorLayer::OnGuiRender()
@@ -388,8 +388,7 @@ namespace GEngine
 				m_SceneViewportSize		= viewportPanelSize;
 				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
-			uint32_t tex				= m_SceneViewportFrameBuffer->GetColorAttachment();
-			ImGui::Image((void*)tex, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image(GUIUtils::GetTextureID(m_SceneViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			Vector2 windowRegionMin		= { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
 			Vector2 windowRegionMax		= { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
@@ -483,8 +482,7 @@ namespace GEngine
 					m_ActiveScene->MainCamera()->SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 				}
 			}
-			uint32_t tex			= m_GameViewportFrameBuffer->GetColorAttachment();
-			ImGui::Image((void*)tex, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
 			ImGui::End();
 			ImGui::PopStyleVar();

@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLFrameBuffer.h"
+#include "OpenGLTexture2D.h"
 #include <glad/glad.h>
 namespace GEngine
 {
@@ -208,5 +209,15 @@ namespace GEngine
         GE_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Out of range");
 
         glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::FrameBufferTextureFormatToGLFormat(m_ColorAttachmentsSpecs[attachmentIndex].TextureFormat), GL_INT, &val);
+    }
+    Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
+    {
+        GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
+        return CreateRef<OpenGLTexture2D>(m_ColorAttachments[index]);
+    }
+    Ref<Texture2D> OpenGLFrameBuffer::GetDepthAttachment()
+    {
+        GE_CORE_ASSERT(m_DepthAttachment != 0, "No depth frame buffer");
+        return CreateRef<OpenGLTexture2D>(m_DepthAttachment);
     }
 }

@@ -84,6 +84,11 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
+    VulkanTexture2D::VulkanTexture2D(VkImageView imageView)
+    {
+        m_ImageView = imageView;
+        CreateSampler();
+    }
     VulkanTexture2D::~VulkanTexture2D()
     {
         vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);

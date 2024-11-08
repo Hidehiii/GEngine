@@ -25,13 +25,13 @@ namespace GEngine
 			m_WindowSize.y = 0;
 		}
 		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetInFlightFences(0));
-		RenderCommand::BeginCommand();
+		RenderCommand::BeginDrawCommand();
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();
 	}
 	void VulkanGraphicsPresent::End()
 	{
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->End();
-		RenderCommand::EndCommand();
+		RenderCommand::EndDrawCommand();
 		VkSwapchainKHR swapChains[] = { VulkanContext::Get()->GetSwapChain() };
 
 		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetRenderFinishedSemaphores(0) };

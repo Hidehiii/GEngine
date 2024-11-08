@@ -138,6 +138,24 @@ void Sandbox2D::OnPresent()
 	Renderer::EndScene();
 }
 
+void Sandbox2D::OnRender()
+{
+	RenderCommand::BeginDrawCommand();
+	m_FrameBuffer->Begin();
+	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::Clear();
+
+
+	Renderer::BeginScene(m_EditorCamera);
+	m_Texture->Bind(0);
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
+	m_Pipeline->Bind();
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	Renderer::EndScene();
+	m_FrameBuffer->End();
+	RenderCommand::EndDrawCommand();
+}
+
 void Sandbox2D::OnUpdate()
 {
 	GE_PROFILE_FUNCTION();
@@ -158,22 +176,14 @@ void Sandbox2D::OnUpdate()
 	//}
 
 	m_EditorCamera.OnUpdate();
-#if 0
-	RenderCommand::BeginCommand();
-	m_FrameBuffer->Begin();
-	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-	RenderCommand::Clear();
 
+	if (m_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
+	{
+		m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+	}
 	
-	Renderer::BeginScene(m_EditorCamera);
-	m_Texture->Bind(0);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
-	m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
-	Renderer::EndScene();
-	m_FrameBuffer->End();
-	RenderCommand::EndCommand();
-#endif
+
 }
 
 void Sandbox2D::OnGuiRender()

@@ -80,6 +80,10 @@ namespace GEngine
 
 		SetData(data, size);
 	}
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
+	{
+		m_RendererID = rendererID;
+	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		glDeleteTextures(1, &m_RendererID);

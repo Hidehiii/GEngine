@@ -2,6 +2,9 @@
 #include "GEngine/Utils/GUIUtils.h"
 #include "GEngine/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
+#include "Platform/OpenGL/OpenGLFrameBuffer.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
 
 namespace GEngine
 {

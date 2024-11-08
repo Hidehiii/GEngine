@@ -26,8 +26,8 @@ namespace GEngine
 		inline static void SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest);
 		inline static void EnableDepthWrite(bool enabled);
 		inline static void EnableDepthTest(bool enabled);
-		inline static void BeginCommand();
-		inline static void EndCommand();
+		inline static void BeginDrawCommand();
+		inline static void EndDrawCommand();
 		inline static void SetRendererAPI(RendererAPI::API api);
 	private:
 		inline static RendererAPI* s_RendererAPI;

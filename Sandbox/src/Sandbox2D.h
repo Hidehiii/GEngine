@@ -23,6 +23,7 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 	virtual void OnPresent() override;
+	virtual void OnRender() override;
 
 	void OnUpdate() override;
 	virtual void OnGuiRender() override;

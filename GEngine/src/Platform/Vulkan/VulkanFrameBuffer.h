@@ -24,6 +24,9 @@ namespace GEngine
 		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
 		virtual void Begin() override;
 		virtual void End() override;
+		virtual int GetAttachmentCount() override { return m_Attachments.size(); }
+		virtual Ref<Texture2D> GetColorAttachment(int index) override;
+		virtual Ref<Texture2D> GetDepthAttachment() override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Resize(Vector2 size) override;
@@ -31,8 +34,6 @@ namespace GEngine
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
-		virtual uint32_t GetColorAttachment(uint32_t index = 0) const override { return 0; }
-		virtual uint32_t GetDepthAttachment() const override { return 0; }
 		VkFramebuffer GetFrameBuffer() { return m_FrameBuffer; }
 	public:
 		//用于给交换链创建使用
@@ -49,6 +50,9 @@ namespace GEngine
 		std::vector<VkImageView>	m_Attachments;
 		std::vector<VkDeviceMemory> m_ImagesMemory;
 		FrameBufferSpecificationForVulkan m_SpecificationForVulkan;
+		std::vector<VkImage>		m_ColorImages;
+		std::vector<VkImageView>	m_ColorImageViews;
+		std::vector<VkDeviceMemory> m_ColorImagesMemory;
 		VkImage						m_DepthStencilImage = nullptr;
 		VkImageView					m_DepthStencilImageView = nullptr;
 		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;

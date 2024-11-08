@@ -11,6 +11,7 @@ namespace GEngine
 		VulkanTexture2D(const std::string& path);
 		VulkanTexture2D(uint32_t width, uint32_t height);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
+		VulkanTexture2D(VkImageView imageView);
 		virtual ~VulkanTexture2D();
 
 		virtual uint32_t GetWidth() const override { return m_Width; }

@@ -6,8 +6,6 @@
 
 namespace GEngine
 {
-
-
     void VulkanRendererAPI::Init()
     {
 		
@@ -27,7 +25,7 @@ namespace GEngine
     {
         uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
         vertexArray->Bind();
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), count, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), count, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
@@ -59,20 +57,20 @@ namespace GEngine
     void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
     }
-    void VulkanRendererAPI::BeginCommand()
+    void VulkanRendererAPI::BeginDrawCommand()
     {
         VkCommandBufferBeginInfo    beginInfo{};
         beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
-        VulkanContext::Get()->PushCommandBuffer();
-        vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
-        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
+        VulkanContext::Get()->BeginDrawCommandBuffer();
+        vkResetCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0);
+        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &beginInfo));
     }
-    void VulkanRendererAPI::EndCommand()
+    void VulkanRendererAPI::EndDrawCommand()
     {
-        VkCommandBuffer commandBuffer = VulkanContext::Get()->GetCurrentCommandBuffer();
-        VK_CHECK_RESULT(vkEndCommandBuffer(VulkanContext::Get()->PopCommandBuffer()));
+        VkCommandBuffer commandBuffer = VulkanContext::Get()->EndDrawCommandBuffer();
+        VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
         VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetImageAvailableSemaphores(0) };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };

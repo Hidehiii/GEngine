@@ -496,23 +496,23 @@ namespace GEngine
         m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), 5);
     }
 
-    void VulkanContext::PushCommandBuffer()
+    void VulkanContext::BeginDrawCommandBuffer()
     {
         for (int i = 0; i < m_CommandBuffer.GetCommandBuffersSize(); i++)
         {
-            if (std::find(m_PushedCommandBufferIndexs.begin(), m_PushedCommandBufferIndexs.end(), i) == m_PushedCommandBufferIndexs.end())
+            if (std::find(m_DrawUsedCommandBufferIndexs.begin(), m_DrawUsedCommandBufferIndexs.end(), i) == m_DrawUsedCommandBufferIndexs.end())
             {
-                m_PushedCommandBufferIndexs.push_back(i);
+                m_DrawUsedCommandBufferIndexs.push_back(i);
                 return;
             }
         }
         GE_CORE_ERROR("There are not CommandBuffer Could be use");
     }
-    VkCommandBuffer VulkanContext::PopCommandBuffer()
+    VkCommandBuffer VulkanContext::EndDrawCommandBuffer()
     {
-        GE_CORE_ASSERT(m_PushedCommandBufferIndexs.size() > 0, "There are not commandbuffer be using!");
-        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_PushedCommandBufferIndexs[m_PushedCommandBufferIndexs.size() - 1]);
-        m_PushedCommandBufferIndexs.erase(m_PushedCommandBufferIndexs.end() - 1);
+        GE_CORE_ASSERT(m_DrawUsedCommandBufferIndexs.size(), "There is no commandbuffer be using!");
+        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs[m_DrawUsedCommandBufferIndexs.size() - 1]);
+        m_DrawUsedCommandBufferIndexs.erase(m_DrawUsedCommandBufferIndexs.end() - 1);
         return buffer;
     }
 	void VulkanContext::CreateDescriptor()
@@ -524,6 +524,9 @@ namespace GEngine
     {
         // 暂时都创建一个
         size_t size = 1;
+        m_OpaqueRenderFinishedSemaphores.resize(size);
+        m_TransparentRenderFinishedSemaphores.resize(size);
+        m_GUIRenderFinishedSemaphores.resize(size);
         m_ImageAvailableSemaphores.resize(size);
         m_RenderFinishedSemaphores.resize(size);
         m_InFlightFences.resize(size);
