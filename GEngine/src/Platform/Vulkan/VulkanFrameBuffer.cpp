@@ -195,6 +195,9 @@ namespace GEngine
 			m_ColorImages.push_back(image);
 			m_ColorImageViews.push_back(imageView);
 			m_ColorImagesMemory.push_back(imageMemory);
+
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(m_ColorImageViews[i]);
+			m_ColorAttachmentsTexture2D.push_back(texture);
 		}
 		VkDeviceMemory					imageMemory;
 		VkImage							image;
@@ -241,6 +244,8 @@ namespace GEngine
 		m_DepthStencilImage = image;
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
+
+		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(m_DepthStencilImageView);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/FrameBuffer.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
 #include "VulkanRenderPass.h"
 
 namespace GEngine
@@ -56,6 +57,9 @@ namespace GEngine
 		VkImage						m_DepthStencilImage = nullptr;
 		VkImageView					m_DepthStencilImageView = nullptr;
 		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;
+
+		std::vector<Ref<VulkanTexture2D>> m_ColorAttachmentsTexture2D;
+		Ref<VulkanTexture2D>			m_DepthAttachmentTexture2D;
 	};
 }
 

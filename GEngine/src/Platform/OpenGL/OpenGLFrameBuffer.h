@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/FrameBuffer.h"
+#include "OpenGLTexture2D.h"
 #include "GEngine/Math/Math.h"
 
 namespace GEngine
@@ -33,6 +34,8 @@ namespace GEngine
 		uint32_t										m_RendererID = 0;
 		uint32_t										m_DepthAttachment = 0;
 		std::vector<uint32_t>							m_ColorAttachments;
+		std::vector <Ref<OpenGLTexture2D>>				m_ColorAttachmentsTexture2D;
+		Ref<OpenGLTexture2D>							m_DepthAttachmentTexture2D;
 	};
 }
 

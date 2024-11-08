@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLFrameBuffer.h"
-#include "OpenGLTexture2D.h"
+
 #include <glad/glad.h>
 namespace GEngine
 {
@@ -106,6 +106,8 @@ namespace GEngine
 
             m_ColorAttachments.clear();
             m_DepthAttachment = 0;
+            m_ColorAttachmentsTexture2D.clear();
+            m_DepthAttachmentTexture2D = nullptr;
         }
 
         glCreateFramebuffers(1, &m_RendererID);
@@ -133,6 +135,8 @@ namespace GEngine
                         break;
                     }
                 }
+                Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
+                m_ColorAttachmentsTexture2D.push_back(texture);
             }
         }
 
@@ -153,6 +157,7 @@ namespace GEngine
                     break;
                 }
             }
+            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment);
         }
 
         if (m_ColorAttachments.size() >= 1)
@@ -213,11 +218,11 @@ namespace GEngine
     Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
-        return CreateRef<OpenGLTexture2D>(m_ColorAttachments[index]);
+        return m_ColorAttachmentsTexture2D.at(index);
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetDepthAttachment()
     {
         GE_CORE_ASSERT(m_DepthAttachment != 0, "No depth frame buffer");
-        return CreateRef<OpenGLTexture2D>(m_DepthAttachment);
+        return m_DepthAttachmentTexture2D;
     }
 }
