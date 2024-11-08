@@ -53,6 +53,33 @@ void Sandbox2D::OnAttach()
 		}
 	}
 
+	m_PresentVertex.resize(4);
+	m_PresentPipeline = Pipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
+		VertexArray::Create(),
+		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
+	);
+	m_PresentPipeline->GetVertexBuffer()->SetLayout({
+		{ShaderDataType::float4,	"PositionOS"},
+		{ShaderDataType::float2,	"UV"}
+		});
+	m_PresentPipeline->GetVertexArray()->SetVertexBuffer(m_PresentPipeline->GetVertexBuffer());
+	uint32_t* presentIndices = new uint32_t[6];
+	presentIndices[0] = 0;
+	presentIndices[1] = 1;
+	presentIndices[2] = 2;
+
+	presentIndices[3] = 2;
+	presentIndices[4] = 3;
+	presentIndices[5] = 0;
+	m_PresentPipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+	delete[] presentIndices;
+
+	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} };
+	m_PresentVertex[1] = { { 1.0f, -1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} };
+	m_PresentVertex[2] = { { 1.0f,  1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} };
+	m_PresentVertex[3] = { {-1.0f,  1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} };
+
 	int count = 8;
 	m_vertex.resize(count);
 	m_Pipeline = Pipeline::Create(
@@ -123,18 +150,16 @@ void Sandbox2D::OnDetach()
 
 void Sandbox2D::OnPresent()
 {
-	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-	RenderCommand::Clear();
 	// 直接呈现
 	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(m_EditorCamera);
-	
-	m_Pipeline->GetMaterial()->SetCullMode(MaterialCullMode::Back);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
-	m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetCullMode(MaterialCullMode::Back);
+	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
+	m_PresentPipeline->Bind();
+	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexArray());
 	Renderer::EndScene();
 }
 

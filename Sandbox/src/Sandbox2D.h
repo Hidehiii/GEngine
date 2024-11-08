@@ -13,6 +13,12 @@ struct TestVertex
 	int		index;
 };
 
+struct PresentVertex
+{
+	Vector4 Pos;
+	Vector2 UV;
+};
+
 
 class Sandbox2D : public GEngine::Layer
 {
@@ -39,6 +45,9 @@ private:
 	std::vector<TestVertex> m_vertex;
 	Ref<FrameBuffer> m_FrameBuffer;
 	Ref<Texture2D> m_Texture;
+
+	std::vector<PresentVertex> m_PresentVertex;
+	Ref<Pipeline> m_PresentPipeline;
 
 	Editor::EditorCamera m_EditorCamera;
 };
