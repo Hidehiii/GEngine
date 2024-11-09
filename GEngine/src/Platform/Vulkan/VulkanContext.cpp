@@ -509,7 +509,7 @@ namespace GEngine
     void VulkanContext::CreateSyncObjects()
     {
         // 暂时都创建一个
-        size_t size = 10;
+        size_t size = 20;
         m_Semaphores.resize(size);
         m_Fences.resize(size);
 

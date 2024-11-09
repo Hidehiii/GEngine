@@ -64,22 +64,33 @@ namespace GEngine
 						layer->OnUpdate();
 					}
 				}
+				if (m_GraphicsPresent->AquireImage())
 				{
-					GE_PROFILE_SCOPE("LayerStack OnRender");
-					for (auto layer : m_LayerStack) {
-						layer->OnRender();
-					}
-				}
-				{
-					m_ImGuiLayer->Begin();
 					{
-						GE_PROFILE_SCOPE("ImguiStack OnUpdate");
-
+						GE_PROFILE_SCOPE("LayerStack OnRender");
 						for (auto layer : m_LayerStack) {
-							layer->OnGuiRender();
+							layer->OnRender();
 						}
 					}
-					m_ImGuiLayer->End();
+					{
+						m_ImGuiLayer->Begin();
+						{
+							GE_PROFILE_SCOPE("ImguiStack OnGuiRender");
+
+							for (auto layer : m_LayerStack) {
+								layer->OnGuiRender();
+							}
+						}
+						m_ImGuiLayer->End();
+					}
+					{
+						m_GraphicsPresent->Begin();
+						GE_PROFILE_SCOPE("LayerStack OnPresent");
+						for (auto layer : m_LayerStack) {
+							layer->OnPresent();
+						}
+						m_GraphicsPresent->End();
+					}
 				}
 				{
 					GE_PROFILE_SCOPE("LayerStack OnLateUpdate");
@@ -87,14 +98,7 @@ namespace GEngine
 						layer->OnLateUpdate();
 					}
 				}
-				{
-					m_GraphicsPresent->Begin();
-					GE_PROFILE_SCOPE("LayerStack OnPresent");
-					for (auto layer : m_LayerStack) {
-						layer->OnPresent();
-					}
-					m_GraphicsPresent->End();
-				}
+				
 				{
 					GE_PROFILE_SCOPE("LayerStack OnEndFrame");
 					for (auto layer : m_LayerStack) {

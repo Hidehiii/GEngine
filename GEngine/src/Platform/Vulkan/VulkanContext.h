@@ -55,6 +55,7 @@ namespace GEngine
 		VkFence&					GetCurrentFence() { return m_Fences.at(m_FenceIndex); }
 		VkSemaphore&				GetCurrentSemaphore() { return m_Semaphores.at(m_SemaphoreIndex); }
 		void                        MoveToNextSemaphore() { m_SemaphoreIndex = (m_SemaphoreIndex + 1) % m_Semaphores.size(); }
+		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		
 	private:
 		void						CreateInstance();

@@ -8,6 +8,7 @@ namespace GEngine
 	{
 	public:
 		VulkanGraphicsPresent() {}
+		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
 

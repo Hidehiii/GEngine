@@ -7,23 +7,28 @@
 
 namespace GEngine
 {
-	void VulkanGraphicsPresent::Begin()
+	bool VulkanGraphicsPresent::AquireImage()
 	{
 		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence(), VK_TRUE, std::numeric_limits<uint64_t>::max());
-		
-		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(), 
-												VulkanContext::Get()->GetSwapChain(), 
-												std::numeric_limits<uint64_t>::max(), 
-												VulkanContext::Get()->GetCurrentSemaphore(),
-												VK_NULL_HANDLE, 
-												&m_SwapChainImageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || 
+
+		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
+			VulkanContext::Get()->GetSwapChain(),
+			std::numeric_limits<uint64_t>::max(),
+			VulkanContext::Get()->GetCurrentSemaphore(),
+			VK_NULL_HANDLE,
+			&m_SwapChainImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR ||
 			(m_WindowSize.x != 0 && m_WindowSize.y != 0))
 		{
 			VulkanContext::Get()->RecreateSwapChain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 			m_WindowSize.x = 0;
 			m_WindowSize.y = 0;
+			return false;
 		}
+		return true;
+	}
+	void VulkanGraphicsPresent::Begin()
+	{
 		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence());
 		RenderCommand::BeginDrawCommand();
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();

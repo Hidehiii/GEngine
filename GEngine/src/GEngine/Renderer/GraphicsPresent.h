@@ -9,6 +9,7 @@ namespace GEngine
 	{
 	public:
 		GraphicsPresent() {}
+		virtual bool AquireImage() { return true; }
 		virtual void Begin() {}
 		virtual void End() {}
 		void OnWindowResize(const Vector2 size) { m_WindowSize = size; }
