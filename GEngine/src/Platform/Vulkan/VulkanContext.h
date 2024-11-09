@@ -52,9 +52,9 @@ namespace GEngine
 
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		VkFence&					GetInFlightFences(int index) { return m_InFlightFences.at(index % m_InFlightFences.size()); }
-		VkSemaphore&				GetImageAvailableSemaphores(int index) { return m_ImageAvailableSemaphores.at(index % m_ImageAvailableSemaphores.size()); }
-		VkSemaphore&				GetRenderFinishedSemaphores(int index) { return m_RenderFinishedSemaphores.at(index % m_RenderFinishedSemaphores.size()); }
+		VkFence&					GetCurrentFence() { return m_Fences.at(m_FenceIndex); }
+		VkSemaphore&				GetCurrentSemaphore() { return m_Semaphores.at(m_SemaphoreIndex); }
+		void                        MoveToNextSemaphore() { m_SemaphoreIndex = (m_SemaphoreIndex + 1) % m_Semaphores.size(); }
 		
 	private:
 		void						CreateInstance();
@@ -119,14 +119,10 @@ namespace GEngine
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
-
-		std::vector<VkSemaphore>			m_OpaqueRenderFinishedSemaphores;
-		std::vector<VkSemaphore>			m_TransparentRenderFinishedSemaphores;
-		std::vector<VkSemaphore>			m_ShadowRenderFinishedSemaphores;
-		std::vector<VkSemaphore>			m_GUIRenderFinishedSemaphores;
-		std::vector<VkSemaphore>			m_ImageAvailableSemaphores;
-		std::vector<VkSemaphore>			m_RenderFinishedSemaphores;
-		std::vector<VkFence>				m_InFlightFences;
+		std::vector<VkSemaphore>			m_Semaphores;
+		int                                 m_SemaphoreIndex = 0;
+		std::vector<VkFence>				m_Fences;
+		int                                 m_FenceIndex = 0;
 	};
 	
 }

@@ -9,12 +9,12 @@ namespace GEngine
 {
 	void VulkanGraphicsPresent::Begin()
 	{
-		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetInFlightFences(0), VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence(), VK_TRUE, std::numeric_limits<uint64_t>::max());
 		
 		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(), 
 												VulkanContext::Get()->GetSwapChain(), 
 												std::numeric_limits<uint64_t>::max(), 
-												VulkanContext::Get()->GetImageAvailableSemaphores(0), 
+												VulkanContext::Get()->GetCurrentSemaphore(),
 												VK_NULL_HANDLE, 
 												&m_SwapChainImageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || 
@@ -24,7 +24,7 @@ namespace GEngine
 			m_WindowSize.x = 0;
 			m_WindowSize.y = 0;
 		}
-		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetInFlightFences(0));
+		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence());
 		RenderCommand::BeginDrawCommand();
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();
 	}
@@ -34,7 +34,7 @@ namespace GEngine
 		RenderCommand::EndDrawCommand();
 		VkSwapchainKHR swapChains[] = { VulkanContext::Get()->GetSwapChain() };
 
-		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetRenderFinishedSemaphores(0) };
+		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 
 		VkPresentInfoKHR			presentInfo{};
 		presentInfo.sType			= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -44,5 +44,6 @@ namespace GEngine
 		presentInfo.waitSemaphoreCount = 1;
 		presentInfo.pWaitSemaphores = waitSemaphores;
 		VK_CHECK_RESULT(vkQueuePresentKHR(VulkanContext::Get()->GetPresentQueue(), &presentInfo));
+		VulkanContext::Get()->MoveToNextSemaphore();
 	}
 }

@@ -75,17 +75,13 @@ namespace GEngine
     void VulkanContext::Uninit()
     {
         vkDeviceWaitIdle(m_Device);
-        for(int i = 0;i < m_ImageAvailableSemaphores.size();i++)
+        for(int i = 0;i < m_Semaphores.size();i++)
         {
-            vkDestroySemaphore(m_Device, m_ImageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(m_Device, m_Semaphores[i], nullptr);
 		}
-        for (int i = 0; i < m_RenderFinishedSemaphores.size(); i++)
-        {
-            vkDestroySemaphore(m_Device, m_RenderFinishedSemaphores[i], nullptr);
-        }
-        for (int i = 0; i < m_InFlightFences.size(); i++)
+        for (int i = 0; i < m_Fences.size(); i++)
 		{
-			vkDestroyFence(m_Device, m_InFlightFences[i], nullptr);
+			vkDestroyFence(m_Device, m_Fences[i], nullptr);
 		}
         m_Descriptor.Release();
         m_CommandBuffer.Release();
@@ -523,32 +519,22 @@ namespace GEngine
     void VulkanContext::CreateSyncObjects()
     {
         // 暂时都创建一个
-        size_t size = 1;
-        m_OpaqueRenderFinishedSemaphores.resize(size);
-        m_TransparentRenderFinishedSemaphores.resize(size);
-        m_GUIRenderFinishedSemaphores.resize(size);
-        m_ImageAvailableSemaphores.resize(size);
-        m_RenderFinishedSemaphores.resize(size);
-        m_InFlightFences.resize(size);
+        size_t size = 10;
+        m_Semaphores.resize(size);
+        m_Fences.resize(size);
 
-        for (int i = 0; i < m_ImageAvailableSemaphores.size(); i++)
+        for (int i = 0; i < m_Semaphores.size(); i++)
         {
             VkSemaphoreCreateInfo   semaphoreInfo{};
             semaphoreInfo.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
+            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_Semaphores[i]));
         }
-        for (int i = 0; i < m_RenderFinishedSemaphores.size(); i++)
-        {
-            VkSemaphoreCreateInfo   semaphoreInfo{};
-            semaphoreInfo.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
-        }
-        for (int i = 0; i < m_InFlightFences.size(); i++)
+        for (int i = 0; i < m_Fences.size(); i++)
         {
             VkFenceCreateInfo       fenceInfo{};
             fenceInfo.sType         = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags         = VK_FENCE_CREATE_SIGNALED_BIT;
-            VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]));
+            VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Fences[i]));
         }
     }
 

@@ -75,10 +75,10 @@ void Sandbox2D::OnAttach()
 	m_PresentPipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	delete[] presentIndices;
 
-	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} };
-	m_PresentVertex[1] = { { 1.0f, -1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} };
-	m_PresentVertex[2] = { { 1.0f,  1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} };
-	m_PresentVertex[3] = { {-1.0f,  1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} };
+	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 0.0f} };
+	m_PresentVertex[1] = { { 1.0f, -1.0f, 0.0f, 1.0f}, {1.0f, 0.0f} };
+	m_PresentVertex[2] = { { 1.0f,  1.0f, 0.0f, 1.0f}, {1.0f, 1.0f} };
+	m_PresentVertex[3] = { {-1.0f,  1.0f, 0.0f, 1.0f}, {0.0f, 1.0f} };
 
 	int count = 8;
 	m_vertex.resize(count);
@@ -155,7 +155,8 @@ void Sandbox2D::OnPresent()
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(m_EditorCamera);
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	//m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_Texture);
 	m_PresentPipeline->GetMaterial()->SetCullMode(MaterialCullMode::Back);
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
 	m_PresentPipeline->Bind();
@@ -165,7 +166,7 @@ void Sandbox2D::OnPresent()
 
 void Sandbox2D::OnRender()
 {
-	RenderCommand::BeginDrawCommand();
+	/*RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
 	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	RenderCommand::Clear();
@@ -178,7 +179,7 @@ void Sandbox2D::OnRender()
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 	Renderer::EndScene();
 	m_FrameBuffer->End();
-	RenderCommand::EndDrawCommand();
+	RenderCommand::EndDrawCommand();*/
 }
 
 void Sandbox2D::OnUpdate()
