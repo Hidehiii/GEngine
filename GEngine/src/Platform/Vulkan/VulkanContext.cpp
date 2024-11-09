@@ -494,21 +494,11 @@ namespace GEngine
 
     void VulkanContext::BeginDrawCommandBuffer()
     {
-        for (int i = 0; i < m_CommandBuffer.GetCommandBuffersSize(); i++)
-        {
-            if (std::find(m_DrawUsedCommandBufferIndexs.begin(), m_DrawUsedCommandBufferIndexs.end(), i) == m_DrawUsedCommandBufferIndexs.end())
-            {
-                m_DrawUsedCommandBufferIndexs.push_back(i);
-                return;
-            }
-        }
-        GE_CORE_ERROR("There are not CommandBuffer Could be use");
+        m_DrawUsedCommandBufferIndex = (m_DrawUsedCommandBufferIndex + 1) % m_CommandBuffer.GetCommandBuffersSize();
     }
     VkCommandBuffer VulkanContext::EndDrawCommandBuffer()
     {
-        GE_CORE_ASSERT(m_DrawUsedCommandBufferIndexs.size(), "There is no commandbuffer be using!");
-        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs[m_DrawUsedCommandBufferIndexs.size() - 1]);
-        m_DrawUsedCommandBufferIndexs.erase(m_DrawUsedCommandBufferIndexs.end() - 1);
+        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex);
         return buffer;
     }
 	void VulkanContext::CreateDescriptor()
