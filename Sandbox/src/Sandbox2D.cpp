@@ -164,8 +164,8 @@ void Sandbox2D::OnPresent()
 	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexArray());
 
 	
-	/*m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());*/
+	//m_Pipeline->Bind();
+	//RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 
 	Renderer::EndScene();
 }

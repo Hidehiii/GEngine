@@ -55,6 +55,7 @@ namespace GEngine
 		}
 		if (m_RecreatePipeline)
 		{
+			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
