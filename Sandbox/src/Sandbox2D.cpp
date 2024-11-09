@@ -142,6 +142,9 @@ void Sandbox2D::OnAttach()
 	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
 
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
+
+	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
+	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 }
 
 void Sandbox2D::OnDetach()
@@ -155,12 +158,15 @@ void Sandbox2D::OnPresent()
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(m_EditorCamera);
-	//m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_Texture);
-	m_PresentPipeline->GetMaterial()->SetCullMode(MaterialCullMode::Back);
-	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	
 	m_PresentPipeline->Bind();
 	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexArray());
+
+	
+	/*m_Pipeline->Bind();
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());*/
+
 	Renderer::EndScene();
 }
 
@@ -173,8 +179,6 @@ void Sandbox2D::OnRender()
 
 
 	Renderer::BeginScene(m_EditorCamera);
-	m_Texture->Bind(0);
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex) * m_vertex.size());
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
 	Renderer::EndScene();
@@ -232,12 +236,5 @@ void Sandbox2D::OnEvent(GEngine::Event& e)
 
 bool Sandbox2D::OnKeyPressed(GEngine::KeyPressedEvent& e)
 {
-	if (e.GetKeyCode() == KeyCode::A && e.IsRepeat() == false)
-	{	
-		if (m_Pipeline->GetMaterial()->GetTexture2D("tex1") == m_Texture)
-			m_Pipeline->GetMaterial()->SetTexture2D("tex1", Texture2D::WhiteTexture());
-		else
-			m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
-	}
 	return false;
 }
