@@ -30,16 +30,40 @@ namespace GEngine
 	void VulkanGraphicsPresent::Begin()
 	{
 		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence());
-		RenderCommand::BeginDrawCommand();
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
+		VulkanContext::Get()->BeginDrawCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &beginInfo));
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();
 	}
 	void VulkanGraphicsPresent::End()
 	{
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->End();
-		RenderCommand::EndDrawCommand();
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndDrawCommandBuffer();
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+		VkSemaphore submitWaitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+		VulkanContext::Get()->MoveToNextSemaphore();
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+
+		VkSubmitInfo					submitInfo{};
+		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount	= 1;
+		submitInfo.pCommandBuffers		= &commandBuffer;
+		submitInfo.waitSemaphoreCount	= 1;
+		submitInfo.pWaitSemaphores		= submitWaitSemaphores;
+		submitInfo.pWaitDstStageMask	= waitStages;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores	= signalSemaphores;
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VulkanContext::Get()->GetCurrentFence()));
 		VkSwapchainKHR swapChains[] = { VulkanContext::Get()->GetSwapChain() };
 
-		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+		VkSemaphore presentWaitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 
 		VkPresentInfoKHR			presentInfo{};
 		presentInfo.sType			= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -47,7 +71,7 @@ namespace GEngine
 		presentInfo.swapchainCount	= 1;
 		presentInfo.pSwapchains		= swapChains;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = waitSemaphores;
+		presentInfo.pWaitSemaphores = presentWaitSemaphores;
 		VK_CHECK_RESULT(vkQueuePresentKHR(VulkanContext::Get()->GetPresentQueue(), &presentInfo));
 		VulkanContext::Get()->MoveToNextSemaphore();
 	}

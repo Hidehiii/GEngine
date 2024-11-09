@@ -59,6 +59,7 @@ namespace GEngine
     }
     void VulkanRendererAPI::BeginDrawCommand()
     {
+        
         VkCommandBufferBeginInfo    beginInfo{};
         beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags             = 0; // Optional
@@ -87,7 +88,7 @@ namespace GEngine
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores    = signalSemaphores;
 
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VulkanContext::Get()->GetCurrentFence()));
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
     float VulkanRendererAPI::GetTime()
     {
