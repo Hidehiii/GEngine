@@ -50,11 +50,11 @@ namespace GEngine
 				m_Specification.Height,
 				VK_FORMAT_D24_UNORM_S8_UINT,
 				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
 
 			m_DepthStencilImage = image;
 			m_DepthStencilImageView = imageView;
@@ -220,7 +220,7 @@ namespace GEngine
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
 			break;
 		}
 			
@@ -232,7 +232,7 @@ namespace GEngine
 				m_Specification.Height, 
 				depthFormat,
 				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image, 
 				imageMemory);

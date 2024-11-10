@@ -143,7 +143,7 @@ namespace GEngine
 
         if (m_ImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
-            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
         }
     }
     void VulkanTexture2D::Unbind()

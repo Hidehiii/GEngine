@@ -50,7 +50,7 @@ public:
 
 GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args)
 {
-	Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
+	Renderer::SetRenererAPI(RendererAPI::API::Vulkan);
 
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
