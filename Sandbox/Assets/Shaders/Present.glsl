@@ -32,5 +32,9 @@ layout (location = 0) in VertexOutput IN;
 layout (binding = 10) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
 void main()
 {
-	o_color = texture(GE_PRESENT_FRAME_BUFFER, IN.uv);
+	vec2 newUV = IN.uv;
+#if GE_UV_START_AT_TOP
+	newUV.y = 1- newUV.y;
+#endif
+	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV);
 }

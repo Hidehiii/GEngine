@@ -48,13 +48,15 @@ namespace GEngine
 		void SetUniformFloat(const std::string& name, float value);
 		void SetUniformFloat4(const std::string& name, const Vector4& vector);
 		void SetUniformTexture2D(const std::string& name, int slot);
+	protected:
+		virtual void SetMacroBool(std::string& source) override;
 	private:
 		std::string ReadFile(const std::string& path);
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 		void Compile(std::unordered_map<GLenum, std::string>& source);
 
 		void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
-		void CompileOrGetOpenGLBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+		void CompileOrGetOpenGLBinaries(std::unordered_map<GLenum, std::string>& shaderSources);
 		void CreateProgram();
 		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
@@ -76,6 +78,10 @@ namespace GEngine
 		uint32_t											m_BlendDestinationFactor;
 		bool												m_EnableDepthWrite = true;
 		bool												m_EnableDepthTest = true;
+
+		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
+			{ ShaderMacroName::GE_UV_START_AT_TOP, false}
+		};
 	};
 }
 

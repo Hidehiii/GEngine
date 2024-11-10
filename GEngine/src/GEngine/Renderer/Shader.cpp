@@ -8,6 +8,8 @@ namespace GEngine
 {
 	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
+	std::string     ShaderMacroName::GE_UV_START_AT_TOP = "GE_UV_START_AT_TOP";
+
 	std::string		ShaderDataFlag::None		= "#None";
 	std::string		ShaderDataFlag::Name		= "#Name";
 	std::string		ShaderDataFlag::Blend		= "#Blend";

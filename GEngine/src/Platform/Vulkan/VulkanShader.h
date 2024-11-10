@@ -40,12 +40,14 @@ namespace GEngine
 		virtual void SetFloat4(const std::string& name, const Vector4& value) override;
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) override;
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) override;
+	protected:
+		virtual void SetMacroBool(std::string& source) override;
 	private:
 		std::string ReadFile(const std::string& path);
 		std::unordered_map<std::string, std::string> PreProcess(const std::string& source);
 		void Compile(std::unordered_map<std::string, std::string>& source);
 
-		void CompileOrGetVulkanBinaries(const std::unordered_map<std::string, std::string>& shaderSources);
+		void CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources);
 		void CompileOrGetOpenGLBinaries(const std::unordered_map<std::string, std::string>& shaderSources);
 		void Reflect(const std::string stage, const std::vector<uint32_t>& shaderData);
 	private:
@@ -66,6 +68,10 @@ namespace GEngine
 		uint32_t											m_BlendDestinationFactor = (uint32_t)VK_BLEND_FACTOR_ZERO;
 		bool												m_EnableDepthWrite = true;
 		bool												m_EnableDepthTest = true;
+
+		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
+			{ ShaderMacroName::GE_UV_START_AT_TOP, true}
+		};
 	};
 }
 

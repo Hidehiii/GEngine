@@ -120,7 +120,7 @@ namespace GEngine
 		std::string src = ReadFile(path);
 		auto shaderSources = PreProcess(src);
 		//Compile(shaderSources);
-		CompileOrGetVulkanBinaries(shaderSources);
+		//CompileOrGetVulkanBinaries(shaderSources);
 		CompileOrGetOpenGLBinaries(shaderSources);
 		CreateProgram();
 	}
@@ -314,6 +314,13 @@ namespace GEngine
 	void OpenGLShader::SetUniformTexture2D(const std::string& name, int slot)
 	{
 		glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), slot);
+	}
+	void OpenGLShader::SetMacroBool(std::string& source)
+	{
+		for (int i = 0; i < m_MacroBools.size(); i++)
+		{
+			Utils::SetShaderMacroBool(source, m_MacroBools[i].first, m_MacroBools[i].second);
+		}
 	}
 	std::string OpenGLShader::ReadFile(const std::string& path)
 	{
@@ -576,7 +583,7 @@ namespace GEngine
 			Reflect(stage, data);
 	}
 
-	void OpenGLShader::CompileOrGetOpenGLBinaries(const std::unordered_map<GLenum, std::string>& shaderSources)
+	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<GLenum, std::string>& shaderSources)
 	{
 		auto& shaderData = m_OpenGLSPIRV;
 
@@ -609,7 +616,7 @@ namespace GEngine
 			}
 			else
 			{
-
+				SetMacroBool(source);
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
@@ -628,6 +635,9 @@ namespace GEngine
 				}
 			}
 		}
+
+		for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);
 	}
 
 	void OpenGLShader::CreateProgram()

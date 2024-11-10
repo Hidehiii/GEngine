@@ -23,6 +23,11 @@ namespace GEngine
 		Sampler2D	= 7,
 		SamplerCube = 8
 	};
+	class GENGINE_API ShaderMacroName
+	{
+	public:
+		static std::string			GE_UV_START_AT_TOP;
+	};
 	class GENGINE_API ShaderDataFlag
 	{
 	public:
@@ -105,6 +110,8 @@ namespace GEngine
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+	protected:
+		virtual void SetMacroBool(std::string& source) = 0;
 	};
 
 	class GENGINE_API ShaderLibrary
@@ -226,6 +233,13 @@ namespace GEngine
 			std::string cacheDirectory = GetCacheDirectory();
 			if (!std::filesystem::exists(cacheDirectory))
 				std::filesystem::create_directories(cacheDirectory);
+		}
+
+		static void SetShaderMacroBool(std::string& source, const std::string& macro, bool value)
+		{
+			//第二行插入
+			size_t eol = source.find_first_of("\n", 0);
+			source.insert(eol + 1, "#define " + macro + " " + (value ? "1" : "0") + "\n");
 		}
 	}
 }

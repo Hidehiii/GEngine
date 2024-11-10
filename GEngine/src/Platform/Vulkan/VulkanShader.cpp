@@ -82,7 +82,7 @@ namespace GEngine
 		std::string src		= ReadFile(path);
 		auto shaderSources	= PreProcess(src);
 		CompileOrGetVulkanBinaries(shaderSources);
-		CompileOrGetOpenGLBinaries(shaderSources);
+		//CompileOrGetOpenGLBinaries(shaderSources);
 	}
 	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 	{
@@ -120,6 +120,13 @@ namespace GEngine
 	}
 	void VulkanShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count)
 	{
+	}
+	void VulkanShader::SetMacroBool(std::string& source)
+	{
+		for (int i = 0; i < m_MacroBools.size(); i++)
+		{
+			Utils::SetShaderMacroBool(source, m_MacroBools[i].first, m_MacroBools[i].second);
+		}
 	}
 	std::string VulkanShader::ReadFile(const std::string& path)
 	{
@@ -329,7 +336,7 @@ namespace GEngine
 	void VulkanShader::Compile(std::unordered_map<std::string, std::string>& source)
 	{
 	}
-	void VulkanShader::CompileOrGetVulkanBinaries(const std::unordered_map<std::string, std::string>& shaderSources)
+	void VulkanShader::CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources)
 	{
 		shaderc::Compiler			compiler;
 		shaderc::CompileOptions		options;
@@ -360,6 +367,7 @@ namespace GEngine
 			}
 			else
 			{
+				SetMacroBool(source);
 				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
