@@ -84,11 +84,12 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout)
     {
         m_DataFormat    = format;
         m_Image         = image;
         m_ImageView     = imageView;
+        m_ImageLayout   = layout;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -121,6 +122,7 @@ namespace GEngine
         Utils::TransitionImageLayout(m_Image, m_DataFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(m_Buffer, m_Image, m_Width, m_Height);
         Utils::TransitionImageLayout(m_Image, m_DataFormat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_Buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), m_BufferMemory, nullptr);
@@ -139,6 +141,10 @@ namespace GEngine
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;
 
+        if (m_ImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
     }
     void VulkanTexture2D::Unbind()
     {

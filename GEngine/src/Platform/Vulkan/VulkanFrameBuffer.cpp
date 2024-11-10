@@ -114,14 +114,12 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
 		Ref<VulkanTexture2D> texture = m_ColorAttachmentsTexture2D.at(index);
-		texture->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthAttachment()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
 		Ref<VulkanTexture2D> texture = m_DepthAttachmentTexture2D;
-		texture->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
@@ -200,7 +198,7 @@ namespace GEngine
 			m_ColorImageViews.push_back(imageView);
 			m_ColorImagesMemory.push_back(imageMemory);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i]);
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 			m_ColorAttachmentsTexture2D.push_back(texture);
 		}
 		VkDeviceMemory					imageMemory;
@@ -252,7 +250,7 @@ namespace GEngine
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
 
-		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView);
+		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

@@ -140,7 +140,10 @@ void Sandbox2D::OnAttach()
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
 
 	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
+	m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
+
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
 }
 
 void Sandbox2D::OnDetach()
@@ -154,7 +157,7 @@ void Sandbox2D::OnPresent()
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(m_EditorCamera);
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	
 	
 	m_PresentPipeline->Bind();
 	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
