@@ -3,10 +3,9 @@
 
 namespace GEngine
 {
-    OpenGLPipeline::OpenGLPipeline(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Ref<VertexBuffer>& vertexBuffer)
+    OpenGLPipeline::OpenGLPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
         m_Material      = std::dynamic_pointer_cast<OpenGLMaterial>(material);
-        m_VertexArray   = std::dynamic_pointer_cast<OpenGLVertexArray>(vertexArray);
         m_VertexBuffer  = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vertexBuffer);
     }
     OpenGLPipeline::~OpenGLPipeline()

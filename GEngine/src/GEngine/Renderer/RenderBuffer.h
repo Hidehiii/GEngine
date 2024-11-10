@@ -128,6 +128,8 @@ namespace GEngine
 		uint32_t m_Stride = 0;
 	};
 
+	class IndexBuffer;
+
 	class GENGINE_API VertexBuffer
 	{
 	public:
@@ -139,7 +141,9 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
 		virtual void SetLayout(const BufferLayout& layout) = 0;
+		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
+		virtual const Ref<IndexBuffer>& GetIndexBuffer() const = 0;
 
 		static Ref<VertexBuffer> Create(uint32_t size);
 		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);

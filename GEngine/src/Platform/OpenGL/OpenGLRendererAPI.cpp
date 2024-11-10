@@ -48,27 +48,27 @@ namespace GEngine
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
-	void OpenGLRendererAPI::DrawTriangles(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
 	{
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		vertexArray->Bind();
+		uint32_t count = indexCount ? indexCount : vertexBuffer->GetIndexBuffer()->GetCount();
+		vertexBuffer->Bind();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	void OpenGLRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
 	{
-		vertexArray->Bind();
+		vertexBuffer->Bind();
 		glDrawArrays(GL_LINES, 0, indexCount);
 	}
-	void OpenGLRendererAPI::DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
 	{
-		vertexArray->Bind();
+		vertexBuffer->Bind();
 		glDrawArrays(GL_POINTS, 0, indexCount);
 	}
-	void OpenGLRendererAPI::DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)
+	void OpenGLRendererAPI::DrawTrianglesInstanced(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount, uint32_t instanceCount)
 	{
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		vertexArray->Bind();
+		uint32_t count = indexCount ? indexCount : vertexBuffer->GetIndexBuffer()->GetCount();
+		vertexBuffer->Bind();
 		glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr, instanceCount);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}

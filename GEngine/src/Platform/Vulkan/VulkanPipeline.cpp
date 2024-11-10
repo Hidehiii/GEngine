@@ -24,10 +24,9 @@ namespace GEngine
 		}
 	}
 
-    VulkanPipeline::VulkanPipeline(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Ref<VertexBuffer>& vertexBuffer)
+    VulkanPipeline::VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
-        m_VertexArray           = std::dynamic_pointer_cast<VulkanVertexArray>(vertexArray);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
 
 		
@@ -216,11 +215,10 @@ namespace GEngine
 		dynamicStateCreateInfo.pDynamicStates		= m_DynamicStates.data();
 
 		m_VertexInputInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		m_VertexInputInfo.vertexBindingDescriptionCount		= static_cast<uint32_t>(m_VertexArray->GetVertexInputBindingDescriptions().size());
-		auto												bindingDescriptions = m_VertexArray->GetVertexInputBindingDescriptions();
-		m_VertexInputInfo.pVertexBindingDescriptions		= bindingDescriptions.data();
-		m_VertexInputInfo.vertexAttributeDescriptionCount	= static_cast<uint32_t>(m_VertexArray->GetVertexInputAttributeDescriptions().size());
-		auto												attributeDescription = m_VertexArray->GetVertexInputAttributeDescriptions();
+		m_VertexInputInfo.vertexBindingDescriptionCount		= 1;
+		m_VertexInputInfo.pVertexBindingDescriptions		= &(m_VertexBuffer->GetVertexInputBindingDescription());
+		m_VertexInputInfo.vertexAttributeDescriptionCount	= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputAttributeDescriptions().size());
+		auto												attributeDescription = m_VertexBuffer->GetVertexInputAttributeDescriptions();
 		m_VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();
 
 		m_InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

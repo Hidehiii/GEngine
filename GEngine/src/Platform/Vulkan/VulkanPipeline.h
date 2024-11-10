@@ -1,7 +1,7 @@
 #pragma once
 #include "GEngine/Renderer/Pipeline.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "Platform/Vulkan/VulkanVertexArray.h"
+
 #include "Platform/Vulkan/VulkanMaterial.h"
 
 
@@ -12,12 +12,11 @@ namespace GEngine
 	class GENGINE_API VulkanPipeline : public Pipeline
 	{
 	public:
-		VulkanPipeline(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Ref<VertexBuffer>& vertexBuffer);
+		VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanPipeline() override;
 		virtual void Bind() override;
 		virtual void Unbind() override;
 
-		virtual Ref<VertexArray> GetVertexArray() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexArray>(m_VertexArray); }
 		virtual Ref<VertexBuffer> GetVertexBuffer() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
 		virtual Ref<Material> GetMaterial() override { m_RecreatePipeline = true; return std::static_pointer_cast<Material>(m_Material);}
 	private:
@@ -28,7 +27,6 @@ namespace GEngine
 		void CreatePipeline();
 	private:
 		Ref<VulkanMaterial>			m_Material;
-		Ref<VulkanVertexArray>		m_VertexArray;
 		Ref<VulkanVertexBuffer>		m_VertexBuffer;
 
 		VkDescriptorSetLayout		m_DescriptorSetLayout;

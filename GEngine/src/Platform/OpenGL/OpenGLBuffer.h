@@ -17,12 +17,16 @@ namespace GEngine
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout;}
+		virtual void SetLayout(const BufferLayout& layout) override;
+		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
+		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
 			
 	private:
-		uint32_t m_RendererID;
-		BufferLayout m_Layout;
+		uint32_t								m_VertexBufferRendererID;
+		uint32_t								m_VertexArrayRendererID;
+		BufferLayout							m_Layout;
+		Ref<IndexBuffer>						m_IndexBuffer;
 	};
 
 

@@ -24,7 +24,7 @@
 #include "GEngine/Renderer/Renderer.h"
 #include "GEngine/Renderer/Renderer2D.h"
 #include "GEngine/Renderer/RenderCommand.h"
-#include "GEngine/Renderer/VertexArray.h"
+
 #include "GEngine/Renderer/RenderBuffer.h"
 #include "GEngine/Renderer/Shader.h"
 #include "GEngine/Renderer/Pipeline.h"

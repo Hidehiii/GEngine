@@ -56,14 +56,12 @@ void Sandbox2D::OnAttach()
 	m_PresentVertex.resize(4);
 	m_PresentPipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
-		VertexArray::Create(),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
 	m_PresentPipeline->GetVertexBuffer()->SetLayout({
 		{ShaderDataType::float4,	"PositionOS"},
 		{ShaderDataType::float2,	"UV"}
 		});
-	m_PresentPipeline->GetVertexArray()->SetVertexBuffer(m_PresentPipeline->GetVertexBuffer());
 	uint32_t* presentIndices = new uint32_t[6];
 	presentIndices[0] = 0;
 	presentIndices[1] = 1;
@@ -72,7 +70,7 @@ void Sandbox2D::OnAttach()
 	presentIndices[3] = 2;
 	presentIndices[4] = 3;
 	presentIndices[5] = 0;
-	m_PresentPipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+	m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	delete[] presentIndices;
 
 	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 0.0f} };
@@ -84,7 +82,6 @@ void Sandbox2D::OnAttach()
 	m_vertex.resize(count);
 	m_Pipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Testtt.glsl")),
-		VertexArray::Create(),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
 	m_Pipeline->GetVertexBuffer()->SetLayout({
@@ -92,7 +89,6 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"},
 		{ShaderDataType::int1,		"TexIndex"}
 		});
-	m_Pipeline->GetVertexArray()->SetVertexBuffer(m_Pipeline->GetVertexBuffer());
 	uint32_t* quadIndices = new uint32_t[6 * count / 4];
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < 6 * count / 4; i += 6)
@@ -107,7 +103,7 @@ void Sandbox2D::OnAttach()
 
 		offset += 4;
 	}
-	m_Pipeline->GetVertexArray()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
+	m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
 	delete[] quadIndices;
 
 	
@@ -161,11 +157,11 @@ void Sandbox2D::OnPresent()
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
 	
 	m_PresentPipeline->Bind();
-	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexArray());
+	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
 
 	
 	//m_Pipeline->Bind();
-	//RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	//RenderCommand::DrawTriangles(m_Pipeline->GetVertexBuffer());
 
 	Renderer::EndScene();
 }
@@ -180,7 +176,7 @@ void Sandbox2D::OnRender()
 
 	Renderer::BeginScene(m_EditorCamera);
 	m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexArray());
+	RenderCommand::DrawTriangles(m_Pipeline->GetVertexBuffer());
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndDrawCommand();

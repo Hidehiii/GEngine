@@ -22,21 +22,21 @@ namespace GEngine
 		s_RendererAPI->Clear();
 	}
 
-	inline void RenderCommand::DrawTriangles(const Ref<VertexArray>& vertexArray, const uint32_t count = 0)
+	inline void RenderCommand::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count = 0)
 	{
-		s_RendererAPI->DrawTriangles(vertexArray, count);
+		s_RendererAPI->DrawTriangles(vertexBuffer, count);
 	}
-	inline void RenderCommand::DrawTriangles(const Ref<VertexArray>& vertexArray)
+	inline void RenderCommand::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer)
 	{
-		s_RendererAPI->DrawTriangles(vertexArray);
+		s_RendererAPI->DrawTriangles(vertexBuffer);
 	}
-	inline void RenderCommand::DrawLines(const Ref<VertexArray>& vertexArray, const uint32_t count)
+	inline void RenderCommand::DrawLines(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count)
 	{
-		s_RendererAPI->DrawLines(vertexArray, count);
+		s_RendererAPI->DrawLines(vertexBuffer, count);
 	}
-	inline void RenderCommand::DrawPoints(const Ref<VertexArray>& vertexArray, const uint32_t count)
+	inline void RenderCommand::DrawPoints(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count)
 	{
-		s_RendererAPI->DrawPoints(vertexArray, count);
+		s_RendererAPI->DrawPoints(vertexBuffer, count);
 	}
 	inline void RenderCommand::SetLineWidth(float width)
 	{

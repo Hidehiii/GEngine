@@ -15,11 +15,11 @@ namespace GEngine
 		virtual void SetClearColor(const Vector4& color) override;
 		virtual void Clear() override;
 
-		virtual void DrawTriangles(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
-		virtual void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
-		virtual void DrawPoints(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+		virtual void DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
+		virtual void DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
+		virtual void DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
 
-		virtual void DrawTrianglesInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount) override;
+		virtual void DrawTrianglesInstanced(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount, uint32_t instanceCount) override;
 
 		virtual void EnableDepthWrite(bool enabled) override;
 		virtual void EnableDepthTest(bool enabled) override;

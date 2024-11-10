@@ -14,10 +14,10 @@ namespace GEngine
 		inline void static Init();
 		inline static void SetClearColor(const Vector4& color);
 		inline static void Clear();
-		inline static void DrawTriangles(const Ref<VertexArray>& vertexArray, const uint32_t count);
-		inline static void DrawTriangles(const Ref<VertexArray>& vertexArray);
-		inline static void DrawLines(const Ref<VertexArray>& vertexArray, const uint32_t count);
-		inline static void DrawPoints(const Ref<VertexArray>& vertexArray, const uint32_t count);
+		inline static void DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count);
+		inline static void DrawTriangles(const Ref<VertexBuffer>& vertexBuffer);
+		inline static void DrawLines(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count);
+		inline static void DrawPoints(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count);
 		inline static void SetLineWidth(float width);
 		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);

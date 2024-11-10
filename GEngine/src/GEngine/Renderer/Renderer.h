@@ -25,8 +25,6 @@ namespace GEngine
 		static void BeginScene(Camera& camera);
 		static void EndScene();
 
-		static void Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader, Transform& transform);
-
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static void SetRenererAPI(RendererAPI::API api);
 		static void SetModelUniforms(Transform& transform);

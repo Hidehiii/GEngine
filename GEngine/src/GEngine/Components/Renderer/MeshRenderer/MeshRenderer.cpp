@@ -11,7 +11,6 @@ namespace GEngine
 		if (m_GameObject.HasComponent<MeshFilter>() && m_GameObject.GetComponent<MeshFilter>().GetMesh())
 		{
 			Mesh mesh = m_GameObject.GetComponent<MeshFilter>().GetMesh();
-			m_VertexArray = VertexArray::Create();
 			m_VertexBuffer = (VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex)));
 			m_VertexBuffer->SetLayout({
 				{ShaderDataType::float4, "PositionOS"},
@@ -19,8 +18,7 @@ namespace GEngine
 				{ShaderDataType::float4, "Normal"}
 				});
 
-			m_VertexArray->SetVertexBuffer(m_VertexBuffer);
-			m_VertexArray->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
+			m_VertexBuffer->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
 			if(m_Material == nullptr)
 				m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));
 		}
@@ -28,19 +26,18 @@ namespace GEngine
 		{
 			GE_CORE_ERROR("{0} : There is no mesh filter attached to the game object or the mesh filter has no mesh attached to it.", m_GameObject.GetComponent<Attribute>().m_Name);
 
-			m_VertexArray = nullptr;
 			m_VertexBuffer = nullptr;
 		}
 	}
 	void MeshRenderer::OnRender()
 	{
-		if (m_VertexArray && m_Material && m_VertexBuffer)
+		if (m_Material && m_VertexBuffer)
 		{
-			m_VertexArray->Bind();
+			m_VertexBuffer->Bind();
 			m_Material->UploadData();
 			m_VertexBuffer->SetData(m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.data(), m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.size() * sizeof(Vertex));
 			Renderer::SetModelUniforms(m_GameObject.GetComponent<Transform>());
-			RenderCommand::DrawTriangles(m_VertexArray);
+			RenderCommand::DrawTriangles(m_VertexBuffer);
 		}
 		else
 		{

@@ -97,12 +97,6 @@ namespace GEngine
 	{
 		Renderer2D::EndScene();
 	}
-	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader, Transform& transform)
-	{
-		shader->Bind();
-		vertexArray->Bind();
-		RenderCommand::DrawTriangles(vertexArray);
-	}
 	void Renderer::SetRenererAPI(RendererAPI::API api)
 	{
 		RendererAPI::SetAPI(api);
