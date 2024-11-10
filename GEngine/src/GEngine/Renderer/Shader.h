@@ -26,7 +26,7 @@ namespace GEngine
 	class GENGINE_API ShaderMacroName
 	{
 	public:
-		static std::string			GE_UV_START_AT_TOP;
+		static std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
 	};
 	class GENGINE_API ShaderDataFlag
 	{

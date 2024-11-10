@@ -70,7 +70,7 @@ namespace GEngine
 		bool												m_EnableDepthTest = true;
 
 		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
-			{ ShaderMacroName::GE_UV_START_AT_TOP, true}
+			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, true}
 		};
 	};
 }

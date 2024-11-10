@@ -33,7 +33,7 @@ layout (binding = 10) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
 void main()
 {
 	vec2 newUV = IN.uv;
-#if GE_UV_START_AT_TOP
+#if GE_ATTACHMENT_UV_STARTS_AT_TOP
 	newUV.y = 1- newUV.y;
 #endif
 	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV);
