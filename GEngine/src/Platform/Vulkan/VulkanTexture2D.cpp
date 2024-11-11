@@ -94,10 +94,14 @@ namespace GEngine
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-        vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-        vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-        vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
-        vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
+        if(m_Image)
+            vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
+        if(m_ImageMemory)
+            vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+        if(m_Sampler)
+            vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
+        if(m_ImageView)
+            vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
         
     }
     void VulkanTexture2D::SetData(void* data, uint32_t size)

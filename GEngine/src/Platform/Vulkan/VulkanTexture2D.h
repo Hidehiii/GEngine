@@ -39,12 +39,12 @@ namespace GEngine
 		uint32_t						m_RendererID;
 		uint32_t						m_Binding;
 		VkBuffer						m_Buffer;
-		VkDeviceMemory					m_BufferMemory;
+		VkDeviceMemory					m_BufferMemory = nullptr;
 		VkFormat						m_DataFormat;
-		VkImage							m_Image;
-		VkDeviceMemory					m_ImageMemory;
-		VkImageView						m_ImageView;
-		VkSampler						m_Sampler;
+		VkImage							m_Image = nullptr;
+		VkDeviceMemory					m_ImageMemory = nullptr;
+		VkImageView						m_ImageView = nullptr;
+		VkSampler						m_Sampler = nullptr;
 		VkDescriptorSetLayoutBinding	m_DescriptorSetLayoutBinding;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
