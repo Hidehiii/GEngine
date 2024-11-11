@@ -11,7 +11,7 @@ namespace GEngine
 		VulkanTexture2D(const std::string& path);
 		VulkanTexture2D(uint32_t width, uint32_t height);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
-		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout);
+		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isAttachmentImage = false);
 		virtual ~VulkanTexture2D();
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
@@ -26,7 +26,7 @@ namespace GEngine
 		VkDescriptorImageInfo GetDescriptorImageInfo() { return m_ImageInfo; }
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
 		uint32_t GetBinding() { return m_Binding; }
-		void SetImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
+		void SetImageLayout(VkImageLayout newLayout);
 	public:
 		// vulkan glsl 中的layout(binding)要用
 		// 由于现在不知道会有多少
@@ -48,6 +48,9 @@ namespace GEngine
 		VkDescriptorSetLayoutBinding	m_DescriptorSetLayoutBinding;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		bool							m_IsAttachmentImage = false;
+		VkImageLayout					m_AttachmentImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VkFlags							m_AspectFlag = 0;
 	};
 }
 

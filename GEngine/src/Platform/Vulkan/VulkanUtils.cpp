@@ -149,7 +149,9 @@ namespace GEngine
 				destinationStage	= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 			}
 			else {
-				GE_CORE_ASSERT(false, "unsupported layout transition!");
+				GE_CORE_WARN("unsupported layout transition!");
+				VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
+				return;
 			}
 
 			vkCmdPipelineBarrier(

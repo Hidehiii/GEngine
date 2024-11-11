@@ -82,6 +82,15 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 
+		/*for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
+		{
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		}
+		if (m_DepthAttachmentTexture2D)
+		{
+			m_DepthAttachmentTexture2D->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}*/
+
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
@@ -161,7 +170,12 @@ namespace GEngine
 		if (m_FrameBuffer)
 		{
 			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
+			m_Images.clear();
 			m_Attachments.clear();
+			m_ImagesMemory.clear();
+			m_ColorImages.clear();
+			m_ColorImageViews.clear();
+			m_ColorImagesMemory.clear();
 		}
 
 		for (int i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
@@ -198,18 +212,20 @@ namespace GEngine
 			m_ColorImageViews.push_back(imageView);
 			m_ColorImagesMemory.push_back(imageMemory);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, true);
 			m_ColorAttachmentsTexture2D.push_back(texture);
 		}
 		VkDeviceMemory					imageMemory;
 		VkImage							image;
 		VkImageView						imageView;
 		VkFormat						depthFormat;
+		VkFlags							depthAspectFlag;
 		switch (m_DepthAttachmentSpec.TextureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 		{
 			depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width, 
@@ -220,12 +236,13 @@ namespace GEngine
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
 			break;
 		}
 			
 		case FrameBufferTextureFormat::DEPTH:
 			depthFormat = VK_FORMAT_D32_SFLOAT;
+			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width, 
@@ -236,7 +253,7 @@ namespace GEngine
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				image, 
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
@@ -250,7 +267,7 @@ namespace GEngine
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
 
-		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag, true);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

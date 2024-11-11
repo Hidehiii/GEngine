@@ -84,12 +84,18 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isAttachmentImage)
     {
         m_DataFormat    = format;
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
+        m_IsAttachmentImage = isAttachmentImage;
+        m_AspectFlag = aspectFlag;
+        if (m_IsAttachmentImage)
+        {
+            m_AttachmentImageLayout = layout;
+        }
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -145,18 +151,24 @@ namespace GEngine
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;
 
+        if (m_IsAttachmentImage)
+        {
+            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_AttachmentImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_AspectFlag);
+        }
         if (m_ImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
-            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_AspectFlag);
         }
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
     void VulkanTexture2D::Unbind()
     {
 
     }
-    void VulkanTexture2D::SetImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
+    void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
-        Utils::TransitionImageLayout(m_Image, m_DataFormat, oldLayout, newLayout);
+        Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, newLayout);
+        m_ImageLayout = newLayout;
     }
     void VulkanTexture2D::CreateSampler()
     {
