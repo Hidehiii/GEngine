@@ -23,6 +23,19 @@ namespace GEngine
 			VulkanContext::Get()->RecreateSwapChain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 			m_WindowSize.x = 0;
 			m_WindowSize.y = 0;
+			VkSemaphore submitWaitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+			VkSubmitInfo					submitInfo{};
+			submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount	= 0;
+			submitInfo.pCommandBuffers		= nullptr;
+			submitInfo.waitSemaphoreCount	= 1;
+			submitInfo.pWaitSemaphores		= submitWaitSemaphores;
+			submitInfo.pWaitDstStageMask	= waitStages;
+			submitInfo.signalSemaphoreCount = 0;
+			submitInfo.pSignalSemaphores	= nullptr;
+			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+			VulkanContext::Get()->MoveToNextSemaphore();
 			return false;
 		}
 		return true;

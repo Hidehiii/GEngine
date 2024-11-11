@@ -206,10 +206,12 @@ void Sandbox2D::OnUpdate()
 
 	m_EditorCamera.OnUpdate();
 
+	// 重建frameBuffer后记得要重新绑定Attachment
 	if (m_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
 		m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetDepthAttachment());
 	}
 	
 
