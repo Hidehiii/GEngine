@@ -58,7 +58,8 @@ namespace GEngine
 	private:
 		ApplicationSpecification	m_Specification;
 		Scope<Window>				m_Window;
-		Ref<Config>				m_Config;
+		Ref<Config>					m_Config;
+		std::string					m_ConfigPath = "Config.ini";
 		ImGuiLayer*					m_ImGuiLayer;
 		bool						m_Running = true;
 		bool						m_Minimized = false;

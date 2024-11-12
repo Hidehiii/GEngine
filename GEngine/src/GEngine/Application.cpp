@@ -25,7 +25,7 @@ namespace GEngine
 		}
 
 		m_Config = Ref<Config>(new Config());
-		Serializer::Deserialize("Config.ini", m_Config);
+		Serializer::Deserialize(m_ConfigPath, m_Config);
 		Renderer::SetRenererAPI((RendererAPI::API)m_Config->m_RendererAPI);
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
@@ -45,7 +45,7 @@ namespace GEngine
 
 	Application::~Application()
 	{
-		Serializer::Serialize("Config.ini", m_Config);
+		Serializer::Serialize(m_ConfigPath, m_Config);
 
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
