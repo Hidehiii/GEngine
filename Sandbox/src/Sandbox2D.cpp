@@ -220,11 +220,9 @@ void Sandbox2D::OnUpdate()
 void Sandbox2D::OnGuiRender()
 {
 	GE_PROFILE_FUNCTION();
-	/*ImGui::Begin("Profile");
+	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	uint32_t tex = m_FrameBuffer->GetColorAttachment();
-	ImGui::Image((void*)tex, ImVec2(128, 72), { 0.0f, 1.0f }, { 1.0f, 0.0f });
-	ImGui::End();*/
+	ImGui::End();
 }
 
 void Sandbox2D::OnEvent(GEngine::Event& e)

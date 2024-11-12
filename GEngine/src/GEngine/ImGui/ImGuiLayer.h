@@ -3,6 +3,7 @@
 #include "GEngine/Layer.h"
 #include "ImGui/imgui.h"
 #include <ImGuizmo.h>
+#include "PlatformImGui.h"
 
 namespace GEngine
 {
@@ -17,16 +18,17 @@ namespace GEngine
 
 		virtual void OnGuiRender() override;
 		virtual void OnEvent(Event& e) override;
-		void Begin();
-		void End();
+		virtual void Begin();
+		virtual void End();
 
 		void SetBlockEvent(bool block) { m_BlockEvents = block; }
 		void SetDarkThemeColor();
 		ImGuiContext* GetContext() { return m_Context; }
 	private:
-		bool m_BlockEvents = true;
-		float m_Time = 0.0f;
-		ImGuiContext* m_Context;
+		bool			m_BlockEvents = true;
+		float			m_Time = 0.0f;
+		ImGuiContext*	m_Context;
+		PlatformImGui*	m_PlatformImGui = nullptr;
 	};
 }
 

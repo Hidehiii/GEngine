@@ -1,15 +1,14 @@
 #include "GEpch.h"
 #include "ImGuiLayer.h"
 #include "GEngine/Application.h"
-#include "ImGui/backends/imgui_impl_vulkan.h"
-#include "ImGui/backends/imgui_impl_opengl3.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "GEngine/Renderer/RenderCommand.h"
-#include "Platform/Vulkan/VulkanUtils.h"
-#include "Platform/Vulkan/VulkanContext.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include "ImGui/backends/imgui_impl_glfw.cpp"
+#include "Platform/OpenGL/OpenGLImGui.h"
+#include "Platform/Vulkan/VulkanImGui.h"
 
 
 namespace GEngine
@@ -17,15 +16,24 @@ namespace GEngine
 	ImGuiLayer::ImGuiLayer()
 		: Layer("ImGuiLayer")
 	{
+		
 	}
 
 	ImGuiLayer::~ImGuiLayer()
 	{
+		delete m_PlatformImGui;
+		m_PlatformImGui = nullptr;
 	}
 
 	void ImGuiLayer::OnAttach()
 	{
 		GE_PROFILE_FUNCTION();
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
+		case RendererAPI::API::Vulkan: m_PlatformImGui = new VulkanImGui(); break;
+		default: GE_CORE_ASSERT(false, "Unknown renderer api");
+		}
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -59,61 +67,7 @@ namespace GEngine
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 		
 		// Setup Platform/Renderer backends
-		switch (RendererAPI::GetAPI())
-		{
-		case RendererAPI::API::OpenGL:
-			ImGui_ImplGlfw_InitForOpenGL(window, true);
-			ImGui_ImplOpenGL3_Init("#version 410");
-			break;
-		case RendererAPI::API::Vulkan:
-		{
-			ImGui_ImplGlfw_InitForVulkan(window, true);
-
-			VkDescriptorPool descriptorPool;
-
-			std::vector<VkDescriptorPoolSize> poolSizes =
-			{
-				{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
-				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
-				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
-			};
-
-
-			VkDescriptorPoolCreateInfo	poolInfo{};
-			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = 100;
-
-			VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &descriptorPool));
-
-			ImGui_ImplVulkan_InitInfo		info{};
-			info.Instance					= VulkanContext::Get()->GetInstance();
-			info.PhysicalDevice				= VulkanContext::Get()->GetPhysicalDevice();
-			info.Device						= VulkanContext::Get()->GetDevice();
-			info.QueueFamily				= VulkanContext::Get()->GetQueueFamily().GraphicsFamily.value();
-			info.Queue						= VulkanContext::Get()->GetGraphicsQueue();
-			info.PipelineCache				= nullptr;
-			info.MinImageCount				= 2;
-			info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
-			info.DescriptorPool				= descriptorPool;
-			info.Allocator					= nullptr;
-			info.CheckVkResultFn			= nullptr;
-			ImGui_ImplVulkan_Init(&info, VulkanContext::Get()->GetFrameBuffer(0)->GetRenderPass());
-			break;
-		}
-		default:
-			GE_CORE_ASSERT(false, "Unknown render api");
-			break;
-		}
+		m_PlatformImGui->OnAttach(window);
 
 		io.Fonts->Build();
 	}
@@ -121,18 +75,7 @@ namespace GEngine
 	void ImGuiLayer::OnDetach()
 	{
 		GE_PROFILE_FUNCTION();
-		switch (RendererAPI::GetAPI())
-		{
-		case RendererAPI::API::OpenGL:
-			ImGui_ImplOpenGL3_Shutdown();
-			break;
-		case RendererAPI::API::Vulkan:
-			ImGui_ImplVulkan_Shutdown();
-			break;
-		default:
-			GE_CORE_ASSERT(false, "Unknown render api");
-			break;
-		}
+		m_PlatformImGui->OnDetach();
 		
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -158,17 +101,7 @@ namespace GEngine
 	void ImGuiLayer::Begin()
 	{
 		GE_PROFILE_FUNCTION();
-		switch (RendererAPI::GetAPI())
-		{
-		case RendererAPI::API::OpenGL:
-			ImGui_ImplOpenGL3_NewFrame();
-			break;
-		case RendererAPI::API::Vulkan:
-			ImGui_ImplVulkan_NewFrame();
-			break;
-		default:
-			break;
-		}
+		m_PlatformImGui->Begin();
 		
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -184,20 +117,9 @@ namespace GEngine
 		
 		// Rendering
 		ImGui::Render();
-		//RenderCommand::BeginCommand();
-		switch (RendererAPI::GetAPI())
-		{
-		case RendererAPI::API::OpenGL:
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			break;
-		case RendererAPI::API::Vulkan:
-			//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
-			break;
-		default:
-			GE_CORE_ASSERT(false, "Unknown render api");
-			break;
-		}
-		//RenderCommand::EndCommand();
+		RenderCommand::BeginDrawCommand();
+		m_PlatformImGui->End();
+		RenderCommand::EndDrawCommand();
 		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

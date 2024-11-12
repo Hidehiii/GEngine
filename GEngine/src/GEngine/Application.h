@@ -9,7 +9,7 @@
 #include "Renderer/RenderCommand.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/GraphicsPresent.h"
-
+#include "GEngine/Core/Config.h"
 #include <filesystem>
 
 int main(int argc, char** argv);
@@ -58,6 +58,7 @@ namespace GEngine
 	private:
 		ApplicationSpecification	m_Specification;
 		Scope<Window>				m_Window;
+		Ref<Config>				m_Config;
 		ImGuiLayer*					m_ImGuiLayer;
 		bool						m_Running = true;
 		bool						m_Minimized = false;

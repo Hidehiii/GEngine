@@ -50,8 +50,6 @@ public:
 
 GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args)
 {
-	Renderer::SetRenererAPI(RendererAPI::API::Vulkan);
-
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
 	spec.Size = { 720, 720 };

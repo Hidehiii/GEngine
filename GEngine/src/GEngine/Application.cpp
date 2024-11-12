@@ -3,7 +3,7 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Renderer.h"
 #include "GEngine/Scripting/ScriptEngine.h"
-
+#include "tools/Serialization/Serializer.h"
 
 
 namespace GEngine
@@ -16,13 +16,17 @@ namespace GEngine
 
 		GE_CORE_ASSERT(!s_Instance, "Application already exists!");
 		
-		s_Instance = this;
+		s_Instance		= this;
 		m_Specification = spec;
 
 		if (m_Specification.WorkingDirectory.empty() == false)
 		{
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
 		}
+
+		m_Config = Ref<Config>(new Config());
+		Serializer::Deserialize("Config.ini", m_Config);
+		Renderer::SetRenererAPI((RendererAPI::API)m_Config->m_RendererAPI);
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
@@ -41,6 +45,8 @@ namespace GEngine
 
 	Application::~Application()
 	{
+		Serializer::Serialize("Config.ini", m_Config);
+
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}
@@ -115,6 +121,7 @@ namespace GEngine
 	void Application::Close()
 	{
 		m_Running = false;
+		
 	}
 	void Application::OnEvent(Event& e)
 	{
@@ -136,6 +143,7 @@ namespace GEngine
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		m_Running = false;
+		
 		return true;
 	}
 	bool Application::OnWindowResize(WindowResizeEvent& e)

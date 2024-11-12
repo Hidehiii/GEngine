@@ -6,6 +6,8 @@
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/Material.h"
+#include "GEngine/Core/Config.h"
+#include<filesystem>
 
 namespace YAML
 {
@@ -264,6 +266,19 @@ namespace GEngine
 	{
 		static_assert(false);
 	}
+	// 编码config
+	template <>
+	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Config>& config)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "RendererAPI" << YAML::Value << (int)config->m_RendererAPI; 
+
+		out << YAML::EndMap;
+		std::ofstream fout(filepath);
+		fout << out.c_str();
+	}
 	// 编码场景的YAML数据
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Scene>& scene)
@@ -334,6 +349,31 @@ namespace GEngine
 	{
 		static_assert(false);
 	}
+	// 解码config数据
+	template <>
+	static void  GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Config>& config)
+	{
+		YAML::Node data;
+		if (!std::filesystem::exists(filepath))
+		{
+			GE_CORE_INFO("Creating config file...");
+			std::filesystem::path	path = std::filesystem::current_path() / filepath;
+			std::fstream			file(path, std::ios::out | std::ios::trunc);
+			return;
+		}
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			GE_CORE_ERROR("Failed to load config file: {0}, \n{1}", filepath, e.what());
+			return;
+		}
+
+		config->m_RendererAPI	= data["RendererAPI"].as<int>();
+	}
+	
 	// 解码场景的YAML数据
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Scene>& scene)
