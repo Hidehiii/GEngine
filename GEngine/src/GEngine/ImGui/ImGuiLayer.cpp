@@ -117,9 +117,10 @@ namespace GEngine
 		
 		// Rendering
 		ImGui::Render();
-		RenderCommand::BeginDrawCommand();
+		
+		
 		m_PlatformImGui->End();
-		RenderCommand::EndDrawCommand();
+		
 		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

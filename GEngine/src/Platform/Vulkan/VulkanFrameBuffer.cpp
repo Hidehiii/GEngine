@@ -187,7 +187,7 @@ namespace GEngine
 			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
+				colorFormat = VK_FORMAT_R8G8B8A8_SRGB;
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width, 
