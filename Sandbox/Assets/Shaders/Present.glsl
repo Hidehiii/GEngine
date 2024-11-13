@@ -51,9 +51,7 @@ void main()
 	newUV.y = 1- newUV.y;
 #endif
 	vec4 imgui = texture(GE_PRESENT_IMGUI, newUV);
-#if GE_ATTACHMENT_UV_STARTS_AT_TOP
-	//imgui.rgb = vec3ToSrgb(imgui.rgb);
-#endif
 	float rate = step(imgui.r, 0.0001f);
 	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV) * (rate) + imgui * (1 - rate);
+	o_color.rgb = vec3ToSrgb(o_color.rgb);
 }
