@@ -68,8 +68,6 @@ namespace GEngine
 		
 		// Setup Platform/Renderer backends
 		m_PlatformImGui->OnAttach(window);
-
-		io.Fonts->Build();
 	}
 
 	void ImGuiLayer::OnDetach()

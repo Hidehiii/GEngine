@@ -143,7 +143,7 @@ void Sandbox2D::OnAttach()
 	m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetDepthAttachment());
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
 }
 
 void Sandbox2D::OnDetach()

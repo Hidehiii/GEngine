@@ -1,6 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
-
+#include "GEngine/Renderer/FrameBuffer.h"
 
 #ifdef GE_PLATFORM_WINDOWS
 #define VK_CHECK_RESULT(f)																								\
