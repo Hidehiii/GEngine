@@ -32,7 +32,7 @@ public:
 	virtual void OnRender() override;
 
 	void OnUpdate() override;
-	virtual void OnGuiRender() override;
+	virtual void OnImGuiRender() override;
 	void OnEvent(GEngine::Event& e) override;
 private:
 	bool OnKeyPressed(GEngine::KeyPressedEvent& e);

@@ -229,7 +229,7 @@ namespace GEngine
 		RenderCommand::EndDrawCommand();
 	}
 
-	void GEngineEditorLayer::OnGuiRender()
+	void GEngineEditorLayer::OnImGuiRender()
 	{
 		GE_PROFILE_FUNCTION();
 

@@ -22,11 +22,11 @@ namespace GEngine
         m_Height        = height;
         if (channels == 4)
         {
-            m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
+            m_DataFormat = VK_FORMAT_R8G8B8A8_UNORM;
         }
         else
         {
-            m_DataFormat = VK_FORMAT_R8G8B8_SRGB;
+            m_DataFormat = VK_FORMAT_R8G8B8_UNORM;
         }
 
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
@@ -49,7 +49,7 @@ namespace GEngine
     {
         m_Height    = height;
         m_Width     = width;
-        m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        m_DataFormat = VK_FORMAT_R8G8B8A8_UNORM;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -68,7 +68,7 @@ namespace GEngine
     {
 		m_Height = height;
 		m_Width = width;
-		m_DataFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		m_DataFormat = VK_FORMAT_R8G8B8A8_UNORM;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -112,7 +112,7 @@ namespace GEngine
     }
     void VulkanTexture2D::SetData(void* data, uint32_t size)
     {
-        uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_SRGB ? 4 : 3;
+        uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_UNORM ? 4 : 3;
         GE_CORE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),

@@ -82,15 +82,6 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 
-		/*for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
-		{
-			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		}
-		if (m_DepthAttachmentTexture2D)
-		{
-			m_DepthAttachmentTexture2D->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		}*/
-
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
@@ -187,7 +178,7 @@ namespace GEngine
 			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				colorFormat = VK_FORMAT_R8G8B8A8_SRGB;
+				colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width, 

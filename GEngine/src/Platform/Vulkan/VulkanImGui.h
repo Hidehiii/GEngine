@@ -16,6 +16,8 @@ namespace GEngine
 
 		virtual void Begin() override;
 		virtual void End() override;
+
+		virtual Ref<Texture2D> GetImGuiTexture() override;
 	};
 
 }

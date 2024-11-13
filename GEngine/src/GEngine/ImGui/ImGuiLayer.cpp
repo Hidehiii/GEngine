@@ -81,7 +81,7 @@ namespace GEngine
 	}
 
 
-	void ImGuiLayer::OnGuiRender()
+	void ImGuiLayer::OnImGuiRender()
 	{
 
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include "ImGui/imgui.h"
 #include "GEngine/Core/Core.h"
+#include "GEngine/Renderer/Texture.h"
 
 class GLFWwindow;
 namespace GEngine
@@ -14,5 +15,7 @@ namespace GEngine
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+
+		virtual Ref<Texture2D> GetImGuiTexture() = 0;
 	};
 }

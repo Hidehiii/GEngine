@@ -23,9 +23,12 @@ namespace GEngine
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
-		VkDescriptorImageInfo GetDescriptorImageInfo() { return m_ImageInfo; }
-		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
-		uint32_t GetBinding() { return m_Binding; }
+		const uint32_t						GetBinding() { return m_Binding; }
+		const VkSampler						GetSampler() { return m_Sampler; }
+		const VkImageView					GetImageView() { return m_ImageView; }
+		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
+		const VkDescriptorSetLayoutBinding	GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
+		
 		void SetImageLayout(VkImageLayout newLayout);
 	public:
 		// vulkan glsl 中的layout(binding)要用

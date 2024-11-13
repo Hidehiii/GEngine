@@ -231,7 +231,7 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
-				Attachment.format		= VK_FORMAT_R8G8B8A8_SRGB;
+				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::RED_INTEGER:

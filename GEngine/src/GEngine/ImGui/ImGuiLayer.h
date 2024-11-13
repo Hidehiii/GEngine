@@ -4,6 +4,7 @@
 #include "ImGui/imgui.h"
 #include <ImGuizmo.h>
 #include "PlatformImGui.h"
+#include "GEngine/Renderer/Texture.h"
 
 namespace GEngine
 {
@@ -16,7 +17,7 @@ namespace GEngine
 		virtual void OnAttach() override;
 		virtual void OnDetach() override; 
 
-		virtual void OnGuiRender() override;
+		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
 		virtual void Begin();
 		virtual void End();
@@ -24,6 +25,7 @@ namespace GEngine
 		void SetBlockEvent(bool block) { m_BlockEvents = block; }
 		void SetDarkThemeColor();
 		ImGuiContext* GetContext() { return m_Context; }
+		Ref<Texture2D>	GetImGuiImage() { return m_PlatformImGui->GetImGuiTexture(); }
 	private:
 		bool			m_BlockEvents = true;
 		float			m_Time = 0.0f;

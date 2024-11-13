@@ -19,7 +19,7 @@ public:
 
 	}
 
-	void OnGuiRender() override
+	void OnImGuiRender() override
 	{
 
 	}

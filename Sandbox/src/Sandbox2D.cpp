@@ -6,6 +6,8 @@ static std::filesystem::path s_ModelPath = "Resources\\Model";
 static std::filesystem::path s_ShaderPath_2D = "Assets\\Shaders\\2D";
 static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
 
+void* id = nullptr;
+
 Sandbox2D::Sandbox2D()
 	: Layer("Sandbox2D")
 {
@@ -144,6 +146,9 @@ void Sandbox2D::OnAttach()
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
+
+	id = GUIUtils::GetTextureID(m_Texture);
 }
 
 void Sandbox2D::OnDetach()
@@ -173,7 +178,7 @@ void Sandbox2D::OnRender()
 {
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
-	RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
 	RenderCommand::Clear();
 
 
@@ -217,11 +222,18 @@ void Sandbox2D::OnUpdate()
 
 }
 
-void Sandbox2D::OnGuiRender()
+void Sandbox2D::OnImGuiRender()
 {
 	GE_PROFILE_FUNCTION();
+	
+
+	ImGui::Begin("Attachment");
+	ImGui::Text("sdadsdasdsdadasdasdad");
+	ImGui::End();
+
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
+	ImGui::Image(id, { 100, 100 });
 	ImGui::End();
 }
 
@@ -230,7 +242,6 @@ void Sandbox2D::OnEvent(GEngine::Event& e)
 	m_EditorCamera.OnEvent(e);
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Sandbox2D::OnKeyPressed));
-	//GE_INFO(e.ToString());
 }
 
 bool Sandbox2D::OnKeyPressed(GEngine::KeyPressedEvent& e)

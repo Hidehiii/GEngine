@@ -15,7 +15,7 @@ namespace GEngine
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
-		virtual void OnGuiRender() {}
+		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 		virtual void OnRender() {}
 		virtual void OnLateUpdate() {}

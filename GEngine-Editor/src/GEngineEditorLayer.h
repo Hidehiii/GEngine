@@ -24,7 +24,7 @@ namespace GEngine
 
 		virtual void OnUpdate() override;
 		virtual void OnRender() override;
-		virtual void OnGuiRender() override;
+		virtual void OnImGuiRender() override;
 		virtual void OnLateUpdate() override;
 		virtual void OnPresent() override;
 		virtual void OnEndFrame() override;

@@ -84,7 +84,7 @@ namespace GEngine
 							GE_PROFILE_SCOPE("ImguiStack OnGuiRender");
 
 							for (auto layer : m_LayerStack) {
-								layer->OnGuiRender();
+								layer->OnImGuiRender();
 							}
 						}
 						m_ImGuiLayer->End();

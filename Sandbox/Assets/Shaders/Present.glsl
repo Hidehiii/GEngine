@@ -4,6 +4,7 @@
 #Properties
 
 GE_PRESENT_FRAME_BUFFER: sampler2D
+GE_PRESENT_IMGUI: sampler2D
 
 #Type vertex
 #version 450 core
@@ -30,11 +31,29 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (binding = 10) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
+layout (binding = 11) uniform sampler2D GE_PRESENT_IMGUI;
+
+
+float floatToSrgb(float value) {
+    const float inv_12_92 = 0.0773993808;
+    return value <= 0.04045
+       ? value * inv_12_92 
+       : pow((value + 0.055) / 1.055, 2.4);
+}
+vec3 vec3ToSrgb(vec3 value) {
+    return vec3(floatToSrgb(value.x), floatToSrgb(value.y), floatToSrgb(value.z));
+}
+
 void main()
 {
 	vec2 newUV = IN.uv;
 #if GE_ATTACHMENT_UV_STARTS_AT_TOP
 	newUV.y = 1- newUV.y;
 #endif
-	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV);
+	vec4 imgui = texture(GE_PRESENT_IMGUI, newUV);
+#if GE_ATTACHMENT_UV_STARTS_AT_TOP
+	//imgui.rgb = vec3ToSrgb(imgui.rgb);
+#endif
+	float rate = step(imgui.r, 0.0001f);
+	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV) * (rate) + imgui * (1 - rate);
 }

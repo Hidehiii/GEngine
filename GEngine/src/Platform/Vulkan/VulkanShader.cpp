@@ -296,9 +296,9 @@ namespace GEngine
 					uniform.Name			= propName;
 					uniform.Slot			= textureSlot;
 					uniform.Texture			= Texture2D::WhiteTexture();
-					textureSlot++;
 					m_Texture2DCache.push_back(uniform);
 					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
+					textureSlot++;
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
 				{
