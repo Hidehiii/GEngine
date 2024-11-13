@@ -7,10 +7,20 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "GEngine/Renderer/RenderCommand.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
 
 namespace GEngine {
+	static Ref<FrameBuffer>	s_FrameBuffer = nullptr;
+
+
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
+		FrameBufferSpecification fspec;
+		fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
+		fspec.Width = Application::Get().GetWindow().GetWidth();
+		fspec.Height = Application::Get().GetWindow().GetHeight();
+		s_FrameBuffer = FrameBuffer::Create(fspec);
+
 		ImGui_ImplGlfw_InitForVulkan(window, true);
 		VkDescriptorPool descriptorPool;
 
@@ -50,7 +60,7 @@ namespace GEngine {
 		info.DescriptorPool				= descriptorPool;
 		info.Allocator					= nullptr;
 		info.CheckVkResultFn			= nullptr;
-		ImGui_ImplVulkan_Init(&info, VulkanContext::Get()->GetFrameBuffer(0)->GetRenderPass());
+		ImGui_ImplVulkan_Init(&info, std::dynamic_pointer_cast<VulkanFrameBuffer>(s_FrameBuffer)->GetRenderPass());
 
 		VkCommandBuffer CmdBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
@@ -70,9 +80,9 @@ namespace GEngine {
 	void VulkanImGui::End()
 	{
 		RenderCommand::BeginDrawCommand();
-		VulkanContext::Get()->GetFrameBuffer(0)->Begin();
+		s_FrameBuffer->Begin();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentDrawCommandBuffer());
-		VulkanContext::Get()->GetFrameBuffer(0)->End();
+		s_FrameBuffer->End();
 		RenderCommand::EndDrawCommand();
 	}
 
