@@ -19,7 +19,7 @@ namespace GEngine
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
 		m_PresentPipeline			= Pipeline::Create(
-			Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
+			Material::Create(Shader::Create("Assets/Shaders/PresentImGui.glsl")),
 			VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertexData.size())
 		);
 		m_PresentPipeline->GetVertexBuffer()->SetLayout({
@@ -211,7 +211,7 @@ namespace GEngine
 		{
 			GE_PROFILE_SCOPE("Render: EditorOnRender");
 			// temporary
-			RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
+			RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1 });
 			RenderCommand::Clear();
 
 			Renderer::BeginScene(m_EditorCamera);
@@ -228,7 +228,7 @@ namespace GEngine
 		{
 			GE_PROFILE_SCOPE("Render: OnRender");
 			// temporary
-			RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1 });
+			RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1 });
 			RenderCommand::Clear();
 
 
@@ -612,7 +612,6 @@ namespace GEngine
 	{
 		RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 		RenderCommand::Clear();
-		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_StopButtonIcon);
 		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 		m_PresentPipeline->Bind();
 		RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());

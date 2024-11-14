@@ -1,9 +1,8 @@
 
-#Name Present
+#Name PresentImGui
 
 #Properties
 
-GE_PRESENT_FRAME_BUFFER: sampler2D
 GE_PRESENT_IMGUI: sampler2D
 
 #Type vertex
@@ -30,8 +29,7 @@ struct VertexOutput
 	
 };
 layout (location = 0) in VertexOutput IN;
-layout (binding = 10) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
-layout (binding = 11) uniform sampler2D GE_PRESENT_IMGUI;
+layout (binding = 10) uniform sampler2D GE_PRESENT_IMGUI;
 
 
 float floatToSrgb(float value) {
@@ -51,7 +49,6 @@ void main()
 	newUV.y = 1- newUV.y;
 #endif
 	vec4 imgui = texture(GE_PRESENT_IMGUI, newUV);
-	float rate = step(imgui.r, 0.0001f);
-	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV) * (rate) + imgui * (1 - rate);
+	o_color = imgui;
 	o_color.rgb = vec3ToSrgb(o_color.rgb);
 }

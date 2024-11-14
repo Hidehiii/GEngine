@@ -57,30 +57,7 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &s_RenderPass));
 
-		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			s_Spec.x,
-			s_Spec.y,
-			VK_FORMAT_R8G8B8A8_UNORM,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			s_ColorImage,
-			s_ColorImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, s_ColorImageView);
-
-		VkFramebufferCreateInfo			framebufferInfo{};
-		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass		= s_RenderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments	= &s_ColorImageView;
-		framebufferInfo.width			= s_Spec.x;
-		framebufferInfo.height			= s_Spec.y;
-		framebufferInfo.layers			= 1;
-
-		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));
-
-		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, true);
+		CreateBuffer();
 
 		ImGui_ImplGlfw_InitForVulkan(window, true);
 		VkDescriptorPool descriptorPool;
@@ -138,6 +115,16 @@ namespace GEngine {
 
 	void VulkanImGui::Begin()
 	{
+		if ((s_Spec.x != Application::Get().GetWindow().GetWidth() ||
+			s_Spec.y != Application::Get().GetWindow().GetHeight()) &&
+			(Application::Get().GetWindow().GetWidth() != 0 &&
+				Application::Get().GetWindow().GetHeight() != 0))
+		{
+			s_Spec.x = Application::Get().GetWindow().GetWidth();
+			s_Spec.y = Application::Get().GetWindow().GetHeight();
+			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), s_FrameBuffer, nullptr);
+			CreateBuffer();
+		}
 		ImGui_ImplVulkan_NewFrame();
 	}
 
@@ -169,6 +156,34 @@ namespace GEngine {
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
 	{
 		return s_ImGuiImage;
+	}
+
+	void VulkanImGui::CreateBuffer()
+	{
+		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
+			s_Spec.x,
+			s_Spec.y,
+			VK_FORMAT_R8G8B8A8_UNORM,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			s_ColorImage,
+			s_ColorImageMemory);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, s_ColorImageView);
+
+		VkFramebufferCreateInfo			framebufferInfo{};
+		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass		= s_RenderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments	= &s_ColorImageView;
+		framebufferInfo.width			= s_Spec.x;
+		framebufferInfo.height			= s_Spec.y;
+		framebufferInfo.layers			= 1;
+
+		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));
+
+		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, true);
 	}
 
 }

@@ -16,8 +16,8 @@ namespace GEngine
 	void OpenGLImGui::OnAttach(GLFWwindow* window)
 	{
 		s_Spec.Attachments	= { FrameBufferTextureFormat::RGBA8 };
-		s_Spec.Width		= 720;
-		s_Spec.Height		= 720;
+		s_Spec.Width		= Application::Get().GetWindow().GetWidth();
+		s_Spec.Height		= Application::Get().GetWindow().GetHeight();
 		s_FrameBuffer		= FrameBuffer::Create(s_Spec);
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -36,6 +36,7 @@ namespace GEngine
 		{
 			s_Spec.Width = Application::Get().GetWindow().GetWidth();
 			s_Spec.Height = Application::Get().GetWindow().GetHeight();
+			//s_FrameBuffer = FrameBuffer::Create(s_Spec);
 			s_FrameBuffer->Resize(s_Spec.Width, s_Spec.Height);
 		}
 		ImGui_ImplOpenGL3_NewFrame();

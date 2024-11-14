@@ -18,6 +18,8 @@ namespace GEngine
 		virtual void End() override;
 
 		virtual Ref<Texture2D> GetImGuiTexture() override;
+	private:
+		void CreateBuffer();
 	};
 
 }

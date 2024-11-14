@@ -30,6 +30,7 @@ namespace GEngine
 		uint32_t			m_Width, m_Height;
 		uint32_t			m_RendererID;
 		GLenum				m_InternalFormat, m_DataFormat;
+		bool				m_AutoDelete = true;
 	};
 }
 

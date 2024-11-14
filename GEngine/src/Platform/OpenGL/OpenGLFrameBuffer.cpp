@@ -111,6 +111,7 @@ namespace GEngine
         }
 
         glCreateFramebuffers(1, &m_RendererID);
+        
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
         // Attachments
@@ -180,6 +181,7 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
     void OpenGLFrameBuffer::End()
     {

@@ -114,12 +114,14 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
 		Ref<VulkanTexture2D> texture = m_ColorAttachmentsTexture2D.at(index);
+		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthAttachment()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
 		Ref<VulkanTexture2D> texture = m_DepthAttachmentTexture2D;
+		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)

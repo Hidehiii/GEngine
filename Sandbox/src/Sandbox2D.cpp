@@ -145,8 +145,7 @@ void Sandbox2D::OnAttach()
 	m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
+	
 
 	id = GUIUtils::GetTextureID(m_Texture);
 }
@@ -163,7 +162,8 @@ void Sandbox2D::OnPresent()
 
 	Renderer::BeginScene(m_EditorCamera);
 	
-	
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 	m_PresentPipeline->Bind();
 	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
 
