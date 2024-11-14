@@ -112,7 +112,14 @@ namespace GEngine
 		auto texture2Ds		= m_Material->GetGetTexture2Ds();
 		for (auto& texture2D : texture2Ds)
 		{
-			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorSetLayoutBinding());
+			VkDescriptorSetLayoutBinding		layoutBinding{};
+			layoutBinding.binding				= texture2D.Slot;
+			layoutBinding.descriptorCount		= 1;
+			layoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			layoutBinding.pImmutableSamplers	= nullptr;
+			layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
+
+			layoutBindings.push_back(layoutBinding);
 		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -178,7 +185,7 @@ namespace GEngine
 				VkWriteDescriptorSet			descriptorWrite{};
 				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptorWrite.dstSet			= m_DescriptorSet;
-				descriptorWrite.dstBinding		= std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetBinding();
+				descriptorWrite.dstBinding		= texture2D.Slot;
 				descriptorWrite.dstArrayElement = 0;
 				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptorWrite.descriptorCount = 1;

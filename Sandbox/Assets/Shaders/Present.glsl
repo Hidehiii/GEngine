@@ -54,5 +54,4 @@ void main()
 	float rate = step(imgui.r, 0.0001f);
 	o_color = texture(GE_PRESENT_FRAME_BUFFER, newUV) * (rate) + imgui * (1 - rate);
 	o_color.rgb = vec3ToSrgb(o_color.rgb);
-	o_color = vec4(IN.uv, 0, 1);
 }

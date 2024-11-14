@@ -216,7 +216,7 @@ namespace GEngine
 
 			Renderer::BeginScene(m_EditorCamera);
 			OnOverlayRender();
-			m_ActiveScene->OnRender();
+			m_ActiveScene->OnRender(); Renderer2D::DrawQuad(Transform({(((int)Time::GetRunTime() % 3) + 1), 1, 0}), Vector4(1, 1, 1, 1));
 			Renderer::EndScene();
 		}
 		m_SceneViewportFrameBuffer->End();

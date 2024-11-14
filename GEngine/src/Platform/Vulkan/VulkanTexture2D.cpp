@@ -100,13 +100,9 @@ namespace GEngine
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-        if(m_Image)
             vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-        if(m_ImageMemory)
             vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-        if(m_Sampler)
             vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
-        if(m_ImageView)
             vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
         
     }
@@ -139,14 +135,7 @@ namespace GEngine
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
-        m_Binding = slot;
-
-		m_DescriptorSetLayoutBinding.binding            = slot;
-		m_DescriptorSetLayoutBinding.descriptorCount    = 1;
-		m_DescriptorSetLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;
-		m_DescriptorSetLayoutBinding.stageFlags         = VK_SHADER_STAGE_ALL_GRAPHICS;
-
+		
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;

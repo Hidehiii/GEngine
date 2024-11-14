@@ -233,7 +233,7 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	ImGui::Image(id, { 100, 100 });
+	ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }
 

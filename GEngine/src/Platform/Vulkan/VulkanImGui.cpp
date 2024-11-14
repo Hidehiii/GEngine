@@ -130,6 +130,7 @@ namespace GEngine {
 
 	void VulkanImGui::End()
 	{
+		s_ImGuiImage->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		RenderCommand::BeginDrawCommand();
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
