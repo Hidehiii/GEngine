@@ -7,6 +7,8 @@ namespace GEngine
 	{
 	public:
 		OpenGLGraphicsPresent() {}
+		virtual void Begin() override;
+		virtual void End() override;
 	};
 }
 
