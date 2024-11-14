@@ -19,12 +19,12 @@ namespace GEngine {
 
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
-		s_Spec.x				= 720;
-		s_Spec.y				= 720;
+		s_Spec.x				= Application::Get().GetWindow().GetWidth();
+		s_Spec.y				= Application::Get().GetWindow().GetHeight();
 
 		std::vector<VkAttachmentDescription>	attachments;
 		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FrameBufferTextureFormat::RGBA8);
-		des.format								= VK_FORMAT_B8G8R8A8_UNORM;
+		des.format								= VK_FORMAT_R8G8B8A8_UNORM;
 		attachments.push_back(des);
 
 		std::vector<VkAttachmentReference>	colorAttachmentRefs;
