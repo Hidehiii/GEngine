@@ -10,15 +10,15 @@
 #include <GLFW/glfw3.h>
 namespace GEngine
 {
-	static Ref<FrameBuffer> s_FrameBuffer;
+	Ref<FrameBuffer>			s_FrameBuffer;
 	FrameBufferSpecification	s_Spec;
 
 	void OpenGLImGui::OnAttach(GLFWwindow* window)
 	{
-		s_Spec.Attachments = { FrameBufferTextureFormat::RGBA8 };
-		s_Spec.Width = 720;
-		s_Spec.Height = 720;
-		s_FrameBuffer = FrameBuffer::Create(s_Spec);
+		s_Spec.Attachments	= { FrameBufferTextureFormat::RGBA8 };
+		s_Spec.Width		= 720;
+		s_Spec.Height		= 720;
+		s_FrameBuffer		= FrameBuffer::Create(s_Spec);
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 450");
@@ -29,6 +29,15 @@ namespace GEngine
 	}
 	void OpenGLImGui::Begin()
 	{
+		if ((s_Spec.Width != Application::Get().GetWindow().GetWidth() ||
+			s_Spec.Height != Application::Get().GetWindow().GetHeight()) &&
+			(Application::Get().GetWindow().GetWidth() != 0 &&
+				Application::Get().GetWindow().GetHeight() != 0))
+		{
+			s_Spec.Width = Application::Get().GetWindow().GetWidth();
+			s_Spec.Height = Application::Get().GetWindow().GetHeight();
+			s_FrameBuffer->Resize(s_Spec.Width, s_Spec.Height);
+		}
 		ImGui_ImplOpenGL3_NewFrame();
 	}
 	void OpenGLImGui::End()

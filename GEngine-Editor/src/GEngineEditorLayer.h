@@ -13,6 +13,12 @@ namespace GEngine
 		Pause	= 2
 	};
 
+	struct PresentVertex
+	{
+		Vector4	Pos;
+		Vector2 UV;
+	};
+
 	class GEngineEditorLayer : public Layer
 	{
 	public:
@@ -84,6 +90,14 @@ namespace GEngine
 
 		ModelImporter m_ModelImporter;
 
+		// Present
+		Ref<Pipeline>				m_PresentPipeline;
+		std::vector<PresentVertex>	m_PresentVertexData = {
+			{ {-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 0.0f} },
+			{ { 1.0f, -1.0f, 0.0f, 1.0f}, {1.0f, 0.0f} },
+			{ { 1.0f,  1.0f, 0.0f, 1.0f}, {1.0f, 1.0f} },
+			{ {-1.0f,  1.0f, 0.0f, 1.0f}, {0.0f, 1.0f} }
+		};
 	private:
 		std::function<void()> m_SceneStateFunction = [&]() {};
 	};

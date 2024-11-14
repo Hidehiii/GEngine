@@ -22,7 +22,6 @@ namespace GEngine
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
-		Renderer::SetRenererAPI(RendererAPI::API::OpenGL);
 
 		ApplicationSpecification	spec;
 		spec.Name					= "GEngine Editor";

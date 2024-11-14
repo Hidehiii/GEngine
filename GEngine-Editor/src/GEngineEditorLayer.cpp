@@ -18,16 +18,36 @@ namespace GEngine
 	{
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
+		m_PresentPipeline			= Pipeline::Create(
+			Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
+			VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertexData.size())
+		);
+		m_PresentPipeline->GetVertexBuffer()->SetLayout({
+			{ShaderDataType::float4,	"PositionOS"},
+			{ShaderDataType::float2,	"UV"}
+			});
+		uint32_t*					presentIndices = new uint32_t[6];
+		presentIndices[0]			= 0;
+		presentIndices[1]			= 1;
+		presentIndices[2]			= 2;
+
+		presentIndices[3]			= 2;
+		presentIndices[4]			= 3;
+		presentIndices[5]			= 0;
+		m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+		delete[] presentIndices;
+		m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertexData.data(), sizeof(PresentVertex) * m_PresentVertexData.size());
+
 		m_PlayButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playButtonIcon.png");
 		m_PlayingButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playingButtonIcon.png");
 		m_StopButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/stopButtonIcon.png");
 		m_PauseButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/pauseButtonIcon.png");
 		m_PausingButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/pausingButtonIcon.png");
 
-		m_PlayButtonIcon_Display = m_PlayButtonIcon;
-		m_PauseButtonIcon_DisPlay = m_PauseButtonIcon;
+		m_PlayButtonIcon_Display	= m_PlayButtonIcon;
+		m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 
-		FrameBufferSpecification fspec;
+		FrameBufferSpecification		fspec;
 		fspec.Attachments				= { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 		fspec.Width						= 1280;
 		fspec.Height					= 720;
@@ -590,6 +610,12 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnPresent()
 	{
+		RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+		RenderCommand::Clear();
+		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_StopButtonIcon);
+		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
+		m_PresentPipeline->Bind();
+		RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
 	}
 
 	void GEngineEditorLayer::OnEndFrame()
