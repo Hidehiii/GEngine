@@ -4,6 +4,7 @@
 #include "Renderer/Renderer.h"
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "tools/Serialization/Serializer.h"
+#include "Utils/GUIUtils.h"
 
 
 namespace GEngine

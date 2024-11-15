@@ -83,6 +83,7 @@ namespace GEngine {
 		poolInfo.poolSizeCount		= static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes			= poolSizes.data();
 		poolInfo.maxSets			= 100 * poolSizes.size();
+		poolInfo.flags				= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &descriptorPool));
 
@@ -122,6 +123,10 @@ namespace GEngine {
 		{
 			s_Spec.x = Application::Get().GetWindow().GetWidth();
 			s_Spec.y = Application::Get().GetWindow().GetHeight();
+			
+			vkDestroyImageView(VulkanContext::Get()->GetDevice(), s_ColorImageView, nullptr);
+			vkDestroyImage(VulkanContext::Get()->GetDevice(), s_ColorImage, nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), s_ColorImageMemory, nullptr);
 			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), s_FrameBuffer, nullptr);
 			CreateBuffer();
 		}

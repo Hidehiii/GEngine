@@ -48,7 +48,7 @@ namespace GEngine
 		inline static void SetAPI(API api) { s_API = api; }
 		inline static API Current() { return s_API; }
 	private:
-		inline static API s_API = API::OpenGL;
+		inline static API s_API		= API::OpenGL;
 	};
 
 }

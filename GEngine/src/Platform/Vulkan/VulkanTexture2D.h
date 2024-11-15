@@ -48,9 +48,8 @@ namespace GEngine
 		VkDescriptorSetLayoutBinding	m_DescriptorSetLayoutBinding;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		bool							m_IsAttachmentImage = false;
-		VkImageLayout					m_AttachmentImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = 0;
+		bool							m_IsAttachmentImage = false;
 	};
 }
 

@@ -27,6 +27,22 @@ namespace GEngine
 	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
 	{
+		m_Specification			= buffer->GetSpecification();
+		m_Specification.Width	= width;
+		m_Specification.Height	= height;
+		for (auto format : m_Specification.Attachments.Attachments)
+		{
+			if (Utils::isDepthFormat(format.TextureFormat))
+			{
+				m_DepthAttachmentSpec = format;
+			}
+			else
+			{
+				m_ColorAttachmentsSpecs.emplace_back(format);
+			}
+		}
+		CreateRenderPass();
+		CreateBuffer();
 	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec)
 	{
@@ -80,6 +96,21 @@ namespace GEngine
 	VulkanFrameBuffer::~VulkanFrameBuffer()
 	{
 		vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
+		for (int i = 0; i < m_ColorImageViews.size(); i++)
+		{
+			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ColorImageViews.at(i), nullptr);
+		}
+		for (int i = 0; i < m_ColorImages.size(); i++)
+		{
+			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_ColorImages.at(i), nullptr);
+		}
+		for (int i = 0; i < m_ColorImagesMemory.size(); i++)
+		{
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ColorImagesMemory.at(i), nullptr);
+		}
+		vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_DepthStencilImageView, nullptr);
+		vkDestroyImage(VulkanContext::Get()->GetDevice(), m_DepthStencilImage, nullptr);
+		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_DepthStencilImageMemory, nullptr);
 	}
 	void VulkanFrameBuffer::Begin()
 	{
@@ -156,19 +187,6 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::CreateBuffer()
 	{
-
-		if (m_FrameBuffer)
-		{
-			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
-
-			m_Images.clear();
-			m_Attachments.clear();
-			m_ImagesMemory.clear();
-			m_ColorImages.clear();
-			m_ColorImageViews.clear();
-			m_ColorImagesMemory.clear();
-			m_FrameBuffer = nullptr;
-		}
 
 		for (int i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
 		{

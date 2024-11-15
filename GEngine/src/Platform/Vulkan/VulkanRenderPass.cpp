@@ -89,6 +89,11 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 	}
 
+	VulkanRenderPass::~VulkanRenderPass()
+	{
+		vkDestroyRenderPass(VulkanContext::Get()->GetDevice(), m_RenderPass, nullptr);
+	}
+
 
 	Ref<VulkanRenderPass> VulkanRenderPass::Create(const RenderPassSpecificationForVulkan& spec)
 	{

@@ -50,6 +50,7 @@ namespace GEngine
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+		inline Ref<Config> GetConfig() { return m_Config; }
 
 		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 	private:

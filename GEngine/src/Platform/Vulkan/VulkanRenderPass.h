@@ -23,6 +23,7 @@ namespace GEngine
 	public:
 		VulkanRenderPass(const RenderPassSpecification& spec);
 		VulkanRenderPass(const RenderPassSpecificationForVulkan& spec);
+		~VulkanRenderPass();
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);

@@ -25,7 +25,6 @@ namespace GEngine
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::string& path);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size);
-		
 
 		// 默认白色纹理
 		static Ref<Texture2D> WhiteTexture();

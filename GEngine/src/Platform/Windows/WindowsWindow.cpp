@@ -168,8 +168,9 @@ namespace GEngine
 	void WindowsWindow::Shutdown()
 	{
 		GE_PROFILE_FUNCTION();
-		m_Context->Uninit();
+		
 		glfwDestroyWindow(m_Window);
+		m_Context->Uninit();
 	}
 
 	void WindowsWindow::OnUpdate()

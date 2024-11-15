@@ -20,6 +20,15 @@ namespace GEngine
 			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetRendererID();
 		case RendererAPI::API::Vulkan:
 		{
+			for (int i = s_VulkanTexture2DUsed.size() - 1; i >= 0; i--)
+			{
+				if (s_VulkanTexture2DUsed.at(i).use_count() <= 1)
+				{
+					ImGui_ImplVulkan_RemoveTexture(s_VulkanTextureID.at(i));
+					s_VulkanTexture2DUsed.erase(s_VulkanTexture2DUsed.begin() + i);
+					s_VulkanTextureID.erase(s_VulkanTextureID.begin() + i);
+				}
+			}
 			for (int i = 0; i < s_VulkanTexture2DUsed.size(); i++)
 			{
 				if (s_VulkanTexture2DUsed.at(i) == texture)

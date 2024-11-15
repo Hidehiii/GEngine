@@ -210,7 +210,7 @@ namespace GEngine
 
 			Renderer::BeginScene(m_EditorCamera);
 			OnOverlayRender();
-			m_ActiveScene->OnRender(); Renderer2D::DrawQuad(Transform({(((int)Time::GetRunTime() % 3) + 1), 1, 0}), Vector4(1, 1, 1, 1));
+			m_ActiveScene->OnRender();
 			Renderer::EndScene();
 		}
 		m_SceneViewportFrameBuffer->End();
@@ -362,21 +362,18 @@ namespace GEngine
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				//m_SceneStateFunction = [&]() {OnScenePlay(); };
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePlay);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				//m_SceneStateFunction = [&]() {OnScenePause(); };
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePause);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
 			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
 			{
-				//m_SceneStateFunction = [&]() {OnSceneStop(); };
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnSceneStop);
 			}
 			ImGui::PopStyleVar(2);
@@ -591,6 +588,38 @@ namespace GEngine
 			ImGui::End();
 		}
 
+		// setting
+		{
+			ImGui::Begin("Setting");
+
+			const char* setRendererAPIString[] = { "OpenGL", "Vulkan" };
+			if (ImGui::BeginCombo("Renderer API", setRendererAPIString[Application::Get().GetConfig()->m_RendererAPI - 1]))
+			{
+				int size = 2;
+				for (int i = 0; i < size; i++)
+				{
+					bool isSelected = setRendererAPIString[i] == setRendererAPIString[Application::Get().GetConfig()->m_RendererAPI - 1];
+					if (ImGui::Selectable(setRendererAPIString[i], isSelected))
+					{
+						if (setRendererAPIString[i] == "OpenGL")
+						{
+							Application::Get().GetConfig()->m_RendererAPI = 1;
+						}
+						else if (setRendererAPIString[i] == "Vulkan")
+						{
+							Application::Get().GetConfig()->m_RendererAPI = 2;
+						}
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::End();
+		}
 
 
 		ImGui::End();

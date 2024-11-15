@@ -90,22 +90,22 @@ namespace GEngine
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
+        m_AspectFlag    = aspectFlag;
         m_IsAttachmentImage = isAttachmentImage;
-        m_AspectFlag = aspectFlag;
-        if (m_IsAttachmentImage)
-        {
-            m_AttachmentImageLayout = layout;
-        }
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
+        vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
+        if (m_IsAttachmentImage == false)
+        {
+            vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
             vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
             vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-            vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
-            vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
-        
+        }
+        vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
     }
+
     void VulkanTexture2D::SetData(void* data, uint32_t size)
     {
         uint32_t bpp = m_DataFormat == VK_FORMAT_R8G8B8A8_UNORM ? 4 : 3;

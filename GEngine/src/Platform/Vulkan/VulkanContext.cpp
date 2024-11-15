@@ -75,6 +75,7 @@ namespace GEngine
     void VulkanContext::Uninit()
     {
         vkDeviceWaitIdle(m_Device);
+        vkQueueWaitIdle(m_GraphicsQueue);
         for(int i = 0;i < m_Semaphores.size();i++)
         {
             vkDestroySemaphore(m_Device, m_Semaphores[i], nullptr);
@@ -531,10 +532,11 @@ namespace GEngine
     void VulkanContext::CleanUpSwapChain()
     {
         vkDeviceWaitIdle(m_Device);
-		for (auto frameBuffer : m_SwapChainFrameBuffers)
+		/*for (auto frameBuffer : m_SwapChainFrameBuffers)
 		{
 			vkDestroyFramebuffer(m_Device, frameBuffer->GetFrameBuffer(), nullptr);
-		}
+		}*/
+        m_SwapChainFrameBuffers.clear();
 		for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);
@@ -544,7 +546,6 @@ namespace GEngine
 
     void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)
     {
-        vkDeviceWaitIdle(m_Device);
         CleanUpSwapChain();
 
         CreateSwapChain(width, height);

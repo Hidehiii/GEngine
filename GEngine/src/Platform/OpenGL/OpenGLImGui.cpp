@@ -36,8 +36,7 @@ namespace GEngine
 		{
 			s_Spec.Width = Application::Get().GetWindow().GetWidth();
 			s_Spec.Height = Application::Get().GetWindow().GetHeight();
-			//s_FrameBuffer = FrameBuffer::Create(s_Spec);
-			s_FrameBuffer->Resize(s_Spec.Width, s_Spec.Height);
+			s_FrameBuffer = FrameBuffer::Recreate(s_FrameBuffer, s_Spec.Width, s_Spec.Height);
 		}
 		ImGui_ImplOpenGL3_NewFrame();
 	}

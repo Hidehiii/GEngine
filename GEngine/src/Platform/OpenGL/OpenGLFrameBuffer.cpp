@@ -92,6 +92,22 @@ namespace GEngine
     }
     OpenGLFrameBuffer::OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
     {
+        m_Specification         = buffer->GetSpecification();
+        m_Specification.Width   = width;
+        m_Specification.Height  = height;
+        for (auto format : m_Specification.Attachments.Attachments)
+        {
+            if (Utils::isDepthFormat(format.TextureFormat))
+            {
+                m_DepthAttachmentSpec = format;
+            }
+            else
+            {
+                m_ColorAttachmentsSpecs.emplace_back(format);
+            }
+        }
+
+        CreateBuffer();
     }
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {

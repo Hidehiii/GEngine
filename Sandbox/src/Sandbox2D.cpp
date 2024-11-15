@@ -5,7 +5,7 @@ using namespace GEngine;
 static std::filesystem::path s_ModelPath = "Resources\\Model";
 static std::filesystem::path s_ShaderPath_2D = "Assets\\Shaders\\2D";
 static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
-static FrameBufferSpecification fspec;
+
 
 void* id = nullptr;
 
@@ -22,7 +22,7 @@ void Sandbox2D::OnAttach()
 	//m_RayTracing.Init();
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
-	
+	FrameBufferSpecification fspec;
 	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 	fspec.Width = 720;
 	fspec.Height = 720;
@@ -232,17 +232,12 @@ void Sandbox2D::OnUpdate()
 	if (m_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		fspec.Width = Application::Get().GetWindow().GetWidth();
-		fspec.Height = Application::Get().GetWindow().GetHeight();
-		//m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-		m_FrameBuffer = FrameBuffer::Create(fspec);
+		m_FrameBuffer = FrameBuffer::Recreate(m_FrameBuffer, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 	if (m_FrameBuffer_0->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_FrameBuffer_0->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		fspec.Width = Application::Get().GetWindow().GetWidth();
-		fspec.Height = Application::Get().GetWindow().GetHeight();
-		m_FrameBuffer_0 = FrameBuffer::Create(fspec);
+		m_FrameBuffer_0 = FrameBuffer::Recreate(m_FrameBuffer_0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
 }
