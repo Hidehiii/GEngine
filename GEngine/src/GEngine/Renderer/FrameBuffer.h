@@ -61,9 +61,6 @@ namespace GEngine
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
-		virtual void Resize(Vector2 size) = 0;
-
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) = 0;
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
 
@@ -75,6 +72,8 @@ namespace GEngine
 		virtual Ref<Texture2D> GetDepthAttachment() = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
+		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
+		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, Vector2 size);
 		operator bool() const { return this != nullptr; }
 
 	protected:

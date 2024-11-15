@@ -25,6 +25,9 @@ namespace GEngine
 		CreateRenderPass();
 		CreateBuffer();
 	}
+	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+	{
+	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec)
 	{
 		m_SpecificationForVulkan		= spec;
@@ -133,22 +136,6 @@ namespace GEngine
 		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
-	void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
-	{
-		if (width <= 0 || height <= 0)
-		{
-			GE_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
-			return;
-		}
-
-		m_Specification.Width = width;
-		m_Specification.Height = height;
-		CreateBuffer();
-	}
-	void VulkanFrameBuffer::Resize(Vector2 size)
-	{
-		Resize((uint32_t)size.x, (uint32_t)size.y);
-	}
 	int VulkanFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
 	{
 		return 0;
@@ -180,6 +167,7 @@ namespace GEngine
 			m_ColorImages.clear();
 			m_ColorImageViews.clear();
 			m_ColorImagesMemory.clear();
+			m_FrameBuffer = nullptr;
 		}
 
 		for (int i = 0; i < m_ColorAttachmentsSpecs.size(); i++)

@@ -19,6 +19,7 @@ namespace GEngine
 	{
 	public:
 		VulkanFrameBuffer(const FrameBufferSpecification& spec);
+		VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
@@ -28,9 +29,6 @@ namespace GEngine
 		virtual int GetAttachmentCount() override { return m_Attachments.size(); }
 		virtual Ref<Texture2D> GetColorAttachment(int index) override;
 		virtual Ref<Texture2D> GetDepthAttachment() override;
-
-		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual void Resize(Vector2 size) override;
 
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }

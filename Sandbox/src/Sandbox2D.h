@@ -44,6 +44,7 @@ private:
 	Ref<Pipeline>	m_Pipeline;
 	std::vector<TestVertex> m_vertex;
 	Ref<FrameBuffer> m_FrameBuffer;
+	Ref<FrameBuffer> m_FrameBuffer_0;
 	Ref<Texture2D> m_Texture;
 
 	std::vector<PresentVertex> m_PresentVertex;

@@ -20,4 +20,21 @@ namespace GEngine
 		return nullptr;
 	}
 
+	Ref<FrameBuffer> FrameBuffer::Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL:  return CreateRef<OpenGLFrameBuffer>(buffer, width, height);
+		case RendererAPI::API::Vulkan:  return CreateRef<VulkanFrameBuffer>(buffer, width, height);
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+
+	Ref<FrameBuffer> FrameBuffer::Recreate(const Ref<FrameBuffer>& buffer, Vector2 size)
+	{
+		return Recreate(buffer, size.x, size.y);
+	}
 }

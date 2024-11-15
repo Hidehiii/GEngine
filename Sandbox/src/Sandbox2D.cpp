@@ -5,6 +5,7 @@ using namespace GEngine;
 static std::filesystem::path s_ModelPath = "Resources\\Model";
 static std::filesystem::path s_ShaderPath_2D = "Assets\\Shaders\\2D";
 static std::filesystem::path s_ShaderPath_3D = "Assets\\Shaders\\3D";
+static FrameBufferSpecification fspec;
 
 void* id = nullptr;
 
@@ -21,11 +22,12 @@ void Sandbox2D::OnAttach()
 	//m_RayTracing.Init();
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
-	FrameBufferSpecification fspec;
+	
 	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 	fspec.Width = 720;
 	fspec.Height = 720;
 	m_FrameBuffer = FrameBuffer::Create(fspec);
+	m_FrameBuffer_0 = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -176,18 +178,34 @@ void Sandbox2D::OnPresent()
 
 void Sandbox2D::OnRender()
 {
+
+	RenderCommand::BeginDrawCommand();
+	m_FrameBuffer_0->Begin();
+	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	RenderCommand::Clear();
+
+
+	Renderer::BeginScene(m_EditorCamera);
+	Renderer2D::DrawQuad(Transform(), Vector4(1, 0, 1, 1));
+	Renderer::EndScene();
+	m_FrameBuffer_0->End();
+	RenderCommand::EndDrawCommand();
+
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
-	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
+	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	RenderCommand::Clear();
 
 
 	Renderer::BeginScene(m_EditorCamera);
 	m_Pipeline->Bind();
 	RenderCommand::DrawTriangles(m_Pipeline->GetVertexBuffer());
+	
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndDrawCommand();
+
+	
 }
 
 void Sandbox2D::OnUpdate()
@@ -209,15 +227,23 @@ void Sandbox2D::OnUpdate()
 	//	
 	//}
 
-	m_EditorCamera.OnUpdate();
+	m_EditorCamera.OnUpdate(); 
 
-	// 重建frameBuffer后记得要重新绑定Attachment
 	if (m_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		fspec.Width = Application::Get().GetWindow().GetWidth();
+		fspec.Height = Application::Get().GetWindow().GetHeight();
+		//m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_FrameBuffer = FrameBuffer::Create(fspec);
 	}
-	
+	if (m_FrameBuffer_0->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_FrameBuffer_0->GetWidth() != Application::Get().GetWindow().GetWidth())
+	{
+		fspec.Width = Application::Get().GetWindow().GetWidth();
+		fspec.Height = Application::Get().GetWindow().GetHeight();
+		m_FrameBuffer_0 = FrameBuffer::Create(fspec);
+	}
 
 }
 
@@ -233,6 +259,7 @@ void Sandbox2D::OnImGuiRender()
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
 	ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer->GetColorAttachment(0)), {100, 100});
+	ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer_0->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }
 

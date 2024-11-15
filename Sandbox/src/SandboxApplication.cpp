@@ -52,7 +52,7 @@ GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args
 {
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
-	spec.Size = { 720, 720 };
+	spec.Size = { 1080, 720 };
 	spec.CommandLineArgs = args;
 	return new Sandbox(spec);
 }

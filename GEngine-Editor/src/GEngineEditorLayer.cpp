@@ -53,7 +53,6 @@ namespace GEngine
 		fspec.Height					= 720;
 		m_SceneViewportFrameBuffer		= FrameBuffer::Create(fspec);
 		m_GameViewportFrameBuffer		= FrameBuffer::Create(fspec);
-		m_PresentFrameBuffer			= FrameBuffer::Create(fspec);
 		m_EditorCamera					= Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
 		m_EditorScene					= CreateRef<Scene>();
 		m_ActiveScene					= m_EditorScene;
@@ -177,29 +176,24 @@ namespace GEngine
 			FrameBufferSpecification fbspsc = m_SceneViewportFrameBuffer->GetSpecification();
 			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspsc.Width != m_SceneViewportSize.x || fbspsc.Height != m_SceneViewportSize.y))
 			{
-				m_SceneViewportFrameBuffer->Resize(m_SceneViewportSize);
+				m_SceneViewportFrameBuffer = FrameBuffer::Recreate(m_SceneViewportFrameBuffer, m_SceneViewportSize);
 			}
 
 			if (m_SceneViewportFocused && m_SceneViewportHovered)
 			{
 				m_EditorCamera.OnUpdate();
 			}
-
-			
-
 		}
 
 
 		// Game Viewport
 		{
-			
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
 			FrameBufferSpecification fbspsc = m_GameViewportFrameBuffer->GetSpecification();
 			if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspsc.Width != m_GameViewportSize.x || fbspsc.Height != m_GameViewportSize.y))
 			{
-				m_GameViewportFrameBuffer->Resize(m_GameViewportSize);
+				m_GameViewportFrameBuffer = FrameBuffer::Recreate(m_GameViewportFrameBuffer, m_GameViewportSize);
 			}
-			
 		}
 	}
 

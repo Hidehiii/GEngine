@@ -11,6 +11,7 @@ namespace GEngine
 	{
 	public:
 		OpenGLFrameBuffer(const FrameBufferSpecification& spec);
+		OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		virtual ~OpenGLFrameBuffer() override;
 
 		
@@ -18,9 +19,6 @@ namespace GEngine
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual int GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
-
-		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual void Resize(Vector2 size) override;
 
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }

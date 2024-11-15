@@ -90,6 +90,9 @@ namespace GEngine
 
         CreateBuffer();
     }
+    OpenGLFrameBuffer::OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+    {
+    }
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
         glDeleteFramebuffers(1, &m_RendererID);
@@ -186,22 +189,6 @@ namespace GEngine
     void OpenGLFrameBuffer::End()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-    void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
-    {
-        if (width <= 0 || height <= 0)
-        {
-			GE_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
-			return;
-		}
-
-        m_Specification.Width = width;
-        m_Specification.Height = height;
-        CreateBuffer();
-    }
-    void OpenGLFrameBuffer::Resize(Vector2 size)
-    {
-        Resize((uint32_t)size.x, (uint32_t)size.y);
     }
     int OpenGLFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
     {

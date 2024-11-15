@@ -61,7 +61,7 @@ namespace GEngine
 		void OnComponentRemoved(ScriptableObject scriptableObject, T& component);*/
 	private:
 		entt::registry m_Registry;
-		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+		uint32_t m_ViewportWidth = 1920, m_ViewportHeight = 1080;
 		std::vector<GameObject> m_DeletedGameObject;
 
 		Ref<PhysicsTimerWheel> m_PhysicsTimerWheel = nullptr;
