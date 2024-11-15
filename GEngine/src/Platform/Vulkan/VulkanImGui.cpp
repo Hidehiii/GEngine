@@ -152,6 +152,7 @@ namespace GEngine {
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
 
 		RenderCommand::EndDrawCommand();
+		int i = 0;
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()

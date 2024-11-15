@@ -216,7 +216,6 @@ void Sandbox2D::OnUpdate()
 		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
 		m_FrameBuffer->Resize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetDepthAttachment());
 	}
 	
 
