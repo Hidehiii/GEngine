@@ -139,16 +139,6 @@ namespace GEngine
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;
-
-        if (m_IsAttachmentImage)
-        {
-            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_AttachmentImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_AspectFlag);
-        }
-        if (m_ImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        {
-            Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_AspectFlag);
-        }
-        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
     void VulkanTexture2D::Unbind()
     {

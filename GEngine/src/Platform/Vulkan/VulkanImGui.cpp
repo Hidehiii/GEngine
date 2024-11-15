@@ -147,16 +147,18 @@ namespace GEngine {
 		renderPassInfo.pClearValues				= &clearColor;
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+		
+
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentDrawCommandBuffer());
 
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
 
 		RenderCommand::EndDrawCommand();
-		int i = 0;
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
 	{
+		s_ImGuiImage->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return s_ImGuiImage;
 	}
 
