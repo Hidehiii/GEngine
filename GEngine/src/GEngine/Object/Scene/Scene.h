@@ -49,8 +49,6 @@ namespace GEngine
 		{
 			if constexpr (std::is_same<T, Camera>::value)
 				component.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-			else if constexpr (std::is_same<T, MeshRenderer>::value)
-				component.Init();
 		}
 		/*template<typename T>
 		void OnComponentRemoved(GameObject gameObject, T& component);

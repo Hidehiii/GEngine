@@ -43,7 +43,7 @@ namespace GEngine
 	class GENGINE_API VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		VulkanIndexBuffer(uint32_t* indices, uint32_t count);
+		VulkanIndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~VulkanIndexBuffer();
 
 		virtual void Bind() const override;

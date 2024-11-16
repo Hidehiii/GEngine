@@ -322,7 +322,7 @@ namespace GEngine
 		DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
 			{
 				auto shaderString = ShaderLibrary::GetShaderNames();
-				const char* currentShader = component.m_Material ? component.m_Material->GetShader()->GetShaderName().c_str() : "None";
+				const char* currentShader = component.GetMaterial() ? component.GetMaterial()->GetShader()->GetShaderName().c_str() : "None";
 				if (ImGui::BeginCombo("##2", currentShader))
 				{
 					for (int i = 0; i < shaderString.size(); i++)
@@ -340,19 +340,19 @@ namespace GEngine
 					ImGui::EndCombo();
 				}
 				
-				if (component.m_Material)
+				if (component.GetMaterial())
 				{
-					ImGui::Text(component.m_Material->GetName().c_str());
-					auto& uniforms = component.m_Material->GetUniforms();
+					ImGui::Text(component.GetMaterial()->GetName().c_str());
+					auto& uniforms = component.GetMaterial()->GetUniforms();
 					for (auto& uniform : uniforms)
 					{
 						switch (uniform.Type)
 						{
 						case ShaderUniformType::Float:
 						{
-							float f = component.m_Material->GetFloat(uniform.Name);
+							float f = component.GetMaterial()->GetFloat(uniform.Name);
 							GUI::FloatControl(uniform.Name.c_str(), f);
-							component.m_Material->SetFloat(uniform.Name, f);
+							component.GetMaterial()->SetFloat(uniform.Name, f);
 							break;
 						}
 						case ShaderUniformType::Int:
@@ -361,16 +361,16 @@ namespace GEngine
 						}
 						case ShaderUniformType::Vector:
 						{
-							Vector4 v = component.m_Material->GetVector(uniform.Name);
+							Vector4 v = component.GetMaterial()->GetVector(uniform.Name);
 							GUI::Vector4Control(uniform.Name.c_str(), v);
-							component.m_Material->SetVector(uniform.Name, v);
+							component.GetMaterial()->SetVector(uniform.Name, v);
 							break;
 						}
 						case ShaderUniformType::Color:
 						{
-							Vector4 v = component.m_Material->GetVector(uniform.Name);
+							Vector4 v = component.GetMaterial()->GetVector(uniform.Name);
 							GUI::Color4Control(uniform.Name.c_str(), v);
-							component.m_Material->SetVector(uniform.Name, v);
+							component.GetMaterial()->SetVector(uniform.Name, v);
 							break;
 						}
 						case ShaderUniformType::Mat3:

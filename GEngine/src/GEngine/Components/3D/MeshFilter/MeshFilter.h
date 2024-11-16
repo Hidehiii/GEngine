@@ -15,12 +15,14 @@ namespace GEngine
 		MeshFilter(const MeshFilter&) = default;
 
 		void SetMesh(const Mesh& mesh);
-		Mesh& GetMesh() { return m_Mesh; }
+		const Mesh& GetMesh() { return m_Mesh; }
 
 		operator bool() const { return m_Mesh; }
 	private:
 		// Mesh of the game object
 		Mesh m_Mesh;
+
+		friend class MeshRenderer;
 	};
 }
 

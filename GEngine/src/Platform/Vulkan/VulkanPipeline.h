@@ -16,8 +16,10 @@ namespace GEngine
 		virtual ~VulkanPipeline() override;
 		virtual void PrepareRender();
 		virtual void Render(uint32_t indexCount, uint32_t instanceCount = 0) override;
-		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
+		virtual Ref<VertexBuffer> GetVertexBuffer() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
+		virtual void SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
 		virtual Ref<Material> GetMaterial() override { m_RecreatePipeline = true; return std::static_pointer_cast<Material>(m_Material);}
+		virtual void SetMaterial(Ref<Material>& material) override;
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次，现在先每次更新看看能不能跑

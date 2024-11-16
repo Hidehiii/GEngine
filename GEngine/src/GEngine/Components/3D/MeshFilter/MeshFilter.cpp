@@ -9,7 +9,7 @@ namespace GEngine
 		m_Mesh = mesh;
 		if (m_GameObject.HasComponent<MeshRenderer>())
 		{
-			m_GameObject.GetComponent<MeshRenderer>().Init();
+			m_GameObject.GetComponent<MeshRenderer>().UpdateMesh(mesh);
 		}
 	}
 }

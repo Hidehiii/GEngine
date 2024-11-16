@@ -7,9 +7,9 @@
 
 #Type vertex
 #version 450 core
-layout(location = 0) in vec4 i_position;
-layout(location = 1) in vec4 i_color;
-layout(location = 2) in vec4 i_normal;
+layout(location = 0) in vec4 i_PositionOS;
+layout(location = 1) in vec4 i_Color;
+layout(location = 2) in vec4 i_Normal;
 
 layout(std140, binding = 1) uniform CAMERA
 {
@@ -33,20 +33,20 @@ layout(std140, binding = 4) uniform LIGHT
 };
 struct VertexOutput
 {
-	vec4 color;
-	vec4 normal;
+	vec4 Color;
+	vec4 Normal;
 };
-layout (set = 1, location = 0) out VertexOutput OUT;
+layout (location = 0) out VertexOutput OUT;
 void main()
 {
-	OUT.color = i_color;
-	OUT.normal = normalize(GE_MATRIX_M * i_normal);
-	gl_Position = GE_MATRIX_VP * GE_MATRIX_M * i_position;
+	OUT.Color = i_Color;
+	OUT.Normal = normalize(GE_MATRIX_M * i_Normal);
+	gl_Position = GE_MATRIX_VP * GE_MATRIX_M * i_PositionOS;
 }
 
 #Type fragment
 #version 450 core
-layout(location = 0) out vec4 o_color;
+layout(location = 0) out vec4 o_Color;
 layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
@@ -61,12 +61,12 @@ layout(std140, binding = 4) uniform LIGHT
 };
 struct VertexOutput
 {
-	vec4 color;
-	vec4 normal;
+	vec4 Color;
+	vec4 Normal;
 };
 layout (location = 0) in VertexOutput IN;
 void main()
 {
-	vec4 col = (dot(normalize(IN.normal.xyz), -normalize(GE_MAIN_LIGHT_DIRECTION.xyz)) * 0.5 + 0.5) * GE_MAIN_LIGHT_COLOR;
-	o_color = vec4(col.x, col.y, col.z, 1.0);
+	vec4 col = (dot(normalize(IN.Normal.xyz), -normalize(GE_MAIN_LIGHT_DIRECTION.xyz)) * 0.5 + 0.5) * GE_MAIN_LIGHT_COLOR;
+	o_Color = vec4(col.x, col.y, col.z, 1.0);
 }

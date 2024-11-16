@@ -50,6 +50,7 @@ namespace GEngine
 		void SetUniformTexture2D(const std::string& name, int slot);
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
+		virtual void SetMacroExp(std::string& source) override;
 	private:
 		std::string ReadFile(const std::string& path);
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
@@ -81,6 +82,9 @@ namespace GEngine
 
 		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
 			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, false}
+		};
+		std::vector<std::pair<std::string, std::string>>	m_MacroExps = {
+
 		};
 	};
 }

@@ -66,4 +66,12 @@ namespace GEngine
             }
         }
     }
+    void OpenGLPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
+    {
+        m_VertexBuffer = std::dynamic_pointer_cast<OpenGLVertexBuffer>(buffer);
+    }
+    void OpenGLPipeline::SetMaterial(Ref<Material>& material)
+    {
+        m_Material = std::dynamic_pointer_cast<OpenGLMaterial>(material);
+    }
 }

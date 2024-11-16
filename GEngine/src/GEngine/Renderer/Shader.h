@@ -112,6 +112,7 @@ namespace GEngine
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 	protected:
 		virtual void SetMacroBool(std::string& source) = 0;
+		virtual void SetMacroExp(std::string& source) = 0;
 	};
 
 	class GENGINE_API ShaderLibrary
@@ -240,6 +241,13 @@ namespace GEngine
 			//第二行插入
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + (value ? "1" : "0") + "\n");
+		}
+
+		static void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp)
+		{
+			//第二行插入
+			size_t eol = source.find_first_of("\n", 0);
+			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
 		}
 	}
 }

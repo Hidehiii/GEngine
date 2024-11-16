@@ -28,8 +28,6 @@ namespace GEngine
     {
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
-
-		
     }
 
     VulkanPipeline::~VulkanPipeline()
@@ -137,6 +135,18 @@ namespace GEngine
 				break;
 			}
 		}
+	}
+
+	void VulkanPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
+	{
+		m_VertexBuffer = std::dynamic_pointer_cast<VulkanVertexBuffer>(buffer);
+		m_RecreatePipeline = true;
+	}
+
+	void VulkanPipeline::SetMaterial(Ref<Material>& material)
+	{
+		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
+		m_RecreatePipeline = true;
 	}
 
     VkShaderModule VulkanPipeline::CreateShaderModule(const std::vector<uint32_t>& code)

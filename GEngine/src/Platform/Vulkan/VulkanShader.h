@@ -42,6 +42,7 @@ namespace GEngine
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) override;
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
+		virtual void SetMacroExp(std::string& source) override;
 	private:
 		std::string ReadFile(const std::string& path);
 		std::unordered_map<std::string, std::string> PreProcess(const std::string& source);
@@ -71,6 +72,9 @@ namespace GEngine
 
 		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
 			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, true}
+		};
+		std::vector<std::pair<std::string, std::string>>	m_MacroExps = {
+
 		};
 	};
 }

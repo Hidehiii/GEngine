@@ -161,7 +161,7 @@ namespace GEngine
         m_IndexBuffer = indexBuffer;
     }
     
-    VulkanIndexBuffer::VulkanIndexBuffer(uint32_t* indices, uint32_t count)
+    VulkanIndexBuffer::VulkanIndexBuffer(const uint32_t* indices, uint32_t count)
     {
 		m_Count = count;
 		VkDeviceSize bufferSize = sizeof(uint32_t) * count;

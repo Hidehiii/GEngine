@@ -2,11 +2,8 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Components/Component.h"
-
-#include "GEngine/Renderer/Shader.h"
-#include "GEngine/Renderer/RenderBuffer.h"
-#include "GEngine/Renderer/Material.h"
-
+#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Asset/Mesh.h"
 namespace GEngine
 {
 
@@ -18,15 +15,15 @@ namespace GEngine
 		MeshRenderer() = default;
 		MeshRenderer(const MeshRenderer&) = default;
 
-		void Init();
-
 		void OnRender();
 
 		void SetMaterial(Ref<Material> material);
-	public:
-		Ref<Material> m_Material;
+		Ref<Material> GetMaterial() { return m_Pipeline ?  m_Pipeline->GetMaterial() : nullptr; }
 	private:
-		Ref<VertexBuffer> m_VertexBuffer;
+		void UpdateMesh(const Mesh& mesh);
+	private:
+		Ref<Pipeline>	m_Pipeline = nullptr;
+		friend class MeshFilter;
 	};
 }
 

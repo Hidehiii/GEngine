@@ -322,6 +322,13 @@ namespace GEngine
 			Utils::SetShaderMacroBool(source, m_MacroBools[i].first, m_MacroBools[i].second);
 		}
 	}
+	void OpenGLShader::SetMacroExp(std::string& source)
+	{
+		for (int i = 0; i < m_MacroExps.size(); i++)
+		{
+			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
+		}
+	}
 	std::string OpenGLShader::ReadFile(const std::string& path)
 	{
 		std::string src;
