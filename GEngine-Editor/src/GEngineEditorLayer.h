@@ -50,7 +50,7 @@ namespace GEngine
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();
-		void DulicateGameObject();
+		void DuplicateGameObject();
 	private:
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;

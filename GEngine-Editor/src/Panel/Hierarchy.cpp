@@ -35,7 +35,6 @@ namespace GEngine
 		if (ImGui::BeginPopup("AddComponent"))
 		{
 			DrawAddComponentOption<ImageRenderer>	("Image Renderer",		gameObject);
-			DrawAddComponentOption<CircleRenderer>	("Circle Renderer",		gameObject);
 			DrawAddComponentOption<Camera>			("Camera",				gameObject);
 			DrawAddComponentOption<RigidBody2D>		("RigidBody 2D",		gameObject);
 			DrawAddComponentOption<BoxCollider2D>	("Box Collider 2D",		gameObject);
@@ -214,46 +213,6 @@ namespace GEngine
 				}
 				ImGui::Columns(1);
 				GUI::Vector2Control("Tiling", component.m_Tiling, Vector2(1.0f));
-			}
-		);
-
-		DrawComponent<CircleRenderer>("Circle Renderer", gameObject, true, [](auto& component)
-			{
-				GUI::Color4Control("Color", component.m_Color);
-				std::string texName = component.m_Texture ? component.m_Texture->GetPath() : "None";
-				float size = 100.0f;
-				ImGui::Columns(2);
-				ImGui::SetColumnWidth(0, size);
-				ImGui::Text("Texture");
-				ImGui::NextColumn();
-				float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-				ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-				buttonSize = { ImGui::CalcItemWidth(), lineHeight };
-				ImGui::Button(texName.c_str(), buttonSize);
-				// Recive Drag data
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						std::filesystem::path pathnam = (const wchar_t*)payload->Data;
-						// Image data
-						if (pathnam.extension() == ".png")
-						{
-							component.m_Texture = Texture2D::Create(pathnam.string());
-						}
-
-					}
-					ImGui::EndDragDropTarget();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Reset"))
-				{
-					component.m_Texture = nullptr;
-				}
-				ImGui::Columns(1);
-				GUI::FloatControl("Radius", component.m_Radius, 0.5f, 0.01f);
-				GUI::FloatControl("Thickness", component.m_Thickness, 0.1f, 0.01f);
-				GUI::FloatControl("Fade", component.m_Fade, 0.0f, 0.01f);
 			}
 		);
 

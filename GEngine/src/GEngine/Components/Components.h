@@ -6,7 +6,6 @@
 #include "NativeScript/NativeScript.h"
 #include "2D/BoxCollider2D/BoxCollider2D.h"
 #include "2D/RigidBody2D/RigidBody2D.h"
-#include "Renderer/CircleRenderer/CircleRenderer.h"
 #include "2D/CircleCollider2D/CircleCollider2D.h"
 #include "3D/MeshFilter/MeshFilter.h"
 #include "Light/DirectionalLight.h"
@@ -25,6 +24,6 @@ namespace GEngine
 	using AllComponents =
 		ComponentGroup<Transform, ImageRenderer,
 		Camera, NativeScript, RigidBody2D, BoxCollider2D,
-		Attribute, CircleRenderer, CircleCollider2D, MeshFilter,
+		Attribute, CircleCollider2D, MeshFilter,
 		MeshRenderer, DirectionalLight, BoxCollider, RigidBody>;
 }

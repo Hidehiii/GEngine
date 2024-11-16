@@ -24,14 +24,10 @@ namespace GEngine
 		static void EndScene();
 
 		static void RenderImage(Transform& transform, ImageRenderer& imagerRenderer);
-		static void RenderCircle(Transform& transform, CircleRenderer& circleRenderer);
 
 		// Base
 		static void DrawQuad(Transform& transform, const Vector4& color);
 		static void DrawQuad(Transform& transform, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
-		static void DrawQuad(Transform& transform, const Vector4& color, const Ref<SubTexture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
-		static void DrawCircle(Transform& transform, const Vector4& color, const float radius = 0.5f, const float thickness = 1.0f, const float fade = 0.0f);
-		static void DrawCircle(Transform& transform, const Vector4& color, const Ref<Texture2D> tex, const float radius = 0.5f, const float thickness = 1.0f, const float fade = 0.0f);
 		static void DrawCircle(Transform& transform, const float& radius, const Vector4& lineColor, const int& segmentCount = 36);
 		static void DrawLine(const Vector3& start, const Vector3& end, const Vector4& color);
 		static void DrawLine(const Vector3& start, const Vector3& direction, const float length, const Vector4& color);
@@ -46,14 +42,6 @@ namespace GEngine
 		// With Texture
 		static void DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
 		static void DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
-
-		// With SubTexture
-		static void DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
-		static void DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<SubTexture2D> tex, const Vector2 tiling = { 1.0f, 1.0f});
-
-		// With SpriteSheet (unuseful)
-		static void DrawQuad(const Vector2& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const Vector2 tiling = { 1.0f, 1.0f});
-		static void DrawQuad(const Vector3& position, const Vector3& rotation, const Vector3& size, const Vector4& color, const Ref<Texture2D> spriteSheet, const Vector2 spriteSheetSize, const Vector2 spriteSize, const Vector2 offset, const Vector2 tiling = { 1.0f, 1.0f});
 
 		// Other
 		static void SetLineWidth(float width);

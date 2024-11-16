@@ -106,7 +106,7 @@ namespace GEngine
 		for (auto entity : view)
 		{
 			auto& attribute = srcSceneRegistry.get<Attribute>(entity);
-			UUID id = attribute.GetUUID();
+			UUID id = attribute.GetUUID(); 
 			auto& name = attribute.m_Name;
 			auto newEntity = newScene->CreateGameObject(id, name);
 			enttMap[id] = (entt::entity)newEntity;
@@ -134,8 +134,9 @@ namespace GEngine
 	void Scene::DuplicateGameObject(GameObject gameObject)
 	{
 		GameObject newObject = CreateGameObject(gameObject.GetComponent<Attribute>().m_Name);
-
+		UUID newUuid = newObject.GetComponent<Attribute>().m_UUID;
 		CopyComponentIfExists(AllComponents{}, newObject, gameObject);
+		newObject.GetComponent<Attribute>().m_UUID = newUuid;
 	}
 	void Scene::DestroyGameObject(GameObject gameObject)
 	{

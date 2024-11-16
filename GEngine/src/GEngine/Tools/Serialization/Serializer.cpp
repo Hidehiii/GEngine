@@ -203,20 +203,6 @@ namespace GEngine
 			out << YAML::Key << "Tiling" << YAML::Value << imageRenderer.m_Tiling;
 			out << YAML::EndMap;
 		}
-		// Circle Renderer
-		if (gameObject.HasComponent<CircleRenderer>())
-		{
-
-			out << YAML::Key << "CircleRenderer";
-			out << YAML::Value << YAML::BeginMap;
-			auto& circleRenderer = gameObject.GetComponent<CircleRenderer>();
-			out << YAML::Key << "Color" << YAML::Value << circleRenderer.m_Color;
-			out << YAML::Key << "Texture" << YAML::Value << (circleRenderer.m_Texture ? circleRenderer.m_Texture->GetPath() : "None");
-			out << YAML::Key << "Radius" << YAML::Value << circleRenderer.m_Radius;
-			out << YAML::Key << "Thickness" << YAML::Value << circleRenderer.m_Thickness;
-			out << YAML::Key << "Fade" << YAML::Value << circleRenderer.m_Fade;
-			out << YAML::EndMap;
-		}
 		// RigidBody2D
 		if (gameObject.HasComponent<RigidBody2D>())
 		{
@@ -457,24 +443,6 @@ namespace GEngine
 						newGameObject.GetComponent<ImageRenderer>().m_Texture = Texture2D::Create(texturePath);
 					}
 					newGameObject.GetComponent<ImageRenderer>().m_Tiling = tiling;
-				}
-				if (gameObject["CircleRenderer"])
-				{
-					auto circleRenderer = gameObject["CircleRenderer"];
-					Vector4 color = circleRenderer["Color"].as<Vector4>();
-					std::string texturePath = circleRenderer["Texture"].as<std::string>();
-					float radius = circleRenderer["Radius"].as<float>();
-					float thickness = circleRenderer["Thickness"].as<float>();
-					float fade = circleRenderer["Fade"].as<float>();
-					newGameObject.AddComponent<CircleRenderer>();
-					newGameObject.GetComponent<CircleRenderer>().m_Color = color;
-					if (texturePath != "None")
-					{
-						newGameObject.GetComponent<CircleRenderer>().m_Texture = Texture2D::Create(texturePath);
-					}
-					newGameObject.GetComponent<CircleRenderer>().m_Radius = radius;
-					newGameObject.GetComponent<CircleRenderer>().m_Thickness = thickness;
-					newGameObject.GetComponent<CircleRenderer>().m_Fade = fade;
 				}
 				if (gameObject["RigidBody2D"])
 				{

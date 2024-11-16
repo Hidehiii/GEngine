@@ -705,7 +705,7 @@ namespace GEngine
 				if (controlPressed)
 				{
 					// ctrl + D
-					DulicateGameObject();
+					DuplicateGameObject();
 				}
 				break;
 			}
@@ -935,7 +935,7 @@ namespace GEngine
 		}
 	}
 
-	void GEngineEditorLayer::DulicateGameObject()
+	void GEngineEditorLayer::DuplicateGameObject()
 	{
 		if (m_SceneState == EditorSceneState::Edit)
 		{
