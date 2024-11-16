@@ -103,6 +103,13 @@ namespace GEngine
 		}
 	};
 
+	enum class VertexTopology
+	{
+		Point		= 0,
+		Line		= 1,
+		Triangle	= 2
+	};
+
 	// Buffer Layout
 	class GENGINE_API BufferLayout
 	{
@@ -144,9 +151,10 @@ namespace GEngine
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const = 0;
+		virtual VertexTopology GetVertexTopologyType() = 0;
 
-		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(uint32_t size, VertexTopology type = VertexTopology::Triangle);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexTopology type = VertexTopology::Triangle);
 	};
 
 	class GENGINE_API IndexBuffer

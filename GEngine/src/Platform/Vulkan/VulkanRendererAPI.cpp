@@ -29,9 +29,13 @@ namespace GEngine
     }
     void VulkanRendererAPI::DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
     {
+        vertexBuffer->Bind();
+        vkCmdDraw(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0);
     }
     void VulkanRendererAPI::DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
     {
+        vertexBuffer->Bind();
+        vkCmdDraw(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0);
     }
     void VulkanRendererAPI::EnableDepthWrite(bool enabled)
     {

@@ -3,10 +3,11 @@
 #include <glad/glad.h>
 namespace GEngine
 {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, VertexTopology type)
 	{
 		GE_PROFILE_FUNCTION();
 
+		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBufferRendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
@@ -14,10 +15,10 @@ namespace GEngine
 		glCreateVertexArrays(1, &m_VertexArrayRendererID);
 	}
 	// Vertex Buffer
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, VertexTopology type)
 	{
 		GE_PROFILE_FUNCTION();
-
+		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBufferRendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);

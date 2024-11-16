@@ -8,8 +8,8 @@ namespace GEngine
 	class GENGINE_API OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(uint32_t size);
-		OpenGLVertexBuffer(float* vertices, uint32_t size);
+		OpenGLVertexBuffer(uint32_t size, VertexTopology type = VertexTopology::Triangle);
+		OpenGLVertexBuffer(float* vertices, uint32_t size, VertexTopology type = VertexTopology::Triangle);
 		virtual ~OpenGLVertexBuffer();
 
 		virtual void SetData(const void* data, uint32_t size) override;
@@ -21,12 +21,13 @@ namespace GEngine
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
-			
+		virtual VertexTopology GetVertexTopologyType() override { return m_TopologyType; }
 	private:
 		uint32_t								m_VertexBufferRendererID;
 		uint32_t								m_VertexArrayRendererID;
 		BufferLayout							m_Layout;
 		Ref<IndexBuffer>						m_IndexBuffer;
+		VertexTopology							m_TopologyType;
 	};
 
 

@@ -9,8 +9,8 @@ namespace GEngine
 	class GENGINE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(uint32_t size);
-		VulkanVertexBuffer(float* vertices, uint32_t size);
+		VulkanVertexBuffer(uint32_t size, VertexTopology type = VertexTopology::Triangle);
+		VulkanVertexBuffer(float* vertices, uint32_t size, VertexTopology type = VertexTopology::Triangle);
 		virtual ~VulkanVertexBuffer();
 
 		virtual void SetData(const void* data, uint32_t size) override;
@@ -22,15 +22,17 @@ namespace GEngine
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
+		virtual VertexTopology GetVertexTopologyType() override { return m_TopologyType; }
 
 		const VkVertexInputBindingDescription& GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
 		const std::vector<VkVertexInputAttributeDescription>& GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
 	private:
+		VertexTopology	m_TopologyType;
 		VkBuffer		m_VertexBuffer;
 		VkDeviceMemory	m_VertexBufferMemory;
 		BufferLayout	m_Layout;
 		uint32_t		m_Offset = 0;
-		Ref<IndexBuffer>						m_IndexBuffer;
+		Ref<IndexBuffer>						m_IndexBuffer = nullptr;
 		VkVertexInputBindingDescription			m_VertexInputBindingDescription;
 		std::vector<VkVertexInputAttributeDescription>	m_VertexInputAttributeDescriptions;
 	};

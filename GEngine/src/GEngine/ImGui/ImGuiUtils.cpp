@@ -51,4 +51,38 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "GetTextureID not work");
 		return nullptr;
 	}
+
+	Vector2 GUIUtils::GetUV0()
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			return { 0.0f, 1.0f };
+		case RendererAPI::API::Vulkan:
+			return { 0.0f, 0.0f };
+
+		default:
+			break;
+		}
+
+		GE_CORE_ASSERT(false, "GetTextureID not work");
+		return Vector2();
+	}
+
+	Vector2 GUIUtils::GetUV1()
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			return { 1.0f, 0.0f };
+		case RendererAPI::API::Vulkan:
+			return { 1.0f, 1.0f };
+
+		default:
+			break;
+		}
+
+		GE_CORE_ASSERT(false, "GetTextureID not work");
+		return Vector2();
+	}
 }

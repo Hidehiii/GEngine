@@ -360,19 +360,19 @@ namespace GEngine
 			ImGui::Begin("##ToolBar",nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			float size = ImGui::GetWindowHeight() - 1.0f;
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePlay);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePause);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { 0.0f, 1.0f }, { 1.0f, 0.0f }))
+			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnSceneStop);
 			}
@@ -399,7 +399,7 @@ namespace GEngine
 				m_SceneViewportSize		= viewportPanelSize;
 				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
-			ImGui::Image(GUIUtils::GetTextureID(m_SceneViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image(GUIUtils::GetTextureID(m_SceneViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
 
 			Vector2 windowRegionMin		= { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
 			Vector2 windowRegionMax		= { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
@@ -493,7 +493,7 @@ namespace GEngine
 					m_ActiveScene->MainCamera()->SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 				}
 			}
-			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { 0.0f, 1.0f }, { 1.0f, 0.0f });
+			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
 
 			ImGui::End();
 			ImGui::PopStyleVar();

@@ -6,8 +6,9 @@
 
 namespace GEngine
 {
-    VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size)
+    VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size, VertexTopology type)
     {
+        m_TopologyType = type;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
                             VulkanContext::Get()->GetDevice(),
                             size, 
@@ -16,8 +17,9 @@ namespace GEngine
                             m_VertexBuffer, 
                             m_VertexBufferMemory);
     }
-    VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size)
+    VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size, VertexTopology type)
     {
+        m_TopologyType = type;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
                             VulkanContext::Get()->GetDevice(),
                             size, 
@@ -44,7 +46,8 @@ namespace GEngine
         GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
-        m_IndexBuffer->Bind();
+        if(m_IndexBuffer)
+            m_IndexBuffer->Bind();
     }
     void VulkanVertexBuffer::Unbind() const
     {

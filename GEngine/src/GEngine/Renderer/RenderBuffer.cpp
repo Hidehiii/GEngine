@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexTopology type)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -15,17 +15,17 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLVertexBuffer>(size);
+			return CreateRef<OpenGLVertexBuffer>(size, type);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanVertexBuffer>(size);
+			return CreateRef<VulkanVertexBuffer>(size, type);
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, VertexTopology type)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -34,10 +34,10 @@ namespace GEngine
 			return nullptr;
 			}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLVertexBuffer>(vertices, size);
+			return CreateRef<OpenGLVertexBuffer>(vertices, size, type);
 			}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanVertexBuffer>(vertices, size);
+			return CreateRef<VulkanVertexBuffer>(vertices, size, type);
 		}
 		}
 		

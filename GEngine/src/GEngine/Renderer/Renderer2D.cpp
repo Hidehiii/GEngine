@@ -173,7 +173,7 @@ namespace GEngine
 			{
 				s_Data.LinePipeline = Pipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Line2D.glsl")),
-					VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex))
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex), VertexTopology::Line)
 				);
 				s_Data.LinePipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
@@ -187,7 +187,7 @@ namespace GEngine
 			{
 				s_Data.PointPipeline = Pipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Point2D.glsl")),
-					VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex))
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex), VertexTopology::Point)
 				);
 				s_Data.PointPipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},

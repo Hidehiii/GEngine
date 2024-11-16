@@ -230,7 +230,22 @@ namespace GEngine
 		m_VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();
 
 		m_InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		m_InputAssembly.topology				= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		if (m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Point)
+		{
+			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		}
+		else if (m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Line)
+		{
+			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		}
+		else if(m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Triangle)
+		{
+			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		}
+		else
+		{
+			GE_CORE_ASSERT(false, "unkown topolopgy");
+		}
 		m_InputAssembly.primitiveRestartEnable	= VK_FALSE;
 
 		m_Viewport.x			= 0.0f;
