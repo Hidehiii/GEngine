@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexTopology type)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -15,17 +15,17 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLVertexBuffer>(size, type);
+			return CreateRef<OpenGLVertexBuffer>(size, sizeInstance, type);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanVertexBuffer>(size, type);
+			return CreateRef<VulkanVertexBuffer>(size, sizeInstance, type);
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, VertexTopology type)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -34,10 +34,10 @@ namespace GEngine
 			return nullptr;
 			}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLVertexBuffer>(vertices, size, type);
+			return CreateRef<OpenGLVertexBuffer>(vertices, size, sizeInstance, type);
 			}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanVertexBuffer>(vertices, size, type);
+			return CreateRef<VulkanVertexBuffer>(vertices, size, sizeInstance, type);
 		}
 		}
 		
@@ -69,11 +69,25 @@ namespace GEngine
 	{
 		uint32_t offset = 0;
 		m_Stride = 0;
+		m_StrideInstance = 0;
 		for (auto& element : m_Elements)
 		{
-			element.Offset = offset;
-			offset += element.Size;
-			m_Stride += element.Size;
+			if (element.IsInstance == false)
+			{
+				element.Offset = offset;
+				offset += element.Size;
+				m_Stride += element.Size;
+			}
+		}
+		offset = 0;
+		for (auto& element : m_Elements)
+		{
+			if (element.IsInstance)
+			{
+				element.Offset = offset;
+				offset += element.Size;
+				m_StrideInstance += element.Size;
+			}
 		}
 	}
 }

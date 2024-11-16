@@ -13,6 +13,17 @@ struct TestVertex
 	int		index;
 };
 
+struct InstanceVertex
+{
+	Vector4 Pos;
+	Vector2 UV;
+};
+
+struct InstanceData
+{
+	Vector4 Offset;
+};
+
 struct PresentVertex
 {
 	Vector4 Pos;
@@ -42,6 +53,8 @@ private:
 	RayTracing m_RayTracing;*/
 
 	Ref<Pipeline>	m_Pipeline;
+	Ref<Pipeline>	m_InstancePipeline;
+	std::vector<InstanceData> m_InstanceData;
 	std::vector<TestVertex> m_vertex;
 	Ref<FrameBuffer> m_FrameBuffer;
 	Ref<FrameBuffer> m_FrameBuffer_0;

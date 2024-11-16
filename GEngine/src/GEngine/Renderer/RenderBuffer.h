@@ -78,11 +78,13 @@ namespace GEngine
 		uint32_t Size;
 		// Is the buffer element normalized
 		bool Normalized;
+		// Is instance data
+		bool IsInstance;
 
 		BufferElement() {}
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-			: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized){}
+		BufferElement(ShaderDataType type, const std::string& name, bool isInstance = false, bool normalized = false)
+			: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), IsInstance(isInstance), Normalized(normalized){}
 
 		uint32_t GetElementDataSize() const
 		{
@@ -122,6 +124,7 @@ namespace GEngine
 
 		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 		inline uint32_t GetStride() const { return m_Stride; }
+		inline uint32_t GetStrideInstance() const { return m_StrideInstance; }
 		uint32_t GetElementCount() const { return (uint32_t)m_Elements.size(); }
 
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
@@ -133,6 +136,7 @@ namespace GEngine
 	private:
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride = 0;
+		uint32_t m_StrideInstance = 0;
 	};
 
 	class IndexBuffer;
@@ -146,15 +150,16 @@ namespace GEngine
 		virtual void Unbind() const = 0;
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
-
+		virtual void SetDataInstance(const void* data, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const = 0;
 		virtual VertexTopology GetVertexTopologyType() = 0;
+		virtual bool IsInstanceRendering() = 0;
 
-		static Ref<VertexBuffer> Create(uint32_t size, VertexTopology type = VertexTopology::Triangle);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, VertexTopology type = VertexTopology::Triangle);
+		static Ref<VertexBuffer> Create(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
 	};
 
 	class GENGINE_API IndexBuffer

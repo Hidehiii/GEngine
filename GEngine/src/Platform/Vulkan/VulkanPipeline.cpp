@@ -4,7 +4,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
-
+#include "GEngine/Renderer/RenderCommand.h"
 
 namespace GEngine
 {
@@ -39,7 +39,7 @@ namespace GEngine
 		vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
     }
 
-    void VulkanPipeline::Bind()
+    void VulkanPipeline::PrepareRender()
     {
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
@@ -84,11 +84,60 @@ namespace GEngine
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
-    void VulkanPipeline::Unbind()
-    {
-
-    }
-
+	void VulkanPipeline::Render(uint32_t indexCount, uint32_t instanceCount)
+	{
+		PrepareRender();
+		m_VertexBuffer->Bind();
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
+		if (m_VertexBuffer->IsInstanceRendering())
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				RenderCommand::DrawTriangleInstance(indexCount, instanceCount);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				RenderCommand::DrawLines(indexCount);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				RenderCommand::DrawPoints(indexCount);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
+		else
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				RenderCommand::DrawTriangles(indexCount);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				RenderCommand::DrawLines(indexCount);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				RenderCommand::DrawPoints(indexCount);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
+	}
 
     VkShaderModule VulkanPipeline::CreateShaderModule(const std::vector<uint32_t>& code)
     {
@@ -223,8 +272,9 @@ namespace GEngine
 		dynamicStateCreateInfo.pDynamicStates		= m_DynamicStates.data();
 
 		m_VertexInputInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		m_VertexInputInfo.vertexBindingDescriptionCount		= 1;
-		m_VertexInputInfo.pVertexBindingDescriptions		= &(m_VertexBuffer->GetVertexInputBindingDescription());
+		m_VertexInputInfo.vertexBindingDescriptionCount		= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputBindingDescription().size());
+		auto												bindingDescription = m_VertexBuffer->GetVertexInputBindingDescription();
+		m_VertexInputInfo.pVertexBindingDescriptions		= bindingDescription.data();
 		m_VertexInputInfo.vertexAttributeDescriptionCount	= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputAttributeDescriptions().size());
 		auto												attributeDescription = m_VertexBuffer->GetVertexInputAttributeDescriptions();
 		m_VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();

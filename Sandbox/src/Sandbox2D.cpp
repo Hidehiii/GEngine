@@ -150,6 +150,41 @@ void Sandbox2D::OnAttach()
 	
 
 	id = GUIUtils::GetTextureID(m_Texture);
+
+	m_InstanceData.resize(10);
+	m_InstancePipeline = Pipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/Instancing.glsl")),
+		VertexBuffer::Create(sizeof(InstanceVertex) * 4, sizeof(InstanceData) * m_InstanceData.size())
+	);    
+	m_InstancePipeline->GetVertexBuffer()->SetLayout({
+		{ShaderDataType::float4,	"PositionOS"		},
+		{ShaderDataType::float2,	"UV"				},
+		{ShaderDataType::float4,	"Offset",		true}
+		});
+	uint32_t* InstanceIndices = new uint32_t[6];
+	InstanceIndices[0] = 0;
+	InstanceIndices[1] = 1;
+	InstanceIndices[2] = 2;
+	InstanceIndices[3] = 2;
+	InstanceIndices[4] = 3;
+	InstanceIndices[5] = 0;
+	m_InstancePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(InstanceIndices, 6));
+	delete[] InstanceIndices;
+	InstanceVertex* instanceVertex = new InstanceVertex[4];
+	instanceVertex[0].Pos = { -0.5f, -0.5f, 0.0f, 1.0f };
+	instanceVertex[1].Pos = { 0.5f, -0.5f, 0.0f, 1.0f };
+	instanceVertex[2].Pos = { 0.5f,  0.5f, 0.0f, 1.0f };
+	instanceVertex[3].Pos = { -0.5f,  0.5f, 0.0f, 1.0f };
+	instanceVertex[0].UV = { 0.0f, 0.0f };
+	instanceVertex[1].UV = { 1.0f, 0.0f };
+	instanceVertex[2].UV = { 1.0f, 1.0f };
+	instanceVertex[3].UV = { 0.0f, 1.0f };
+	m_InstancePipeline->GetVertexBuffer()->SetData(instanceVertex, sizeof(InstanceVertex) * 4);
+	for (int i = 0; i < 10; i++)
+	{
+		m_InstanceData[i] = { Vector4(i, i , 0, 0) };
+	}
+	m_InstancePipeline->GetVertexBuffer()->SetDataInstance(m_InstanceData.data(), m_InstanceData.size() * sizeof(InstanceData));
 }
 
 void Sandbox2D::OnDetach()
@@ -166,8 +201,7 @@ void Sandbox2D::OnPresent()
 	
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
-	m_PresentPipeline->Bind();
-	RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
+	m_PresentPipeline->Render();
 
 	
 	//m_Pipeline->Bind();
@@ -198,9 +232,8 @@ void Sandbox2D::OnRender()
 
 
 	Renderer::BeginScene(m_EditorCamera);
-	m_Pipeline->Bind();
-	RenderCommand::DrawTriangles(m_Pipeline->GetVertexBuffer());
-	
+	//m_Pipeline->Render();
+	m_InstancePipeline->Render(6, 10);
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndDrawCommand();

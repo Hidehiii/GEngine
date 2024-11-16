@@ -14,9 +14,8 @@ namespace GEngine
 	public:
 		VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanPipeline() override;
-		virtual void Bind() override;
-		virtual void Unbind() override;
-
+		virtual void PrepareRender();
+		virtual void Render(uint32_t indexCount, uint32_t instanceCount = 0) override;
 		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
 		virtual Ref<Material> GetMaterial() override { m_RecreatePipeline = true; return std::static_pointer_cast<Material>(m_Material);}
 	private:

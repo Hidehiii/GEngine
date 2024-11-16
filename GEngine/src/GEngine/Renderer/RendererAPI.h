@@ -24,11 +24,11 @@ namespace GEngine
 		virtual void SetClearColor(const Vector4& color) = 0;
 		virtual void Clear() = 0;
 
-		virtual void DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) = 0;
-		virtual void DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) = 0;
-		virtual void DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) = 0;
+		virtual void DrawTriangles(uint32_t indexCount = 0) = 0;
+		virtual void DrawLines(uint32_t indexCount = 0) = 0;
+		virtual void DrawPoints(uint32_t indexCount = 0) = 0;
 
-		virtual void DrawTrianglesInstanced(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount, uint32_t instanceCount) = 0;
+		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
 		virtual void SetPointSize(float size) = 0;

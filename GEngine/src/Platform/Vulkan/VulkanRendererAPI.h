@@ -19,9 +19,9 @@ namespace GEngine
 		virtual void Clear() override;
 
 
-		virtual void DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
-		virtual void DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
-		virtual void DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount = 0) override;
+		virtual void DrawTriangles(uint32_t indexCount = 0) override;
+		virtual void DrawLines(uint32_t indexCount = 0) override;
+		virtual void DrawPoints(uint32_t indexCount = 0) override;
 
 		virtual void EnableDepthWrite(bool enabled) override;
 		virtual void EnableDepthTest(bool enabled) override;
@@ -29,7 +29,7 @@ namespace GEngine
 		virtual void SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest) override;
 
 
-		virtual void DrawTrianglesInstanced(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount, uint32_t instanceCount) override;
+		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) override;
 
 		virtual void SetLineWidth(float width) override;
 		virtual void SetPointSize(float size) override;

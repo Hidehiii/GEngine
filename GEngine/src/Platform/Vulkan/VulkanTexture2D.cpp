@@ -84,25 +84,21 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isAttachmentImage)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag)
     {
         m_DataFormat    = format;
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
         m_AspectFlag    = aspectFlag;
-        m_IsAttachmentImage = isAttachmentImage;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
         vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-        if (m_IsAttachmentImage == false)
-        {
             vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
             vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
             vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-        }
         vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
     }
 

@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 namespace GEngine
 {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, VertexTopology type)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		GE_PROFILE_FUNCTION();
 
@@ -13,25 +13,50 @@ namespace GEngine
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 
 		glCreateVertexArrays(1, &m_VertexArrayRendererID);
+
+		if (sizeInstance > 0)
+		{
+			m_InstanceRendering = true;
+			glCreateBuffers(1, &m_InstanceBufferRendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
+		}
 	}
 	// Vertex Buffer
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, VertexTopology type)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		GE_PROFILE_FUNCTION();
 		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBufferRendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+
+		if (sizeInstance > 0)
+		{
+			m_InstanceRendering = true;
+			glCreateBuffers(1, &m_InstanceBufferRendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
+			
+		}
 	}
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		glDeleteBuffers(1, &m_VertexBufferRendererID);
+		if (m_InstanceRendering)
+		{
+			glDeleteBuffers(1, &m_InstanceBufferRendererID);
+		}
 	}
 	void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		GE_PROFILE_FUNCTION();
-		
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+	}
+	void OpenGLVertexBuffer::SetDataInstance(const void* data, uint32_t size)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 	void OpenGLVertexBuffer::Bind() const
@@ -63,9 +88,21 @@ namespace GEngine
 			case ShaderDataType::float3:
 			case ShaderDataType::float4:
 			{
-				glEnableVertexAttribArray(index);
-				glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
-					element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
+				if (element.IsInstance)
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+					glEnableVertexAttribArray(index);
+					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideInstance(), (const void*)element.Offset);
+					glVertexAttribDivisor(index, 1);
+				}
+				else
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+					glEnableVertexAttribArray(index);
+					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
+				}
 				index++;
 				break;
 			}
@@ -74,9 +111,21 @@ namespace GEngine
 			case ShaderDataType::int3:
 			case ShaderDataType::int4:
 			{
-				glEnableVertexAttribArray(index);
-				glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
-					m_Layout.GetStride(), (const void*)element.Offset);
+				if (element.IsInstance)
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+					glEnableVertexAttribArray(index);
+					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+						m_Layout.GetStrideInstance(), (const void*)element.Offset);
+					glVertexAttribDivisor(index, 1);
+				}
+				else
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+					glEnableVertexAttribArray(index);
+					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+						m_Layout.GetStride(), (const void*)element.Offset);
+				}
 				index++;
 				break;
 			}

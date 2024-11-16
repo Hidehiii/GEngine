@@ -173,7 +173,7 @@ namespace GEngine
 			{
 				s_Data.LinePipeline = Pipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Line2D.glsl")),
-					VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex), VertexTopology::Line)
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex), 0, VertexTopology::Line)
 				);
 				s_Data.LinePipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
@@ -181,19 +181,43 @@ namespace GEngine
 					});
 
 				s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
+				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
+				uint32_t offset = 0;
+				for (uint32_t i = 0; i < s_Data.MaxIndices; i += 2)
+				{
+					quadIndices[i + 0] = offset + 0;
+					quadIndices[i + 1] = offset + 1;
+
+					offset += 2;
+				}
+				s_Data.LinePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
+
+				delete[] quadIndices;
+
 			}
 
 			// Point
 			{
 				s_Data.PointPipeline = Pipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Point2D.glsl")),
-					VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex), VertexTopology::Point)
+					VertexBuffer::Create(s_Data.MaxVertices * sizeof(PointVertex), 0, VertexTopology::Point)
 				);
 				s_Data.PointPipeline->GetVertexBuffer()->SetLayout({
 					{ShaderDataType::float4, "PositionOS"},
 					{ShaderDataType::float4, "Color"}
 					});
 				s_Data.PointVertexBufferBase = new PointVertex[s_Data.MaxVertices];
+
+				uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
+				uint32_t offset = 0;
+				for (uint32_t i = 0; i < s_Data.MaxIndices; i += 1)
+				{
+					quadIndices[i + 0] = offset + 0;
+					offset += 1;
+				}
+				s_Data.PointPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, s_Data.MaxIndices));
+
+				delete[] quadIndices;
 			}
 		}
 		
@@ -212,8 +236,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 			s_Data.QuadPipeline->GetVertexBuffer()->SetData(s_Data.QuadVertexBufferBase, dataSize);
-			s_Data.QuadPipeline->Bind();
-			RenderCommand::DrawTriangles(s_Data.QuadPipeline->GetVertexBuffer(), s_Data.QuadIndexCount);
+			s_Data.QuadPipeline->Render(s_Data.QuadIndexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -221,8 +244,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
 			s_Data.CirclePipeline->GetVertexBuffer()->SetData(s_Data.CircleVertexBufferBase, dataSize);
-			s_Data.CirclePipeline->Bind();
-			RenderCommand::DrawTriangles(s_Data.CirclePipeline->GetVertexBuffer(), s_Data.CircleIndexCount);
+			s_Data.CirclePipeline->Render(s_Data.CircleIndexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -230,8 +252,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
 			s_Data.LinePipeline->GetVertexBuffer()->SetData(s_Data.LineVertexBufferBase, dataSize);
-			s_Data.LinePipeline->Bind();
-			RenderCommand::DrawLines(s_Data.LinePipeline->GetVertexBuffer(), s_Data.LineVertexCount);
+			s_Data.LinePipeline->Render(s_Data.LineVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -239,8 +260,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.PointVertexBufferPtr - (uint8_t*)s_Data.PointVertexBufferBase);
 			s_Data.PointPipeline->GetVertexBuffer()->SetData(s_Data.PointVertexBufferBase, dataSize);
-			s_Data.PointPipeline->Bind();
-			RenderCommand::DrawPoints(s_Data.PointPipeline->GetVertexBuffer(), s_Data.PointVertexCount);
+			s_Data.PointPipeline->Render(s_Data.PointVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 	}

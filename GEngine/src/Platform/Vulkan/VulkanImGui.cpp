@@ -192,7 +192,7 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));
 
-		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, true);
+		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 }

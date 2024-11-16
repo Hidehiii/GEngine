@@ -22,21 +22,21 @@ namespace GEngine
 		s_RendererAPI->Clear();
 	}
 
-	inline void RenderCommand::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count = 0)
+	inline void RenderCommand::DrawTriangles(const uint32_t count = 0)
 	{
-		s_RendererAPI->DrawTriangles(vertexBuffer, count);
+		s_RendererAPI->DrawTriangles(count);
 	}
-	inline void RenderCommand::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer)
+	inline void RenderCommand::DrawTriangleInstance(const uint32_t count, const uint32_t instanceCount)
 	{
-		s_RendererAPI->DrawTriangles(vertexBuffer);
+		s_RendererAPI->DrawTrianglesInstance(count, instanceCount);
 	}
-	inline void RenderCommand::DrawLines(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count)
+	inline void RenderCommand::DrawLines(const uint32_t count)
 	{
-		s_RendererAPI->DrawLines(vertexBuffer, count);
+		s_RendererAPI->DrawLines(count);
 	}
-	inline void RenderCommand::DrawPoints(const Ref<VertexBuffer>& vertexBuffer, const uint32_t count)
+	inline void RenderCommand::DrawPoints(const uint32_t count)
 	{
-		s_RendererAPI->DrawPoints(vertexBuffer, count);
+		s_RendererAPI->DrawPoints(count);
 	}
 	inline void RenderCommand::SetLineWidth(float width)
 	{

@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-    VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size, VertexTopology type)
+    VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
     {
         m_TopologyType = type;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
@@ -16,8 +16,19 @@ namespace GEngine
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
                             m_VertexBuffer, 
                             m_VertexBufferMemory);
+        if (sizeInstance > 0)
+        {
+            m_InstanceRendering = true;
+            Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+                VulkanContext::Get()->GetDevice(),
+                sizeInstance,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                m_InstanceBuffer,
+                m_InstanceBufferMemory);
+        }
     }
-    VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size, VertexTopology type)
+    VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
     {
         m_TopologyType = type;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
@@ -27,6 +38,17 @@ namespace GEngine
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
                             m_VertexBuffer, 
                             m_VertexBufferMemory);
+        if (sizeInstance > 0)
+        {
+            m_InstanceRendering = true;
+            Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+                VulkanContext::Get()->GetDevice(),
+                sizeInstance,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                m_InstanceBuffer,
+                m_InstanceBufferMemory);
+        }
         SetData(vertices, size);
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
@@ -41,11 +63,20 @@ namespace GEngine
 		memcpy(mappedData, data, size);
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory);
     }
+    void VulkanVertexBuffer::SetDataInstance(const void* data, uint32_t size)
+    {
+        void* mappedData;
+        vkMapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory, 0, size, 0, &mappedData);
+        memcpy(mappedData, data, size);
+        vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory);
+    }
     void VulkanVertexBuffer::Bind() const
     {
         GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
+        if(m_InstanceRendering)
+            vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 1, 1, &m_InstanceBuffer, offsets);
         if(m_IndexBuffer)
             m_IndexBuffer->Bind();
     }
@@ -56,10 +87,24 @@ namespace GEngine
     void VulkanVertexBuffer::SetLayout(const BufferLayout& layout)
     {
         m_Layout                            = layout;
+        m_VertexInputBindingDescription.clear();
+        m_VertexInputAttributeDescriptions.clear();
+
         VkVertexInputBindingDescription		bindingDescription{};
         bindingDescription.binding          = 0;
         bindingDescription.stride           = m_Layout.GetStride();
         bindingDescription.inputRate        = VK_VERTEX_INPUT_RATE_VERTEX;
+        m_VertexInputBindingDescription.push_back(bindingDescription);
+        
+
+        if (m_InstanceRendering)
+        {
+            VkVertexInputBindingDescription		    instanceBindingDescription{};
+            instanceBindingDescription.binding      = 1;
+            instanceBindingDescription.stride       = m_Layout.GetStrideInstance();
+            instanceBindingDescription.inputRate    = VK_VERTEX_INPUT_RATE_INSTANCE;
+            m_VertexInputBindingDescription.push_back(instanceBindingDescription);
+        }
 
         uint32_t index = 0;
         for (auto& element : m_Layout)
@@ -68,6 +113,12 @@ namespace GEngine
             attributeDescription.binding            = 0;
             attributeDescription.location           = index;
             attributeDescription.offset             = element.Offset;
+
+            if (element.IsInstance)
+            {
+                attributeDescription.binding        = 1;
+            }
+
             switch (element.Type)
             {
             case ShaderDataType::float1:
@@ -102,7 +153,7 @@ namespace GEngine
             index++;
         }
 
-        m_VertexInputBindingDescription = bindingDescription;
+        
     }
 
     void VulkanVertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)

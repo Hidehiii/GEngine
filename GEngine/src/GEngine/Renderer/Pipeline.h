@@ -9,9 +9,7 @@ namespace GEngine
 	{
 	public:
 		virtual ~Pipeline() = default;
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-
+		virtual void Render(uint32_t indexCount = 0, uint32_t instanceCount = 0) = 0;
 		virtual Ref<VertexBuffer> GetVertexBuffer() = 0;
 
 		virtual Ref<Material> GetMaterial() = 0;

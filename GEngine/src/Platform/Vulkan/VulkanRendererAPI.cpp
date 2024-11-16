@@ -21,21 +21,17 @@ namespace GEngine
     void VulkanRendererAPI::Clear()
     {
     }
-    void VulkanRendererAPI::DrawTriangles(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
+    void VulkanRendererAPI::DrawTriangles(uint32_t indexCount)
     {
-        uint32_t count = indexCount ? indexCount : vertexBuffer->GetIndexBuffer()->GetCount();
-        vertexBuffer->Bind();
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), count, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
-    void VulkanRendererAPI::DrawLines(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
+    void VulkanRendererAPI::DrawLines(uint32_t indexCount)
     {
-        vertexBuffer->Bind();
-        vkCmdDraw(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
-    void VulkanRendererAPI::DrawPoints(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount)
+    void VulkanRendererAPI::DrawPoints(uint32_t indexCount)
     {
-        vertexBuffer->Bind();
-        vkCmdDraw(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::EnableDepthWrite(bool enabled)
     {
@@ -49,8 +45,9 @@ namespace GEngine
     void VulkanRendererAPI::SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest)
     {
     }
-    void VulkanRendererAPI::DrawTrianglesInstanced(const Ref<VertexBuffer>& vertexBuffer, uint32_t indexCount, uint32_t instanceCount)
+    void VulkanRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
     {
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
     }
     void VulkanRendererAPI::SetLineWidth(float width)
     {

@@ -37,7 +37,7 @@ namespace GEngine
 			m_Material->UploadData();
 			m_VertexBuffer->SetData(m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.data(), m_GameObject.GetComponent<MeshFilter>().GetMesh().m_Vertices.size() * sizeof(Vertex));
 			Renderer::SetModelUniforms(m_GameObject.GetComponent<Transform>());
-			RenderCommand::DrawTriangles(m_VertexBuffer);
+			//RenderCommand::DrawTriangles(m_VertexBuffer);
 		}
 		else
 		{

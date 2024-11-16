@@ -636,8 +636,7 @@ namespace GEngine
 		RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 		RenderCommand::Clear();
 		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
-		m_PresentPipeline->Bind();
-		RenderCommand::DrawTriangles(m_PresentPipeline->GetVertexBuffer());
+		m_PresentPipeline->Render();
 	}
 
 	void GEngineEditorLayer::OnEndFrame()
