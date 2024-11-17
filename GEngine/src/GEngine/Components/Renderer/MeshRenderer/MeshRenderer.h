@@ -20,7 +20,7 @@ namespace GEngine
 		void SetMaterial(Ref<Material> material);
 		Ref<Material> GetMaterial() { return m_Pipeline ?  m_Pipeline->GetMaterial() : nullptr; }
 	private:
-		void UpdateMesh(const Mesh& mesh);
+		void UpdatePipeline();
 	private:
 		Ref<Pipeline>	m_Pipeline = nullptr;
 		friend class MeshFilter;

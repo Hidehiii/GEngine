@@ -15,49 +15,41 @@ namespace GEngine
 		}
 		else
 		{
-			if (m_GameObject.HasComponent<MeshFilter>() && m_GameObject.GetComponent<MeshFilter>().m_Mesh)
-			{
-				Mesh mesh = m_GameObject.GetComponent<MeshFilter>().m_Mesh;
-				m_Pipeline = Pipeline::Create(
-					Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl")),
-					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
-				);
-				m_Pipeline->GetVertexBuffer()->SetLayout({
-					{ShaderDataType::float4, "PositionOS"	},
-					{ShaderDataType::float4, "Color"		},
-					{ShaderDataType::float4, "Normal"		}
-					});
-				m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
-				m_Pipeline->GetVertexBuffer()->SetData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
-			}
+			UpdatePipeline();
 		}
 	}
 	void MeshRenderer::SetMaterial(Ref<Material> material)
 	{
-		m_Pipeline->SetMaterial(material);
+		if(m_Pipeline)
+			m_Pipeline->SetMaterial(material);
 	}
-	void MeshRenderer::UpdateMesh(const Mesh& mesh)
+	void MeshRenderer::UpdatePipeline()
 	{
-		if (m_Pipeline)
+		if (m_GameObject.HasComponent<MeshFilter>() && m_GameObject.GetComponent<MeshFilter>().m_Mesh)
 		{
-			m_Pipeline = Pipeline::Create(
-				m_Pipeline->GetMaterial(),
-				VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
-			);
+			Mesh mesh = m_GameObject.GetComponent<MeshFilter>().m_Mesh;
+			if (m_Pipeline)
+			{
+				m_Pipeline = Pipeline::Create(
+					m_Pipeline->GetMaterial(),
+					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
+				);
+			}
+			else
+			{
+				m_Pipeline = Pipeline::Create(
+					Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl")),
+					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
+				);
+			}
+			m_Pipeline->GetVertexBuffer()->SetLayout({
+				{ShaderDataType::float4, "PositionOS"	},
+				{ShaderDataType::float4, "Color"		},
+				{ShaderDataType::float4, "Normal"		}
+				});
+			m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
+			m_Pipeline->GetVertexBuffer()->SetData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
 		}
-		else
-		{
-			m_Pipeline = Pipeline::Create(
-				Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl")),
-				VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
-			);
-		}
-		m_Pipeline->GetVertexBuffer()->SetLayout({
-			{ShaderDataType::float4, "PositionOS"	},
-			{ShaderDataType::float4, "Color"		},
-			{ShaderDataType::float4, "Normal"		}
-			});
-		m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
 	}
 }
 
