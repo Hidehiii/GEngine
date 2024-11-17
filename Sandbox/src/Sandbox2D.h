@@ -58,6 +58,7 @@ private:
 	std::vector<TestVertex> m_vertex;
 	Ref<FrameBuffer> m_FrameBuffer;
 	Ref<FrameBuffer> m_FrameBuffer_0;
+	Ref<FrameBuffer> m_FrameBufferBlitTarget;
 	Ref<Texture2D> m_Texture;
 
 	std::vector<PresentVertex> m_PresentVertex;

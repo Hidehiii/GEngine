@@ -167,6 +167,9 @@ namespace GEngine
 		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
+	void VulkanFrameBuffer::Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height)
+	{
+	}
 	int VulkanFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
 	{
 		return 0;

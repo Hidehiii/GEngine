@@ -11,7 +11,7 @@ namespace GEngine
 		OpenGLTexture2D(const std::string& path);
 		OpenGLTexture2D(uint32_t width, uint32_t height);
 		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
-		OpenGLTexture2D(uint32_t rendererID);
+		OpenGLTexture2D(uint32_t rendererID, bool isMultiSample = false);
 		virtual ~OpenGLTexture2D();
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
@@ -30,6 +30,7 @@ namespace GEngine
 		uint32_t			m_Width, m_Height;
 		uint32_t			m_RendererID;
 		GLenum				m_InternalFormat, m_DataFormat;
+		bool				m_MultiSample = false;
 	};
 }
 

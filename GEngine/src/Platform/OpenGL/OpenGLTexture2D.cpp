@@ -68,8 +68,8 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
+		m_InternalFormat	= GL_RGBA8;
+		m_DataFormat		= GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -80,9 +80,10 @@ namespace GEngine
 
 		SetData(data, size);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID, bool isMultiSample)
 	{
 		m_RendererID = rendererID;
+		m_MultiSample = isMultiSample;
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
@@ -99,7 +100,7 @@ namespace GEngine
 	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	
 		GE_PROFILE_FUNCTION();
-
+		GE_CORE_ASSERT(m_MultiSample == false, "Can not bind a multisample texture!");
 		glBindTextureUnit(slot, m_RendererID);
 	}
 	void OpenGLTexture2D::Unbind()

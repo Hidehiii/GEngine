@@ -70,6 +70,7 @@ namespace GEngine
 		virtual int GetAttachmentCount() = 0;
 		virtual Ref<Texture2D> GetColorAttachment(int index) = 0;
 		virtual Ref<Texture2D> GetDepthAttachment() = 0;
+		virtual void Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height) = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);

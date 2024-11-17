@@ -59,6 +59,8 @@ namespace GEngine
 		// Editor
 		Ref<FrameBuffer> m_SceneViewportFrameBuffer;
 		Ref<FrameBuffer> m_GameViewportFrameBuffer;
+		Ref<FrameBuffer> m_SceneViewportShadowFrameBuffer;
+		Ref<FrameBuffer> m_GameViewportShadowFrameBuffer;
 		Vector2 m_SceneViewportSize = { 0.0f, 0.0f };
 		Vector2 m_GameViewportSize = { 0.0f, 0.0f };
 		bool m_SceneViewportFocused = false, m_SceneViewportHovered = false;

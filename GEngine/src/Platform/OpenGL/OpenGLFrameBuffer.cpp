@@ -155,7 +155,7 @@ namespace GEngine
                         break;
                     }
                 }
-                Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
+                Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i], m_Specification.Samples > 1);
                 m_ColorAttachmentsTexture2D.push_back(texture);
             }
         }
@@ -177,7 +177,7 @@ namespace GEngine
                     break;
                 }
             }
-            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment);
+            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment, m_Specification.Samples > 1);
         }
 
         if (m_ColorAttachments.size() >= 1)
@@ -205,6 +205,14 @@ namespace GEngine
     void OpenGLFrameBuffer::End()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    void OpenGLFrameBuffer::Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height)
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, std::dynamic_pointer_cast<OpenGLFrameBuffer>(dst)->m_RendererID);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
     }
     int OpenGLFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
     {

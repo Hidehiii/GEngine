@@ -19,7 +19,7 @@ namespace GEngine
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual int GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
-
+		virtual void Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height) override;
 		virtual int ReadPixelInt(int attachmentIndex, int x, int y) override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual void ClearAttachmentInt(int attachmentIndex, int val) override;
