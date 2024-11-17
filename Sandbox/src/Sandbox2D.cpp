@@ -195,9 +195,6 @@ void Sandbox2D::OnDetach()
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
-	RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-	RenderCommand::Clear();
-
 	Renderer::BeginScene(m_EditorCamera);
 	
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
@@ -216,8 +213,6 @@ void Sandbox2D::OnRender()
 
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer_0->Begin();
-	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	RenderCommand::Clear();
 
 
 	Renderer::BeginScene(m_EditorCamera);
@@ -228,8 +223,6 @@ void Sandbox2D::OnRender()
 
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
-	RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	RenderCommand::Clear();
 
 
 	Renderer::BeginScene(m_EditorCamera);

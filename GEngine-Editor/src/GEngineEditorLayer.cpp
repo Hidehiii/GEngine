@@ -201,13 +201,8 @@ namespace GEngine
 	{
 		RenderCommand::BeginDrawCommand();
 		m_SceneViewportFrameBuffer->Begin();
-
 		{
 			GE_PROFILE_SCOPE("Render: EditorOnRender");
-			// temporary
-			RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1 });
-			RenderCommand::Clear();
-
 			Renderer::BeginScene(m_EditorCamera);
 			OnOverlayRender();
 			m_ActiveScene->OnRender();
@@ -218,25 +213,14 @@ namespace GEngine
 
 		RenderCommand::BeginDrawCommand();
 		m_GameViewportFrameBuffer->Begin();
-
 		{
 			GE_PROFILE_SCOPE("Render: OnRender");
-			// temporary
-			RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1 });
-			RenderCommand::Clear();
-
-
 			auto camera = m_ActiveScene->MainCamera();
 			if (camera)
 			{
 				Renderer::BeginScene(*camera);
 				m_ActiveScene->OnRender();
 				Renderer::EndScene();
-			}
-
-			// test shadow
-			{
-
 			}
 		}
 		m_GameViewportFrameBuffer->End();
@@ -633,8 +617,6 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnPresent()
 	{
-		RenderCommand::SetClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-		RenderCommand::Clear();
 		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 		m_PresentPipeline->Render();
 	}
