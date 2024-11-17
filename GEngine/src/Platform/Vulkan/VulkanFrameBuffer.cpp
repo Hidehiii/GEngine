@@ -54,6 +54,7 @@ namespace GEngine
 		renderPassSpec.ColorAttachmentsFinalLayout	= spec.ColorAttachmentsFinalLayout;
 		renderPassSpec.ColorAttachmentsFormat		= spec.ColorAttachmentsFormat;
 		renderPassSpec.EnableDepthStencilAttachment = spec.EnableDepthStencilAttachment;
+		renderPassSpec.Samples						= spec.Samples;
 
 		m_RenderPass = CreateRef<VulkanRenderPass>(renderPassSpec);
 
@@ -71,6 +72,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				image,
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
@@ -96,21 +98,18 @@ namespace GEngine
 	VulkanFrameBuffer::~VulkanFrameBuffer()
 	{
 		vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
-		for (int i = 0; i < m_ColorImageViews.size(); i++)
+		for (int i = 0; i < m_Attachments.size(); i++)
 		{
-			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ColorImageViews.at(i), nullptr);
+			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
 		}
-		for (int i = 0; i < m_ColorImages.size(); i++)
+		for (int i = 0; i < m_Images.size(); i++)
 		{
-			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_ColorImages.at(i), nullptr);
+			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Images.at(i), nullptr);
 		}
-		for (int i = 0; i < m_ColorImagesMemory.size(); i++)
+		for (int i = 0; i < m_ImagesMemory.size(); i++)
 		{
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ColorImagesMemory.at(i), nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImagesMemory.at(i), nullptr);
 		}
-		vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_DepthStencilImageView, nullptr);
-		vkDestroyImage(VulkanContext::Get()->GetDevice(), m_DepthStencilImage, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_DepthStencilImageMemory, nullptr);
 	}
 	void VulkanFrameBuffer::Begin()
 	{
@@ -186,6 +185,7 @@ namespace GEngine
 		RenderPassSpecification				spec;
 		spec.ColorAttachments				= m_ColorAttachmentsSpecs;
 		spec.DepthAttachment				= m_DepthAttachmentSpec;
+		spec.Samples						= m_Specification.Samples;
 		m_RenderPass = CreateRef<VulkanRenderPass>(spec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()
@@ -200,22 +200,46 @@ namespace GEngine
 			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
+			{
 				colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
-					m_Specification.Width, 
-					m_Specification.Height, 
+					m_Specification.Width,
+					m_Specification.Height,
 					colorFormat,
-					VK_IMAGE_TILING_OPTIMAL, 
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+					VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+					VK_SAMPLE_COUNT_1_BIT,
 					image,
 					imageMemory);
 				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 				break;
+			}
 			default:
 				GE_CORE_ASSERT(false, "Unknown format");
 				break;
+			}
+			if (m_Specification.Samples > 1)
+			{
+				VkImage						tempImage;
+				VkImageView					tempImageView;
+				VkDeviceMemory				tempImageMemory;
+				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+					VulkanContext::Get()->GetDevice(),
+					m_Specification.Width,
+					m_Specification.Height,
+					colorFormat,
+					VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+					tempImage,
+					tempImageMemory);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, tempImageView);
+				m_Images.push_back(tempImage);
+				m_Attachments.push_back(tempImageView);
+				m_ImagesMemory.push_back(tempImageMemory);
 			}
 			m_Images.push_back(image);
 			m_Attachments.push_back(imageView);
@@ -225,7 +249,7 @@ namespace GEngine
 			m_ColorImageViews.push_back(imageView);
 			m_ColorImagesMemory.push_back(imageMemory);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, false);
 			m_ColorAttachmentsTexture2D.push_back(texture);
 		}
 		VkDeviceMemory					imageMemory;
@@ -247,6 +271,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL, 
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				image,
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
@@ -264,6 +289,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				image, 
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
@@ -271,6 +297,27 @@ namespace GEngine
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
 			break;
+		}
+		if (m_Specification.Samples > 1)
+		{
+			VkImage						tempImage;
+			VkImageView					tempImageView;
+			VkDeviceMemory				tempImageMemory;
+			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+				VulkanContext::Get()->GetDevice(),
+				m_Specification.Width,
+				m_Specification.Height,
+				depthFormat,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+				tempImage,
+				tempImageMemory);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, depthAspectFlag, tempImageView);
+			m_Images.push_back(tempImage);
+			m_Attachments.push_back(tempImageView);
+			m_ImagesMemory.push_back(tempImageMemory);
 		}
 		m_Images.push_back(image);
 		m_Attachments.push_back(imageView);
@@ -280,7 +327,7 @@ namespace GEngine
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
 
-		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
+		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag, m_Specification.Samples > 1);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

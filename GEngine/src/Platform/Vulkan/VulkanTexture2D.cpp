@@ -37,6 +37,7 @@ namespace GEngine
 			                VK_IMAGE_TILING_OPTIMAL,
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                            VK_SAMPLE_COUNT_1_BIT,
 			                m_Image,
 			                m_ImageMemory);
         Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -58,6 +59,7 @@ namespace GEngine
 			                VK_IMAGE_TILING_OPTIMAL,
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                            VK_SAMPLE_COUNT_1_BIT,
 			                m_Image,
 			                m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -77,6 +79,7 @@ namespace GEngine
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_SAMPLE_COUNT_1_BIT,
 			m_Image,
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, m_DataFormat, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -84,13 +87,14 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample)
     {
         m_DataFormat    = format;
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
         m_AspectFlag    = aspectFlag;
+        m_MultiSample = isMultiSample;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -131,7 +135,7 @@ namespace GEngine
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
-		
+        GE_CORE_ASSERT(m_MultiSample == false, "Can not bind a multisample texture!");
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;

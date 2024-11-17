@@ -20,7 +20,7 @@ namespace GEngine
 			VkAttachmentDescription		Attachment{};
 			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
 			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;
+			Attachment.storeOp			= spec.Samples == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -31,11 +31,11 @@ namespace GEngine
 		if (spec.EnableDepthStencilAttachment)
 		{
 			VkAttachmentDescription		Attachment{};
-			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
+			Attachment.samples			= Utils::SampleCountToVulkanFlag(spec.Samples);
 			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;
+			Attachment.storeOp			= spec.Samples == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_STORE;
+			Attachment.stencilStoreOp	= spec.Samples == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
 			Attachment.format			= Utils::FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 			Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -105,21 +105,49 @@ namespace GEngine
 		std::vector<VkAttachmentDescription>  attachments;
 		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat);
+			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat, VK_SAMPLE_COUNT_1_BIT);
 			attachments.push_back(des);
+			if (spec.Samples > 1)
+			{
+				des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
+				attachments.push_back(des);
+			}
 		}
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat);
+			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat, VK_SAMPLE_COUNT_1_BIT);
 			attachments.push_back(des);
+			if (spec.Samples > 1)
+			{
+				des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
+				attachments.push_back(des);
+			}
 		}
 
 		std::vector<VkAttachmentReference> colorAttachmentRefs;
-		for (int i = 0; i < spec.ColorAttachments.size(); i++)
+		std::vector<VkAttachmentReference> resolveAttachmentRefs;
+		if (spec.Samples > 1)
 		{
-			VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, i);
-			colorAttachmentRefs.push_back(ref);
+			int index = 0;
+			for (int i = 0; i < spec.ColorAttachments.size(); i++)
+			{
+				VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
+				colorAttachmentRefs.push_back(ref);
+				index++;
+				ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
+				resolveAttachmentRefs.push_back(ref);
+				index++;
+			}
 		}
+		else
+		{
+			for (int i = 0; i < spec.ColorAttachments.size(); i++)
+			{
+				VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, i);
+				colorAttachmentRefs.push_back(ref);
+			}
+		}
+		
 
 		VkAttachmentReference			depthAttachmentRef{};
 
@@ -128,6 +156,7 @@ namespace GEngine
 		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
+		subpass.pResolveAttachments		= resolveAttachmentRefs.data();
 		subpass.pDepthStencilAttachment = nullptr;
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{

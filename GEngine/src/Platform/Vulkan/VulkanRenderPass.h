@@ -9,6 +9,7 @@ namespace GEngine
 	{
 		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
 		FrameBufferTextureSpecification					DepthAttachment;
+		int												Samples = 1;
 	};
 
 	struct RenderPassSpecificationForVulkan
@@ -16,6 +17,7 @@ namespace GEngine
 		std::vector<VkFormat>						ColorAttachmentsFormat;
 		std::vector<VkImageLayout>					ColorAttachmentsFinalLayout;
 		bool 										EnableDepthStencilAttachment;
+		int											Samples = 1;
 	};
 
 	class GENGINE_API VulkanRenderPass

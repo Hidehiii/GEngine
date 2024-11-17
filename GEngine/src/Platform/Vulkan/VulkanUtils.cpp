@@ -43,7 +43,7 @@ namespace GEngine
             vkBindBufferMemory(device, buffer, bufferMemory, 0);
         }
 
-		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& outImage, VkDeviceMemory& imageMemory)
+		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, VkImage& outImage, VkDeviceMemory& imageMemory)
 		{
 			VkImageCreateInfo		imageInfo{};
 			imageInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -57,7 +57,7 @@ namespace GEngine
 			imageInfo.tiling		= tiling;
 			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageInfo.usage			= usage;
-			imageInfo.samples		= VK_SAMPLE_COUNT_1_BIT;
+			imageInfo.samples		= sample;
 			imageInfo.sharingMode	= VK_SHARING_MODE_EXCLUSIVE;
 			imageInfo.flags			= 0; // Optional
 
@@ -232,10 +232,10 @@ namespace GEngine
 			GE_CORE_CRITICAL("failed to find supported format!");
 		}
 
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, int samples)
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
 		{
 			VkAttachmentDescription		Attachment{};
-			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
+			Attachment.samples			= sample;
 			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 			Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -298,6 +298,29 @@ namespace GEngine
 			}
 
 			return Ref;
+		}
+		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample)
+		{
+			switch (sample)
+			{
+			case 1: return VK_SAMPLE_COUNT_1_BIT;
+			case 2: return VK_SAMPLE_COUNT_2_BIT;
+			case 4: return VK_SAMPLE_COUNT_4_BIT;
+			case 8: return VK_SAMPLE_COUNT_8_BIT;
+			case 16: return VK_SAMPLE_COUNT_16_BIT;
+			case 32: return VK_SAMPLE_COUNT_32_BIT;
+			case 64: return VK_SAMPLE_COUNT_64_BIT;
+			default:
+				GE_CORE_ASSERT(false, "invalied sample value");
+				break;
+			}
+			return VK_SAMPLE_COUNT_1_BIT;
+		}
+		void ResolveImage(VkImage src, VkImageLayout srcLayout, VkImage dst, VkImageLayout dstLayout, uint32_t width, uint32_t height)
+		{
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
+
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
     }
 }

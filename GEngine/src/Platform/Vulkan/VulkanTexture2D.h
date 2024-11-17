@@ -11,7 +11,7 @@ namespace GEngine
 		VulkanTexture2D(const std::string& path);
 		VulkanTexture2D(uint32_t width, uint32_t height);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
-		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag);
+		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample = false);
 		virtual ~VulkanTexture2D();
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
@@ -49,6 +49,7 @@ namespace GEngine
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = 0;
+		bool							m_MultiSample = false;
 	};
 }
 

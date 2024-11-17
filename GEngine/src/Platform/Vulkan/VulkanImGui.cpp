@@ -177,6 +177,7 @@ namespace GEngine {
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_SAMPLE_COUNT_1_BIT,
 			s_ColorImage,
 			s_ColorImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, s_ColorImageView);

@@ -30,9 +30,6 @@ void Sandbox2D::OnAttach()
 	m_FrameBuffer = FrameBuffer::Create(fspec);
 	m_FrameBuffer_0 = FrameBuffer::Create(fspec);
 
-	fspec.Samples = 1;
-	m_FrameBufferBlitTarget = FrameBuffer::Create(fspec);
-
 	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
 
 	// Read all shader files
@@ -203,7 +200,7 @@ void Sandbox2D::OnPresent()
 
 	Renderer::BeginScene(m_EditorCamera);
 	
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBufferBlitTarget->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 	m_PresentPipeline->Render();
 
@@ -241,8 +238,6 @@ void Sandbox2D::OnRender()
 	Renderer::EndScene();
 	m_FrameBuffer->End();
 	RenderCommand::EndDrawCommand();
-
-	m_FrameBuffer->Blit(m_FrameBufferBlitTarget, m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight());
 }
 
 void Sandbox2D::OnUpdate()
@@ -275,12 +270,6 @@ void Sandbox2D::OnUpdate()
 		m_FrameBuffer_0->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
 		m_FrameBuffer_0 = FrameBuffer::Recreate(m_FrameBuffer_0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-	}
-
-	if (m_FrameBufferBlitTarget->GetHeight() != Application::Get().GetWindow().GetHeight() ||
-		m_FrameBufferBlitTarget->GetWidth() != Application::Get().GetWindow().GetWidth())
-	{
-		m_FrameBufferBlitTarget = FrameBuffer::Recreate(m_FrameBufferBlitTarget, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
 }

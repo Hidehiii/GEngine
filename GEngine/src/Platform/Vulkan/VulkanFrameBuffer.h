@@ -13,6 +13,7 @@ namespace GEngine
 		std::vector<VkFormat>		ColorAttachmentsFormat;
 		std::vector<VkImageLayout>	ColorAttachmentsFinalLayout;
 		bool						EnableDepthStencilAttachment;
+		int							Samples = 1;
 	};
 
 	class GENGINE_API VulkanFrameBuffer : public FrameBuffer
