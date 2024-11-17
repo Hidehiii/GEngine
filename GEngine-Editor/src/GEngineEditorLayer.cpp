@@ -173,10 +173,14 @@ namespace GEngine
 		// Scene Viewport
 		{			
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
-			FrameBufferSpecification fbspsc = m_SceneViewportFrameBuffer->GetSpecification();
-			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspsc.Width != m_SceneViewportSize.x || fbspsc.Height != m_SceneViewportSize.y))
+			FrameBufferSpecification fbspec = m_SceneViewportFrameBuffer->GetSpecification();
+			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y)
+				|| Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
 			{
-				m_SceneViewportFrameBuffer = FrameBuffer::Recreate(m_SceneViewportFrameBuffer, m_SceneViewportSize);
+				fbspec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
+				fbspec.Width = m_SceneViewportSize.x;
+				fbspec.Height = m_SceneViewportSize.y;
+				m_SceneViewportFrameBuffer = FrameBuffer::Create(fbspec);
 			}
 
 			if (m_SceneViewportFocused && m_SceneViewportHovered)
@@ -189,10 +193,18 @@ namespace GEngine
 		// Game Viewport
 		{
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
-			FrameBufferSpecification fbspsc = m_GameViewportFrameBuffer->GetSpecification();
-			if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspsc.Width != m_GameViewportSize.x || fbspsc.Height != m_GameViewportSize.y))
+			FrameBufferSpecification fbspec = m_GameViewportFrameBuffer->GetSpecification();
+			auto camera = m_ActiveScene->MainCamera();
+			if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspec.Width != m_GameViewportSize.x || fbspec.Height != m_GameViewportSize.y))
 			{
-				m_GameViewportFrameBuffer = FrameBuffer::Recreate(m_GameViewportFrameBuffer, m_GameViewportSize);
+				fbspec.Width	= m_GameViewportSize.x;
+				fbspec.Height	= m_GameViewportSize.y;
+				m_GameViewportFrameBuffer = FrameBuffer::Create(fbspec);
+			}
+			if ((camera && Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType) != fbspec.Samples))
+			{
+				fbspec.Samples = Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType);
+				m_GameViewportFrameBuffer = FrameBuffer::Create(fbspec);
 			}
 		}
 	}

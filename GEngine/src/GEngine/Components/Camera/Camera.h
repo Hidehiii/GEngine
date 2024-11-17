@@ -10,14 +10,32 @@ namespace GEngine
 {
 	enum class CameraType : int
 	{
-		OrthoGraphic = 0,
-		Perspective = 1
+		OrthoGraphic	= 0,
+		Perspective		= 1
 	};
 
 	static std::string CameraTypeString[] =
 	{
 		"OrthoGraphic",
 		"Perspective"
+	};
+
+	enum class AntiAliasingType
+	{
+		None	= 0,
+		MSAA2x	= 1,
+		MSAA4x	= 2,
+		MSAA8x	= 3,
+		MSAA16x = 4
+	};
+
+	static std::string AntiAliasingTypeString[] =
+	{
+		"None",
+		"2xMSAA",
+		"4xMSAA",
+		"8xMSAA",
+		"16xMSAA"
 	};
 
 	class GENGINE_API Camera : public Component
@@ -34,7 +52,9 @@ namespace GEngine
 		CameraType GetCameraType() { return m_CameraType;  }
 		float GetAspectRatio() { return m_AspectRatio; }
 
+		static int AntiAliasingTypeToInt(AntiAliasingType type);
 		static std::string GetCameraTypeString(CameraType type) { return CameraTypeString[(int)type];  }
+		static std::string GetAntiAliasingTypeString(AntiAliasingType type) { return AntiAliasingTypeString[(int)type]; }
 	protected: 
 		void RecalculateProjectionMatrix();
 	public:
@@ -73,7 +93,7 @@ namespace GEngine
 		int RenderOrder = 0;
 		// if the camera is the primary camera
 		bool isPrimary = false;
-
+		AntiAliasingType m_AntiAliasingType = AntiAliasingType::None;
 	public:
 		// Orthographic Camera
 		float m_OrthoGraphicSize = 10.0f;

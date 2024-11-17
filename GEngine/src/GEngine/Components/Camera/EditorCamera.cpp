@@ -8,6 +8,7 @@ namespace GEngine::Editor
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
 		: Camera(CameraType::Perspective, fov, aspectRatio, nearClip, farClip)
 	{
+		m_AntiAliasingType = AntiAliasingType::MSAA4x;
 		UpdateView();
 	}
 

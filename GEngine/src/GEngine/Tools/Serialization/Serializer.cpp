@@ -184,6 +184,8 @@ namespace GEngine
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.m_PerspectiveFOV;
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.m_PerspectiveNear;
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.m_PerspectiveFar;
+
+			out << YAML::Key << "AntiAliasingType" << YAML::Value << (int)camera.m_AntiAliasingType;
 			out << YAML::EndMap;
 
 
@@ -399,11 +401,11 @@ namespace GEngine
 				}
 				if (gameObject["Transform"])
 				{
-					auto transform = gameObject["Transform"];
-					auto position = transform["Position"].as<Vector3>();
-					auto rotation = transform["Rotation"].as<Quaternion>();
-					auto rotation_angles = transform["Rotation_Angles"].as<Vector3>();
-					auto scale = transform["Scale"].as<Vector3>();
+					auto transform			= gameObject["Transform"];
+					auto position			= transform["Position"].as<Vector3>();
+					auto rotation			= transform["Rotation"].as<Quaternion>();
+					auto rotation_angles	= transform["Rotation_Angles"].as<Vector3>();
+					auto scale				= transform["Scale"].as<Vector3>();
 					newGameObject.GetComponent<Transform>().SetPosition(position);
 					newGameObject.GetComponent<Transform>().SetEulerAngle(rotation_angles);
 					newGameObject.GetComponent<Transform>().SetRotation(rotation);
@@ -411,30 +413,32 @@ namespace GEngine
 				}
 				if (gameObject["Camera"])
 				{
-					auto camera = gameObject["Camera"];
-					auto cameraParameters = camera["CameraParameters"];
-					CameraType cameraType = (CameraType)cameraParameters["CameraType"].as<int>();
-					float orthoGraphicSize = cameraParameters["OrthoGraphicSize"].as<float>();
-					float orthoGraphicNear = cameraParameters["OrthoGraphicNear"].as<float>();
-					float orthoGraphicFar = cameraParameters["OrthoGraphicFar"].as<float>();
-					float perspectiveFOV = cameraParameters["PerspectiveFOV"].as<float>();
-					float perspectiveNear = cameraParameters["PerspectiveNear"].as<float>();
-					float perspectiveFar = cameraParameters["PerspectiveFar"].as<float>();
+					auto camera					= gameObject["Camera"];
+					auto cameraParameters		= camera["CameraParameters"];
+					CameraType cameraType		= (CameraType)cameraParameters["CameraType"].as<int>();
+					float orthoGraphicSize		= cameraParameters["OrthoGraphicSize"].as<float>();
+					float orthoGraphicNear		= cameraParameters["OrthoGraphicNear"].as<float>();
+					float orthoGraphicFar		= cameraParameters["OrthoGraphicFar"].as<float>();
+					float perspectiveFOV		= cameraParameters["PerspectiveFOV"].as<float>();
+					float perspectiveNear		= cameraParameters["PerspectiveNear"].as<float>();
+					float perspectiveFar		= cameraParameters["PerspectiveFar"].as<float>();
+					int antiAliasingType		= cameraParameters["AntiAliasingType"].as<int>();
 					newGameObject.AddComponent<Camera>(cameraType);
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicSize = orthoGraphicSize;
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicNear = orthoGraphicNear;
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicFar = orthoGraphicFar;
-					newGameObject.GetComponent<Camera>().m_PerspectiveFOV = perspectiveFOV;
-					newGameObject.GetComponent<Camera>().m_PerspectiveNear = perspectiveNear;
-					newGameObject.GetComponent<Camera>().m_PerspectiveFar = perspectiveFar;
-					newGameObject.GetComponent<Camera>().RenderOrder = camera["RenderOrder"].as<int>();
-					newGameObject.GetComponent<Camera>().isPrimary = camera["isPrimary"].as<bool>();
+					newGameObject.GetComponent<Camera>().m_OrthoGraphicSize		= orthoGraphicSize;
+					newGameObject.GetComponent<Camera>().m_OrthoGraphicNear		= orthoGraphicNear;
+					newGameObject.GetComponent<Camera>().m_OrthoGraphicFar		= orthoGraphicFar;
+					newGameObject.GetComponent<Camera>().m_PerspectiveFOV		= perspectiveFOV;
+					newGameObject.GetComponent<Camera>().m_PerspectiveNear		= perspectiveNear;
+					newGameObject.GetComponent<Camera>().m_PerspectiveFar		= perspectiveFar;
+					newGameObject.GetComponent<Camera>().m_AntiAliasingType		= (AntiAliasingType)antiAliasingType;
+					newGameObject.GetComponent<Camera>().RenderOrder			= camera["RenderOrder"].as<int>();
+					newGameObject.GetComponent<Camera>().isPrimary				= camera["isPrimary"].as<bool>();
 				}
 				if (gameObject["ImageRenderer"])
 				{
-					auto imageRenderer = gameObject["ImageRenderer"];
-					Vector4 color = imageRenderer["Color"].as<Vector4>();
-					Vector2 tiling = imageRenderer["Tiling"].as<Vector2>();
+					auto imageRenderer		= gameObject["ImageRenderer"];
+					Vector4 color			= imageRenderer["Color"].as<Vector4>();
+					Vector2 tiling			= imageRenderer["Tiling"].as<Vector2>();
 					std::string texturePath = imageRenderer["Texture"].as<std::string>();
 					newGameObject.AddComponent<ImageRenderer>();
 					newGameObject.GetComponent<ImageRenderer>().m_Color = color;
@@ -454,39 +458,39 @@ namespace GEngine
 				}
 				if (gameObject["BoxCollider2D"])
 				{
-					auto boxCollider2D = gameObject["BoxCollider2D"];
-					Vector2 offset = boxCollider2D["Offset"].as<Vector2>();
-					Vector2 size = boxCollider2D["Size"].as<Vector2>();
-					float rotation = boxCollider2D["Rotation"].as<float>();
-					float density = boxCollider2D["Density"].as<float>();
-					float friction = boxCollider2D["Friction"].as<float>();
-					float restitution = boxCollider2D["Restitution"].as<float>();
-					float restitutionThreshold = boxCollider2D["RestitutionThreshold"].as<float>();
-					bool isTrigger = boxCollider2D["IsTrigger"].as<bool>();
+					auto boxCollider2D			= gameObject["BoxCollider2D"];
+					Vector2 offset				= boxCollider2D["Offset"].as<Vector2>();
+					Vector2 size				= boxCollider2D["Size"].as<Vector2>();
+					float rotation				= boxCollider2D["Rotation"].as<float>();
+					float density				= boxCollider2D["Density"].as<float>();
+					float friction				= boxCollider2D["Friction"].as<float>();
+					float restitution			= boxCollider2D["Restitution"].as<float>();
+					float restitutionThreshold	= boxCollider2D["RestitutionThreshold"].as<float>();
+					bool isTrigger				= boxCollider2D["IsTrigger"].as<bool>();
 					newGameObject.AddComponent<BoxCollider2D>(size, offset);
-					newGameObject.GetComponent<BoxCollider2D>().m_Rotation = rotation;
-					newGameObject.GetComponent<BoxCollider2D>().m_Density = density;
-					newGameObject.GetComponent<BoxCollider2D>().m_Friction = friction;
-					newGameObject.GetComponent<BoxCollider2D>().m_Restitution = restitution;
-					newGameObject.GetComponent<BoxCollider2D>().m_RestitutionThreshold = restitutionThreshold;
-					newGameObject.GetComponent<BoxCollider2D>().m_IsTrigger = isTrigger;
+					newGameObject.GetComponent<BoxCollider2D>().m_Rotation				= rotation;
+					newGameObject.GetComponent<BoxCollider2D>().m_Density				= density;
+					newGameObject.GetComponent<BoxCollider2D>().m_Friction				= friction;
+					newGameObject.GetComponent<BoxCollider2D>().m_Restitution			= restitution;
+					newGameObject.GetComponent<BoxCollider2D>().m_RestitutionThreshold	= restitutionThreshold;
+					newGameObject.GetComponent<BoxCollider2D>().m_IsTrigger				= isTrigger;
 				}
 				if (gameObject["CircleCollider2D"])
 				{
-					auto circleCollider2D = gameObject["CircleCollider2D"];
-					Vector2 offset = circleCollider2D["Offset"].as<Vector2>();
-					float radius = circleCollider2D["Radius"].as<float>();
-					float density = circleCollider2D["Density"].as<float>();
-					float friction = circleCollider2D["Friction"].as<float>();
-					float restitution = circleCollider2D["Restitution"].as<float>();
-					float restitutionThreshold = circleCollider2D["RestitutionThreshold"].as<float>();
-					bool isTrigger = circleCollider2D["IsTrigger"].as<bool>();
+					auto circleCollider2D		= gameObject["CircleCollider2D"];
+					Vector2 offset				= circleCollider2D["Offset"].as<Vector2>();
+					float radius				= circleCollider2D["Radius"].as<float>();
+					float density				= circleCollider2D["Density"].as<float>();
+					float friction				= circleCollider2D["Friction"].as<float>();
+					float restitution			= circleCollider2D["Restitution"].as<float>();
+					float restitutionThreshold	= circleCollider2D["RestitutionThreshold"].as<float>();
+					bool isTrigger				= circleCollider2D["IsTrigger"].as<bool>();
 					newGameObject.AddComponent<CircleCollider2D>(offset, radius);
-					newGameObject.GetComponent<CircleCollider2D>().m_Density = density;
-					newGameObject.GetComponent<CircleCollider2D>().m_Friction = friction;
-					newGameObject.GetComponent<CircleCollider2D>().m_Restitution = restitution;
-					newGameObject.GetComponent<CircleCollider2D>().m_RestitutionThreshold = restitutionThreshold;
-					newGameObject.GetComponent<CircleCollider2D>().m_IsTrigger = isTrigger;
+					newGameObject.GetComponent<CircleCollider2D>().m_Density				= density;
+					newGameObject.GetComponent<CircleCollider2D>().m_Friction				= friction;
+					newGameObject.GetComponent<CircleCollider2D>().m_Restitution			= restitution;
+					newGameObject.GetComponent<CircleCollider2D>().m_RestitutionThreshold	= restitutionThreshold;
+					newGameObject.GetComponent<CircleCollider2D>().m_IsTrigger				= isTrigger;
 				}
 			}
 		}

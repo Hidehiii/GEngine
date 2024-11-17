@@ -168,6 +168,57 @@ namespace GEngine
 					GUI::FloatControl("Near clip", component.m_PerspectiveNear);
 					GUI::FloatControl("Far clip", component.m_PerspectiveFar);
 				}
+
+				std::string currentAntiAliasingType = Camera::GetAntiAliasingTypeString(component.m_AntiAliasingType);
+				if (ImGui::BeginCombo("Anti Aliasing", (const char*)currentAntiAliasingType.c_str()))
+				{
+					bool isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::None);
+					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::None).c_str(), isSelected))
+					{
+						component.m_AntiAliasingType = AntiAliasingType::None;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA2x);
+					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA2x).c_str(), isSelected))
+					{
+						component.m_AntiAliasingType = AntiAliasingType::MSAA2x;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA4x);
+					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA4x).c_str(), isSelected))
+					{
+						component.m_AntiAliasingType = AntiAliasingType::MSAA4x;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA8x);
+					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA8x).c_str(), isSelected))
+					{
+						component.m_AntiAliasingType = AntiAliasingType::MSAA8x;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA16x);
+					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA16x).c_str(), isSelected))
+					{
+						component.m_AntiAliasingType = AntiAliasingType::MSAA16x;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
 			}
 		);
 

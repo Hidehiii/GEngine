@@ -29,6 +29,19 @@ namespace GEngine
         m_AspectRatio = (float)width / (float)height;
         RecalculateProjectionMatrix();
     }
+    int Camera::AntiAliasingTypeToInt(AntiAliasingType type)
+    {
+        switch (type)
+        {
+        case GEngine::AntiAliasingType::None:		return 1;
+        case GEngine::AntiAliasingType::MSAA2x:		return 2;
+        case GEngine::AntiAliasingType::MSAA4x:		return 4;
+        case GEngine::AntiAliasingType::MSAA8x:		return 8;
+        case GEngine::AntiAliasingType::MSAA16x:	return 16;
+        default:
+            break;
+        }
+    }
     void Camera::RecalculateProjectionMatrix()
     {
         switch (m_CameraType)
