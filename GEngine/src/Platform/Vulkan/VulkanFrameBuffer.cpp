@@ -220,6 +220,9 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "Unknown format");
 				break;
 			}
+			m_Images.push_back(image);
+			m_Attachments.push_back(imageView);
+			m_ImagesMemory.push_back(imageMemory);
 			if (m_Specification.Samples > 1)
 			{
 				VkImage						tempImage;
@@ -241,9 +244,6 @@ namespace GEngine
 				m_Attachments.push_back(tempImageView);
 				m_ImagesMemory.push_back(tempImageMemory);
 			}
-			m_Images.push_back(image);
-			m_Attachments.push_back(imageView);
-			m_ImagesMemory.push_back(imageMemory);
 
 			m_ColorImages.push_back(image);
 			m_ColorImageViews.push_back(imageView);
@@ -271,7 +271,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL, 
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+				VK_SAMPLE_COUNT_1_BIT,
 				image,
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
@@ -289,7 +289,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+				VK_SAMPLE_COUNT_1_BIT,
 				image, 
 				imageMemory);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, depthAspectFlag, imageView);
@@ -298,6 +298,9 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown format");
 			break;
 		}
+		m_Images.push_back(image);
+		m_Attachments.push_back(imageView);
+		m_ImagesMemory.push_back(imageMemory);
 		if (m_Specification.Samples > 1)
 		{
 			VkImage						tempImage;
@@ -309,7 +312,7 @@ namespace GEngine
 				m_Specification.Height,
 				depthFormat,
 				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				tempImage,
@@ -319,9 +322,6 @@ namespace GEngine
 			m_Attachments.push_back(tempImageView);
 			m_ImagesMemory.push_back(tempImageMemory);
 		}
-		m_Images.push_back(image);
-		m_Attachments.push_back(imageView);
-		m_ImagesMemory.push_back(imageMemory);
 
 		m_DepthStencilImage = image;
 		m_DepthStencilImageView = imageView;

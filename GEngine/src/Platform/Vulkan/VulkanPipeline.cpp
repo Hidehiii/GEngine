@@ -51,17 +51,13 @@ namespace GEngine
 			CreatePipeline();
 			m_FirstCreatePipeline = false;
 		}
-		if (m_RecreatePipeline)
-		{
-			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
-			CreateDescriptorSetAndLayout();
-			UpdateDescriptorSet();
-			CreatePipeline();
-			m_RecreatePipeline = false;
-		}
+		vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
+		vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
+		vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+		CreateDescriptorSetAndLayout();
+		UpdateDescriptorSet();
+		CreatePipeline();
 		
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
@@ -334,7 +330,7 @@ namespace GEngine
 
 		m_Multisampling.sType					= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		m_Multisampling.sampleShadingEnable		= VK_FALSE;
-		m_Multisampling.rasterizationSamples	= VK_SAMPLE_COUNT_1_BIT;
+		m_Multisampling.rasterizationSamples	= Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples);
 		m_Multisampling.minSampleShading		= 1.0f;
 		m_Multisampling.pSampleMask				= nullptr;
 		m_Multisampling.alphaToCoverageEnable	= VK_FALSE;

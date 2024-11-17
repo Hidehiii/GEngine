@@ -132,10 +132,10 @@ namespace GEngine
 			for (int i = 0; i < spec.ColorAttachments.size(); i++)
 			{
 				VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
-				colorAttachmentRefs.push_back(ref);
+				resolveAttachmentRefs.push_back(ref);
 				index++;
 				ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
-				resolveAttachmentRefs.push_back(ref);
+				colorAttachmentRefs.push_back(ref);
 				index++;
 			}
 		}
@@ -160,7 +160,14 @@ namespace GEngine
 		subpass.pDepthStencilAttachment = nullptr;
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			depthAttachmentRef			= Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
+			if (spec.Samples > 1)
+			{
+				depthAttachmentRef = Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2 + 1);
+			}
+			else
+			{
+				depthAttachmentRef = Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
+			}
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
 		
