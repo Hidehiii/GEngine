@@ -208,15 +208,6 @@ namespace GEngine
 					{
 						ImGui::SetItemDefaultFocus();
 					}
-					isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA16x);
-					if (ImGui::Selectable((const char*)Camera::GetAntiAliasingTypeString(AntiAliasingType::MSAA16x).c_str(), isSelected))
-					{
-						component.m_AntiAliasingType = AntiAliasingType::MSAA16x;
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
 					ImGui::EndCombo();
 				}
 			}

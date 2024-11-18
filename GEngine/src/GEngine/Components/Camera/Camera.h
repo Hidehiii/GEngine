@@ -25,8 +25,7 @@ namespace GEngine
 		None	= 0,
 		MSAA2x	= 1,
 		MSAA4x	= 2,
-		MSAA8x	= 3,
-		MSAA16x = 4
+		MSAA8x	= 3
 	};
 
 	static std::string AntiAliasingTypeString[] =
@@ -34,8 +33,7 @@ namespace GEngine
 		"None",
 		"2xMSAA",
 		"4xMSAA",
-		"8xMSAA",
-		"16xMSAA"
+		"8xMSAA"
 	};
 
 	class GENGINE_API Camera : public Component

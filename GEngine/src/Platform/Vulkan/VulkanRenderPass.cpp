@@ -102,39 +102,39 @@ namespace GEngine
 
 	void VulkanRenderPass::CreateRenderPass(const RenderPassSpecification& spec)
 	{
-		std::vector<VkAttachmentDescription>  attachments;
+		std::vector<VkAttachmentDescription2>  attachments;
 		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat, VK_SAMPLE_COUNT_1_BIT);
+			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, VK_SAMPLE_COUNT_1_BIT);
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
-				des = Utils::CreateAttachmentDescription(spec.ColorAttachments.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
+				des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
 				attachments.push_back(des);
 			}
 		}
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			VkAttachmentDescription		des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat, VK_SAMPLE_COUNT_1_BIT);
+			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, VK_SAMPLE_COUNT_1_BIT);
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
-				des = Utils::CreateAttachmentDescription(spec.DepthAttachment.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
+				des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples));
 				attachments.push_back(des);
 			}
 		}
 
-		std::vector<VkAttachmentReference> colorAttachmentRefs;
-		std::vector<VkAttachmentReference> resolveAttachmentRefs;
+		std::vector<VkAttachmentReference2> colorAttachmentRefs;
+		std::vector<VkAttachmentReference2> resolveAttachmentRefs;
 		if (spec.Samples > 1)
 		{
 			int index = 0;
 			for (int i = 0; i < spec.ColorAttachments.size(); i++)
 			{
-				VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
+				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, index);
 				resolveAttachmentRefs.push_back(ref);
 				index++;
-				ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, index);
+				ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, index);
 				colorAttachmentRefs.push_back(ref);
 				index++;
 			}
@@ -143,16 +143,17 @@ namespace GEngine
 		{
 			for (int i = 0; i < spec.ColorAttachments.size(); i++)
 			{
-				VkAttachmentReference		ref = Utils::CreateAttachmentReference(spec.ColorAttachments.at(i).TextureFormat, i);
+				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, i);
 				colorAttachmentRefs.push_back(ref);
 			}
 		}
 		
 
-		VkAttachmentReference			depthAttachmentRef{};
+		VkAttachmentReference2			depthAttachmentRef{};
+		depthAttachmentRef.sType		= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
 
-
-		VkSubpassDescription			 subpass{};
+		VkSubpassDescription2			 subpass{};
+		subpass.sType					= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
 		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
@@ -162,17 +163,30 @@ namespace GEngine
 		{
 			if (spec.Samples > 1)
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2 + 1);
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2 + 1);
+
+				VkSubpassDescriptionDepthStencilResolve	subpassDepthStencilResolve{};
+
+				VkAttachmentReference2	ref{};
+				ref = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2);
+
+				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
+				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &ref;
+				subpassDepthStencilResolve.depthResolveMode					= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+				subpassDepthStencilResolve.stencilResolveMode				= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+				subpass.pNext												= &subpassDepthStencilResolve;
 			}
 			else
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
 			}
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
+
 		
 
-		VkSubpassDependency			 dependency{};
+		VkSubpassDependency2			 dependency{};
+		dependency.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass			= 0;
 		dependency.srcStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
@@ -180,8 +194,8 @@ namespace GEngine
 		dependency.dstStageMask			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		dependency.dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-		VkRenderPassCreateInfo          renderPassInfo{};
-		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		VkRenderPassCreateInfo2          renderPassInfo{};
+		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
 		renderPassInfo.attachmentCount	= static_cast<uint32_t>(attachments.size());
 		renderPassInfo.pAttachments		= attachments.data();
 		renderPassInfo.subpassCount		= 1;
@@ -189,7 +203,7 @@ namespace GEngine
 		renderPassInfo.dependencyCount	= 1;
 		renderPassInfo.pDependencies	= &dependency;
 
-		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 	}
 	
 }

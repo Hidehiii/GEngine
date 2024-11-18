@@ -232,9 +232,10 @@ namespace GEngine
 			GE_CORE_CRITICAL("failed to find supported format!");
 		}
 
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
+		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
 		{
-			VkAttachmentDescription		Attachment{};
+			VkAttachmentDescription2	Attachment{};
+			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= sample;
 			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 			Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;
@@ -262,7 +263,6 @@ namespace GEngine
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
 				Attachment.format		= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			default:
@@ -272,6 +272,76 @@ namespace GEngine
 			return Attachment;
 		}
 
+		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index)
+		{
+			VkAttachmentReference2		Ref{};
+			Ref.attachment = index;
+			Ref.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+			switch (format)
+			{
+			case GEngine::FrameBufferTextureFormat::None:
+				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
+				break;
+			case GEngine::FrameBufferTextureFormat::RGBA8:
+				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				break;
+			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
+				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH:
+				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				break;
+			default:
+				break;
+			}
+
+			return Ref;
+		}
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
+		{
+			VkAttachmentDescription	Attachment{};
+			Attachment.samples = sample;
+			Attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			Attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			Attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			Attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			switch (format)
+			{
+			case GEngine::FrameBufferTextureFormat::None:
+				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
+				break;
+			case GEngine::FrameBufferTextureFormat::RGBA8:
+				Attachment.format = VK_FORMAT_R8G8B8A8_UNORM;
+				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
+				Attachment.format = VK_FORMAT_R8_SINT;
+				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+				Attachment.format = FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				Attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+				Attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH:
+				Attachment.format = FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				break;
+			default:
+				break;
+			}
+
+			return Attachment;
+		}
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index)
 		{
 			VkAttachmentReference		Ref{};

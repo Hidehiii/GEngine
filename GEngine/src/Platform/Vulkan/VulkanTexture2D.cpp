@@ -146,7 +146,7 @@ namespace GEngine
     }
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
-        Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, newLayout);
+        Utils::TransitionImageLayout(m_Image, m_DataFormat, m_ImageLayout, newLayout, m_AspectFlag);
         m_ImageLayout = newLayout;
     }
     void VulkanTexture2D::CreateSampler()
