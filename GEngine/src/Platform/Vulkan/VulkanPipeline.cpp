@@ -1,11 +1,13 @@
 #include "GEpch.h"
 #include "VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "Platform/Vulkan/VulkanContext.h"
+
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Renderer/RenderCommand.h"
 
+
+#include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
 	namespace Utils
@@ -51,29 +53,40 @@ namespace GEngine
 			CreatePipeline();
 			m_FirstCreatePipeline = false;
 		}
-		vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
-		vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-		vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
-		CreateDescriptorSetAndLayout();
+		if (m_RecreatePipeline)
+		{
+			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
+			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
+			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+			CreateDescriptorSetAndLayout();
+			UpdateDescriptorSet();
+			CreatePipeline();
+		}
 		UpdateDescriptorSet();
-		CreatePipeline();
+		
 		
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
-		m_Viewport.x		= 0.0f;
-		m_Viewport.y		= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
-		m_Viewport.width	= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth();
-		m_Viewport.height	= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
-		m_Viewport.minDepth = 0.0f;
-		m_Viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_Viewport);
+		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples));
 
-		m_Scissor.offset = { 0, 0 };
-		m_Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
-		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_Scissor);
+		VkViewport			Viewport{};
+		Viewport.x			= 0.0f;
+		Viewport.y			= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
+		Viewport.width		= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth();
+		Viewport.height		= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
+		Viewport.minDepth	= 0.0f;
+		Viewport.maxDepth	= 1.0f;
+		vkCmdSetViewport(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Viewport);
 
-		
+		VkRect2D											Scissor{};
+		Scissor.offset = { 0, 0 };
+		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
+		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
+
+		vkCmdSetDepthTestEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthTest());
+		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
+		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::MaterialCullModeToVkCullMode(m_Material->GetCullMode()));
 
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
@@ -255,105 +268,108 @@ namespace GEngine
 	}
     void VulkanPipeline::CreatePipeline()
     {
-		m_VertexShaderModule		= CreateShaderModule(m_Material->GetShader()->GetVertexShaderSource());
-		m_FragmentShaderModule		= CreateShaderModule(m_Material->GetShader()->GetFragmentShaderSource());
+		VkShaderModule VertexShaderModule, FragmentShaderModule;
+
+		VertexShaderModule		= CreateShaderModule(m_Material->GetShader()->GetVertexShaderSource());
+		FragmentShaderModule	= CreateShaderModule(m_Material->GetShader()->GetFragmentShaderSource());
 
 		VkPipelineShaderStageCreateInfo		vertexShaderStageInfo{};
 		vertexShaderStageInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderStageInfo.stage			= VK_SHADER_STAGE_VERTEX_BIT;
-		vertexShaderStageInfo.module		= m_VertexShaderModule;
+		vertexShaderStageInfo.module		= VertexShaderModule;
 		vertexShaderStageInfo.pName			= "main";
 
 		VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
 		fragmentShaderStageInfo.sType		= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderStageInfo.stage		= VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragmentShaderStageInfo.module		= m_FragmentShaderModule;
+		fragmentShaderStageInfo.module		= FragmentShaderModule;
 		fragmentShaderStageInfo.pName		= "main";
 
-		m_ShaderStages						= { vertexShaderStageInfo, fragmentShaderStageInfo };
+		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
+		ShaderStages						= { vertexShaderStageInfo, fragmentShaderStageInfo };
 
 		VkPipelineDynamicStateCreateInfo			dynamicStateCreateInfo{};
 		dynamicStateCreateInfo.sType				= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateCreateInfo.dynamicStateCount	= m_DynamicStates.size();
 		dynamicStateCreateInfo.pDynamicStates		= m_DynamicStates.data();
 
-		m_VertexInputInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		m_VertexInputInfo.vertexBindingDescriptionCount		= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputBindingDescription().size());
+		VkPipelineVertexInputStateCreateInfo				VertexInputInfo{};
+		VertexInputInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		VertexInputInfo.vertexBindingDescriptionCount		= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputBindingDescription().size());
 		auto												bindingDescription = m_VertexBuffer->GetVertexInputBindingDescription();
-		m_VertexInputInfo.pVertexBindingDescriptions		= bindingDescription.data();
-		m_VertexInputInfo.vertexAttributeDescriptionCount	= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputAttributeDescriptions().size());
+		VertexInputInfo.pVertexBindingDescriptions			= bindingDescription.data();
+		VertexInputInfo.vertexAttributeDescriptionCount		= static_cast<uint32_t>(m_VertexBuffer->GetVertexInputAttributeDescriptions().size());
 		auto												attributeDescription = m_VertexBuffer->GetVertexInputAttributeDescriptions();
-		m_VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();
+		VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();
 
-		m_InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		if (m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Point)
+		VkPipelineInputAssemblyStateCreateInfo				InputAssembly{};
+		InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		switch (m_VertexBuffer->GetVertexTopologyType())
 		{
-			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		case VertexTopology::Point:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
+		case VertexTopology::Line:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST; break;
+		case VertexTopology::Triangle:	InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
+		default: GE_CORE_ASSERT(false, "unkown topolopgy");
 		}
-		else if (m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Line)
-		{
-			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		}
-		else if(m_VertexBuffer->GetVertexTopologyType() == VertexTopology::Triangle)
-		{
-			m_InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		}
-		else
-		{
-			GE_CORE_ASSERT(false, "unkown topolopgy");
-		}
-		m_InputAssembly.primitiveRestartEnable	= VK_FALSE;
+		InputAssembly.primitiveRestartEnable	= VK_FALSE;
 
-		m_Viewport.x			= 0.0f;
-		m_Viewport.y			= 0.0f;
-		m_Viewport.width		= (float)VulkanContext::Get()->GetSwapChainExtent().width;
-		m_Viewport.height		= (float)VulkanContext::Get()->GetSwapChainExtent().height;
-		m_Viewport.minDepth		= 0.0f;
-		m_Viewport.maxDepth		= 1.0f;
+		VkViewport			Viewport{};
+		Viewport.x			= 0.0f;
+		Viewport.y			= 0.0f;
+		Viewport.width		= (float)VulkanContext::Get()->GetSwapChainExtent().width;
+		Viewport.height		= (float)VulkanContext::Get()->GetSwapChainExtent().height;
+		Viewport.minDepth	= 0.0f;
+		Viewport.maxDepth	= 1.0f;
 
-		m_Scissor.offset = { 0, 0 };
-		m_Scissor.extent = VulkanContext::Get()->GetSwapChainExtent();
+		VkRect2D											Scissor{};
+		Scissor.offset = { 0, 0 };
+		Scissor.extent = VulkanContext::Get()->GetSwapChainExtent();
 
-		m_ViewportState.sType			= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		m_ViewportState.viewportCount	= 1;
-		m_ViewportState.pViewports		= &m_Viewport;
-		m_ViewportState.scissorCount	= 1;
-		m_ViewportState.pScissors		= &m_Scissor;
+		VkPipelineViewportStateCreateInfo					ViewportState{};
+		ViewportState.sType									= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		ViewportState.viewportCount							= 1;
+		ViewportState.pViewports							= &Viewport;
+		ViewportState.scissorCount							= 1;
+		ViewportState.pScissors								= &Scissor;
 
-		m_Rasterizer.sType						= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		m_Rasterizer.depthClampEnable			= VK_FALSE;
-		m_Rasterizer.rasterizerDiscardEnable	= VK_FALSE;
-		m_Rasterizer.polygonMode				= VK_POLYGON_MODE_FILL;
-		m_Rasterizer.lineWidth					= 1.0f;
-		m_Rasterizer.cullMode					= Utils::MaterialCullModeToVkCullMode(m_Material->GetCullMode());
-		m_Rasterizer.frontFace					= VK_FRONT_FACE_CLOCKWISE;
+		VkPipelineRasterizationStateCreateInfo				Rasterizer{};
+		Rasterizer.sType									= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		Rasterizer.depthClampEnable							= VK_FALSE;
+		Rasterizer.rasterizerDiscardEnable					= VK_FALSE;
+		Rasterizer.polygonMode								= VK_POLYGON_MODE_FILL;
+		Rasterizer.lineWidth								= 1.0f;
+		Rasterizer.cullMode									= Utils::MaterialCullModeToVkCullMode(m_Material->GetCullMode());
+		Rasterizer.frontFace								= VK_FRONT_FACE_CLOCKWISE;
 
-		m_Multisampling.sType					= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		m_Multisampling.sampleShadingEnable		= VK_FALSE;
-		m_Multisampling.rasterizationSamples	= Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples);
-		m_Multisampling.minSampleShading		= 1.0f;
-		m_Multisampling.pSampleMask				= nullptr;
-		m_Multisampling.alphaToCoverageEnable	= VK_FALSE;
-		m_Multisampling.alphaToOneEnable		= VK_FALSE;
+		VkPipelineMultisampleStateCreateInfo				Multisampling{};
+		Multisampling.sType									= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		Multisampling.sampleShadingEnable					= VK_FALSE;
+		Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples);
+		Multisampling.minSampleShading						= 1.0f;
+		Multisampling.pSampleMask							= nullptr;
+		Multisampling.alphaToCoverageEnable					= VK_FALSE;
+		Multisampling.alphaToOneEnable						= VK_FALSE;
 
-		m_ColorBlendAttachment.colorWriteMask		= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		m_ColorBlendAttachment.blendEnable			= VK_FALSE;
-		m_ColorBlendAttachment.srcColorBlendFactor	= (VkBlendFactor)m_Material->GetBlendSourceFactor();
-		m_ColorBlendAttachment.dstColorBlendFactor	= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
-		m_ColorBlendAttachment.colorBlendOp			= VK_BLEND_OP_ADD;
-		m_ColorBlendAttachment.srcAlphaBlendFactor	= (VkBlendFactor)m_Material->GetBlendSourceFactor();
-		m_ColorBlendAttachment.dstAlphaBlendFactor	= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
-		m_ColorBlendAttachment.alphaBlendOp			= VK_BLEND_OP_ADD;
+		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
+		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		ColorBlendAttachment.blendEnable					= VK_FALSE;
+		ColorBlendAttachment.srcColorBlendFactor			= (VkBlendFactor)m_Material->GetBlendSourceFactor();
+		ColorBlendAttachment.dstColorBlendFactor			= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
+		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
+		ColorBlendAttachment.srcAlphaBlendFactor			= (VkBlendFactor)m_Material->GetBlendSourceFactor();
+		ColorBlendAttachment.dstAlphaBlendFactor			= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
+		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
 
-		m_ColorBlending.sType						= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		m_ColorBlending.logicOpEnable				= VK_FALSE;
-		m_ColorBlending.logicOp						= VK_LOGIC_OP_COPY;
-		m_ColorBlending.attachmentCount				= 1;
-		m_ColorBlending.pAttachments				= &m_ColorBlendAttachment;
-		m_ColorBlending.blendConstants[0]			= 0.0f;
-		m_ColorBlending.blendConstants[1]			= 0.0f;
-		m_ColorBlending.blendConstants[2]			= 0.0f;
-		m_ColorBlending.blendConstants[3]			= 0.0f;
+		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
+		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		ColorBlending.logicOpEnable							= VK_FALSE;
+		ColorBlending.logicOp								= VK_LOGIC_OP_COPY;
+		ColorBlending.attachmentCount						= 1;
+		ColorBlending.pAttachments							= &ColorBlendAttachment;
+		ColorBlending.blendConstants[0]						= 0.0f;
+		ColorBlending.blendConstants[1]						= 0.0f;
+		ColorBlending.blendConstants[2]						= 0.0f;
+		ColorBlending.blendConstants[3]						= 0.0f;
 
 		VkPipelineLayoutCreateInfo					pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -378,15 +394,15 @@ namespace GEngine
 
 		VkGraphicsPipelineCreateInfo        pipelineInfo{};
 		pipelineInfo.sType					= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount				= static_cast<uint32_t>(m_ShaderStages.size());
-		pipelineInfo.pStages				= m_ShaderStages.data();
-		pipelineInfo.pVertexInputState		= &m_VertexInputInfo;
-		pipelineInfo.pInputAssemblyState	= &m_InputAssembly;
-		pipelineInfo.pViewportState			= &m_ViewportState;
-		pipelineInfo.pRasterizationState	= &m_Rasterizer;
-		pipelineInfo.pMultisampleState		= &m_Multisampling;
+		pipelineInfo.stageCount				= static_cast<uint32_t>(ShaderStages.size());
+		pipelineInfo.pStages				= ShaderStages.data();
+		pipelineInfo.pVertexInputState		= &VertexInputInfo;
+		pipelineInfo.pInputAssemblyState	= &InputAssembly;
+		pipelineInfo.pViewportState			= &ViewportState;
+		pipelineInfo.pRasterizationState	= &Rasterizer;
+		pipelineInfo.pMultisampleState		= &Multisampling;
 		pipelineInfo.pDepthStencilState		= &depthStencil;
-		pipelineInfo.pColorBlendState		= &m_ColorBlending;
+		pipelineInfo.pColorBlendState		= &ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
 		pipelineInfo.layout					= m_PipelineLayout;
 		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetRenderPass();
@@ -396,7 +412,7 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), VertexShaderModule, nullptr);
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), FragmentShaderModule, nullptr);
     }
 }

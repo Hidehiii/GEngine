@@ -27,7 +27,7 @@ namespace GEngine
 		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample = VK_SAMPLE_COUNT_1_BIT);
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
-		void ResolveImage(VkImage src, VkImageLayout srcLayout, VkImage dst, VkImageLayout dstLayout, uint32_t width, uint32_t height);
+		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, VkImageAspectFlags aspectFlag);
 	}
 	
 }

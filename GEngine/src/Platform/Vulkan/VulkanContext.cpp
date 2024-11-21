@@ -307,6 +307,8 @@ namespace GEngine
 #endif
         VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device));
 
+        LoadFunctionEXT(extensions);
+
 		vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
     }
@@ -358,7 +360,6 @@ namespace GEngine
 				m_InstanceExtensions.erase(m_InstanceExtensions.begin() + i);
             }
         }
-
 #ifdef GE_DEBUG
         for (const auto& extension : m_InstanceExtensions)
         {
@@ -542,6 +543,16 @@ namespace GEngine
 			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
 		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+    }
+
+    void VulkanContext::LoadFunctionEXT(std::vector<const char*> ext)
+    {
+		if (std::find(ext.begin(), ext.end(), VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME) != ext.end())
+		{
+			// load vkCmdSetRasterizationSamplesEXT
+			m_Function.vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT)vkGetDeviceProcAddr(m_Device, "vkCmdSetRasterizationSamplesEXT");
+            GE_CORE_INFO("Load Functoin (vkCmdSetRasterizationSamplesEXT)");
+		}
     }
 
     void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)

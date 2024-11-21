@@ -17,6 +17,7 @@ namespace GEngine
 		virtual MaterialBlendMode GetBlendMode() override { return m_BlendMode; }
 		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
 		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
+		virtual bool IsOpaque() override { return (VkBlendFactor)m_BlendSourceFactor == VK_BLEND_FACTOR_ONE && (VkBlendFactor)m_BlendDestinationFactor == VK_BLEND_FACTOR_ZERO; }
 
 		virtual void EnableDepthWrite(bool enabled) override { m_EnableDepthWrite = enabled; }
 		virtual bool GetEnableDepthWrite() override { return m_EnableDepthWrite; }
@@ -61,8 +62,8 @@ namespace GEngine
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;
 		std::string											m_Name;
 		MaterialBlendMode									m_BlendMode = MaterialBlendMode::None;
-		uint32_t											m_BlendSourceFactor = 0;
-		uint32_t											m_BlendDestinationFactor = 0;
+		uint32_t											m_BlendSourceFactor = (uint32_t)VK_BLEND_FACTOR_ONE;
+		uint32_t											m_BlendDestinationFactor = (uint32_t)VK_BLEND_FACTOR_ZERO;
 		MaterialCullMode									m_CullMode = MaterialCullMode::Back;
 		Buffer												m_UniformStorageBuffer;
 		std::vector<ShaderUniform>							m_Uniforms;

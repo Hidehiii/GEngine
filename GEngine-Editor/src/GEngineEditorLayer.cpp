@@ -174,12 +174,15 @@ namespace GEngine
 		{			
 			// If framebuffer is changed in OnGuiRender(), the screen will flash
 			FrameBufferSpecification fbspec = m_SceneViewportFrameBuffer->GetSpecification();
-			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y)
-				|| Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
+			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y))
 			{
-				fbspec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
 				fbspec.Width = m_SceneViewportSize.x;
 				fbspec.Height = m_SceneViewportSize.y;
+				m_SceneViewportFrameBuffer = FrameBuffer::Create(fbspec);
+			}
+			if (Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
+			{
+				fbspec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
 				m_SceneViewportFrameBuffer = FrameBuffer::Create(fbspec);
 			}
 
@@ -489,8 +492,8 @@ namespace GEngine
 					m_ActiveScene->MainCamera()->SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 				}
 			}
-			//ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
-			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetDepthAttachment()), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
+			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
+			//ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetDepthAttachment()), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
 
 			ImGui::End();
 			ImGui::PopStyleVar();

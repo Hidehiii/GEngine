@@ -386,9 +386,31 @@ namespace GEngine
 			}
 			return VK_SAMPLE_COUNT_1_BIT;
 		}
-		void ResolveImage(VkImage src, VkImageLayout srcLayout, VkImage dst, VkImageLayout dstLayout, uint32_t width, uint32_t height)
+		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, VkImageAspectFlags aspectFlag)
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
+			VkImageSubresourceLayers	layers{};
+			layers.aspectMask = aspectFlag;
+			layers.mipLevel = 1;
+			layers.baseArrayLayer = 0;
+			layers.layerCount = 1;
+
+			VkImageBlit		region{};
+			region.srcSubresource = layers;
+			region.srcOffsets[0] = { 0, 0, 0 };
+			region.srcOffsets[1] = { (int)srcSize.x, (int)srcSize.y, 0 };
+			region.dstSubresource = layers;
+			region.dstOffsets[0] = { 0, 0, 0 };
+			region.dstOffsets[1] = { (int)dstSize.x, (int)dstSize.y, 0 };
+
+			vkCmdBlitImage(commandBuffer,
+				src,
+				srcLayout,
+				dst,
+				dstLayout,
+				1,
+				&region,
+				VK_FILTER_LINEAR);
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}

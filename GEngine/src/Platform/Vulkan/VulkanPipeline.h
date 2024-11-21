@@ -16,9 +16,9 @@ namespace GEngine
 		virtual ~VulkanPipeline() override;
 		virtual void PrepareRender();
 		virtual void Render(uint32_t indexCount, uint32_t instanceCount = 0) override;
-		virtual Ref<VertexBuffer> GetVertexBuffer() override { m_RecreatePipeline = true; return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
+		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
 		virtual void SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
-		virtual Ref<Material> GetMaterial() override { m_RecreatePipeline = true; return std::static_pointer_cast<Material>(m_Material);}
+		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
 		virtual void SetMaterial(Ref<Material>& material) override;
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
@@ -33,29 +33,19 @@ namespace GEngine
 		VkDescriptorSetLayout		m_DescriptorSetLayout;
 		VkDescriptorSet				m_DescriptorSet;
 
-		VkShaderModule				m_VertexShaderModule;
-		VkShaderModule				m_FragmentShaderModule;
 		std::vector<VkDynamicState> m_DynamicStates = {
 			VK_DYNAMIC_STATE_VIEWPORT,
 			VK_DYNAMIC_STATE_SCISSOR,
-			/*VK_DYNAMIC_STATE_LINE_WIDTH,
+			//VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT,
+			//VK_DYNAMIC_STATE_LINE_WIDTH,
 			VK_DYNAMIC_STATE_CULL_MODE,
 			VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE,
 			VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE,
 
-			VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
-			VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT,*/
+			//VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
+			//VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT
 		};
-		std::vector<VkPipelineShaderStageCreateInfo>		m_ShaderStages;
-		VkPipelineVertexInputStateCreateInfo				m_VertexInputInfo{};
-		VkPipelineInputAssemblyStateCreateInfo				m_InputAssembly{};
-		VkViewport											m_Viewport{};
-		VkRect2D											m_Scissor{};
-		VkPipelineViewportStateCreateInfo					m_ViewportState{};
-		VkPipelineRasterizationStateCreateInfo				m_Rasterizer{};
-		VkPipelineMultisampleStateCreateInfo				m_Multisampling{};
-		VkPipelineColorBlendAttachmentState					m_ColorBlendAttachment{};
-		VkPipelineColorBlendStateCreateInfo					m_ColorBlending{};
+		
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_GraphicsPipeline;
 		bool												m_FirstCreatePipeline = true;

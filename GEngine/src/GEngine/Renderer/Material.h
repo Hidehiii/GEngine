@@ -41,6 +41,7 @@ namespace GEngine
 		virtual MaterialBlendMode GetBlendMode() = 0;
 		virtual uint32_t GetBlendSourceFactor() = 0;
 		virtual uint32_t GetBlendDestinationFactor() = 0;
+		virtual bool IsOpaque() = 0;
 
 		virtual void EnableDepthWrite(bool enabled) = 0;
 		virtual bool GetEnableDepthWrite() = 0;

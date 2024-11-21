@@ -1,8 +1,8 @@
 
 #Name AlphaTestShader
 #Blend Alpha SrcAlpha OneMinusSrcAlpha
-#DepthWrite On
-#DepthMask Off
+#DepthWrite Off
+#DepthTest On
 #Properties
 
 p0: color;
@@ -42,7 +42,7 @@ struct VertexOutput
 	vec4 color;
 	vec4 normal;
 };
-layout (set = 1, location = 0) out VertexOutput OUT;
+layout (location = 0) out VertexOutput OUT;
 void main()
 {
 	OUT.color = i_color;

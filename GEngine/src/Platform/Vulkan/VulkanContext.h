@@ -11,6 +11,11 @@
 
 namespace GEngine
 {
+	struct VulkanFunctionEXT
+	{
+		PFN_vkCmdSetRasterizationSamplesEXT vkCmdSetRasterizationSamplesEXT = VK_NULL_HANDLE;
+	};
+	
 
 	struct SwapChainSupportDetails 
 	{
@@ -56,7 +61,7 @@ namespace GEngine
 		VkSemaphore&				GetCurrentSemaphore() { return m_Semaphores.at(m_SemaphoreIndex); }
 		void                        MoveToNextSemaphore() { m_SemaphoreIndex = (m_SemaphoreIndex + 1) % m_Semaphores.size(); }
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
-		
+		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 	private:
 		void						CreateInstance();
 		bool						CheckValidationLayerSupport();
@@ -80,6 +85,7 @@ namespace GEngine
 		void						CreateDescriptor();
 		void						CreateSyncObjects();
 		void						CleanUpSwapChain();
+		void						LoadFunctionEXT(std::vector<const char*> ext);
 	private:
 		GLFWwindow*							m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;
@@ -124,6 +130,7 @@ namespace GEngine
 		int                                 m_SemaphoreIndex = 0;
 		std::vector<VkFence>				m_Fences;
 		int                                 m_FenceIndex = 0;
+		VulkanFunctionEXT					m_Function;
 	};
 	
 }

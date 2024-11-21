@@ -87,22 +87,23 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample)
     {
         m_DataFormat    = format;
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
+        m_ImageMemory   = imageMemory;
         m_AspectFlag    = aspectFlag;
-        m_MultiSample = isMultiSample;
+        m_MultiSample   = isMultiSample;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
         vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-            vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
-            vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-            vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+		vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
+		vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
+		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
         vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
     }
 

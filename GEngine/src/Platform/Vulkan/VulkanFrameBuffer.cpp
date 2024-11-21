@@ -98,17 +98,20 @@ namespace GEngine
 	VulkanFrameBuffer::~VulkanFrameBuffer()
 	{
 		vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
-		for (int i = 0; i < m_Attachments.size(); i++)
+		if (m_Specification.Samples > 1)
 		{
-			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
-		}
-		for (int i = 0; i < m_Images.size(); i++)
-		{
-			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Images.at(i), nullptr);
-		}
-		for (int i = 0; i < m_ImagesMemory.size(); i++)
-		{
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImagesMemory.at(i), nullptr);
+			for (int i = 1; i < m_Attachments.size(); i+=2)
+			{
+				vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
+			}
+			for (int i = 1; i < m_Images.size(); i+=2)
+			{
+				vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Images.at(i), nullptr);
+			}
+			for (int i = 1; i < m_ImagesMemory.size(); i+=2)
+			{
+				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImagesMemory.at(i), nullptr);
+			}
 		}
 	}
 	void VulkanFrameBuffer::Begin()
@@ -168,6 +171,17 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height)
 	{
+		Ref<VulkanFrameBuffer>	dstFramebuffer = std::dynamic_pointer_cast<VulkanFrameBuffer>(dst);
+		for (int i = 0; i < m_ColorImages.size(); i++)
+		{
+			Utils::BlitImage(m_ColorImages[i],
+				m_ColorAttachmentsTexture2D[i]->GetImageLayout(),
+				Vector2(width, height),
+				dstFramebuffer->m_ColorImages[i],
+				dstFramebuffer->m_ColorAttachmentsTexture2D[i]->GetImageLayout(),
+				Vector2(width, height),
+				VK_IMAGE_ASPECT_COLOR_BIT);
+		}
 	}
 	int VulkanFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
 	{
@@ -249,7 +263,7 @@ namespace GEngine
 			m_ColorImageViews.push_back(imageView);
 			m_ColorImagesMemory.push_back(imageMemory);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, false);
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], m_ColorImagesMemory[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, false);
 			m_ColorAttachmentsTexture2D.push_back(texture);
 		}
 		VkDeviceMemory					imageMemory;
@@ -327,7 +341,7 @@ namespace GEngine
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
 
-		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag, false);
+		m_DepthAttachmentTexture2D = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory , VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag, false);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
