@@ -427,7 +427,10 @@ namespace GEngine
 	}
 	void Scene::OnRenderOIT()
 	{
+		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 		// oit 需要depthTest on 和 depthWrite off
+
+		auto view = m_Registry.view<MeshRenderer>();
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{

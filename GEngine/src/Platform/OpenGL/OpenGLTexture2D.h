@@ -9,8 +9,8 @@ namespace GEngine
 	{
 	public:
 		OpenGLTexture2D(const std::string& path);
-		OpenGLTexture2D(uint32_t width, uint32_t height);
-		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
+		OpenGLTexture2D(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
+		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
 		OpenGLTexture2D(uint32_t rendererID, bool isMultiSample = false);
 		virtual ~OpenGLTexture2D();
 

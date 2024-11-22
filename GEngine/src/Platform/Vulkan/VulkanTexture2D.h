@@ -9,8 +9,8 @@ namespace GEngine
 	{
 	public:
 		VulkanTexture2D(const std::string& path);
-		VulkanTexture2D(uint32_t width, uint32_t height);
-		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size);
+		VulkanTexture2D(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
+		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
 		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample = false);
 		virtual ~VulkanTexture2D();
 

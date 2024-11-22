@@ -6,6 +6,31 @@
 
 namespace GEngine
 {
+	namespace Utils
+	{
+		GLenum Texture2DFormatToGLInternalFormat(Texture2DFormat format)
+		{
+			switch (format)
+			{
+			case GEngine::Texture2DFormat::RGBA: return GL_RGBA8;
+			case GEngine::Texture2DFormat::RGB: return GL_RGB8;
+			default:
+				break;
+			}
+		}
+		GLenum Texture2DFormatToGLDataFormat(Texture2DFormat format)
+		{
+			switch (format)
+			{
+			case GEngine::Texture2DFormat::RGBA: return GL_RGBA;
+			case GEngine::Texture2DFormat::RGB: return GL_RGB;
+			default:
+				break;
+			}
+		}
+	}
+
+
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		: m_Path(path)
 	{
@@ -47,13 +72,13 @@ namespace GEngine
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Texture2DFormat format)
 		: m_Width(width), m_Height(height)
 	{
 		GE_PROFILE_FUNCTION();
 
-		m_InternalFormat	= GL_RGBA8;
-		m_DataFormat		= GL_RGBA;
+		m_InternalFormat = Utils::Texture2DFormatToGLInternalFormat(format);
+		m_DataFormat = Utils::Texture2DFormatToGLDataFormat(format);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -63,13 +88,13 @@ namespace GEngine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format)
 		: m_Width(width), m_Height(height)
 	{
 		GE_PROFILE_FUNCTION();
 
-		m_InternalFormat	= GL_RGBA8;
-		m_DataFormat		= GL_RGBA;
+		m_InternalFormat	= Utils::Texture2DFormatToGLInternalFormat(format);
+		m_DataFormat		= Utils::Texture2DFormatToGLDataFormat(format);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);

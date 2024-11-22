@@ -8,7 +8,7 @@ namespace GEngine
 {
 	Ref<Texture2D>	Texture2D::s_WhiteTexture2D = nullptr;
 
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Texture2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -17,10 +17,10 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLTexture2D>(width, height);
+			return CreateRef<OpenGLTexture2D>(width, height, format);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanTexture2D>(width, height);
+			return CreateRef<VulkanTexture2D>(width, height, format);
 		}
 		}
 
@@ -46,7 +46,7 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -55,10 +55,10 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLTexture2D>(width, height, data, size);
+			return CreateRef<OpenGLTexture2D>(width, height, data, size, format);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanTexture2D>(width, height, data, size);
+			return CreateRef<VulkanTexture2D>(width, height, data, size, format);
 		}
 		}
 

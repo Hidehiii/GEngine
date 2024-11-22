@@ -27,7 +27,7 @@ namespace GEngine
 		m_BufferInfo.offset = m_Offset;
 		m_BufferInfo.range = size;
 	}
-	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset = 0)
+	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
 		VkBuffer	stagingBuffer;
 		VkDeviceMemory	stagingBufferMemory;

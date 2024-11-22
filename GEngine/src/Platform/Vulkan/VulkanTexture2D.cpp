@@ -7,6 +7,21 @@
 
 namespace GEngine
 {
+    namespace Utils
+    {
+        VkFormat Texture2DFormatToVulkanFormat(Texture2DFormat format)
+        {
+            switch (format)
+            {
+            case GEngine::Texture2DFormat::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
+            case GEngine::Texture2DFormat::RGB: return VK_FORMAT_R8G8B8_UNORM;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
     VulkanTexture2D::VulkanTexture2D(const std::string& path)
     {
         m_Path = path;
@@ -46,11 +61,11 @@ namespace GEngine
         
         CreateSampler();
     }
-    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, Texture2DFormat format)
     {
         m_Height    = height;
         m_Width     = width;
-        m_DataFormat = VK_FORMAT_R8G8B8A8_UNORM;
+        m_DataFormat = Utils::Texture2DFormatToVulkanFormat(format); 
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -66,11 +81,11 @@ namespace GEngine
 
         CreateSampler();
     }
-    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size)
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format)
     {
 		m_Height = height;
 		m_Width = width;
-		m_DataFormat = VK_FORMAT_R8G8B8A8_UNORM;
+		m_DataFormat = Utils::Texture2DFormatToVulkanFormat(format);
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -130,7 +145,7 @@ namespace GEngine
         Utils::CopyBufferToImage(m_Buffer, m_Image, m_Width, m_Height);
         Utils::TransitionImageLayout(m_Image, m_DataFormat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
+        
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_Buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), m_BufferMemory, nullptr);
     }

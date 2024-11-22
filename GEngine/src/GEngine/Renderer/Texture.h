@@ -19,12 +19,18 @@ namespace GEngine
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 
+	enum class Texture2DFormat
+	{
+		RGBA,
+		RGB,
+	};
+
 	class GENGINE_API Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
 		static Ref<Texture2D> Create(const std::string& path);
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
 
 		// 默认白色纹理
 		static Ref<Texture2D> WhiteTexture();
