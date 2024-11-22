@@ -275,6 +275,8 @@ namespace GEngine
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
         glDisable(GL_FRAMEBUFFER_SRGB);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
     }
     void OpenGLFrameBuffer::End()
     {

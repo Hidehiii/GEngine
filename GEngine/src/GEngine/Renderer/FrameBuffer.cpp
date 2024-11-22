@@ -6,6 +6,7 @@
 
 namespace GEngine
 {
+	Vector2 FrameBuffer::s_CurrentFrameBufferSize = Vector2(0, 0);
 
     Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& spec)
     {

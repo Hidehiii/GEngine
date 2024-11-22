@@ -1,0 +1,52 @@
+#include "GEpch.h"
+#include "VulkanStorageBuffer.h"
+#include "Platform/Vulkan/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanContext.h"
+
+namespace GEngine
+{
+	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding)
+	{
+		m_Binding = binding;
+
+		m_DescriptorSetLayoutBinding.binding		= binding;
+		m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		m_DescriptorSetLayoutBinding.descriptorCount = 1;
+		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
+		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
+			size,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_StorageBuffer,
+			m_StorageBufferMemory);
+
+		m_BufferInfo.buffer = m_StorageBuffer;
+		m_BufferInfo.offset = m_Offset;
+		m_BufferInfo.range = size;
+	}
+	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset = 0)
+	{
+		VkBuffer	stagingBuffer;
+		VkDeviceMemory	stagingBufferMemory;
+		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
+			VulkanContext::Get()->GetDevice(),
+			size,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer,
+			stagingBufferMemory);
+
+		void* tempData;
+		vkMapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, 0, size, 0, &tempData);
+		memcpy(tempData, data, size);
+		vkUnmapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory);
+		Utils::CopyBufferToBuffer(stagingBuffer, m_StorageBuffer, size);
+
+		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), stagingBuffer, nullptr);
+		vkFreeMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, nullptr);
+	}
+}
+

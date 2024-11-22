@@ -414,5 +414,18 @@ namespace GEngine
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
+		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size)
+		{
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
+
+			VkBufferCopy	copyRegion{};
+			copyRegion.srcOffset = 0;
+			copyRegion.dstOffset = 0;
+			copyRegion.size = size;
+
+			vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
+
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
+		}
     }
 }

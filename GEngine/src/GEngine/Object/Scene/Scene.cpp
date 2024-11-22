@@ -425,6 +425,10 @@ namespace GEngine
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
 	}
+	void Scene::OnRenderOIT()
+	{
+		// oit 需要depthTest on 和 depthWrite off
+	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;

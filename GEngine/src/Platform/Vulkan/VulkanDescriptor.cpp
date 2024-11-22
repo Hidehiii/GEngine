@@ -13,17 +13,17 @@ namespace GEngine
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, descriptorCount },
-			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, descriptorCount }
+			{ VK_DESCRIPTOR_TYPE_SAMPLER,					descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,				descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,				descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,		descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,		descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,	descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,	descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,			descriptorCount }
 		};
 
 

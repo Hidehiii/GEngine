@@ -70,3 +70,7 @@
 #include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 
 #include "GEngine/Physics/3D/Physics3D.h"
+
+// compute
+#include "GEngine/Compute/StorageBuffer.h"
+#include "GEngine/Compute/StorageImage.h"

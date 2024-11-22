@@ -29,19 +29,29 @@ namespace GEngine
 		Vector4 GE_MAIN_LIGHT_COLOR;
 	};
 
+	struct ScreenData
+	{
+		// x: width
+		// y: height
+		Vector4	GE_SCREEN_SIZE;
+	};
+
 	struct ShaderUniformData
 	{
-		CameraData CameraDataBuffer;
-		Ref<UniformBuffer> CameraUniformBuffer;
+		CameraData			CameraDataBuffer;
+		Ref<UniformBuffer>	CameraUniformBuffer;
 
-		TimeData TimeDataBuffer;
-		Ref<UniformBuffer> TimeUniformBuffer;
+		TimeData			TimeDataBuffer;
+		Ref<UniformBuffer>	TimeUniformBuffer;
 
-		ModelData ModelDataBuffer;
-		Ref<UniformBuffer> ModelUniformBuffer;
+		ModelData			ModelDataBuffer;
+		Ref<UniformBuffer>	ModelUniformBuffer;
 
-		LigthData LigthDataBuffer;
-		Ref<UniformBuffer> LigthUniformBuffer;
+		LigthData			LigthDataBuffer;
+		Ref<UniformBuffer>	LigthUniformBuffer;
+
+		ScreenData			ScreenDataBuffer;
+		Ref<UniformBuffer>	ScreenUniformBuffer;
 	};
 
 	static ShaderUniformData s_ShaderUniformData;
@@ -55,10 +65,11 @@ namespace GEngine
 
 		// Uniform Buffers的位置是固定的，所以这里直接创建
 		// 0 的位置留给自定义
-		s_ShaderUniformData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 1);
-		s_ShaderUniformData.TimeUniformBuffer = UniformBuffer::Create(sizeof(TimeData), 2);
-		s_ShaderUniformData.ModelUniformBuffer = UniformBuffer::Create(sizeof(ModelData), 3);
-		s_ShaderUniformData.LigthUniformBuffer = UniformBuffer::Create(sizeof(LigthData), 4);
+		s_ShaderUniformData.CameraUniformBuffer		= UniformBuffer::Create(sizeof(CameraData), 1);
+		s_ShaderUniformData.TimeUniformBuffer		= UniformBuffer::Create(sizeof(TimeData),	2);
+		s_ShaderUniformData.ModelUniformBuffer		= UniformBuffer::Create(sizeof(ModelData),	3);
+		s_ShaderUniformData.LigthUniformBuffer		= UniformBuffer::Create(sizeof(LigthData),	4);
+		s_ShaderUniformData.ScreenUniformBuffer		= UniformBuffer::Create(sizeof(ScreenData), 5);
 	}
 
 	void Renderer::Shutdown()
@@ -75,6 +86,7 @@ namespace GEngine
 	{
 		SetCameraUniforms(camera.GetView(), camera.GetProjection(), camera.GetPosition());
 		SetTimeUniforms();
+		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 
 		Renderer2D::BeginScene();
 	}
@@ -82,7 +94,7 @@ namespace GEngine
 	{
 		SetCameraUniforms(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());
 		SetTimeUniforms();
-
+		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 		Renderer2D::BeginScene();
 	}
 	void Renderer::BeginScene(Camera& camera)
@@ -90,7 +102,7 @@ namespace GEngine
 		Transform& transform = camera.m_GameObject.GetComponent<Transform>();
 		SetCameraUniforms(Math::Inverse(transform.GetModelMatrix()), camera.GetProjectionMatrix(), transform.GetPosition());
 		SetTimeUniforms();
-
+		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 		Renderer2D::BeginScene();
 	}
 	void Renderer::EndScene()
@@ -131,6 +143,13 @@ namespace GEngine
 
 
 		s_ShaderUniformData.LigthUniformBuffer->SetData(&s_ShaderUniformData.LigthDataBuffer, sizeof(LigthData));
+	}
+
+	void Renderer::SetScreenUniform(Vector4& size)
+	{
+		s_ShaderUniformData.ScreenDataBuffer.GE_SCREEN_SIZE = size;
+
+		s_ShaderUniformData.ScreenUniformBuffer->SetData(&s_ShaderUniformData.ScreenDataBuffer, sizeof(ScreenData));
 	}
 
 	void Renderer::DrawCubeWireframe(Transform& transform, Vector4 color)

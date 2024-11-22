@@ -81,6 +81,11 @@ namespace GEngine
 		FrameBufferSpecification						m_Specification;
 		FrameBufferTextureSpecification					m_DepthAttachmentSpec = FrameBufferTextureFormat::None;
 		std::vector<FrameBufferTextureSpecification>	m_ColorAttachmentsSpecs;
+	protected:
+		static Vector2	GetCurrentFrameBufferSize() { return s_CurrentFrameBufferSize; }
+		static Vector2									s_CurrentFrameBufferSize;
+
+		friend class Renderer;
 	};
 
 	namespace Utils

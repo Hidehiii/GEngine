@@ -148,6 +148,7 @@ namespace GEngine
 			m_DepthAttachmentTexture2D->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		}
 
+		s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
 		s_CurrentVulkanFrameBuffer = this;
 	}
 	void VulkanFrameBuffer::End()
@@ -182,6 +183,7 @@ namespace GEngine
 				Vector2(width, height),
 				VK_IMAGE_ASPECT_COLOR_BIT);
 		}
+		// TODO: 还有深度的要转，但是目前这个函数用不到先不写了
 	}
 	int VulkanFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
 	{
