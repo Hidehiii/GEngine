@@ -8,7 +8,7 @@ namespace GEngine
 {
 	Ref<Texture2D>	Texture2D::s_WhiteTexture2D = nullptr;
 
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Texture2DFormat format)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Image2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -46,7 +46,7 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{

@@ -4,10 +4,10 @@
 #DepthTest On
 #Properties
 
-prop1: color
-prop2: float
-prop3: int
-prop4: vector
+color prop1;
+float prop2;
+int prop3;
+vector prop4;
 
 #Type vertex
 #version 450 core

@@ -2,10 +2,9 @@
 #Name NormalWS3D
 
 #Properties
+vector p0;
+vector p1;
 
-p0: vector
-
-p1: vector
 
 #Type vertex
 #version 450 core

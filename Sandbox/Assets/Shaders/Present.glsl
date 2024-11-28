@@ -2,9 +2,8 @@
 #Name Present
 
 #Properties
-
-GE_PRESENT_FRAME_BUFFER: sampler2D
-GE_PRESENT_IMGUI: sampler2D
+sampler2D GE_PRESENT_FRAME_BUFFER;
+sampler2D GE_PRESENT_IMGUI;
 
 #Type vertex
 #version 450 core

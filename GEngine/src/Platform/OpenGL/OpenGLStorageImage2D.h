@@ -10,7 +10,7 @@ namespace GEngine
 	private:
 		uint32_t	m_RendererID = 0;
 		uint32_t			m_Width, m_Height;
-		GLenum				m_InternalFormat, m_DataFormat;
+		Image2DFormat	m_Format;
 	};
 }
 

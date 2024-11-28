@@ -25,9 +25,9 @@ namespace GEngine
 	class GENGINE_API Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, Image2DFormat format = Image2DFormat::R8G8B8A8F);
 		static Ref<Texture2D> Create(const std::string& path);
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format = Image2DFormat::R8G8B8A8F);
 
 		// 默认白色纹理
 		static Ref<Texture2D> WhiteTexture();

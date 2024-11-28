@@ -3,14 +3,15 @@
 
 #Properties
 
-Tex_0: sampler2D
-Tex_1: sampler2D
-Tex_2: sampler2D
-Tex_3: sampler2D
-Tex_4: sampler2D
-Tex_5: sampler2D
-Tex_6: sampler2D
-Tex_7: sampler2D
+sampler2D Tex_0;
+sampler2D Tex_1;
+sampler2D Tex_2;
+sampler2D Tex_3;
+sampler2D Tex_4;
+sampler2D Tex_5;
+sampler2D Tex_6;
+sampler2D Tex_7;
+
 
 #Type vertex
 #version 450 core

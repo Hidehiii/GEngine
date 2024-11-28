@@ -3,9 +3,8 @@
 
 #Properties
 
-p0: vector
-
-p1: vector
+vector p0;
+vector p1;
 
 #Type vertex
 #version 450 core

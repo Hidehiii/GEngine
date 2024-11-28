@@ -38,7 +38,6 @@ namespace GEngine
 		std::string						m_Path;
 		Image2DFormat					m_Format;
 		uint32_t						m_Width, m_Height;
-		VkFormat						m_DataFormat;
 		VkImage							m_Image = nullptr;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;

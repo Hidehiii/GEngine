@@ -3,7 +3,7 @@
 
 #Properties
 
-GE_PRESENT_IMGUI: sampler2D
+sampler2D GE_PRESENT_IMGUI;
 
 #Type vertex
 #version 450 core

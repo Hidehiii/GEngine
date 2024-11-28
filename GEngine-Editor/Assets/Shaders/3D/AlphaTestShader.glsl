@@ -4,11 +4,9 @@
 #DepthWrite Off
 #DepthTest On
 #Properties
-
-p0: color;
-
-p1: vector
-p2: float
+color p0;
+vector p1;
+float p2;
 
 
 #Type vertex

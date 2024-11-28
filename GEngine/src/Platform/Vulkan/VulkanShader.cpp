@@ -262,7 +262,7 @@ namespace GEngine
 			std::vector<std::string> props = Utils::SplitString(properties, '\n');
 			for (auto& prop : props)
 			{
-				prop = Utils::RemoveCharFromString(prop, ' ');
+				//prop = Utils::RemoveCharFromString(prop, ' ');
 				prop = Utils::RemoveCharFromString(prop, '\r');
 				prop = Utils::RemoveCharFromString(prop, '\n');
 				prop = Utils::RemoveCharFromString(prop, '\t');
@@ -277,13 +277,24 @@ namespace GEngine
 			}
 			uint32_t location = 0;
 			uint32_t textureSlot = VulkanTexture2D::s_Texture2DBindingOffset;
-			// split properties by :
+			// split properties by " "
 			for (auto& prop : props)
 			{
-				std::vector<std::string> propData = Utils::SplitString(prop, ':');
+				std::vector<std::string> propData = Utils::SplitString(prop, ' ');
+				for (auto& prop : propData)
+				{
+					prop = Utils::RemoveCharFromString(prop, ' ');
+				}
+				for (auto it = propData.begin(); it != propData.end();)
+				{
+					if (it->empty())
+						it = propData.erase(it);
+					else
+						++it;
+				}
 				GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
-				std::string propName = propData[0];
-				std::string propType = propData[1];
+				std::string propName = propData[1];
+				std::string propType = propData[0];
 				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
 					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D &&
 					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube && 

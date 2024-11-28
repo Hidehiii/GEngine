@@ -3,8 +3,9 @@
 
 #Properties
 
-prop1: float
-tex1: sampler2D
+float prop1;
+sampler2D tex1;
+
 
 #Type vertex
 #version 450 core
