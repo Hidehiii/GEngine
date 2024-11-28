@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Renderer/ImageFormat.h"
 
 #ifdef GE_PLATFORM_WINDOWS
 #define VK_CHECK_RESULT(f)																								\
@@ -28,6 +29,8 @@ namespace GEngine
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, VkImageAspectFlags aspectFlag);
+		VkFormat Image2DFormatToVulkanFormat(Image2DFormat format);
+		Image2DFormat VulkanFormatToImage2DFormat(VkFormat format);
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size);
 	}
 	

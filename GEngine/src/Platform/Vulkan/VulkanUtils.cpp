@@ -427,5 +427,30 @@ namespace GEngine
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
+
+		VkFormat Image2DFormatToVulkanFormat(Image2DFormat format)
+		{
+			switch (format)
+			{
+			case GEngine::Image2DFormat::R8G8B8A8F: return VK_FORMAT_R8G8B8A8_UNORM;
+			case GEngine::Image2DFormat::R8G8B8F:   return VK_FORMAT_R8G8B8_UNORM;
+			case GEngine::Image2DFormat::R32UI:     return VK_FORMAT_R32_UINT;
+				break;
+			default:
+				break;
+			}
+		}
+		Image2DFormat VulkanFormatToImage2DFormat(VkFormat format)
+		{
+			switch (format)
+			{
+			case VK_FORMAT_R8G8B8A8_UNORM:			return Image2DFormat::R8G8B8A8F;
+			case VK_FORMAT_R8G8B8_UNORM:			return Image2DFormat::R8G8B8F;
+			case VK_FORMAT_R32_UINT:				return Image2DFormat::R32UI;
+				break;
+			default:
+				break;
+			}
+		}
     }
 }

@@ -13,15 +13,16 @@ namespace GEngine
 {
 	enum class ShaderUniformType
 	{
-		None		= 0, 
-		Int			= 1,
-		Float		= 2,
-		Vector		= 3,
-		Color		= 4,
-		Mat3		= 5,
-		Mat4		= 6,
-		Sampler2D	= 7,
-		SamplerCube = 8
+		None			= 0, 
+		Int				= 1,
+		Float			= 2,
+		Vector			= 3,
+		Color			= 4,
+		Mat3			= 5,
+		Mat4			= 6,
+		Sampler2D		= 7,
+		SamplerCube		= 8,
+		StorageImage2D	= 9
 	};
 	class GENGINE_API ShaderMacroName
 	{
@@ -211,14 +212,15 @@ namespace GEngine
 		
 		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "int")			return ShaderUniformType::Int;
-			if (ToLower(type) == "float")		return ShaderUniformType::Float;
-			if (ToLower(type) == "vector")		return ShaderUniformType::Vector;
-			if (ToLower(type) == "color")		return ShaderUniformType::Color;
-			if (ToLower(type) == "mat3")		return ShaderUniformType::Mat3;
-			if (ToLower(type) == "mat4")		return ShaderUniformType::Mat4;
-			if (ToLower(type) == "sampler2d")	return ShaderUniformType::Sampler2D;
-			if (ToLower(type) == "samplercube")	return ShaderUniformType::SamplerCube;
+			if (ToLower(type) == "int")				return ShaderUniformType::Int;
+			if (ToLower(type) == "float")			return ShaderUniformType::Float;
+			if (ToLower(type) == "vector")			return ShaderUniformType::Vector;
+			if (ToLower(type) == "color")			return ShaderUniformType::Color;
+			if (ToLower(type) == "mat3")			return ShaderUniformType::Mat3;
+			if (ToLower(type) == "mat4")			return ShaderUniformType::Mat4;
+			if (ToLower(type) == "sampler2d")		return ShaderUniformType::Sampler2D;
+			if (ToLower(type) == "samplercube")		return ShaderUniformType::SamplerCube;
+			if (ToLower(type) == "storageimage2d")	return ShaderUniformType::StorageImage2D;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
 		}

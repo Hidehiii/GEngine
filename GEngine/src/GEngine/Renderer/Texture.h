@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Renderer/ImageFormat.h"
 
 
 namespace GEngine
@@ -19,11 +20,7 @@ namespace GEngine
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 
-	enum class Texture2DFormat
-	{
-		RGBA,
-		RGB,
-	};
+	
 
 	class GENGINE_API Texture2D : public Texture
 	{

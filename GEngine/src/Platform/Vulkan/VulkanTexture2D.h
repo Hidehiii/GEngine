@@ -9,8 +9,8 @@ namespace GEngine
 	{
 	public:
 		VulkanTexture2D(const std::string& path);
-		VulkanTexture2D(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
-		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
+		VulkanTexture2D(uint32_t width, uint32_t height, Image2DFormat format = Image2DFormat::R8G8B8A8F);
+		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format = Image2DFormat::R8G8B8A8F);
 		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample = false);
 		virtual ~VulkanTexture2D();
 
@@ -36,16 +36,13 @@ namespace GEngine
 		void CreateSampler();
 	private:
 		std::string						m_Path;
+		Image2DFormat					m_Format;
 		uint32_t						m_Width, m_Height;
-		uint32_t						m_RendererID;
-		VkBuffer						m_Buffer;
-		VkDeviceMemory					m_BufferMemory = nullptr;
 		VkFormat						m_DataFormat;
 		VkImage							m_Image = nullptr;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkSampler						m_Sampler = nullptr;
-		VkDescriptorSetLayoutBinding	m_DescriptorSetLayoutBinding;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = 0;

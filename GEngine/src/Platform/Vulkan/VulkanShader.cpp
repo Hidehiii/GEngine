@@ -286,7 +286,8 @@ namespace GEngine
 				std::string propType = propData[1];
 				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
 					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D &&
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube)
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube && 
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageImage2D)
 				{
 					ShaderUniform			uniform;
 					uniform.Name			= propName;
@@ -308,6 +309,10 @@ namespace GEngine
 					textureSlot++;
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
+				{
+					GE_CORE_ASSERT(false, "Not implemented yet");
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageImage2D)
 				{
 					GE_CORE_ASSERT(false, "Not implemented yet");
 				}

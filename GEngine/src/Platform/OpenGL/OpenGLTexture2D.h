@@ -9,8 +9,8 @@ namespace GEngine
 	{
 	public:
 		OpenGLTexture2D(const std::string& path);
-		OpenGLTexture2D(uint32_t width, uint32_t height, Texture2DFormat format = Texture2DFormat::RGBA);
-		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Texture2DFormat format = Texture2DFormat::RGBA);
+		OpenGLTexture2D(uint32_t width, uint32_t height, Image2DFormat format = Image2DFormat::R8G8B8A8F);
+		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format = Image2DFormat::R8G8B8A8F);
 		OpenGLTexture2D(uint32_t rendererID, bool isMultiSample = false);
 		virtual ~OpenGLTexture2D();
 
@@ -29,7 +29,7 @@ namespace GEngine
 		std::string			m_Path;
 		uint32_t			m_Width, m_Height;
 		uint32_t			m_RendererID;
-		GLenum				m_InternalFormat, m_DataFormat;
+		Image2DFormat		m_Format;
 		bool				m_MultiSample = false;
 	};
 }
