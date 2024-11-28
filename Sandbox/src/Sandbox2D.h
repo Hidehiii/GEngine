@@ -52,6 +52,8 @@ private:
 	GEngine::Editor::EditorCamera m_EditorCamera;
 	RayTracing m_RayTracing;*/
 
+	Ref<StorageImage2D> m_StorageImage;
+
 	Ref<Pipeline>	m_Pipeline;
 	Ref<Pipeline>	m_InstancePipeline;
 	std::vector<InstanceData> m_InstanceData;

@@ -29,8 +29,9 @@ namespace GEngine
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, VkImageAspectFlags aspectFlag);
-		VkFormat Image2DFormatToVulkanFormat(Image2DFormat format);
-		Image2DFormat VulkanFormatToImage2DFormat(VkFormat format);
+		VkFormat RenderImage2DFormatToVulkanFormat(RenderImage2DFormat format);
+		VkFormat ComputeImage2DFormatToVulkanFormat(ComputeImage2DFormat format);
+		RenderImage2DFormat VulkanFormatToRenderImage2DFormat(VkFormat format);
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size);
 	}
 	

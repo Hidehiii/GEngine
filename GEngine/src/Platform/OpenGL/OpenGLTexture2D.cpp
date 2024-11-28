@@ -30,13 +30,13 @@ namespace GEngine
 		{
 			internalFormat	= GL_RGBA8;
 			dataFormat		= GL_RGBA;
-			m_Format = Image2DFormat::R8G8B8A8F;
+			m_Format = RenderImage2DFormat::RGBA8F;
 		}
 		else if (channels == 3)
 		{
 			internalFormat	= GL_RGB8;
 			dataFormat		= GL_RGB;
-			m_Format = Image2DFormat::R8G8B8F;
+			m_Format = RenderImage2DFormat::RGB8F;
 		}
 
 		GE_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
@@ -51,7 +51,7 @@ namespace GEngine
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Image2DFormat format)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
 		: m_Width(width), m_Height(height)
 	{
 		GE_PROFILE_FUNCTION();
@@ -59,21 +59,21 @@ namespace GEngine
 		m_Format = format;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, Utils::Image2DFormatToGLInternalFormat(format), m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
 		: m_Width(width), m_Height(height)
 	{
 		GE_PROFILE_FUNCTION();
 		m_Format = format;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, Utils::Image2DFormatToGLInternalFormat(format), m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -94,7 +94,7 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::Image2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
 	}
 	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	

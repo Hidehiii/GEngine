@@ -5,7 +5,7 @@
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 namespace GEngine
 {
-	Ref<StorageImage2D> StorageImage2D::Create(uint32_t width, uint32_t height, Image2DFormat format)
+	Ref<StorageImage2D> StorageImage2D::Create(uint32_t width, uint32_t height, ComputeImage2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{

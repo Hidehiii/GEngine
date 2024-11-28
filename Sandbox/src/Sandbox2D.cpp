@@ -186,6 +186,16 @@ void Sandbox2D::OnAttach()
 		m_InstanceData[i] = { Vector4(i, i , 0, 0) };
 	}
 	m_InstancePipeline->GetVertexBuffer()->SetDataInstance(m_InstanceData.data(), m_InstanceData.size() * sizeof(InstanceData));
+
+
+	
+	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
+	uint32_t* test = new uint32_t[Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4];
+	for (int i = 0; i < Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4; i++)
+	{
+		test[i] = 1;
+	}
+	m_StorageImage->SetData(test, Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4);
 }
 
 void Sandbox2D::OnDetach()
@@ -211,7 +221,7 @@ void Sandbox2D::OnPresent()
 void Sandbox2D::OnRender()
 {
 
-	RenderCommand::BeginDrawCommand();
+	/*RenderCommand::BeginDrawCommand();
 	m_FrameBuffer_0->Begin();
 
 
@@ -219,14 +229,16 @@ void Sandbox2D::OnRender()
 	Renderer2D::DrawQuad(Transform(), Vector4(1, 0, 1, 1));
 	Renderer::EndScene();
 	m_FrameBuffer_0->End();
-	RenderCommand::EndDrawCommand();
+	RenderCommand::EndDrawCommand();*/
 
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
 
 
 	Renderer::BeginScene(m_EditorCamera);
-	//m_Pipeline->Render();
+	// 先测gl
+	m_StorageImage->Bind(0);
+
 	m_InstancePipeline->Render(6, 10);
 	Renderer::EndScene();
 	m_FrameBuffer->End();

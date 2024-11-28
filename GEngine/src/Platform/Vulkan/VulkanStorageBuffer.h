@@ -8,6 +8,7 @@ namespace GEngine
 	{
 	public:
 		VulkanStorageBuffer(uint32_t size, uint32_t binding);
+		virtual ~VulkanStorageBuffer();
 		virtual void SetData(uint32_t size, const void* data, uint32_t offset = 0) override;
 	private:
 		VkBuffer		m_StorageBuffer;

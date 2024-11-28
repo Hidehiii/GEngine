@@ -22,31 +22,31 @@ namespace GEngine
         m_Height        = height;
         if (channels == 4)
         {
-            m_Format = Image2DFormat::R8G8B8A8F;
+            m_Format = RenderImage2DFormat::RGBA8F;
         }
         else
         {
-            m_Format = Image2DFormat::R8G8B8F;
+            m_Format = RenderImage2DFormat::RGB8F;
         }
 
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                    VulkanContext::Get()->GetDevice(),
 			                m_Width,
 			                m_Height,
-                            Utils::Image2DFormatToVulkanFormat(m_Format),
+                            Utils::RenderImage2DFormatToVulkanFormat(m_Format),
 			                VK_IMAGE_TILING_OPTIMAL,
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             VK_SAMPLE_COUNT_1_BIT,
 			                m_Image,
 			                m_ImageMemory);
-        Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+        Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
         stbi_image_free(data);
         
         CreateSampler();
     }
-    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, Image2DFormat format)
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
     {
         m_Height    = height;
         m_Width     = width;
@@ -55,18 +55,18 @@ namespace GEngine
 			                VulkanContext::Get()->GetDevice(),
 			                m_Width,
 			                m_Height,
-                            Utils::Image2DFormatToVulkanFormat(m_Format),
+                            Utils::RenderImage2DFormatToVulkanFormat(m_Format),
 			                VK_IMAGE_TILING_OPTIMAL,
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             VK_SAMPLE_COUNT_1_BIT,
 			                m_Image,
 			                m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 
         CreateSampler();
     }
-    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, Image2DFormat format)
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
     {
 		m_Height = height;
 		m_Width = width;
@@ -75,21 +75,21 @@ namespace GEngine
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
 			m_Height,
-            Utils::Image2DFormatToVulkanFormat(m_Format),
+            Utils::RenderImage2DFormatToVulkanFormat(m_Format),
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             VK_SAMPLE_COUNT_1_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 
 		CreateSampler();
         SetData(data, size);
     }
     VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample)
     {
-        m_Format = Utils::VulkanFormatToImage2DFormat(format);
+        m_Format = Utils::VulkanFormatToRenderImage2DFormat(format);
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
@@ -127,9 +127,9 @@ namespace GEngine
         memcpy(tempData, data, static_cast<size_t>(size));
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 
-        Utils::TransitionImageLayout(m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height);
-        Utils::TransitionImageLayout(m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
@@ -148,7 +148,7 @@ namespace GEngine
     }
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
-        Utils::TransitionImageLayout(m_Image, Utils::Image2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);
+        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);
         m_ImageLayout = newLayout;
     }
     void VulkanTexture2D::CreateSampler()

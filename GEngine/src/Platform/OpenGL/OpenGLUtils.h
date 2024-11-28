@@ -5,8 +5,11 @@ namespace GEngine
 {
 	namespace Utils
 	{
-		GLenum Image2DFormatToGLInternalFormat(Image2DFormat format);
-		GLenum Image2DFormatToGLDataFormat(Image2DFormat format);
+		GLenum RenderImage2DFormatToGLInternalFormat(RenderImage2DFormat format);
+		GLenum RenderImage2DFormatToGLDataFormat(RenderImage2DFormat format);
+
+		GLenum ComputeImage2DFormatToGLInternalFormat(ComputeImage2DFormat format);
+		GLenum ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
 	}
 }
 

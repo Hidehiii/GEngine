@@ -36,6 +36,8 @@ layout(std140, binding = 2) uniform TIME
 {
 	float GE_TIME;
 };
+
+layout (binding = 20, rgba32f) uniform image2D img_T;
 struct VertexOutput
 {
 	vec4 position;
@@ -45,4 +47,9 @@ layout (location = 0) in VertexOutput IN;
 void main()
 {
 	o_color = vec4(IN.uv, 0.0f, 1.0f);
+
+
+	//imageStore(img_T, ivec2(gl_FragCoord.xy), vec4(gl_FragCoord.x, gl_FragCoord.y, 1.0f, 1.0f));
+	vec4 col = imageLoad(img_T, ivec2(gl_FragCoord.xy));
+	o_color.b = col.r;
 }

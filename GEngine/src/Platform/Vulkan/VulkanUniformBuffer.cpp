@@ -59,9 +59,6 @@ namespace GEngine
 		m_BufferInfo.offset				= m_Offset;
 		m_BufferInfo.range				= size;
 	}
-	void VulkanUniformBuffer::RT_SetData(const void* data, uint32_t size, uint32_t offset)
-	{
-	}
 	void VulkanUniformBuffer::AddPublicUniformBuffer(VulkanUniformBuffer* buffer)
 	{
 		s_PublicUniformBuffer.push_back(buffer);

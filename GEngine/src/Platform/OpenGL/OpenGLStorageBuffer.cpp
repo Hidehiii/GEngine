@@ -10,6 +10,10 @@ namespace GEngine
 		glGenBuffers(1, &m_RendererID);
 		glNamedBufferStorage(m_RendererID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
 	}
+	OpenGLStorageBuffer::~OpenGLStorageBuffer()
+	{
+		glDeleteBuffers(1, &m_RendererID);
+	}
 	void OpenGLStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_Binding, m_RendererID);

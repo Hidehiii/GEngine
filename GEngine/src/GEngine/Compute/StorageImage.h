@@ -10,8 +10,10 @@ namespace GEngine
 	class GENGINE_API StorageImage2D
 	{
 	public:
+		virtual void SetData(const void* data, uint32_t size) = 0;
+		virtual void Bind(const uint32_t slot = 0) = 0;
 
-		static Ref<StorageImage2D> Create(uint32_t width, uint32_t height, Image2DFormat format);
+		static Ref<StorageImage2D> Create(uint32_t width, uint32_t height, ComputeImage2DFormat format);
 	};
 }
 
