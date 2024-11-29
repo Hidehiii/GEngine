@@ -230,7 +230,9 @@ namespace GEngine
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-        return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+        return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy &&
+            supportedFeatures.fragmentStoresAndAtomics && supportedFeatures.vertexPipelineStoresAndAtomics && supportedFeatures.geometryShader &&
+            supportedFeatures.tessellationShader;
     }
     QueueFamilyIndices VulkanContext::FindQueueFamilies(VkPhysicalDevice device)
     {
@@ -281,12 +283,9 @@ namespace GEngine
 
         CheckInstanceExtensionSupport(m_PhysicalDevice);
 
-        // feature开启在这里
-        VkPhysicalDeviceFeatures                deviceFeatures = {};
-        deviceFeatures.samplerAnisotropy        = VK_TRUE;
-        deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
-        deviceFeatures.geometryShader           = VK_TRUE;
-        deviceFeatures.tessellationShader       = VK_TRUE;
+
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &deviceFeatures);
 
 
         VkDeviceCreateInfo                  createInfo = {};
