@@ -190,12 +190,7 @@ void Sandbox2D::OnAttach()
 
 	
 	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
-	uint32_t* test = new uint32_t[Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4];
-	for (int i = 0; i < Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4; i++)
-	{
-		test[i] = 1;
-	}
-	m_StorageImage->SetData(test, Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4);
+	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 }
 
 void Sandbox2D::OnDetach()
@@ -236,10 +231,6 @@ void Sandbox2D::OnRender()
 
 
 	Renderer::BeginScene(m_EditorCamera);
-	// 先测gl
-	m_InstancePipeline->GetMaterial()->UploadData();
-	m_InstancePipeline->GetMaterial()->GetShader()->SetInt1("img_T", 0);
-	m_StorageImage->Bind(0);
 
 	m_InstancePipeline->Render(6, 10);
 	Renderer::EndScene();

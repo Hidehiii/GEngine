@@ -54,7 +54,7 @@ namespace GEngine
 		virtual Ref<Texture2D> GetTexture2D(const std::string& name) override { return GetUniformTexture2DByName(name).Texture; }
 
 		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage) override;
-		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) override { return GetUniformStorage2DByName(name).Image; }
+		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) override { return GetUniformStorageImage2DByName(name).Image; }
 
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
 		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() override { return m_Texture2D; }
