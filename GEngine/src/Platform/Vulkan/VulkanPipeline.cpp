@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-
+#include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Renderer/RenderCommand.h"
@@ -171,20 +171,35 @@ namespace GEngine
 	void VulkanPipeline::CreateDescriptorSetAndLayout()
 	{
 		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
+		// 公共ubo
 		std::vector<VulkanUniformBuffer*> publicUniformBuffer		= VulkanUniformBuffer::GetPublicUniformBuffer();
 		for (auto buffer : publicUniformBuffer)
 		{
 			layoutBindings.push_back(buffer->GetDescriptorSetLayoutBinding());
 		}
+		// 材质ubo
 		layoutBindings.push_back(m_Material->GetUniformBuffer()->GetDescriptorSetLayoutBinding());
-		// TODO : 后面贴图需要放在材质里而不是外部绑定
-		auto texture2Ds		= m_Material->GetGetTexture2Ds();
+		// 贴图绑定
+		auto texture2Ds		= m_Material->GetTexture2Ds();
 		for (auto& texture2D : texture2Ds)
 		{
 			VkDescriptorSetLayoutBinding		layoutBinding{};
 			layoutBinding.binding				= texture2D.Slot;
 			layoutBinding.descriptorCount		= 1;
 			layoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			layoutBinding.pImmutableSamplers	= nullptr;
+			layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
+
+			layoutBindings.push_back(layoutBinding);
+		}
+		// storage image 绑定
+		auto storageImage2Ds = m_Material->GetStorageImage2Ds();
+		for (auto& image2D : storageImage2Ds)
+		{
+			VkDescriptorSetLayoutBinding		layoutBinding{};
+			layoutBinding.binding				= image2D.Slot;
+			layoutBinding.descriptorCount		= 1;
+			layoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			layoutBinding.pImmutableSamplers	= nullptr;
 			layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
 
@@ -245,9 +260,9 @@ namespace GEngine
 
 			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 		}
-		// TODO: 后面贴图也要放进材质，由这里统一获取进行绑定更新
+		// 更新贴图绑定
 		{
-			auto texture2Ds					= m_Material->GetGetTexture2Ds();
+			auto texture2Ds					= m_Material->GetTexture2Ds();
 			for (auto& texture2D : texture2Ds)
 			{
 				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorImageInfo();
@@ -260,6 +275,26 @@ namespace GEngine
 				descriptorWrite.descriptorCount = 1;
 				descriptorWrite.pBufferInfo		= nullptr;
 				descriptorWrite.pImageInfo		= &imageInfo; 
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			}
+		}
+		// 更新storage image绑定
+		{
+			auto storageImage2Ds = m_Material->GetStorageImage2Ds();
+			for (auto& image2D : storageImage2Ds)
+			{
+				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanStorageImage2D>(image2D.Image)->GetDescriptorImageInfo();
+				VkWriteDescriptorSet			descriptorWrite{};
+				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet			= m_DescriptorSet;
+				descriptorWrite.dstBinding		= image2D.Slot;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo		= nullptr;
+				descriptorWrite.pImageInfo		= &imageInfo;
 				descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);

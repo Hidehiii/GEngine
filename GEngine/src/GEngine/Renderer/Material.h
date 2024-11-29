@@ -80,8 +80,8 @@ namespace GEngine
 		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) = 0;
 
 		virtual std::vector<ShaderUniform>& GetUniforms() = 0;
-		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() = 0;
-
+		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds() = 0;
+		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds() = 0;
 	protected:
 		bool m_HasChanged = false;
 	};

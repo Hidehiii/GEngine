@@ -281,8 +281,14 @@ namespace GEngine
 
         CheckInstanceExtensionSupport(m_PhysicalDevice);
 
-        VkPhysicalDeviceFeatures            deviceFeatures = {};
-        deviceFeatures.samplerAnisotropy    = VK_TRUE;
+        // feature开启在这里
+        VkPhysicalDeviceFeatures                deviceFeatures = {};
+        deviceFeatures.samplerAnisotropy        = VK_TRUE;
+        deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
+        deviceFeatures.geometryShader           = VK_TRUE;
+        deviceFeatures.tessellationShader       = VK_TRUE;
+
+
         VkDeviceCreateInfo                  createInfo = {};
         createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());

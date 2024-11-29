@@ -127,10 +127,9 @@ namespace GEngine
         memcpy(tempData, data, static_cast<size_t>(size));
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 
-        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height);
-        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
@@ -138,6 +137,7 @@ namespace GEngine
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
         GE_CORE_ASSERT(m_MultiSample == false, "Can not bind a multisample texture!");
+        SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;

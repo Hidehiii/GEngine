@@ -13,6 +13,9 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void Bind(const uint32_t slot = 0) override;
 
+		const VkImageView					GetImageView() { return m_ImageView; }
+		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
+		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		void SetImageLayout(VkImageLayout newLayout);
 	private:
 		uint32_t						m_Width, m_Height;

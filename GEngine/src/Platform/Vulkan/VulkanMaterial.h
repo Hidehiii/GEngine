@@ -56,7 +56,8 @@ namespace GEngine
 
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
 		Ref<VulkanUniformBuffer> GetUniformBuffer() { return m_UniformBuffer; }
-		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() override { return m_Texture2D; }
+		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds() override { return m_Texture2D; }
+		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds() override { return m_StorageImage2D; }
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
 		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);

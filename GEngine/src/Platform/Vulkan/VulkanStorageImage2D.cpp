@@ -52,10 +52,9 @@ namespace GEngine
 		memcpy(tempData, data, static_cast<size_t>(size));
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 
-		Utils::TransitionImageLayout(m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height);
-		Utils::TransitionImageLayout(m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-		m_ImageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		SetImageLayout(VK_IMAGE_LAYOUT_GENERAL);
 
 		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
@@ -63,6 +62,7 @@ namespace GEngine
 
 	void VulkanStorageImage2D::Bind(const uint32_t slot)
 	{
+		SetImageLayout(VK_IMAGE_LAYOUT_GENERAL);
 		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		m_ImageInfo.imageView	= m_ImageView;
 	}

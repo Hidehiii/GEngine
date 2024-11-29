@@ -242,7 +242,7 @@ namespace GEngine
 	{
 		GE_PROFILE_FUNCTION();
 
-		if (s_Data.QuadInstanceCount >= Renderer2DData::MaxInstance || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().size())
+		if (s_Data.QuadInstanceCount >= Renderer2DData::MaxInstance || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetTexture2Ds().size())
 		{
 			NextBatch();
 		}
@@ -250,7 +250,7 @@ namespace GEngine
 		int textureIndex = -1;
 		for (uint32_t i = 0; i < s_Data.QuadTextureIndex; i++)
 		{
-			if(*(s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(i).Texture.get()) == *tex.get())
+			if(*(s_Data.QuadPipeline->GetMaterial()->GetTexture2Ds().at(i).Texture.get()) == *tex.get())
 			{
 				textureIndex = i;
 				break;
@@ -259,7 +259,7 @@ namespace GEngine
 		if (textureIndex == -1)
 		{
 			textureIndex = s_Data.QuadTextureIndex;
-			s_Data.QuadPipeline->GetMaterial()->GetGetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = tex;
+			s_Data.QuadPipeline->GetMaterial()->GetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = tex;
 			s_Data.QuadTextureIndex++;
 		}
 
