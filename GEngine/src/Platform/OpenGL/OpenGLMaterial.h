@@ -53,11 +53,15 @@ namespace GEngine
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) override;
 		virtual Ref<Texture2D> GetTexture2D(const std::string& name) override { return GetUniformTexture2DByName(name).Texture; }
 
+		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage) override;
+		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) override { return GetUniformStorage2DByName(name).Image; }
+
 		virtual std::vector<ShaderUniform>& GetUniforms() override { return m_Uniforms; }
 		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() override { return m_Texture2D; }
 	private:
 		ShaderUniform GetUniformByName(const std::string& name) const;
 		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);
+		ShaderUniformStorageImage2D& GetUniformStorageImage2DByName(const std::string& name);
 	private:
 		Ref<OpenGLShader>									m_Shader;
 		Ref<OpenGLUniformBuffer>							m_UniformBuffer;
@@ -71,6 +75,7 @@ namespace GEngine
 		bool												m_EnableDepthWrite		=		true;
 		bool												m_EnableDepthTest		=		true;
 		std::vector<ShaderUniformTexture2D>					m_Texture2D;
+		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
 	};
 }
 

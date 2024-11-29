@@ -5,6 +5,7 @@
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Buffer.h"
 #include "GEngine/Renderer/Texture.h"
+#include "GEngine/Compute/StorageImage.h"
 #include <algorithm>
 #include <filesystem>
 
@@ -77,13 +78,21 @@ namespace GEngine
 		uint32_t Slot;
 		Ref<Texture2D> Texture;
 	};
+
+
+	struct ShaderUniformStorageImage2D
+	{
+		std::string Name;
+		uint32_t Slot;
+		Ref<StorageImage2D> Image;
+	};
+
 	class GENGINE_API Shader
 	{
 	public:
 		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
 
 		virtual void SetInt1(const std::string& name, int value) = 0;
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
@@ -106,6 +115,7 @@ namespace GEngine
 
 		virtual std::vector<ShaderUniform> GetUniforms() = 0;
 		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() = 0;
+		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D() = 0;
 		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
 

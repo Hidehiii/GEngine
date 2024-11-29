@@ -13,7 +13,6 @@ namespace GEngine
 		virtual ~VulkanShader();
 
 		virtual void Bind() const override;
-		virtual void Unbind() const override;
 
 		virtual int GetBlendMode() override { return m_BlendType; }
 		virtual int GetCullMode() override { return m_CullMode; }
@@ -28,6 +27,7 @@ namespace GEngine
 		virtual void SetShaderName(std::string name) override { m_Name = name; }
 		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() { return m_Texture2DCache;}
 		virtual uint32_t GetTexture2DCount() override { return m_Texture2DCache.size(); }
+		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D() override { return m_StorageImage2DCache; }
 
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_VulkanSPIRV[ShaderStage::Fragment]; }
@@ -62,6 +62,7 @@ namespace GEngine
 
 		std::vector<ShaderUniform>							m_UniformCache;
 		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
+		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
 
 		int													m_BlendType;
 		int													m_CullMode;

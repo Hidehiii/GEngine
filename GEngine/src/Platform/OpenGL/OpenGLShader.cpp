@@ -257,12 +257,6 @@ namespace GEngine
 
 		glUseProgram(m_RendererID);
 	}
-	void OpenGLShader::Unbind() const
-	{
-		GE_PROFILE_FUNCTION();
-
-		glUseProgram(0);
-	}
 	void OpenGLShader::SetInt1(const std::string& name, int value)
 	{
 		glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
@@ -509,9 +503,11 @@ namespace GEngine
 					uniform.Name			= propName;
 					uniform.Slot			= textureSlot;
 					uniform.Texture			= Texture2D::WhiteTexture();
+					
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
+
 					textureSlot++;
 					m_Texture2DCache.push_back(uniform);
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
 				{
@@ -519,7 +515,15 @@ namespace GEngine
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageImage2D)
 				{
-					GE_CORE_ASSERT(false, "Not implemented yet");
+					ShaderUniformStorageImage2D	uniform;
+					uniform.Name				= propName;
+					uniform.Slot				= textureSlot;
+					uniform.Image				= nullptr;
+
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
+
+					textureSlot++;
+					m_StorageImage2DCache.push_back(uniform);
 				}
 			}
 		}

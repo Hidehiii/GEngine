@@ -34,6 +34,8 @@ namespace GEngine
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
+			// StorageImage2D
+			m_StorageImage2D			= m_Shader->GetStorageImage2D();
 		}
 		else
 		{
@@ -51,6 +53,11 @@ namespace GEngine
 		for (auto& texture2D : m_Texture2D)
 		{
 			texture2D.Texture->Bind(texture2D.Slot);
+		}
+
+		for (auto& image2D : m_StorageImage2D)
+		{
+			image2D.Image->Bind(image2D.Slot);
 		}
 	}
 	void VulkanMaterial::SetCullMode(MaterialCullMode mode)
@@ -152,6 +159,11 @@ namespace GEngine
 		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
 		uniform.Texture = texture;
 	}
+	void VulkanMaterial::SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage)
+	{
+		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
+		uniform.Image = storageImage;
+	}
 	ShaderUniform VulkanMaterial::GetUniformByName(const std::string& name) const
 	{
 		for (auto uniform : m_Uniforms)
@@ -173,5 +185,17 @@ namespace GEngine
 		}
 		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
 		return ShaderUniformTexture2D();
+	}
+	ShaderUniformStorageImage2D& VulkanMaterial::GetUniformStorageImage2DByName(const std::string& name)
+	{
+		for (int i = 0; i < m_StorageImage2D.size(); i++)
+		{
+			if (m_StorageImage2D.at(i).Name == name)
+			{
+				return m_StorageImage2D.at(i);
+			}
+		}
+		GE_CORE_ASSERT(false, "There is no uniform storage image2d with name {0} in the shader!", name);
+		return ShaderUniformStorageImage2D();
 	}
 }

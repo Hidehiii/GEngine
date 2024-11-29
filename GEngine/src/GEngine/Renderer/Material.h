@@ -76,6 +76,9 @@ namespace GEngine
 		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) = 0;
 		virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
 
+		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage) = 0;
+		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) = 0;
+
 		virtual std::vector<ShaderUniform>& GetUniforms() = 0;
 		virtual std::vector<ShaderUniformTexture2D>& GetGetTexture2Ds() = 0;
 

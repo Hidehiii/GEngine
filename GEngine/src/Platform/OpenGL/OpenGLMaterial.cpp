@@ -35,6 +35,8 @@ namespace GEngine
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
+			// StorageImage2D
+			m_StorageImage2D			= m_Shader->GetStorageImage2D();
 		}
 		else
 		{
@@ -54,6 +56,12 @@ namespace GEngine
 		{
 			m_Shader->SetInt1(texture2D.Name, texture2D.Slot);
 			texture2D.Texture->Bind(texture2D.Slot);
+		}
+
+		for (auto& image2D : m_StorageImage2D)
+		{
+			m_Shader->SetInt1(image2D.Name, image2D.Slot);
+			image2D.Image->Bind(image2D.Slot);
 		}
 		RenderCommand::SetCull(m_CullMode);
 		RenderCommand::SetBlend(m_BlendMode, m_BlendSourceFactor, m_BlendDestinationFactor);
@@ -165,6 +173,11 @@ namespace GEngine
 		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
 		uniform.Texture = texture;
 	}
+	void OpenGLMaterial::SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage)
+	{
+		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
+		uniform.Image = storageImage;
+	}
 	ShaderUniform OpenGLMaterial::GetUniformByName(const std::string& name) const
 	{
 		for(auto uniform : m_Uniforms)
@@ -186,5 +199,17 @@ namespace GEngine
 		}
 		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
 		return ShaderUniformTexture2D();
+	}
+	ShaderUniformStorageImage2D& OpenGLMaterial::GetUniformStorageImage2DByName(const std::string& name)
+	{
+		for (int i = 0; i < m_StorageImage2D.size(); i++)
+		{
+			if (m_StorageImage2D.at(i).Name == name)
+			{
+				return m_StorageImage2D.at(i);
+			}
+		}
+		GE_CORE_ASSERT(false, "There is no uniform storage image2d with name {0} in the shader!", name);
+		return ShaderUniformStorageImage2D();
 	}
 }
