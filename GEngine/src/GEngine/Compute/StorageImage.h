@@ -14,6 +14,11 @@ namespace GEngine
 		virtual void Bind(const uint32_t slot = 0) = 0;
 
 		static Ref<StorageImage2D> Create(uint32_t width, uint32_t height, ComputeImage2DFormat format);
+
+		// °×É«Ä¬ÈÏ
+		static Ref<StorageImage2D> White();
+	private:
+		static Ref<StorageImage2D>	s_WhiteStorageImage2D;
 	};
 }
 

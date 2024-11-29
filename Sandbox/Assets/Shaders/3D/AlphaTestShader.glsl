@@ -24,7 +24,7 @@ layout(std140, binding = 1) uniform CAMERA
 };
 layout(std140, binding = 2) uniform TIME
 {
-	float GE_TIME;
+	vec4 GE_TIME;
 };
 layout(std140, binding = 3) uniform MODEL
 {

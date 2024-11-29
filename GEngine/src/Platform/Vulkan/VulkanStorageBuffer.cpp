@@ -45,7 +45,7 @@ namespace GEngine
 			stagingBufferMemory);
 
 		void* tempData;
-		vkMapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, 0, size, 0, &tempData);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, offset, size, 0, &tempData);
 		memcpy(tempData, data, size);
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory);
 		Utils::CopyBufferToBuffer(stagingBuffer, m_StorageBuffer, size);

@@ -502,7 +502,7 @@ namespace GEngine
 					ShaderUniformTexture2D	uniform;
 					uniform.Name			= propName;
 					uniform.Slot			= textureSlot;
-					uniform.Texture			= Texture2D::WhiteTexture();
+					uniform.Texture			= Texture2D::White();
 					
 					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
 
@@ -518,7 +518,7 @@ namespace GEngine
 					ShaderUniformStorageImage2D	uniform;
 					uniform.Name				= propName;
 					uniform.Slot				= textureSlot;
-					uniform.Image				= nullptr;
+					uniform.Image				= StorageImage2D::White();
 
 					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
 

@@ -65,7 +65,7 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Texture2D> Texture2D::WhiteTexture()
+	Ref<Texture2D> Texture2D::White()
 	{
 		if (s_WhiteTexture2D == nullptr)
 		{

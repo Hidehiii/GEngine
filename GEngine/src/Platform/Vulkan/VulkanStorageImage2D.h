@@ -19,7 +19,7 @@ namespace GEngine
 		void SetImageLayout(VkImageLayout newLayout);
 	private:
 		uint32_t						m_Width, m_Height;
-		ComputeImage2DFormat					m_Format;
+		ComputeImage2DFormat			m_Format;
 		VkImage							m_Image = nullptr;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;

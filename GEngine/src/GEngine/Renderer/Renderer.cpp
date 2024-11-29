@@ -15,7 +15,11 @@ namespace GEngine
 	};
 	struct TimeData
 	{
-		float GE_TIME;
+		// x: delta time
+		// y: run time
+		// z: fixed time
+		// w: physical delta time
+		Vector4 GE_TIME;
 	};
 
 	struct ModelData
@@ -126,7 +130,7 @@ namespace GEngine
 	}
 	void Renderer::SetTimeUniforms()
 	{
-		s_ShaderUniformData.TimeDataBuffer.GE_TIME = Time::GetRunTime();
+		s_ShaderUniformData.TimeDataBuffer.GE_TIME = Vector4{ Time::GetDeltaTime(), Time::GetRunTime(), Time::GetFixedTime(), Time::GetPhysicsDeltaTime() };
 
 		s_ShaderUniformData.TimeUniformBuffer->SetData(&s_ShaderUniformData.TimeDataBuffer, sizeof(TimeData));
 	}

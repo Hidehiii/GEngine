@@ -186,11 +186,11 @@ void Sandbox2D::OnAttach()
 		m_InstanceData[i] = { Vector4(i, i , 0, 0) };
 	}
 	m_InstancePipeline->GetVertexBuffer()->SetDataInstance(m_InstanceData.data(), m_InstanceData.size() * sizeof(InstanceData));
-
+	//m_InstancePipeline->GetMaterial()->SetTexture2D("testTex", m_Texture);
 
 	
 	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
-	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
+	//m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 }
 
 void Sandbox2D::OnDetach()

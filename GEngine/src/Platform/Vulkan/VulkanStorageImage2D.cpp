@@ -17,7 +17,7 @@ namespace GEngine
 			m_Height,
 			Utils::ComputeImage2DFormatToVulkanFormat(m_Format),
 			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			VK_SAMPLE_COUNT_1_BIT,
 			m_Image,
@@ -40,7 +40,7 @@ namespace GEngine
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
-			static_cast<uint32_t>(size),
+			(size),
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			buffer,
@@ -49,7 +49,7 @@ namespace GEngine
 
 		void* tempData;
 		vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
-		memcpy(tempData, data, static_cast<size_t>(size));
+		memcpy(tempData, data, (size));
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 
 		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -72,4 +72,6 @@ namespace GEngine
 		Utils::TransitionImageLayout(m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);
 		m_ImageLayout = newLayout;
 	}
+
+
 }

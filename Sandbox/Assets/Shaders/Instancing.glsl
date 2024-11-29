@@ -4,6 +4,7 @@
 #Properties
 
 StorageImage2D testImage;
+Sampler2D testTex;
 
 #Type vertex
 #version 450 core
@@ -36,10 +37,11 @@ void main()
 layout(location = 0) out vec4 o_color;
 layout(std140, binding = 2) uniform TIME
 {
-	float GE_TIME;
+	vec4 GE_TIME;
 };
 
 layout (binding = 10, rgba32f) uniform image2D testImage;
+layout (binding = 11) uniform sampler2D testTex;
 struct VertexOutput
 {
 	vec4 position;
@@ -48,10 +50,11 @@ struct VertexOutput
 layout (location = 0) in VertexOutput IN;
 void main()
 {
-	o_color = vec4(IN.uv, 0.0f, 1.0f);
+	o_color = texture(testTex, IN.uv);
 
-
-	imageStore(testImage, ivec2(gl_FragCoord.xy), vec4(gl_FragCoord.x, gl_FragCoord.y, 1.0f, 1.0f));
-	vec4 col = imageLoad(testImage, ivec2(gl_FragCoord.xy));
+	ivec2 size = imageSize(testImage);
+	vec4 col = imageLoad(testImage, ivec2(0, 0));
+	imageStore(testImage, ivec2(0, 0) , vec4(col.x, col.y, col.z, 1.0f));
+	
 	o_color.b = col.r;
 }

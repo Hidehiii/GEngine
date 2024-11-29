@@ -29,7 +29,7 @@ namespace GEngine
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 
 		// 默认白色纹理
-		static Ref<Texture2D> WhiteTexture();
+		static Ref<Texture2D> White();
 	private:
 		static Ref<Texture2D>	s_WhiteTexture2D;
 	};

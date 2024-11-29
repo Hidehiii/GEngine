@@ -28,10 +28,6 @@ void main()
 #Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 2) uniform TIME
-{
-	float GE_TIME;
-};
 struct VertexOutput
 {
 	vec4 color;
