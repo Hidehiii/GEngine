@@ -14,7 +14,6 @@ namespace GEngine
 		virtual uint32_t GetHeight() const = 0;
 		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void Bind(const uint32_t slot = 0) = 0;
-		virtual void Unbind() = 0;
 		virtual std::string GetPath() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;

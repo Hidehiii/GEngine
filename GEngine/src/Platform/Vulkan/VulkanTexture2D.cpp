@@ -142,10 +142,7 @@ namespace GEngine
 		m_ImageInfo.imageView         = m_ImageView;
 		m_ImageInfo.sampler           = m_Sampler;
     }
-    void VulkanTexture2D::Unbind()
-    {
 
-    }
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
         Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);

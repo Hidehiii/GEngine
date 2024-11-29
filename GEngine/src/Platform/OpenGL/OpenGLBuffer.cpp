@@ -65,12 +65,6 @@ namespace GEngine
 		glBindVertexArray(m_VertexArrayRendererID);
 		//glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 	}
-	void OpenGLVertexBuffer::Unbind() const
-	{
-		GE_PROFILE_FUNCTION();
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
 
 	void OpenGLVertexBuffer::SetLayout(const BufferLayout& layout)
 	{
@@ -177,11 +171,5 @@ namespace GEngine
 		GE_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-	}
-	void OpenGLIndexBuffer::Unbind() const
-	{
-		GE_PROFILE_FUNCTION();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }

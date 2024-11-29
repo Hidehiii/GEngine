@@ -15,7 +15,6 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetDataInstance(const void* data, uint32_t size) override;
 		virtual void Bind() const override;
-		virtual void Unbind() const override;
 
 		virtual void SetLayout(const BufferLayout& layout) override;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
@@ -41,7 +40,6 @@ namespace GEngine
 		virtual ~OpenGLIndexBuffer();
 
 		virtual void Bind() const override;
-		virtual void Unbind() const override;
 		virtual uint32_t GetCount() const override { return m_Count;  };
 	private:
 		uint32_t m_RendererID;

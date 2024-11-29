@@ -18,7 +18,6 @@ namespace GEngine
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual void Bind(const uint32_t slot = 0) override;
-		virtual void Unbind() override;
 		virtual std::string GetPath() const override { return m_Path; };
 
 		uint32_t GetRendererID() const { return m_RendererID; }

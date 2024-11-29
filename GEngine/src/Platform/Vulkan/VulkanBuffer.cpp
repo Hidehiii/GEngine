@@ -80,9 +80,7 @@ namespace GEngine
         if(m_IndexBuffer)
             m_IndexBuffer->Bind();
     }
-    void VulkanVertexBuffer::Unbind() const
-    {
-    }
+
 
     void VulkanVertexBuffer::SetLayout(const BufferLayout& layout)
     {
@@ -184,9 +182,4 @@ namespace GEngine
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
 		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
-
-    void VulkanIndexBuffer::Unbind() const
-    {
-    }
-
 }

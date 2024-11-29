@@ -237,6 +237,8 @@ void Sandbox2D::OnRender()
 
 	Renderer::BeginScene(m_EditorCamera);
 	// 先测gl
+	m_InstancePipeline->GetMaterial()->UploadData();
+	m_InstancePipeline->GetMaterial()->GetShader()->SetInt1("img_T", 0);
 	m_StorageImage->Bind(0);
 
 	m_InstancePipeline->Render(6, 10);
