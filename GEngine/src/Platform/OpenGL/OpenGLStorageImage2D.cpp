@@ -24,10 +24,6 @@ namespace GEngine
 	{
 		glDeleteTextures(1, &m_RendererID);
 	}
-	void OpenGLStorageImage2D::SetData(const void* data, uint32_t size)
-	{
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::ComputeImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
-	}
 	void OpenGLStorageImage2D::Bind(const uint32_t slot)
 	{
 		glBindImageTexture(slot, m_RendererID, 0, 0, 0, GL_READ_WRITE, Utils::ComputeImage2DFormatToGLInternalFormat(m_Format));

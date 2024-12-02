@@ -124,7 +124,7 @@ namespace GEngine
 
         void* tempData;
         vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
-        memcpy(tempData, data, static_cast<size_t>(size));
+        memcpy(tempData, data, static_cast<uint32_t>(size));
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);

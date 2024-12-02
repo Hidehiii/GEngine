@@ -10,15 +10,10 @@ namespace GEngine
 	class GENGINE_API StorageImage2D
 	{
 	public:
-		virtual void SetData(const void* data, uint32_t size) = 0;
+		virtual ~StorageImage2D() = default;
 		virtual void Bind(const uint32_t slot = 0) = 0;
 
 		static Ref<StorageImage2D> Create(uint32_t width, uint32_t height, ComputeImage2DFormat format);
-
-		// °×É«Ä¬ÈÏ
-		static Ref<StorageImage2D> White();
-	private:
-		static Ref<StorageImage2D>	s_WhiteStorageImage2D;
 	};
 }
 

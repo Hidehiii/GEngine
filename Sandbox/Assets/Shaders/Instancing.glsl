@@ -54,7 +54,7 @@ void main()
 
 	ivec2 size = imageSize(testImage);
 	vec4 col = imageLoad(testImage, ivec2(0, 0));
-	imageStore(testImage, ivec2(0, 0) , vec4(col.x, col.y, col.z, 1.0f));
+	imageStore(testImage, ivec2(0, 0) , vec4(fract(GE_TIME.y), fract(GE_TIME.y), 0.0f, 1.0f));
 	
-	o_color.b = col.r;
+	o_color.rgb = col.rgb;
 }

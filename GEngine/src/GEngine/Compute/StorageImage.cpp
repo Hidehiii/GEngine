@@ -5,7 +5,6 @@
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 namespace GEngine
 {
-	Ref<StorageImage2D>	StorageImage2D::s_WhiteStorageImage2D = nullptr;
 
 	Ref<StorageImage2D> StorageImage2D::Create(uint32_t width, uint32_t height, ComputeImage2DFormat format)
 	{
@@ -18,15 +17,5 @@ namespace GEngine
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
-	}
-	Ref<StorageImage2D> StorageImage2D::White()
-	{
-		if (s_WhiteStorageImage2D == nullptr)
-		{
-			uint32_t data[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff };
-			s_WhiteStorageImage2D = StorageImage2D::Create(1, 1, ComputeImage2DFormat::RGBA32F);
-			s_WhiteStorageImage2D->SetData(data, sizeof(uint32_t) * 4);
-		}
-		return s_WhiteStorageImage2D;
 	}
 }

@@ -10,7 +10,6 @@ namespace GEngine
 		VulkanStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format);
 		virtual ~VulkanStorageImage2D();
 
-		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void Bind(const uint32_t slot = 0) override;
 
 		const VkImageView					GetImageView() { return m_ImageView; }

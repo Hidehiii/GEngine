@@ -33,33 +33,6 @@ namespace GEngine
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
 	}
 
-	void VulkanStorageImage2D::SetData(const void* data, uint32_t size)
-	{
-		VkBuffer    buffer;
-		VkDeviceMemory memory;
-
-		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			(size),
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			buffer,
-			memory);
-
-
-		void* tempData;
-		vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
-		memcpy(tempData, data, (size));
-		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
-
-		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height);
-		SetImageLayout(VK_IMAGE_LAYOUT_GENERAL);
-
-		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
-	}
-
 	void VulkanStorageImage2D::Bind(const uint32_t slot)
 	{
 		SetImageLayout(VK_IMAGE_LAYOUT_GENERAL);

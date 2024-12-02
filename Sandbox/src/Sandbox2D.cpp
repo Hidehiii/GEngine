@@ -190,7 +190,7 @@ void Sandbox2D::OnAttach()
 
 	
 	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
-	//m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
+	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 }
 
 void Sandbox2D::OnDetach()
