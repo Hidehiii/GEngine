@@ -27,8 +27,8 @@ void Sandbox2D::OnAttach()
 	fspec.Width = 720;
 	fspec.Height = 720;
 	fspec.Samples = 4;
-	m_FrameBuffer = FrameBuffer::Create(fspec);
-	m_FrameBuffer_0 = FrameBuffer::Create(fspec);
+	m_OIT_0 = FrameBuffer::Create(fspec);
+	m_OIT_1 = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -58,6 +58,16 @@ void Sandbox2D::OnAttach()
 		}
 	}
 
+
+	m_OIT = Pipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/OIT.glsl")),
+		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
+	);
+	m_OIT->GetVertexBuffer()->SetLayout({
+		{ShaderDataType::float4,	"PositionOS"},
+		{ShaderDataType::float2,	"UV"}
+		});
+
 	m_PresentVertex.resize(4);
 	m_PresentPipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
@@ -76,6 +86,7 @@ void Sandbox2D::OnAttach()
 	presentIndices[4] = 3;
 	presentIndices[5] = 0;
 	m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+	m_OIT->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	delete[] presentIndices;
 
 	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 0.0f} };
@@ -85,14 +96,13 @@ void Sandbox2D::OnAttach()
 
 	int count = 8;
 	m_vertex.resize(count);
-	m_Pipeline = Pipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/Testtt.glsl")),
+	m_OITPrepare = Pipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/OITPrepare.glsl")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
-	m_Pipeline->GetVertexBuffer()->SetLayout({
+	m_OITPrepare->GetVertexBuffer()->SetLayout({
 		{ShaderDataType::float4,	"PositionOS"},
-		{ShaderDataType::float2,	"UV"},
-		{ShaderDataType::int1,		"TexIndex"}
+		{ShaderDataType::float2,	"UV"}
 		});
 	uint32_t* quadIndices = new uint32_t[6 * count / 4];
 	uint32_t offset = 0;
@@ -108,10 +118,9 @@ void Sandbox2D::OnAttach()
 
 		offset += 4;
 	}
-	m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
+	m_OITPrepare->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
 	delete[] quadIndices;
 
-	
 	
 	m_vertex[0].Pos = { -0.5f, -0.5f, 0.0f, 1.0f };
 	m_vertex[1].Pos = { 0.5f, -0.5f, 0.0f, 1.0f };
@@ -122,88 +131,42 @@ void Sandbox2D::OnAttach()
 	m_vertex[6].Pos = { 0.0f,  0.5f, -1.0f, 1.0f };
 	m_vertex[7].Pos = { -1.0f,  0.5f, -1.0f, 1.0f };
 
-	m_vertex[0].UV = { 0.0f, 0.0f };
-	m_vertex[1].UV = { 1.0f, 0.0f };
-	m_vertex[2].UV = { 1.0f, 1.0f };
-	m_vertex[3].UV = { 0.0f, 1.0f };
-	m_vertex[4].UV = { 0.0f, 0.0f };
-	m_vertex[5].UV = { 1.0f, 0.0f };
-	m_vertex[6].UV = { 1.0f, 1.0f };
-	m_vertex[7].UV = { 0.0f, 1.0f };
+	m_vertex[0].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
+	m_vertex[1].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
+	m_vertex[2].Color = { 1.0f,  0.0f, 0.0f, 0.5f };
+	m_vertex[3].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
+	m_vertex[4].Color = { 0.0f, 1.0f, 0.0f, 0.5f };
+	m_vertex[5].Color = { 0.0f, 1.0f, 0.0f, 0.5f };
+	m_vertex[6].Color = { 0.0f,  1.0f, 0.0f, 0.5f };
+	m_vertex[7].Color = { 0.0f,  1.0f, 0.0f, 0.5f };
 
-	m_vertex[0].index = 0;
-	m_vertex[1].index = 0;
-	m_vertex[2].index = 0;
-	m_vertex[3].index = 0;
-	m_vertex[4].index = 0;
-	m_vertex[5].index = 0;
-	m_vertex[6].index = 0;
-	m_vertex[7].index = 0;
-
-	m_Pipeline->GetMaterial()->SetFloat("prop1", 1.0f);
 
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
 
-	m_Pipeline->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
-	m_Pipeline->GetMaterial()->SetTexture2D("tex1", m_Texture);
+	m_OITPrepare->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
+
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
+	m_OIT->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
+
 
 	
+	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::R32UI);
+	m_StorageBuffer = StorageBuffer::Create(Application::Get().GetWindow().GetWidth()* Application::Get().GetWindow().GetHeight() * 4 * sizeof(Node));
+	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
-	id = GUIUtils::GetTextureID(m_Texture);
+	SBOData* sbo = new SBOData;
+	sbo->count = 1;
+	sbo->maxNodeCount = 4;
+	m_SBO->SetData(sizeof(SBOData), sbo);
 
-	m_InstanceData.resize(10);
-	m_InstancePipeline = Pipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/Instancing.glsl")),
-		VertexBuffer::Create(sizeof(InstanceVertex) * 4, sizeof(InstanceData) * m_InstanceData.size())
-	);    
-	m_InstancePipeline->GetVertexBuffer()->SetLayout({
-		{ShaderDataType::float4,	"PositionOS"		},
-		{ShaderDataType::float2,	"UV"				},
-		{ShaderDataType::float4,	"Offset",		true}
-		});
-	uint32_t* InstanceIndices = new uint32_t[6];
-	InstanceIndices[0] = 0;
-	InstanceIndices[1] = 1;
-	InstanceIndices[2] = 2;
-	InstanceIndices[3] = 2;
-	InstanceIndices[4] = 3;
-	InstanceIndices[5] = 0;
-	m_InstancePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(InstanceIndices, 6));
-	delete[] InstanceIndices;
-	InstanceVertex* instanceVertex = new InstanceVertex[4];
-	instanceVertex[0].Pos = { -0.5f, -0.5f, 0.0f, 1.0f };
-	instanceVertex[1].Pos = { 0.5f, -0.5f, 0.0f, 1.0f };
-	instanceVertex[2].Pos = { 0.5f,  0.5f, 0.0f, 1.0f };
-	instanceVertex[3].Pos = { -0.5f,  0.5f, 0.0f, 1.0f };
-	instanceVertex[0].UV = { 0.0f, 0.0f };
-	instanceVertex[1].UV = { 1.0f, 0.0f };
-	instanceVertex[2].UV = { 1.0f, 1.0f };
-	instanceVertex[3].UV = { 0.0f, 1.0f };
-	m_InstancePipeline->GetVertexBuffer()->SetData(instanceVertex, sizeof(InstanceVertex) * 4);
-	for (int i = 0; i < 10; i++)
-	{
-		m_InstanceData[i] = { Vector4(i, i , 0, 0) };
-	}
-	m_InstancePipeline->GetVertexBuffer()->SetDataInstance(m_InstanceData.data(), m_InstanceData.size() * sizeof(InstanceData));
-	//m_InstancePipeline->GetMaterial()->SetTexture2D("testTex", m_Texture);
+	m_OITPrepare->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
-	
-	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
-	m_StorageBuffer = StorageBuffer::Create(2 * sizeof(TestSSBOData));
-
-	TestSSBOData* SSBOData = new TestSSBOData[2];
-	SSBOData[0].color = Vector4(0.5f, 0.2f, 0.3f, 1.0f);
-	SSBOData[0].alpha = 0.5f;
-	SSBOData[1].color = Vector4(0.8f, 0.6f, 0.6f, 0.5f);
-	SSBOData[1].alpha = 0.8f;
-	m_StorageBuffer->SetData(2 * sizeof(TestSSBOData), SSBOData);
-
-	m_Pipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
-	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
+	m_OITPrepare->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
+	m_OIT->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
 
 
-	m_InstancePipeline->GetMaterial()->SetStorageBuffer("testBuffer", m_StorageBuffer);
+	m_OITPrepare->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
+	m_OIT->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 }
 
 void Sandbox2D::OnDetach()
@@ -215,13 +178,9 @@ void Sandbox2D::OnPresent()
 	// 直接呈现
 	Renderer::BeginScene(m_EditorCamera);
 	
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_FrameBuffer->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_1->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 	m_PresentPipeline->Render();
-
-	
-	//m_Pipeline->Bind();
-	//RenderCommand::DrawTriangles(m_Pipeline->GetVertexBuffer());
 
 	Renderer::EndScene();
 }
@@ -230,25 +189,21 @@ void Sandbox2D::OnRender()
 {
 
 	RenderCommand::BeginDrawCommand();
-	m_FrameBuffer_0->Begin();
-
-
+	m_OIT_0->Begin();
 	Renderer::BeginScene(m_EditorCamera);
-	m_Pipeline->Render();
+	m_OITPrepare->Render();
 	Renderer::EndScene();
-	m_FrameBuffer_0->End();
+	m_OIT_0->End();
 	RenderCommand::EndDrawCommand();
 
+
+
 	RenderCommand::BeginDrawCommand();
-	m_FrameBuffer->Begin();
-
-
+	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
-
-	
-	m_InstancePipeline->Render(6, 10);
+	m_OIT->Render();
 	Renderer::EndScene();
-	m_FrameBuffer->End();
+	m_OIT_1->End();
 	RenderCommand::EndDrawCommand();
 }
 
@@ -273,15 +228,15 @@ void Sandbox2D::OnUpdate()
 
 	m_EditorCamera.OnUpdate(); 
 
-	if (m_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight() ||
-		m_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth())
+	if (m_OIT_0->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_OIT_0->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_FrameBuffer = FrameBuffer::Recreate(m_FrameBuffer, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_OIT_0 = FrameBuffer::Recreate(m_OIT_0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
-	if (m_FrameBuffer_0->GetHeight() != Application::Get().GetWindow().GetHeight() ||
-		m_FrameBuffer_0->GetWidth() != Application::Get().GetWindow().GetWidth())
+	if (m_OIT_1->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_OIT_1->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_FrameBuffer_0 = FrameBuffer::Recreate(m_FrameBuffer_0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_OIT_1 = FrameBuffer::Recreate(m_OIT_1, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
 }

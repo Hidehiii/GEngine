@@ -9,19 +9,7 @@ using namespace GEngine;
 struct TestVertex
 {
 	Vector4	Pos;
-	Vector2 UV;
-	int		index;
-};
-
-struct InstanceVertex
-{
-	Vector4 Pos;
-	Vector2 UV;
-};
-
-struct InstanceData
-{
-	Vector4 Offset;
+	Vector4 Color;
 };
 
 struct PresentVertex
@@ -30,10 +18,17 @@ struct PresentVertex
 	Vector2 UV;
 };
 
-struct TestSSBOData
+struct Node
 {
 	Vector4 color;
-	float alpha;
+	float depth;
+	uint32_t next;
+};
+
+struct SBOData
+{
+	uint32_t count;
+	uint32_t maxNodeCount;
 };
 
 
@@ -60,13 +55,16 @@ private:
 
 	Ref<StorageImage2D> m_StorageImage;
 	Ref<StorageBuffer>	m_StorageBuffer;
+	Ref<StorageBuffer>	m_SBO;
 
-	Ref<Pipeline>	m_Pipeline;
-	Ref<Pipeline>	m_InstancePipeline;
-	std::vector<InstanceData> m_InstanceData;
+	Ref<Pipeline> m_OITPrepare;
+	Ref<Pipeline> m_OIT;
+
+	Ref<FrameBuffer> m_OIT_0;
+	Ref<FrameBuffer> m_OIT_1;
+
 	std::vector<TestVertex> m_vertex;
-	Ref<FrameBuffer> m_FrameBuffer;
-	Ref<FrameBuffer> m_FrameBuffer_0;
+
 	Ref<Texture2D> m_Texture;
 
 	std::vector<PresentVertex> m_PresentVertex;

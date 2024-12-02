@@ -43,6 +43,7 @@ namespace GEngine
 			case ComputeImage2DFormat::RGBA32UI:	return GL_RGBA32UI;
 			case ComputeImage2DFormat::RGBA16UI:	return GL_RGBA16UI;
 			case ComputeImage2DFormat::RGBA8UI:	return GL_RGBA8UI;
+			case ComputeImage2DFormat::R32UI:	return GL_R32UI;
 			default:
 				break;
 			}
@@ -64,6 +65,7 @@ namespace GEngine
 			case ComputeImage2DFormat::RGBA32UI:return GL_RGBA;
 			case ComputeImage2DFormat::RGBA16UI:return GL_RGBA;
 			case ComputeImage2DFormat::RGBA8UI:return GL_RGBA;
+			case ComputeImage2DFormat::R32UI:return GL_R;
 				break;
 			default:
 				break;

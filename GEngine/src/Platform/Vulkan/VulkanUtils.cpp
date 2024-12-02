@@ -489,6 +489,7 @@ namespace GEngine
 			case ComputeImage2DFormat::RGBA32UI: return VK_FORMAT_R32G32B32A32_UINT;
 			case ComputeImage2DFormat::RGBA16UI: return VK_FORMAT_R16G16B16A16_UINT;
 			case ComputeImage2DFormat::RGBA8UI: return VK_FORMAT_R8G8B8A8_UINT;
+			case ComputeImage2DFormat::R32UI: return VK_FORMAT_R32_UINT;
 			default:
 				break;
 			}

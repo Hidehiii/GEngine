@@ -22,6 +22,7 @@ namespace GEngine
 		RGBA8I,
 		RGBA32UI,
 		RGBA16UI,
-		RGBA8UI
+		RGBA8UI,
+		R32UI
 	};
 }
