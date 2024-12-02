@@ -5,6 +5,7 @@
 
 float prop1;
 sampler2D tex1;
+StorageImage2D testImage;
 
 
 #Type vertex
@@ -56,9 +57,11 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 2) in flat int v_TexIndex;
-layout (binding = 10) uniform sampler2D tex1;
+layout (binding = 20) uniform sampler2D tex1;
+layout (binding = 21, rgba32f) uniform image2D testImage;
 void main()
 {
 	o_color = vec4(IN.uv, 0.0f, 1.0f);
 	o_color = texture(tex1, IN.uv);
+	imageStore(testImage, ivec2(0, 0) , vec4(fract(GE_TIME.y), fract(GE_TIME.y), 0.0f, 1.0f));
 }

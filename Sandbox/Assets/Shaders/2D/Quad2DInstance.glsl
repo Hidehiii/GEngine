@@ -63,14 +63,14 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 3) in flat int v_TexIndex;
-layout (binding = 10) uniform sampler2D Tex_0;
-layout (binding = 11) uniform sampler2D Tex_1;
-layout (binding = 12) uniform sampler2D Tex_2;
-layout (binding = 13) uniform sampler2D Tex_3;
-layout (binding = 14) uniform sampler2D Tex_4;
-layout (binding = 15) uniform sampler2D Tex_5;
-layout (binding = 16) uniform sampler2D Tex_6;
-layout (binding = 17) uniform sampler2D Tex_7;
+layout (binding = 20) uniform sampler2D Tex_0;
+layout (binding = 21) uniform sampler2D Tex_1;
+layout (binding = 22) uniform sampler2D Tex_2;
+layout (binding = 23) uniform sampler2D Tex_3;
+layout (binding = 24) uniform sampler2D Tex_4;
+layout (binding = 25) uniform sampler2D Tex_5;
+layout (binding = 26) uniform sampler2D Tex_6;
+layout (binding = 27) uniform sampler2D Tex_7;
 void main()
 {
 	o_Color = vec4(1.0f, 1.0f, 1.0f, 1.0f);

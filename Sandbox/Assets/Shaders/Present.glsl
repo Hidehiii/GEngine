@@ -29,8 +29,8 @@ struct VertexOutput
 	
 };
 layout (location = 0) in VertexOutput IN;
-layout (binding = 10) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
-layout (binding = 11) uniform sampler2D GE_PRESENT_IMGUI;
+layout (binding = 20) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
+layout (binding = 21) uniform sampler2D GE_PRESENT_IMGUI;
 
 
 float floatToSrgb(float value) {

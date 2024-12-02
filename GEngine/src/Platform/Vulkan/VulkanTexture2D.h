@@ -30,7 +30,7 @@ namespace GEngine
 	public:
 		// vulkan glsl 中的layout(binding)要用
 		// 由于现在不知道会有多少
-		static const uint32_t s_Texture2DBindingOffset = 10;
+		static const uint32_t s_Texture2DBindingOffset = 20;
 	private:
 		void CreateSampler();
 	private:

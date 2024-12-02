@@ -10,6 +10,10 @@ namespace GEngine
 		VulkanStorageBuffer(uint32_t size, uint32_t binding);
 		virtual ~VulkanStorageBuffer();
 		virtual void SetData(uint32_t size, const void* data, uint32_t offset = 0) override;
+
+		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
+		VkDescriptorBufferInfo GetDescriptorBufferInfo() { return m_BufferInfo; }
+		int GetBinding() { return m_Binding; }
 	private:
 		VkBuffer		m_StorageBuffer;
 		VkDeviceMemory	m_StorageBufferMemory;

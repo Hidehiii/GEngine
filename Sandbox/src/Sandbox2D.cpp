@@ -199,6 +199,7 @@ void Sandbox2D::OnAttach()
 	SSBOData[1].alpha = 0.8f;
 	m_StorageBuffer->SetData(2 * sizeof(TestSSBOData), SSBOData);
 
+	m_Pipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 }
 
@@ -225,15 +226,15 @@ void Sandbox2D::OnPresent()
 void Sandbox2D::OnRender()
 {
 
-	/*RenderCommand::BeginDrawCommand();
+	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer_0->Begin();
 
 
 	Renderer::BeginScene(m_EditorCamera);
-	Renderer2D::DrawQuad(Transform(), Vector4(1, 0, 1, 1));
+	m_Pipeline->Render();
 	Renderer::EndScene();
 	m_FrameBuffer_0->End();
-	RenderCommand::EndDrawCommand();*/
+	RenderCommand::EndDrawCommand();
 
 	RenderCommand::BeginDrawCommand();
 	m_FrameBuffer->Begin();
