@@ -27,7 +27,6 @@ void Sandbox2D::OnAttach()
 	fspec.Width = 720;
 	fspec.Height = 720;
 	fspec.Samples = 4;
-	m_OIT_0 = FrameBuffer::Create(fspec);
 	m_OIT_1 = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
@@ -102,7 +101,7 @@ void Sandbox2D::OnAttach()
 	);
 	m_OITPrepare->GetVertexBuffer()->SetLayout({
 		{ShaderDataType::float4,	"PositionOS"},
-		{ShaderDataType::float2,	"UV"}
+		{ShaderDataType::float4,	"Color"}
 		});
 	uint32_t* quadIndices = new uint32_t[6 * count / 4];
 	uint32_t offset = 0;
@@ -154,11 +153,7 @@ void Sandbox2D::OnAttach()
 	m_StorageBuffer = StorageBuffer::Create(Application::Get().GetWindow().GetWidth()* Application::Get().GetWindow().GetHeight() * 4 * sizeof(Node));
 	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
-	SBOData* sbo = new SBOData;
-	sbo->count = 0;
-	sbo->maxNodeCount = 4;
-	m_SBO->SetData(sizeof(SBOData), sbo);
-
+	m_OITPrepare->GetMaterial()->SetCullMode(CullMode::None);
 	m_OITPrepare->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
 	m_OITPrepare->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
@@ -188,12 +183,19 @@ void Sandbox2D::OnPresent()
 void Sandbox2D::OnRender()
 {
 
+	SBOData* sbo = new SBOData;
+	sbo->count = 0;
+	sbo->maxNodeCount = Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4;
+	m_SBO->SetData(sizeof(SBOData), sbo);
+
+	
+
 	RenderCommand::BeginDrawCommand();
-	m_OIT_0->Begin();
+	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_OITPrepare->Render();
 	Renderer::EndScene();
-	m_OIT_0->End();
+	m_OIT_1->End();
 	RenderCommand::EndDrawCommand();
 
 
@@ -228,11 +230,6 @@ void Sandbox2D::OnUpdate()
 
 	m_EditorCamera.OnUpdate(); 
 
-	if (m_OIT_0->GetHeight() != Application::Get().GetWindow().GetHeight() ||
-		m_OIT_0->GetWidth() != Application::Get().GetWindow().GetWidth())
-	{
-		m_OIT_0 = FrameBuffer::Recreate(m_OIT_0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-	}
 	if (m_OIT_1->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_OIT_1->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{

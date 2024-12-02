@@ -1,8 +1,6 @@
 
 #Name OITPrepare
-#Blend Alpha SrcAlpha OneMinusSrcAlpha
-#DepthWrite Off
-#DepthTest On
+
 #Properties
 
 StorageImage2D headIndexImage;
@@ -76,5 +74,5 @@ void main()
         nodes[nodeIdx].depth = gl_FragCoord.z;
         nodes[nodeIdx].next = prevHeadIdx;
     }
-    o_color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    o_color = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 }

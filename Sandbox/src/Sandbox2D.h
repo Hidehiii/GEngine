@@ -60,7 +60,6 @@ private:
 	Ref<Pipeline> m_OITPrepare;
 	Ref<Pipeline> m_OIT;
 
-	Ref<FrameBuffer> m_OIT_0;
 	Ref<FrameBuffer> m_OIT_1;
 
 	std::vector<TestVertex> m_vertex;

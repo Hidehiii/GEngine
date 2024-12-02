@@ -1,8 +1,6 @@
 
 #Name OIT
-#Blend Alpha SrcAlpha OneMinusSrcAlpha
-#DepthWrite Off
-#DepthTest On
+
 #Properties
 
 StorageImage2D headIndexImage;
@@ -28,7 +26,7 @@ layout (location = 0) out VertexOutput OUT;
 void main()
 {
 	OUT.uv = i_uv;
-	gl_Position =  GE_MATRIX_VP * (i_position);
+	gl_Position =  (i_position);
 	OUT.position = gl_Position;
 }
 
@@ -59,12 +57,12 @@ struct VertexOutput
 layout (location = 0) in VertexOutput IN;
 void main()
 {
-	Node fragments[128];
+	Node fragments[4];
     int count = 0;
 
     uint nodeIdx = imageLoad(headIndexImage, ivec2(gl_FragCoord.xy)).r;
 	//数据读取
-    while (nodeIdx != 0xffffffff && count < 128)
+    while (nodeIdx != 0xffffffff && count < 4)
     {
         fragments[count] = nodes[nodeIdx];
         nodeIdx = fragments[count].next;
@@ -92,4 +90,5 @@ void main()
     }
 
     o_color = color;
+    imageAtomicExchange(headIndexImage, ivec2(gl_FragCoord.xy), -1);
 }
