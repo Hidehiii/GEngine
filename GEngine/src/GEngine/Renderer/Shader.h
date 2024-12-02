@@ -23,7 +23,8 @@ namespace GEngine
 		Mat4			= 6,
 		Sampler2D		= 7,
 		SamplerCube		= 8,
-		StorageImage2D	= 9
+		StorageImage2D	= 9,
+		StorageBuffer	= 10
 	};
 	class GENGINE_API ShaderMacroName
 	{
@@ -231,6 +232,7 @@ namespace GEngine
 			if (ToLower(type) == "sampler2d")		return ShaderUniformType::Sampler2D;
 			if (ToLower(type) == "samplercube")		return ShaderUniformType::SamplerCube;
 			if (ToLower(type) == "storageimage2d")	return ShaderUniformType::StorageImage2D;
+			if (ToLower(type) == "storagebuffer")	return ShaderUniformType::StorageBuffer;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
 		}

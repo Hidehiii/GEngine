@@ -464,7 +464,7 @@ namespace GEngine
 					++it;
 			}
 			uint32_t location = 0;
-			uint32_t textureSlot = 0;
+			uint32_t slot = 0;
 			// split properties by :
 			for (auto& prop : props)
 			{
@@ -486,7 +486,8 @@ namespace GEngine
 				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
 					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D && 
 					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube &&
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageImage2D)
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageImage2D &&
+					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageBuffer)
 				{
 					ShaderUniform			uniform;
 					uniform.Name			= propName;
@@ -501,12 +502,12 @@ namespace GEngine
 				{
 					ShaderUniformTexture2D	uniform;
 					uniform.Name			= propName;
-					uniform.Slot			= textureSlot;
+					uniform.Slot			= slot;
 					uniform.Texture			= Texture2D::White();
 					
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, slot);
 
-					textureSlot++;
+					slot++;
 					m_Texture2DCache.push_back(uniform);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
@@ -517,13 +518,17 @@ namespace GEngine
 				{
 					ShaderUniformStorageImage2D	uniform;
 					uniform.Name				= propName;
-					uniform.Slot				= textureSlot;
+					uniform.Slot				= slot;
 					uniform.Image				= nullptr;
 
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, textureSlot);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, slot);
 
-					textureSlot++;
+					slot++;
 					m_StorageImage2DCache.push_back(uniform);
+				}
+				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageBuffer)
+				{
+					GE_CORE_ASSERT(false, "Not implemented yet");
 				}
 			}
 		}

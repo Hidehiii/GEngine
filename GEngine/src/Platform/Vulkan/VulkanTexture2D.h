@@ -27,10 +27,6 @@ namespace GEngine
 		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		void SetImageLayout(VkImageLayout newLayout);
-	public:
-		// vulkan glsl 中的layout(binding)要用
-		// 由于现在不知道会有多少
-		static const uint32_t s_Texture2DBindingOffset = 20;
 	private:
 		void CreateSampler();
 	private:

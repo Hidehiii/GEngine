@@ -51,6 +51,10 @@ namespace GEngine
 		void CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources);
 		void CompileOrGetOpenGLBinaries(const std::unordered_map<std::string, std::string>& shaderSources);
 		void Reflect(const std::string stage, const std::vector<uint32_t>& shaderData);
+
+	private:
+		// 起始slot绑定， 从20开始
+		static const uint32_t s_Slot = 10;
 	private:
 		std::string											m_FilePath;
 		std::string											m_Name;
