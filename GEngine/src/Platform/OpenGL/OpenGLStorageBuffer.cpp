@@ -7,8 +7,9 @@ namespace GEngine
 	OpenGLStorageBuffer::OpenGLStorageBuffer(uint32_t size, uint32_t binding)
 	{
 		m_Binding = binding;
-		glGenBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_RendererID);
 		glNamedBufferStorage(m_RendererID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		int i = 0;
 	}
 	OpenGLStorageBuffer::~OpenGLStorageBuffer()
 	{

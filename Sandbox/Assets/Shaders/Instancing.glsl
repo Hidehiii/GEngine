@@ -42,6 +42,15 @@ layout(std140, binding = 2) uniform TIME
 
 layout (binding = 10, rgba32f) uniform image2D testImage;
 layout (binding = 11) uniform sampler2D testTex;
+struct SSBOData
+{
+	vec4 color;
+	float alpha;	
+};
+layout(std430, binding = 9) buffer SSBO
+{
+	SSBOData datas[];	
+};
 struct VertexOutput
 {
 	vec4 position;
@@ -56,5 +65,9 @@ void main()
 	vec4 col = imageLoad(testImage, ivec2(0, 0));
 	imageStore(testImage, ivec2(0, 0) , vec4(fract(GE_TIME.y), fract(GE_TIME.y), 0.0f, 1.0f));
 	
+	float alpha = datas[0].alpha;
+
+
 	o_color.rgb = col.rgb;
+	o_color.b = alpha;
 }

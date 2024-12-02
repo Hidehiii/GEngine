@@ -30,6 +30,12 @@ struct PresentVertex
 	Vector2 UV;
 };
 
+struct TestSSBOData
+{
+	Vector4 color;
+	float alpha;
+};
+
 
 class Sandbox2D : public GEngine::Layer
 {
@@ -53,6 +59,7 @@ private:
 	RayTracing m_RayTracing;*/
 
 	Ref<StorageImage2D> m_StorageImage;
+	Ref<StorageBuffer>	m_StorageBuffer;
 
 	Ref<Pipeline>	m_Pipeline;
 	Ref<Pipeline>	m_InstancePipeline;
