@@ -1,6 +1,8 @@
 
 #Name OITPrepare
-
+#Blend Alpha SrcAlpha OneMinusSrcAlpha
+#DepthWrite Off
+#DepthTest On
 #Properties
 
 StorageImage2D headIndexImage;

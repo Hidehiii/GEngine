@@ -1,6 +1,8 @@
 
 #Name OIT
-
+#Blend Alpha SrcAlpha OneMinusSrcAlpha
+#DepthWrite Off
+#DepthTest On
 #Properties
 
 StorageImage2D headIndexImage;
@@ -62,7 +64,7 @@ void main()
 
     uint nodeIdx = imageLoad(headIndexImage, ivec2(gl_FragCoord.xy)).r;
 	//数据读取
-    while (nodeIdx != 0x00000000 && count < 128)
+    while (nodeIdx != 0xffffffff && count < 128)
     {
         fragments[count] = nodes[nodeIdx];
         nodeIdx = fragments[count].next;

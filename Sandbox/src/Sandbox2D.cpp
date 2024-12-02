@@ -58,7 +58,7 @@ void Sandbox2D::OnAttach()
 		}
 	}
 
-
+	m_PresentVertex.resize(4);
 	m_OIT = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OIT.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
@@ -68,7 +68,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"}
 		});
 
-	m_PresentVertex.resize(4);
+	
 	m_PresentPipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
@@ -155,7 +155,7 @@ void Sandbox2D::OnAttach()
 	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
 	SBOData* sbo = new SBOData;
-	sbo->count = 1;
+	sbo->count = 0;
 	sbo->maxNodeCount = 4;
 	m_SBO->SetData(sizeof(SBOData), sbo);
 
