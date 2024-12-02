@@ -5,6 +5,7 @@
 
 StorageImage2D testImage;
 Sampler2D testTex;
+StorageBuffer testBuffer;
 
 #Type vertex
 #version 450 core
@@ -47,6 +48,10 @@ struct SSBOData
 	vec4 color;
 	float alpha;	
 };
+layout (binding = 22) buffer testBuffer
+{
+	SSBOData ssbo[];	
+};
 struct VertexOutput
 {
 	vec4 position;
@@ -63,4 +68,6 @@ void main()
 
 
 	o_color.rgb = col.rgb;
+
+	o_color.rgb = ssbo[0].color.rgb;
 }

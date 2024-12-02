@@ -2,6 +2,7 @@
 #include "OpenGLRendererAPI.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "OpenGLUtils.h"
 
 namespace GEngine
 {
@@ -80,38 +81,38 @@ namespace GEngine
 		else
 			glDisable(GL_DEPTH_TEST);
 	}
-	void OpenGLRendererAPI::SetCull(MaterialCullMode mode)
+	void OpenGLRendererAPI::SetCull(CullMode mode)
 	{
 		switch (mode)
 		{
-		case MaterialCullMode::None:	glDisable(GL_CULL_FACE); break;
-		case MaterialCullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
-		case MaterialCullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
+		case CullMode::None:	glDisable(GL_CULL_FACE); break;
+		case CullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
+		case CullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
 		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
 		}
 	}
-	void OpenGLRendererAPI::SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest)
+	void OpenGLRendererAPI::SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest)
 	{
 		switch (mode)
 		{
-		case MaterialBlendMode::None:
+		case BlendMode::None:
 			glDisable(GL_BLEND);
 			break;
-		case MaterialBlendMode::Alpha:
+		case BlendMode::Alpha:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
-		case MaterialBlendMode::Additive:
+		case BlendMode::Additive:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR);
 			break;
-		case MaterialBlendMode::Multiply:
+		case BlendMode::Multiply:
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_DST_COLOR, GL_ZERO);
 			break;
-		case MaterialBlendMode::Customized:
+		case BlendMode::Customized:
 			glEnable(GL_BLEND);
-			glBlendFunc(source, dest);
+			glBlendFunc(Utils::BlendFactorToGLBlendFactor(source), Utils::BlendFactorToGLBlendFactor(dest));
 			break;
 		default:
 			break;

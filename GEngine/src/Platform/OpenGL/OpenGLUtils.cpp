@@ -70,5 +70,24 @@ namespace GEngine
 			}
 			return GLenum();
 		}
+		GLenum BlendFactorToGLBlendFactor(BlendFactor factor)
+		{
+			switch (factor)
+			{
+			case BlendFactor::SRC_ALPHA: return GL_SRC_ALPHA;
+			case BlendFactor::DST_ALPHA: return GL_DST_ALPHA;
+			case BlendFactor::SRC_COLOR: return GL_SRC_COLOR;
+			case BlendFactor::DST_COLOR: return GL_DST_COLOR;
+			case BlendFactor::ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+			case BlendFactor::ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+			case BlendFactor::ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+			case BlendFactor::ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+			case BlendFactor::ONE: return GL_ONE;
+			case BlendFactor::ZERO: return GL_ZERO;
+			default:
+				break;
+			}
+			return GLenum();
+		}
 	}
 }

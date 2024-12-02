@@ -6,6 +6,7 @@
 #include "GEngine/Core/Buffer.h"
 #include "GEngine/Renderer/Texture.h"
 #include "GEngine/Compute/StorageImage.h"
+#include "GEngine/Compute/StorageBuffer.h"
 #include <algorithm>
 #include <filesystem>
 
@@ -30,6 +31,33 @@ namespace GEngine
 	{
 	public:
 		static std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
+	};
+	enum class GENGINE_API BlendFactor
+	{
+		SRC_ALPHA		= 1,
+		DST_ALPHA		= 2,
+		SRC_COLOR		= 3,
+		DST_COLOR		= 4,
+		ONE_MINUS_SRC_ALPHA = 5,
+		ONE_MINUS_DST_ALPHA = 6,
+		ONE_MINUS_SRC_COLOR = 7,
+		ONE_MINUS_DST_COLOR = 8,
+		ONE = 9,
+		ZERO = 10
+	};
+	enum class CullMode
+	{
+		None = 0,
+		Front = 1,
+		Back = 2
+	};
+	enum class BlendMode
+	{
+		None = 0,
+		Alpha = 1,
+		Additive = 2,
+		Multiply = 3,
+		Customized = 4
 	};
 	class GENGINE_API ShaderDataFlag
 	{
@@ -88,6 +116,13 @@ namespace GEngine
 		Ref<StorageImage2D> Image;
 	};
 
+	struct ShaderUniformStorageBuffer
+	{
+		std::string Name;
+		uint32_t Slot;
+		Ref<StorageBuffer> Buffer;
+	};
+
 	class GENGINE_API Shader
 	{
 	public:
@@ -104,19 +139,21 @@ namespace GEngine
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
 
-		virtual const std::string& GetShaderName() const = 0;
-		virtual void SetShaderName(std::string name) = 0;
-		virtual int GetBlendMode() = 0;
-		virtual int GetCullMode() = 0;
-		virtual uint32_t GetBlendSourceFactor() = 0;
-		virtual uint32_t GetBlendDestinationFactor() = 0;
-		virtual bool GetEnableDepthWrite() = 0;
-		virtual bool GetEnableDepthTest() = 0;
-		virtual uint32_t GetTexture2DCount() = 0;
+		virtual BlendMode GetBlendMode() { return m_BlendMode; }
+		virtual CullMode GetCullMode() { return m_CullMode; }
+		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
+		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
+		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
+		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
 
-		virtual std::vector<ShaderUniform> GetUniforms() = 0;
-		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() = 0;
-		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D() = 0;
+		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
+		virtual const std::string& GetShaderName() const  { return m_Name; }
+		virtual void SetShaderName(std::string name)  { m_Name = name; }
+		virtual std::vector<ShaderUniformTexture2D> GetTexture2D()  { return m_Texture2DCache; }
+		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
+		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
+		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
+
 		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
 
@@ -125,6 +162,22 @@ namespace GEngine
 	protected:
 		virtual void SetMacroBool(std::string& source) = 0;
 		virtual void SetMacroExp(std::string& source) = 0;
+	protected:
+		// slot 从20开始
+		static const uint32_t s_SlotOffset = 20;
+	protected:
+		std::string											m_FilePath;
+		std::string											m_Name;
+		std::vector<ShaderUniform>							m_UniformCache;
+		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
+		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
+		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
+		bool												m_EnableDepthWrite = true;
+		bool												m_EnableDepthTest = true;
+		BlendFactor									m_BlendSourceFactor = BlendFactor::ONE;
+		BlendFactor									m_BlendDestinationFactor = BlendFactor::ZERO;
+		BlendMode											m_BlendMode = BlendMode::None;
+		CullMode													m_CullMode = CullMode::Back;
 	};
 
 	class GENGINE_API ShaderLibrary
@@ -237,6 +290,33 @@ namespace GEngine
 			return ShaderUniformType::None;
 		}
 
+		static BlendFactor ShaderBlendFactorFromString(const std::string& factor)
+		{
+			if (ToUpper(factor) == "SRCALPHA")			return BlendFactor::SRC_ALPHA;
+			if (ToUpper(factor) == "DSTALPHA")			return BlendFactor::DST_ALPHA;
+			if (ToUpper(factor) == "SRCCOLOR")			return BlendFactor::SRC_COLOR;
+			if (ToUpper(factor) == "DSTCOLOR")			return BlendFactor::DST_COLOR;
+			if (ToUpper(factor) == "ONEMINUSSRCALPHA")	return BlendFactor::ONE_MINUS_SRC_ALPHA;
+			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return BlendFactor::ONE_MINUS_DST_ALPHA;
+			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return BlendFactor::ONE_MINUS_SRC_COLOR;
+			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return BlendFactor::ONE_MINUS_DST_COLOR;
+			if (ToUpper(factor) == "ONE")				return BlendFactor::ONE;
+			if (ToUpper(factor) == "ZERO")				return BlendFactor::ZERO;
+
+			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
+		}
+
+		static BlendMode ShaderBlendModeFromString(const std::string& type)
+		{
+			if (ToLower(type) == "none")			return BlendMode::None;
+			if (ToLower(type) == "alpha")			return BlendMode::Alpha;
+			if (ToLower(type) == "additive")		return BlendMode::Additive;
+			if (ToLower(type) == "multiply")		return BlendMode::Multiply;
+			if (ToLower(type) == "customized")		return BlendMode::Customized;
+
+			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
+			return BlendMode::None;
+		}
 		static const char* GetCacheDirectory()
 		{
 			// TODO: make sure the assets directory is valid

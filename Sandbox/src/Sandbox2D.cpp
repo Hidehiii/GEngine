@@ -190,7 +190,7 @@ void Sandbox2D::OnAttach()
 
 	
 	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA32F);
-	m_StorageBuffer = StorageBuffer::Create(2 * sizeof(TestSSBOData), 9);
+	m_StorageBuffer = StorageBuffer::Create(2 * sizeof(TestSSBOData));
 
 	TestSSBOData* SSBOData = new TestSSBOData[2];
 	SSBOData[0].color = Vector4(0.5f, 0.2f, 0.3f, 1.0f);
@@ -201,6 +201,9 @@ void Sandbox2D::OnAttach()
 
 	m_Pipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
 	m_InstancePipeline->GetMaterial()->SetStorageImage2D("testImage", m_StorageImage);
+
+
+	m_InstancePipeline->GetMaterial()->SetStorageBuffer("testBuffer", m_StorageBuffer);
 }
 
 void Sandbox2D::OnDetach()

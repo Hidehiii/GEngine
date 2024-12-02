@@ -14,32 +14,6 @@ namespace GEngine
 	namespace Utils {
 		
 		
-		static uint32_t ShaderBlendFactorFromString(const std::string& factor)
-		{
-			if (ToUpper(factor) == "SRCALPHA")			return (uint32_t)GL_SRC_ALPHA;
-			if (ToUpper(factor) == "DSTALPHA")			return (uint32_t)GL_DST_ALPHA;
-			if (ToUpper(factor) == "SRCCOLOR")			return (uint32_t)GL_SRC_COLOR;
-			if (ToUpper(factor) == "DSTCOLOR")			return (uint32_t)GL_DST_COLOR;
-			if (ToUpper(factor) == "ONEMINUSSRCALPHA")	return (uint32_t)GL_ONE_MINUS_SRC_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return (uint32_t)GL_ONE_MINUS_DST_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return (uint32_t)GL_ONE_MINUS_SRC_COLOR;
-			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return (uint32_t)GL_ONE_MINUS_DST_COLOR;
-			if (ToUpper(factor) == "ONE")				return (uint32_t)GL_ONE;
-			if (ToUpper(factor) == "ZERO")				return (uint32_t)GL_ZERO;
-
-			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
-		}
-		static MaterialBlendMode ShaderBlendTypeFromString(const std::string& type)
-		{
-			if (ToLower(type) == "none")			return MaterialBlendMode::None;
-			if (ToLower(type) == "alpha")			return MaterialBlendMode::Alpha;
-			if (ToLower(type) == "additive")		return MaterialBlendMode::Additive;
-			if (ToLower(type) == "multiply")		return MaterialBlendMode::Multiply;
-			if (ToLower(type) == "customized")		return MaterialBlendMode::Customized;
-
-			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return MaterialBlendMode::None;
-		}
 
 		static GLenum ShaderTypeFromString(const std::string& type)
 		{
@@ -111,10 +85,9 @@ namespace GEngine
 	
 
 	OpenGLShader::OpenGLShader(const std::string& path)
-		: m_FilePath(path)
 	{
 		GE_PROFILE_FUNCTION();
-
+		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		std::string src = ReadFile(path);
@@ -125,9 +98,10 @@ namespace GEngine
 		CreateProgram();
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
-		: m_Name(name)
 	{
 		GE_PROFILE_FUNCTION();
+
+		m_Name = name;
 
 		// Create an empty vertex shader handle
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -390,7 +364,7 @@ namespace GEngine
 			blendString = Utils::RemoveCharFromString(blendString, '\n');
 			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
 			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1, "Syntax error");
-			m_BlendType					= (int)Utils::ShaderBlendTypeFromString(blends.at(0));
+			m_BlendMode					= Utils::ShaderBlendModeFromString(blends.at(0));
 			if (blends.size() ==3)
 			{
 				m_BlendSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
@@ -505,7 +479,7 @@ namespace GEngine
 					uniform.Slot			= slot;
 					uniform.Texture			= Texture2D::White();
 					
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, slot);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property slot: {2}", uniform.Name, propType, slot);
 
 					slot++;
 					m_Texture2DCache.push_back(uniform);
@@ -521,14 +495,22 @@ namespace GEngine
 					uniform.Slot				= slot;
 					uniform.Image				= nullptr;
 
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Location: {2}", uniform.Name, propType, slot);
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property slot: {2}", uniform.Name, propType, slot);
 
 					slot++;
 					m_StorageImage2DCache.push_back(uniform);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageBuffer)
 				{
-					GE_CORE_ASSERT(false, "Not implemented yet");
+					ShaderUniformStorageBuffer	uniform;
+					uniform.Name				= propName;
+					uniform.Slot				= slot + Shader::s_SlotOffset;
+					uniform.Buffer				= nullptr;
+
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, uniform.Slot);
+
+					slot++;
+					m_StorageBufferCache.push_back(uniform);
 				}
 			}
 		}

@@ -39,10 +39,10 @@ namespace GEngine
     void VulkanRendererAPI::EnableDepthTest(bool enabled)
     {
     }
-    void VulkanRendererAPI::SetCull(MaterialCullMode mode)
+    void VulkanRendererAPI::SetCull(CullMode mode)
     {
     }
-    void VulkanRendererAPI::SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest)
+    void VulkanRendererAPI::SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest)
     {
     }
     void VulkanRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)

@@ -442,6 +442,26 @@ namespace GEngine
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
 
+		VkBlendFactor BlendFactorToVulkanBlendFactor(BlendFactor factor)
+		{
+			switch (factor)
+			{
+			case BlendFactor::SRC_ALPHA: return VK_BLEND_FACTOR_SRC_ALPHA;
+			case BlendFactor::DST_ALPHA: return VK_BLEND_FACTOR_DST_ALPHA;
+			case BlendFactor::SRC_COLOR: return VK_BLEND_FACTOR_SRC_COLOR;
+			case BlendFactor::DST_COLOR: return VK_BLEND_FACTOR_DST_COLOR;
+			case BlendFactor::ONE_MINUS_SRC_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			case BlendFactor::ONE_MINUS_DST_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+			case BlendFactor::ONE_MINUS_SRC_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+			case BlendFactor::ONE_MINUS_DST_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+			case BlendFactor::ONE: return VK_BLEND_FACTOR_ONE;
+			case BlendFactor::ZERO: return VK_BLEND_FACTOR_ZERO;
+			default:
+				break;
+			}
+			return VkBlendFactor();
+		}
+
 		VkFormat RenderImage2DFormatToVulkanFormat(RenderImage2DFormat format)
 		{
 			switch (format)
@@ -457,18 +477,18 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case GEngine::ComputeImage2DFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case GEngine::ComputeImage2DFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
-			case GEngine::ComputeImage2DFormat::RG32F: return VK_FORMAT_R32G32_SFLOAT;
-			case GEngine::ComputeImage2DFormat::RG16F: return VK_FORMAT_R16G16_SFLOAT;
-			case GEngine::ComputeImage2DFormat::R32F: return VK_FORMAT_R32_SFLOAT;
-			case GEngine::ComputeImage2DFormat::R16F: return VK_FORMAT_R16_SFLOAT;
-			case GEngine::ComputeImage2DFormat::RGBA32I: return VK_FORMAT_R32G32B32A32_SINT;
-			case GEngine::ComputeImage2DFormat::RGBA16I: return VK_FORMAT_R16G16B16A16_SINT;
-			case GEngine::ComputeImage2DFormat::RGBA8I: return VK_FORMAT_R8G8B8A8_SINT;
-			case GEngine::ComputeImage2DFormat::RGBA32UI: return VK_FORMAT_R32G32B32A32_UINT;
-			case GEngine::ComputeImage2DFormat::RGBA16UI: return VK_FORMAT_R16G16B16A16_UINT; 
-			case GEngine::ComputeImage2DFormat::RGBA8UI: return VK_FORMAT_R8G8B8A8_UINT;
+			case ComputeImage2DFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ComputeImage2DFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case ComputeImage2DFormat::RG32F: return VK_FORMAT_R32G32_SFLOAT;
+			case ComputeImage2DFormat::RG16F: return VK_FORMAT_R16G16_SFLOAT;
+			case ComputeImage2DFormat::R32F: return VK_FORMAT_R32_SFLOAT;
+			case ComputeImage2DFormat::R16F: return VK_FORMAT_R16_SFLOAT;
+			case ComputeImage2DFormat::RGBA32I: return VK_FORMAT_R32G32B32A32_SINT;
+			case ComputeImage2DFormat::RGBA16I: return VK_FORMAT_R16G16B16A16_SINT;
+			case ComputeImage2DFormat::RGBA8I: return VK_FORMAT_R8G8B8A8_SINT;
+			case ComputeImage2DFormat::RGBA32UI: return VK_FORMAT_R32G32B32A32_UINT;
+			case ComputeImage2DFormat::RGBA16UI: return VK_FORMAT_R16G16B16A16_UINT;
+			case ComputeImage2DFormat::RGBA8UI: return VK_FORMAT_R8G8B8A8_UINT;
 			default:
 				break;
 			}
@@ -481,6 +501,18 @@ namespace GEngine
 			case VK_FORMAT_R8G8B8A8_UNORM:			return RenderImage2DFormat::RGBA8F;
 			case VK_FORMAT_R8G8B8_UNORM:			return RenderImage2DFormat::RGB8F;
 				break;
+			default:
+				break;
+			}
+		}
+		// front和back要反过来，适应viewport的反转
+		VkCullModeFlagBits CullModeToVkCullMode(CullMode mode)
+		{
+			switch (mode)
+			{
+			case CullMode::None:	return VK_CULL_MODE_NONE;
+			case CullMode::Front:	return VK_CULL_MODE_BACK_BIT;
+			case CullMode::Back:	return VK_CULL_MODE_FRONT_BIT;
 			default:
 				break;
 			}

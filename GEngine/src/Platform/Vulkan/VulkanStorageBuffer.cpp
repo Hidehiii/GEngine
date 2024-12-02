@@ -5,11 +5,9 @@
 
 namespace GEngine
 {
-	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding)
+	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
 	{
-		m_Binding = binding;
-
-		m_DescriptorSetLayoutBinding.binding		= binding;
+		m_DescriptorSetLayoutBinding.binding		= -1;
 		m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount = 1;
 		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
@@ -52,6 +50,10 @@ namespace GEngine
 
 		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), stagingBuffer, nullptr);
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, nullptr);
+	}
+	void VulkanStorageBuffer::Bind(uint32_t slot)
+	{
+		m_DescriptorSetLayoutBinding.binding = slot;
 	}
 }
 

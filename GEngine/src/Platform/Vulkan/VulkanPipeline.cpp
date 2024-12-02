@@ -4,27 +4,13 @@
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
+#include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "GEngine/Renderer/RenderCommand.h"
 
 
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
-	namespace Utils
-	{
-		// front和back要反过来，适应viewport的反转
-		VkCullModeFlagBits MaterialCullModeToVkCullMode(MaterialCullMode mode)
-		{
-			switch (mode)
-			{
-			case MaterialCullMode::None:	return VK_CULL_MODE_NONE;
-			case MaterialCullMode::Front:	return VK_CULL_MODE_BACK_BIT;
-			case MaterialCullMode::Back:	return VK_CULL_MODE_FRONT_BIT; 
-			default:
-				break;
-			}
-		}
-	}
 
     VulkanPipeline::VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
@@ -86,7 +72,7 @@ namespace GEngine
 
 		vkCmdSetDepthTestEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthTest());
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
-		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::MaterialCullModeToVkCullMode(m_Material->GetCullMode()));
+		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
 
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
@@ -205,6 +191,19 @@ namespace GEngine
 
 			layoutBindings.push_back(layoutBinding);
 		}
+		// storage buffer 绑定
+		auto storageBuffers = m_Material->GetStorageBuffers();
+		for (auto& buffer : storageBuffers)
+		{
+			VkDescriptorSetLayoutBinding		layoutBinding{};
+			layoutBinding.binding				= buffer.Slot;
+			layoutBinding.descriptorCount		= 1;
+			layoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			layoutBinding.pImmutableSamplers	= nullptr;
+			layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
+
+			layoutBindings.push_back(layoutBinding);
+		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -300,6 +299,26 @@ namespace GEngine
 				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
 			}
 		}
+		// 更新storage buffer绑定
+		{
+			auto storageBuffers = m_Material->GetStorageBuffers();
+			for (auto& buffer : storageBuffers)
+			{
+				VkDescriptorBufferInfo			bufferInfo = std::dynamic_pointer_cast<VulkanStorageBuffer>(buffer.Buffer)->GetDescriptorBufferInfo();
+				VkWriteDescriptorSet			descriptorWrite{};
+				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet			= m_DescriptorSet;
+				descriptorWrite.dstBinding		= buffer.Slot;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo		= &bufferInfo;
+				descriptorWrite.pImageInfo		= nullptr;
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			}
+		}
 	}
     void VulkanPipeline::CreatePipeline()
     {
@@ -373,7 +392,7 @@ namespace GEngine
 		Rasterizer.rasterizerDiscardEnable					= VK_FALSE;
 		Rasterizer.polygonMode								= VK_POLYGON_MODE_FILL;
 		Rasterizer.lineWidth								= 1.0f;
-		Rasterizer.cullMode									= Utils::MaterialCullModeToVkCullMode(m_Material->GetCullMode());
+		Rasterizer.cullMode									= Utils::CullModeToVkCullMode(m_Material->GetCullMode());
 		Rasterizer.frontFace								= VK_FRONT_FACE_CLOCKWISE;
 
 		VkPipelineMultisampleStateCreateInfo				Multisampling{};
@@ -388,11 +407,11 @@ namespace GEngine
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
 		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		ColorBlendAttachment.blendEnable					= VK_FALSE;
-		ColorBlendAttachment.srcColorBlendFactor			= (VkBlendFactor)m_Material->GetBlendSourceFactor();
-		ColorBlendAttachment.dstColorBlendFactor			= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
+		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendSourceFactor());
+		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendDestinationFactor());
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
-		ColorBlendAttachment.srcAlphaBlendFactor			= (VkBlendFactor)m_Material->GetBlendSourceFactor();
-		ColorBlendAttachment.dstAlphaBlendFactor			= (VkBlendFactor)m_Material->GetBlendDestinationFactor();
+		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendSourceFactor());
+		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendDestinationFactor());
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};

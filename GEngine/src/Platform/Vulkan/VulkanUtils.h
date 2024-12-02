@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/ImageFormat.h"
+#include "GEngine/Renderer/Shader.h"
 
 #ifdef GE_PLATFORM_WINDOWS
 #define VK_CHECK_RESULT(f)																								\
@@ -33,6 +34,8 @@ namespace GEngine
 		VkFormat ComputeImage2DFormatToVulkanFormat(ComputeImage2DFormat format);
 		RenderImage2DFormat VulkanFormatToRenderImage2DFormat(VkFormat format);
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size);
+		VkBlendFactor BlendFactorToVulkanBlendFactor(BlendFactor factor);
+		VkCullModeFlagBits CullModeToVkCullMode(CullMode mode);
 	}
 	
 }

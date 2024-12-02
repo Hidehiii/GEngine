@@ -14,21 +14,6 @@ namespace GEngine
 
 		virtual void Bind() const override;
 
-		virtual int GetBlendMode() override { return m_BlendType; }
-		virtual int GetCullMode() override { return m_CullMode; }
-		virtual uint32_t GetBlendSourceFactor() override { return m_BlendSourceFactor; }
-		virtual uint32_t GetBlendDestinationFactor() override { return m_BlendDestinationFactor; }
-
-		virtual bool GetEnableDepthWrite() override { return m_EnableDepthWrite; }
-		virtual bool GetEnableDepthTest() override { return m_EnableDepthTest; }
-
-		virtual std::vector<ShaderUniform> GetUniforms() override { return m_UniformCache; };
-		virtual const std::string& GetShaderName() const override { return m_Name; }
-		virtual void SetShaderName(std::string name) override { m_Name = name; }
-		virtual std::vector<ShaderUniformTexture2D> GetTexture2D() { return m_Texture2DCache;}
-		virtual uint32_t GetTexture2DCount() override { return m_Texture2DCache.size(); }
-		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D() override { return m_StorageImage2DCache; }
-
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_VulkanSPIRV[ShaderStage::Fragment]; }
 
@@ -51,29 +36,12 @@ namespace GEngine
 		void CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources);
 		void CompileOrGetOpenGLBinaries(const std::unordered_map<std::string, std::string>& shaderSources);
 		void Reflect(const std::string stage, const std::vector<uint32_t>& shaderData);
-
 	private:
-		// 起始slot绑定， 从20开始
-		static const uint32_t s_Slot = 10;
-	private:
-		std::string											m_FilePath;
-		std::string											m_Name;
 
 		std::unordered_map<std::string, std::vector<uint32_t>>	m_VulkanSPIRV;
 		std::unordered_map<std::string, std::vector<uint32_t>>	m_OpenGLSPIRV;
 
 		std::unordered_map<std::string, std::string>		m_OpenGLSourceCode;
-
-		std::vector<ShaderUniform>							m_UniformCache;
-		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
-		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
-
-		int													m_BlendType;
-		int													m_CullMode;
-		uint32_t											m_BlendSourceFactor = (uint32_t)VK_BLEND_FACTOR_ONE;
-		uint32_t											m_BlendDestinationFactor = (uint32_t)VK_BLEND_FACTOR_ZERO;
-		bool												m_EnableDepthWrite = true;
-		bool												m_EnableDepthTest = true;
 
 		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
 			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, true}

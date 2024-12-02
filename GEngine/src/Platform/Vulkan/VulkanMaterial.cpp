@@ -16,8 +16,8 @@ namespace GEngine
 				size += uniform.Size;
 				m_Uniforms.push_back(uniform);
 			}
-			m_UniformStorageBuffer.Allocate(size);
-			m_UniformStorageBuffer.ZeroInitialize();
+			m_UniformsBuffer.Allocate(size);
+			m_UniformsBuffer.ZeroInitialize();
 			// Create uniform buffer
 			// 0 is reserved for custom uniform buffer
 			m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
@@ -26,7 +26,7 @@ namespace GEngine
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
 			// Read blend type and factor
-			m_BlendMode					= (MaterialBlendMode)m_Shader->GetBlendMode();
+			m_BlendMode					= m_Shader->GetBlendMode();
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
 			// Read depth test and depth mask
@@ -36,10 +36,12 @@ namespace GEngine
 			m_Texture2D					= m_Shader->GetTexture2D();
 			// StorageImage2D
 			m_StorageImage2D			= m_Shader->GetStorageImage2D();
+			// StorageBuffer
+			m_StorageBuffer				= m_Shader->GetStorageBuffer();
 		}
 		else
 		{
-			GE_CORE_WARN("Shader of material {0} is not of type OpenGLShader!", name);
+			GE_CORE_WARN("Shader of material {0} is not of type vulaknShader!", name);
 		}
 	}
 	VulkanMaterial::~VulkanMaterial()
@@ -47,8 +49,8 @@ namespace GEngine
 	}
 	void VulkanMaterial::UploadData()
 	{
-		if(m_UniformStorageBuffer.Size > 0)
-			m_UniformBuffer->SetData(m_UniformStorageBuffer.ReadBytes(m_UniformStorageBuffer.GetSize()), m_UniformStorageBuffer.GetSize());
+		if(m_UniformsBuffer.Size > 0)
+			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
 
 		for (auto& texture2D : m_Texture2D)
 		{
@@ -59,143 +61,21 @@ namespace GEngine
 		{
 			image2D.Image->Bind(image2D.Slot);
 		}
-	}
-	void VulkanMaterial::SetCullMode(MaterialCullMode mode)
-	{
-		m_CullMode = mode;
-	}
-	void VulkanMaterial::SetBlendMode(MaterialBlendMode mode, uint32_t source, uint32_t dest)
-	{
-		m_BlendMode = mode;
-		m_BlendSourceFactor = source;
-		m_BlendDestinationFactor = dest;
-	}
-	void VulkanMaterial::SetFloat(const std::string& name, float value)
-	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
+
+		for (auto& storageBuffer : m_StorageBuffer)
 		{
-			m_UniformStorageBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
+			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
 	}
-	void VulkanMaterial::SetInt(const std::string& name, int value)
-	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformStorageBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
-		}
-	}
-	void VulkanMaterial::SetUInt(const std::string& name, uint32_t value)
-	{
-	}
-	void VulkanMaterial::SetVector(const std::string& name, const Vector2& value)
-	{
-		SetVector(name, Vector4(value, 0.0f, 0.0f));
-	}
-	void VulkanMaterial::SetVector(const std::string& name, const Vector3& value)
-	{
-		SetVector(name, Vector4(value, 0.0f));
-	}
-	void VulkanMaterial::SetVector(const std::string& name, const Vector4& value)
-	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformStorageBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
-		}
-	}
+
 	void VulkanMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
 	{
 	}
-	float VulkanMaterial::GetFloat(const std::string& name)
-	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			float value;
-			value = m_UniformStorageBuffer.Read<float>(uniform.Location, uniform.Size);
-			return value;
-		}
-		return 0.0f;
-	}
-	int VulkanMaterial::GetInt(const std::string& name)
-	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			int value;
-			value = m_UniformStorageBuffer.Read<int>(uniform.Location, uniform.Size);
-		}
-		return 0;
-	}
-	uint32_t VulkanMaterial::GetUInt(const std::string& name)
-	{
-		return 0;
-	}
-	Vector4 VulkanMaterial::GetVector(const std::string& name)
-	{
-		ShaderUniform& uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			Vector4 value;
-			value = m_UniformStorageBuffer.Read<Vector4>(uniform.Location, uniform.Size);
-			return value;
-		}
-		return Vector4();
-	}
-	void VulkanMaterial::SetName(const std::string& name)
-	{
-		m_Name = name;
-	}
+
 	void VulkanMaterial::SetShader(const Ref<Shader>& shader)
 	{
 	}
 	void VulkanMaterial::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
 	{
-	}
-	void VulkanMaterial::SetTexture2D(const std::string& name, const Ref<Texture2D>& texture)
-	{
-		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
-		uniform.Texture = texture;
-	}
-	void VulkanMaterial::SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage)
-	{
-		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
-		uniform.Image = storageImage;
-	}
-	ShaderUniform VulkanMaterial::GetUniformByName(const std::string& name) const
-	{
-		for (auto uniform : m_Uniforms)
-		{
-			if (uniform.Name == name)
-				return uniform;
-		}
-		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
-		return ShaderUniform();
-	}
-	ShaderUniformTexture2D& VulkanMaterial::GetUniformTexture2DByName(const std::string& name)
-	{
-		for (int i = 0; i < m_Texture2D.size(); i++)
-		{
-			if (m_Texture2D.at(i).Name == name)
-			{
-				return (m_Texture2D.at(i));
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
-		return ShaderUniformTexture2D();
-	}
-	ShaderUniformStorageImage2D& VulkanMaterial::GetUniformStorageImage2DByName(const std::string& name)
-	{
-		for (int i = 0; i < m_StorageImage2D.size(); i++)
-		{
-			if (m_StorageImage2D.at(i).Name == name)
-			{
-				return m_StorageImage2D.at(i);
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform storage image2d with name {0} in the shader!", name);
-		return ShaderUniformStorageImage2D();
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 #include "GEngine/Renderer/ImageFormat.h"
+#include "GEngine/Renderer/Shader.h"
 namespace GEngine
 {
 	namespace Utils
@@ -10,6 +11,8 @@ namespace GEngine
 
 		GLenum ComputeImage2DFormatToGLInternalFormat(ComputeImage2DFormat format);
 		GLenum ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
+
+		GLenum BlendFactorToGLBlendFactor(BlendFactor factor);
 	}
 }
 

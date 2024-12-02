@@ -36,8 +36,8 @@ namespace GEngine
 
 		virtual void EnableDepthWrite(bool enabled) = 0;
 		virtual void EnableDepthTest(bool enabled) = 0;
-		virtual void SetCull(MaterialCullMode mode) = 0;
-		virtual void SetBlend(MaterialBlendMode mode, uint32_t source, uint32_t dest) = 0;
+		virtual void SetCull(CullMode mode) = 0;
+		virtual void SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest) = 0;
 
 		virtual float GetTime() = 0;
 

@@ -10,20 +10,7 @@
 
 namespace GEngine
 {
-	enum class MaterialCullMode
-	{
-		None	= 0,
-		Front	= 1,
-		Back	= 2
-	};
-	enum class MaterialBlendMode
-	{
-		None		= 0,
-		Alpha		= 1,
-		Additive	= 2,
-		Multiply	= 3,
-		Customized	= 4
-	};
+	
 	class GENGINE_API Material
 	{
 	public:
@@ -37,53 +24,76 @@ namespace GEngine
 
 		virtual void UploadData() = 0;
 
-		virtual MaterialCullMode GetCullMode() = 0;
-		virtual MaterialBlendMode GetBlendMode() = 0;
-		virtual uint32_t GetBlendSourceFactor() = 0;
-		virtual uint32_t GetBlendDestinationFactor() = 0;
-		virtual bool IsOpaque() = 0;
+		virtual CullMode GetCullMode() { return m_CullMode; }
+		virtual BlendMode GetBlendMode() { return m_BlendMode; }
+		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
+		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
+		virtual bool IsOpaque() { return m_BlendSourceFactor == BlendFactor::ONE && m_BlendDestinationFactor == BlendFactor::ZERO; }
 
-		virtual void EnableDepthWrite(bool enabled) = 0;
-		virtual bool GetEnableDepthWrite() = 0;
+		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
+		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
 
-		virtual void EnableDepthTest(bool enabled) = 0;
-		virtual bool GetEnableDepthTest() = 0;
+		virtual void EnableDepthTest(bool enabled)  { m_EnableDepthTest = enabled; }
+		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
 
-		virtual void SetCullMode(MaterialCullMode mode) = 0;
-		virtual void SetBlendMode(MaterialBlendMode mode, uint32_t source, uint32_t dest) = 0;
+		virtual void SetCullMode(CullMode mode);
+		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
 
-		virtual void SetFloat(const std::string& name, float value) = 0;
-		virtual void SetInt(const std::string& name, int value) = 0;
+		virtual void SetFloat(const std::string& name, float value);
+		virtual void SetInt(const std::string& name, int value);
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
-		virtual void SetUInt(const std::string& name, uint32_t value) = 0;
-		virtual void SetVector(const std::string& name, const Vector2& value) = 0;
-		virtual void SetVector(const std::string& name, const Vector3& value) = 0;
-		virtual void SetVector(const std::string& name, const Vector4& value) = 0;
+		virtual void SetUInt(const std::string& name, uint32_t value);
+		virtual void SetVector(const std::string& name, const Vector2& value);
+		virtual void SetVector(const std::string& name, const Vector3& value);
+		virtual void SetVector(const std::string& name, const Vector4& value);
 
-		virtual float GetFloat(const std::string& name) = 0;
-		virtual int GetInt(const std::string& name) = 0;
-		virtual uint32_t GetUInt(const std::string& name) = 0;
-		virtual Vector4 GetVector(const std::string& name) = 0;
+		virtual float GetFloat(const std::string& name);
+		virtual int GetInt(const std::string& name);
+		virtual uint32_t GetUInt(const std::string& name);
+		virtual Vector4 GetVector(const std::string& name);
 
 		virtual Ref<Shader>& GetShader() = 0;
-		virtual std::string GetName() = 0;
+		virtual std::string GetName() { return m_Name; };
 
 		virtual void SetShader(const Ref<Shader>& shader) = 0;
-		virtual void SetName(const std::string& name) = 0;
+		virtual void SetName(const std::string& name) { m_Name = name; }
 
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
 
-		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture) = 0;
-		virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
+		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
+		virtual Ref<Texture2D> GetTexture2D(const std::string& name);
 
-		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage) = 0;
-		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name) = 0;
+		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
+		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name);
 
-		virtual std::vector<ShaderUniform>& GetUniforms() = 0;
-		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds() = 0;
-		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds() = 0;
+		virtual void SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
+		virtual Ref<StorageBuffer> GetStorageBuffer(const std::string& name);
+
+		virtual std::vector<ShaderUniform>& GetUniforms()  { return m_Uniforms; }
+		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds()  { return m_Texture2D; }
+		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds()  { return m_StorageImage2D; }
+		virtual std::vector<ShaderUniformStorageBuffer>& GetStorageBuffers() { return m_StorageBuffer; }
+	protected:
+		ShaderUniform GetUniformByName(const std::string& name) const;
+		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);
+		ShaderUniformStorageImage2D& GetUniformStorageImage2DByName(const std::string& name);
+		ShaderUniformStorageBuffer& GetUniformStorageBufferByName(const std::string& name);
 	protected:
 		bool m_HasChanged = false;
+
+		
+		std::string											m_Name;
+		BlendMode									m_BlendMode = BlendMode::None;
+		CullMode									m_CullMode = CullMode::Back;
+		Buffer												m_UniformsBuffer;
+		std::vector<ShaderUniform>							m_Uniforms;
+		bool												m_EnableDepthWrite = true;
+		bool												m_EnableDepthTest = true;
+		std::vector<ShaderUniformTexture2D>					m_Texture2D;
+		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
+		std::vector<ShaderUniformStorageBuffer>				m_StorageBuffer;
+		BlendFactor											m_BlendSourceFactor = BlendFactor::ONE;
+		BlendFactor											m_BlendDestinationFactor = BlendFactor::ZERO;
 	};
 }
 
