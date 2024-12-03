@@ -70,7 +70,7 @@ namespace GEngine
 				{
 					GE_TRACE("Model: {0} loading", path);
 					m_ModelImporter.LoadMesh(path.string());
-					GE_TRACE("Model: {0} loaded", path);
+
 				}
 			}
 			GE_TRACE("Model Count: {0}", MeshLibrary::GetMeshNames().size());
@@ -85,7 +85,6 @@ namespace GEngine
 				{
 					GE_TRACE("Shader: {0} loading", path);
 					ShaderLibrary::Load(path.string());
-					GE_TRACE("Shader: {0} loaded", path);
 				}
 			}
 			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
@@ -96,7 +95,6 @@ namespace GEngine
 				{
 					GE_TRACE("Shader: {0} loading", path);
 					ShaderLibrary::Load(path.string());
-					GE_TRACE("Shader: {0} loaded", path);
 				}
 			}
 		}
@@ -109,7 +107,7 @@ namespace GEngine
 			public:
 				void OnStart()
 				{
-					GE_TRACE("OnStart");
+					GE_TRACE("TestScript OnStart");
 					GE_TRACE(m_GameObject.GetComponent<Attribute>().m_Name);
 				}
 				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
@@ -123,6 +121,10 @@ namespace GEngine
 				void OnUpdate()
 				{
 					//GE_TRACE("OnUpdate");
+				}
+				void OnRender()
+				{
+					Renderer2D::DrawQuad(Transform(), Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 				}
 			};
 			class SubTestScript : public TestScript
@@ -139,7 +141,7 @@ namespace GEngine
 				}
 				void OnStart()
 				{
-					GE_TRACE("OnStart");
+					GE_TRACE("TestScript2 OnStart");
 					GetComponent<SubTestScript>().i = 20;
 					GE_CRITICAL(GetComponent<SubTestScript>().i);
 				}

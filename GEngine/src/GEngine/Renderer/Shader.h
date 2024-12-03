@@ -11,6 +11,7 @@
 #include <filesystem>
 
 
+
 namespace GEngine
 {
 	enum class ShaderUniformType
@@ -123,83 +124,6 @@ namespace GEngine
 		Ref<StorageBuffer> Buffer;
 	};
 
-	class GENGINE_API Shader
-	{
-	public:
-		virtual ~Shader() = default;
-
-		virtual void Bind() const = 0;
-
-		virtual void SetInt1(const std::string& name, int value) = 0;
-		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
-		virtual void SetFloat1(const std::string& name, float value) = 0;
-		virtual void SetFloat2(const std::string& name, const Vector2& value) = 0;
-		virtual void SetFloat3(const std::string& name, const Vector3& value) = 0;
-		virtual void SetFloat4(const std::string& name, const Vector4& value) = 0;
-		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
-		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
-
-		virtual BlendMode GetBlendMode() { return m_BlendMode; }
-		virtual CullMode GetCullMode() { return m_CullMode; }
-		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
-		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
-		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
-		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
-
-		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
-		virtual const std::string& GetShaderName() const  { return m_Name; }
-		virtual void SetShaderName(std::string name)  { m_Name = name; }
-		virtual std::vector<ShaderUniformTexture2D> GetTexture2D()  { return m_Texture2DCache; }
-		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
-		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
-		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
-
-		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
-		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
-
-		static Ref<Shader> Create(const std::string& path);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
-	protected:
-		virtual void SetMacroBool(std::string& source) = 0;
-		virtual void SetMacroExp(std::string& source) = 0;
-	protected:
-		// slot 从20开始
-		static const uint32_t s_SlotOffset = 20;
-	protected:
-		std::string											m_FilePath;
-		std::string											m_Name;
-		std::vector<ShaderUniform>							m_UniformCache;
-		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
-		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
-		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
-		bool												m_EnableDepthWrite = true;
-		bool												m_EnableDepthTest = true;
-		BlendFactor									m_BlendSourceFactor = BlendFactor::ONE;
-		BlendFactor									m_BlendDestinationFactor = BlendFactor::ZERO;
-		BlendMode											m_BlendMode = BlendMode::None;
-		CullMode													m_CullMode = CullMode::Back;
-	};
-
-	class GENGINE_API ShaderLibrary
-	{
-	public:
-		static std::string Add(Ref<Shader>& shader);
-		static Ref<Shader> Load(const std::string& path);
-		static Ref<Shader> Get(const std::string& name);
-		static Ref<Shader> GetShader(const std::string& name) { return Get(name);}
-		static size_t Size() { return m_Shaders.size(); }
-		static std::vector<std::string> GetShaderNames();
-		static bool Exists(const std::string& name) { return m_Shaders.find(name) != m_Shaders.end(); }
-	private:
-		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
-	};
-
-
-
-
-
-
-
 	namespace Utils
 	{
 		static std::string ToLower(std::string string)
@@ -273,7 +197,7 @@ namespace GEngine
 			return result;
 		}
 
-		
+
 		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
 		{
 			if (ToLower(type) == "int")				return ShaderUniformType::Int;
@@ -343,5 +267,101 @@ namespace GEngine
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
 		}
+
+		static std::string ReadFile(const std::string& path)
+		{
+			std::string src;
+			std::ifstream file(path, std::ios::in | std::ios::binary);
+
+			GE_CORE_ASSERT(file, " file " + path + " not found");
+
+			file.seekg(0, std::ios::end);
+			src.resize(file.tellg());
+			file.seekg(0, std::ios::beg);
+			file.read(&src[0], src.size());
+			file.close();
+			return src;
+		}
 	}
+
+	class GENGINE_API Shader
+	{
+	public:
+		virtual ~Shader() = default;
+
+		virtual void Bind() const = 0;
+
+		virtual void SetInt1(const std::string& name, int value) = 0;
+		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
+		virtual void SetFloat1(const std::string& name, float value) = 0;
+		virtual void SetFloat2(const std::string& name, const Vector2& value) = 0;
+		virtual void SetFloat3(const std::string& name, const Vector3& value) = 0;
+		virtual void SetFloat4(const std::string& name, const Vector4& value) = 0;
+		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
+		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
+
+		virtual BlendMode GetBlendMode() { return m_BlendMode; }
+		virtual CullMode GetCullMode() { return m_CullMode; }
+		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
+		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
+		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
+		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
+
+		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
+		virtual const std::string& GetShaderName() const  { return m_Name; }
+		virtual void SetShaderName(std::string name)  { m_Name = name; }
+		virtual std::vector<ShaderUniformTexture2D> GetTexture2D()  { return m_Texture2DCache; }
+		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
+		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
+		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
+
+		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
+		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
+
+		static Ref<Shader> Create(const std::string& path);
+		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+	protected:
+		
+		virtual void SetMacroBool(std::string& source) = 0;
+		virtual void SetMacroExp(std::string& source) = 0;
+	protected:
+		// slot 从40开始
+		static const uint32_t s_SlotOffset = 40;
+	protected:
+		std::string											m_FilePath;
+		std::string											m_Name;
+		std::vector<ShaderUniform>							m_UniformCache;
+		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
+		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
+		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
+		bool												m_EnableDepthWrite = true;
+		bool												m_EnableDepthTest = true;
+		BlendFactor									m_BlendSourceFactor = BlendFactor::ONE;
+		BlendFactor									m_BlendDestinationFactor = BlendFactor::ZERO;
+		BlendMode											m_BlendMode = BlendMode::None;
+		CullMode													m_CullMode = CullMode::Back;
+		
+	};
+
+	class GENGINE_API ShaderLibrary
+	{
+	public:
+		static std::string Add(Ref<Shader>& shader);
+		static Ref<Shader> Load(const std::string& path);
+		static Ref<Shader> Get(const std::string& name);
+		static Ref<Shader> GetShader(const std::string& name) { return Get(name);}
+		static size_t Size() { return m_Shaders.size(); }
+		static std::vector<std::string> GetShaderNames();
+		static bool Exists(const std::string& name) { return m_Shaders.find(name) != m_Shaders.end(); }
+	private:
+		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+	};
+
+
+
+
+
+
+
+	
 }

@@ -89,6 +89,14 @@ namespace GEngine
 			}
 			m_TempAddScripts.clear();
 		}
+
+		void OnRender();
+		void OnAwake();
+		void OnStart();
+		void OnUpdate();
+		void OnPhysicsUpdate();
+		void OnLateUpdate();
+		void OnDestroy();
 	public:
 		std::vector<std::pair<ScriptableObject*, ScriptableObject* (*)()>>		m_Scripts;
 	private:

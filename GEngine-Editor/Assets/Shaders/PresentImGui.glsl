@@ -7,6 +7,7 @@ sampler2D GE_PRESENT_IMGUI;
 
 #Type vertex
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
 struct VertexOutput
@@ -22,25 +23,16 @@ void main()
 
 #Type fragment
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
 struct VertexOutput
 {
 	vec2 uv;
-	
 };
 layout (location = 0) in VertexOutput IN;
-layout (binding = 20) uniform sampler2D GE_PRESENT_IMGUI;
+layout (binding = 40) uniform sampler2D GE_PRESENT_IMGUI;
 
 
-float floatToSrgb(float value) {
-    const float inv_12_92 = 0.0773993808;
-    return value <= 0.04045
-       ? value * inv_12_92 
-       : pow((value + 0.055) / 1.055, 2.4);
-}
-vec3 vec3ToSrgb(vec3 value) {
-    return vec3(floatToSrgb(value.x), floatToSrgb(value.y), floatToSrgb(value.z));
-}
 
 void main()
 {
@@ -50,5 +42,5 @@ void main()
 #endif
 	vec4 imgui = texture(GE_PRESENT_IMGUI, newUV);
 	o_color = imgui;
-	o_color.rgb = vec3ToSrgb(o_color.rgb);
+	o_color.rgb = Vec3ToSrgb(o_color.rgb);
 }

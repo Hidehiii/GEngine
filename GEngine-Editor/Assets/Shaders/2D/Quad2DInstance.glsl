@@ -1,4 +1,3 @@
-
 #Name Quad2DInstance
 
 #Properties
@@ -12,9 +11,9 @@ sampler2D Tex_5;
 sampler2D Tex_6;
 sampler2D Tex_7;
 
-
 #Type vertex
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec2 i_UV;
 layout(location = 2) in vec2 i_Tiling;
@@ -24,13 +23,7 @@ layout(location = 5) in vec4 i_ModelMatrixRow_1;
 layout(location = 6) in vec4 i_ModelMatrixRow_2;
 layout(location = 7) in vec4 i_ModelMatrixRow_3;
 layout(location = 8) in vec4 i_ModelMatrixRow_4;
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
+
 struct VertexOutput
 {
 	vec2 UV;
@@ -54,6 +47,7 @@ void main()
 
 #Type fragment
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput
 {
@@ -63,14 +57,14 @@ struct VertexOutput
 };
 layout (location = 0) in VertexOutput IN;
 layout (location = 3) in flat int v_TexIndex;
-layout (binding = 20) uniform sampler2D Tex_0;
-layout (binding = 21) uniform sampler2D Tex_1;
-layout (binding = 22) uniform sampler2D Tex_2;
-layout (binding = 23) uniform sampler2D Tex_3;
-layout (binding = 24) uniform sampler2D Tex_4;
-layout (binding = 25) uniform sampler2D Tex_5;
-layout (binding = 26) uniform sampler2D Tex_6;
-layout (binding = 27) uniform sampler2D Tex_7;
+layout (binding = 40) uniform sampler2D Tex_0;
+layout (binding = 41) uniform sampler2D Tex_1;
+layout (binding = 42) uniform sampler2D Tex_2;
+layout (binding = 43) uniform sampler2D Tex_3;
+layout (binding = 44) uniform sampler2D Tex_4;
+layout (binding = 45) uniform sampler2D Tex_5;
+layout (binding = 46) uniform sampler2D Tex_6;
+layout (binding = 47) uniform sampler2D Tex_7;
 void main()
 {
 	o_Color = vec4(1.0f, 1.0f, 1.0f, 1.0f);

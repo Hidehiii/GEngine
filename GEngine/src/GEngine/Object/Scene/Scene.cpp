@@ -194,7 +194,7 @@ namespace GEngine
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnAwake);
 		// Awake Scripts
-		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
+		/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
 				nativeScript.Excute();
 				for (auto& script : nativeScript.m_Scripts)
@@ -207,7 +207,7 @@ namespace GEngine
 					script.first->OnAwake();
 				}
 				nativeScript.Excute();
-			});
+			});*/
 		// Add physics world 2D
 		m_PhysicsWorld2D = CreateRef<Physics2DWorld>(Vector2(0.0f, -9.8f), this);
 		// Add physical contact listener 2D
@@ -275,7 +275,7 @@ namespace GEngine
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnStart);
 		// Start Scripts
-		m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
+		/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 			{
 				for (auto& script : nativeScript.m_Scripts)
 				{
@@ -288,7 +288,7 @@ namespace GEngine
 					script.first->OnStart();
 				}
 				nativeScript.Excute();
-			});
+			});*/
 
 		// Start timerwheel
 		m_PhysicsTimerWheel->Start();
@@ -312,7 +312,7 @@ namespace GEngine
 				}
 
 				CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnPhysicsUpdate);
-				m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
+				/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 					{
 						for (auto& script : nativeScript.m_Scripts)
 						{
@@ -326,8 +326,8 @@ namespace GEngine
 							script.first->OnPhysicsUpdate();
 						}
 						nativeScript.Excute();
-						
-					});
+
+					});*/
 			});
 		
 	}
@@ -338,7 +338,7 @@ namespace GEngine
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnUpdate);
 		// Update Scripts
 		{
-			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
+			/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 				{
 					for (auto& script : nativeScript.m_Scripts)
 					{
@@ -352,7 +352,7 @@ namespace GEngine
 						script.first->OnUpdate();
 					}
 					nativeScript.Excute();
-				});
+				});*/
 		}
 	}
 	// 场景中的所有对象在每一帧结束时调用
@@ -361,7 +361,7 @@ namespace GEngine
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnLateUpdate);
 		// Update Scripts
 		{
-			m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
+			/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
 				{
 					for (auto& script : nativeScript.m_Scripts)
 					{
@@ -375,7 +375,7 @@ namespace GEngine
 						script.first->OnLateUpdate();
 					}
 					nativeScript.Excute();
-				});
+				});*/
 		}
 	}
 	// 场景中的所有对象在每一帧结束后调用
@@ -386,19 +386,7 @@ namespace GEngine
 			auto nativeScript = object.TryGetComponent<NativeScript>();
 			if (nativeScript)
 			{
-				for(auto& script : nativeScript->m_Scripts)
-				{
-					if (script.first == nullptr)
-					{
-						script.first = script.second();
-						script.first->m_GameObject = object;
-						script.first->OnAwake();
-						script.first->OnStart();
-					}
-					script.first->OnDestroy();
-					delete script.first;
-					script.first = nullptr;
-				}
+				nativeScript->OnDestroy();
 			}
 			m_Registry.destroy(object);
 		}
@@ -424,13 +412,6 @@ namespace GEngine
 		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
-	}
-	void Scene::OnRenderOIT()
-	{
-		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
-		// oit 需要depthTest on 和 depthWrite off
-
-		auto view = m_Registry.view<MeshRenderer>();
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{

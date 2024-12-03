@@ -39,18 +39,18 @@ layout(std140, binding = 2) uniform TIME
 	vec4 GE_TIME;
 };
 
-layout (binding = 20, r32ui) uniform uimage2D headIndexImage;
+layout (binding = 40, r32ui) uniform uimage2D headIndexImage;
 struct Node
 {
 	vec4 color;
 	float depth;
 	uint next;	
 };
-layout (binding = 21) buffer LinkedListSBO
+layout (binding = 41) buffer LinkedListSBO
 {
 	Node nodes[];	
 };
-layout (binding = 22) buffer GeometrySBO
+layout (binding = 42) buffer GeometrySBO
 {
 	uint count;
     uint maxNodeCount;

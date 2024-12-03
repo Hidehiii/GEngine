@@ -11,30 +11,10 @@ float p2;
 
 #Type vertex
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
 layout(location = 2) in vec4 i_normal;
-
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
-layout(std140, binding = 2) uniform TIME
-{
-	vec4 GE_TIME;
-};
-layout(std140, binding = 3) uniform MODEL
-{
-	mat4 GE_MATRIX_M;
-};
-layout(std140, binding = 4) uniform LIGHT
-{
-	vec4 GE_MAIN_LIGHT_DIRECTION;
-	vec4 GE_MAIN_LIGHT_COLOR;
-};
 struct VertexOutput
 {
 	vec4 color;
@@ -51,13 +31,6 @@ void main()
 #Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
 layout(std140, binding = 0) uniform MATERIAL
 {
 	vec4 p0;

@@ -2,12 +2,45 @@
 #include "OpenGLShader.h"
 #include "GEngine/Renderer/Material.h"
 #include <glad/glad.h>
-
-#include <filesystem>
-
 #include <shaderc/shaderc.hpp>
 #include <SPIRVCross/spirv_cross.hpp>
 #include <SPIRVCross/spirv_glsl.hpp>
+
+
+class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
+{
+	shaderc_include_result* GetInclude(
+		const char* requested_source,
+		shaderc_include_type type,
+		const char* requesting_source,
+		size_t include_depth) override
+	{
+		const std::string name = std::string(requested_source);
+		const std::string contents = GEngine::Utils::ReadFile(name);
+
+		auto container = new std::array<std::string, 2>;
+		(*container)[0] = name;
+		(*container)[1] = contents;
+
+		auto data = new shaderc_include_result;
+
+		data->user_data = container;
+
+		data->source_name = (*container)[0].data();
+		data->source_name_length = (*container)[0].size();
+
+		data->content = (*container)[1].data();
+		data->content_length = (*container)[1].size();
+
+		return data;
+	};
+
+	void ReleaseInclude(shaderc_include_result* data) override
+	{
+		delete static_cast<std::array<std::string, 2>*>(data->user_data);
+		delete data;
+	};
+};
 
 namespace GEngine
 {
@@ -90,7 +123,7 @@ namespace GEngine
 		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();
 
-		std::string src = ReadFile(path);
+		std::string src = Utils::ReadFile(path);
 		auto shaderSources = PreProcess(src);
 		//Compile(shaderSources);
 		//CompileOrGetVulkanBinaries(shaderSources);
@@ -297,20 +330,6 @@ namespace GEngine
 			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
 		}
 	}
-	std::string OpenGLShader::ReadFile(const std::string& path)
-	{
-		std::string src;
-		std::ifstream file(path, std::ios::in | std::ios::binary);
-
-		GE_CORE_ASSERT(file, "Shader file " + path +" not found");
-
-		file.seekg(0, std::ios::end);
-		src.resize(file.tellg());
-		file.seekg(0, std::ios::beg);
-		file.read(&src[0], src.size());
-		file.close();
-		return src;
-	}
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
 		std::unordered_map<GLenum, std::string> shaderSources;
@@ -391,7 +410,7 @@ namespace GEngine
 				depthMaskProp.erase(index, 1);
 			}
 			m_EnableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
-			GE_CORE_TRACE("DepthMask: {0}", m_EnableDepthWrite);
+			GE_CORE_TRACE("DepthWrite: {0}", m_EnableDepthWrite);
 		}
 
 		// find DepthTest
@@ -593,8 +612,8 @@ namespace GEngine
 			}
 		}
 
-		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
+		/*for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);*/
 	}
 
 	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<GLenum, std::string>& shaderSources)
@@ -603,6 +622,7 @@ namespace GEngine
 
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
+		options.SetIncluder(std::make_unique<ShaderIncluder>());
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 		const bool optimize = false;
 		if (optimize)
@@ -631,7 +651,7 @@ namespace GEngine
 			else
 			{
 				SetMacroBool(source);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ASSERT(false, module.GetErrorMessage());
@@ -650,8 +670,8 @@ namespace GEngine
 			}
 		}
 
-		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
+		/*for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);*/
 	}
 
 	void OpenGLShader::CreateProgram()

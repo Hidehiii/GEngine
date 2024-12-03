@@ -5,15 +5,9 @@
 
 #Type vertex
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
 struct VertexOutput
 {
 	vec4 color;

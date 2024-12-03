@@ -37,7 +37,6 @@ namespace GEngine
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;
 	private:
-		std::string ReadFile(const std::string& path);
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 		void Compile(std::unordered_map<GLenum, std::string>& source);
 
