@@ -12,6 +12,34 @@
 namespace GEngine
 {
 	template<typename... Component>
+	static void CallComponentFunction(GameObject& obj, ComponentFunction function)
+	{
+		([&]()
+			{
+				auto component = obj.TryGetComponent<Component>();
+				if (component)
+				{
+					switch (function)
+					{
+					case ComponentFunction::OnAwake:		component.OnAwake(); break;
+					case ComponentFunction::OnStart:		component.OnStart(); break;
+					case ComponentFunction::OnUpdate:		component.OnUpdate(); break;
+					case ComponentFunction::OnPhysicsUpdate:component.OnPhysicsUpdate(); break;
+					case ComponentFunction::OnLateUpdate:	component.OnLateUpdate(); break;
+					case ComponentFunction::OnDestroy:		component.OnDestroy(); break;
+					case ComponentFunction::OnRender:		component.OnRender(); break;
+					default:
+						break;
+					}
+				}
+			}(), ...);
+	}
+	template<typename... Component>
+	static void CallComponentFunction(ComponentGroup<Component...>, GameObject& obj, ComponentFunction function)
+	{
+		CallComponentFunction<Component...>(obj, function);
+	}
+	template<typename... Component>
 	static void CallComponentFunction(entt::registry& reg, ComponentFunction function)
 	{
 		([&]()
@@ -193,21 +221,6 @@ namespace GEngine
 		m_PhysicsTimerWheel =  CreateRef<PhysicsTimerWheel>(10, 1000 * Time::GetFixedTime());
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnAwake);
-		// Awake Scripts
-		/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
-			{
-				nativeScript.Excute();
-				for (auto& script : nativeScript.m_Scripts)
-				{
-					if (script.first == nullptr)
-					{
-						script.first = script.second();
-						script.first->m_GameObject = GameObject(entity, this);
-					}
-					script.first->OnAwake();
-				}
-				nativeScript.Excute();
-			});*/
 		// Add physics world 2D
 		m_PhysicsWorld2D = CreateRef<Physics2DWorld>(Vector2(0.0f, -9.8f), this);
 		// Add physical contact listener 2D
@@ -274,21 +287,6 @@ namespace GEngine
 	{
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnStart);
-		// Start Scripts
-		/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
-			{
-				for (auto& script : nativeScript.m_Scripts)
-				{
-					if (script.first == nullptr)
-					{
-						script.first = script.second();
-						script.first->m_GameObject = GameObject(entity, this);
-						script.first->OnAwake();
-					}
-					script.first->OnStart();
-				}
-				nativeScript.Excute();
-			});*/
 
 		// Start timerwheel
 		m_PhysicsTimerWheel->Start();
@@ -312,22 +310,6 @@ namespace GEngine
 				}
 
 				CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnPhysicsUpdate);
-				/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
-					{
-						for (auto& script : nativeScript.m_Scripts)
-						{
-							if (script.first == nullptr)
-							{
-								script.first = script.second();
-								script.first->m_GameObject = GameObject(entity, this);
-								script.first->OnAwake();
-								script.first->OnStart();
-							}
-							script.first->OnPhysicsUpdate();
-						}
-						nativeScript.Excute();
-
-					});*/
 			});
 		
 	}
@@ -336,47 +318,11 @@ namespace GEngine
 	void Scene::OnUpdate()
 	{
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnUpdate);
-		// Update Scripts
-		{
-			/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
-				{
-					for (auto& script : nativeScript.m_Scripts)
-					{
-						if (script.first == nullptr)
-						{
-							script.first = script.second();
-							script.first->m_GameObject = GameObject(entity, this);
-							script.first->OnAwake();
-							script.first->OnStart();
-						}
-						script.first->OnUpdate();
-					}
-					nativeScript.Excute();
-				});*/
-		}
 	}
 	// 场景中的所有对象在每一帧结束时调用
 	void Scene::OnLateUpdate()
 	{
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnLateUpdate);
-		// Update Scripts
-		{
-			/*m_Registry.view<NativeScript>().each([=](auto entity, NativeScript& nativeScript)
-				{
-					for (auto& script : nativeScript.m_Scripts)
-					{
-						if (script.first == nullptr)
-						{
-							script.first = script.second();
-							script.first->m_GameObject = GameObject(entity, this);
-							script.first->OnAwake();
-							script.first->OnStart();
-						}
-						script.first->OnLateUpdate();
-					}
-					nativeScript.Excute();
-				});*/
-		}
 	}
 	// 场景中的所有对象在每一帧结束后调用
 	void Scene::OnEndFrame()
@@ -412,6 +358,14 @@ namespace GEngine
 		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
+		// 透明排序可能要
+		//TODO
+		auto e = m_Registry.view<Attribute>();
+		std::vector<entt::entity> entities;
+		for (auto it = e.begin(); it != e.end(); it++)
+		{
+			entities.push_back(*it);
+		}
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{

@@ -5,7 +5,7 @@
 
 namespace GEngine
 {
-
+	Camera Renderer::s_RenderTargetCamera = Camera();
 	struct CameraData
 	{
 		Matrix4x4 GE_MATRIX_V;
@@ -100,6 +100,8 @@ namespace GEngine
 		SetTimeUniforms();
 		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 		Renderer2D::BeginScene();
+
+		s_RenderTargetCamera = camera;
 	}
 	void Renderer::BeginScene(Camera& camera)
 	{
@@ -108,6 +110,7 @@ namespace GEngine
 		SetTimeUniforms();
 		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 		Renderer2D::BeginScene();
+		s_RenderTargetCamera = camera;
 	}
 	void Renderer::EndScene()
 	{
