@@ -26,7 +26,7 @@ void Sandbox2D::OnAttach()
 	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 	fspec.Width = 720;
 	fspec.Height = 720;
-	fspec.Samples = 4;
+	fspec.Samples = 1;
 	m_OIT_1 = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);

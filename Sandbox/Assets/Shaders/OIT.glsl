@@ -65,6 +65,7 @@ void main()
     while (nodeIdx != 0xffffffff && count < 4)
     {
         fragments[count] = nodes[nodeIdx];
+        nodes[nodeIdx].next = -1;
         nodeIdx = fragments[count].next;
         ++count;
     }
