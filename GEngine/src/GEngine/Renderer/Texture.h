@@ -47,6 +47,7 @@ namespace GEngine
 			Front	= 5  // -Z
 		};
 		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) = 0;
+		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) = 0;
 
 		static Ref<CubeMap> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,

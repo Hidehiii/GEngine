@@ -24,7 +24,7 @@ namespace GEngine
 			0,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 	}
 
 	VulkanStorageImage2D::~VulkanStorageImage2D()

@@ -20,8 +20,8 @@ namespace GEngine
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDvice);
 		void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, uint32_t arrayLayers, VkImageCreateFlags flags, VkImage& outImage, VkDeviceMemory& imageMemory);
-		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask, VkImageView& outImageView);
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
+		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, VkImageAspectFlags aspectMask, VkImageView& outImageView);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount = 1, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0, uint32_t baseArrayLayer = 0, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample = VK_SAMPLE_COUNT_1_BIT);
@@ -36,6 +36,7 @@ namespace GEngine
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size);
 		VkBlendFactor BlendFactorToVulkanBlendFactor(BlendFactor factor);
 		VkCullModeFlagBits CullModeToVkCullMode(CullMode mode);
+		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer);
 	}
 	
 }

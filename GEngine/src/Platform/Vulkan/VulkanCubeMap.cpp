@@ -25,7 +25,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 		CreateSampler();
 	}
 
@@ -66,7 +66,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 		CreateSampler();
 		LoadImageData();
 	}
@@ -116,6 +116,10 @@ namespace GEngine
 
 		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
+	}
+
+	void VulkanCubeMap::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face)
+	{
 	}
 
 	void VulkanCubeMap::Bind(const uint32_t slot)

@@ -15,6 +15,7 @@ namespace GEngine
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) override;
+		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) override;
 		virtual void Bind(const uint32_t slot = 0) override;
 		virtual std::string GetPath() const override;
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanCubeMap&)other).m_Image; };

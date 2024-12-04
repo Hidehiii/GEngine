@@ -78,12 +78,12 @@ namespace GEngine
 			vkBindImageMemory(device, outImage, imageMemory, 0);
 		}
 
-		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask, VkImageView& outImageView)
+		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, VkImageAspectFlags aspectMask, VkImageView& outImageView)
 		{
 			VkImageViewCreateInfo                           createInfo{};
 			createInfo.sType								= VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			createInfo.image								= image;
-			createInfo.viewType								= VK_IMAGE_VIEW_TYPE_2D;
+			createInfo.viewType								= viewType;
 			createInfo.format								= format;
 			createInfo.components.r							= VK_COMPONENT_SWIZZLE_IDENTITY;
 			createInfo.components.g							= VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -97,7 +97,7 @@ namespace GEngine
 
 			VK_CHECK_RESULT(vkCreateImageView(device, &createInfo, nullptr, &outImageView));
 		}
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkFlags aspectFlag)
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag)
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
@@ -112,7 +112,7 @@ namespace GEngine
 			barrier.subresourceRange.baseMipLevel	= 0;
 			barrier.subresourceRange.levelCount		= 1;
 			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount		= 1;
+			barrier.subresourceRange.layerCount		= layerCount;
 			barrier.srcAccessMask					= 0; // TODO
 			barrier.dstAccessMask					= 0; // TODO
 
@@ -519,6 +519,38 @@ namespace GEngine
 			default:
 				break;
 			}
+		}
+		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer)
+		{
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
+			VkImageSubresourceLayers	srcLayers{};
+			srcLayers.aspectMask			= srcAspectFlag;
+			srcLayers.mipLevel				= srcMipLevel;
+			srcLayers.baseArrayLayer		= srcBaseArrayLayer;
+			srcLayers.layerCount			= 1;
+
+			VkImageSubresourceLayers	dstLayers{};
+			dstLayers.aspectMask		= dstAspectFlag;
+			dstLayers.mipLevel			= dstMipLevel;
+			dstLayers.baseArrayLayer	= dstBaseArrayLayer;
+			dstLayers.layerCount		= 1;
+
+			VkImageCopy				region{};
+			region.srcSubresource	= srcLayers;
+			region.srcOffset		= { 0, 0, 0 };
+			region.dstSubresource	= dstLayers;
+			region.dstOffset		= { 0, 0, 0 };
+			region.extent			= { width, height, 1 };
+
+			vkCmdCopyImage(commandBuffer,
+				src,
+				srcLayout,
+				dst,
+				dstLayout,
+				1,
+				&region);
+
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
     }
 }

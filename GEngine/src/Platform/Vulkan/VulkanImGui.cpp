@@ -179,7 +179,7 @@ namespace GEngine {
 			0,
 			s_ColorImage,
 			s_ColorImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, s_ColorImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, s_ColorImageView);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

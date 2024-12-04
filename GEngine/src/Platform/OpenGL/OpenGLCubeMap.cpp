@@ -3,6 +3,7 @@
 #include "stb_image.h"
 #include <glad/glad.h>
 #include "OpenGLUtils.h"
+#include "OpenGLTexture2D.h"
 
 namespace GEngine
 {
@@ -63,6 +64,18 @@ namespace GEngine
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 		glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
+	}
+	void OpenGLCubeMap::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face)
+	{
+		GLint currentFbo;
+		GLuint fbo;
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
+		glCreateFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetRendererID(), 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+		glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, 0, 0, 0, 0, 0, width, height);
+		glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
 	}
 	void OpenGLCubeMap::Bind(const uint32_t slot)
 	{
