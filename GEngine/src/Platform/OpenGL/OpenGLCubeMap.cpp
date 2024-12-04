@@ -24,5 +24,11 @@ namespace GEngine
 	{
 		glDeleteTextures(1, &m_RendererID);
 	}
+	void OpenGLCubeMap::SetData(void* data, uint32_t size)
+	{
+	}
+	void OpenGLCubeMap::SetData(void* data, uint32_t size, CubeMapFace face)
+	{
+	}
 }
 

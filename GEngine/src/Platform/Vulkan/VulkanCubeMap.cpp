@@ -42,6 +42,20 @@ namespace GEngine
 		vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
 	}
 
+	void VulkanCubeMap::SetData(void* data, uint32_t size)
+	{
+	}
+
+	void VulkanCubeMap::SetData(void* data, uint32_t size, CubeMapFace face)
+	{
+	}
+
+	void VulkanCubeMap::SetImageLayout(VkImageLayout newLayout)
+	{
+		Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);
+		m_ImageLayout = newLayout;
+	}
+
 	void VulkanCubeMap::CreateSampler()
 	{
 		VkSamplerCreateInfo             samplerInfo{};
