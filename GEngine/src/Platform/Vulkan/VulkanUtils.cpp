@@ -197,7 +197,7 @@ namespace GEngine
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkFlags aspectFlag)
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag)
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
@@ -207,8 +207,8 @@ namespace GEngine
 			region.bufferImageHeight			= 0;
 
 			region.imageSubresource.aspectMask	= aspectFlag;
-			region.imageSubresource.mipLevel	= 0;
-			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.mipLevel	= mipLevel;
+			region.imageSubresource.baseArrayLayer = baseArrayLayer;
 			region.imageSubresource.layerCount	= 1;
 
 			region.imageOffset = { 0, 0, 0 };

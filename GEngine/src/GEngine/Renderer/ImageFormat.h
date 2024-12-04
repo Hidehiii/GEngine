@@ -5,9 +5,22 @@ namespace GEngine
 {
 	enum class RenderImage2DFormat
 	{
+		None,
 		RGBA8F,
 		RGB8F,
 	};
+
+	static uint32_t RenderImage2DFormatChannelSize(RenderImage2DFormat format)
+	{
+		switch (format)
+		{
+		case RenderImage2DFormat::None: return 0;
+		case RenderImage2DFormat::RGBA8F: return 4;
+		case RenderImage2DFormat::RGB8F: return 3;
+		default:
+			break;
+		}
+	}
 
 	enum class ComputeImage2DFormat
 	{

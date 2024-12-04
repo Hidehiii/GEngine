@@ -12,7 +12,7 @@ namespace GEngine
 		virtual ~Texture() = default;
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void SetData(const void* data, uint32_t size) = 0;
 		virtual void Bind(const uint32_t slot = 0) = 0;
 		virtual std::string GetPath() const = 0;
 
@@ -39,14 +39,14 @@ namespace GEngine
 	public:
 		enum class CubeMapFace
 		{
-			Right	= 0,
-			Left	= 1,
-			Top		= 2,
-			Buttom	= 3,
-			Back	= 4,
-			Front	= 5
+			Right	= 0, // +X
+			Left	= 1, // -X
+			Top		= 2, // +Y
+			Buttom	= 3, // -Y
+			Back	= 4, // +Z
+			Front	= 5  // -Z
 		};
-		virtual void SetData(void* data, uint32_t size, CubeMapFace face) = 0;
+		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) = 0;
 
 		static Ref<CubeMap> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,

@@ -12,11 +12,15 @@ namespace GEngine
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual void SetData(void* data, uint32_t size) override;
-		virtual void SetData(void* data, uint32_t size, CubeMapFace face) override;
+		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) override;
+		virtual void Bind(const uint32_t slot = 0) override;
+		virtual std::string GetPath() const override;
 		uint32_t GetRendererID() const { return m_RendererID; }
 
 		virtual bool operator==(const Texture& other) const override { return m_RendererID == ((OpenGLCubeMap&)other).m_RendererID; };
+	private:
+		void LoadImageData();
 	private:
 		std::vector<std::string>		m_Path;
 		uint32_t m_RendererID;

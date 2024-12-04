@@ -13,8 +13,10 @@ namespace GEngine
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual void SetData(void* data, uint32_t size) override;
-		virtual void SetData(void* data, uint32_t size, CubeMapFace face) override;
+		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) override;
+		virtual void Bind(const uint32_t slot = 0) override;
+		virtual std::string GetPath() const override;
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanCubeMap&)other).m_Image; };
 
 		const VkSampler						GetSampler() { return m_Sampler; }
@@ -24,6 +26,7 @@ namespace GEngine
 		void SetImageLayout(VkImageLayout newLayout);
 	private:
 		void CreateSampler();
+		void LoadImageData();
 	private:
 		std::vector<std::string>		m_Path;
 		RenderImage2DFormat				m_Format;

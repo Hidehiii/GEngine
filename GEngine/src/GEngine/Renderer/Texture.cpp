@@ -86,10 +86,10 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<CubeMap>(width, height, format);
+			return CreateRef<OpenGLCubeMap>(width, height, format);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<CubeMap>(width, height, format);
+			return CreateRef<VulkanCubeMap>(width, height, format);
 		}
 		}
 
@@ -105,10 +105,10 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
 		}
 		}
 

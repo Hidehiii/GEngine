@@ -113,7 +113,7 @@ namespace GEngine
         vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
     }
 
-    void VulkanTexture2D::SetData(void* data, uint32_t size)
+    void VulkanTexture2D::SetData(const void* data, uint32_t size)
     {
 
         VkBuffer    buffer;
