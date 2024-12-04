@@ -410,4 +410,21 @@ namespace GEngine
         return (float*)glm::value_ptr(v);
     }
 
+    float Math::Distance(const Vector2& v1, const Vector2& v2)
+    {
+        return glm::distance(v1, v2);
+    }
+
+    float Math::Distance(const Vector3& v1, const Vector3& v2)
+    {
+        return glm::distance(v1, v2);
+    }
+
+    float Math::Distance(const Vector4& v1, const Vector4& v2)
+    {
+        return glm::distance(v1, v2);
+    }
+
+
+
 }

@@ -21,13 +21,13 @@ namespace GEngine
 				{
 					switch (function)
 					{
-					case ComponentFunction::OnAwake:		component.OnAwake(); break;
-					case ComponentFunction::OnStart:		component.OnStart(); break;
-					case ComponentFunction::OnUpdate:		component.OnUpdate(); break;
-					case ComponentFunction::OnPhysicsUpdate:component.OnPhysicsUpdate(); break;
-					case ComponentFunction::OnLateUpdate:	component.OnLateUpdate(); break;
-					case ComponentFunction::OnDestroy:		component.OnDestroy(); break;
-					case ComponentFunction::OnRender:		component.OnRender(); break;
+					case ComponentFunction::OnAwake:		component->OnAwake(); break;
+					case ComponentFunction::OnStart:		component->OnStart(); break;
+					case ComponentFunction::OnUpdate:		component->OnUpdate(); break;
+					case ComponentFunction::OnPhysicsUpdate:component->OnPhysicsUpdate(); break;
+					case ComponentFunction::OnLateUpdate:	component->OnLateUpdate(); break;
+					case ComponentFunction::OnDestroy:		component->OnDestroy(); break;
+					case ComponentFunction::OnRender:		component->OnRender(); break;
 					default:
 						break;
 					}
@@ -352,19 +352,31 @@ namespace GEngine
 			m_PhysicsTimerWheel->Continue();
 		}
 	}
+
+
+	bool ObjSort(GameObject& a, GameObject& b)
+	{
+		return Math::Distance(Renderer::GetRenderTargetCameraPosition(), a.GetComponent<Transform>().m_Position) > 
+			Math::Distance(Renderer::GetRenderTargetCameraPosition(), b.GetComponent<Transform>().m_Position);
+	}
 	// 渲染场景中的所有对象
 	void Scene::OnRender()
 	{
 		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
 
-		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
-		// 透明排序可能要
-		//TODO
+		//CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
+		// 距离排序可能要
+		// TODO
 		auto e = m_Registry.view<Attribute>();
-		std::vector<entt::entity> entities;
+		std::vector<GameObject> entities;
 		for (auto it = e.begin(); it != e.end(); it++)
 		{
-			entities.push_back(*it);
+			entities.push_back({ *it, this });
+		}
+		std::sort(entities.begin(), entities.end(), ObjSort);
+		for (auto it = entities.begin(); it != entities.end(); it++)
+		{
+			CallComponentFunction(AllComponents{}, *it, ComponentFunction::OnRender);
 		}
 	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

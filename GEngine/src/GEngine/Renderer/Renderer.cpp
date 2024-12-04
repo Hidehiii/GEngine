@@ -6,6 +6,7 @@
 namespace GEngine
 {
 	Camera Renderer::s_RenderTargetCamera = Camera();
+	Vector3 Renderer::s_RenderTargetCameraPosition = Vector3();
 	struct CameraData
 	{
 		Matrix4x4 GE_MATRIX_V;
@@ -102,6 +103,7 @@ namespace GEngine
 		Renderer2D::BeginScene();
 
 		s_RenderTargetCamera = camera;
+		s_RenderTargetCameraPosition = camera.GetPosition();
 	}
 	void Renderer::BeginScene(Camera& camera)
 	{
@@ -110,7 +112,9 @@ namespace GEngine
 		SetTimeUniforms();
 		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
 		Renderer2D::BeginScene();
+
 		s_RenderTargetCamera = camera;
+		s_RenderTargetCameraPosition = camera.m_GameObject.GetComponent<Transform>().m_Position;
 	}
 	void Renderer::EndScene()
 	{

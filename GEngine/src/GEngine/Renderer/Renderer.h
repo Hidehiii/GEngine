@@ -32,11 +32,13 @@ namespace GEngine
 		static void SetScreenUniform(Vector4& size);
 
 		static void DrawCubeWireframe(Transform& transform, Vector4 color);
-		const static Camera RenderTargetCamera() { return s_RenderTargetCamera; }
+		const static Camera GetRenderTargetCamera() { return s_RenderTargetCamera; }
+		const static Vector3 GetRenderTargetCameraPosition() { return s_RenderTargetCameraPosition; }
 	private:
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
 		static Camera s_RenderTargetCamera;
+		static Vector3 s_RenderTargetCameraPosition;
 	};
 }
 

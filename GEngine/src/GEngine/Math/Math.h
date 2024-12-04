@@ -64,6 +64,9 @@ namespace GEngine
 		static float* ValuePtr(const Vector3& v);
 		static float* ValuePtr(const Vector4& v);
 		static float* ValuePtr(const Matrix4x4& v);
+		static float Distance(const Vector2& v1, const Vector2& v2);
+		static float Distance(const Vector3& v1, const Vector3& v2);
+		static float Distance(const Vector4& v1, const Vector4& v2);
 
 		template<typename T>
 		static T Max(std::initializer_list<T> list)
