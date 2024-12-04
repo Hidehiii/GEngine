@@ -38,6 +38,8 @@ namespace GEngine
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             VK_SAMPLE_COUNT_1_BIT,
+                            1,
+                            0,
 			                m_Image,
 			                m_ImageMemory);
         Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -60,6 +62,8 @@ namespace GEngine
 			                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             VK_SAMPLE_COUNT_1_BIT,
+                            1,
+                            0,
 			                m_Image,
 			                m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -80,6 +84,8 @@ namespace GEngine
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             VK_SAMPLE_COUNT_1_BIT,
+            1,
+            0,
 			m_Image,
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
@@ -152,7 +158,7 @@ namespace GEngine
     {
 		VkSamplerCreateInfo             samplerInfo{};
 		samplerInfo.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter           = VK_FILTER_LINEAR;
+		samplerInfo.magFilter           = VK_FILTER_NEAREST;
 		samplerInfo.minFilter           = VK_FILTER_LINEAR;
 		samplerInfo.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;

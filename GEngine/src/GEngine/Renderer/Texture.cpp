@@ -3,6 +3,8 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
+#include "Platform/OpenGL/OpenGLCubeMap.h"
+#include "Platform/Vulkan/VulkanCubeMap.h"
 
 namespace GEngine
 {
@@ -73,5 +75,44 @@ namespace GEngine
 			s_WhiteTexture2D = Texture2D::Create(1, 1, &whiteTexture2DData, sizeof(uint32_t));
 		}
 		return s_WhiteTexture2D;
+	}
+
+	Ref<CubeMap> CubeMap::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: {
+			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		}
+		case RendererAPI::API::OpenGL: {
+			return CreateRef<CubeMap>(width, height, format);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<CubeMap>(width, height, format);
+		}
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: {
+			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		}
+		case RendererAPI::API::OpenGL: {
+			return CreateRef<CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+		}
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
 	}
 }

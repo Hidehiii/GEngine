@@ -33,6 +33,25 @@ namespace GEngine
 	private:
 		static Ref<Texture2D>	s_WhiteTexture2D;
 	};
+
+	class GENGINE_API CubeMap : public Texture
+	{
+	public:
+		enum class CubeMapFace
+		{
+			Right	= 0,
+			Left	= 1,
+			Top		= 2,
+			Buttom	= 3,
+			Back	= 4,
+			Front	= 5
+		};
+		virtual void SetData(void* data, uint32_t size, CubeMapFace face) = 0;
+
+		static Ref<CubeMap> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,
+			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath);
+	};
 }
 
 
