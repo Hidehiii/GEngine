@@ -3,6 +3,7 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
+#include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "GEngine/Renderer/RenderCommand.h"
@@ -204,6 +205,19 @@ namespace GEngine
 
 			layoutBindings.push_back(layoutBinding);
 		}
+		//cube map 绑定
+		auto cubeMaps = m_Material->GetCubeMaps();
+		for (auto& cubeMap : cubeMaps)
+		{
+			VkDescriptorSetLayoutBinding		layoutBinding{};
+			layoutBinding.binding				= cubeMap.Slot;
+			layoutBinding.descriptorCount		= 1;
+			layoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			layoutBinding.pImmutableSamplers	= nullptr;
+			layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
+
+			layoutBindings.push_back(layoutBinding);
+		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -274,6 +288,26 @@ namespace GEngine
 				descriptorWrite.descriptorCount = 1;
 				descriptorWrite.pBufferInfo		= nullptr;
 				descriptorWrite.pImageInfo		= &imageInfo; 
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			}
+		}
+		// 更新cubeMap绑定
+		{
+			auto cubeMaps						= m_Material->GetCubeMaps();
+			for (auto& cubeMap : cubeMaps)
+			{
+				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanCubeMap>(cubeMap.Cubemap)->GetDescriptorImageInfo();
+				VkWriteDescriptorSet			descriptorWrite{};
+				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet			= m_DescriptorSet;
+				descriptorWrite.dstBinding		= cubeMap.Slot;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo		= nullptr;
+				descriptorWrite.pImageInfo		= &imageInfo;
 				descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);

@@ -156,6 +156,9 @@ namespace GEngine
 		const char* depthTestToken		= "#DepthTest";
 		size_t depthTestTokenLength		= strlen(depthTestToken);
 
+		const char* cullModeToken = "#Cull";
+		size_t cullModeTokenLength = strlen(cullModeToken);
+
 		const char* propertyToken		= "#Properties";
 		size_t propertyTokenLength		= strlen(propertyToken);
 
@@ -240,6 +243,23 @@ namespace GEngine
 			GE_CORE_TRACE("DepthTest: {0}", m_EnableDepthTest);
 		}
 
+		// find Cull
+		pos = source.find(cullModeToken, 0);
+		if (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + cullModeTokenLength + 1;
+			std::string cullProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = cullProp.find(' ', index)) != std::string::npos)
+			{
+				cullProp.erase(index, 1);
+			}
+			m_CullMode = Utils::ShaderCullModeFromString(cullProp);
+			GE_CORE_TRACE("Cull: {0}", cullProp);
+		}
+
 		// find Properties
 		pos						= source.find(propertyToken, 0);
 		if (pos != std::string::npos)
@@ -315,7 +335,15 @@ namespace GEngine
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
 				{
-					GE_CORE_ASSERT(false, "Not implemented yet");
+					ShaderUniformCubeMap	uniform;
+					uniform.Name			= propName;
+					uniform.Slot			= slot;
+					uniform.Cubemap			= CubeMap::White();
+
+					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, slot);
+
+					slot++;
+					m_CubeMapCache.push_back(uniform);
 				}
 				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageImage2D)
 				{

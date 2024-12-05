@@ -69,22 +69,27 @@ namespace GEngine
 		virtual void SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
 		virtual Ref<StorageBuffer> GetStorageBuffer(const std::string& name);
 
+		virtual void SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
+		virtual Ref<CubeMap> GetCubeMap(const std::string& name);
+
 		virtual std::vector<ShaderUniform>& GetUniforms()  { return m_Uniforms; }
 		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds()  { return m_Texture2D; }
 		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds()  { return m_StorageImage2D; }
 		virtual std::vector<ShaderUniformStorageBuffer>& GetStorageBuffers() { return m_StorageBuffer; }
+		virtual std::vector<ShaderUniformCubeMap>& GetCubeMaps() { return m_CubeMap; }
 	protected:
 		ShaderUniform GetUniformByName(const std::string& name) const;
 		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);
 		ShaderUniformStorageImage2D& GetUniformStorageImage2DByName(const std::string& name);
 		ShaderUniformStorageBuffer& GetUniformStorageBufferByName(const std::string& name);
+		ShaderUniformCubeMap& GetUniformCubeMapByName(const std::string& name);
 	protected:
 		bool m_HasChanged = false;
 
 		
 		std::string											m_Name;
-		BlendMode									m_BlendMode = BlendMode::None;
-		CullMode									m_CullMode = CullMode::Back;
+		BlendMode											m_BlendMode = BlendMode::None;
+		CullMode											m_CullMode = CullMode::Back;
 		Buffer												m_UniformsBuffer;
 		std::vector<ShaderUniform>							m_Uniforms;
 		bool												m_EnableDepthWrite = true;
@@ -92,6 +97,7 @@ namespace GEngine
 		std::vector<ShaderUniformTexture2D>					m_Texture2D;
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBuffer;
+		std::vector<ShaderUniformCubeMap>					m_CubeMap;
 		BlendFactor											m_BlendSourceFactor = BlendFactor::ONE;
 		BlendFactor											m_BlendDestinationFactor = BlendFactor::ZERO;
 	};

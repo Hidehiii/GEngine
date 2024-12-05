@@ -96,32 +96,40 @@ namespace GEngine
 		ShaderUniform() = default;
 		ShaderUniform(const ShaderUniform&) = default;
 
-		std::string Name = "";
-		ShaderUniformType Type = ShaderUniformType::None;
-		uint32_t Size = 0;
-		uint32_t Location = 0;
+		std::string			Name = "";
+		ShaderUniformType	Type = ShaderUniformType::None;
+		uint32_t			Size = 0;
+		uint32_t			Location = 0;
 	};
 
 	struct ShaderUniformTexture2D
 	{
-		std::string Name;
-		uint32_t Slot;
-		Ref<Texture2D> Texture;
+		std::string		Name;
+		uint32_t		Slot;
+		Ref<Texture2D>	Texture;
 	};
 
 
 	struct ShaderUniformStorageImage2D
 	{
-		std::string Name;
-		uint32_t Slot;
+		std::string			Name;
+		uint32_t			Slot;
 		Ref<StorageImage2D> Image;
 	};
 
 	struct ShaderUniformStorageBuffer
 	{
-		std::string Name;
-		uint32_t Slot;
-		Ref<StorageBuffer> Buffer;
+		std::string			Name;
+		uint32_t			Slot;
+		Ref<StorageBuffer>	Buffer;
+	};
+
+
+	struct ShaderUniformCubeMap
+	{
+		std::string		Name;
+		uint32_t		Slot;
+		Ref<CubeMap>	Cubemap;
 	};
 
 	namespace Utils
@@ -143,6 +151,14 @@ namespace GEngine
 			if (ToLower(value) == "1")				return true;
 			if (ToLower(value) == "true")			return true;
 			return false;
+		}
+
+		static CullMode ShaderCullModeFromString(const std::string& value)
+		{
+			if (ToLower(value) == "none") return CullMode::None;
+			if (ToLower(value) == "back") return CullMode::Back;
+			if (ToLower(value) == "front") return CullMode::Front;
+			return CullMode::Back;
 		}
 
 		static std::vector<std::string> SplitString(const std::string& string, char delimiter)
@@ -314,6 +330,7 @@ namespace GEngine
 		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
 		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
 		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
+		virtual std::vector<ShaderUniformCubeMap>	GetCubeMap() { return m_CubeMapCache; }
 
 		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
@@ -334,12 +351,13 @@ namespace GEngine
 		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
-		bool												m_EnableDepthWrite = true;
-		bool												m_EnableDepthTest = true;
-		BlendFactor									m_BlendSourceFactor = BlendFactor::ONE;
-		BlendFactor									m_BlendDestinationFactor = BlendFactor::ZERO;
-		BlendMode											m_BlendMode = BlendMode::None;
-		CullMode													m_CullMode = CullMode::Back;
+		std::vector<ShaderUniformCubeMap>					m_CubeMapCache;
+		bool												m_EnableDepthWrite			= true;
+		bool												m_EnableDepthTest			= true;
+		BlendFactor											m_BlendSourceFactor			= BlendFactor::ONE;
+		BlendFactor											m_BlendDestinationFactor	= BlendFactor::ZERO;
+		BlendMode											m_BlendMode					= BlendMode::None;
+		CullMode											m_CullMode					= CullMode::Back;
 		
 	};
 

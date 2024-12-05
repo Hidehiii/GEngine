@@ -39,6 +39,8 @@ namespace GEngine
 			m_StorageImage2D			= m_Shader->GetStorageImage2D();
 			// StorageBuffer
 			m_StorageBuffer				= m_Shader->GetStorageBuffer();
+			// cube map
+			m_CubeMap					= m_Shader->GetCubeMap();
 		}
 		else
 		{
@@ -64,6 +66,12 @@ namespace GEngine
 		{
 			m_Shader->SetInt1(image2D.Name, image2D.Slot);
 			image2D.Image->Bind(image2D.Slot);
+		}
+
+		for (auto& cubeMap : m_CubeMap)
+		{
+			m_Shader->SetInt1(cubeMap.Name, cubeMap.Slot);
+			cubeMap.Cubemap->Bind(cubeMap.Slot);
 		}
 
 		for (auto& storageBuffer : m_StorageBuffer)

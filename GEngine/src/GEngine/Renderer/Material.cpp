@@ -78,6 +78,18 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "There is no uniform storage buffer with name {0} in the shader!", name);
 		return ShaderUniformStorageBuffer();
 	}
+	ShaderUniformCubeMap& Material::GetUniformCubeMapByName(const std::string& name)
+	{
+		for (int i = 0; i < m_CubeMap.size(); i++)
+		{
+			if (m_CubeMap.at(i).Name == name)
+			{
+				return (m_CubeMap.at(i));
+			}
+		}
+		GE_CORE_ASSERT(false, "There is no uniform cube map with name {0} in the shader!", name);
+		return ShaderUniformCubeMap();
+	}
 	void Material::SetCullMode(CullMode mode)
 	{
 		m_CullMode = mode;
@@ -196,5 +208,14 @@ namespace GEngine
 	Ref<StorageBuffer> Material::GetStorageBuffer(const std::string& name)
 	{
 		return GetUniformStorageBufferByName(name).Buffer;
+	}
+	void Material::SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap)
+	{
+		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
+		uniform.Cubemap = cubeMap;
+	}
+	Ref<CubeMap> Material::GetCubeMap(const std::string& name)
+	{
+		return GetUniformCubeMapByName(name).Cubemap;
 	}
 }

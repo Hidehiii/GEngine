@@ -9,6 +9,7 @@
 namespace GEngine
 {
 	Ref<Texture2D>	Texture2D::s_WhiteTexture2D = nullptr;
+	Ref<CubeMap> CubeMap::s_WhiteCubeMap = nullptr;
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
 	{
@@ -114,5 +115,20 @@ namespace GEngine
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
+	}
+	Ref<CubeMap> CubeMap::White()
+	{
+		if (s_WhiteCubeMap == nullptr)
+		{
+			uint32_t whiteCubeMapData = 0xffffffff;
+			s_WhiteCubeMap = CubeMap::Create(1, 1);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Right);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Left);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Top);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Buttom);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Back);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Front);
+		}							
+		return s_WhiteCubeMap;
 	}
 }

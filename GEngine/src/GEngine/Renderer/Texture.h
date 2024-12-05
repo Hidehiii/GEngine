@@ -52,6 +52,11 @@ namespace GEngine
 		static Ref<CubeMap> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,
 			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath);
+
+		// 默认白色
+		static Ref<CubeMap> White();
+	private:
+		static Ref<CubeMap> s_WhiteCubeMap;
 	};
 }
 
