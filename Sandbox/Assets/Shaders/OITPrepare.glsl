@@ -1,6 +1,6 @@
 
 #Name OITPrepare
-
+#Cull None
 #Properties
 
 StorageImage2D headIndexImage;

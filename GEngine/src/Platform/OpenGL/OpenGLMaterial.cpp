@@ -30,6 +30,8 @@ namespace GEngine
 			m_BlendMode					= m_Shader->GetBlendMode();
 			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
 			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
+			// cull mode
+			m_CullMode					= m_Shader->GetCullMode();
 			// Read depth test and depth mask
 			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
 			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();

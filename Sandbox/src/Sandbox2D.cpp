@@ -93,7 +93,7 @@ void Sandbox2D::OnAttach()
 	m_PresentVertex[2] = { { 1.0f,  1.0f, 0.0f, 1.0f}, {1.0f, 1.0f} };
 	m_PresentVertex[3] = { {-1.0f,  1.0f, 0.0f, 1.0f}, {0.0f, 1.0f} };
 
-	int count = 8;
+	int count = 12;
 	m_vertex.resize(count);
 	m_OITPrepare = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OITPrepare.glsl")),
@@ -129,15 +129,23 @@ void Sandbox2D::OnAttach()
 	m_vertex[5].Pos = { 0.0f, -0.5f, -1.0f, 1.0f };
 	m_vertex[6].Pos = { 0.0f,  0.5f, -1.0f, 1.0f };
 	m_vertex[7].Pos = { -1.0f,  0.5f, -1.0f, 1.0f };
+	m_vertex[8].Pos = { -0.5f, -0.5f, 1.0f, 1.0f };
+	m_vertex[9].Pos = { 0.5f, -0.5f, 1.0f, 1.0f };
+	m_vertex[10].Pos = { 0.5f,  0.5f, -1.5f, 1.0f };
+	m_vertex[11].Pos = { -0.5f,  0.5f, -1.5f, 1.0f };
 
-	m_vertex[0].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
-	m_vertex[1].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
-	m_vertex[2].Color = { 1.0f,  0.0f, 0.0f, 0.5f };
-	m_vertex[3].Color = { 1.0f, 0.0f, 0.0f, 0.5f };
-	m_vertex[4].Color = { 0.0f, 1.0f, 0.0f, 0.5f };
-	m_vertex[5].Color = { 0.0f, 1.0f, 0.0f, 0.5f };
-	m_vertex[6].Color = { 0.0f,  1.0f, 0.0f, 0.5f };
-	m_vertex[7].Color = { 0.0f,  1.0f, 0.0f, 0.5f };
+	m_vertex[0].Color = { 1.0f, 0.0f, 0.0f, 0.25f };
+	m_vertex[1].Color = { 1.0f, 0.0f, 0.0f, 0.25f };
+	m_vertex[2].Color = { 1.0f,  0.0f, 0.0f, 0.25f };
+	m_vertex[3].Color = { 1.0f, 0.0f, 0.0f, 0.25f };
+	m_vertex[4].Color = { 0.0f, 1.0f, 0.0f, 0.25f };
+	m_vertex[5].Color = { 0.0f, 1.0f, 0.0f, 0.25f };
+	m_vertex[6].Color = { 0.0f,  1.0f, 0.0f, 0.25f };
+	m_vertex[7].Color = { 0.0f,  1.0f, 0.0f, 0.25f };
+	m_vertex[8].Color = { 0.0f, 0.0f, 1.0f, 0.25f };
+	m_vertex[9].Color = { 0.0f, 0.0f, 1.0f, 0.25f };
+	m_vertex[10].Color = { 0.0f,  0.0f, 1.0f, 0.25f };
+	m_vertex[11].Color = { 0.0f,  0.0f, 1.0f, 0.25f };
 
 
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
@@ -153,7 +161,7 @@ void Sandbox2D::OnAttach()
 	m_StorageBuffer = StorageBuffer::Create(Application::Get().GetWindow().GetWidth()* Application::Get().GetWindow().GetHeight() * 4 * sizeof(Node));
 	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
-	m_OITPrepare->GetMaterial()->SetCullMode(CullMode::None);
+
 	m_OITPrepare->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
 	m_OITPrepare->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);

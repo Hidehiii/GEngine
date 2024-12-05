@@ -25,7 +25,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 		CreateSampler();
 	}
 
@@ -66,7 +66,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, VK_IMAGE_ASPECT_COLOR_BIT, m_ImageView);
 		CreateSampler();
 		LoadImageData();
 	}
@@ -111,8 +111,8 @@ namespace GEngine
 		memcpy(tempData, data, static_cast<uint32_t>(size));
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
 		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, (uint32_t)face);
-		SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, (uint32_t)face, m_AspectFlag);
+
 
 		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
@@ -148,7 +148,7 @@ namespace GEngine
 
 	void VulkanCubeMap::SetImageLayout(VkImageLayout newLayout)
 	{
-		Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, m_AspectFlag);
+		Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 6, m_AspectFlag);
 		m_ImageLayout = newLayout;
 	}
 

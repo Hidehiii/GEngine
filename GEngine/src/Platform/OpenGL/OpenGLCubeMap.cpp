@@ -10,6 +10,8 @@ namespace GEngine
 	OpenGLCubeMap::OpenGLCubeMap(uint32_t width, uint32_t height, RenderImage2DFormat format)
 	{
 		m_Format = format;
+		m_Width = width;
+		m_Height = height;
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);

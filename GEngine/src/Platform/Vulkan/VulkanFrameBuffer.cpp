@@ -77,7 +77,7 @@ namespace GEngine
 				0,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
 
 			m_DepthStencilImage = image;
 			m_DepthStencilImageView = imageView;
@@ -233,7 +233,7 @@ namespace GEngine
 					0,
 					image,
 					imageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 				break;
 			}
 			default:
@@ -261,7 +261,7 @@ namespace GEngine
 					0,
 					tempImage,
 					tempImageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, tempImageView);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, tempImageView);
 				m_Images.push_back(tempImage);
 				m_Attachments.push_back(tempImageView);
 				m_ImagesMemory.push_back(tempImageMemory);
@@ -298,7 +298,7 @@ namespace GEngine
 				0,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, depthAspectFlag, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, imageView);
 			break;
 		}
 			
@@ -318,7 +318,7 @@ namespace GEngine
 				0,
 				image, 
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, depthAspectFlag, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, imageView);
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
@@ -345,7 +345,7 @@ namespace GEngine
 				0,
 				tempImage,
 				tempImageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, depthAspectFlag, tempImageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, tempImageView);
 			m_Images.push_back(tempImage);
 			m_Attachments.push_back(tempImageView);
 			m_ImagesMemory.push_back(tempImageMemory);

@@ -20,13 +20,13 @@ namespace GEngine
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDvice);
 		void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, uint32_t arrayLayers, VkImageCreateFlags flags, VkImage& outImage, VkDeviceMemory& imageMemory);
-		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, VkImageAspectFlags aspectMask, VkImageView& outImageView);
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount = 1, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0, uint32_t baseArrayLayer = 0, VkFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT);
+		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, uint32_t layerCount, VkImageAspectFlags aspectMask, VkImageView& outImageView);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag);
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample = VK_SAMPLE_COUNT_1_BIT);
+		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample);
 		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index);
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample = VK_SAMPLE_COUNT_1_BIT);
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample);
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, VkImageAspectFlags aspectFlag);

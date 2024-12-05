@@ -78,7 +78,7 @@ namespace GEngine
 			vkBindImageMemory(device, outImage, imageMemory, 0);
 		}
 
-		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, VkImageAspectFlags aspectMask, VkImageView& outImageView)
+		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, uint32_t layerCount, VkImageAspectFlags aspectMask, VkImageView& outImageView)
 		{
 			VkImageViewCreateInfo                           createInfo{};
 			createInfo.sType								= VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -93,7 +93,7 @@ namespace GEngine
 			createInfo.subresourceRange.baseMipLevel		= 0;
 			createInfo.subresourceRange.levelCount			= 1;
 			createInfo.subresourceRange.baseArrayLayer		= 0;
-			createInfo.subresourceRange.layerCount			= 1;
+			createInfo.subresourceRange.layerCount			= layerCount;
 
 			VK_CHECK_RESULT(vkCreateImageView(device, &createInfo, nullptr, &outImageView));
 		}

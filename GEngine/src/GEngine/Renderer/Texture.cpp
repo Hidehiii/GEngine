@@ -122,12 +122,12 @@ namespace GEngine
 		{
 			uint32_t whiteCubeMapData = 0xffffffff;
 			s_WhiteCubeMap = CubeMap::Create(1, 1);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Right);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Left);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Top);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Buttom);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Back);
-			s_WhiteCubeMap->SetData(&whiteCubeMapData, 1, CubeMapFace::Front);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Right);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Left);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Top);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Buttom);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Back);
+			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Front);
 		}							
 		return s_WhiteCubeMap;
 	}
