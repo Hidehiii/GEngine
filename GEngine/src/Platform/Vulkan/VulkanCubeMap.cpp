@@ -2,7 +2,7 @@
 #include "VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
 #include "stb_image.h"
 
 namespace GEngine
@@ -120,6 +120,12 @@ namespace GEngine
 
 	void VulkanCubeMap::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face)
 	{
+		Utils::CopyImageToImage(width, height, std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImage(),
+			std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImageLayout(),
+			std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetAspectFlag(),
+			0, 0,
+			m_Image, m_ImageLayout, m_AspectFlag,
+			0, (uint32_t)face);
 	}
 
 	void VulkanCubeMap::Bind(const uint32_t slot)

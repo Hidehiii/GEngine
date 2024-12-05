@@ -22,10 +22,12 @@ namespace GEngine
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
+		const VkImage						GetImage() { return m_Image; }
 		const VkSampler						GetSampler() { return m_Sampler; }
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
+		const VkImageAspectFlags			GetAspectFlag() { return m_AspectFlag; }
 		void SetImageLayout(VkImageLayout newLayout);
 	private:
 		void CreateSampler();
