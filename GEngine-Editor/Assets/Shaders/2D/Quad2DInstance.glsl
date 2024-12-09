@@ -1,7 +1,8 @@
 #Name Quad2DInstance
 #Blend Alpha SrcAlpha OneMinusSrcAlpha
-#DepthWrite Off
+#DepthWrite On
 #DepthTest On
+#Cull Back
 #Properties
 
 sampler2D Tex_0;
