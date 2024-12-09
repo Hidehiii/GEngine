@@ -78,7 +78,7 @@ namespace GEngine
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
-	void VulkanPipeline::Render(uint32_t indexCount, uint32_t instanceCount)
+	void VulkanPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
 	{
 		PrepareRender();
 		m_VertexBuffer->Bind();

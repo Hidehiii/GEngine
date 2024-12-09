@@ -182,7 +182,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadInstanceBufferPtr - (uint8_t*)s_Data.QuadInstanceBufferBase);
 			s_Data.QuadPipeline->GetVertexBuffer()->SetDataInstance(s_Data.QuadInstanceBufferBase, dataSize);
-			s_Data.QuadPipeline->Render( 6, s_Data.QuadInstanceCount);
+			s_Data.QuadPipeline->Render(s_Data.QuadInstanceCount, 6);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -190,7 +190,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
 			s_Data.LinePipeline->GetVertexBuffer()->SetData(s_Data.LineVertexBufferBase, dataSize);
-			s_Data.LinePipeline->Render(s_Data.LineVertexCount);
+			s_Data.LinePipeline->Render(1, s_Data.LineVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -198,7 +198,7 @@ namespace GEngine
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.PointVertexBufferPtr - (uint8_t*)s_Data.PointVertexBufferBase);
 			s_Data.PointPipeline->GetVertexBuffer()->SetData(s_Data.PointVertexBufferBase, dataSize);
-			s_Data.PointPipeline->Render(s_Data.PointVertexCount);
+			s_Data.PointPipeline->Render(1, s_Data.PointVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 	}

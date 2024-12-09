@@ -12,7 +12,7 @@ namespace GEngine
     OpenGLPipeline::~OpenGLPipeline()
     {
     }
-    void OpenGLPipeline::Render(uint32_t indexCount, uint32_t instanceCount)
+    void OpenGLPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
     {
         m_Material->UploadData();
         m_VertexBuffer->Bind();

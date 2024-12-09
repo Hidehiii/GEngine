@@ -15,7 +15,7 @@ namespace GEngine
 		VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanPipeline() override;
 		virtual void PrepareRender();
-		virtual void Render(uint32_t indexCount, uint32_t instanceCount = 0) override;
+		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 		virtual Ref<VertexBuffer> GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }
 		virtual void SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
 		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
