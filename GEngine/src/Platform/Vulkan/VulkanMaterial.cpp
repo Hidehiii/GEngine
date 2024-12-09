@@ -27,8 +27,10 @@ namespace GEngine
 			}
 			// Read blend type and factor
 			m_BlendMode					= m_Shader->GetBlendMode();
-			m_BlendSourceFactor			= m_Shader->GetBlendSourceFactor();
-			m_BlendDestinationFactor	= m_Shader->GetBlendDestinationFactor();
+			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSourceFactor();
+			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSourceFactor();
+			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDestinationFactor();
+			m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDestinationFactor();
 			// cull mode
 			m_CullMode					= m_Shader->GetCullMode();
 			// Read depth test and depth mask

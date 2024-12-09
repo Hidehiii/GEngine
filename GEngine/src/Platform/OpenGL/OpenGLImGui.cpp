@@ -42,9 +42,8 @@ namespace GEngine
 	}
 	void OpenGLImGui::End()
 	{
+		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 		s_FrameBuffer->Begin();
-		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
-		RenderCommand::Clear();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		s_FrameBuffer->End();
 	}

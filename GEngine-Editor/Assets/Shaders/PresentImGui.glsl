@@ -1,6 +1,8 @@
-
 #Name PresentImGui
-
+#Cull Back
+#Blend None
+#DepthWrite On
+#DepthTest On
 #Properties
 
 sampler2D GE_PRESENT_IMGUI;

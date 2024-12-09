@@ -61,8 +61,6 @@ namespace GEngine
 		static void ResetStats();
 	private:
 		static void ResetShaderData();
-		static void StartBatch();
-		static void NextBatch();
 	};
 }
 

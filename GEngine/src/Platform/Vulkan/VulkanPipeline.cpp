@@ -441,11 +441,11 @@ namespace GEngine
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
 		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		ColorBlendAttachment.blendEnable					= VK_FALSE;
-		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendSourceFactor());
-		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendDestinationFactor());
+		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSourceFactor());
+		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDestinationFactor());
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
-		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendSourceFactor());
-		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendDestinationFactor());
+		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSourceFactor());
+		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDestinationFactor());
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};

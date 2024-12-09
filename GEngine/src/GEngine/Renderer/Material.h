@@ -26,9 +26,11 @@ namespace GEngine
 
 		virtual CullMode GetCullMode() { return m_CullMode; }
 		virtual BlendMode GetBlendMode() { return m_BlendMode; }
-		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
-		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
-		virtual bool IsOpaque() { return m_BlendSourceFactor == BlendFactor::ONE && m_BlendDestinationFactor == BlendFactor::ZERO; }
+		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
+		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
+		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
+		virtual bool IsOpaque() { return m_BlendColorSourceFactor == BlendFactor::ONE && m_BlendColorDestinationFactor == BlendFactor::ZERO; }
 
 		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
@@ -38,6 +40,7 @@ namespace GEngine
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
+		virtual void SetBlendMode(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
 
 		virtual void SetFloat(const std::string& name, float value);
 		virtual void SetInt(const std::string& name, int value);
@@ -98,8 +101,10 @@ namespace GEngine
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBuffer;
 		std::vector<ShaderUniformCubeMap>					m_CubeMap;
-		BlendFactor											m_BlendSourceFactor = BlendFactor::ONE;
-		BlendFactor											m_BlendDestinationFactor = BlendFactor::ZERO;
+		BlendFactor											m_BlendColorSourceFactor = BlendFactor::ONE;
+		BlendFactor											m_BlendColorDestinationFactor = BlendFactor::ZERO;
+		BlendFactor											m_BlendAlphaSourceFactor = BlendFactor::ONE;
+		BlendFactor											m_BlendAlphaDestinationFactor = BlendFactor::ZERO;
 	};
 }
 

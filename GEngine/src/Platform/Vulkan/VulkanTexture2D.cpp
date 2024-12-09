@@ -137,7 +137,7 @@ namespace GEngine
 
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, 0, m_AspectFlag);
-
+        SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);

@@ -56,7 +56,6 @@ namespace GEngine
 		m_EditorCamera					= Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
 		m_EditorScene					= CreateRef<Scene>();
 		m_ActiveScene					= m_EditorScene;
-		
 		m_Hierarchy.SetContext(m_ActiveScene);
 
 
@@ -216,10 +215,11 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnRender()
 	{
+		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
 		RenderCommand::BeginDrawCommand();
 		m_SceneViewportFrameBuffer->Begin();
 		{
-			GE_PROFILE_SCOPE("Render: EditorOnRender");
 			Renderer::BeginScene(m_EditorCamera);
 			OnOverlayRender();
 			m_ActiveScene->OnRender();
@@ -231,7 +231,6 @@ namespace GEngine
 		RenderCommand::BeginDrawCommand();
 		m_GameViewportFrameBuffer->Begin();
 		{
-			GE_PROFILE_SCOPE("Render: OnRender");
 			auto camera = m_ActiveScene->MainCamera();
 			if (camera)
 			{

@@ -58,9 +58,9 @@ namespace GEngine
 	{
 		s_RendererAPI->SetCull(mode);
 	}
-	inline void RenderCommand::SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest)
+	inline void RenderCommand::SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
 	{
-		s_RendererAPI->SetBlend(mode, source, dest);
+		s_RendererAPI->SetBlend(mode, srcColor, dstColor, srcAlpha, dstAlpha);
 	}
 	inline void RenderCommand::EnableDepthWrite(bool enabled)
 	{

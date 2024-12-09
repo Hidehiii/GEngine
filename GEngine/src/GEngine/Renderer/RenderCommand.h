@@ -23,7 +23,7 @@ namespace GEngine
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		inline static float GetTime();
 		inline static void SetCull(CullMode mode);
-		inline static void SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest);
+		inline static void SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
 		inline static void EnableDepthWrite(bool enabled);
 		inline static void EnableDepthTest(bool enabled);
 		inline static void BeginDrawCommand();

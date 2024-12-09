@@ -94,11 +94,21 @@ namespace GEngine
 	{
 		m_CullMode = mode;
 	}
+	void Material::SetBlendMode(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+	{
+		m_BlendMode = mode;
+		m_BlendColorSourceFactor = srcColor;
+		m_BlendColorDestinationFactor = dstColor;
+		m_BlendAlphaSourceFactor = srcAlpha;
+		m_BlendAlphaDestinationFactor = dstAlpha;
+	}
 	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest)
 	{
 		m_BlendMode = mode;
-		m_BlendSourceFactor = source;
-		m_BlendDestinationFactor = dest;
+		m_BlendColorSourceFactor = source;
+		m_BlendAlphaSourceFactor = source;
+		m_BlendColorDestinationFactor = dest;
+		m_BlendAlphaDestinationFactor = dest;
 	}
 	void Material::SetFloat(const std::string& name, float value)
 	{

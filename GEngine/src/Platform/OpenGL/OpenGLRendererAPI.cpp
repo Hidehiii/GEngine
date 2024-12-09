@@ -44,9 +44,11 @@ namespace GEngine
 	void OpenGLRendererAPI::SetClearColor(const Vector4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
+		glClearDepth(1.0f);
 	}
 	void OpenGLRendererAPI::Clear()
 	{
+		glDepthMask(GL_TRUE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	void OpenGLRendererAPI::DrawTriangles(uint32_t indexCount)
@@ -91,7 +93,7 @@ namespace GEngine
 		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
 		}
 	}
-	void OpenGLRendererAPI::SetBlend(BlendMode mode, BlendFactor source, BlendFactor dest)
+	void OpenGLRendererAPI::SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
 	{
 		switch (mode)
 		{
@@ -112,7 +114,10 @@ namespace GEngine
 			break;
 		case BlendMode::Customized:
 			glEnable(GL_BLEND);
-			glBlendFunc(Utils::BlendFactorToGLBlendFactor(source), Utils::BlendFactorToGLBlendFactor(dest));
+			glBlendFuncSeparate(Utils::BlendFactorToGLBlendFactor(srcColor),
+				Utils::BlendFactorToGLBlendFactor(dstColor),
+				Utils::BlendFactorToGLBlendFactor(srcAlpha),
+				Utils::BlendFactorToGLBlendFactor(dstAlpha));
 			break;
 		default:
 			break;

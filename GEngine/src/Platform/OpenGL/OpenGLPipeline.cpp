@@ -16,7 +16,7 @@ namespace GEngine
     {
         m_Material->UploadData();
         m_VertexBuffer->Bind();
-        indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
+        indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount(); 
         if (m_VertexBuffer->IsInstanceRendering())
         {
             switch (m_VertexBuffer->GetVertexTopologyType())

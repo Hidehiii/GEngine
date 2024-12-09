@@ -318,8 +318,10 @@ namespace GEngine
 
 		virtual BlendMode GetBlendMode() { return m_BlendMode; }
 		virtual CullMode GetCullMode() { return m_CullMode; }
-		virtual BlendFactor GetBlendSourceFactor() { return m_BlendSourceFactor; }
-		virtual BlendFactor GetBlendDestinationFactor() { return m_BlendDestinationFactor; }
+		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
+		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
+		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
 		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
 
@@ -354,8 +356,10 @@ namespace GEngine
 		std::vector<ShaderUniformCubeMap>					m_CubeMapCache;
 		bool												m_EnableDepthWrite			= true;
 		bool												m_EnableDepthTest			= true;
-		BlendFactor											m_BlendSourceFactor			= BlendFactor::ONE;
-		BlendFactor											m_BlendDestinationFactor	= BlendFactor::ZERO;
+		BlendFactor											m_BlendColorSourceFactor		= BlendFactor::ONE;
+		BlendFactor											m_BlendColorDestinationFactor	= BlendFactor::ZERO;
+		BlendFactor											m_BlendAlphaSourceFactor	= BlendFactor::ONE;
+		BlendFactor											m_BlendAlphaDestinationFactor = BlendFactor::ZERO;
 		BlendMode											m_BlendMode					= BlendMode::None;
 		CullMode											m_CullMode					= CullMode::Back;
 		

@@ -385,13 +385,22 @@ namespace GEngine
 			blendString = Utils::RemoveCharFromString(blendString, '\r');
 			blendString = Utils::RemoveCharFromString(blendString, '\n');
 			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1, "Syntax error");
-			m_BlendMode					= Utils::ShaderBlendModeFromString(blends.at(0));
-			if (blends.size() ==3)
+			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 5, "Syntax error");
+			m_BlendMode = Utils::ShaderBlendModeFromString(blends.at(0));
+			if (blends.size() == 3)
 			{
-				m_BlendSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				m_BlendDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				m_BlendColorSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				m_BlendAlphaSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				m_BlendColorDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				m_BlendAlphaDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
 				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
+			}
+			else if (blends.size() == 5)
+			{
+				m_BlendColorSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				m_BlendColorDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				m_BlendAlphaSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(3));
+				m_BlendAlphaDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(4));
 			}
 			else
 			{

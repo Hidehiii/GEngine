@@ -174,15 +174,12 @@ namespace GEngine
 	}
 	void Renderer2D::Flush()
 	{
-		GE_PROFILE_FUNCTION();
-
-		
 
 		if (s_Data.QuadInstanceCount)
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadInstanceBufferPtr - (uint8_t*)s_Data.QuadInstanceBufferBase);
 			s_Data.QuadPipeline->GetVertexBuffer()->SetDataInstance(s_Data.QuadInstanceBufferBase, dataSize);
-			s_Data.QuadPipeline->Render(s_Data.QuadInstanceCount, 6);
+			s_Data.QuadPipeline->Render(s_Data.QuadInstanceCount);
 			s_Data.stats.m_DrawCalls++;
 		}
 
@@ -201,27 +198,23 @@ namespace GEngine
 			s_Data.PointPipeline->Render(1, s_Data.PointVertexCount);
 			s_Data.stats.m_DrawCalls++;
 		}
+
+		ResetShaderData();
 	}
 	void Renderer2D::BeginScene()
 	{
-		GE_PROFILE_FUNCTION();
-
 		ResetShaderData();
 	}
 	void Renderer2D::EndScene()
 	{
-		GE_PROFILE_FUNCTION();
-
 		Flush();
 	}
 
 	void Renderer2D::DrawQuad(Transform& transform, const Vector4& color)
 	{
-		GE_PROFILE_FUNCTION();
-
 		if (s_Data.QuadInstanceCount >= Renderer2DData::MaxInstance)
 		{
-			NextBatch();
+			Flush();
 		}
 
 		const int texIndex = 0.0f; // 0 = white texture
@@ -240,11 +233,9 @@ namespace GEngine
 	}
 	void Renderer2D::DrawQuad(Transform& transform, const Vector4& color, const Ref<Texture2D> tex, const Vector2 tiling)
 	{
-		GE_PROFILE_FUNCTION();
-
 		if (s_Data.QuadInstanceCount >= Renderer2DData::MaxInstance || s_Data.QuadTextureIndex >= s_Data.QuadPipeline->GetMaterial()->GetTexture2Ds().size())
 		{
-			NextBatch();
+			Flush();
 		}
 
 		int textureIndex = -1;
@@ -281,7 +272,7 @@ namespace GEngine
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
-			NextBatch();
+			Flush();
 		}
 
 		s_Data.LineVertexBufferPtr->Position = { start.x, start.y, start.z, 1.0f };
@@ -302,7 +293,7 @@ namespace GEngine
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
-			NextBatch();
+			Flush();
 		}
 
 		for (int i = 0; i < segmentCount; i++)
@@ -322,7 +313,7 @@ namespace GEngine
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
-			NextBatch();
+			Flush();
 		}
 
 		Vector4 startPos = { start.x, start.y, start.z, 1.0f };
@@ -345,7 +336,7 @@ namespace GEngine
 
 		if (s_Data.PointVertexCount >= Renderer2DData::MaxInstance)
 		{
-			NextBatch();
+			Flush();
 		}
 
 		s_Data.PointVertexBufferPtr->Position = { position.x, position.y, position.z, 1.0f };
@@ -407,18 +398,6 @@ namespace GEngine
 	}
 	void Renderer2D::ResetShaderData()
 	{
-		s_Data.QuadInstanceBufferPtr = s_Data.QuadInstanceBufferBase;
-		s_Data.QuadInstanceCount = 0;
-
-		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-		s_Data.LineVertexCount = 0;
-
-		s_Data.PointVertexBufferPtr = s_Data.PointVertexBufferBase;
-		s_Data.PointVertexCount = 0;
-	}
-	void Renderer2D::StartBatch()
-	{
-		Flush();
 		s_Data.QuadTextureIndex = 1;
 
 		s_Data.QuadInstanceBufferPtr = s_Data.QuadInstanceBufferBase;
@@ -429,10 +408,6 @@ namespace GEngine
 
 		s_Data.PointVertexBufferPtr = s_Data.PointVertexBufferBase;
 		s_Data.PointVertexCount = 0;
-	}
-	void Renderer2D::NextBatch()
-	{
-		StartBatch();
 	}
 	void Renderer2D::SetLineWidth(float width)
 	{
