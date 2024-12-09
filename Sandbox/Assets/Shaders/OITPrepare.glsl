@@ -1,6 +1,9 @@
 
 #Name OITPrepare
 #Cull None
+#DepthWrite Off
+#DepthTest On
+#Blend Alpha
 #Properties
 
 StorageImage2D headIndexImage;
