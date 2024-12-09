@@ -17,7 +17,7 @@ namespace GEngine
 		// Depth,Stencil
 		DEPTH24STENCIL8,
 
-		// Defaults
+		// Depth
 		DEPTH
 	};
 
@@ -50,6 +50,11 @@ namespace GEngine
 		uint32_t Samples = 1;
 
 		bool SwapChainTarget = false;
+	};
+
+	enum FrameBufferBeginActionBit
+	{
+
 	};
 
 	class GENGINE_API FrameBuffer
