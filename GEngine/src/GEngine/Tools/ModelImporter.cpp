@@ -83,14 +83,13 @@ namespace GEngine
         GE_CORE_TRACE("Mesh Name: {0}", newMesh.m_Name);
         GE_CORE_TRACE("Triangle Count: {0}", triangleCount);
         GE_CORE_TRACE("Vertex Count: {0}", mesh->GetControlPointsCount());
+		GE_CORE_INFO("UV layers Count: {}", mesh->GetElementUVCount());
         Vertex vertex;
         for (int i = 0; i < triangleCount; i++)
         {
             for (int j = 0; j < 3; j++)
             {
                 int ctrlPointIndex = mesh->GetPolygonVertex(i, j);
-
-				GE_CORE_INFO("UV layers: {}", mesh->GetElementUVCount());
 
                 ReadVertex(mesh, ctrlPointIndex, vertex);
                 ReadColor(mesh, ctrlPointIndex, vertexCounter, vertex);
