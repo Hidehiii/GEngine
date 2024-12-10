@@ -30,7 +30,9 @@ namespace GEngine
 		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
 		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
 		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
-		virtual bool IsOpaque() { return m_BlendColorSourceFactor == BlendFactor::ONE && m_BlendColorDestinationFactor == BlendFactor::ZERO; }
+		virtual bool IsOpaque() { return m_BlendColorSourceFactor == BlendFactor::ONE && m_BlendColorDestinationFactor == BlendFactor::ZERO
+											&& m_BlendAlphaSourceFactor == BlendFactor::ONE && m_BlendAlphaDestinationFactor == BlendFactor::ZERO
+			                                && m_BlendMode == BlendMode::None; }
 
 		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }

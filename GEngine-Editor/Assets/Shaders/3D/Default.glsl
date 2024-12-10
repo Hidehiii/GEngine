@@ -11,6 +11,11 @@
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec4 i_Color;
 layout(location = 2) in vec4 i_Normal;
+layout(location = 3) in vec4 i_Tangent;
+layout(location = 4) in vec2 i_UV0;
+layout(location = 5) in vec2 i_UV1;
+layout(location = 6) in vec2 i_UV2;
+layout(location = 7) in vec2 i_UV3;
 struct VertexOutput
 {
 	vec4 Color;

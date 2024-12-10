@@ -45,7 +45,12 @@ namespace GEngine
 			m_Pipeline->GetVertexBuffer()->SetLayout({
 				{ShaderDataType::float4, "PositionOS"	},
 				{ShaderDataType::float4, "Color"		},
-				{ShaderDataType::float4, "Normal"		}
+				{ShaderDataType::float4, "Normal"		},
+				{ShaderDataType::float3, "Tangent"		},
+				{ShaderDataType::float2, "UV0"			},
+				{ShaderDataType::float2, "UV1"			},
+				{ShaderDataType::float2, "UV2"			},
+				{ShaderDataType::float2, "UV3"			},
 				});
 			m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
 			m_Pipeline->GetVertexBuffer()->SetData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
