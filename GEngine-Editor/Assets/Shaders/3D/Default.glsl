@@ -4,6 +4,7 @@
 #DepthWrite On
 #DepthTest On
 #Properties
+#EndProperties
 
 #Type vertex
 #version 450 core

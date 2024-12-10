@@ -8,7 +8,7 @@
 StorageImage2D headIndexImage;
 StorageBuffer LinkedListSBO;
 SamplerCube TexCube;
-
+#EndProperties
 #Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;

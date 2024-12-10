@@ -1,8 +1,6 @@
 
 #Name Point2D
 
-#Properties
-
 #Type vertex
 #version 450 core
 #include"Assets/Shaders/Core/Core.glsl"

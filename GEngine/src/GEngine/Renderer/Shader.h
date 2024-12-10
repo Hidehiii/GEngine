@@ -91,6 +91,7 @@ namespace GEngine
 		}
 		return 0;
 	}
+	
 	struct ShaderUniform
 	{
 		ShaderUniform() = default;
@@ -143,6 +144,19 @@ namespace GEngine
 		{
 			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
 			return string;
+		}
+
+		static uint8_t ShaderVertexInputFlagToLocation(const std::string& flag)
+		{
+			if (ToLower(flag) == "position")	return 0;
+			if (ToLower(flag) == "color")		return 1;
+			if (ToLower(flag) == "normal")		return 2;
+			if (ToLower(flag) == "tangent")		return 3;
+			if (ToLower(flag) == "uv0")			return 4;
+			if (ToLower(flag) == "uv1")			return 5;
+			if (ToLower(flag) == "uv2")			return 6;
+			if (ToLower(flag) == "uv3")			return 7;
+			GE_CORE_ASSERT(false, "invalid vertex input");
 		}
 
 		static bool ShaderBoolFromString(const std::string& value)
@@ -282,6 +296,180 @@ namespace GEngine
 			//第二行插入
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
+		}
+		static void InsertShaderVertexInput(std::string& source, const std::string& vertexInput)
+		{
+			//第二行插入
+			size_t eol = source.find_first_of("\n", 0);
+			source.insert(eol + 1, vertexInput);
+		}
+		static std::string ProcessShaderName(const std::string& source)
+		{
+			std::string output;
+
+			const char* token = "#Name";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return output;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + tokenLength + 1;
+			std::string name = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = name.find(' ', index)) != std::string::npos)
+			{
+				name.erase(index, 1);
+			}
+			output = name;
+			GE_CORE_TRACE("Shader name: {0}", name);
+			return output;
+		}
+		static void ProcessShaderBlend(const std::string& source, BlendMode& mode, BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
+		{
+			const char* token = "#Blend";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + tokenLength + 1;
+			std::string blendString = source.substr(begin, eol - begin);
+			blendString = Utils::RemoveCharFromString(blendString, ';');
+			blendString = Utils::RemoveCharFromString(blendString, '\r');
+			blendString = Utils::RemoveCharFromString(blendString, '\n');
+			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
+			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 5, "Syntax error");
+			mode = Utils::ShaderBlendModeFromString(blends.at(0));
+			if (blends.size() == 3)
+			{
+				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(1));
+				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(2));
+				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
+			}
+			else if (blends.size() == 5)
+			{
+				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
+				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
+				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(3));
+				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(4));
+			}
+			else
+			{
+				GE_CORE_TRACE(" error Blend type: {0}", blends.at(0));
+			}
+		}
+		static void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite)
+		{
+			const char* token = "#DepthWrite";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + tokenLength + 1;
+			std::string depthMaskProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
+			{
+				depthMaskProp.erase(index, 1);
+			}
+			enableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
+			GE_CORE_TRACE("DepthWrite: {0}", enableDepthWrite);
+		}
+		static void ProcessShaderDepthTest(const std::string& source, bool& enableDepthTest)
+		{
+			const char* token = "#DepthTest";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + tokenLength + 1;
+			std::string depthTestProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
+			{
+				depthTestProp.erase(index, 1);
+			}
+			enableDepthTest = Utils::ShaderBoolFromString(depthTestProp);
+			GE_CORE_TRACE("DepthTest: {0}", enableDepthTest);
+		}
+		static void ProcessShaderCull(const std::string& source, CullMode& mode)
+		{
+			const char* token = "#Cull";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin = pos + tokenLength + 1;
+			std::string cullProp = source.substr(begin, eol - begin);
+			int index = 0;
+			while ((index = cullProp.find(' ', index)) != std::string::npos)
+			{
+				cullProp.erase(index, 1);
+			}
+			mode = Utils::ShaderCullModeFromString(cullProp);
+			GE_CORE_TRACE("Cull: {0}", cullProp);
+		}
+		static std::string ProcessShaderVertexInput(const std::string& source)
+		{
+			std::string output;
+
+			const char* token = "#VertexInput";
+			const char* endToken = "#EndVertexInput";
+			size_t tokenLength = strlen(token);
+			size_t pos = source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return output;
+			}
+			size_t eol = source.find_first_of("\r\n", pos);
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			size_t end = source.find(endToken, pos);
+			std::string properties = source.substr(nextLinePos, end - nextLinePos);
+
+			std::vector<std::string> props = Utils::SplitString(properties, '\n');
+			for (auto& prop : props)
+			{
+				//prop = Utils::RemoveCharFromString(prop, ' ');
+				prop = Utils::RemoveCharFromString(prop, '\r');
+				prop = Utils::RemoveCharFromString(prop, '\n');
+				prop = Utils::RemoveCharFromString(prop, '\t');
+				prop = Utils::RemoveCharFromString(prop, ';');
+			}
+			for (auto it = props.begin(); it != props.end();)
+			{
+				if (it->empty())
+					it = props.erase(it);
+				else
+					++it;
+			}
+			for (auto prop : props)
+			{
+				std::string flag = Utils::SplitString(prop, ':').at(1);
+				std::string pro = Utils::SplitString(prop, ':').at(0);
+				output += "layout(location=" + std::to_string(Utils::ShaderVertexInputFlagToLocation(flag)) + ") in " + pro + ";\n";
+			}
+			GE_CORE_INFO(output);
+			return output;
 		}
 
 		static std::string ReadFile(const std::string& path)

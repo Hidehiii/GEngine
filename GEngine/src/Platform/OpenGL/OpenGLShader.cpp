@@ -334,140 +334,39 @@ namespace GEngine
 	{
 		std::unordered_map<GLenum, std::string> shaderSources;
 
-		const char* nameToken			= "#Name";
-		size_t nameTokenLength			= strlen(nameToken);
-
-		const char* blendToken			= "#Blend";
-		size_t blendTokenLength			= strlen(blendToken);
-
-		const char* depthWriteToken		= "#DepthWrite";
-		size_t depthWriteTokenLength	= strlen(depthWriteToken);
-
-		const char* depthTestToken		= "#DepthTest";
-		size_t depthTestTokenLength		= strlen(depthTestToken);
-
-		const char* cullModeToken		= "#Cull";
-		size_t cullModeTokenLength		= strlen(cullModeToken);
-
 		const char* propertyToken		= "#Properties";
+		const char* propertyEndToken	= "#EndProperties";
 		size_t propertyTokenLength		= strlen(propertyToken);
 
 		const char* typeToken			= "#Type";
 		size_t typeTokenLength			= strlen(typeToken);
 
 		// find Name 
-		
-		size_t pos = source.find(nameToken, 0);
-		if (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + nameTokenLength + 1;
-			std::string name = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = name.find(' ', index)) != std::string::npos)
-			{
-				name.erase(index, 1);
-			}
-			m_Name = name;
-			GE_CORE_TRACE("Shader name: {0}", m_Name);
-		}
+		m_Name = Utils::ProcessShaderName(source);
+
 
 		// find Blend
-		pos = source.find(blendToken, 0);
-		if (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + blendTokenLength + 1;
-			std::string blendString = source.substr(begin, eol - begin);
-			blendString = Utils::RemoveCharFromString(blendString, ';');
-			blendString = Utils::RemoveCharFromString(blendString, '\r');
-			blendString = Utils::RemoveCharFromString(blendString, '\n');
-			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 5, "Syntax error");
-			m_BlendMode = Utils::ShaderBlendModeFromString(blends.at(0));
-			if (blends.size() == 3)
-			{
-				m_BlendColorSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				m_BlendAlphaSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				m_BlendColorDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				m_BlendAlphaDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
-			}
-			else if (blends.size() == 5)
-			{
-				m_BlendColorSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				m_BlendColorDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				m_BlendAlphaSourceFactor = Utils::ShaderBlendFactorFromString(blends.at(3));
-				m_BlendAlphaDestinationFactor = Utils::ShaderBlendFactorFromString(blends.at(4));
-			}
-			else
-			{
-				GE_CORE_TRACE("Blend type: {0}", blends.at(0));
-			}
-		}
+		Utils::ProcessShaderBlend(source, m_BlendMode, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
+
 
 		// find DepthWrite
-		pos = source.find(depthWriteToken, 0);
-		if (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + depthWriteTokenLength + 1;
-			std::string depthMaskProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
-			{
-				depthMaskProp.erase(index, 1);
-			}
-			m_EnableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
-			GE_CORE_TRACE("DepthWrite: {0}", m_EnableDepthWrite);
-		}
+		Utils::ProcessShaderDepthWrite(source, m_EnableDepthWrite);
 
 		// find DepthTest
-		pos = source.find(depthTestToken, 0);
-		if (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + depthTestTokenLength + 1;
-			std::string depthTestProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
-			{
-				depthTestProp.erase(index, 1);
-			}
-			m_EnableDepthTest = Utils::ShaderBoolFromString(depthTestProp);
-			GE_CORE_TRACE("DepthTest: {0}", m_EnableDepthTest);
-		}
+		Utils::ProcessShaderDepthTest(source, m_EnableDepthTest);
 
 		// find Cull
-		pos = source.find(cullModeToken, 0);
-		if (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + cullModeTokenLength + 1;
-			std::string cullProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = cullProp.find(' ', index)) != std::string::npos)
-			{
-				cullProp.erase(index, 1);
-			}
-			m_CullMode = Utils::ShaderCullModeFromString(cullProp);
-			GE_CORE_TRACE("Cull: {0}", cullProp);
-		}
+		Utils::ProcessShaderCull(source, m_CullMode);
 		
 		// find Properties
-		pos = source.find(propertyToken, 0);
+		size_t pos = source.find(propertyToken, 0);
 		if (pos != std::string::npos)
 		{
 			// split properties by \n
 			size_t eol = source.find_first_of("\r\n", pos);
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			size_t end = source.find(typeToken, pos);
+			size_t end = source.find(propertyEndToken, pos);
 			std::string properties = source.substr(nextLinePos, end - nextLinePos);
 			std::vector<std::string> props = Utils::SplitString(properties, '\n');
 			for (auto& prop : props)
@@ -594,7 +493,6 @@ namespace GEngine
 			pos = source.find(typeToken, nextLinePos);
 			shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
-
 		return shaderSources;
 	}
 

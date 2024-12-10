@@ -7,7 +7,7 @@
 color p0;
 vector p1;
 float p2;
-
+#EndProperties
 
 #Type vertex
 #version 450 core

@@ -1,7 +1,6 @@
 
 #Name Line2D
 
-#Properties
 
 #Type vertex
 #version 450 core

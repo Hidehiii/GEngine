@@ -4,7 +4,7 @@
 #Properties
 sampler2D GE_PRESENT_FRAME_BUFFER;
 sampler2D GE_PRESENT_IMGUI;
-
+#EndProperties
 #Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;

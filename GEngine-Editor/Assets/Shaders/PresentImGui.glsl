@@ -7,6 +7,7 @@
 
 sampler2D GE_PRESENT_IMGUI;
 
+#EndProperties
 #Type vertex
 #version 450 core
 #include"Assets/Shaders/Core/Core.glsl"

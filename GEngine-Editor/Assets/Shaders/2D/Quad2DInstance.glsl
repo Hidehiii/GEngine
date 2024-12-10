@@ -13,7 +13,7 @@ sampler2D Tex_4;
 sampler2D Tex_5;
 sampler2D Tex_6;
 sampler2D Tex_7;
-
+#EndProperties
 #Type vertex
 #version 450 core
 #include"Assets/Shaders/Core/Core.glsl"

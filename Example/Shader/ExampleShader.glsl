@@ -10,6 +10,8 @@ float prop2;
 int prop3;
 vector prop4;
 
+#EndProperties
+
 #Type vertex
 #version 450 core
 #include"Assets/Shaders/Core/Core.glsl"

@@ -4,7 +4,7 @@
 #DepthWrite On
 #DepthTest On
 #Properties
-
+#EndProperties
 #Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_PositionOS;

@@ -9,7 +9,7 @@
 StorageImage2D headIndexImage;
 StorageBuffer LinkedListSBO;
 StorageBuffer GeometrySBO;
-
+#EndProperties
 #Type vertex
 #version 450 core
 layout(location = 0) in vec4 i_position;
