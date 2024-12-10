@@ -2,7 +2,7 @@
 #Name OIT
 #DepthWrite Off
 #DepthTest On
-#Blend Alpha
+#Blend None
 #Properties
 
 StorageImage2D headIndexImage;

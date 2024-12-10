@@ -26,7 +26,8 @@ namespace GEngine
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
 			// Read blend type and factor
-			m_BlendMode					= m_Shader->GetBlendMode();
+			m_BlendModeColor = m_Shader->GetBlendModeColor();
+			m_BlendModeAlpha = m_Shader->GetBlendModeAlpha();
 			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSourceFactor();
 			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSourceFactor();
 			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDestinationFactor();

@@ -26,7 +26,7 @@ namespace GEngine
 		virtual void EnableDepthWrite(bool enabled) override;
 		virtual void EnableDepthTest(bool enabled) override;
 		virtual void SetCull(CullMode mode) override;
-		virtual void SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) override;
+		virtual void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) override;
 
 
 		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) override;

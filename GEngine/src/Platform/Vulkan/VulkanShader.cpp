@@ -155,7 +155,7 @@ namespace GEngine
 		m_Name = Utils::ProcessShaderName(source);
 
 		// find Blend
-		Utils::ProcessShaderBlend(source, m_BlendMode, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
+		Utils::ProcessShaderBlend(source, m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
 
 
 		// find DepthWrite

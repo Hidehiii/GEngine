@@ -1,5 +1,5 @@
 #Name ExampleShader
-#Blend Alpha SrcAlpha OneMinusSrcAlpha
+#Blend Add SrcAlpha OneMinusSrcAlpha
 #DepthWrite On
 #DepthTest On
 #Cull Back

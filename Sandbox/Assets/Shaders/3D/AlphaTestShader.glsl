@@ -1,6 +1,6 @@
 
 #Name AlphaTestShader
-#Blend Alpha SrcAlpha OneMinusSrcAlpha
+#Blend Add SrcAlpha OneMinusSrcAlpha
 #DepthWrite Off
 #DepthTest On
 #Properties

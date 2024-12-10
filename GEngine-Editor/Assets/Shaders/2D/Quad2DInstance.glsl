@@ -1,5 +1,5 @@
 #Name Quad2DInstance
-#Blend Alpha SrcAlpha OneMinusSrcAlpha
+#Blend Add SrcAlpha OneMinusSrcAlpha
 #DepthWrite Off
 #DepthTest On
 #Cull Back

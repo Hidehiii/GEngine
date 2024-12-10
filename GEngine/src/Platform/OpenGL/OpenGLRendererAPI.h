@@ -24,7 +24,7 @@ namespace GEngine
 		virtual void EnableDepthWrite(bool enabled) override;
 		virtual void EnableDepthTest(bool enabled) override;
 		virtual void SetCull(CullMode mode) override;
-		virtual void SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) override;
+		virtual void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) override;
 
 		virtual void SetLineWidth(float width) override;
 		virtual void SetPointSize(float size) override;

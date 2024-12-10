@@ -94,9 +94,10 @@ namespace GEngine
 	{
 		m_CullMode = mode;
 	}
-	void Material::SetBlendMode(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
 	{
-		m_BlendMode = mode;
+		m_BlendModeColor = modeColor;
+		m_BlendModeAlpha = modeAlpha;
 		m_BlendColorSourceFactor = srcColor;
 		m_BlendColorDestinationFactor = dstColor;
 		m_BlendAlphaSourceFactor = srcAlpha;
@@ -104,7 +105,8 @@ namespace GEngine
 	}
 	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest)
 	{
-		m_BlendMode = mode;
+		m_BlendModeColor = mode;
+		m_BlendModeAlpha = mode;
 		m_BlendColorSourceFactor = source;
 		m_BlendAlphaSourceFactor = source;
 		m_BlendColorDestinationFactor = dest;

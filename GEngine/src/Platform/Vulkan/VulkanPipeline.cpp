@@ -392,6 +392,7 @@ namespace GEngine
 
 		VkPipelineInputAssemblyStateCreateInfo				InputAssembly{};
 		InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		InputAssembly.topology				= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		switch (m_VertexBuffer->GetVertexTopologyType())
 		{
 		case VertexTopology::Point:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
@@ -440,13 +441,59 @@ namespace GEngine
 
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
 		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		ColorBlendAttachment.blendEnable					= VK_FALSE;
+		ColorBlendAttachment.blendEnable					= VK_TRUE;
 		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSourceFactor());
 		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDestinationFactor());
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
+		switch (m_Material->GetBlendModeColor())
+		{
+		case BlendMode::None:
+			ColorBlendAttachment.blendEnable = VK_FALSE;
+			return;
+		case BlendMode::Add:
+			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			break;
+		case BlendMode::Substract:
+			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_SUBTRACT;
+			break;
+		case BlendMode::ReverseSubstract:
+			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
+			break;
+		case BlendMode::Min:
+			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MIN;
+			break;
+		case BlendMode::Max:
+			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MAX;
+			break;
+		default:
+			break;
+		}
 		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSourceFactor());
 		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDestinationFactor());
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
+		switch (m_Material->GetBlendModeAlpha())
+		{
+		case BlendMode::None:
+			ColorBlendAttachment.blendEnable = VK_FALSE;
+			return;
+		case BlendMode::Add:
+			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			break;
+		case BlendMode::Substract:
+			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
+			break;
+		case BlendMode::ReverseSubstract:
+			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
+			break;
+		case BlendMode::Min:
+			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MIN;
+			break;
+		case BlendMode::Max:
+			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MAX;
+			break;
+		default:
+			break;
+		}
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
 		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

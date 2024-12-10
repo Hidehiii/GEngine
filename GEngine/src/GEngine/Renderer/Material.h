@@ -25,14 +25,13 @@ namespace GEngine
 		virtual void UploadData() = 0;
 
 		virtual CullMode GetCullMode() { return m_CullMode; }
-		virtual BlendMode GetBlendMode() { return m_BlendMode; }
+		virtual BlendMode GetBlendModeColor() { return m_BlendModeColor; }
+		virtual BlendMode GetBlendModeAlpha() { return m_BlendModeAlpha; }
 		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
 		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
 		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
 		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
-		virtual bool IsOpaque() { return m_BlendColorSourceFactor == BlendFactor::ONE && m_BlendColorDestinationFactor == BlendFactor::ZERO
-											&& m_BlendAlphaSourceFactor == BlendFactor::ONE && m_BlendAlphaDestinationFactor == BlendFactor::ZERO
-			                                && m_BlendMode == BlendMode::None; }
+		virtual bool IsOpaque() { return m_BlendModeColor == BlendMode::None || m_BlendModeAlpha == BlendMode::None; }
 
 		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
@@ -42,7 +41,7 @@ namespace GEngine
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
-		virtual void SetBlendMode(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
+		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
 
 		virtual void SetFloat(const std::string& name, float value);
 		virtual void SetInt(const std::string& name, int value);
@@ -93,7 +92,8 @@ namespace GEngine
 
 		
 		std::string											m_Name;
-		BlendMode											m_BlendMode = BlendMode::None;
+		BlendMode											m_BlendModeColor = BlendMode::None;
+		BlendMode											m_BlendModeAlpha = BlendMode::None;
 		CullMode											m_CullMode = CullMode::Back;
 		Buffer												m_UniformsBuffer;
 		std::vector<ShaderUniform>							m_Uniforms;

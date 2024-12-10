@@ -27,7 +27,8 @@ namespace GEngine
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
 			// Read blend type and factor
-			m_BlendMode					= m_Shader->GetBlendMode();
+			m_BlendModeColor					= m_Shader->GetBlendModeColor();
+			m_BlendModeAlpha					= m_Shader->GetBlendModeAlpha();
 			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSourceFactor();
 			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSourceFactor();
 			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDestinationFactor();
@@ -83,7 +84,7 @@ namespace GEngine
 			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
 		RenderCommand::SetCull(m_CullMode);
-		RenderCommand::SetBlend(m_BlendMode, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
+		RenderCommand::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
 		RenderCommand::EnableDepthTest(m_EnableDepthTest);
 		RenderCommand::EnableDepthWrite(m_EnableDepthWrite);
 	}

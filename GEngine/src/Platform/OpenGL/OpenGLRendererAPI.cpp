@@ -93,35 +93,60 @@ namespace GEngine
 		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
 		}
 	}
-	void OpenGLRendererAPI::SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+	void OpenGLRendererAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
 	{
-		switch (mode)
+		GLenum colorMode = GL_FUNC_ADD, alphaMode = GL_FUNC_ADD;
+		switch (modeColor)
 		{
 		case BlendMode::None:
 			glDisable(GL_BLEND);
+			return;
+		case BlendMode::Add:
+			colorMode = GL_FUNC_ADD;
 			break;
-		case BlendMode::Alpha:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		case BlendMode::Substract:
+			colorMode = (GL_FUNC_SUBTRACT);
 			break;
-		case BlendMode::Additive:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR);
+		case BlendMode::ReverseSubstract:
+			colorMode = (GL_FUNC_REVERSE_SUBTRACT);
 			break;
-		case BlendMode::Multiply:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		case BlendMode::Min:
+			colorMode = (GL_MIN);
 			break;
-		case BlendMode::Customized:
-			glEnable(GL_BLEND);
-			glBlendFuncSeparate(Utils::BlendFactorToGLBlendFactor(srcColor),
-				Utils::BlendFactorToGLBlendFactor(dstColor),
-				Utils::BlendFactorToGLBlendFactor(srcAlpha),
-				Utils::BlendFactorToGLBlendFactor(dstAlpha));
+		case BlendMode::Max:
+			colorMode = (GL_MAX);
 			break;
 		default:
 			break;
 		}
+		switch (modeAlpha)
+		{
+		case BlendMode::None:
+			glDisable(GL_BLEND);
+			return;
+		case BlendMode::Add:
+			alphaMode = GL_FUNC_ADD;
+			break;
+		case BlendMode::Substract:
+			alphaMode = GL_FUNC_SUBTRACT;
+			break;
+		case BlendMode::ReverseSubstract:
+			alphaMode = GL_FUNC_REVERSE_SUBTRACT;
+			break;
+		case BlendMode::Min:
+			alphaMode = GL_MIN;
+			break;
+		case BlendMode::Max:
+			alphaMode = GL_MAX;
+			break;
+		default:
+			break;
+		}
+		glBlendEquationSeparate(colorMode, alphaMode);
+		glBlendFuncSeparate(Utils::BlendFactorToGLBlendFactor(srcColor),
+			Utils::BlendFactorToGLBlendFactor(dstColor),
+			Utils::BlendFactorToGLBlendFactor(srcAlpha),
+			Utils::BlendFactorToGLBlendFactor(dstAlpha));
 	}
 	void OpenGLRendererAPI::SetLineWidth(float width)
 	{

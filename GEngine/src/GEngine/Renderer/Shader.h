@@ -55,10 +55,11 @@ namespace GEngine
 	enum class BlendMode
 	{
 		None = 0,
-		Alpha = 1,
-		Additive = 2,
-		Multiply = 3,
-		Customized = 4
+		Add = 1,
+		Substract = 2,
+		ReverseSubstract = 3,
+		Min = 4,
+		Max = 5,
 	};
 	class GENGINE_API ShaderDataFlag
 	{
@@ -263,10 +264,11 @@ namespace GEngine
 		static BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
 			if (ToLower(type) == "none")			return BlendMode::None;
-			if (ToLower(type) == "alpha")			return BlendMode::Alpha;
-			if (ToLower(type) == "additive")		return BlendMode::Additive;
-			if (ToLower(type) == "multiply")		return BlendMode::Multiply;
-			if (ToLower(type) == "customized")		return BlendMode::Customized;
+			if (ToLower(type) == "add")				return BlendMode::Add;
+			if (ToLower(type) == "substract")		return BlendMode::Substract;
+			if (ToLower(type) == "reversesubstract")		return BlendMode::ReverseSubstract;
+			if (ToLower(type) == "min")		return BlendMode::Min;
+			if (ToLower(type) == "max")		return BlendMode::Max;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return BlendMode::None;
@@ -327,7 +329,7 @@ namespace GEngine
 			GE_CORE_TRACE("Shader name: {0}", name);
 			return output;
 		}
-		static void ProcessShaderBlend(const std::string& source, BlendMode& mode, BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
+		static void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha, BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
 		{
 			const char* token = "#Blend";
 			size_t tokenLength = strlen(token);
@@ -344,26 +346,31 @@ namespace GEngine
 			blendString = Utils::RemoveCharFromString(blendString, '\r');
 			blendString = Utils::RemoveCharFromString(blendString, '\n');
 			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 5, "Syntax error");
-			mode = Utils::ShaderBlendModeFromString(blends.at(0));
+			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 6, "Syntax error");
+			modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
+			modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
 			if (blends.size() == 3)
 			{
+				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
+				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
 				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
 				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(1));
 				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
 				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(2));
 				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
 			}
-			else if (blends.size() == 5)
+			else if (blends.size() == 6)
 			{
+				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
 				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
 				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(3));
-				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(4));
+				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(3));
+				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(4));
+				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(5));
 			}
 			else
 			{
-				GE_CORE_TRACE(" error Blend type: {0}", blends.at(0));
+				GE_CORE_TRACE("Blend type: {0}", blends.at(0));
 			}
 		}
 		static void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite)
@@ -504,7 +511,8 @@ namespace GEngine
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
 
-		virtual BlendMode GetBlendMode() { return m_BlendMode; }
+		virtual BlendMode GetBlendModeColor() { return m_BlendModeColor; }
+		virtual BlendMode GetBlendModeAlpha() { return m_BlendModeAlpha; }
 		virtual CullMode GetCullMode() { return m_CullMode; }
 		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
 		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
@@ -548,7 +556,8 @@ namespace GEngine
 		BlendFactor											m_BlendColorDestinationFactor	= BlendFactor::ZERO;
 		BlendFactor											m_BlendAlphaSourceFactor	= BlendFactor::ONE;
 		BlendFactor											m_BlendAlphaDestinationFactor = BlendFactor::ZERO;
-		BlendMode											m_BlendMode					= BlendMode::None;
+		BlendMode											m_BlendModeColor					= BlendMode::None;
+		BlendMode											m_BlendModeAlpha					= BlendMode::None;
 		CullMode											m_CullMode					= CullMode::Back;
 		
 	};

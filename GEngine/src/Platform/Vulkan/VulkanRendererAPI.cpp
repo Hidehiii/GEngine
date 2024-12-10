@@ -42,7 +42,7 @@ namespace GEngine
     void VulkanRendererAPI::SetCull(CullMode mode)
     {
     }
-    void VulkanRendererAPI::SetBlend(BlendMode mode, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+    void VulkanRendererAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
     {
     }
     void VulkanRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
