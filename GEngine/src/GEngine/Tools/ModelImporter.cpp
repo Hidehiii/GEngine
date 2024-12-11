@@ -9,6 +9,7 @@ namespace GEngine
     }
     bool ModelImporter::LoadMesh(const std::string filaName)
 	{
+		m_Meshes.clear();
         m_FilePath = filaName;
         FbxManager* manager = FbxManager::Create();
         FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
@@ -33,7 +34,6 @@ namespace GEngine
                 ProcessNode(m_RootNode->GetChild(i));
         }
         m_Importer->Destroy();
-        m_Meshes.clear();
 		return true;
 	}
 

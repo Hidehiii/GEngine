@@ -67,6 +67,10 @@ private:
 	Ref<Texture2D> m_Texture;
 	Ref<CubeMap> m_CubeMap;
 
+	Ref<Scene> m_Scene;
+	ModelImporter m_ModelImporter;
+	GameObject m_SkyBox;
+
 	std::vector<PresentVertex> m_PresentVertex;
 	Ref<Pipeline> m_PresentPipeline;
 

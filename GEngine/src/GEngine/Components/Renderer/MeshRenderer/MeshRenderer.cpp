@@ -22,6 +22,7 @@ namespace GEngine
 	{
 		if(m_Pipeline)
 			m_Pipeline->SetMaterial(material);
+		m_Material = material;
 	}
 	void MeshRenderer::UpdatePipeline()
 	{
@@ -35,10 +36,18 @@ namespace GEngine
 					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
 				);
 			}
-			else
+			else if (m_Material)
 			{
 				m_Pipeline = Pipeline::Create(
-					Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl")),
+					m_Material,
+					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
+				);
+			}
+			else
+			{
+				m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));
+				m_Pipeline = Pipeline::Create(
+					m_Material,
 					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
 				);
 			}

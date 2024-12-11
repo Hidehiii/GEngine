@@ -57,6 +57,18 @@ void Sandbox2D::OnAttach()
 		}
 	}
 
+	m_Scene = CreateRef<Scene>();
+	m_SkyBox = m_Scene->CreateGameObject("SkyBox");
+	m_SkyBox.AddComponent<MeshFilter>();
+	m_ModelImporter.LoadMesh("Resources/Model/Cube.fbx");
+	m_SkyBox.GetComponent<MeshFilter>().SetMesh(m_ModelImporter.GetMesh(0));
+	m_SkyBox.AddComponent<MeshRenderer>();
+	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.glsl"));
+	mat->SetCullMode(CullMode::None);
+	m_SkyBox.GetComponent<MeshRenderer>().SetMaterial(mat);
+
+	
+
 	m_PresentVertex.resize(4);
 	m_OIT = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OIT.glsl")),
@@ -178,6 +190,7 @@ void Sandbox2D::OnAttach()
 		"Assets/Textures/CubeTest.png",
 		"Assets/Textures/CubeTest.png");
 	m_OIT->GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
+	mat->SetCubeMap("TexCube", m_CubeMap);
 }
 
 void Sandbox2D::OnDetach()
@@ -219,6 +232,10 @@ void Sandbox2D::OnRender()
 	RenderCommand::BeginDrawCommand();
 	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
+	
+	m_SkyBox.GetComponent<MeshRenderer>().OnRender();
+
+
 	m_OIT->Render();
 
 	Renderer::EndScene();

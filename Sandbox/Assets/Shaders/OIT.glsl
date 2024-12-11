@@ -95,13 +95,15 @@ void main()
     }
 
     // 混合处理
-    vec4 color = vec4(0.025, 0.025, 0.025, 1.0f);  //底图
-    color = texture(TexCube, ivec3(gl_FragCoord.xy, GE_CAMERA_POSITION.z));
+    vec4 color = vec4(0.0, 0.0, 0.0, 0.0);  //底图
     for (int i = 0; i < count; ++i)
     {
         color = mix(color, fragments[i].color, fragments[i].color.a);
     }
-
+    if(color.a <= 0.0001f)
+    {
+        discard;
+    }
     o_color = color;
     imageAtomicExchange(headIndexImage, ivec2(gl_FragCoord.xy), -1);
 }

@@ -18,11 +18,12 @@ namespace GEngine
 		void OnRender();
 
 		void SetMaterial(Ref<Material> material);
-		Ref<Material> GetMaterial() { return m_Pipeline ?  m_Pipeline->GetMaterial() : nullptr; }
+		Ref<Material> GetMaterial() { return m_Material; }
 	private:
 		void UpdatePipeline();
 	private:
 		Ref<Pipeline>	m_Pipeline = nullptr;
+		Ref<Material>   m_Material = nullptr;
 		friend class MeshFilter;
 	};
 }
