@@ -449,7 +449,7 @@ namespace GEngine
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
-			return;
+			break;
 		case BlendMode::Add:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
 			break;
@@ -475,7 +475,7 @@ namespace GEngine
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
-			return;
+			break;
 		case BlendMode::Add:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 			break;

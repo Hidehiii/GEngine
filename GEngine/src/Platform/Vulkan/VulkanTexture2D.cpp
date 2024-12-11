@@ -145,8 +145,8 @@ namespace GEngine
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, 0, m_AspectFlag);
 		uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
-		//Utils::GenerateMipmap(m_Image, m_Width, m_Height, mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
-        //m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		Utils::GenerateMipmap(m_Image, m_Width, m_Height, mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
