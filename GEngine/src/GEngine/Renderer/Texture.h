@@ -17,6 +17,9 @@ namespace GEngine
 		virtual std::string GetPath() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
+	protected:
+		bool m_GenerateMipmap = true;
 	};
 
 	
@@ -30,6 +33,7 @@ namespace GEngine
 
 		// 默认白色纹理
 		static Ref<Texture2D> White();
+
 	private:
 		static Ref<Texture2D>	s_WhiteTexture2D;
 	};

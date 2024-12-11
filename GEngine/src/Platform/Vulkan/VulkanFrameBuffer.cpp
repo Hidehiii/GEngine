@@ -75,9 +75,10 @@ namespace GEngine
 				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				1,
 				0,
+				1,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, VK_FORMAT_D24_UNORM_S8_UINT, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 1, imageView);
 
 			m_DepthStencilImage = image;
 			m_DepthStencilImageView = imageView;
@@ -180,9 +181,11 @@ namespace GEngine
 			Utils::BlitImage(m_ColorImages[i],
 				m_ColorAttachmentsTexture2D[i]->GetImageLayout(),
 				Vector2(width, height),
+				1,
 				dstFramebuffer->m_ColorImages[i],
 				dstFramebuffer->m_ColorAttachmentsTexture2D[i]->GetImageLayout(),
 				Vector2(width, height),
+				1,
 				VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 		// TODO: 还有深度的要转，但是目前这个函数用不到先不写了
@@ -231,9 +234,10 @@ namespace GEngine
 					VK_SAMPLE_COUNT_1_BIT,
 					1,
 					0,
+					1,
 					image,
 					imageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
 				break;
 			}
 			default:
@@ -259,9 +263,10 @@ namespace GEngine
 					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 					1,
 					0,
+					1,
 					tempImage,
 					tempImageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, tempImageView);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, tempImageView);
 				m_Images.push_back(tempImage);
 				m_Attachments.push_back(tempImageView);
 				m_ImagesMemory.push_back(tempImageMemory);
@@ -296,9 +301,10 @@ namespace GEngine
 				VK_SAMPLE_COUNT_1_BIT,
 				1,
 				0,
+				1,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 			break;
 		}
 			
@@ -316,9 +322,10 @@ namespace GEngine
 				VK_SAMPLE_COUNT_1_BIT,
 				1,
 				0,
+				1,
 				image, 
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 			break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown format");
@@ -343,9 +350,10 @@ namespace GEngine
 				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 				1,
 				0,
+				1,
 				tempImage,
 				tempImageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, tempImageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, tempImageView);
 			m_Images.push_back(tempImage);
 			m_Attachments.push_back(tempImageView);
 			m_ImagesMemory.push_back(tempImageMemory);

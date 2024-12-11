@@ -79,7 +79,7 @@ namespace GEngine
 	}
 	void OpenGLTexture2D::SetData(const void* data, uint32_t size)
 	{
-
+		glGenerateTextureMipmap(m_RendererID);
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
 	}
 	void OpenGLTexture2D::Bind(const uint32_t slot)

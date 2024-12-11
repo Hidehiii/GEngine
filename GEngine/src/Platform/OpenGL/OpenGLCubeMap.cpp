@@ -66,6 +66,9 @@ namespace GEngine
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 		glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
+
+		glGenerateTextureMipmap(m_RendererID);
+		
 	}
 	void OpenGLCubeMap::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face)
 	{
@@ -78,6 +81,7 @@ namespace GEngine
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 		glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, 0, 0, 0, 0, 0, width, height);
 		glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
+		glGenerateTextureMipmap(m_RendererID);
 	}
 	void OpenGLCubeMap::Bind(const uint32_t slot)
 	{
