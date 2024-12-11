@@ -29,7 +29,7 @@ namespace GEngine
             m_Format = RenderImage2DFormat::RGB8F;
         }
         
-        uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                    VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -41,10 +41,10 @@ namespace GEngine
                             VK_SAMPLE_COUNT_1_BIT,
                             1,
                             0,
-                            mipLevels,
+                            m_MipLevels,
 			                m_Image,
 			                m_ImageMemory);
-        Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, m_ImageView);
+        Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
 
         stbi_image_free(data);
@@ -57,7 +57,7 @@ namespace GEngine
         m_Width     = width;
         m_Format = format;
 
-        uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -69,10 +69,10 @@ namespace GEngine
                             VK_SAMPLE_COUNT_1_BIT,
                             1,
                             0,
-                            mipLevels,
+                            m_MipLevels,
 			                m_Image,
 			                m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
         CreateSampler();
     }
@@ -82,7 +82,7 @@ namespace GEngine
 		m_Width = width;
         m_Format = format;
 
-        uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -94,10 +94,10 @@ namespace GEngine
             VK_SAMPLE_COUNT_1_BIT,
             1,
             0,
-            mipLevels,
+            m_MipLevels,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
 		CreateSampler();
         SetData(data, size);
@@ -144,8 +144,7 @@ namespace GEngine
 
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, 0, m_AspectFlag);
-		uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
-		Utils::GenerateMipmap(m_Image, m_Width, m_Height, mipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
+		Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
@@ -162,7 +161,7 @@ namespace GEngine
 
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
-        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, 1);
+        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
         m_ImageLayout = newLayout;
     }
     void VulkanTexture2D::CreateSampler()

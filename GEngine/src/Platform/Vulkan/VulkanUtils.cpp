@@ -127,6 +127,13 @@ namespace GEngine
 				sourceStage			= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 				destinationStage	= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			}
+			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+				sourceStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+				destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			}
 			else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -588,14 +595,14 @@ namespace GEngine
 				VkImageBlit		region{};
 				region.srcSubresource.aspectMask = aspectFlag;
 				region.srcSubresource.baseArrayLayer = baseArrayLayer;
-				region.srcSubresource.layerCount = 1;
+				region.srcSubresource.layerCount = layerCount;
 				region.srcSubresource.mipLevel = i - 1;
 				region.srcOffsets[0] = { 0, 0, 0 };
 				region.srcOffsets[1] = { mipWidth, mipHeight, 1 };
 				region.dstSubresource.mipLevel = i;
 				region.dstSubresource.aspectMask = aspectFlag;
 				region.dstSubresource.baseArrayLayer = baseArrayLayer;
-				region.dstSubresource.layerCount = 1;
+				region.dstSubresource.layerCount = layerCount;
 				region.dstOffsets[0] = { 0, 0, 0 };
 				region.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
 

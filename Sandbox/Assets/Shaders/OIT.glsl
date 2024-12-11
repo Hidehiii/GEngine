@@ -36,6 +36,13 @@ void main()
 #Type fragment
 #version 450 core
 layout(location = 0) out vec4 o_color;
+layout(std140, binding = 1) uniform CAMERA
+{
+    mat4 GE_MATRIX_V;
+    mat4 GE_MATRIX_P;
+    mat4 GE_MATRIX_VP;
+    vec4 GE_CAMERA_POSITION;
+};
 layout(std140, binding = 2) uniform TIME
 {
 	vec4 GE_TIME;
@@ -89,7 +96,7 @@ void main()
 
     // 混合处理
     vec4 color = vec4(0.025, 0.025, 0.025, 1.0f);  //底图
-    color = texture(TexCube, ivec3(gl_FragCoord.xy, 0));
+    color = texture(TexCube, ivec3(gl_FragCoord.xy, GE_CAMERA_POSITION.z));
     for (int i = 0; i < count; ++i)
     {
         color = mix(color, fragments[i].color, fragments[i].color.a);

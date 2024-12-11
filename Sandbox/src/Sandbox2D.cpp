@@ -170,6 +170,14 @@ void Sandbox2D::OnAttach()
 
 	m_OITPrepare->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 	m_OIT->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
+
+	m_CubeMap = CubeMap::Create("Assets/Textures/CubeTest.png",
+		"Assets/Textures/CubeTest.png",
+		"Assets/Textures/CubeTest.png",
+		"Assets/Textures/CubeTest.png",
+		"Assets/Textures/CubeTest.png",
+		"Assets/Textures/CubeTest.png");
+	m_OIT->GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
 }
 
 void Sandbox2D::OnDetach()
@@ -212,6 +220,7 @@ void Sandbox2D::OnRender()
 	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_OIT->Render();
+
 	Renderer::EndScene();
 	m_OIT_1->End();
 	RenderCommand::EndDrawCommand();

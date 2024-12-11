@@ -29,15 +29,15 @@ namespace GEngine
 		{
 			m_Format = RenderImage2DFormat::RGB8F;
 		}
-
+		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
+		SetData(data, m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format));
 		stbi_image_free(data);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
@@ -45,25 +45,24 @@ namespace GEngine
 	{
 
 		m_Format = format;
-
+		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
 		: m_Width(width), m_Height(height)
 	{
 		m_Format = format;
-
+		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		SetData(data, size);
@@ -79,8 +78,9 @@ namespace GEngine
 	}
 	void OpenGLTexture2D::SetData(const void* data, uint32_t size)
 	{
-		glGenerateTextureMipmap(m_RendererID);
+		
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
+		glGenerateTextureMipmap(m_RendererID);
 	}
 	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	

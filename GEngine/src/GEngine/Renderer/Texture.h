@@ -15,11 +15,13 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) = 0;
 		virtual void Bind(const uint32_t slot = 0) = 0;
 		virtual std::string GetPath() const = 0;
+		virtual uint32_t GetMipLevels() { return m_MipLevels; }
 
 		virtual bool operator==(const Texture& other) const = 0;
 
 	protected:
 		bool m_GenerateMipmap = true;
+		uint32_t m_MipLevels = 1;
 	};
 
 	

@@ -65,6 +65,7 @@ private:
 	std::vector<TestVertex> m_vertex;
 
 	Ref<Texture2D> m_Texture;
+	Ref<CubeMap> m_CubeMap;
 
 	std::vector<PresentVertex> m_PresentVertex;
 	Ref<Pipeline> m_PresentPipeline;
