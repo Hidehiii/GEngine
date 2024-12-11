@@ -16,6 +16,10 @@ layout(std140, binding = 1) uniform CAMERA
 	mat4 GE_MATRIX_VP;
 	vec4 GE_CAMERA_POSITION;
 };
+layout(std140, binding = 3) uniform MODEL
+{
+	mat4 GE_MATRIX_M;
+};
 struct VertexOutput
 {
 	vec4 position;
@@ -23,7 +27,7 @@ struct VertexOutput
 layout (location = 0) out VertexOutput OUT;
 void main()
 {
-	gl_Position =  (i_position);
+	gl_Position =  GE_MATRIX_VP * GE_MATRIX_M * (i_position);
 	OUT.position = gl_Position;
 }
 
@@ -52,6 +56,4 @@ void main()
 
     ivec3 uv = ivec3(IN.position.x, IN.position.y, IN.position.z);
     o_color = texture(TexCube, uv);
-    o_color.a = 1.0f;
-    o_color.r = 1.0f;
 }

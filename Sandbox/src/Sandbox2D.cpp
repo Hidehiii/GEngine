@@ -234,9 +234,10 @@ void Sandbox2D::OnRender()
 	Renderer::BeginScene(m_EditorCamera);
 	
 	m_SkyBox.GetComponent<MeshRenderer>().OnRender();
+	m_SkyBox.GetComponent<MeshRenderer>().GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
+	m_SkyBox.GetComponent<MeshRenderer>().GetMaterial()->SetCullMode(CullMode::Front);
 
-
-	m_OIT->Render();
+	//m_OIT->Render();
 
 	Renderer::EndScene();
 	m_OIT_1->End();
