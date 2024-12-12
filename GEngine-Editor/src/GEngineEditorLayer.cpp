@@ -160,7 +160,6 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnUpdate()
 	{
-		GE_PROFILE_FUNCTION();
 
 		// Scene update ( logic and physics )
 		{
@@ -245,7 +244,6 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnImGuiRender()
 	{
-		GE_PROFILE_FUNCTION();
 
 		bool dockSpace = true;
 		// If you strip some features of, this demo is pretty much equivalent to calling DockSpaceOverViewport()!
@@ -447,12 +445,6 @@ namespace GEngine
 					tc.m_Position = position;
 					tc.SetEulerAngle(Math::Degrees(rotation));
 					tc.m_Scale = scale;
-					// delta mat
-					/*Vector3 deltaPosition, deltaRotation, deltaScale;
-					Math::DecomposeTransformMatrix(deltaMatrix, deltaPosition, deltaRotation, deltaScale);
-					tc.m_Position += deltaPosition;
-					tc.Rotate(Math::Degrees(deltaRotation));
-					tc.m_Scale = deltaScale;*/
 				}
 
 			}

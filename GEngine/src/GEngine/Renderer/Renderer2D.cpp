@@ -268,7 +268,6 @@ namespace GEngine
 	}
 	void Renderer2D::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color)
 	{
-		GE_PROFILE_FUNCTION();
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
@@ -289,7 +288,6 @@ namespace GEngine
 	}
 	void Renderer2D::DrawCircle(Transform& transform, const float& radius, const Vector4& lineColor, const int& segmentCount)
 	{
-		GE_PROFILE_FUNCTION();
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
@@ -309,7 +307,6 @@ namespace GEngine
 	}
 	void Renderer2D::DrawLine(const Vector3& start, const Vector3& direction, const float length, const Vector4& color)
 	{
-		GE_PROFILE_FUNCTION();
 
 		if (s_Data.LineVertexCount >= Renderer2DData::MaxInstance)
 		{
@@ -332,7 +329,6 @@ namespace GEngine
 	}
 	void Renderer2D::DrawPoint(const Vector3& position, const Vector4& color)
 	{
-		GE_PROFILE_FUNCTION();
 
 		if (s_Data.PointVertexCount >= Renderer2DData::MaxInstance)
 		{

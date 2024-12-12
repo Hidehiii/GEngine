@@ -39,10 +39,7 @@ layout (binding = 40) uniform sampler2D GE_PRESENT_IMGUI;
 
 void main()
 {
-	vec2 newUV = IN.uv;
-#if GE_ATTACHMENT_UV_STARTS_AT_TOP
-	newUV.y = 1- newUV.y;
-#endif
+	vec2 newUV = TransformUV(IN.uv);
 	vec4 imgui = texture(GE_PRESENT_IMGUI, newUV);
 	o_color = imgui;
 	o_color.rgb = Vec3ToSrgb(o_color.rgb);
