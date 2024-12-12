@@ -23,7 +23,7 @@ namespace GEngine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	OpenGLCubeMap::OpenGLCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
@@ -59,7 +59,7 @@ namespace GEngine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		LoadImageData();
 	}
 	OpenGLCubeMap::~OpenGLCubeMap()

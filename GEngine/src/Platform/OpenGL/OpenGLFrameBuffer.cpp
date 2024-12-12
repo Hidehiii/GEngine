@@ -112,8 +112,8 @@ namespace GEngine
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
         glDeleteFramebuffers(1, &m_RendererID);
-        glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
-        glDeleteTextures(1, &m_DepthAttachment);
+        /*glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
+        glDeleteTextures(1, &m_DepthAttachment);*/
         if (m_Specification.Samples > 1)
         {
             glDeleteFramebuffers(1, &m_MultiSampleRendererID);

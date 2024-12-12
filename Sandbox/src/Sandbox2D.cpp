@@ -29,7 +29,7 @@ void Sandbox2D::OnAttach()
 	fspec.Samples = 1;
 	m_OIT_1 = FrameBuffer::Create(fspec);
 
-	m_EditorCamera = Editor::EditorCamera(10.0f, 1.0f, 0.01f, 10000.0f);
+	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
 	// Read all shader files
 	{
@@ -60,7 +60,7 @@ void Sandbox2D::OnAttach()
 	m_Scene = CreateRef<Scene>();
 	m_SkyBox = m_Scene->CreateGameObject("SkyBox");
 	m_SkyBox.AddComponent<MeshFilter>();
-	m_ModelImporter.LoadMesh("Resources/Model/Cube.fbx");
+	m_ModelImporter.LoadMesh("Resources/Model/2Cube.fbx");
 	m_SkyBox.GetComponent<MeshFilter>().SetMesh(m_ModelImporter.GetMesh(0));
 	m_SkyBox.AddComponent<MeshRenderer>();
 	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.glsl"));
@@ -189,8 +189,8 @@ void Sandbox2D::OnAttach()
 		"Assets/Textures/JPG/Glass/top.jpg",
 		"Assets/Textures/JPG/Glass/bottom.jpg",
 		"Assets/Textures/JPG/Glass/back.jpg",
-		"Assets/Textures/JPG/Glass/front.jpg", true);
-	m_OIT->GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
+		"Assets/Textures/JPG/Glass/front.jpg");
+	
 	mat->SetCubeMap("TexCube", m_CubeMap);
 }
 
@@ -235,8 +235,8 @@ void Sandbox2D::OnRender()
 	Renderer::BeginScene(m_EditorCamera);
 	
 	m_Scene->OnRender();
-
-	//m_OIT->Render();
+	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_OIT_1->GetColorAttachment(0));
+	m_OIT->Render();
 
 	Renderer::EndScene();
 	m_OIT_1->End();

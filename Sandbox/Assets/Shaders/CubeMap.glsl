@@ -28,9 +28,9 @@ layout (location = 0) out VertexOutput OUT;
 void main()
 {
 	mat4 view = mat4(
-		GE_MATRIX_V[0][0], GE_MATRIX_V[1][0], GE_MATRIX_V[2][0], 0.0f,
-		GE_MATRIX_V[0][1], GE_MATRIX_V[1][1], GE_MATRIX_V[2][1], 0.0f,
-		GE_MATRIX_V[0][2], GE_MATRIX_V[1][2], GE_MATRIX_V[2][2], 0.0f,
+		GE_MATRIX_V[0][0], GE_MATRIX_V[0][1], GE_MATRIX_V[0][2], 0.0f,
+		GE_MATRIX_V[1][0], GE_MATRIX_V[1][1], GE_MATRIX_V[1][2], 0.0f,
+		GE_MATRIX_V[2][0], GE_MATRIX_V[2][1], GE_MATRIX_V[2][2], 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
 	vec4 pos = GE_MATRIX_P * view * GE_MATRIX_M * vec4(i_position.xyz, 1.0f);

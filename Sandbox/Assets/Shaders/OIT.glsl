@@ -7,7 +7,7 @@
 
 StorageImage2D headIndexImage;
 StorageBuffer LinkedListSBO;
-SamplerCube TexCube;
+Sampler2D BaseColor;
 #EndProperties
 #Type vertex
 #version 450 core
@@ -59,7 +59,7 @@ layout (binding = 41) buffer LinkedListSBO
 {
 	Node nodes[];	
 };
-layout (binding = 42) uniform samplerCube TexCube;
+layout (binding = 42) uniform sampler2D BaseColor;
 struct VertexOutput
 {
 	vec4 position;
@@ -96,6 +96,11 @@ void main()
 
     // 混合处理
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);  //底图
+    vec2 newUV = IN.uv;
+#if GE_ATTACHMENT_UV_STARTS_AT_TOP
+    uv.y = 1 - uv.y;
+#endif
+    color = texture(BaseColor, IN.uv);
     for (int i = 0; i < count; ++i)
     {
         color = mix(color, fragments[i].color, fragments[i].color.a);
