@@ -28,7 +28,7 @@ layout (location = 0) out VertexOutput OUT;
 void main()
 {
 	gl_Position =  GE_MATRIX_VP * GE_MATRIX_M * (i_position);
-	OUT.position = gl_Position;
+	OUT.position = i_position;
 }
 
 #Type fragment

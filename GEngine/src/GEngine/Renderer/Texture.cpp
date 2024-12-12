@@ -78,7 +78,7 @@ namespace GEngine
 		return s_WhiteTexture2D;
 	}
 
-	Ref<CubeMap> CubeMap::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
+	Ref<CubeMap> CubeMap::Create(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -87,17 +87,17 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLCubeMap>(width, height, format);
+			return CreateRef<OpenGLCubeMap>(width, height, generateMipmap, format);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanCubeMap>(width, height, format);
+			return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath)
+	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -106,10 +106,10 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath);
+			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
 		}
 

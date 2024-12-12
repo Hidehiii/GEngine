@@ -55,9 +55,9 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) = 0;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) = 0;
 
-		static Ref<CubeMap> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<CubeMap> Create(uint32_t width, uint32_t height, bool generateMipmap = false, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,
-			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath);
+			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap = false);
 
 		// 默认白色
 		static Ref<CubeMap> White();

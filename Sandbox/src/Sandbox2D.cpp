@@ -64,7 +64,7 @@ void Sandbox2D::OnAttach()
 	m_SkyBox.GetComponent<MeshFilter>().SetMesh(m_ModelImporter.GetMesh(0));
 	m_SkyBox.AddComponent<MeshRenderer>();
 	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.glsl"));
-	mat->SetCullMode(CullMode::None);
+	mat->SetCullMode(CullMode::Front);
 	m_SkyBox.GetComponent<MeshRenderer>().SetMaterial(mat);
 
 	
@@ -183,12 +183,12 @@ void Sandbox2D::OnAttach()
 	m_OITPrepare->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 	m_OIT->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 
-	m_CubeMap = CubeMap::Create("Assets/Textures/CubeTest.png",
-		"Assets/Textures/CubeTest.png",
-		"Assets/Textures/CubeTest.png",
-		"Assets/Textures/CubeTest.png",
-		"Assets/Textures/CubeTest.png",
-		"Assets/Textures/CubeTest.png");
+	m_CubeMap = CubeMap::Create("Assets/Textures/right.png",
+		"Assets/Textures/left.png",
+		"Assets/Textures/top.png",
+		"Assets/Textures/bottom.png",
+		"Assets/Textures/back.png",
+		"Assets/Textures/front.png");
 	m_OIT->GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
 	mat->SetCubeMap("TexCube", m_CubeMap);
 }
@@ -234,8 +234,6 @@ void Sandbox2D::OnRender()
 	Renderer::BeginScene(m_EditorCamera);
 	
 	m_SkyBox.GetComponent<MeshRenderer>().OnRender();
-	m_SkyBox.GetComponent<MeshRenderer>().GetMaterial()->SetCubeMap("TexCube", m_CubeMap);
-	m_SkyBox.GetComponent<MeshRenderer>().GetMaterial()->SetCullMode(CullMode::Front);
 
 	//m_OIT->Render();
 

@@ -7,12 +7,17 @@
 
 namespace GEngine
 {
-	VulkanCubeMap::VulkanCubeMap(uint32_t width, uint32_t height, RenderImage2DFormat format)
+	VulkanCubeMap::VulkanCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
 	{
 		m_Height = height;
 		m_Width = width;
 		m_Format = format;
-		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		m_GenerateMipmap = generateMipmap;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
+		
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -31,7 +36,7 @@ namespace GEngine
 		CreateSampler();
 	}
 
-	VulkanCubeMap::VulkanCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath)
+	VulkanCubeMap::VulkanCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
 		m_Path.push_back(rightPath);
 		m_Path.push_back(leftPath);
@@ -39,6 +44,8 @@ namespace GEngine
 		m_Path.push_back(buttomPath);
 		m_Path.push_back(backPath);
 		m_Path.push_back(frontPath);
+		m_GenerateMipmap = generateMipmap;
+		
 		int	width, height, channels;
 		stbi_uc* data;
 		stbi_set_flip_vertically_on_load(1);
@@ -55,7 +62,10 @@ namespace GEngine
 			m_Format = RenderImage2DFormat::RGB8F;
 		}
 		stbi_image_free(data);
-		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -119,9 +129,15 @@ namespace GEngine
 
 		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
-
-		Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
-		m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		if (m_GenerateMipmap)
+		{
+			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
+			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
 	}
 
 	void VulkanCubeMap::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face)
@@ -135,8 +151,15 @@ namespace GEngine
 			m_Image, m_ImageLayout, m_AspectFlag,
 			0, (uint32_t)face);
 
-		Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
-		m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		if (m_GenerateMipmap)
+		{
+			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
+			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
 	}
 
 	void VulkanCubeMap::Bind(const uint32_t slot)

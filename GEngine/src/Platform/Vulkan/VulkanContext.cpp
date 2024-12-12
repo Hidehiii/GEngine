@@ -213,6 +213,15 @@ namespace GEngine
         {
             GE_CORE_ERROR("Failed to find a suitable GPU!");
         }
+
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
+
+        GE_CORE_INFO("          Device name     : {}", deviceProperties.deviceName);
+        GE_CORE_INFO("          Driver version  : {}", deviceProperties.driverVersion);
+        GE_CORE_INFO("          API version     : {}.{}.{}", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+        GE_CORE_INFO("          Vendor id       : {}", deviceProperties.vendorID);
+        GE_CORE_INFO("          Device id       : {}", deviceProperties.deviceID);
     }
     bool VulkanContext::IsDeviceSuitable(VkPhysicalDevice device)
     {
@@ -245,7 +254,7 @@ namespace GEngine
         int                                 i = 0;
         for (const auto& queueFamily : queueFamilies)
         {
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
             {
                 indices.GraphicsFamily = i;
             }
