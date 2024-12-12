@@ -36,7 +36,6 @@ namespace GEngine
 		m_GenerateMipmap = generateMipmap;
 		int	width, height, channels;
 		stbi_uc* data;
-		stbi_set_flip_vertically_on_load(1);
 		data = stbi_load(rightPath.c_str(), &width, &height, &channels, 0);
 		GE_CORE_ASSERT(data, "Failed to load image!");
 		m_Width	= width;
@@ -99,7 +98,7 @@ namespace GEngine
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetRendererID(), 0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
-		glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int)face, 0, 0, 0, 0, 0, width, height);
+		glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (uint16_t)face, 0, 0, 0, 0, 0, width, height);
 		glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
 
 		if (m_GenerateMipmap)

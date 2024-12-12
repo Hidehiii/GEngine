@@ -219,6 +219,7 @@ namespace GEngine
 			int	width, height, channels;
 			stbi_uc* data;
 			stbi_set_flip_vertically_on_load(1);
+			GE_INFO("Loading cube map : {}", m_Path.at(i).c_str());
 			data = stbi_load(m_Path.at(i).c_str(), &width, &height, &channels, 0);
 			GE_CORE_ASSERT(data, "Failed to load image!");
 			GE_CORE_ASSERT(m_Width == width, " The cube map image is not the same size!");
