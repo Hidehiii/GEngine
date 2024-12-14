@@ -102,7 +102,7 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isMultiSample)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isAttachment)
     {
         m_Format = Utils::VulkanFormatToRenderImage2DFormat(format);
         m_Image         = image;
@@ -110,7 +110,7 @@ namespace GEngine
         m_ImageLayout   = layout;
         m_ImageMemory   = imageMemory;
         m_AspectFlag    = aspectFlag;
-        m_MultiSample   = isMultiSample;
+        m_IsAttachment   = isAttachment;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -152,7 +152,6 @@ namespace GEngine
     }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
-        GE_CORE_ASSERT(m_MultiSample == false, "Can not bind a multisample texture!");
         SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;

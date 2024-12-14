@@ -236,6 +236,7 @@ void Sandbox2D::OnRender()
 	
 	m_Scene->OnRender();
 	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_OIT_1->GetColorAttachment(0));
+	
 	m_OIT->Render();
 
 	Renderer::EndScene();
