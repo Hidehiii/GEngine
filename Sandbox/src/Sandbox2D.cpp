@@ -184,12 +184,12 @@ void Sandbox2D::OnAttach()
 	m_OITPrepare->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 	m_OIT->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 
-	m_CubeMap = CubeMap::Create("Assets/Textures/JPG/Glass/right.jpg",
-		"Assets/Textures/JPG/Glass/left.jpg",
-		"Assets/Textures/JPG/Glass/top.jpg",
-		"Assets/Textures/JPG/Glass/bottom.jpg",
-		"Assets/Textures/JPG/Glass/back.jpg",
-		"Assets/Textures/JPG/Glass/front.jpg");
+	m_CubeMap = CubeMap::Create("Assets/Textures/right.png",
+		"Assets/Textures/left.png",
+		"Assets/Textures/top.png",
+		"Assets/Textures/bottom.png",
+		"Assets/Textures/back.png",
+		"Assets/Textures/front.png");
 	
 	mat->SetCubeMap("TexCube", m_CubeMap);
 }
