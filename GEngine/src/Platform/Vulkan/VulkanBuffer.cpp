@@ -53,8 +53,12 @@ namespace GEngine
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
-        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_VertexBuffer, nullptr);
-        vkFreeMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, nullptr);
+        if (VulkanContext::Get()->GetDevice())
+        {
+			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_VertexBuffer, nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, nullptr);
+        }
+        
     }
     void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
     {
@@ -173,8 +177,12 @@ namespace GEngine
 
     VulkanIndexBuffer::~VulkanIndexBuffer()
     {
-        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_IndexBuffer, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, nullptr);
+        if (VulkanContext::Get()->GetDevice())
+        {
+			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_IndexBuffer, nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, nullptr);
+        }
+        
     }
 
     void VulkanIndexBuffer::Bind() const

@@ -101,6 +101,9 @@ namespace GEngine
         vkDestroyDevice(m_Device, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
+
+        m_Device = nullptr;
+        m_Instance = nullptr;
     }
 	void VulkanContext::SwapBuffers()
 	{
@@ -547,10 +550,6 @@ namespace GEngine
     void VulkanContext::CleanUpSwapChain()
     {
         vkDeviceWaitIdle(m_Device);
-		/*for (auto frameBuffer : m_SwapChainFrameBuffers)
-		{
-			vkDestroyFramebuffer(m_Device, frameBuffer->GetFrameBuffer(), nullptr);
-		}*/
         m_SwapChainFrameBuffers.clear();
 		for (auto imageView : m_SwapChainImageViews)
 		{
@@ -601,6 +600,7 @@ namespace GEngine
             spec.Height                         = m_SwapChainExtent.height;
             spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
             spec.EnableDepthStencilAttachment   = true;
+            spec.Samples                        = 4;
 
 			Ref<VulkanFrameBuffer> frameBuffer  = CreateRef<VulkanFrameBuffer>(spec);
 			m_SwapChainFrameBuffers[i]          = frameBuffer;

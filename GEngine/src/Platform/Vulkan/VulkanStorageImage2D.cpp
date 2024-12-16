@@ -30,10 +30,13 @@ namespace GEngine
 
 	VulkanStorageImage2D::~VulkanStorageImage2D()
 	{
-		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-		vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
-		vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+		if (VulkanContext::Get()->GetDevice())
+		{
+			vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
+			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
+			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+		}
 	}
 
 	void VulkanStorageImage2D::Bind(const uint32_t slot)

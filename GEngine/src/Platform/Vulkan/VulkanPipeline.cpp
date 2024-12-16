@@ -21,9 +21,13 @@ namespace GEngine
 
     VulkanPipeline::~VulkanPipeline()
     {
-        vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-		vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+		if (VulkanContext::Get()->GetDevice())
+		{
+			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
+			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+		}
+        
     }
 
     void VulkanPipeline::PrepareRender()

@@ -23,8 +23,14 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Release()
 	{
-		if(m_CommandPool != VK_NULL_HANDLE)
-			vkDestroyCommandPool(VulkanContext::Get()->GetDevice(), m_CommandPool, nullptr);
+		if (m_CommandPool != VK_NULL_HANDLE)
+		{
+			if (VulkanContext::Get()->GetDevice())
+			{
+				vkDestroyCommandPool(VulkanContext::Get()->GetDevice(), m_CommandPool, nullptr);
+			}
+		}
+			
 	}
 	VkCommandBuffer VulkanCommandBuffer::BeginSingleTimeCommands()
 	{

@@ -12,7 +12,7 @@ namespace GEngine
 		uint32_t					Width, Height;
 		std::vector<VkFormat>		ColorAttachmentsFormat;
 		std::vector<VkImageLayout>	ColorAttachmentsFinalLayout;
-		bool						EnableDepthStencilAttachment;
+		bool						EnableDepthStencilAttachment = false;
 		int							Samples = 1;
 	};
 

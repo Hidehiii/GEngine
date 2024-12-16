@@ -39,6 +39,10 @@ namespace GEngine
 
 	void VulkanDescriptor::Release()
 	{
-		vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), m_DescriptorPool, nullptr);
+		if (VulkanContext::Get()->GetDevice())
+		{
+			vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), m_DescriptorPool, nullptr);
+		}
+		
 	}
 }

@@ -87,11 +87,15 @@ namespace GEngine
 
 	VulkanCubeMap::~VulkanCubeMap()
 	{
-		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-		vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
-		vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-		vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
+		if (VulkanContext::Get()->GetDevice())
+		{
+			vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
+			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
+			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
+			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+			vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
+		}
+		
 	}
 
 	void VulkanCubeMap::SetData(const void* data, uint32_t size)

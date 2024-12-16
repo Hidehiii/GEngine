@@ -251,7 +251,6 @@ void Sandbox2D::OnRender()
 
 void Sandbox2D::OnUpdate()
 {
-	GE_PROFILE_FUNCTION();
 	//m_EditorCamera.OnUpdate();
 
 	//GEngine::Renderer2D::ResetStats();
