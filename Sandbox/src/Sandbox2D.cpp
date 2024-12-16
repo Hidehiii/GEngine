@@ -28,6 +28,7 @@ void Sandbox2D::OnAttach()
 	fspec.Height = 720;
 	fspec.Samples = 1;
 	m_OIT_1 = FrameBuffer::Create(fspec);
+	m_SkyBoxFB = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -218,6 +219,13 @@ void Sandbox2D::OnRender()
 	sbo->maxNodeCount = Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4;
 	m_SBO->SetData(sizeof(SBOData), sbo);
 
+	RenderCommand::BeginDrawCommand();
+	m_SkyBoxFB->Begin();
+	Renderer::BeginScene(m_EditorCamera);
+	m_Scene->OnRender();
+	Renderer::EndScene();
+	m_SkyBoxFB->End();
+	RenderCommand::EndDrawCommand();
 	
 
 	RenderCommand::BeginDrawCommand();
@@ -228,14 +236,11 @@ void Sandbox2D::OnRender()
 	m_OIT_1->End();
 	RenderCommand::EndDrawCommand();
 
-
+	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_SkyBoxFB->GetColorAttachment(0));
 
 	RenderCommand::BeginDrawCommand();
 	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
-	
-	m_Scene->OnRender();
-	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_OIT_1->GetColorAttachment(0));
 	
 	m_OIT->Render();
 
@@ -270,7 +275,11 @@ void Sandbox2D::OnUpdate()
 	{
 		m_OIT_1 = FrameBuffer::Recreate(m_OIT_1, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
-
+	if (m_SkyBoxFB->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_SkyBoxFB->GetWidth() != Application::Get().GetWindow().GetWidth())
+	{
+		m_SkyBoxFB = FrameBuffer::Recreate(m_SkyBoxFB, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+	}
 }
 
 void Sandbox2D::OnImGuiRender()

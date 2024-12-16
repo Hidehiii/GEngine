@@ -52,11 +52,6 @@ namespace GEngine
 		bool SwapChainTarget = false;
 	};
 
-	enum FrameBufferBeginActionBit
-	{
-
-	};
-
 	class GENGINE_API FrameBuffer
 	{
 	public:
