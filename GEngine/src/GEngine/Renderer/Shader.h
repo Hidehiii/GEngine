@@ -61,6 +61,16 @@ namespace GEngine
 		Min = 4,
 		Max = 5,
 	};
+	enum class CompareOperation
+	{
+		Less = 0,
+		Greater = 1,
+		LessEqual = 2,
+		GreaterEqual = 3,
+		Equal = 4,
+		NotEqual = 5,
+		Always = 6,
+	};
 	class GENGINE_API ShaderDataFlag
 	{
 	public:
@@ -166,6 +176,21 @@ namespace GEngine
 			if (ToLower(value) == "1")				return true;
 			if (ToLower(value) == "true")			return true;
 			return false;
+		}
+
+		static CompareOperation ShaderCompareOperationFromString(const std::string& value)
+		{
+			if (ToLower(value) == "less")				return CompareOperation::Less;
+			if (ToLower(value) == "greater")			return CompareOperation::Greater;
+			if (ToLower(value) == "lessequal")			return CompareOperation::LessEqual;
+			if (ToLower(value) == "lequal")				return CompareOperation::LessEqual;
+			if (ToLower(value) == "greaterequal")		return CompareOperation::GreaterEqual;
+			if (ToLower(value) == "gequal")				return CompareOperation::GreaterEqual;
+			if (ToLower(value) == "equal")				return CompareOperation::Equal;
+			if (ToLower(value) == "notequal")			return CompareOperation::NotEqual;
+			if (ToLower(value) == "always")				return CompareOperation::Always;
+
+			return CompareOperation::LessEqual;
 		}
 
 		static CullMode ShaderCullModeFromString(const std::string& value)
@@ -394,7 +419,7 @@ namespace GEngine
 			enableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
 			GE_CORE_TRACE("DepthWrite: {0}", enableDepthWrite);
 		}
-		static void ProcessShaderDepthTest(const std::string& source, bool& enableDepthTest)
+		static void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation)
 		{
 			const char* token = "#DepthTest";
 			size_t tokenLength = strlen(token);
@@ -412,8 +437,8 @@ namespace GEngine
 			{
 				depthTestProp.erase(index, 1);
 			}
-			enableDepthTest = Utils::ShaderBoolFromString(depthTestProp);
-			GE_CORE_TRACE("DepthTest: {0}", enableDepthTest);
+			depthTestOperation = Utils::ShaderCompareOperationFromString(depthTestProp);
+			GE_CORE_TRACE("DepthTest: {0}", depthTestProp);
 		}
 		static void ProcessShaderCull(const std::string& source, CullMode& mode)
 		{
@@ -519,7 +544,7 @@ namespace GEngine
 		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
 		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
-		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
+		virtual CompareOperation GetDepthTestOperation()  { return m_DepthTestOperation; }
 
 		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
 		virtual const std::string& GetShaderName() const  { return m_Name; }
@@ -550,15 +575,16 @@ namespace GEngine
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
 		std::vector<ShaderUniformCubeMap>					m_CubeMapCache;
-		bool												m_EnableDepthWrite			= true;
-		bool												m_EnableDepthTest			= true;
+		bool												m_EnableDepthWrite				= true;
+		CompareOperation									m_DepthTestOperation			= CompareOperation::LessEqual;
+		bool												m_EnableColorWrite				= true;
 		BlendFactor											m_BlendColorSourceFactor		= BlendFactor::ONE;
 		BlendFactor											m_BlendColorDestinationFactor	= BlendFactor::ZERO;
-		BlendFactor											m_BlendAlphaSourceFactor	= BlendFactor::ONE;
-		BlendFactor											m_BlendAlphaDestinationFactor = BlendFactor::ZERO;
-		BlendMode											m_BlendModeColor					= BlendMode::None;
-		BlendMode											m_BlendModeAlpha					= BlendMode::None;
-		CullMode											m_CullMode					= CullMode::Back;
+		BlendFactor											m_BlendAlphaSourceFactor		= BlendFactor::ONE;
+		BlendFactor											m_BlendAlphaDestinationFactor	= BlendFactor::ZERO;
+		BlendMode											m_BlendModeColor				= BlendMode::None;
+		BlendMode											m_BlendModeAlpha				= BlendMode::None;
+		CullMode											m_CullMode						= CullMode::Back;
 		
 	};
 

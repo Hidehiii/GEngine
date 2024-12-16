@@ -1,7 +1,7 @@
 #Name Quad2DInstance
 #Blend Add SrcAlpha OneMinusSrcAlpha
 #DepthWrite Off
-#DepthTest On
+#DepthTest LEqual
 #Cull Back
 #Properties
 

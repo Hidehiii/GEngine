@@ -2,7 +2,6 @@
 #Name Default
 #Blend None
 #DepthWrite On
-#DepthTest On
 #Properties
 #EndProperties
 #Type vertex

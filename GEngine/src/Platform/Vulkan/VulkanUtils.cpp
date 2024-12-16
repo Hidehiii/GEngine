@@ -651,5 +651,21 @@ namespace GEngine
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
+		VkCompareOp CompareOPToVkCompareOP(CompareOperation op)
+		{
+			switch (op)
+			{
+			case CompareOperation::Less:		return VK_COMPARE_OP_LESS;
+			case CompareOperation::Greater:		return VK_COMPARE_OP_GREATER;
+			case CompareOperation::LessEqual:	return VK_COMPARE_OP_LESS_OR_EQUAL;
+			case CompareOperation::GreaterEqual:return VK_COMPARE_OP_GREATER_OR_EQUAL;
+			case CompareOperation::Equal:		return VK_COMPARE_OP_EQUAL;
+			case CompareOperation::NotEqual:	return VK_COMPARE_OP_NOT_EQUAL;
+			case CompareOperation::Always:		return VK_COMPARE_OP_ALWAYS;
+			default:
+				break;
+			}
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		}
     }
 }

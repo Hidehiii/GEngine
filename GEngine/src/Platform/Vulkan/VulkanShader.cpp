@@ -162,7 +162,7 @@ namespace GEngine
 		Utils::ProcessShaderDepthWrite(source, m_EnableDepthWrite);
 
 		// find DepthTest
-		Utils::ProcessShaderDepthTest(source, m_EnableDepthTest);
+		Utils::ProcessShaderDepthTest(source, m_DepthTestOperation);
 
 		// find Cull
 		Utils::ProcessShaderCull(source, m_CullMode);

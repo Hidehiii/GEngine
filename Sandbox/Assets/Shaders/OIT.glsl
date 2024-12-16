@@ -1,7 +1,7 @@
 
 #Name OIT
 #DepthWrite Off
-#DepthTest On
+#DepthTest LEqual
 #Blend None
 #Properties
 

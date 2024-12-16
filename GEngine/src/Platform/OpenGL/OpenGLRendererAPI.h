@@ -22,7 +22,7 @@ namespace GEngine
 		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) override;
 
 		virtual void EnableDepthWrite(bool enabled) override;
-		virtual void EnableDepthTest(bool enabled) override;
+		virtual void SetDepthTest(CompareOperation op) override;
 		virtual void SetCull(CullMode mode) override;
 		virtual void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) override;
 

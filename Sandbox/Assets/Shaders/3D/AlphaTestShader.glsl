@@ -2,7 +2,6 @@
 #Name AlphaTestShader
 #Blend Add SrcAlpha OneMinusSrcAlpha
 #DepthWrite Off
-#DepthTest On
 #Properties
 color p0;
 vector p1;

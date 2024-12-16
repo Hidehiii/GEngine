@@ -36,8 +36,8 @@ namespace GEngine
 		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
 
-		virtual void EnableDepthTest(bool enabled)  { m_EnableDepthTest = enabled; }
-		virtual bool GetEnableDepthTest()  { return m_EnableDepthTest; }
+		virtual void SetDepthTestOperation(CompareOperation op)  { m_DepthTestOperation = op; }
+		virtual CompareOperation GetDepthTestOperation()  { return m_DepthTestOperation; }
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
@@ -98,7 +98,7 @@ namespace GEngine
 		Buffer												m_UniformsBuffer;
 		std::vector<ShaderUniform>							m_Uniforms;
 		bool												m_EnableDepthWrite = true;
-		bool												m_EnableDepthTest = true;
+		CompareOperation									m_DepthTestOperation = CompareOperation::LessEqual;
 		std::vector<ShaderUniformTexture2D>					m_Texture2D;
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBuffer;

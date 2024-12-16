@@ -46,11 +46,12 @@ namespace GEngine
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
 		glClearDepth(1.0f);
+		glClearStencil(0.0f);
 	}
 	void OpenGLRendererAPI::Clear()
 	{
 		glDepthMask(GL_TRUE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 	void OpenGLRendererAPI::DrawTriangles(uint32_t indexCount)
 	{
@@ -77,12 +78,20 @@ namespace GEngine
 		else
 			glDepthMask(GL_FALSE);
 	}
-	void OpenGLRendererAPI::EnableDepthTest(bool enabled)
+	void OpenGLRendererAPI::SetDepthTest(CompareOperation op)
 	{
-		if (enabled)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
+		switch (op)
+		{
+		case CompareOperation::Less:		glDepthFunc(GL_LESS); break;
+		case CompareOperation::Greater:		glDepthFunc(GL_GREATER); break;
+		case CompareOperation::LessEqual:	glDepthFunc(GL_LEQUAL); break;
+		case CompareOperation::GreaterEqual:glDepthFunc(GL_GEQUAL); break;
+		case CompareOperation::Equal:		glDepthFunc(GL_EQUAL); break;
+		case CompareOperation::NotEqual:	glDepthFunc(GL_NOTEQUAL); break;
+		case CompareOperation::Always:		glDepthFunc(GL_ALWAYS); break;
+		default:
+			break;
+		}
 	}
 	void OpenGLRendererAPI::SetCull(CullMode mode)
 	{

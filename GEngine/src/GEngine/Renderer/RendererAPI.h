@@ -35,7 +35,7 @@ namespace GEngine
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
 		virtual void EnableDepthWrite(bool enabled) = 0;
-		virtual void EnableDepthTest(bool enabled) = 0;
+		virtual void SetDepthTest(CompareOperation op) = 0;
 		virtual void SetCull(CullMode mode) = 0;
 		virtual void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha) = 0;
 

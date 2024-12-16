@@ -2,7 +2,6 @@
 #Name OITPrepare
 #Cull None
 #DepthWrite Off
-#DepthTest On
 #Blend None
 #Properties
 

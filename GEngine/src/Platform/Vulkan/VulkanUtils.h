@@ -38,6 +38,7 @@ namespace GEngine
 		VkCullModeFlagBits CullModeToVkCullMode(CullMode mode);
 		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer);
 		void GenerateMipmap(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkImageAspectFlags aspectFlag, uint32_t baseArrayLayer, uint32_t layerCount);
+		VkCompareOp CompareOPToVkCompareOP(CompareOperation op);
 	}
 	
 }

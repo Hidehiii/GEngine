@@ -2,7 +2,7 @@
 #Cull Back
 #Blend None
 #DepthWrite On
-#DepthTest On
+#DepthTest LEqual
 #Properties
 
 sampler2D GE_PRESENT_IMGUI;

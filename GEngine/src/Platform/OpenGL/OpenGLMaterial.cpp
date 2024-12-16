@@ -37,7 +37,7 @@ namespace GEngine
 			m_CullMode					= m_Shader->GetCullMode();
 			// Read depth test and depth mask
 			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
-			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
+			m_DepthTestOperation		= m_Shader->GetDepthTestOperation();
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
 			// StorageImage2D
@@ -85,7 +85,7 @@ namespace GEngine
 		}
 		RenderCommand::SetCull(m_CullMode);
 		RenderCommand::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
-		RenderCommand::EnableDepthTest(m_EnableDepthTest);
+		RenderCommand::SetDepthTest(m_DepthTestOperation);
 		RenderCommand::EnableDepthWrite(m_EnableDepthWrite);
 	}
 	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)

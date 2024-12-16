@@ -75,7 +75,7 @@ namespace GEngine
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
 
-		vkCmdSetDepthTestEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthTest());
+		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
 		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
 
@@ -521,9 +521,9 @@ namespace GEngine
 
 		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
 		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable			= m_Material->GetEnableDepthTest() ? VK_TRUE : VK_FALSE;
+		depthStencil.depthTestEnable			= VK_TRUE;
 		depthStencil.depthWriteEnable			= m_Material->GetEnableDepthWrite() ? VK_TRUE : VK_FALSE;
-		depthStencil.depthCompareOp				= VK_COMPARE_OP_LESS;
+		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation());
 		depthStencil.depthBoundsTestEnable		= VK_FALSE;
 		depthStencil.minDepthBounds				= 0.0f; // Optional
 		depthStencil.maxDepthBounds				= 1.0f; // Optional

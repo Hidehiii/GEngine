@@ -36,7 +36,7 @@ namespace GEngine
 			m_CullMode					= m_Shader->GetCullMode();
 			// Read depth test and depth mask
 			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
-			m_EnableDepthTest			= m_Shader->GetEnableDepthTest();
+			m_DepthTestOperation		= m_Shader->GetDepthTestOperation();
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
 			// StorageImage2D

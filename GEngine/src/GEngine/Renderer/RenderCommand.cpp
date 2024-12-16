@@ -66,9 +66,9 @@ namespace GEngine
 	{
 		s_RendererAPI->EnableDepthWrite(enabled);
 	}
-	inline void RenderCommand::EnableDepthTest(bool enabled)
+	inline void RenderCommand::SetDepthTest(CompareOperation op)
 	{
-		s_RendererAPI->EnableDepthTest(enabled);
+		s_RendererAPI->SetDepthTest(op);
 	}
 	inline void RenderCommand::BeginDrawCommand()
 	{

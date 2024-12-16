@@ -2,7 +2,7 @@
 #Name Default
 #Blend None
 #DepthWrite On
-#DepthTest On
+#DepthTest LEqual
 #Properties
 #EndProperties
 

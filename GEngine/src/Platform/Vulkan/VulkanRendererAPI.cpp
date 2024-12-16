@@ -36,9 +36,6 @@ namespace GEngine
     void VulkanRendererAPI::EnableDepthWrite(bool enabled)
     {
     }
-    void VulkanRendererAPI::EnableDepthTest(bool enabled)
-    {
-    }
     void VulkanRendererAPI::SetCull(CullMode mode)
     {
     }
