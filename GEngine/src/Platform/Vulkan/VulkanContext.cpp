@@ -600,7 +600,7 @@ namespace GEngine
             spec.Height                         = m_SwapChainExtent.height;
             spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
             spec.EnableDepthStencilAttachment   = true;
-            spec.Samples                        = 4;
+            spec.Samples                        = 1;
 
 			Ref<VulkanFrameBuffer> frameBuffer  = CreateRef<VulkanFrameBuffer>(spec);
 			m_SwapChainFrameBuffers[i]          = frameBuffer;

@@ -49,6 +49,7 @@ namespace GEngine
 		m_SpecificationForVulkan		= spec;
 		m_Specification.Width			= spec.Width;
 		m_Specification.Height			= spec.Height;
+		m_Specification.Samples			= spec.Samples;
 		
 		RenderPassSpecificationForVulkan renderPassSpec;
 		renderPassSpec.ColorAttachmentsFinalLayout	= spec.ColorAttachmentsFinalLayout;
@@ -104,7 +105,7 @@ namespace GEngine
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+				VK_SAMPLE_COUNT_1_BIT,
 				1,
 				0,
 				1,
