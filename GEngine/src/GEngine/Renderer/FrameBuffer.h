@@ -12,7 +12,12 @@ namespace GEngine
 
 		// Color
 		RGBA8,
-		RED_INTEGER,
+		R32F,
+		RG16F,
+		R32I,
+		RG16I,
+		R32UI,
+		RG16UI,
 
 		// Depth,Stencil
 		DEPTH24STENCIL8,
@@ -61,16 +66,12 @@ namespace GEngine
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 
-		virtual int ReadPixelInt(int attachmentIndex, int x, int y) = 0;
-		virtual void ClearAttachmentInt(int attachmentIndex, int val) = 0;
-
 		virtual Vector2 GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
 		virtual float GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float GetHeight() const { return (float)GetSpecification().Height; }
 		virtual int GetAttachmentCount() = 0;
 		virtual Ref<Texture2D> GetColorAttachment(int index) = 0;
 		virtual Ref<Texture2D> GetDepthAttachment() = 0;
-		virtual void Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height) = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);

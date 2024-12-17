@@ -55,22 +55,6 @@ namespace GEngine
             }
             
         }
-        static GLenum FrameBufferTextureFormatToGLFormat(FrameBufferTextureFormat format)
-        {
-            switch (format)
-            {
-                case FrameBufferTextureFormat::RGBA8:
-					return GL_RGBA8;
-                case FrameBufferTextureFormat::RED_INTEGER:
-                    return GL_RED_INTEGER;
-                case FrameBufferTextureFormat::DEPTH24STENCIL8:
-                    return GL_DEPTH24_STENCIL8;
-                case FrameBufferTextureFormat::DEPTH:
-                    return GL_DEPTH_COMPONENT;
-            }
-            GE_CORE_ASSERT(false, "Unknown FrameBufferTextureFormat");
-            return GL_NONE;
-        }
     }
 
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& spec)
@@ -146,11 +130,36 @@ namespace GEngine
                         Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
                         break;
                     }
-                    case FrameBufferTextureFormat::RED_INTEGER:
+                    case FrameBufferTextureFormat::R32F:
                     {
-                        Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
+                        Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32F, GL_R, m_Specification.Width, m_Specification.Height, i);
                         break;
                     }
+                    case FrameBufferTextureFormat::RG16F:
+                    {
+						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+                    }
+					case FrameBufferTextureFormat::R32I:
+					{
+						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32I, GL_R, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::RG16I:
+					{
+						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16I, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::R32UI:
+					{
+						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32UI, GL_R, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::RG16UI:
+					{
+						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16UI, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
                     }
                 }
             }
@@ -211,11 +220,36 @@ namespace GEngine
                         Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
                         break;
                     }
-                    case FrameBufferTextureFormat::RED_INTEGER:
+                    case FrameBufferTextureFormat::R32F:
                     {
-                        Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
+                        Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32F, GL_R, m_Specification.Width, m_Specification.Height, i);
                         break;
                     }
+					case FrameBufferTextureFormat::RG16F:
+					{
+						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::R32I:
+					{
+						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32I, GL_R, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::RG16I:
+					{
+						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16I, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::R32UI:
+					{
+						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32UI, GL_R, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+					case FrameBufferTextureFormat::RG16UI:
+					{
+						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16UI, GL_RG, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
                 }
                 Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i], false);
                 m_ColorAttachmentsTexture2D.push_back(texture);
@@ -283,38 +317,17 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void OpenGLFrameBuffer::Blit(Ref<FrameBuffer>& dst, uint32_t width, uint32_t height)
-    {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, std::dynamic_pointer_cast<OpenGLFrameBuffer>(dst)->m_RendererID);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-    int OpenGLFrameBuffer::ReadPixelInt(int attachmentIndex, int x, int y)
-    {
-        GE_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Out of range");
-        glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-        int pixel = -1;
-        glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixel);
-        return pixel;
-    }
-    void OpenGLFrameBuffer::ClearAttachmentInt(int attachmentIndex, int val)
-    {
-        GE_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Out of range");
-
-        glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::FrameBufferTextureFormatToGLFormat(m_ColorAttachmentsSpecs[attachmentIndex].TextureFormat), GL_INT, &val);
-    }
     Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
         if (m_Specification.Samples > 1)
         {
+			GLint currentFbo;
+			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
             glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleRendererID);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RendererID);
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
         }
         return m_ColorAttachmentsTexture2D.at(index);
     }
@@ -323,10 +336,12 @@ namespace GEngine
         GE_CORE_ASSERT(m_DepthAttachment != 0, "No depth frame buffer");
         if (m_Specification.Samples > 1)
         {
+			GLint currentFbo;
+			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
             glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleRendererID);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RendererID);
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
         }
         return m_DepthAttachmentTexture2D;
     }

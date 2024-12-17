@@ -30,6 +30,7 @@ namespace GEngine
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag);
+		void BlitImage(VkCommandBuffer CmdBuffer, VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag);
 		VkFormat RenderImage2DFormatToVulkanFormat(RenderImage2DFormat format);
 		VkFormat ComputeImage2DFormatToVulkanFormat(ComputeImage2DFormat format);
 		RenderImage2DFormat VulkanFormatToRenderImage2DFormat(VkFormat format);

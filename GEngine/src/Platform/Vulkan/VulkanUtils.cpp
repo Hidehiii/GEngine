@@ -445,6 +445,31 @@ namespace GEngine
 
 			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
+		void BlitImage(VkCommandBuffer CmdBuffer, VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag)
+		{
+			VkImageBlit								region{};
+			region.srcSubresource.mipLevel			= srcMipLevel;
+			region.srcSubresource.aspectMask		= aspectFlag;
+			region.srcSubresource.baseArrayLayer	= 0;
+			region.srcSubresource.layerCount		= 1;
+			region.srcOffsets[0]					= { 0, 0, 0 };
+			region.srcOffsets[1]					= { (int)srcSize.x, (int)srcSize.y, 1 };
+			region.dstSubresource.mipLevel			= dstMipLevel;
+			region.dstSubresource.aspectMask		= aspectFlag;
+			region.dstSubresource.baseArrayLayer	= 0;
+			region.dstSubresource.layerCount		= 1;
+			region.dstOffsets[0]					= { 0, 0, 0 };
+			region.dstOffsets[1]					= { (int)dstSize.x, (int)dstSize.y, 1 };
+
+			vkCmdBlitImage(CmdBuffer,
+				src,
+				srcLayout,
+				dst,
+				dstLayout,
+				1,
+				&region,
+				VK_FILTER_LINEAR);
+		}
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size)
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
@@ -598,8 +623,11 @@ namespace GEngine
 					0, nullptr,
 					1, &barrier);
 
+				BlitImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, { mipWidth, mipHeight }, i - 1,
+					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1 }, i,
+					aspectFlag);
 
-				VkImageBlit		region{};
+				/*VkImageBlit		region{};
 				region.srcSubresource.aspectMask = aspectFlag;
 				region.srcSubresource.baseArrayLayer = baseArrayLayer;
 				region.srcSubresource.layerCount = layerCount;
@@ -620,7 +648,7 @@ namespace GEngine
 					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 					1,
 					&region,
-					VK_FILTER_LINEAR);
+					VK_FILTER_LINEAR);*/
 				
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

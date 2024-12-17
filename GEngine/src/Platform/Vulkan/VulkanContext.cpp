@@ -592,8 +592,10 @@ namespace GEngine
         m_SwapChainFrameBuffers.resize(m_SwapChainImageViews.size());
 		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
             std::vector<VkImageView> attachmentsVec = { m_SwapChainImageViews[i] };
+            std::vector<VkImage> imagesVec = { m_SwapChainImages[i] };
 
             FrameBufferSpecificationForVulkan   spec;
+            spec.ColorImages                    = imagesVec;
             spec.ColorAttachments               = attachmentsVec;
             spec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
             spec.Width                          = m_SwapChainExtent.width;
