@@ -68,10 +68,12 @@ namespace GEngine
 			VkMemoryRequirements memRequirements;
 			vkGetImageMemoryRequirements(device, outImage, &memRequirements);
 
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
+			uint32_t memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
+
+			VkMemoryAllocateInfo		allocInfo{};
+			allocInfo.sType				= VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize	= memRequirements.size;
+			allocInfo.memoryTypeIndex	= memoryTypeIndex;
 
 			VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory));
 
