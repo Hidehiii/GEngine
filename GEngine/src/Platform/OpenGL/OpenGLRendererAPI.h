@@ -32,6 +32,8 @@ namespace GEngine
 
 		virtual void BeginDrawCommand() override {}
 		virtual void EndDrawCommand() override{}
+		virtual void BeginSecondaryDrawCommand() override {}
+		virtual void EndSecondaryDrawCommand() override {}
 
 		virtual float GetTime() override;
 	};

@@ -528,6 +528,37 @@ namespace GEngine
         VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex);
         return buffer;
     }
+    void VulkanContext::BeginSecondaryDrawCommandBuffer()
+    {
+        // 根据当前thread id 分配secondary command buffer
+        GE_CORE_ASSERT(m_DrawUsedSecondaryCommandBuffers.size() < m_CommandBuffer.GetSecondaryCommandBuffersSize(), "There is no avilable secondary command buffer");
+        bool isUsing = true;
+        while (isUsing)
+        {
+            m_DrawUsedSecondaryCommandBufferIndex = (m_DrawUsedCommandBufferIndex + 1) % m_CommandBuffer.GetSecondaryCommandBuffersSize();
+            for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+            {
+                if (m_DrawUsedSecondaryCommandBuffers.at(i).second == m_DrawUsedSecondaryCommandBufferIndex)
+                {
+                    isUsing = false;
+                    break;
+                }
+            }
+            isUsing = !isUsing;
+            if (isUsing == false)
+            {
+                m_DrawUsedSecondaryCommandBuffers.emplace_back(std::this_thread::get_id(), m_DrawUsedSecondaryCommandBufferIndex);
+            }
+        }
+    }
+    VkCommandBuffer VulkanContext::EndSecondaryDrawCommandBuffer()
+    {
+        return VkCommandBuffer();
+    }
+    VkCommandBuffer VulkanContext::GetCurrentSecondaryDrawCommandBuffer()
+    {
+        return VkCommandBuffer();
+    }
 	void VulkanContext::CreateDescriptor()
 	{
         m_Descriptor            = VulkanDescriptor(1000, 100);

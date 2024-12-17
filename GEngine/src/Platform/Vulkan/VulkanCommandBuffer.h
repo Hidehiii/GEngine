@@ -24,8 +24,10 @@ namespace GEngine
 		~VulkanCommandBuffer();
 		void Release();
 
-		VkCommandBuffer GetCommandBuffer(int index = 0) { GE_CORE_ASSERT(index < m_CommandBuffers.size(), "Out of range!"); return m_CommandBuffers.at(index); }
+		VkCommandBuffer GetCommandBuffer(int index = 0) { return m_CommandBuffers.at(index); }
+		VkCommandBuffer GetSecondaryCommandBuffer(int index = 0) { return m_SecondaryCommandBuffers.at(index); }
 		uint32_t		GetCommandBuffersSize() { return m_CommandBuffers.size(); }
+		uint32_t		GetSecondaryCommandBuffersSize() { return m_SecondaryCommandBuffers.size(); }
 
 		VkCommandBuffer BeginSingleTimeCommands();
 		void			EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue queue);
@@ -34,6 +36,7 @@ namespace GEngine
 	private:
 		VkCommandPool					m_CommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer>	m_CommandBuffers;
+		std::vector<VkCommandBuffer>	m_SecondaryCommandBuffers;
 	};
 }
 

@@ -8,6 +8,7 @@ namespace GEngine
 	{
 		CreateCommandPool(queueFamilyIndices);
 		m_CommandBuffers.resize(count);
+		m_SecondaryCommandBuffers.resize(count);
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -16,6 +17,10 @@ namespace GEngine
 		allocInfo.commandBufferCount	= count;
 
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_CommandBuffers.data()));
+
+
+		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_SecondaryCommandBuffers.data()));
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{

@@ -45,6 +45,9 @@ namespace GEngine
 		void						BeginDrawCommandBuffer();
 		VkCommandBuffer				EndDrawCommandBuffer();
 		VkCommandBuffer				GetCurrentDrawCommandBuffer() { return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex); }
+		void						BeginSecondaryDrawCommandBuffer();
+		VkCommandBuffer				EndSecondaryDrawCommandBuffer();
+		VkCommandBuffer				GetCurrentSecondaryDrawCommandBuffer() { return m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBufferIndex); }
 		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
@@ -125,7 +128,7 @@ namespace GEngine
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBuffer					m_CommandBuffer;
-		int									m_DrawUsedCommandBufferIndex;
+		int									m_DrawUsedCommandBufferIndex = 0;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
@@ -134,6 +137,8 @@ namespace GEngine
 		std::vector<VkFence>				m_Fences;
 		int                                 m_FenceIndex = 0;
 		VulkanFunctionEXT					m_Function;
+		std::vector<std::pair<std::thread::id, int>> m_DrawUsedSecondaryCommandBuffers;
+		int									m_DrawUsedSecondaryCommandBufferIndex = 0;
 	};
 	
 }

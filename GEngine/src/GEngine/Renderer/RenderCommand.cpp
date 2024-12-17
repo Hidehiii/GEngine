@@ -78,6 +78,14 @@ namespace GEngine
 	{
 		s_RendererAPI->EndDrawCommand();
 	}
+	inline void RenderCommand::BeginSecondaryDrawCommand(uint32_t threadID)
+	{
+		s_RendererAPI->BeginSecondaryDrawCommand(threadID);
+	}
+	inline void RenderCommand::EndSecondaryDrawCommand()
+	{
+		s_RendererAPI->EndSecondaryDrawCommand();
+	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{
 		switch (api)

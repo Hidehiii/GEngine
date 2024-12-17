@@ -88,6 +88,12 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
+    void VulkanRendererAPI::BeginSecondaryDrawCommand()
+    {
+    }
+    void VulkanRendererAPI::EndSecondaryDrawCommand()
+    {
+    }
     float VulkanRendererAPI::GetTime()
     {
         return 0.0f;
