@@ -299,12 +299,20 @@ namespace GEngine
 		VkPhysicalDeviceFeatures deviceFeatures;
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &deviceFeatures);
 
+        VkPhysicalDeviceFeatures2               deviceFeatures2;
+        deviceFeatures2.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        VkPhysicalDevice16BitStorageFeatures    bitsStorage16;
+        bitsStorage16.sType                     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
+        deviceFeatures2.pNext                   = &bitsStorage16;
+        vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
+
 
         VkDeviceCreateInfo                  createInfo = {};
         createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos        = queueCreateInfos.data();
         createInfo.pEnabledFeatures         = &deviceFeatures;
+        createInfo.pNext                    = &bitsStorage16;
 
         std::vector<const char*>            extensions = m_InstanceExtensions;
         for (const auto& extension : m_DeviceExtensions)

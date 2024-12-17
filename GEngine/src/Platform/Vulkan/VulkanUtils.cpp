@@ -268,7 +268,7 @@ namespace GEngine
 			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= sample;
 			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_STORE;
+			Attachment.storeOp			= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -281,8 +281,121 @@ namespace GEngine
 				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
+			case GEngine::FrameBufferTextureFormat::R32F:
+				Attachment.format		= VK_FORMAT_R32_SFLOAT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16F:
+				Attachment.format		= VK_FORMAT_R16G16_SFLOAT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::R32I:
+				Attachment.format		= VK_FORMAT_R32_SINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16I:
+				Attachment.format		= VK_FORMAT_R16G16_SINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::R32UI:
+				Attachment.format		= VK_FORMAT_R32_UINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16UI:
+				Attachment.format		= VK_FORMAT_R16G16_UINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
+				Attachment.stencilStoreOp	= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH:
+				Attachment.format		= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				break;
+			default:
+				break;
+			}
+
+			return Attachment;
+		}
+
+		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index)
+		{
+			VkAttachmentReference2		Ref{};
+			Ref.attachment				= index;
+			Ref.sType					= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+			switch (format)
+			{
+			case GEngine::FrameBufferTextureFormat::None:
+				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
+				break;
+			case GEngine::FrameBufferTextureFormat::RGBA8:
+			case GEngine::FrameBufferTextureFormat::R32F:
+			case GEngine::FrameBufferTextureFormat::RG16F:
+			case GEngine::FrameBufferTextureFormat::R32I:
+			case GEngine::FrameBufferTextureFormat::RG16I:
+			case GEngine::FrameBufferTextureFormat::R32UI:
+			case GEngine::FrameBufferTextureFormat::RG16UI:
+				Ref.layout		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask	= VK_IMAGE_ASPECT_COLOR_BIT;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+				Ref.layout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask	= VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+				break;
+			case GEngine::FrameBufferTextureFormat::DEPTH:
+				Ref.layout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				Ref.aspectMask	= VK_IMAGE_ASPECT_DEPTH_BIT;
+				break;
+			default:
+				break;
+			}
+
+			return Ref;
+		}
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
+		{
+			VkAttachmentDescription			Attachment{};
+			Attachment.samples				= sample;
+			Attachment.loadOp				= VK_ATTACHMENT_LOAD_OP_CLEAR;
+			Attachment.storeOp				= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.stencilLoadOp		= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			Attachment.stencilStoreOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.initialLayout		= VK_IMAGE_LAYOUT_UNDEFINED;
+			switch (format)
+			{
+			case GEngine::FrameBufferTextureFormat::None:
+				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
+				break;
+			case GEngine::FrameBufferTextureFormat::RGBA8:
+				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::R32F:
 				Attachment.format		= VK_FORMAT_R8_SINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16F:
+				Attachment.format		= VK_FORMAT_R16G16_SFLOAT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::R32I:
+				Attachment.format		= VK_FORMAT_R32_SINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16I:
+				Attachment.format		= VK_FORMAT_R16G16_SINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::R32UI:
+				Attachment.format		= VK_FORMAT_R32_UINT;
+				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			case GEngine::FrameBufferTextureFormat::RG16UI:
+				Attachment.format		= VK_FORMAT_R16G16_UINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
@@ -301,77 +414,6 @@ namespace GEngine
 
 			return Attachment;
 		}
-
-		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index)
-		{
-			VkAttachmentReference2		Ref{};
-			Ref.attachment = index;
-			Ref.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
-			switch (format)
-			{
-			case GEngine::FrameBufferTextureFormat::None:
-				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
-				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
-				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				Ref.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				break;
-			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
-				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				Ref.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				Ref.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
-				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				Ref.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				break;
-			default:
-				break;
-			}
-
-			return Ref;
-		}
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
-		{
-			VkAttachmentDescription	Attachment{};
-			Attachment.samples = sample;
-			Attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			Attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			Attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			Attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			switch (format)
-			{
-			case GEngine::FrameBufferTextureFormat::None:
-				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
-				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
-				Attachment.format = VK_FORMAT_R8G8B8A8_UNORM;
-				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				break;
-			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
-				Attachment.format = VK_FORMAT_R8_SINT;
-				Attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Attachment.format = FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-				Attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				Attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-				Attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
-				Attachment.format = FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-				Attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				break;
-			default:
-				break;
-			}
-
-			return Attachment;
-		}
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index)
 		{
 			VkAttachmentReference		Ref{};
@@ -382,9 +424,12 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
 				break;
 			case GEngine::FrameBufferTextureFormat::RGBA8:
-				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				break;
-			case GEngine::FrameBufferTextureFormat::RED_INTEGER:
+			case GEngine::FrameBufferTextureFormat::R32F:
+			case GEngine::FrameBufferTextureFormat::RG16F:
+			case GEngine::FrameBufferTextureFormat::R32I:
+			case GEngine::FrameBufferTextureFormat::RG16I:
+			case GEngine::FrameBufferTextureFormat::R32UI:
+			case GEngine::FrameBufferTextureFormat::RG16UI:
 				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
@@ -420,19 +465,19 @@ namespace GEngine
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
-			VkImageBlit		region{};
-			region.srcSubresource.mipLevel = srcMipLevel;
-			region.srcSubresource.aspectMask = aspectFlag;
-			region.srcSubresource.baseArrayLayer = 0;
-			region.srcSubresource.layerCount = 1;
-			region.srcOffsets[0] = { 0, 0, 0 };
-			region.srcOffsets[1] = { (int)srcSize.x, (int)srcSize.y, 1 };
-			region.dstSubresource.mipLevel = dstMipLevel;
-			region.dstSubresource.aspectMask = aspectFlag;
-			region.dstSubresource.baseArrayLayer = 0;
-			region.dstSubresource.layerCount = 1;
-			region.dstOffsets[0] = { 0, 0, 0 };
-			region.dstOffsets[1] = { (int)dstSize.x, (int)dstSize.y, 1 };
+			VkImageBlit								region{};
+			region.srcSubresource.mipLevel			= srcMipLevel;
+			region.srcSubresource.aspectMask		= aspectFlag;
+			region.srcSubresource.baseArrayLayer	= 0;
+			region.srcSubresource.layerCount		= 1;
+			region.srcOffsets[0]					= { 0, 0, 0 };
+			region.srcOffsets[1]					= { (int)srcSize.x, (int)srcSize.y, 1 };
+			region.dstSubresource.mipLevel			= dstMipLevel;
+			region.dstSubresource.aspectMask		= aspectFlag;
+			region.dstSubresource.baseArrayLayer	= 0;
+			region.dstSubresource.layerCount		= 1;
+			region.dstOffsets[0]					= { 0, 0, 0 };
+			region.dstOffsets[1]					= { (int)dstSize.x, (int)dstSize.y, 1 };
 
 			vkCmdBlitImage(commandBuffer,
 				src,
@@ -496,7 +541,7 @@ namespace GEngine
 			case BlendFactor::ONE_MINUS_DST_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 			case BlendFactor::ONE_MINUS_SRC_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 			case BlendFactor::ONE_MINUS_DST_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			case BlendFactor::ONE: return VK_BLEND_FACTOR_ONE;
+			case BlendFactor::ONE:	return VK_BLEND_FACTOR_ONE;
 			case BlendFactor::ZERO: return VK_BLEND_FACTOR_ZERO;
 			default:
 				break;
@@ -508,8 +553,8 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case RenderImage2DFormat::RGBA8F: return VK_FORMAT_R8G8B8A8_UNORM;
-			case RenderImage2DFormat::RGB8F:   return VK_FORMAT_R8G8B8_UNORM;
+			case RenderImage2DFormat::RGBA8F:	return VK_FORMAT_R8G8B8A8_UNORM;
+			case RenderImage2DFormat::RGB8F:	return VK_FORMAT_R8G8B8_UNORM;
 				break;
 			default:
 				break;
@@ -519,19 +564,19 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case ComputeImage2DFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ComputeImage2DFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
-			case ComputeImage2DFormat::RG32F: return VK_FORMAT_R32G32_SFLOAT;
-			case ComputeImage2DFormat::RG16F: return VK_FORMAT_R16G16_SFLOAT;
-			case ComputeImage2DFormat::R32F: return VK_FORMAT_R32_SFLOAT;
-			case ComputeImage2DFormat::R16F: return VK_FORMAT_R16_SFLOAT;
-			case ComputeImage2DFormat::RGBA32I: return VK_FORMAT_R32G32B32A32_SINT;
-			case ComputeImage2DFormat::RGBA16I: return VK_FORMAT_R16G16B16A16_SINT;
-			case ComputeImage2DFormat::RGBA8I: return VK_FORMAT_R8G8B8A8_SINT;
-			case ComputeImage2DFormat::RGBA32UI: return VK_FORMAT_R32G32B32A32_UINT;
-			case ComputeImage2DFormat::RGBA16UI: return VK_FORMAT_R16G16B16A16_UINT;
-			case ComputeImage2DFormat::RGBA8UI: return VK_FORMAT_R8G8B8A8_UINT;
-			case ComputeImage2DFormat::R32UI: return VK_FORMAT_R32_UINT;
+			case ComputeImage2DFormat::RGBA32F:		return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ComputeImage2DFormat::RGBA16F:		return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case ComputeImage2DFormat::RG32F:		return VK_FORMAT_R32G32_SFLOAT;
+			case ComputeImage2DFormat::RG16F:		return VK_FORMAT_R16G16_SFLOAT;
+			case ComputeImage2DFormat::R32F:		return VK_FORMAT_R32_SFLOAT;
+			case ComputeImage2DFormat::R16F:		return VK_FORMAT_R16_SFLOAT;
+			case ComputeImage2DFormat::RGBA32I:		return VK_FORMAT_R32G32B32A32_SINT;
+			case ComputeImage2DFormat::RGBA16I:		return VK_FORMAT_R16G16B16A16_SINT;
+			case ComputeImage2DFormat::RGBA8I:		return VK_FORMAT_R8G8B8A8_SINT;
+			case ComputeImage2DFormat::RGBA32UI:	return VK_FORMAT_R32G32B32A32_UINT;
+			case ComputeImage2DFormat::RGBA16UI:	return VK_FORMAT_R16G16B16A16_UINT;
+			case ComputeImage2DFormat::RGBA8UI:		return VK_FORMAT_R8G8B8A8_UINT;
+			case ComputeImage2DFormat::R32UI:		return VK_FORMAT_R32_UINT;
 			default:
 				break;
 			}

@@ -30,6 +30,7 @@ namespace GEngine
 			attachments.push_back(Attachment);
 			if (spec.Samples > 1)
 			{
+				Attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				Attachment.samples = Utils::SampleCountToVulkanFlag(spec.Samples);
 				attachments.push_back(Attachment);
 			}
@@ -49,6 +50,8 @@ namespace GEngine
 			attachments.push_back(Attachment);
 			if (spec.Samples > 1)
 			{
+				Attachment.storeOp			= VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				Attachment.samples = Utils::SampleCountToVulkanFlag(spec.Samples);
 				attachments.push_back(Attachment);
 			}

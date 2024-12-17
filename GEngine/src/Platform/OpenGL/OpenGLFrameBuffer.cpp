@@ -185,8 +185,8 @@ namespace GEngine
 
             if (m_MultiSampleColorAttachments.size() >= 1)
             {
-                GE_CORE_ASSERT(m_MultiSampleColorAttachments.size() <= 4, "Out of range");
-                GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+                GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                       GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
                 glDrawBuffers(m_MultiSampleColorAttachments.size(), buffers);
             }
             else if (m_MultiSampleColorAttachments.empty())
@@ -279,16 +279,14 @@ namespace GEngine
 
         if (m_ColorAttachments.size() >= 1)
         {
-            GE_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Out of range");
-            GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+            GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                   GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
             glDrawBuffers(m_ColorAttachments.size(), buffers);
         }
         else if (m_ColorAttachments.empty())
         {
             glDrawBuffers(GL_NONE, GL_NONE);
         }
-
-        
 
         
         GE_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
