@@ -110,6 +110,10 @@ namespace GEngine
 	{
         
 	}
+    VkFence& VulkanContext::GetCurrentFence()
+    {
+        return m_Fences.at(Renderer::GetCurrentFrame());
+    }
     VkSemaphore& VulkanContext::GetCurrentSemaphore()
     {
         return m_Semaphores.at(m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCurrentFrame() * m_SyncObjectSizePerFrame);

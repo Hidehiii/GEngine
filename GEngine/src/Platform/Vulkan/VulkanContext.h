@@ -60,7 +60,7 @@ namespace GEngine
 
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		VkFence&					GetCurrentFence() { return m_Fences.at(m_FenceIndex); }
+		VkFence&					GetCurrentFence();
 		VkSemaphore&				GetCurrentSemaphore();
 		void                        MoveToNextSemaphore();
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
