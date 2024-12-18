@@ -206,14 +206,18 @@ namespace GEngine
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+		VkCommandBuffer cmdBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
+
 		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
 		{
-			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(cmdBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 		if (m_DepthAttachmentTexture2D)
 		{
-			m_DepthAttachmentTexture2D->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+			m_DepthAttachmentTexture2D->SetImageLayout(cmdBuffer, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		}
+
+		VulkanContext::Get()->EndSingleTimeCommands(cmdBuffer);
 
 		s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
 		s_CurrentVulkanFrameBuffer = this;

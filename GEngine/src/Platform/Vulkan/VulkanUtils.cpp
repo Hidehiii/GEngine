@@ -676,29 +676,6 @@ namespace GEngine
 				BlitImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, { mipWidth, mipHeight }, i - 1,
 					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1 }, i,
 					aspectFlag);
-
-				/*VkImageBlit		region{};
-				region.srcSubresource.aspectMask = aspectFlag;
-				region.srcSubresource.baseArrayLayer = baseArrayLayer;
-				region.srcSubresource.layerCount = layerCount;
-				region.srcSubresource.mipLevel = i - 1;
-				region.srcOffsets[0] = { 0, 0, 0 };
-				region.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-				region.dstSubresource.mipLevel = i;
-				region.dstSubresource.aspectMask = aspectFlag;
-				region.dstSubresource.baseArrayLayer = baseArrayLayer;
-				region.dstSubresource.layerCount = layerCount;
-				region.dstOffsets[0] = { 0, 0, 0 };
-				region.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-
-				vkCmdBlitImage(commandBuffer,
-					image,
-					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					image,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1,
-					&region,
-					VK_FILTER_LINEAR);*/
 				
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
