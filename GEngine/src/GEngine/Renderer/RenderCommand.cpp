@@ -78,9 +78,9 @@ namespace GEngine
 	{
 		s_RendererAPI->EndDrawCommand();
 	}
-	inline void RenderCommand::BeginSecondaryDrawCommand(uint32_t threadID)
+	inline void RenderCommand::BeginSecondaryDrawCommand()
 	{
-		s_RendererAPI->BeginSecondaryDrawCommand(threadID);
+		s_RendererAPI->BeginSecondaryDrawCommand();
 	}
 	inline void RenderCommand::EndSecondaryDrawCommand()
 	{

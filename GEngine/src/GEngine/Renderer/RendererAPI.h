@@ -43,6 +43,9 @@ namespace GEngine
 
 		virtual void BeginDrawCommand() = 0;
 		virtual void EndDrawCommand() = 0;
+		virtual void BeginSecondaryDrawCommand() = 0;
+		virtual void EndSecondaryDrawCommand() = 0;
+
 
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }

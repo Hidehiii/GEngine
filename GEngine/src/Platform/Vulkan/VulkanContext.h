@@ -47,7 +47,7 @@ namespace GEngine
 		VkCommandBuffer				GetCurrentDrawCommandBuffer() { return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex); }
 		void						BeginSecondaryDrawCommandBuffer();
 		VkCommandBuffer				EndSecondaryDrawCommandBuffer();
-		VkCommandBuffer				GetCurrentSecondaryDrawCommandBuffer() { return m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBufferIndex); }
+		VkCommandBuffer				GetCurrentSecondaryDrawCommandBuffer();
 		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }

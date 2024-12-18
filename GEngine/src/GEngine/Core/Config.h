@@ -6,6 +6,7 @@ namespace GEngine
 	{
 	public:
 		Config() {}
-		int m_RendererAPI = 1;
+		uint8_t m_RendererAPI = 1;
+		uint8_t m_FramesInFlight = 2;
 	};
 }

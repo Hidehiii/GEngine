@@ -28,8 +28,8 @@ namespace GEngine
 		inline static void SetDepthTest(CompareOperation op);
 		inline static void BeginDrawCommand();
 		inline static void EndDrawCommand();
-		inline static void BeginSecondaryDrawCommand(uint32_t threadID);
-		inline static void EndSecondaryDrawCommand(uint32_t threadID);
+		inline static void BeginSecondaryDrawCommand();
+		inline static void EndSecondaryDrawCommand();
 		inline static void SetRendererAPI(RendererAPI::API api);
 	private:
 		inline static RendererAPI* s_RendererAPI;

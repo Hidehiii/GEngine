@@ -262,6 +262,7 @@ namespace GEngine
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "RendererAPI" << YAML::Value << (int)config->m_RendererAPI; 
+		out << YAML::Key << "FramesInFlight" << YAML::Value << (int)config->m_FramesInFlight;
 
 		out << YAML::EndMap;
 		std::ofstream fout(filepath);
@@ -359,7 +360,8 @@ namespace GEngine
 			return;
 		}
 
-		config->m_RendererAPI	= data["RendererAPI"].as<int>();
+		config->m_RendererAPI	= data["RendererAPI"].as<uint8_t>();
+		config->m_FramesInFlight = data["FramesInFlight"].as<uint8_t>();
 	}
 	
 	// 解码场景的YAML数据
