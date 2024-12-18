@@ -220,14 +220,6 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::End()
 	{
-		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
-		{
-			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		}
-		if (m_DepthAttachmentTexture2D)
-		{
-			m_DepthAttachmentTexture2D->SetImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		}
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
 		s_CurrentVulkanFrameBuffer = nullptr;
 	}
