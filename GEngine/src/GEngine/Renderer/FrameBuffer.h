@@ -69,6 +69,7 @@ namespace GEngine
 		virtual Vector2 GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
 		virtual float GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float GetHeight() const { return (float)GetSpecification().Height; }
+		virtual uint32_t GetSamples() const { return GetSpecification().Samples; }
 		virtual int GetAttachmentCount() = 0;
 		virtual Ref<Texture2D> GetColorAttachment(int index) = 0;
 		virtual Ref<Texture2D> GetDepthAttachment() = 0;

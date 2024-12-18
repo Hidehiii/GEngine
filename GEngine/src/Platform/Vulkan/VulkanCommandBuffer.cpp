@@ -72,7 +72,6 @@ namespace GEngine
 		submitInfo.pCommandBuffers		= &commandBuffer;
 
 		vkQueueSubmit(queue, 1, &submitInfo, fence);
-		//vkQueueWaitIdle(queue);
 		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 
 		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_CommandPool, 1, &commandBuffer);

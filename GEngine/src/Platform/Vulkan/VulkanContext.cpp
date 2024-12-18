@@ -308,24 +308,46 @@ namespace GEngine
 
         CheckInstanceExtensionSupport(m_PhysicalDevice);
 
-
-		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &deviceFeatures);
-
-        VkPhysicalDeviceFeatures2               deviceFeatures2;
+        VkPhysicalDeviceFeatures2               deviceFeatures2 = {};
         deviceFeatures2.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        VkPhysicalDevice16BitStorageFeatures    bitsStorage16;
+
+        VkPhysicalDevice16BitStorageFeatures    bitsStorage16 = {};
         bitsStorage16.sType                     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
         deviceFeatures2.pNext                   = &bitsStorage16;
-        //vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
 
+        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT    extendedDynamicState2Features = {};
+        extendedDynamicState2Features.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT;
+        bitsStorage16.pNext                                 = &extendedDynamicState2Features;
+        
+		VkPhysicalDeviceExtendedDynamicState3FeaturesEXT    extendedDynamicState3Features = {};
+		extendedDynamicState3Features.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
+        extendedDynamicState2Features.pNext                 = &extendedDynamicState3Features;
+
+        VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR  separateDepthStencilLayoutFeaturesKHR = {};
+        separateDepthStencilLayoutFeaturesKHR.sType             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES_KHR;
+        extendedDynamicState3Features.pNext                     = &separateDepthStencilLayoutFeaturesKHR;
+
+        VkPhysicalDeviceImageCompressionControlFeaturesEXT  imageCompressionControlFeatrue = {};
+        imageCompressionControlFeatrue.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT;
+        separateDepthStencilLayoutFeaturesKHR.pNext         = &imageCompressionControlFeatrue;
+
+        VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT imageCompressionControlSwapchainFeatrue = {};
+        imageCompressionControlSwapchainFeatrue.sType               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT;
+        imageCompressionControlFeatrue.pNext                        = &imageCompressionControlSwapchainFeatrue;
+
+        VkPhysicalDeviceShaderFloat16Int8Features       shaderFloat16Int8Feature = {};
+        shaderFloat16Int8Feature.sType                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES;
+        imageCompressionControlSwapchainFeatrue.pNext   = &shaderFloat16Int8Feature;
+
+        
+
+        vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
 
         VkDeviceCreateInfo                  createInfo = {};
         createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos        = queueCreateInfos.data();
-        createInfo.pEnabledFeatures         = &deviceFeatures;
-        //createInfo.pNext                    = &bitsStorage16;
+        createInfo.pNext                    = &deviceFeatures2;
 
         std::vector<const char*>            extensions = m_InstanceExtensions;
         for (const auto& extension : m_DeviceExtensions)
@@ -648,7 +670,12 @@ namespace GEngine
 		{
 			// load vkCmdSetRasterizationSamplesEXT
 			m_Function.vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT)vkGetDeviceProcAddr(m_Device, "vkCmdSetRasterizationSamplesEXT");
-            GE_CORE_INFO("Load Functoin (vkCmdSetRasterizationSamplesEXT)");
+            if(m_Function.vkCmdSetRasterizationSamplesEXT)
+                GE_CORE_INFO("Load Functoin (vkCmdSetRasterizationSamplesEXT)");
+
+            m_Function.vkCmdSetColorWriteMaskEXT = (PFN_vkCmdSetColorWriteMaskEXT)vkGetDeviceProcAddr(m_Device, "vkCmdSetColorWriteMaskEXT");
+            if(m_Function.vkCmdSetColorWriteMaskEXT)
+                GE_CORE_INFO("Load Functoin (vkCmdSetColorWriteMaskEXT)");
 		}
     }
 

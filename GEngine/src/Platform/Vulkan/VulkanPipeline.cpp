@@ -75,7 +75,8 @@ namespace GEngine
 		Scissor.offset = { 0, 0 };
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
-
+		VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
+		
 		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
 		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));

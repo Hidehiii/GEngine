@@ -61,6 +61,7 @@ private:
 	Ref<Pipeline> m_OIT;
 
 	Ref<FrameBuffer> m_OIT_1;
+	Ref<FrameBuffer> m_DepthOnly;
 	Ref<FrameBuffer> m_SkyBoxFB;
 
 	std::vector<TestVertex> m_vertex;

@@ -1,7 +1,7 @@
 
 #Name OITPrepare
 #Cull None
-#DepthWrite Off
+#DepthWrite On
 #Blend None
 #Properties
 

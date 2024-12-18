@@ -29,6 +29,8 @@ void Sandbox2D::OnAttach()
 	fspec.Samples = 1;
 	m_OIT_1 = FrameBuffer::Create(fspec);
 	m_SkyBoxFB = FrameBuffer::Create(fspec);
+	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };
+	m_DepthOnly = FrameBuffer::Create(fspec);
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -229,11 +231,11 @@ void Sandbox2D::OnRender()
 	
 
 	RenderCommand::BeginDrawCommand();
-	m_OIT_1->Begin();
+	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_OITPrepare->Render();
 	Renderer::EndScene();
-	m_OIT_1->End();
+	m_DepthOnly->End();
 	RenderCommand::EndDrawCommand();
 
 	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_SkyBoxFB->GetColorAttachment(0));
@@ -274,6 +276,11 @@ void Sandbox2D::OnUpdate()
 	{
 		m_OIT_1 = FrameBuffer::Recreate(m_OIT_1, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
+	if (m_DepthOnly->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_DepthOnly->GetWidth() != Application::Get().GetWindow().GetWidth())
+	{
+		m_DepthOnly = FrameBuffer::Recreate(m_DepthOnly, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+	}
 	if (m_SkyBoxFB->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_SkyBoxFB->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
@@ -292,7 +299,7 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	//ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer->GetColorAttachment(0)), {100, 100});
+	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthAttachment()), {100, 100});
 	//ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer_0->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }
