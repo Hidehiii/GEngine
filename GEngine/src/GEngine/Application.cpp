@@ -117,6 +117,7 @@ namespace GEngine
 			
 
 			m_Window->OnUpdate();
+			Renderer::MoveToNextFrame();
 		}
 	}
 	void Application::Close()

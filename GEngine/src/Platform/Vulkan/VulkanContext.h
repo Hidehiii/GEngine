@@ -44,7 +44,7 @@ namespace GEngine
 		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
 		void						BeginDrawCommandBuffer();
 		VkCommandBuffer				EndDrawCommandBuffer();
-		VkCommandBuffer				GetCurrentDrawCommandBuffer() { return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex); }
+		VkCommandBuffer				GetCurrentDrawCommandBuffer();
 		void						BeginSecondaryDrawCommandBuffer();
 		VkCommandBuffer				EndSecondaryDrawCommandBuffer();
 		VkCommandBuffer				GetCurrentSecondaryDrawCommandBuffer();
@@ -127,8 +127,9 @@ namespace GEngine
 		VkExtent2D							m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
+		int									m_CommandBufferSizePerFrame = 10;
 		VulkanCommandBuffer					m_CommandBuffer;
-		int									m_DrawUsedCommandBufferIndex = 0;
+		std::vector<int>					m_DrawUsedCommandBufferIndexs;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;

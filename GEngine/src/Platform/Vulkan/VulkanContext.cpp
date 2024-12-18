@@ -2,6 +2,7 @@
 #include "VulkanContext.h"
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanUtils.h"
+#include "GEngine/Renderer/Renderer.h"
 #include <set>
 
 namespace GEngine
@@ -516,17 +517,25 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), 5);
+        m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
+        for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+        {
+            m_DrawUsedCommandBufferIndexs.push_back(0);
+        }
     }
 
     void VulkanContext::BeginDrawCommandBuffer()
     {
-        m_DrawUsedCommandBufferIndex = (m_DrawUsedCommandBufferIndex + 1) % m_CommandBuffer.GetCommandBuffersSize();
+        m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
     }
     VkCommandBuffer VulkanContext::EndDrawCommandBuffer()
     {
-        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndex);
+        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return buffer;
+    }
+    VkCommandBuffer VulkanContext::GetCurrentDrawCommandBuffer()
+    {
+        return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
     }
     void VulkanContext::BeginSecondaryDrawCommandBuffer()
     {
@@ -535,7 +544,7 @@ namespace GEngine
         bool isUsing = true;
         while (isUsing)
         {
-            m_DrawUsedSecondaryCommandBufferIndex = (m_DrawUsedCommandBufferIndex + 1) % m_CommandBuffer.GetSecondaryCommandBuffersSize();
+            m_DrawUsedSecondaryCommandBufferIndex = (m_DrawUsedSecondaryCommandBufferIndex + 1) % m_CommandBuffer.GetSecondaryCommandBuffersSize();
             for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
             {
                 if (m_DrawUsedSecondaryCommandBuffers.at(i).second == m_DrawUsedSecondaryCommandBufferIndex)
