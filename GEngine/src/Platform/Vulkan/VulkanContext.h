@@ -61,8 +61,8 @@ namespace GEngine
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
 		VkFence&					GetCurrentFence() { return m_Fences.at(m_FenceIndex); }
-		VkSemaphore&				GetCurrentSemaphore() { return m_Semaphores.at(m_SemaphoreIndex); }
-		void                        MoveToNextSemaphore() { m_SemaphoreIndex = (m_SemaphoreIndex + 1) % m_Semaphores.size(); }
+		VkSemaphore&				GetCurrentSemaphore();
+		void                        MoveToNextSemaphore();
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 	private:
@@ -133,8 +133,9 @@ namespace GEngine
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
+		int									m_SyncObjectSizePerFrame = 20;
 		std::vector<VkSemaphore>			m_Semaphores;
-		int                                 m_SemaphoreIndex = 0;
+		std::vector<int>                    m_SemaphoreIndexs;
 		std::vector<VkFence>				m_Fences;
 		int                                 m_FenceIndex = 0;
 		VulkanFunctionEXT					m_Function;

@@ -110,6 +110,14 @@ namespace GEngine
 	{
         
 	}
+    VkSemaphore& VulkanContext::GetCurrentSemaphore()
+    {
+        return m_Semaphores.at(m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCurrentFrame() * m_SyncObjectSizePerFrame);
+    }
+    void VulkanContext::MoveToNextSemaphore()
+    {
+        m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) = (m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_SyncObjectSizePerFrame;
+    }
     void VulkanContext::CreateInstance()
     {
 #ifdef GE_DEBUG
@@ -575,10 +583,8 @@ namespace GEngine
 
     void VulkanContext::CreateSyncObjects()
     {
-        // 暂时都创建一个
-        size_t size = 20;
-        m_Semaphores.resize(size);
-        m_Fences.resize(size);
+        m_Semaphores.resize(m_SyncObjectSizePerFrame * Renderer::GetFramesInFlight());
+        m_Fences.resize(m_SyncObjectSizePerFrame * Renderer::GetFramesInFlight());
 
         for (int i = 0; i < m_Semaphores.size(); i++)
         {
@@ -592,6 +598,11 @@ namespace GEngine
             fenceInfo.sType         = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags         = VK_FENCE_CREATE_SIGNALED_BIT;
             VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Fences[i]));
+        }
+
+        for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+        {
+            m_SemaphoreIndexs.push_back(0);
         }
     }
 
