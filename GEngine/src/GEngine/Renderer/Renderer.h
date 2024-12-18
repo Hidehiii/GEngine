@@ -27,6 +27,10 @@ namespace GEngine
 
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static void SetRenererAPI(RendererAPI::API api);
+		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
+		static uint8_t GetFramesInFlight() { return s_FramesInFlight; }
+		static uint8_t GetCurrentFrame() { return s_CurrentFrame; }
+		static void MoveToNextFrame() { s_CurrentFrame = (s_CurrentFrame + 1) % s_FramesInFlight; }
 		static void SetModelUniforms(Transform& transform);
 		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
 		static void SetScreenUniform(Vector4& size);
@@ -39,6 +43,8 @@ namespace GEngine
 		static void SetTimeUniforms();
 		static Camera s_RenderTargetCamera;
 		static Vector3 s_RenderTargetCameraPosition;
+		static uint8_t s_FramesInFlight;
+		static uint8_t s_CurrentFrame;
 	};
 }
 

@@ -7,6 +7,9 @@ namespace GEngine
 {
 	Camera Renderer::s_RenderTargetCamera = Camera();
 	Vector3 Renderer::s_RenderTargetCameraPosition = Vector3();
+	uint8_t Renderer::s_FramesInFlight = 2;
+	uint8_t Renderer::s_CurrentFrame = 0;
+
 	struct CameraData
 	{
 		Matrix4x4 GE_MATRIX_V;

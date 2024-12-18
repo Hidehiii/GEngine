@@ -34,7 +34,7 @@ namespace GEngine
 		m_BufferInfo.buffer		= m_UniformBuffer;
 		m_BufferInfo.offset		= m_Offset;
 		m_BufferInfo.range		= size;
-		// 公共ubo不会每次更新
+		// 公共ubo索引不为0
 		if (binding != 0)
 		{
 			AddPublicUniformBuffer(this);

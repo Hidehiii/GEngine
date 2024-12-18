@@ -54,6 +54,7 @@ namespace GEngine
 			UpdateDescriptorSet();
 			CreatePipeline();
 		}
+		// 现在是低效率的每帧更新
 		UpdateDescriptorSet();
 		
 		
