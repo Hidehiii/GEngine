@@ -59,16 +59,24 @@ namespace GEngine
 	void VulkanCommandBuffer::EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue queue)
 	{
 		vkEndCommandBuffer(commandBuffer);
+		// 用fence 而不是wait
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+		VkFence fence;
+		VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceCreateInfo, nullptr, &fence));
 
 		VkSubmitInfo					submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount	= 1;
 		submitInfo.pCommandBuffers		= &commandBuffer;
 
-		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(queue);
+		vkQueueSubmit(queue, 1, &submitInfo, fence);
+		//vkQueueWaitIdle(queue);
+		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 
 		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_CommandPool, 1, &commandBuffer);
+		vkDestroyFence(VulkanContext::Get()->GetDevice(), fence, nullptr);
 	}
 	void VulkanCommandBuffer::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
 	{
