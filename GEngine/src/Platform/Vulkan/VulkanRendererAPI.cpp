@@ -90,9 +90,20 @@ namespace GEngine
     }
     void VulkanRendererAPI::BeginSecondaryDrawCommand()
     {
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+		VulkanContext::Get()->BeginSecondaryDrawCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryDrawCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryDrawCommandBuffer(), &beginInfo));
     }
     void VulkanRendererAPI::EndSecondaryDrawCommand()
     {
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndSecondaryDrawCommandBuffer();
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+        vkCmdExecuteCommands(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 1, &commandBuffer);
     }
     float VulkanRendererAPI::GetTime()
     {

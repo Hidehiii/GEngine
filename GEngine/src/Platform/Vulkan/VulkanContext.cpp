@@ -547,7 +547,9 @@ namespace GEngine
     }
     VkCommandBuffer VulkanContext::GetCurrentDrawCommandBuffer()
     {
-        return m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        VkCommandBuffer cmdBuffer = GetCurrentSecondaryDrawCommandBuffer();
+        cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        return cmdBuffer;
     }
     void VulkanContext::BeginSecondaryDrawCommandBuffer()
     {
@@ -574,11 +576,30 @@ namespace GEngine
     }
     VkCommandBuffer VulkanContext::EndSecondaryDrawCommandBuffer()
     {
-        return VkCommandBuffer();
+		VkCommandBuffer cmdBuffer = nullptr;
+		for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+		{
+			if (m_DrawUsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+			{
+				cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBuffers.at(i).second);
+                m_DrawUsedSecondaryCommandBuffers.erase(m_DrawUsedSecondaryCommandBuffers.begin() + i);
+				break;
+			}
+		}
+		return cmdBuffer;
     }
     VkCommandBuffer VulkanContext::GetCurrentSecondaryDrawCommandBuffer()
     {
-        return VkCommandBuffer();
+        VkCommandBuffer cmdBuffer = nullptr;
+        for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+        {
+            if (m_DrawUsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+            {
+                cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBuffers.at(i).second);
+                break;
+            }
+        }
+        return cmdBuffer;
     }
 	void VulkanContext::CreateDescriptor()
 	{
