@@ -103,6 +103,12 @@ namespace GEngine
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
+			TransitionImageLayout(commandBuffer, image, format, oldLayout, newLayout, layerCount, aspectFlag, mipLevel);
+
+			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
+		}
+		void TransitionImageLayout(VkCommandBuffer CmdBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag, uint32_t mipLevel)
+		{
 			VkImageMemoryBarrier		barrier{};
 			barrier.sType				= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			barrier.oldLayout			= oldLayout;
@@ -115,8 +121,8 @@ namespace GEngine
 			barrier.subresourceRange.levelCount		= mipLevel;
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount		= layerCount;
-			barrier.srcAccessMask					= 0; // TODO
-			barrier.dstAccessMask					= 0; // TODO
+			barrier.srcAccessMask = 0; // TODO
+			barrier.dstAccessMask = 0; // TODO
 
 			VkPipelineStageFlags sourceStage;
 			VkPipelineStageFlags destinationStage;
@@ -140,8 +146,8 @@ namespace GEngine
 				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 				barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-				sourceStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
-				destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+				sourceStage			= VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+				destinationStage	= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			}
 			else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -170,8 +176,8 @@ namespace GEngine
 				barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+				sourceStage			= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				destinationStage	= VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
 			}
 			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			{
@@ -198,20 +204,17 @@ namespace GEngine
 				destinationStage	= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 			}
 			else {
-				VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 				return;
 			}
 
 			vkCmdPipelineBarrier(
-				commandBuffer,
+				CmdBuffer,
 				sourceStage, destinationStage,
 				0,
 				0, nullptr,
 				0, nullptr,
 				1, &barrier
 			);
-
-			VulkanContext::Get()->EndSingleTimeCommands(commandBuffer);
 		}
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag)
 		{

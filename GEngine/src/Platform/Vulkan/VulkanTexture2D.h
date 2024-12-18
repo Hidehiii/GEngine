@@ -29,6 +29,7 @@ namespace GEngine
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		const VkImageAspectFlags			GetAspectFlag() { return m_AspectFlag; }
 		void SetImageLayout(VkImageLayout newLayout);
+		void SetImageLayout(VkCommandBuffer cmdBuffer,  VkImageLayout newLayout);
 	private:
 		void CreateSampler();
 	private:

@@ -167,6 +167,11 @@ namespace GEngine
         Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
         m_ImageLayout = newLayout;
     }
+    void VulkanTexture2D::SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout)
+    {
+		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
+		m_ImageLayout = newLayout;
+    }
     void VulkanTexture2D::CreateSampler()
     {
 		VkSamplerCreateInfo             samplerInfo{};

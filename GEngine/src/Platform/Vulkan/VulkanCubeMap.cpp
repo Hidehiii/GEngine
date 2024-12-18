@@ -190,6 +190,12 @@ namespace GEngine
 		m_ImageLayout = newLayout;
 	}
 
+	void VulkanCubeMap::SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout)
+	{
+		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 6, m_AspectFlag, m_MipLevels);
+		m_ImageLayout = newLayout;
+	}
+
 	void VulkanCubeMap::CreateSampler()
 	{
 		VkSamplerCreateInfo             samplerInfo{};
