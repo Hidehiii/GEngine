@@ -25,6 +25,8 @@ namespace GEngine
 		VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
+		virtual int GetColorAttachmentCount() override { return m_ColorImageViews.size(); }
+
 		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
 		virtual void Begin() override;
 		virtual void End() override;

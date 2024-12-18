@@ -64,6 +64,7 @@ namespace GEngine
 			VkFormat						colorFormat = spec.ColorAttachmentsFormat.at(i);
 			m_Images.push_back(spec.ColorImages.at(i));
 			m_Attachments.push_back(spec.ColorAttachments.at(i));
+			m_ColorImageViews.push_back(spec.ColorAttachments.at(i));
 			m_ImagesMemory.push_back(nullptr);
 			if (m_Specification.Samples > 1)
 			{

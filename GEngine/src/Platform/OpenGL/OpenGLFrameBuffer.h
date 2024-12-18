@@ -14,7 +14,7 @@ namespace GEngine
 		OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		virtual ~OpenGLFrameBuffer() override;
 
-		
+		virtual int GetColorAttachmentCount() override { return m_ColorAttachments.size(); }
 
 		virtual void Begin() override;
 		virtual void End() override;

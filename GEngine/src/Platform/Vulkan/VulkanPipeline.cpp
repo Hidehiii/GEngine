@@ -76,7 +76,8 @@ namespace GEngine
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
 		VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
-		
+		VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
+		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetColorWriteMaskEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, colorMaks);
 		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
 		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
@@ -501,12 +502,14 @@ namespace GEngine
 			break;
 		}
 
+		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetColorAttachmentCount(), ColorBlendAttachment);
+
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
 		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		ColorBlending.logicOpEnable							= VK_FALSE;
 		ColorBlending.logicOp								= VK_LOGIC_OP_COPY;
-		ColorBlending.attachmentCount						= 1;
-		ColorBlending.pAttachments							= &ColorBlendAttachment;
+		ColorBlending.attachmentCount						= static_cast<uint32_t>(attachmentsBlend.size());
+		ColorBlending.pAttachments							= attachmentsBlend.data();
 		ColorBlending.blendConstants[0]						= 0.0f;
 		ColorBlending.blendConstants[1]						= 0.0f;
 		ColorBlending.blendConstants[2]						= 0.0f;

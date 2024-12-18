@@ -23,7 +23,7 @@ void Sandbox2D::OnAttach()
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
 	FrameBufferSpecification fspec;
-	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
+	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 	fspec.Width = 720;
 	fspec.Height = 720;
 	fspec.Samples = 1;
