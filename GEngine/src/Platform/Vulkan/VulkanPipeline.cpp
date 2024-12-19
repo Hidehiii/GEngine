@@ -372,7 +372,7 @@ namespace GEngine
 		vertexShaderStageInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderStageInfo.stage			= VK_SHADER_STAGE_VERTEX_BIT;
 		vertexShaderStageInfo.module		= VertexShaderModule;
-		vertexShaderStageInfo.pName			= "main";
+		vertexShaderStageInfo.pName			= m_ShaderMainFuncName;
 
 		VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
 		fragmentShaderStageInfo.sType		= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
