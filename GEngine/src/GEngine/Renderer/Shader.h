@@ -585,7 +585,7 @@ namespace GEngine
 		BlendMode											m_BlendModeColor				= BlendMode::None;
 		BlendMode											m_BlendModeAlpha				= BlendMode::None;
 		CullMode											m_CullMode						= CullMode::Back;
-		const static std::string							s_ShaderMainFuncName = "main";
+		const std::string									m_ShaderMainFuncName			= "main";
 		
 	};
 
