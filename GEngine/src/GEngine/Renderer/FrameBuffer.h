@@ -48,13 +48,22 @@ namespace GEngine
 		std::vector<FrameBufferTextureSpecification> Attachments;
 	};
 
+	enum class FrameBufferAttachmentsAction
+	{
+		None	= 0,
+		Load	= 1,
+		Clear	= 2,
+		Store	= 3
+	};
+
 	struct FrameBufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;
 		FrameBufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1;
 
-		bool SwapChainTarget = false;
+		FrameBufferAttachmentsAction AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
+		FrameBufferAttachmentsAction AttachmentsEndAction	= FrameBufferAttachmentsAction::Store;
 	};
 
 	class GENGINE_API FrameBuffer
