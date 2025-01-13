@@ -25,9 +25,15 @@ namespace GEngine
 		virtual void SetFloat4(const std::string& name, const Vector4& value) override;
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) override;
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) override;
+
+		void CreateShaderModule();
+		void DestroyShaderModule();
+		VkShaderModule GetShaderModule(std::string stage);
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;
+
+		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 	private:
 		std::unordered_map<std::string, std::string> PreProcess(const std::string& source);
 		void Compile(std::unordered_map<std::string, std::string>& source);
@@ -47,6 +53,8 @@ namespace GEngine
 		std::vector<std::pair<std::string, std::string>>	m_MacroExps = {
 
 		};
+
+		VkShaderModule m_VertexShaderModule, m_FragmentShaderModule;
 	};
 }
 

@@ -151,17 +151,6 @@ namespace GEngine
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-
-    VkShaderModule VulkanPipeline::CreateShaderModule(const std::vector<uint32_t>& code)
-    {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size() * sizeof(uint32_t);
-        createInfo.pCode    = code.data();
-        VkShaderModule      shaderModule;
-		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::Get()->GetDevice(), &createInfo, nullptr, &shaderModule));
-        return shaderModule;
-    }
 	void VulkanPipeline::CreateDescriptorSetAndLayout()
 	{
 		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
@@ -363,22 +352,20 @@ namespace GEngine
 	}
     void VulkanPipeline::CreatePipeline()
     {
-		VkShaderModule VertexShaderModule, FragmentShaderModule;
-
-		VertexShaderModule		= CreateShaderModule(m_Material->GetShader()->GetVertexShaderSource());
-		FragmentShaderModule	= CreateShaderModule(m_Material->GetShader()->GetFragmentShaderSource());
+		// TODO 
+		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();
 
 		VkPipelineShaderStageCreateInfo		vertexShaderStageInfo{};
 		vertexShaderStageInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderStageInfo.stage			= VK_SHADER_STAGE_VERTEX_BIT;
-		vertexShaderStageInfo.module		= VertexShaderModule;
-		vertexShaderStageInfo.pName			= m_ShaderMainFuncName;
+		vertexShaderStageInfo.module		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Vertex);
+		vertexShaderStageInfo.pName			= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 
 		VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
 		fragmentShaderStageInfo.sType		= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderStageInfo.stage		= VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragmentShaderStageInfo.module		= FragmentShaderModule;
-		fragmentShaderStageInfo.pName		= "main";
+		fragmentShaderStageInfo.module		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Fragment);
+		fragmentShaderStageInfo.pName		= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 		ShaderStages						= { vertexShaderStageInfo, fragmentShaderStageInfo };
@@ -556,7 +543,7 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), VertexShaderModule, nullptr);
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), FragmentShaderModule, nullptr);
+		// TODO 
+		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
     }
 }

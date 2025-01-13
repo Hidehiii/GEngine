@@ -21,7 +21,6 @@ namespace GEngine
 		virtual Ref<Material> GetMaterial() override { return std::static_pointer_cast<Material>(m_Material);}
 		virtual void SetMaterial(Ref<Material>& material) override;
 	private:
-		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
 		void CreateDescriptorSetAndLayout();
 		void UpdateDescriptorSet();

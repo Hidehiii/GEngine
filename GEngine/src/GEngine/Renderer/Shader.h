@@ -555,6 +555,8 @@ namespace GEngine
 		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
 		virtual std::vector<ShaderUniformCubeMap>	GetCubeMap() { return m_CubeMapCache; }
 
+		virtual std::string GetShaderMainFuncName() { return m_ShaderMainFuncName; }
+
 		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
 

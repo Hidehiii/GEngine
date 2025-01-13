@@ -126,6 +126,24 @@ namespace GEngine
 	void VulkanShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count)
 	{
 	}
+	void VulkanShader::CreateShaderModule()
+	{
+		m_VertexShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Vertex]);
+		m_FragmentShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Fragment]);
+	}
+	void VulkanShader::DestroyShaderModule()
+	{
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
+		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
+	}
+	VkShaderModule VulkanShader::GetShaderModule(std::string stage)
+	{
+		if (stage == ShaderStage::Pixel || stage == ShaderStage::Fragment)
+			return m_FragmentShaderModule;
+		else if (stage == ShaderStage::Vertex)
+			return m_VertexShaderModule;
+		return VkShaderModule();
+	}
 	void VulkanShader::SetMacroBool(std::string& source)
 	{
 		for (int i = 0; i < m_MacroBools.size(); i++)
@@ -140,12 +158,22 @@ namespace GEngine
 			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
 		}
 	}
+	VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code)
+	{
+		VkShaderModuleCreateInfo	createInfo{};
+		createInfo.sType			= VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize			= code.size() * sizeof(uint32_t);
+		createInfo.pCode			= code.data();
+		VkShaderModule				shaderModule;
+		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::Get()->GetDevice(), &createInfo, nullptr, &shaderModule));
+		return shaderModule;
+	}
 	std::unordered_map<std::string, std::string> VulkanShader::PreProcess(const std::string& source)
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
 		const char* propertyToken		= "#Properties";
-		const char* propertyEndToken = "#EndProperties";
+		const char* propertyEndToken	= "#EndProperties";
 		size_t propertyTokenLength		= strlen(propertyToken);
 
 		const char* typeToken			= "#Type";
