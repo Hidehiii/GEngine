@@ -75,7 +75,7 @@ namespace GEngine
 		Scissor.offset = { 0, 0 };
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
-		VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
+		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
 		VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetColorWriteMaskEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, colorMaks);
 		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
@@ -355,17 +355,19 @@ namespace GEngine
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();
 
+		std::string shaderMainFuncName = m_Material->GetShader()->GetShaderMainFuncName().c_str();
+
 		VkPipelineShaderStageCreateInfo		vertexShaderStageInfo{};
 		vertexShaderStageInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderStageInfo.stage			= VK_SHADER_STAGE_VERTEX_BIT;
 		vertexShaderStageInfo.module		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Vertex);
-		vertexShaderStageInfo.pName			= m_Material->GetShader()->GetShaderMainFuncName().c_str();
+		vertexShaderStageInfo.pName			= shaderMainFuncName.c_str();
 
 		VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
 		fragmentShaderStageInfo.sType		= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderStageInfo.stage		= VK_SHADER_STAGE_FRAGMENT_BIT;
 		fragmentShaderStageInfo.module		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Fragment);
-		fragmentShaderStageInfo.pName		= m_Material->GetShader()->GetShaderMainFuncName().c_str();
+		fragmentShaderStageInfo.pName		= shaderMainFuncName.c_str();
 
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 		ShaderStages						= { vertexShaderStageInfo, fragmentShaderStageInfo };

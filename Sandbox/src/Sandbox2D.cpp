@@ -26,7 +26,7 @@ void Sandbox2D::OnAttach()
 	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
 	fspec.Width = 720;
 	fspec.Height = 720;
-	fspec.Samples = 1;
+	fspec.Samples = 4;
 	m_OIT_1 = FrameBuffer::Create(fspec);
 	m_SkyBoxFB = FrameBuffer::Create(fspec);
 	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };

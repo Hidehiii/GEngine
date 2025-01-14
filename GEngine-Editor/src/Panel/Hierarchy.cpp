@@ -169,7 +169,14 @@ namespace GEngine
 					GUI::FloatControl("Far clip", component.m_PerspectiveFar);
 				}
 
-				std::string currentAntiAliasingType = Camera::GetAntiAliasingTypeString(component.m_AntiAliasingType);
+				int currentAntiAliasingType = (int)component.m_AntiAliasingType;
+				//std::string antiAliasingTypes = "None\0MSAA2x\0MSAA4x\0MSAA8x\0MSAA16x\0";
+				const char* antiAliasingTypes[] = { u8"None", u8"MSAA2x", u8"MSAA4x", u8"MSAA8x", u8"MSAA16x" };
+				if (ImGui::Combo(u8"Anti Aliasing", &currentAntiAliasingType, antiAliasingTypes, 5))
+				{
+					component.m_AntiAliasingType = (AntiAliasingType)currentAntiAliasingType;
+				}
+				/*std::string currentAntiAliasingType = Camera::GetAntiAliasingTypeString(component.m_AntiAliasingType);
 				if (ImGui::BeginCombo("Anti Aliasing", (const char*)currentAntiAliasingType.c_str()))
 				{
 					bool isSelected = currentAntiAliasingType == Camera::GetAntiAliasingTypeString(AntiAliasingType::None);
@@ -218,7 +225,7 @@ namespace GEngine
 						ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
-				}
+				}*/
 			}
 		);
 
