@@ -267,13 +267,13 @@ namespace GEngine
 			GE_CORE_CRITICAL("failed to find supported format!");
 		}
 
-		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
+		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
 		{
 			VkAttachmentDescription2	Attachment{};
 			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= sample;
-			Attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp			= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.loadOp			= loadOp;
+			Attachment.storeOp			= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -311,9 +311,9 @@ namespace GEngine
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-				Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
-				Attachment.stencilStoreOp	= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.stencilLoadOp	= loadOp;
+				Attachment.stencilStoreOp	= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
@@ -361,12 +361,12 @@ namespace GEngine
 
 			return Ref;
 		}
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample)
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
 		{
 			VkAttachmentDescription			Attachment{};
 			Attachment.samples				= sample;
-			Attachment.loadOp				= VK_ATTACHMENT_LOAD_OP_CLEAR;
-			Attachment.storeOp				= sample == 1 ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.loadOp				= loadOp;
+			Attachment.storeOp				= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.stencilLoadOp		= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout		= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -404,9 +404,9 @@ namespace GEngine
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
-				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-				Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_CLEAR;
-				Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_STORE;
+				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Attachment.stencilLoadOp	= loadOp;
+				Attachment.stencilStoreOp	= storeOp;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			case GEngine::FrameBufferTextureFormat::DEPTH:
@@ -721,6 +721,32 @@ namespace GEngine
 				break;
 			}
 			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		}
+		VkAttachmentLoadOp AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op)
+		{
+			switch (op)
+			{
+			case FrameBufferAttachmentsAction::None:	return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			case FrameBufferAttachmentsAction::Load:	return VK_ATTACHMENT_LOAD_OP_LOAD;
+			case FrameBufferAttachmentsAction::Clear:	return VK_ATTACHMENT_LOAD_OP_CLEAR;
+			case FrameBufferAttachmentsAction::Store:	GE_CORE_ASSERT(false, "Unkonwn fb load action"); break;
+			default:
+				break;
+			}
+			return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		}
+		VkAttachmentStoreOp AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op)
+		{
+			switch (op)
+			{
+			case FrameBufferAttachmentsAction::None:	return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			case FrameBufferAttachmentsAction::Load:	GE_CORE_ASSERT(false, "Unknown fb store action");
+			case FrameBufferAttachmentsAction::Clear:	GE_CORE_ASSERT(false, "Unknown fb store action");
+			case FrameBufferAttachmentsAction::Store:	return VK_ATTACHMENT_STORE_OP_STORE;
+			default:
+				break;
+			}
+			return VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		}
     }
 }

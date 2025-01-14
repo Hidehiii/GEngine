@@ -10,6 +10,8 @@ namespace GEngine
 		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
 		FrameBufferTextureSpecification					DepthAttachment;
 		int												Samples = 1;
+		FrameBufferAttachmentsAction					AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
+		FrameBufferAttachmentsAction					AttachmentsEndAction = FrameBufferAttachmentsAction::Store;
 	};
 
 	struct RenderPassSpecificationForVulkan
@@ -18,6 +20,8 @@ namespace GEngine
 		std::vector<VkImageLayout>					ColorAttachmentsFinalLayout;
 		bool 										EnableDepthStencilAttachment;
 		int											Samples = 1;
+		VkAttachmentLoadOp							AttachmentsBeginAction = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		VkAttachmentStoreOp							AttachmentsEndAction = VK_ATTACHMENT_STORE_OP_STORE;
 	};
 
 	class GENGINE_API VulkanRenderPass

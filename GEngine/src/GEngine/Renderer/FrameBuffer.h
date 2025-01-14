@@ -79,6 +79,8 @@ namespace GEngine
 		virtual float GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float GetHeight() const { return (float)GetSpecification().Height; }
 		virtual uint32_t GetSamples() const { return GetSpecification().Samples; }
+		virtual FrameBufferAttachmentsAction GetAttachmentsBeginAction() { return GetSpecification().AttachmentsBeginAction; }
+		virtual FrameBufferAttachmentsAction GetAttachmentsEndAction() { return GetSpecification().AttachmentsEndAction; }
 		virtual int GetAttachmentCount() = 0;
 		virtual int GetColorAttachmentCount() = 0;
 		virtual Ref<Texture2D> GetColorAttachment(int index) = 0;

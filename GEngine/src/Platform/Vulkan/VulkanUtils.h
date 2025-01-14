@@ -25,9 +25,9 @@ namespace GEngine
 		void TransitionImageLayout(VkCommandBuffer CmdBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag, uint32_t mipLevel);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag);
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample);
+		VkAttachmentDescription2 CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
 		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index);
-		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample);
+		VkAttachmentDescription CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
 		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index);
 		VkSampleCountFlagBits SampleCountToVulkanFlag(int sample);
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag);
@@ -41,6 +41,8 @@ namespace GEngine
 		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer);
 		void GenerateMipmap(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkImageAspectFlags aspectFlag, uint32_t baseArrayLayer, uint32_t layerCount);
 		VkCompareOp CompareOPToVkCompareOP(CompareOperation op);
+		VkAttachmentLoadOp AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op);
+		VkAttachmentStoreOp AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op);
 	}
 	
 }

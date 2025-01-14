@@ -56,6 +56,8 @@ namespace GEngine
 		renderPassSpec.ColorAttachmentsFormat		= spec.ColorAttachmentsFormat;
 		renderPassSpec.EnableDepthStencilAttachment = spec.EnableDepthStencilAttachment;
 		renderPassSpec.Samples						= spec.Samples;
+		renderPassSpec.AttachmentsBeginAction		= spec.AttachmentsBeginAction;
+		renderPassSpec.AttachmentsEndAction			= spec.AttachmentsEndAction;
 
 		m_RenderPass = CreateRef<VulkanRenderPass>(renderPassSpec);
 
@@ -252,6 +254,8 @@ namespace GEngine
 		spec.ColorAttachments				= m_ColorAttachmentsSpecs;
 		spec.DepthAttachment				= m_DepthAttachmentSpec;
 		spec.Samples						= m_Specification.Samples;
+		spec.AttachmentsBeginAction			= m_Specification.AttachmentsBeginAction;
+		spec.AttachmentsEndAction			= m_Specification.AttachmentsEndAction;
 		m_RenderPass = CreateRef<VulkanRenderPass>(spec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()

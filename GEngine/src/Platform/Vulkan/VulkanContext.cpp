@@ -714,6 +714,8 @@ namespace GEngine
             spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
             spec.EnableDepthStencilAttachment   = true;
             spec.Samples                        = 1;
+            spec.AttachmentsBeginAction         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            spec.AttachmentsEndAction           = VK_ATTACHMENT_STORE_OP_STORE;
 
 			Ref<VulkanFrameBuffer> frameBuffer  = CreateRef<VulkanFrameBuffer>(spec);
 			m_SwapChainFrameBuffers[i]          = frameBuffer;

@@ -23,7 +23,7 @@ namespace GEngine {
 		s_Spec.y				= Application::Get().GetWindow().GetHeight();
 
 		std::vector<VkAttachmentDescription>	attachments;
-		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FrameBufferTextureFormat::RGBA8, VK_SAMPLE_COUNT_1_BIT);
+		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FrameBufferTextureFormat::RGBA8, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 		des.format								= VK_FORMAT_R8G8B8A8_UNORM;
 		attachments.push_back(des);
 
