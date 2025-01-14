@@ -13,5 +13,6 @@ namespace GEngine
 		static void Vector4Control(const std::string& label, Vector4& val, Vector4 restVal = Vector4(0.0f), float speed = 0.1f, float size = 100.0f);
 		static void Color4Control(const std::string& label, Vector4& color, float size = 100.0f);
 		static void Checkbox(const std::string& label, bool& val, float size = 100.0f);
+		static void IntControl(const std::string& label, int& val, int restVal = 0, int speed = 1, float size = 100.0f);
 	};
 }

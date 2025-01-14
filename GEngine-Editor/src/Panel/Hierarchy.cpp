@@ -130,43 +130,25 @@ namespace GEngine
 			{
 				GUI::Checkbox("Is main camera", component.isPrimary);
 
-
-				std::string currentType = component.GetCameraTypeString(component.GetCameraType());
-				if (ImGui::BeginCombo("Camera type", (const char*)currentType.c_str()))
+				const char* cameraTypeString[] = { u8"OrthoGraphic", u8"Perspective" };
+				int currentType = (int)component.GetCameraType();
+				if (ImGui::Combo("Camera type", &currentType, cameraTypeString, 2))
 				{
-					bool isSelected = currentType == Camera::GetCameraTypeString(CameraType::OrthoGraphic);
-					if (ImGui::Selectable((const char*)Camera::GetCameraTypeString(CameraType::OrthoGraphic).c_str(), isSelected))
-					{
-						component.SetCameraType(CameraType::OrthoGraphic);
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					isSelected = currentType == Camera::GetCameraTypeString(CameraType::Perspective);
-					if (ImGui::Selectable((const char*)Camera::GetCameraTypeString(CameraType::Perspective).c_str(), isSelected))
-					{
-						component.SetCameraType(CameraType::Perspective);
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
+					component.SetCameraType(currentType);
 				}
 
 				if (component.GetCameraType() == CameraType::OrthoGraphic)
 				{
-					GUI::FloatControl("Size", component.m_OrthoGraphicSize);
-					GUI::FloatControl("Near clip", component.m_OrthoGraphicNear);
-					GUI::FloatControl("Far clip", component.m_OrthoGraphicFar);
+					GUI::FloatControl(u8"Size",			component.m_OrthoGraphicSize);
+					GUI::FloatControl(u8"Near clip",	component.m_OrthoGraphicNear);
+					GUI::FloatControl(u8"Far clip",		component.m_OrthoGraphicFar);
 				}
 
 				if (component.GetCameraType() == CameraType::Perspective)
 				{
-					GUI::FloatControl("FOV", component.m_PerspectiveFOV, 45.0f, 0.05f);
-					GUI::FloatControl("Near clip", component.m_PerspectiveNear);
-					GUI::FloatControl("Far clip", component.m_PerspectiveFar);
+					GUI::FloatControl(u8"FOV",			component.m_PerspectiveFOV, 45.0f, 0.05f);
+					GUI::FloatControl(u8"Near clip",	component.m_PerspectiveNear);
+					GUI::FloatControl(u8"Far clip",		component.m_PerspectiveFar);
 				}
 
 				int currentAntiAliasingType = (int)component.m_AntiAliasingType;
@@ -265,14 +247,14 @@ namespace GEngine
 
 		DrawComponent<BoxCollider2D>("Box Collider 2D", gameObject, true, [](auto& component)
 			{
-				GUI::Vector2Control("Offset", component.m_Offset);
-				GUI::Vector2Control("Size", component.m_Size, { 1.0f, 1.0f },0.01f);
-				GUI::FloatControl("Rotation", component.m_Rotation);
-				GUI::FloatControl("Density", component.m_Density, 1.0f, 0.01f);
-				GUI::FloatControl("Friction", component.m_Friction, 0.5f, 0.01f);
-				GUI::FloatControl("Restitution", component.m_Restitution, 0.0f, 0.01f);
-				GUI::FloatControl("Restitution Threshold", component.m_RestitutionThreshold, 0.5f, 0.01f);
-				GUI::Checkbox("Is Trigger", component.m_IsTrigger);
+				GUI::Vector2Control	(u8"Offset",				component.m_Offset);
+				GUI::Vector2Control	(u8"Size",					component.m_Size, { 1.0f, 1.0f },0.01f);
+				GUI::FloatControl	(u8"Rotation",				component.m_Rotation);
+				GUI::FloatControl	(u8"Density",				component.m_Density, 1.0f, 0.01f);
+				GUI::FloatControl	(u8"Friction",				component.m_Friction, 0.5f, 0.01f);
+				GUI::FloatControl	(u8"Restitution",			component.m_Restitution, 0.0f, 0.01f);
+				GUI::FloatControl	(u8"Restitution Threshold",	component.m_RestitutionThreshold, 0.5f, 0.01f);
+				GUI::Checkbox		(u8"Is Trigger",			component.m_IsTrigger);
 			}
 		);
 
@@ -364,6 +346,9 @@ namespace GEngine
 						}
 						case ShaderUniformType::Int:
 						{
+							int i = component.GetMaterial()->GetInt(uniform.Name);
+							GUI::IntControl(uniform.Name.c_str(), i);
+							component.GetMaterial()->SetInt(uniform.Name, i);
 							break;
 						}
 						case ShaderUniformType::Vector:

@@ -568,7 +568,7 @@ namespace GEngine
 
 			ImGui::NewLine();
 			ImGui::Separator();
-			ImGui::Text("Stats:");
+			ImGui::Text("2D Stats:");
 			ImGui::Text("Triangles: %d",	Renderer2D::GetStats().m_TriangleCount);
 			ImGui::Text("Lines: %d",		Renderer2D::GetStats().m_LineCount);
 			ImGui::Text("Points: %d",		Renderer2D::GetStats().m_PointCount);

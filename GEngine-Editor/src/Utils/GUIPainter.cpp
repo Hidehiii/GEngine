@@ -267,4 +267,40 @@ namespace GEngine
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
+	void GUI::IntControl(const std::string& label, int& val, int restVal, int speed, float size)
+	{
+		ImGui::Columns(1);
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, size);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
+		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			val = restVal;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+		ImGui::DragInt("##X", &val, speed);
+		ImGui::PopItemWidth();
+
+
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
 }
