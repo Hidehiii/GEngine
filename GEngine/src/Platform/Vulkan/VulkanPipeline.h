@@ -51,6 +51,7 @@ namespace GEngine
 		VkPipeline											m_GraphicsPipeline;
 		bool												m_FirstCreatePipeline = true;
 		bool												m_RecreatePipeline = false;
+		VkPipelineCache										m_PipelineCache;
 	};
 }
 

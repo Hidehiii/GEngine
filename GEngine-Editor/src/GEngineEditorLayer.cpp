@@ -585,30 +585,18 @@ namespace GEngine
 		{
 			ImGui::Begin("Setting");
 
-			const char* setRendererAPIString[] = { "OpenGL", "Vulkan" };
-			if (ImGui::BeginCombo("Renderer API", setRendererAPIString[Application::Get().GetConfig()->m_RendererAPI - 1]))
+			const char* setRendererAPIString[] = { u8"OpenGL", u8"Vulkan" };
+			int currentRendererAPI = Application::Get().GetConfig()->m_RendererAPI - 1;
+			if (ImGui::Combo("Renderer API", &currentRendererAPI, setRendererAPIString, 2))
 			{
-				int size = 2;
-				for (int i = 0; i < size; i++)
-				{
-					bool isSelected = setRendererAPIString[i] == setRendererAPIString[Application::Get().GetConfig()->m_RendererAPI - 1];
-					if (ImGui::Selectable(setRendererAPIString[i], isSelected))
-					{
-						if (setRendererAPIString[i] == "OpenGL")
-						{
-							Application::Get().GetConfig()->m_RendererAPI = 1;
-						}
-						else if (setRendererAPIString[i] == "Vulkan")
-						{
-							Application::Get().GetConfig()->m_RendererAPI = 2;
-						}
-					}
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
+				Application::Get().GetConfig()->m_RendererAPI = currentRendererAPI + 1;
+			}
+
+			const char* setFramesInFlightsString[] = { u8"1", u8"2", u8"3" };
+			int currentFramesInFlight = Application::Get().GetConfig()->m_FramesInFlight - 1;
+			if (ImGui::Combo("Frames in flight", &currentFramesInFlight, setFramesInFlightsString, 3))
+			{
+				Application::Get().GetConfig()->m_FramesInFlight = currentFramesInFlight + 1;
 			}
 
 			ImGui::End();

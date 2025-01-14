@@ -17,12 +17,20 @@ namespace GEngine
     {
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
+
+		VkPipelineCacheCreateInfo			pipelineCacheInfo{};
+		pipelineCacheInfo.sType				= VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		pipelineCacheInfo.initialDataSize	= 0;
+		pipelineCacheInfo.pInitialData		= nullptr;
+
+		VK_CHECK_RESULT(vkCreatePipelineCache(VulkanContext::Get()->GetDevice(), &pipelineCacheInfo, nullptr, &m_PipelineCache));
     }
 
     VulkanPipeline::~VulkanPipeline()
     {
 		if (VulkanContext::Get()->GetDevice())
 		{
+			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
@@ -40,18 +48,15 @@ namespace GEngine
 		if (m_FirstCreatePipeline)
 		{
 			CreateDescriptorSetAndLayout();
-			UpdateDescriptorSet();
 			CreatePipeline();
 			m_FirstCreatePipeline = false;
 		}
-		if (m_RecreatePipeline)
+		if (m_RecreatePipeline || true)
 		{
-			//vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
 			CreateDescriptorSetAndLayout();
-			UpdateDescriptorSet();
 			CreatePipeline();
 		}
 		// 现在是低效率的每帧更新
@@ -543,7 +548,10 @@ namespace GEngine
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
+
+		
+
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
