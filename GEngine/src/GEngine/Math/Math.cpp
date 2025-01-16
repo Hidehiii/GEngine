@@ -58,9 +58,41 @@ namespace GEngine
     {
         return glm::radians(angle);
     }
+    Matrix2x2 Math::Inverse(const Matrix2x2& matrix)
+    {
+        return glm::inverse(matrix);
+    }
+    Matrix3x3 Math::Inverse(const Matrix3x3& matrix)
+    {
+        return glm::inverse(matrix);
+    }
     Matrix4x4 Math::Inverse(const Matrix4x4& matrix)
     {
         return glm::inverse(matrix);
+    }
+    Matrix2x2 Math::Transpose(const Matrix2x2& matrix)
+    {
+        return glm::transpose(matrix);
+    }
+    Matrix3x3 Math::Transpose(const Matrix3x3& matrix)
+    {
+        return glm::transpose(matrix);
+    }
+    Matrix4x4 Math::Transpose(const Matrix4x4& matrix)
+    {
+        return glm::transpose(matrix);
+    }
+    float Math::Determinant(const Matrix2x2& matrix)
+    {
+        return glm::determinant(matrix);
+    }
+    float Math::Determinant(const Matrix3x3& matrix)
+    {
+        return glm::determinant(matrix);
+    }
+    float Math::Determinant(const Matrix4x4& matrix)
+    {
+        return glm::determinant(matrix);
     }
     float Math::Degrees(const float angle)
     {
@@ -82,9 +114,17 @@ namespace GEngine
     {
         return Matrix4x4(glm::toMat4(quat));
     }
+    Matrix3x3 Math::ToMatrix3x3(Quaternion quat)
+    {
+        return Matrix3x3(glm::toMat3(quat));
+    }
     Matrix4x4 Math::ToMatrix4x4(Vector3 rotation)
     {
         return Matrix4x4(glm::toMat4(Quaternion(rotation)));
+    }
+    Matrix3x3 Math::ToMatrix3x3(Vector3 rotation)
+    {
+        return Matrix3x3(glm::toMat3(Quaternion(rotation)));
     }
     bool Math::DecomposeTransformMatrix(const Matrix4x4 transformMatrix, Vector3& outPosition, Quaternion& outRotation, Vector3& outScale)
     {
@@ -330,19 +370,59 @@ namespace GEngine
         return glm::dot((v1), (v2));
     }
 
+    Vector3 Math::Cross(const Vector3& v1, const Vector3& v2)
+    {
+        return glm::cross((v1), (v2));
+    }
+
+    Vector2 Math::Clamp(const Vector2& value, const Vector2& min, const Vector2& max)
+    {
+        return glm::clamp(value, min, max);
+    }
+
     Vector3 Math::Clamp(const Vector3& value, const Vector3& min, const Vector3& max)
+    {
+        return glm::clamp(value, min, max);
+    }
+
+    Vector4 Math::Clamp(const Vector4& value, const Vector4& min, const Vector4& max)
     {
         return glm::clamp(value, min, max);
     }
 
     float Math::Clamp(float value, float min, float max)
     {
-        return glm::clamp(value, min, max);
+        return glm::clamp(value, min, max); 
+    }
+
+    Vector2 Math::Reflect(const Vector2& v, const Vector2& normal)
+    {
+        return glm::reflect(v, normal);
     }
 
     Vector3 Math::Reflect(const Vector3& v, const Vector3& normal)
     {
         return glm::reflect(v, normal);
+    }
+
+    Vector4 Math::Reflect(const Vector4& v, const Vector4& normal)
+    {
+        return glm::reflect(v, normal);
+    }
+
+    Vector2 Math::Refract(const Vector2& v, const Vector2& normal, float eta)
+    {
+        return glm::refract(v, normal, eta);
+    }
+
+    Vector3 Math::Refract(const Vector3& v, const Vector3& normal, float eta)
+    {
+        return glm::refract(v, normal, eta);
+    }
+
+    Vector4 Math::Refract(const Vector4& v, const Vector4& normal, float eta)
+    {
+        return glm::refract(v, normal, eta);
     }
 
     float Math::Sqrt(float value)
@@ -355,9 +435,19 @@ namespace GEngine
         return glm::tan(angle);
     }
 
-    Matrix4x4 Math::IdentityMatrix()
+    Matrix4x4 Math::IdentityMatrix4x4()
     {
         return Matrix4x4(1.0f);
+    }
+
+    Matrix3x3 Math::IdentityMatrix3x3()
+    {
+        return Matrix3x3(1.0f);
+    }
+
+    Matrix2x2 Math::IdentityMatrix2x2()
+    {
+        return Matrix2x2(1.0f);
     }
 
     float Math::Sin(float angle)
@@ -401,6 +491,16 @@ namespace GEngine
     }
 
     float* Math::ValuePtr(const Vector4& v)
+    {
+        return (float*)glm::value_ptr(v);
+    }
+
+    float* Math::ValuePtr(const Matrix2x2& v)
+    {
+        return (float*)glm::value_ptr(v);
+    }
+
+    float* Math::ValuePtr(const Matrix3x3& v)
     {
         return (float*)glm::value_ptr(v);
     }
