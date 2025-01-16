@@ -54,28 +54,48 @@ namespace GEngine
 				return ShaderStage::Vertex;
 			if (ToLower(type) == ShaderStage::Fragment || ToLower(type) == ShaderStage::Pixel)
 				return ShaderStage::Fragment;
+			if (ToLower(type) == ShaderStage::Compute)
+				return ShaderStage::Compute;
+			if (ToLower(type) == ShaderStage::TessellationControl)
+				return ShaderStage::TessellationControl;
+			if (ToLower(type) == ShaderStage::TessellationEvaluation)
+				return ShaderStage::TessellationEvaluation;
+			if (ToLower(type) == ShaderStage::Geometry)
+				return ShaderStage::Geometry;
 
 			GE_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
 		}
 		static const char* GLShaderStageCachedOpenGLFileExtension(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)			return ".cached_opengl.vert";
-			else if (stage == ShaderStage::Fragment)	return ".cached_opengl.frag";
+			if (stage == ShaderStage::Vertex)					return ".cached_opengl.vert";
+			if (stage == ShaderStage::Fragment)					return ".cached_opengl.frag";
+			if (stage == ShaderStage::Compute)					return ".cached_opengl.comp";
+			if (stage == ShaderStage::TessellationControl)		return ".cached_opengl.tesc";
+			if (stage == ShaderStage::TessellationEvaluation)	return ".cached_opengl.tese";
+			if (stage == ShaderStage::Geometry)					return ".cached_opengl.geom";
 			GE_CORE_ASSERT(false, "");
 			return "";
 		}
 		static const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)		return ".cached_vulkan.vert";
-			else if(stage == ShaderStage::Fragment) return ".cached_vulkan.frag";
+			if (stage == ShaderStage::Vertex)					return ".cached_vulkan.vert";
+			if (stage == ShaderStage::Fragment)					return ".cached_vulkan.frag";
+			if (stage == ShaderStage::Compute)					return ".cached_vulkan.comp";
+			if (stage == ShaderStage::TessellationControl)		return ".cached_vulkan.tesc";
+			if (stage == ShaderStage::TessellationEvaluation)	return ".cached_vulkan.tese";
+			if (stage == ShaderStage::Geometry)					return ".cached_vulkan.geom";
 			GE_CORE_ASSERT(false, "");
 			return "";
 		}
 		static shaderc_shader_kind ShaderStageToShaderC(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)			return shaderc_glsl_vertex_shader;
-			else if (stage == ShaderStage::Fragment)	return shaderc_glsl_fragment_shader;
+			if (stage == ShaderStage::Vertex)					return shaderc_glsl_vertex_shader;
+			if (stage == ShaderStage::Fragment)					return shaderc_glsl_fragment_shader;
+			if (stage == ShaderStage::Compute)					return shaderc_glsl_compute_shader;
+			if (stage == ShaderStage::TessellationControl)		return shaderc_glsl_tess_control_shader;
+			if (stage == ShaderStage::TessellationEvaluation)	return shaderc_glsl_tess_evaluation_shader;
+			if (stage == ShaderStage::Geometry)					return shaderc_glsl_geometry_shader;
 			GE_CORE_ASSERT(false, "");
 			return (shaderc_shader_kind)0;
 		}
@@ -128,13 +148,33 @@ namespace GEngine
 	}
 	void VulkanShader::CreateShaderModule()
 	{
-		m_VertexShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Vertex]);
-		m_FragmentShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Fragment]);
+		if (m_VulkanSPIRV.find(ShaderStage::Vertex) != m_VulkanSPIRV.end())
+			m_VertexShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Vertex]);
+		if (m_VulkanSPIRV.find(ShaderStage::Fragment) != m_VulkanSPIRV.end())
+			m_FragmentShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Fragment]);
+		if (m_VulkanSPIRV.find(ShaderStage::Compute) != m_VulkanSPIRV.end())
+			m_ComputeShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Compute]);
+		if (m_VulkanSPIRV.find(ShaderStage::TessellationControl) != m_VulkanSPIRV.end())
+			m_TessellationControlShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::TessellationControl]);
+		if (m_VulkanSPIRV.find(ShaderStage::TessellationEvaluation) != m_VulkanSPIRV.end())
+			m_TessellationEvaluationShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::TessellationEvaluation]);
+		if (m_VulkanSPIRV.find(ShaderStage::Geometry) != m_VulkanSPIRV.end())
+			m_GeometryShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::Geometry]);
 	}
 	void VulkanShader::DestroyShaderModule()
 	{
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
-		vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::Vertex) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::Fragment) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::Compute) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_ComputeShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::TessellationControl) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_TessellationControlShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::TessellationEvaluation) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_TessellationEvaluationShaderModule, nullptr);
+		if (m_VulkanSPIRV.find(ShaderStage::Geometry) != m_VulkanSPIRV.end())
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_GeometryShaderModule, nullptr);
 	}
 	VkShaderModule VulkanShader::GetShaderModule(std::string stage)
 	{
@@ -142,7 +182,17 @@ namespace GEngine
 			return m_FragmentShaderModule;
 		else if (stage == ShaderStage::Vertex)
 			return m_VertexShaderModule;
-		return VkShaderModule();
+		else if (stage == ShaderStage::Compute)
+			return m_ComputeShaderModule;
+		else if (stage == ShaderStage::TessellationControl)
+			return m_TessellationControlShaderModule;
+		else if (stage == ShaderStage::TessellationEvaluation)
+			return m_TessellationEvaluationShaderModule;
+		else if (stage == ShaderStage::Geometry)
+			return m_GeometryShaderModule;
+
+		GE_CORE_ASSERT(false, "Unknown shader stage");
+		return nullptr;
 	}
 	void VulkanShader::SetMacroBool(std::string& source)
 	{

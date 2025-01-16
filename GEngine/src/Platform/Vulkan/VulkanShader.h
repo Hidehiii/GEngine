@@ -54,7 +54,8 @@ namespace GEngine
 
 		};
 
-		VkShaderModule m_VertexShaderModule, m_FragmentShaderModule;
+		VkShaderModule m_VertexShaderModule, m_FragmentShaderModule, m_ComputeShaderModule, m_TessellationControlShaderModule,
+						m_TessellationEvaluationShaderModule, m_GeometryShaderModule;
 	};
 }
 

@@ -88,6 +88,10 @@ namespace GEngine
 		static	std::string         Vertex;
 		static	std::string         Fragment;
 		static	std::string         Pixel;
+		static	std::string			Compute;
+		static	std::string			TessellationControl;
+		static	std::string			TessellationEvaluation;
+		static	std::string			Geometry;
 	};
 	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
 	{

@@ -21,6 +21,10 @@ namespace GEngine
 	std::string     ShaderStage::Vertex			= "vertex";
 	std::string     ShaderStage::Fragment		= "fragment";
 	std::string     ShaderStage::Pixel			= "pixel";
+	std::string		ShaderStage::Compute		= "compute";
+	std::string		ShaderStage::TessellationControl	= "tessellationControl";
+	std::string		ShaderStage::TessellationEvaluation = "tessellationEvaluation";
+	std::string		ShaderStage::Geometry		= "geometry";
 
 	Ref<Shader> Shader::Create(const std::string& path)
 	{

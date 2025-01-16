@@ -54,6 +54,14 @@ namespace GEngine
 				return GL_VERTEX_SHADER;
 			if (ToLower(type) == ShaderStage::Fragment || ToLower(type) == ShaderStage::Pixel)
 				return GL_FRAGMENT_SHADER;
+			if (ToLower(type) == ShaderStage::Compute)
+				return GL_COMPUTE_SHADER;
+			if (ToLower(type) == ShaderStage::TessellationControl)
+				return GL_TESS_CONTROL_SHADER;
+			if (ToLower(type) == ShaderStage::TessellationEvaluation)
+				return GL_TESS_EVALUATION_SHADER;
+			if (ToLower(type) == ShaderStage::Geometry)
+				return GL_GEOMETRY_SHADER;
 
 			GE_CORE_ASSERT(false, "Unknown shader type!");
 			return 0;
@@ -63,8 +71,12 @@ namespace GEngine
 		{
 			switch (type)
 			{
-			case GL_VERTEX_SHADER:		return ShaderStage::Vertex;
-			case GL_FRAGMENT_SHADER:	return ShaderStage::Fragment;
+			case GL_VERTEX_SHADER:			return ShaderStage::Vertex;
+			case GL_FRAGMENT_SHADER:		return ShaderStage::Fragment;
+			case GL_COMPUTE_SHADER:			return ShaderStage::Compute;
+			case GL_TESS_CONTROL_SHADER:	return ShaderStage::TessellationControl;
+			case GL_TESS_EVALUATION_SHADER:	return ShaderStage::TessellationEvaluation;
+			case GL_GEOMETRY_SHADER:		return ShaderStage::Geometry;
 			}
 			GE_CORE_ASSERT(false, "Unknown shader type");
 			return 0;
@@ -74,30 +86,27 @@ namespace GEngine
 		{
 			switch (stage)
 			{
-			case GL_VERTEX_SHADER:   return shaderc_glsl_vertex_shader;
-			case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
+			case GL_VERTEX_SHADER:			return shaderc_glsl_vertex_shader;
+			case GL_FRAGMENT_SHADER:		return shaderc_glsl_fragment_shader;
+			case GL_COMPUTE_SHADER:			return shaderc_glsl_compute_shader;
+			case GL_TESS_CONTROL_SHADER:	return shaderc_glsl_tess_control_shader;
+			case GL_TESS_EVALUATION_SHADER:	return shaderc_glsl_tess_evaluation_shader;
+			case GL_GEOMETRY_SHADER:		return shaderc_glsl_geometry_shader;
 			}
 			GE_CORE_ASSERT(false,"");
 			return (shaderc_shader_kind)0;
-		}
-
-		static const char* GLShaderStageToString(GLenum stage)
-		{
-			switch (stage)
-			{
-			case GL_VERTEX_SHADER:   return "GL_VERTEX_SHADER";
-			case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
-			}
-			GE_CORE_ASSERT(false,"");
-			return nullptr;
 		}
 
 		static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
 		{
 			switch (stage)
 			{
-			case GL_VERTEX_SHADER:    return ".cached_opengl.vert";
-			case GL_FRAGMENT_SHADER:  return ".cached_opengl.frag";
+			case GL_VERTEX_SHADER:			return ".cached_opengl.vert";
+			case GL_FRAGMENT_SHADER:		return ".cached_opengl.frag";
+			case GL_COMPUTE_SHADER:			return ".cached_opengl.comp";
+			case GL_TESS_CONTROL_SHADER:	return ".cached_opengl.tesc";
+			case GL_TESS_EVALUATION_SHADER:	return ".cached_opengl_tese";
+			case GL_GEOMETRY_SHADER:		return ".cached_opengl_geom";
 			}
 			GE_CORE_ASSERT(false, "");
 			return "";
@@ -107,8 +116,12 @@ namespace GEngine
 		{
 			switch (stage)
 			{
-			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
-			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+			case GL_VERTEX_SHADER:			return ".cached_vulkan.vert";
+			case GL_FRAGMENT_SHADER:		return ".cached_vulkan.frag";
+			case GL_COMPUTE_SHADER:			return ".cached_vulkan.comp";
+			case GL_TESS_CONTROL_SHADER:	return ".cached_vulkan.tesc";
+			case GL_TESS_EVALUATION_SHADER:	return ".cached_vulkan_tese";
+			case GL_GEOMETRY_SHADER:		return ".cached_vulkan_geom";
 			}
 			GE_CORE_ASSERT(false, "");
 			return "";
@@ -655,7 +668,7 @@ namespace GEngine
 		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources				= compiler.get_shader_resources();
 
-		GE_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
+		GE_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::StringFromShaderType(stage), m_FilePath);
 		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
 		GE_CORE_TRACE("    {0} resources", resources.sampled_images.size());
 
