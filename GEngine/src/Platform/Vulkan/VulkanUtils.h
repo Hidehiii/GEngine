@@ -43,6 +43,7 @@ namespace GEngine
 		VkCompareOp CompareOPToVkCompareOP(CompareOperation op);
 		VkAttachmentLoadOp AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op);
 		VkAttachmentStoreOp AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op);
+		VkPipelineShaderStageCreateInfo	CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName);
 	}
 	
 }

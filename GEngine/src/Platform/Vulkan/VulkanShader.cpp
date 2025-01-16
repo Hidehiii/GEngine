@@ -175,6 +175,13 @@ namespace GEngine
 			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_TessellationEvaluationShaderModule, nullptr);
 		if (m_VulkanSPIRV.find(ShaderStage::Geometry) != m_VulkanSPIRV.end())
 			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_GeometryShaderModule, nullptr);
+
+		m_VertexShaderModule					= nullptr;
+		m_FragmentShaderModule					= nullptr;
+		m_ComputeShaderModule					= nullptr;
+		m_TessellationControlShaderModule		= nullptr;
+		m_TessellationEvaluationShaderModule	= nullptr;
+		m_GeometryShaderModule					= nullptr;
 	}
 	VkShaderModule VulkanShader::GetShaderModule(std::string stage)
 	{

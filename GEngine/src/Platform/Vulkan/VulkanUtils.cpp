@@ -748,5 +748,14 @@ namespace GEngine
 			}
 			return VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		}
+		VkPipelineShaderStageCreateInfo CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName)
+		{
+			VkPipelineShaderStageCreateInfo		info{};
+			info.sType							= VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			info.stage							= stage;
+			info.module							= module;
+			info.pName							= funcName;
+			return info;
+		}
     }
 }
