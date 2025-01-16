@@ -23,15 +23,15 @@ namespace GEngine
     }
     void VulkanRendererAPI::DrawTriangles(uint32_t indexCount)
     {
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::DrawLines(uint32_t indexCount)
     {
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::DrawPoints(uint32_t indexCount)
     {
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
     void VulkanRendererAPI::EnableDepthWrite(bool enabled)
     {
@@ -44,7 +44,7 @@ namespace GEngine
     }
     void VulkanRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
     {
-        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
+        vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
     }
     void VulkanRendererAPI::SetLineWidth(float width)
     {
@@ -62,13 +62,13 @@ namespace GEngine
         beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
-        VulkanContext::Get()->BeginDrawCommandBuffer();
-        vkResetCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0);
-        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &beginInfo));
+        VulkanContext::Get()->BeginCommandBuffer();
+        vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
+        VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
     }
     void VulkanRendererAPI::EndDrawCommand()
     {
-        VkCommandBuffer commandBuffer = VulkanContext::Get()->EndDrawCommandBuffer();
+        VkCommandBuffer commandBuffer = VulkanContext::Get()->EndCommandBuffer();
         VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
         VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore()};
@@ -88,26 +88,111 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
-    void VulkanRendererAPI::BeginSecondaryDrawCommand()
+    void VulkanRendererAPI::BeginSecondaryCommand()
     {
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags             = 0; // Optional
 		beginInfo.pInheritanceInfo  = nullptr; // Optional
-		VulkanContext::Get()->BeginSecondaryDrawCommandBuffer();
-		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryDrawCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryDrawCommandBuffer(), &beginInfo));
+		VulkanContext::Get()->BeginSecondaryCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentSecondaryCommandBuffer(), &beginInfo));
     }
-    void VulkanRendererAPI::EndSecondaryDrawCommand()
+    void VulkanRendererAPI::EndSecondaryCommand()
     {
-		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndSecondaryDrawCommandBuffer();
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndSecondaryCommandBuffer();
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
-        vkCmdExecuteCommands(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 1, &commandBuffer);
+        vkCmdExecuteCommands(VulkanContext::Get()->GetCurrentCommandBuffer(), 1, &commandBuffer);
     }
     float VulkanRendererAPI::GetTime()
     {
-        return 0.0f;
+        return (float)glfwGetTime();
+    }
+
+    uint32_t VulkanRendererAPI::GetMaxTextureSize()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+        return deviceProperties.limits.maxImageDimension2D;
+    }
+
+    uint32_t VulkanRendererAPI::GetMaxCombinedTextureCount()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+		return deviceProperties.limits.maxDescriptorSetSampledImages;
+    }
+
+    uint32_t VulkanRendererAPI::GetMaxPerStageTextureCount()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+		return deviceProperties.limits.maxPerStageDescriptorSampledImages;
+    }
+
+    Vector3 VulkanRendererAPI::GetMaxComputeWorkGroupCount()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+        int x = deviceProperties.limits.maxComputeWorkGroupCount[0];
+        int y = deviceProperties.limits.maxComputeWorkGroupCount[1];
+        int z = deviceProperties.limits.maxComputeWorkGroupCount[2];
+        return Vector3(x, y, z);
+    }
+
+    Vector3 VulkanRendererAPI::GetMaxComputeWorkGroupSize()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+		int x = deviceProperties.limits.maxComputeWorkGroupSize[0];
+		int y = deviceProperties.limits.maxComputeWorkGroupSize[1];
+		int z = deviceProperties.limits.maxComputeWorkGroupSize[2];
+		return Vector3(x, y, z);
+    }
+
+    uint32_t VulkanRendererAPI::GetMaxComputeWorkGroupInvocations()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+        return deviceProperties.limits.maxComputeWorkGroupInvocations;
+    }
+
+    void VulkanRendererAPI::BeginComputeCommand()
+    {
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+		VulkanContext::Get()->BeginCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
+    }
+
+    void VulkanRendererAPI::EndComputeCommand()
+    {
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndCommandBuffer();
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+		VulkanContext::Get()->MoveToNextSemaphore();
+		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+
+		VkSubmitInfo                    submitInfo{};
+		submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount   = 1;
+		submitInfo.pCommandBuffers      = &commandBuffer;
+		submitInfo.waitSemaphoreCount   = 1;
+		submitInfo.pWaitSemaphores      = waitSemaphores;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores    = signalSemaphores;
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+    }
+
+    void VulkanRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
+    {
+        vkCmdDispatch(VulkanContext::Get()->GetCurrentCommandBuffer(), x, y, z);
     }
 
 }

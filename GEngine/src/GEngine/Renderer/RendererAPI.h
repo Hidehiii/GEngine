@@ -43,8 +43,21 @@ namespace GEngine
 
 		virtual void BeginDrawCommand() = 0;
 		virtual void EndDrawCommand() = 0;
-		virtual void BeginSecondaryDrawCommand() = 0;
-		virtual void EndSecondaryDrawCommand() = 0;
+		virtual void BeginSecondaryCommand() = 0;
+		virtual void EndSecondaryCommand() = 0;
+
+		virtual uint32_t GetMaxTextureSize() = 0;
+		virtual uint32_t GetMaxCombinedTextureCount() = 0;
+		virtual uint32_t GetMaxPerStageTextureCount() = 0;
+
+		// compute
+		virtual Vector3 GetMaxComputeWorkGroupCount() = 0;
+		virtual Vector3 GetMaxComputeWorkGroupSize() = 0;
+		virtual uint32_t GetMaxComputeWorkGroupInvocations() = 0;
+
+		virtual void BeginComputeCommand() = 0;
+		virtual void EndComputeCommand() = 0;
+		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
 
 
 		inline static API GetAPI() { return s_API; }

@@ -43,12 +43,12 @@ namespace GEngine
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
 		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
 		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
-		void						BeginDrawCommandBuffer();
-		VkCommandBuffer				EndDrawCommandBuffer();
-		VkCommandBuffer				GetCurrentDrawCommandBuffer();
-		void						BeginSecondaryDrawCommandBuffer();
-		VkCommandBuffer				EndSecondaryDrawCommandBuffer();
-		VkCommandBuffer				GetCurrentSecondaryDrawCommandBuffer();
+		void						BeginCommandBuffer();
+		VkCommandBuffer				EndCommandBuffer();
+		VkCommandBuffer				GetCurrentCommandBuffer();
+		void						BeginSecondaryCommandBuffer();
+		VkCommandBuffer				EndSecondaryCommandBuffer();
+		VkCommandBuffer				GetCurrentSecondaryCommandBuffer();
 		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
@@ -128,9 +128,9 @@ namespace GEngine
 		VkExtent2D							m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
-		int									m_CommandBufferSizePerFrame = 10;
+		int									m_CommandBufferSizePerFrame = 30;
 		VulkanCommandBuffer					m_CommandBuffer;
-		std::vector<int>					m_DrawUsedCommandBufferIndexs;
+		std::vector<int>					m_UsedCommandBufferIndexs;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
@@ -140,8 +140,8 @@ namespace GEngine
 		std::vector<VkFence>				m_Fences;
 		int                                 m_FenceIndex = 0;
 		VulkanFunctionEXT					m_Function;
-		std::vector<std::pair<std::thread::id, int>> m_DrawUsedSecondaryCommandBuffers;
-		int									m_DrawUsedSecondaryCommandBufferIndex = 0;
+		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
+		int									m_UsedSecondaryCommandBufferIndex = 0;
 	};
 	
 }

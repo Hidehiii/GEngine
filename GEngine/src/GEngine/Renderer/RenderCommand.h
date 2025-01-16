@@ -28,9 +28,23 @@ namespace GEngine
 		inline static void SetDepthTest(CompareOperation op);
 		inline static void BeginDrawCommand();
 		inline static void EndDrawCommand();
-		inline static void BeginSecondaryDrawCommand();
-		inline static void EndSecondaryDrawCommand();
+		inline static void BeginSecondaryCommand();
+		inline static void EndSecondaryCommand();
 		inline static void SetRendererAPI(RendererAPI::API api);
+
+
+		inline static uint32_t GetMaxTextureSize();
+		inline static uint32_t GetMaxCombinedTextureCount();
+		inline static uint32_t GetMaxPerStageTextureCount();
+
+		// compute
+		inline static Vector3 GetMaxComputeWorkGroupCount();
+		inline static Vector3 GetMaxComputeWorkGroupSize();
+		inline static uint32_t GetMaxComputeWorkGroupInvocations();
+
+		inline static void BeginComputeCommand();
+		inline static void EndComputeCommand();
+		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
 	private:
 		inline static RendererAPI* s_RendererAPI;
 	};

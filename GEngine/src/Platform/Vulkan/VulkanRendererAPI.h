@@ -37,10 +37,23 @@ namespace GEngine
 
 		virtual void BeginDrawCommand() override;
 		virtual void EndDrawCommand() override;
-		virtual void BeginSecondaryDrawCommand() override;
-		virtual void EndSecondaryDrawCommand() override;
+		virtual void BeginSecondaryCommand() override;
+		virtual void EndSecondaryCommand() override;
 
 		virtual float GetTime() override;
+
+		virtual uint32_t GetMaxTextureSize() override;
+		virtual uint32_t GetMaxCombinedTextureCount() override;
+		virtual uint32_t GetMaxPerStageTextureCount() override;
+
+		// compute
+		virtual Vector3 GetMaxComputeWorkGroupCount() override;
+		virtual Vector3 GetMaxComputeWorkGroupSize() override;
+		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
+
+		virtual void BeginComputeCommand() override;
+		virtual void EndComputeCommand() override;
+		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) override;
 	};
 }
 

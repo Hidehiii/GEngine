@@ -78,13 +78,13 @@ namespace GEngine
 	{
 		s_RendererAPI->EndDrawCommand();
 	}
-	inline void RenderCommand::BeginSecondaryDrawCommand()
+	inline void RenderCommand::BeginSecondaryCommand()
 	{
-		s_RendererAPI->BeginSecondaryDrawCommand();
+		s_RendererAPI->BeginSecondaryCommand();
 	}
-	inline void RenderCommand::EndSecondaryDrawCommand()
+	inline void RenderCommand::EndSecondaryCommand()
 	{
-		s_RendererAPI->EndSecondaryDrawCommand();
+		s_RendererAPI->EndSecondaryCommand();
 	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{
@@ -101,5 +101,41 @@ namespace GEngine
 		default:
 			break;
 		}
+	}
+	inline uint32_t RenderCommand::GetMaxTextureSize()
+	{
+		return s_RendererAPI->GetMaxTextureSize();
+	}
+	inline uint32_t RenderCommand::GetMaxCombinedTextureCount()
+	{
+		return s_RendererAPI->GetMaxCombinedTextureCount();
+	}
+	inline uint32_t RenderCommand::GetMaxPerStageTextureCount()
+	{
+		return s_RendererAPI->GetMaxPerStageTextureCount();
+	}
+	inline Vector3 RenderCommand::GetMaxComputeWorkGroupCount()
+	{
+		return s_RendererAPI->GetMaxComputeWorkGroupCount();
+	}
+	inline Vector3 RenderCommand::GetMaxComputeWorkGroupSize()
+	{
+		return s_RendererAPI->GetMaxComputeWorkGroupSize();
+	}
+	inline uint32_t RenderCommand::GetMaxComputeWorkGroupInvocations()
+	{
+		return s_RendererAPI->GetMaxComputeWorkGroupInvocations();
+	}
+	inline void RenderCommand::BeginComputeCommand()
+	{
+		s_RendererAPI->BeginComputeCommand();
+	}
+	inline void RenderCommand::EndComputeCommand()
+	{
+		s_RendererAPI->EndComputeCommand();
+	}
+	inline void RenderCommand::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
+	{
+		s_RendererAPI->Compute(x, y, z);
 	}
 }

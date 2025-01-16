@@ -76,11 +76,11 @@ namespace GEngine
     }
     void VulkanVertexBuffer::Bind() const
     {
-        GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
+        GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
+        vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
         if(m_InstanceRendering)
-            vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 1, 1, &m_InstanceBuffer, offsets);
+            vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentCommandBuffer(), 1, 1, &m_InstanceBuffer, offsets);
         if(m_IndexBuffer)
             m_IndexBuffer->Bind();
     }
@@ -187,7 +187,7 @@ namespace GEngine
 
     void VulkanIndexBuffer::Bind() const
     {
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
-		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
+		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
 }

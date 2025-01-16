@@ -174,4 +174,48 @@ namespace GEngine
 	{
 		return (float)glfwGetTime();
 	}
+	uint32_t OpenGLRendererAPI::GetMaxTextureSize()
+	{
+		int size;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
+		return size;
+	}
+	uint32_t OpenGLRendererAPI::GetMaxCombinedTextureCount()
+	{
+		int count;
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &count);
+		return count;
+	}
+	uint32_t OpenGLRendererAPI::GetMaxPerStageTextureCount()
+	{
+		int count;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &count);
+		return count;
+	}
+	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupCount()
+	{
+		int x, y, z;
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &x);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &y);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &z);
+		return Vector3(x, y, z);
+	}
+	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupSize()
+	{
+		int x, y, z;
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &x);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &y);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &z);
+		return Vector3(x, y, z);
+	}
+	uint32_t OpenGLRendererAPI::GetMaxComputeWorkGroupInvocations()
+	{
+		int x;
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
+		return x;
+	}
+	void OpenGLRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
+	{
+		glDispatchCompute(x, y, z);
+	}
 }

@@ -147,13 +147,13 @@ namespace GEngine {
 
 		renderPassInfo.clearValueCount			= 1;
 		renderPassInfo.pClearValues				= &clearColor;
-		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		
 
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentDrawCommandBuffer());
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
 
-		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
+		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
 
 		RenderCommand::EndDrawCommand();
 	}

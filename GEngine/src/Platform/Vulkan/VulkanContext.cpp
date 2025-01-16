@@ -554,36 +554,36 @@ namespace GEngine
         m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
         for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
         {
-            m_DrawUsedCommandBufferIndexs.push_back(0);
+            m_UsedCommandBufferIndexs.push_back(0);
         }
     }
 
-    void VulkanContext::BeginDrawCommandBuffer()
+    void VulkanContext::BeginCommandBuffer()
     {
-        m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
+        m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
     }
-    VkCommandBuffer VulkanContext::EndDrawCommandBuffer()
+    VkCommandBuffer VulkanContext::EndCommandBuffer()
     {
-        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return buffer;
     }
-    VkCommandBuffer VulkanContext::GetCurrentDrawCommandBuffer()
+    VkCommandBuffer VulkanContext::GetCurrentCommandBuffer()
     {
-        VkCommandBuffer cmdBuffer = GetCurrentSecondaryDrawCommandBuffer();
-        cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetCommandBuffer(m_DrawUsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        VkCommandBuffer cmdBuffer = GetCurrentSecondaryCommandBuffer();
+        cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetCommandBuffer(m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return cmdBuffer;
     }
-    void VulkanContext::BeginSecondaryDrawCommandBuffer()
+    void VulkanContext::BeginSecondaryCommandBuffer()
     {
         // 根据当前thread id 分配secondary command buffer
-        GE_CORE_ASSERT(m_DrawUsedSecondaryCommandBuffers.size() < m_CommandBuffer.GetSecondaryCommandBuffersSize(), "There is no avilable secondary command buffer");
+        GE_CORE_ASSERT(m_UsedSecondaryCommandBuffers.size() < m_CommandBuffer.GetSecondaryCommandBuffersSize(), "There is no avilable secondary command buffer");
         bool isUsing = true;
         while (isUsing)
         {
-            m_DrawUsedSecondaryCommandBufferIndex = (m_DrawUsedSecondaryCommandBufferIndex + 1) % m_CommandBuffer.GetSecondaryCommandBuffersSize();
-            for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+            m_UsedSecondaryCommandBufferIndex = (m_UsedSecondaryCommandBufferIndex + 1) % m_CommandBuffer.GetSecondaryCommandBuffersSize();
+            for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
             {
-                if (m_DrawUsedSecondaryCommandBuffers.at(i).second == m_DrawUsedSecondaryCommandBufferIndex)
+                if (m_UsedSecondaryCommandBuffers.at(i).second == m_UsedSecondaryCommandBufferIndex)
                 {
                     isUsing = false;
                     break;
@@ -592,32 +592,32 @@ namespace GEngine
             isUsing = !isUsing;
             if (isUsing == false)
             {
-                m_DrawUsedSecondaryCommandBuffers.emplace_back(std::this_thread::get_id(), m_DrawUsedSecondaryCommandBufferIndex);
+                m_UsedSecondaryCommandBuffers.emplace_back(std::this_thread::get_id(), m_UsedSecondaryCommandBufferIndex);
             }
         }
     }
-    VkCommandBuffer VulkanContext::EndSecondaryDrawCommandBuffer()
+    VkCommandBuffer VulkanContext::EndSecondaryCommandBuffer()
     {
 		VkCommandBuffer cmdBuffer = nullptr;
-		for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+		for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
 		{
-			if (m_DrawUsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+			if (m_UsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
 			{
-				cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBuffers.at(i).second);
-                m_DrawUsedSecondaryCommandBuffers.erase(m_DrawUsedSecondaryCommandBuffers.begin() + i);
+				cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
+                m_UsedSecondaryCommandBuffers.erase(m_UsedSecondaryCommandBuffers.begin() + i);
 				break;
 			}
 		}
 		return cmdBuffer;
     }
-    VkCommandBuffer VulkanContext::GetCurrentSecondaryDrawCommandBuffer()
+    VkCommandBuffer VulkanContext::GetCurrentSecondaryCommandBuffer()
     {
         VkCommandBuffer cmdBuffer = nullptr;
-        for (int i = 0; i < m_DrawUsedSecondaryCommandBuffers.size(); i++)
+        for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
         {
-            if (m_DrawUsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+            if (m_UsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
             {
-                cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_DrawUsedSecondaryCommandBuffers.at(i).second);
+                cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
                 break;
             }
         }

@@ -186,7 +186,7 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Begin()
 	{
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -207,7 +207,7 @@ namespace GEngine
 		}
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
-		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkCommandBuffer cmdBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
 
@@ -227,7 +227,7 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::End()
 	{
-		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentDrawCommandBuffer());
+		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
 		s_CurrentVulkanFrameBuffer = nullptr;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetColorAttachment(int index)

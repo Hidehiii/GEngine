@@ -40,7 +40,7 @@ namespace GEngine
 
     void VulkanPipeline::PrepareRender()
     {
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), "There is no commandbuffer be using");
+		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
 
 		m_Material->UploadData();
@@ -63,7 +63,7 @@ namespace GEngine
 		UpdateDescriptorSet();
 		
 		
-        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples));
 
@@ -74,20 +74,20 @@ namespace GEngine
 		Viewport.height		= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
 		Viewport.minDepth	= 0.0f;
 		Viewport.maxDepth	= 1.0f;
-		vkCmdSetViewport(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Viewport);
+		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Viewport);
 
 		VkRect2D											Scissor{};
 		Scissor.offset = { 0, 0 };
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
-		vkCmdSetScissor(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, &Scissor);
+		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Scissor);
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
 		VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetColorWriteMaskEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, colorMaks);
-		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
-		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), m_Material->GetEnableDepthWrite());
-		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
+		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
+		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentCommandBuffer(), m_Material->GetEnableDepthWrite());
+		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
 
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
     }
 
 	void VulkanPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
