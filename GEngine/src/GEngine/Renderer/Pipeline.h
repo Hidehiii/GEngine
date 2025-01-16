@@ -1,7 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "Material.h"
-
 #include "RenderBuffer.h"
 namespace GEngine
 {

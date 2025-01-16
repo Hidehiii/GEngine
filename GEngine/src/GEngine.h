@@ -24,7 +24,6 @@
 #include "GEngine/Renderer/Renderer.h"
 #include "GEngine/Renderer/Renderer2D.h"
 #include "GEngine/Renderer/RenderCommand.h"
-
 #include "GEngine/Renderer/RenderBuffer.h"
 #include "GEngine/Renderer/Shader.h"
 #include "GEngine/Renderer/Pipeline.h"
@@ -34,10 +33,6 @@
 #include "GEngine/Renderer/UniformBuffer.h"
 #include "GEngine/Renderer/Material.h"
 #include "GEngine/Renderer/GraphicsPresent.h"
-
-// Camera
-#include "GEngine/Components/Camera/OrthoGraphicCamera.h"
-#include "GEngine/Components/Camera/OrthoGraphicCameraController.h"
 
 
 // Components
@@ -74,3 +69,5 @@
 // compute
 #include "GEngine/Compute/StorageBuffer.h"
 #include "GEngine/Compute/StorageImage.h"
+#include "GEngine/Compute/ComputeCommand.h"
+#include "GEngine/Compute/ComputePipeline.h"
