@@ -57,12 +57,18 @@ private:
 	Ref<StorageBuffer>	m_StorageBuffer;
 	Ref<StorageBuffer>	m_SBO;
 
+	Ref<StorageImage2D> m_ComputeImage2D;
+
 	Ref<Pipeline> m_OITPrepare;
 	Ref<Pipeline> m_OIT;
+
+	Ref<ComputePipeline> m_ComputeTest;
+	Ref<Pipeline> m_ComputeShow;
 
 	Ref<FrameBuffer> m_OIT_1;
 	Ref<FrameBuffer> m_DepthOnly;
 	Ref<FrameBuffer> m_SkyBoxFB;
+	Ref<FrameBuffer> m_ComputeFB;
 
 	std::vector<TestVertex> m_vertex;
 

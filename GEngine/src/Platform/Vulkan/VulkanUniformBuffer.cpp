@@ -19,7 +19,7 @@ namespace GEngine
 		m_DescriptorSetLayoutBinding.binding			= binding;
 		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
-		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS;
+		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 		
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 

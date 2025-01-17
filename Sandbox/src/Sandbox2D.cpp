@@ -29,6 +29,7 @@ void Sandbox2D::OnAttach()
 	fspec.Samples = 4;
 	m_OIT_1 = FrameBuffer::Create(fspec);
 	m_SkyBoxFB = FrameBuffer::Create(fspec);
+	m_ComputeFB = FrameBuffer::Create(fspec);
 	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };
 	m_DepthOnly = FrameBuffer::Create(fspec);
 
@@ -83,7 +84,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"}
 		});
 
-	
+
 	m_PresentPipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
@@ -174,6 +175,7 @@ void Sandbox2D::OnAttach()
 
 	
 	m_StorageImage = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::R32UI);
+	m_ComputeImage2D = StorageImage2D::Create(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight(), ComputeImage2DFormat::RGBA16F);
 	m_StorageBuffer = StorageBuffer::Create(Application::Get().GetWindow().GetWidth()* Application::Get().GetWindow().GetHeight() * 4 * sizeof(Node));
 	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
@@ -195,6 +197,11 @@ void Sandbox2D::OnAttach()
 		"Assets/Textures/front.png");
 	
 	mat->SetCubeMap("TexCube", m_CubeMap);
+
+
+	m_ComputeTest = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/ComputeTest.glsl")));
+	m_ComputeTest->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
+	m_ComputeTest->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 }
 
 void Sandbox2D::OnDetach()
@@ -215,11 +222,10 @@ void Sandbox2D::OnPresent()
 
 void Sandbox2D::OnRender()
 {
-
-	SBOData* sbo = new SBOData;
-	sbo->count = 0;
-	sbo->maxNodeCount = Application::Get().GetWindow().GetWidth() * Application::Get().GetWindow().GetHeight() * 4;
-	m_SBO->SetData(sizeof(SBOData), sbo);
+	
+	ComputeCommand::BeginComputeCommand();
+	m_ComputeTest->Compute(1, 1, 1);
+	ComputeCommand::EndComputeCommand();
 
 	RenderCommand::BeginDrawCommand();
 	m_SkyBoxFB->Begin();
@@ -243,9 +249,7 @@ void Sandbox2D::OnRender()
 	RenderCommand::BeginDrawCommand();
 	m_OIT_1->Begin();
 	Renderer::BeginScene(m_EditorCamera);
-	
 	m_OIT->Render();
-
 	Renderer::EndScene();
 	m_OIT_1->End();
 	RenderCommand::EndDrawCommand();

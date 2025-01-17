@@ -176,6 +176,7 @@ namespace GEngine
 
 		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 		VulkanContext::Get()->MoveToNextSemaphore();
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
 		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 
 		VkSubmitInfo                    submitInfo{};
@@ -184,6 +185,7 @@ namespace GEngine
 		submitInfo.pCommandBuffers      = &commandBuffer;
 		submitInfo.waitSemaphoreCount   = 1;
 		submitInfo.pWaitSemaphores      = waitSemaphores;
+        submitInfo.pWaitDstStageMask    = waitStages;
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores    = signalSemaphores;
 
