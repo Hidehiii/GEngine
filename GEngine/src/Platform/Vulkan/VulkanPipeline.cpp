@@ -51,7 +51,7 @@ namespace GEngine
 			CreatePipeline();
 			m_FirstCreatePipeline = false;
 		}
-		if (m_RecreatePipeline || true)
+		if (m_RecreatePipeline)
 		{
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);

@@ -12,8 +12,6 @@ namespace GEngine
 		VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~VulkanShader();
 
-		virtual void Bind() const override;
-
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_VulkanSPIRV[ShaderStage::Fragment]; }
 

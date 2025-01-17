@@ -118,10 +118,6 @@ namespace GEngine
 	VulkanShader::~VulkanShader()
 	{
 	}
-	void VulkanShader::Bind() const
-	{
-		
-	}
 	void VulkanShader::SetInt1(const std::string& name, int value)
 	{
 	}

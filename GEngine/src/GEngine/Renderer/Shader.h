@@ -529,8 +529,6 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual void Bind() const = 0;
-
 		virtual void SetInt1(const std::string& name, int value) = 0;
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
 		virtual void SetFloat1(const std::string& name, float value) = 0;

@@ -145,136 +145,134 @@ namespace GEngine
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 	{
-		GE_PROFILE_FUNCTION();
+		//GE_PROFILE_FUNCTION();
 
-		m_Name = name;
+		//m_Name = name;
 
-		// Create an empty vertex shader handle
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		//// Create an empty vertex shader handle
+		//GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-		// Send the vertex shader source code to GL
-		// Note that std::string's .c_str is NULL character terminated.
-		const GLchar* source = (const GLchar*)vertexSrc.c_str();
-		glShaderSource(vertexShader, 1, &source, 0);
+		//// Send the vertex shader source code to GL
+		//// Note that std::string's .c_str is NULL character terminated.
+		//const GLchar* source = (const GLchar*)vertexSrc.c_str();
+		//glShaderSource(vertexShader, 1, &source, 0);
 
-		// Compile the vertex shader
-		glCompileShader(vertexShader);
+		//// Compile the vertex shader
+		//glCompileShader(vertexShader);
 
-		GLint isCompiled = 0;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+		//GLint isCompiled = 0;
+		//glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
+		//if (isCompiled == GL_FALSE)
+		//{
+		//	GLint maxLength = 0;
+		//	glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
+		//	// The maxLength includes the NULL character
+		//	std::vector<GLchar> infoLog(maxLength);
+		//	glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
 
-			// We don't need the shader anymore.
-			glDeleteShader(vertexShader);
+		//	// We don't need the shader anymore.
+		//	glDeleteShader(vertexShader);
 
-			// Use the infoLog as you see fit.
+		//	// Use the infoLog as you see fit.
 
-			// In this simple program, we'll just leave
-			GE_CORE_ERROR("Vertex Shader compilation failed");
-			GE_CORE_ERROR("{0}", infoLog.data());
+		//	// In this simple program, we'll just leave
+		//	GE_CORE_ERROR("Vertex Shader compilation failed");
+		//	GE_CORE_ERROR("{0}", infoLog.data());
 
-			GE_CORE_ASSERT(false, "Shader compilation failed");
-			return;
-		}
+		//	GE_CORE_ASSERT(false, "Shader compilation failed");
+		//	return;
+		//}
 
-		// Create an empty fragment shader handle
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		//// Create an empty fragment shader handle
+		//GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-		// Send the fragment shader source code to GL
-		// Note that std::string's .c_str is NULL character terminated.
-		source = (const GLchar*)fragmentSrc.c_str();
-		glShaderSource(fragmentShader, 1, &source, 0);
+		//// Send the fragment shader source code to GL
+		//// Note that std::string's .c_str is NULL character terminated.
+		//source = (const GLchar*)fragmentSrc.c_str();
+		//glShaderSource(fragmentShader, 1, &source, 0);
 
-		// Compile the fragment shader
-		glCompileShader(fragmentShader);
+		//// Compile the fragment shader
+		//glCompileShader(fragmentShader);
 
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+		//glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+		//if (isCompiled == GL_FALSE)
+		//{
+		//	GLint maxLength = 0;
+		//	glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
+		//	// The maxLength includes the NULL character
+		//	std::vector<GLchar> infoLog(maxLength);
+		//	glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
 
-			// We don't need the shader anymore.
-			glDeleteShader(fragmentShader);
-			// Either of them. Don't leak shaders.
-			glDeleteShader(vertexShader);
+		//	// We don't need the shader anymore.
+		//	glDeleteShader(fragmentShader);
+		//	// Either of them. Don't leak shaders.
+		//	glDeleteShader(vertexShader);
 
-			// Use the infoLog as you see fit.
+		//	// Use the infoLog as you see fit.
 
-			// In this simple program, we'll just leave
+		//	// In this simple program, we'll just leave
 
-			GE_CORE_ERROR("Fragment Shader compilation failed");
-			GE_CORE_ERROR("{0}", infoLog.data());
+		//	GE_CORE_ERROR("Fragment Shader compilation failed");
+		//	GE_CORE_ERROR("{0}", infoLog.data());
 
-			GE_CORE_ASSERT(false, "Shader compilation failed");
-			return;
-		}
+		//	GE_CORE_ASSERT(false, "Shader compilation failed");
+		//	return;
+		//}
 
-		// Vertex and fragment shaders are successfully compiled.
-		// Now time to link them together into a program.
-		// Get a program object.
-		m_RendererID = glCreateProgram();
-		GLuint program = m_RendererID;
+		//// Vertex and fragment shaders are successfully compiled.
+		//// Now time to link them together into a program.
+		//// Get a program object.
+		//m_RendererID = glCreateProgram();
+		//GLuint program = m_RendererID;
 
-		// Attach our shaders to our program
-		glAttachShader(program, vertexShader);
-		glAttachShader(program, fragmentShader);
+		//// Attach our shaders to our program
+		//glAttachShader(program, vertexShader);
+		//glAttachShader(program, fragmentShader);
 
-		// Link our program
-		glLinkProgram(program);
+		//// Link our program
+		//glLinkProgram(program);
 
-		// Note the different functions here: glGetProgram* instead of glGetShader*.
-		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+		//// Note the different functions here: glGetProgram* instead of glGetShader*.
+		//GLint isLinked = 0;
+		//glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		//if (isLinked == GL_FALSE)
+		//{
+		//	GLint maxLength = 0;
+		//	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		//	// The maxLength includes the NULL character
+		//	std::vector<GLchar> infoLog(maxLength);
+		//	glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
 
-			// We don't need the program anymore.
-			glDeleteProgram(program);
-			// Don't leak shaders either.
-			glDeleteShader(vertexShader);
-			glDeleteShader(fragmentShader);
+		//	// We don't need the program anymore.
+		//	glDeleteProgram(program);
+		//	// Don't leak shaders either.
+		//	glDeleteShader(vertexShader);
+		//	glDeleteShader(fragmentShader);
 
-			// Use the infoLog as you see fit.
+		//	// Use the infoLog as you see fit.
 
-			GE_CORE_ERROR("Shader link failed");
-			GE_CORE_ERROR("{0}", infoLog.data());
+		//	GE_CORE_ERROR("Shader link failed");
+		//	GE_CORE_ERROR("{0}", infoLog.data());
 
-			GE_CORE_ASSERT(false, "Shader link failed");
-			return;
-		}
+		//	GE_CORE_ASSERT(false, "Shader link failed");
+		//	return;
+		//}
 
-		// Always detach shaders after a successful link.
-		glDetachShader(program, vertexShader);
-		glDetachShader(program, fragmentShader);
+		//// Always detach shaders after a successful link.
+		//glDetachShader(program, vertexShader);
+		//glDetachShader(program, fragmentShader);
 
 		
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-		glDeleteProgram(m_RendererID);
+			glDeleteProgram(m_RendererID);
 	}
 	void OpenGLShader::Bind() const
 	{
-		GE_PROFILE_FUNCTION();
-
 		glUseProgram(m_RendererID);
 	}
 	void OpenGLShader::SetInt1(const std::string& name, int value)
@@ -634,7 +632,6 @@ namespace GEngine
 			glSpecializeShader(shaderID, m_ShaderMainFuncName.c_str(), 0, nullptr, nullptr);
 			glAttachShader(program, shaderID);
 		}
-
 		glLinkProgram(program);
 
 		GLint isLinked;
@@ -659,7 +656,6 @@ namespace GEngine
 			glDetachShader(program, id);
 			glDeleteShader(id);
 		}
-
 		m_RendererID = program;
 	}
 
@@ -684,89 +680,6 @@ namespace GEngine
 			GE_CORE_TRACE("    Size = {0}", bufferSize);
 			GE_CORE_TRACE("    Binding = {0}", binding);
 			GE_CORE_TRACE("    Members = {0}", memberCount);
-		}
-	}
-	void OpenGLShader::Compile(std::unordered_map<GLenum, std::string>& source)
-	{
-		GE_PROFILE_FUNCTION();
-
-		m_RendererID = glCreateProgram();
-		GLuint program = m_RendererID;
-
-		GE_CORE_ASSERT(source.size() <= 3, "Only support 3 shaders now!");
-		std::array<GLenum, 3> glShaderIDs;
- 		int glShaderIDIndex = 0;
-
-		for (auto& kv : source)
-		{
-			GLenum type = kv.first;
-			const std::string& src = kv.second;
-
-			GLuint shader = glCreateShader(type);
-			const GLchar* source = src.c_str();
-			glShaderSource(shader, 1, &source, 0);
-			glCompileShader(shader);
-
-			GLint isCompiled = 0;
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-			if (isCompiled == GL_FALSE)
-			{
-				GLint maxLength = 0;
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
-
-				glDeleteShader(shader);
-
-				GE_CORE_ERROR("Shader compilation failed");
-				GE_CORE_ERROR("{0}", infoLog.data());
-
-				GE_CORE_ASSERT(false, Utils::StringFromShaderType(type) + " compilation failed");
-				return;
-			}
-			glAttachShader(m_RendererID, shader);
-			glDeleteShader(shader);
-
-			glShaderIDs[glShaderIDIndex++] = (shader);
-		}	
-
-		// Link our program
-		glLinkProgram(program);
-
-		// Note the different functions here: glGetProgram* instead of glGetShader*.
-		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-
-			// We don't need the program anymore.
-			glDeleteProgram(program);
-			// Don't leak shaders either.
-			for (auto id : glShaderIDs)
-			{
-				glDeleteShader(id);
-			}
-
-			// Use the infoLog as you see fit.
-
-			GE_CORE_ERROR("Shader link failed");
-			GE_CORE_ERROR("{0}", infoLog.data());
-
-			GE_CORE_ASSERT(false, "Shader link failed");
-			return;
-		}
-
-		// Always detach shaders after a successful link.
-		for (auto id : glShaderIDs)
-		{
-			glDetachShader(program, id);
 		}
 	}
 }

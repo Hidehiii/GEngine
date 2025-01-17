@@ -307,7 +307,7 @@ namespace GEngine
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
         glDisable(GL_FRAMEBUFFER_SRGB);
         glDepthMask(GL_TRUE);
-		if (m_Specification.AttachmentsEndAction == FrameBufferAttachmentsAction::Clear)
+		if (m_Specification.AttachmentsBeginAction == FrameBufferAttachmentsAction::Clear)
 		{
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
