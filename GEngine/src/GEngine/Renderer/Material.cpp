@@ -28,9 +28,45 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;
     }
+	Ref<Material> Material::Create(const std::string& shaderPath, const std::string& name)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: {
+			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		}
+		case RendererAPI::API::OpenGL: {
+			return CreateRef<OpenGLMaterial>(Shader::Create(shaderPath), name);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
+			return nullptr;
+		}
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
     Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
     {
-        return nullptr;;
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: {
+			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		}
+		case RendererAPI::API::OpenGL: {
+			return CreateRef<OpenGLMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
+			return nullptr;
+		}
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
     }
 	ShaderUniform Material::GetUniformByName(const std::string& name) const
 	{

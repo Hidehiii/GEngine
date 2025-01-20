@@ -15,6 +15,7 @@ namespace GEngine
 	{
 	public:
 		static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name = "");
+		static Ref<Material> Create(const std::string& shaderPath, const std::string& name = "");
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
 
 		bool HasChanged() { return m_HasChanged; }

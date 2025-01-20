@@ -552,6 +552,7 @@ namespace GEngine
 		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
 		virtual const std::string& GetShaderName() const  { return m_Name; }
 		virtual void SetShaderName(std::string name)  { m_Name = name; }
+		virtual std::string GetShaderPath() { return m_FilePath; }
 		virtual std::vector<ShaderUniformTexture2D> GetTexture2D()  { return m_Texture2DCache; }
 		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
 		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
