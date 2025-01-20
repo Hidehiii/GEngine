@@ -127,14 +127,14 @@ namespace GEngine
 
 
 
-#ifdef GE_PROFILE
-	#define GE_PROFILE_BEGIN_SESSION(name, filepath) ::GEngine::Instrumentor::Get().BeginSession(name, filepath)
-	#define GE_PROFILE_END_SESSION() ::GEngine::Instrumentor::Get().EndSession()
-    #define GE_PROFILE_SCOPE(name) ::GEngine::InstrumentationTimer timer##__LINE__(name);
-	#define GE_PROFILE_FUNCTION() GE_PROFILE_SCOPE(__FUNCSIG__)
-#else
-	#define GE_PROFILE_BEGIN_SESSION(name, filepath)
-	#define GE_PROFILE_END_SESSION()
-	#define GE_PROFILE_SCOPE(name)
-	#define GE_PROFILE_FUNCTION()
-#endif
+//#ifdef GE_PROFILE
+//	#define GE_PROFILE_BEGIN_SESSION(name, filepath) ::GEngine::Instrumentor::Get().BeginSession(name, filepath)
+//	#define GE_PROFILE_END_SESSION() ::GEngine::Instrumentor::Get().EndSession()
+//    #define GE_PROFILE_SCOPE(name) ::GEngine::InstrumentationTimer timer##__LINE__(name);
+//	#define GE_PROFILE_FUNCTION() GE_PROFILE_SCOPE(__FUNCSIG__)
+//#else
+//	#define GE_PROFILE_BEGIN_SESSION(name, filepath)
+//	#define GE_PROFILE_END_SESSION()
+//	#define GE_PROFILE_SCOPE(name)
+//	#define GE_PROFILE_FUNCTION()
+//#endif

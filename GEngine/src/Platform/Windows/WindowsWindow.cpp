@@ -21,7 +21,7 @@ namespace GEngine
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
-		GE_PROFILE_FUNCTION();
+		
 		
 		Init(props);
 	}
@@ -34,7 +34,7 @@ namespace GEngine
 
 	void WindowsWindow::Init(const WindowProps& props)
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		m_Data.Title	= props.Title;
 		m_Data.Width	= props.Width;
@@ -171,7 +171,7 @@ namespace GEngine
 
 	void WindowsWindow::Shutdown()
 	{
-		GE_PROFILE_FUNCTION();
+		
 		
 		glfwDestroyWindow(m_Window);
 		m_Context->Uninit();
@@ -179,7 +179,7 @@ namespace GEngine
 
 	void WindowsWindow::OnUpdate()
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		glfwPollEvents();
 		

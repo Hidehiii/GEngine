@@ -13,8 +13,8 @@ namespace GEngine
 
 	Application::Application(const ApplicationSpecification& spec)
 	{
-		GE_PROFILE_FUNCTION();
-
+		
+		Log::Init();
 		GE_CORE_ASSERT(!s_Instance, "Application already exists!");
 		
 		s_Instance		= this;
@@ -55,10 +55,9 @@ namespace GEngine
 
 	void Application::Run()
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		while (m_Running) {
-			GE_PROFILE_SCOPE("RunLoop");
 
 			Time::SetDeltaTime(m_Window->GetTime() - Time::GetRunTime());
 			Time::SetRunTime(m_Window->GetTime());
@@ -66,7 +65,6 @@ namespace GEngine
 			if (m_Minimized == false)
 			{
 				{
-					GE_PROFILE_SCOPE("LayerStack OnUpdate");
 
 					for (auto layer : m_LayerStack) {
 						layer->OnUpdate();
@@ -75,7 +73,6 @@ namespace GEngine
 				if (m_GraphicsPresent->AquireImage())
 				{
 					{
-						GE_PROFILE_SCOPE("LayerStack OnRender");
 						for (auto layer : m_LayerStack) {
 							layer->OnRender();
 						}
@@ -83,7 +80,6 @@ namespace GEngine
 					{
 						m_ImGuiLayer->Begin();
 						{
-							GE_PROFILE_SCOPE("ImguiStack OnGuiRender");
 
 							for (auto layer : m_LayerStack) {
 								layer->OnImGuiRender();
@@ -93,7 +89,6 @@ namespace GEngine
 					}
 					{
 						m_GraphicsPresent->Begin();
-						GE_PROFILE_SCOPE("LayerStack OnPresent");
 						for (auto layer : m_LayerStack) {
 							layer->OnPresent();
 						}
@@ -101,14 +96,12 @@ namespace GEngine
 					}
 				}
 				{
-					GE_PROFILE_SCOPE("LayerStack OnLateUpdate");
 					for (auto layer : m_LayerStack) {
 						layer->OnLateUpdate();
 					}
 				}
 				
 				{
-					GE_PROFILE_SCOPE("LayerStack OnEndFrame");
 					for (auto layer : m_LayerStack) {
 						layer->OnEndFrame();
 					}
@@ -128,7 +121,7 @@ namespace GEngine
 	}
 	void Application::OnEvent(Event& e)
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowClose));

@@ -132,7 +132,7 @@ namespace GEngine
 
 	OpenGLShader::OpenGLShader(const std::string& path)
 	{
-		GE_PROFILE_FUNCTION();
+		
 		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();
 
@@ -145,7 +145,7 @@ namespace GEngine
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 	{
-		//GE_PROFILE_FUNCTION();
+		//
 
 		//m_Name = name;
 

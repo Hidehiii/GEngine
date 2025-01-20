@@ -103,7 +103,7 @@ namespace GEngine
 
 	VulkanShader::VulkanShader(const std::string& path)
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();

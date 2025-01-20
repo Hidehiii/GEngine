@@ -5,7 +5,7 @@ namespace GEngine
 {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBufferRendererID);
@@ -25,7 +25,7 @@ namespace GEngine
 	// Vertex Buffer
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		GE_PROFILE_FUNCTION();
+		
 		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBufferRendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
@@ -50,7 +50,7 @@ namespace GEngine
 	}
 	void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		GE_PROFILE_FUNCTION();
+		
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
@@ -61,7 +61,7 @@ namespace GEngine
 	}
 	void OpenGLVertexBuffer::Bind() const
 	{
-		GE_PROFILE_FUNCTION();
+		
 		glBindVertexArray(m_VertexArrayRendererID);
 		//glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
 	}
@@ -156,7 +156,7 @@ namespace GEngine
 	OpenGLIndexBuffer::OpenGLIndexBuffer(const uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -168,7 +168,7 @@ namespace GEngine
 	}
 	void OpenGLIndexBuffer::Bind() const
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 	}

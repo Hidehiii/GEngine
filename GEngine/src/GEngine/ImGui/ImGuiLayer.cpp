@@ -27,7 +27,7 @@ namespace GEngine
 
 	void ImGuiLayer::OnAttach()
 	{
-		GE_PROFILE_FUNCTION();
+		
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
@@ -72,7 +72,7 @@ namespace GEngine
 
 	void ImGuiLayer::OnDetach()
 	{
-		GE_PROFILE_FUNCTION();
+		
 		m_PlatformImGui->OnDetach();
 		
 		ImGui_ImplGlfw_Shutdown();
@@ -98,7 +98,7 @@ namespace GEngine
 
 	void ImGuiLayer::Begin()
 	{
-		GE_PROFILE_FUNCTION();
+		
 		m_PlatformImGui->Begin();
 		
 		ImGui_ImplGlfw_NewFrame();
@@ -107,7 +107,7 @@ namespace GEngine
 	}
 	void ImGuiLayer::End()
 	{
-		GE_PROFILE_FUNCTION();
+		
 
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();

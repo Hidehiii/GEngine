@@ -71,7 +71,7 @@ namespace GEngine
 
 	void Renderer2D::Init()
 	{
-		GE_PROFILE_FUNCTION();
+		
 		// Runtime
 		{
 			// Quad

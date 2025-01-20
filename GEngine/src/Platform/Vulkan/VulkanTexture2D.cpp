@@ -14,7 +14,6 @@ namespace GEngine
         stbi_uc* data;
         stbi_set_flip_vertically_on_load(1);
         {
-            GE_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)")
             data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         }
         GE_CORE_ASSERT(data, "Failed to load image!");
@@ -26,7 +25,7 @@ namespace GEngine
         }
         else
         {
-            m_Format = RenderImage2DFormat::RGB8F;
+            m_Format = RenderImage2DFormat::RGB8F; // 大多数显卡vulkan 不支持这个格式
         }
         
         m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;

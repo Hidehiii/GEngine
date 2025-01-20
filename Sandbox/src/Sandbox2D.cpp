@@ -264,7 +264,6 @@ void Sandbox2D::OnUpdate()
 	
 
 	//{
-	//	GE_PROFILE_SCOPE("Render: OnUpdate");
 	//	// temporary
 	//	GEngine::Renderer::BeginScene(m_Camera);
 
@@ -295,7 +294,7 @@ void Sandbox2D::OnUpdate()
 
 void Sandbox2D::OnImGuiRender()
 {
-	GE_PROFILE_FUNCTION();
+	
 	
 
 	ImGui::Begin("Attachment");
