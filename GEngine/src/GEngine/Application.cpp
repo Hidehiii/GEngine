@@ -32,7 +32,7 @@ namespace GEngine
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
-		m_Window->SetVSync(false);
+		m_Window->SetVSync(m_Config->m_VSync);
 
 		m_GraphicsPresent = GraphicsPresent::Create();
 

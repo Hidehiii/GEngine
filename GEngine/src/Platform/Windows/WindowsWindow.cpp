@@ -195,15 +195,9 @@ namespace GEngine
 		glfwExtensions				= glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 		std::vector<const char*>	extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-#ifdef GE_DEBUG
-			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-
 		return extensions;
 	}
 
-	// only used for OpenGL
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
@@ -212,16 +206,12 @@ namespace GEngine
 				glfwSwapInterval(1);
 			else
 				glfwSwapInterval(0);
+		}
 
-			m_Data.VSync = enabled;
-		}
-		else
-		{
-			m_Data.VSync = false;
-		}
+		m_Context->SetVSync(enabled);
+		m_Data.VSync = enabled;
 	}
 
-	// only used for OpenGL
 	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;

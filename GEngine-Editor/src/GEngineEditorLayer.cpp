@@ -599,6 +599,14 @@ namespace GEngine
 				Application::Get().GetConfig()->m_FramesInFlight = currentFramesInFlight + 1;
 			}
 
+			const char* setVSyncString[] = { u8"false", u8"true" };
+			int currentVSync = Application::Get().GetConfig()->m_VSync;
+			if (ImGui::Combo("VSync", &currentVSync, setVSyncString, 2))
+			{
+				Application::Get().GetConfig()->m_VSync = currentVSync;
+				Application::Get().GetWindow().SetVSync(currentVSync);
+			}
+
 			ImGui::End();
 		}
 

@@ -3,6 +3,7 @@
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Core/CoreThread.h"
 #include <set>
 
 namespace GEngine
@@ -22,6 +23,10 @@ namespace GEngine
         else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
             GE_CORE_WARN("Validation layer: {0}", pCallbackData->pMessage);
+        }
+        else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+        {
+            GE_CORE_INFO("Validation layer: {0}", pCallbackData->pMessage);
         }
         return VK_FALSE;
     }
@@ -110,6 +115,15 @@ namespace GEngine
 	{
         
 	}
+    void VulkanContext::SetVSync(bool enable)
+    {
+        m_VSync = enable;
+		CleanUpSwapChain();
+
+		CreateSwapChain(m_SwapChainExtent.width, m_SwapChainExtent.height);
+		CreateImageViews();
+		CreateFrameBuffer();
+    }
     VkFence& VulkanContext::GetCurrentFence()
     {
         return m_Fences.at(Renderer::GetCurrentFrame());
@@ -141,6 +155,11 @@ namespace GEngine
         VkInstanceCreateInfo                    createInfo = {};
         createInfo.sType                        = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo             = &appInfo;
+
+#ifdef GE_DEBUG
+        m_Extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
         createInfo.enabledExtensionCount        = static_cast<uint32_t>(m_Extensions.size());
         createInfo.ppEnabledExtensionNames      = m_Extensions.data();
 #ifdef GE_DEBUG
@@ -462,9 +481,13 @@ namespace GEngine
     VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
 		for (const auto& availablePresentMode : availablePresentModes) {
-			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+			if (m_VSync == false && availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
 				return availablePresentMode;
 			}
+            if (m_VSync == true && availablePresentMode == VK_PRESENT_MODE_FIFO_KHR)
+            {
+                return availablePresentMode;
+            }
 		}
 
 		return VK_PRESENT_MODE_FIFO_KHR;
@@ -592,7 +615,7 @@ namespace GEngine
             isUsing = !isUsing;
             if (isUsing == false)
             {
-                m_UsedSecondaryCommandBuffers.emplace_back(std::this_thread::get_id(), m_UsedSecondaryCommandBufferIndex);
+                m_UsedSecondaryCommandBuffers.emplace_back(THREAD_ID, m_UsedSecondaryCommandBufferIndex);
             }
         }
     }
@@ -601,7 +624,7 @@ namespace GEngine
 		VkCommandBuffer cmdBuffer = nullptr;
 		for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
 		{
-			if (m_UsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+			if (m_UsedSecondaryCommandBuffers.at(i).first == THREAD_ID)
 			{
 				cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
                 m_UsedSecondaryCommandBuffers.erase(m_UsedSecondaryCommandBuffers.begin() + i);
@@ -615,7 +638,7 @@ namespace GEngine
         VkCommandBuffer cmdBuffer = nullptr;
         for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
         {
-            if (m_UsedSecondaryCommandBuffers.at(i).first == std::this_thread::get_id())
+            if (m_UsedSecondaryCommandBuffers.at(i).first == THREAD_ID)
             {
                 cmdBuffer = m_CommandBuffer.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
                 break;

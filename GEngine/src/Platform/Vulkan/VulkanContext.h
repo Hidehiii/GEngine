@@ -34,10 +34,10 @@ namespace GEngine
 		virtual void				Init(const unsigned int width, const unsigned int height) override;
 		virtual void				Uninit() override;
 		virtual void				SwapBuffers() override;
-
+		virtual void				SetVSync(bool enable) override;
 		virtual void				SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
-		virtual void				RecreateSwapChain(unsigned int width, unsigned int height) override;
 
+		void						RecreateSwapChain(unsigned int width, unsigned int height);
 		static VulkanContext*		Get() { return s_ContextInstance; }
 		VkDevice					GetDevice() { return m_Device; }
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
@@ -122,6 +122,7 @@ namespace GEngine
 			VK_KHR_16BIT_STORAGE_EXTENSION_NAME,
 			VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME,
 		};
+		bool								m_VSync = false;
 		VkSwapchainKHR						m_SwapChain;
 		std::vector<VkImage>				m_SwapChainImages;
 		VkFormat							m_SwapChainImageFormat;

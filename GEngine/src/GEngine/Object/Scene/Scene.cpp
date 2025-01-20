@@ -113,7 +113,7 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
-		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
+		std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
 		if (m_PhysicsTimerWheel != nullptr)
 		{
 			m_PhysicsTimerWheel->Stop();
@@ -362,7 +362,7 @@ namespace GEngine
 	// 渲染场景中的所有对象
 	void Scene::OnRender()
 	{
-		std::lock_guard<std::mutex> lock(CoreThread::s_Mutex);
+		std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
 
 		//CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
 		// 距离排序可能要

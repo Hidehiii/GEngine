@@ -14,5 +14,5 @@ namespace GEngine
 	};
 }
 
-
-
+#define CORE_THREAD_MUTEX CoreThread::s_Mutex
+#define THREAD_ID std::this_thread::get_id()
