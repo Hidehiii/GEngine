@@ -118,30 +118,6 @@ namespace GEngine
 	VulkanShader::~VulkanShader()
 	{
 	}
-	void VulkanShader::SetInt1(const std::string& name, int value)
-	{
-	}
-	void VulkanShader::SetIntArray(const std::string& name, int* value, uint32_t count)
-	{
-	}
-	void VulkanShader::SetFloat1(const std::string& name, float value)
-	{
-	}
-	void VulkanShader::SetFloat2(const std::string& name, const Vector2& value)
-	{
-	}
-	void VulkanShader::SetFloat3(const std::string& name, const Vector3& value)
-	{
-	}
-	void VulkanShader::SetFloat4(const std::string& name, const Vector4& value)
-	{
-	}
-	void VulkanShader::SetMat4x4(const std::string& name, const Matrix4x4& value)
-	{
-	}
-	void VulkanShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count)
-	{
-	}
 	void VulkanShader::CreateShaderModule()
 	{
 		if (m_VulkanSPIRV.find(ShaderStage::Vertex) != m_VulkanSPIRV.end())

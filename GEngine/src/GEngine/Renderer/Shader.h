@@ -530,15 +530,6 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual void SetInt1(const std::string& name, int value) = 0;
-		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) = 0;
-		virtual void SetFloat1(const std::string& name, float value) = 0;
-		virtual void SetFloat2(const std::string& name, const Vector2& value) = 0;
-		virtual void SetFloat3(const std::string& name, const Vector3& value) = 0;
-		virtual void SetFloat4(const std::string& name, const Vector4& value) = 0;
-		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) = 0;
-		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) = 0;
-
 		virtual BlendMode GetBlendModeColor() { return m_BlendModeColor; }
 		virtual BlendMode GetBlendModeAlpha() { return m_BlendModeAlpha; }
 		virtual CullMode GetCullMode() { return m_CullMode; }
@@ -549,7 +540,7 @@ namespace GEngine
 		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
 		virtual CompareOperation GetDepthTestOperation()  { return m_DepthTestOperation; }
 
-		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; };
+		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; }
 		virtual const std::string& GetShaderName() const  { return m_Name; }
 		virtual void SetShaderName(std::string name)  { m_Name = name; }
 		virtual std::string GetShaderPath() { return m_FilePath; }

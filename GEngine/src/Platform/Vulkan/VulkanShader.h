@@ -15,15 +15,6 @@ namespace GEngine
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_VulkanSPIRV[ShaderStage::Fragment]; }
 
-		virtual void SetInt1(const std::string& name, int value) override;
-		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
-		virtual void SetFloat1(const std::string& name, float value) override;
-		virtual void SetFloat2(const std::string& name, const Vector2& value) override;
-		virtual void SetFloat3(const std::string& name, const Vector3& value) override;
-		virtual void SetFloat4(const std::string& name, const Vector4& value) override;
-		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value) override;
-		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count) override;
-
 		void CreateShaderModule();
 		void DestroyShaderModule();
 		VkShaderModule GetShaderModule(std::string stage);
