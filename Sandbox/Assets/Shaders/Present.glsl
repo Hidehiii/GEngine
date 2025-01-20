@@ -30,8 +30,8 @@ struct VertexOutput
 	
 };
 layout (location = 0) in VertexOutput IN;
-layout (binding = 40) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
-layout (binding = 41) uniform sampler2D GE_PRESENT_IMGUI;
+layout (binding = GE_BINDING_START + 0) uniform sampler2D GE_PRESENT_FRAME_BUFFER;
+layout (binding = GE_BINDING_START + 1) uniform sampler2D GE_PRESENT_IMGUI;
 
 void main()
 {

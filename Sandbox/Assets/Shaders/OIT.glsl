@@ -38,18 +38,18 @@ void main()
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
 
-layout (binding = 40, r32ui) uniform uimage2D headIndexImage;
+layout (binding = GE_BINDING_START + 0, r32ui) uniform uimage2D headIndexImage;
 struct Node
 {
 	vec4 color;
 	float depth;
 	uint next;	
 };
-layout (binding = 41) buffer LinkedListSBO
+layout (binding = GE_BINDING_START + 1) buffer LinkedListSBO
 {
 	Node nodes[];	
 };
-layout (binding = 42) uniform sampler2D BaseColor;
+layout (binding = GE_BINDING_START + 2) uniform sampler2D BaseColor;
 struct VertexOutput
 {
 	vec4 position;

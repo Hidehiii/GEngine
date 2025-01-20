@@ -55,13 +55,9 @@ namespace GEngine
 
 	void Application::Run()
 	{
-		
-
 		while (m_Running) {
-
 			Time::SetDeltaTime(m_Window->GetTime() - Time::GetRunTime());
 			Time::SetRunTime(m_Window->GetTime());
-
 			if (m_Minimized == false)
 			{
 				{
@@ -121,8 +117,6 @@ namespace GEngine
 	}
 	void Application::OnEvent(Event& e)
 	{
-		
-
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowResize));
@@ -139,7 +133,6 @@ namespace GEngine
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		m_Running = false;
-		
 		return true;
 	}
 	bool Application::OnWindowResize(WindowResizeEvent& e)

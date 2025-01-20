@@ -33,7 +33,7 @@ struct VertexOutput
 	vec2 uv;
 };
 layout (location = 0) in VertexOutput IN;
-layout (binding = 40) uniform sampler2D GE_PRESENT_IMGUI;
+layout (binding = GE_BINDING_START + 0) uniform sampler2D GE_PRESENT_IMGUI;
 
 
 

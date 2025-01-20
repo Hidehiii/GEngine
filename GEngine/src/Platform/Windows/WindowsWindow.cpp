@@ -69,7 +69,10 @@ namespace GEngine
 			m_Context->SetRequiredExtensions(GetRequiredExtensions());
 		}
 		else
+		{
 			GE_CORE_ASSERT(false, "Renderer API not supported");
+		}
+			
 
 		
 		m_Context->Init(m_Data.Width, m_Data.Height);
@@ -171,19 +174,13 @@ namespace GEngine
 
 	void WindowsWindow::Shutdown()
 	{
-		
-		
 		glfwDestroyWindow(m_Window);
 		m_Context->Uninit();
 	}
 
 	void WindowsWindow::OnUpdate()
 	{
-		
-
 		glfwPollEvents();
-		
-
 		m_Context->SwapBuffers();
 	}
 

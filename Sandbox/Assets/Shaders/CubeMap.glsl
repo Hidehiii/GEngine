@@ -51,7 +51,7 @@ layout(std140, binding = 2) uniform TIME
 {
 	vec4 GE_TIME;
 };
-layout (binding = 40) uniform samplerCube TexCube;
+layout (binding = GE_BINDING_START + 0) uniform samplerCube TexCube;
 struct VertexOutput
 {
 	vec4 position;

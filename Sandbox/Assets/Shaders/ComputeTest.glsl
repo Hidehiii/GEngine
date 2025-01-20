@@ -20,8 +20,8 @@ layout(std140, binding = 5) uniform SCREEN
 {
 	vec4 GE_SCREEN_SIZE;	
 };
-layout (binding = 40, rgba16f) uniform image2D computeTestImage;
-layout (binding = 41) buffer GeometrySBO
+layout (binding = GE_BINDING_START, rgba16f) uniform image2D computeTestImage;
+layout (binding = GE_BINDING_START + 1) buffer GeometrySBO
 {
 	uint count;
     uint maxNodeCount;

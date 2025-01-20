@@ -32,6 +32,7 @@ namespace GEngine
 	{
 	public:
 		static std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
+		static std::string			GE_BINDING_START;
 	};
 	enum class GENGINE_API BlendFactor
 	{
