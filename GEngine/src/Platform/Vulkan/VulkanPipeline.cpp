@@ -45,11 +45,10 @@ namespace GEngine
 
 		m_Material->UploadData();
 
-		if (m_FirstCreatePipeline)
+		if (m_GraphicsPipeline == nullptr)
 		{
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
-			m_FirstCreatePipeline = false;
 		}
 		if (m_RecreatePipeline)
 		{
@@ -59,8 +58,11 @@ namespace GEngine
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
 		}
-		// 现在是低效率的每帧更新
-		UpdateDescriptorSet();
+		if (m_UpdateDescriptorSet)
+		{
+			UpdateDescriptorSet();
+			m_UpdateDescriptorSet = false;
+		}
 		
 		
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
@@ -81,7 +83,7 @@ namespace GEngine
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Scissor);
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
-		VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
+		//VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
 		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetColorWriteMaskEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, colorMaks);
 		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentCommandBuffer(), m_Material->GetEnableDepthWrite());
@@ -145,10 +147,21 @@ namespace GEngine
 		}
 	}
 
+	Ref<VertexBuffer> VulkanPipeline::GetVertexBuffer()
+	{
+		return (m_VertexBuffer);
+	}
+
 	void VulkanPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
 	{
 		m_VertexBuffer = std::dynamic_pointer_cast<VulkanVertexBuffer>(buffer);
 		m_RecreatePipeline = true;
+	}
+
+	Ref<Material> VulkanPipeline::GetMaterial()
+	{
+		m_UpdateDescriptorSet = true;  
+		return (m_Material);
 	}
 
 	void VulkanPipeline::SetMaterial(Ref<Material>& material)

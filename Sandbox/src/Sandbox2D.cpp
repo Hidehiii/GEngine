@@ -28,6 +28,7 @@ void Sandbox2D::OnAttach()
 	fspec.Height = 720;
 	fspec.Samples = 4;
 	m_OIT_1 = FrameBuffer::Create(fspec);
+	fspec.Samples = 8;
 	m_SkyBoxFB = FrameBuffer::Create(fspec);
 	m_ComputeFB = FrameBuffer::Create(fspec);
 	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };

@@ -25,11 +25,10 @@ namespace GEngine
 		VkDescriptorSet				m_DescriptorSet;
 
 		VkPipelineLayout									m_PipelineLayout;
-		VkPipeline											m_ComputePipeline;
+		VkPipeline											m_ComputePipeline = nullptr;
 		VkPipelineCache										m_PipelineCache;
-
-		bool												m_FirstCreatePipeline = true;
 		bool												m_RecreatePipeline = false;
+		bool												m_UpdateDescriptorSet = true;
 	};
 }
 

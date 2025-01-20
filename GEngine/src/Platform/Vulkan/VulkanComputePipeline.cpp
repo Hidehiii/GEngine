@@ -37,11 +37,13 @@ namespace GEngine
 	}
 	Ref<Material> VulkanComputePipeline::GetMaterial()
 	{
+		m_UpdateDescriptorSet = true;
 		return m_Material;
 	}
 	void VulkanComputePipeline::SetMaterial(Ref<Material>& material)
 	{
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
+		m_RecreatePipeline = true;
 	}
 	void VulkanComputePipeline::CreateDescriptorSetAndLayout()
 	{
@@ -251,7 +253,7 @@ namespace GEngine
 		VkPipelineShaderStageCreateInfo		shaderStage;
 		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute))
 		{
-			shaderStage = (Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT,
+			shaderStage = (Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_COMPUTE_BIT,
 				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute),
 				shaderMainFuncName.c_str()));
 		}
@@ -281,11 +283,10 @@ namespace GEngine
 
 		m_Material->UploadData();
 
-		if (m_FirstCreatePipeline)
+		if (m_ComputePipeline == nullptr)
 		{
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
-			m_FirstCreatePipeline = false;
 		}
 		if (m_RecreatePipeline)
 		{
@@ -295,8 +296,11 @@ namespace GEngine
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
 		}
-		// 现在是低效率的每帧更新
-		UpdateDescriptorSet();
+		if (m_UpdateDescriptorSet)
+		{
+			UpdateDescriptorSet();
+			m_UpdateDescriptorSet = false;
+		}
 
 
 		vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
