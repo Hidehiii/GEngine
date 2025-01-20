@@ -48,28 +48,6 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case RendererAPI::API::OpenGL: {
-			Ref<Shader> shader = CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
-			return shader;
-		}
-		case RendererAPI::API::Vulkan: {
-			GE_CORE_ASSERT(false, "Vulkan Shader not supported to be created in this way!");
-			Ref<Shader> shader = CreateRef<VulkanShader>(name, vertexSrc, fragmentSrc);
-			return shader;
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
 	std::string ShaderLibrary::Add(Ref<Shader>& shader)
 	{
 		auto& name = shader->GetShaderName();

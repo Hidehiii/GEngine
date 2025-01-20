@@ -530,37 +530,36 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual BlendMode GetBlendModeColor() { return m_BlendModeColor; }
-		virtual BlendMode GetBlendModeAlpha() { return m_BlendModeAlpha; }
-		virtual CullMode GetCullMode() { return m_CullMode; }
-		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
-		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
-		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
-		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
-		virtual CompareOperation GetDepthTestOperation()  { return m_DepthTestOperation; }
+		virtual BlendMode									GetBlendModeColor() { return m_BlendModeColor; }
+		virtual BlendMode									GetBlendModeAlpha() { return m_BlendModeAlpha; }
+		virtual CullMode									GetCullMode() { return m_CullMode; }
+		virtual BlendFactor									GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
+		virtual BlendFactor									GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
+		virtual BlendFactor									GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor									GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
+		virtual bool										GetEnableDepthWrite()  { return m_EnableDepthWrite; }
+		virtual CompareOperation							GetDepthTestOperation()  { return m_DepthTestOperation; }
 
-		virtual std::vector<ShaderUniform> GetUniforms()  { return m_UniformCache; }
-		virtual const std::string& GetShaderName() const  { return m_Name; }
-		virtual void SetShaderName(std::string name)  { m_Name = name; }
-		virtual std::string GetShaderPath() { return m_FilePath; }
-		virtual std::vector<ShaderUniformTexture2D> GetTexture2D()  { return m_Texture2DCache; }
-		virtual uint32_t GetTexture2DCount()  { return m_Texture2DCache.size(); }
-		virtual std::vector<ShaderUniformStorageImage2D> GetStorageImage2D()  { return m_StorageImage2DCache; }
-		virtual std::vector<ShaderUniformStorageBuffer> GetStorageBuffer() { return m_StorageBufferCache; }
-		virtual std::vector<ShaderUniformCubeMap>	GetCubeMap() { return m_CubeMapCache; }
+		virtual std::vector<ShaderUniform>					GetUniforms()  { return m_UniformCache; }
+		virtual const std::string&							GetShaderName() const  { return m_Name; }
+		virtual void										SetShaderName(std::string name)  { m_Name = name; }
+		virtual std::string									GetShaderPath() { return m_FilePath; }
+		virtual std::vector<ShaderUniformTexture2D>			GetTexture2D()  { return m_Texture2DCache; }
+		virtual uint32_t									GetTexture2DCount()  { return m_Texture2DCache.size(); }
+		virtual std::vector<ShaderUniformStorageImage2D>	GetStorageImage2D()  { return m_StorageImage2DCache; }
+		virtual std::vector<ShaderUniformStorageBuffer>		GetStorageBuffer() { return m_StorageBufferCache; }
+		virtual std::vector<ShaderUniformCubeMap>			GetCubeMap() { return m_CubeMapCache; }
 
-		virtual std::string GetShaderMainFuncName() { return m_ShaderMainFuncName; }
+		virtual std::string									GetShaderMainFuncName() { return m_ShaderMainFuncName; }
 
-		virtual std::vector<uint32_t> GetVertexShaderSource() = 0;
-		virtual std::vector<uint32_t> GetFragmentShaderSource() = 0;
+		virtual std::vector<uint32_t>						GetVertexShaderSource() = 0;
+		virtual std::vector<uint32_t>						GetFragmentShaderSource() = 0;
 
-		static Ref<Shader> Create(const std::string& path);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+		static Ref<Shader>									Create(const std::string& path);
 	protected:
 		
-		virtual void SetMacroBool(std::string& source) = 0;
-		virtual void SetMacroExp(std::string& source) = 0;
+		virtual void										SetMacroBool(std::string& source) = 0;
+		virtual void										SetMacroExp(std::string& source) = 0;
 	protected:
 		// slot 从40开始
 		static const uint32_t s_SlotOffset = 40;

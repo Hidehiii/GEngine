@@ -11,7 +11,6 @@ namespace GEngine
 	{
 	public:
 		OpenGLShader(const std::string& path);
-		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~OpenGLShader();
 
 		void Bind() const;

@@ -9,7 +9,6 @@ namespace GEngine
 	{
 	public:
 		VulkanShader(const std::string& path);
-		VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~VulkanShader();
 
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
