@@ -2,7 +2,6 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Components/Components.h"
-#include "GEngine/Components/Camera/OrthoGraphicCamera.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "GEngine/Renderer/Texture.h"
 #include "GEngine/Renderer/Shader.h"

@@ -3,23 +3,26 @@
 
 namespace GEngine
 {
-	PhysicsAllocatorCallBack3D Physics3D::s_AllocatorCallback;
-	PhysicsErrorCallback3D Physics3D::s_ErrorCallback;
+	PhysicsAllocatorCallBack3D		Physics3D::s_AllocatorCallback;
+	PhysicsErrorCallback3D			Physics3D::s_ErrorCallback;
+	physx::PxFoundation*			Physics3D::s_Foundation			= nullptr;
+	physx::PxPhysics*				Physics3D::s_Physics			= nullptr;
+	physx::PxDefaultCpuDispatcher*	Physics3D::s_Dispatcher			= nullptr;
 
 
-	void Physics3D::Init(std::filesystem::path pvdFilePath, bool recordMemoryAllocations)
+	void Physics3D::Init()
 	{
-		m_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_AllocatorCallback, s_ErrorCallback);
-		GE_CORE_ASSERT(m_Foundation, "Failed to create PhysX Foundation");
+		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_AllocatorCallback, s_ErrorCallback);
+		GE_CORE_ASSERT(s_Foundation, "Failed to create PhysX Foundation");
 
-		m_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_Foundation, physx::PxTolerancesScale());
-		GE_CORE_ASSERT(m_Physics, "Failed to create PhysX Physics");
-
+		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, physx::PxTolerancesScale());
+		GE_CORE_ASSERT(s_Physics, "Failed to create PhysX Physics");
+		
 	}
 	void Physics3D::Shutdown()
 	{
-		m_Physics->release();
-		m_Foundation->release();
+		s_Physics->release();
+		s_Foundation->release();
 	}
 
 
@@ -112,5 +115,16 @@ namespace GEngine
 	inline void Physics3DPlane::operator=(const Physics3DPlane& other)
 	{
 		this->m_Plane = other.m_Plane;
+	}
+	Physics3DWorld::Physics3DWorld(Vector3 gravity)
+	{
+		physx::PxSceneDesc	desc(Physics3D::s_Physics->getTolerancesScale());
+		desc.gravity		= physx::PxVec3(gravity.x, gravity.y, gravity.z);	
+
+		m_Scene				= Physics3D::s_Physics->createScene(desc);
+	}
+	void Physics3DWorld::Simulate(float timeStep)
+	{
+		m_Scene->simulate(timeStep);
 	}
 }

@@ -7,6 +7,7 @@
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Physics/2D/Physics2D.h"
 #include "GEngine/Physics/2D/PhysicalContactListener2D.h"
+#include "GEngine/Physics/3D/Physics3D.h"
 
 
 namespace GEngine
@@ -227,6 +228,9 @@ namespace GEngine
 		m_PhysicalContactListener2D = CreateRef<PhysicalContactListener2D>(this);
 		m_PhysicsWorld2D->SetContactListener(m_PhysicalContactListener2D.get());
 
+		// 3d
+		m_PhysicsWorld3D = CreateRef<Physics3DWorld>();
+
 
 		auto view = m_Registry.view<RigidBody2D>();
 		for (auto rig : view)
@@ -292,7 +296,8 @@ namespace GEngine
 		m_PhysicsTimerWheel->Start();
 		// Add physics update
 		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [&]() {
-				m_PhysicsWorld2D->Step(Time::GetPhysicsDeltaTime());
+				m_PhysicsWorld2D->Simulate(Time::GetPhysicsDeltaTime());
+				m_PhysicsWorld3D->Simulate(Time::GetPhysicsDeltaTime());
 
 				// retrieve transform
 				auto view = m_Registry.view<RigidBody2D>();

@@ -89,15 +89,6 @@ namespace GEngine
 	{
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
-
-	void Renderer::BeginScene(const OrthoGraphicCamera& camera)
-	{
-		SetCameraUniforms(camera.GetView(), camera.GetProjection(), camera.GetPosition());
-		SetTimeUniforms();
-		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
-
-		Renderer2D::BeginScene();
-	}
 	void Renderer::BeginScene(const Editor::EditorCamera& camera)
 	{
 		SetCameraUniforms(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());

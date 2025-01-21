@@ -31,7 +31,7 @@ namespace GEngine
 		Physics2DWorld(Vector2 gravity, Scene* scene);
 
 		Physics2DBody* CreateBody(const Physics2DBodyDef* bodyDef);
-		void Step(float timeStep);
+		void Simulate(float timeStep);
 		void SetContactListener(PhysicalContactListener2D* listener);
 
 		~Physics2DWorld();

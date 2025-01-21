@@ -2,7 +2,6 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Object/GameObject.h"
-#include "OrthoGraphicCamera.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Components/Component.h"
 

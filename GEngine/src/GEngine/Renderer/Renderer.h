@@ -4,7 +4,6 @@
 #include "RenderCommand.h"
 #include "Shader.h"
 #include "GEngine/Components/Components.h"
-#include "GEngine/Components/Camera/OrthoGraphicCamera.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/UniformBuffer.h"
@@ -20,7 +19,6 @@ namespace GEngine
 		static void Shutdown();
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		static void BeginScene(const OrthoGraphicCamera& camera);
 		static void BeginScene(const Editor::EditorCamera& camera);
 		static void BeginScene(Camera& camera);
 		static void EndScene();

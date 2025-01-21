@@ -10,6 +10,7 @@
 
 
 
+
 namespace GEngine
 {
 	class PhysicsAllocatorCallBack3D;
@@ -19,15 +20,20 @@ namespace GEngine
 	class GENGINE_API Physics3D
 	{
 	public:
-		void Init(std::filesystem::path pvdFilePath, bool recordMemoryAllocations = true);
-		void Shutdown();
+		static void Init();
+		static void Shutdown();
+
 	public:
 		static PhysicsAllocatorCallBack3D s_AllocatorCallback;
 		static PhysicsErrorCallback3D s_ErrorCallback;
 
 	private:
-		physx::PxFoundation* m_Foundation = nullptr;
-		physx::PxPhysics* m_Physics = nullptr;
+		static physx::PxFoundation* s_Foundation;
+		static physx::PxPhysics* s_Physics;
+		static physx::PxDefaultCpuDispatcher* s_Dispatcher;
+
+		friend class Physics3DWorld;
+
 	};
 
 	class GENGINE_API PhysicsAllocatorCallBack3D : public physx::PxAllocatorCallback
@@ -149,6 +155,19 @@ namespace GEngine
 		inline void operator=(const Physics3DPlane& other);
 	private:
 		physx::PxPlaneGeometry m_Plane;
+	};
+
+	class GENGINE_API Physics3DBody;
+
+
+	class GENGINE_API Physics3DWorld
+	{
+	public:
+		Physics3DWorld(Vector3 gravity = { 0.0f, -9.81f, 0.0f }); 
+
+		void Simulate(float timeStep);
+	private:
+		physx::PxScene* m_Scene;
 	};
 }
 

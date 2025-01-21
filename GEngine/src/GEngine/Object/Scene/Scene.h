@@ -11,6 +11,7 @@ namespace GEngine
 	class DirectionalLight;
 	class Physics2DWorld;
 	class PhysicalContactListener2D;
+	class Physics3DWorld;
 
 
 	class GENGINE_API Scene : private Object
@@ -67,6 +68,7 @@ namespace GEngine
 		Ref<Physics2DWorld> m_PhysicsWorld2D = nullptr;
 		Ref<PhysicalContactListener2D> m_PhysicalContactListener2D = nullptr;
 
+		Ref<Physics3DWorld> m_PhysicsWorld3D = nullptr;
 
 		friend class GameObject;
 		friend class Serializer;

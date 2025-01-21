@@ -65,7 +65,7 @@ namespace GEngine
 			break;
 		}
 
-		GE_CORE_ASSERT(false, "GetTextureID not work");
+		GE_CORE_ASSERT(false, "GetUV0 not work");
 		return Vector2();
 	}
 
@@ -82,7 +82,7 @@ namespace GEngine
 			break;
 		}
 
-		GE_CORE_ASSERT(false, "GetTextureID not work");
+		GE_CORE_ASSERT(false, "GetUV1 not work");
 		return Vector2();
 	}
 }

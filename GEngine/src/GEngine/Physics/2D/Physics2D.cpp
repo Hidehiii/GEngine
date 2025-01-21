@@ -32,7 +32,7 @@ namespace GEngine
 		return body;
 	}
 
-	void GEngine::Physics2DWorld::Step(float timeStep)
+	void GEngine::Physics2DWorld::Simulate(float timeStep)
 	{
 		this->m_PhysicsWorld2D->Step(timeStep, m_VelocityIterations, m_PositionIterations);
 	}

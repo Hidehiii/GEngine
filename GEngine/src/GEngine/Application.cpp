@@ -5,6 +5,7 @@
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "tools/Serialization/Serializer.h"
 #include "Utils/GUIUtils.h"
+#include "GEngine/Physics/3D/Physics3D.h"
 
 
 namespace GEngine
@@ -39,6 +40,7 @@ namespace GEngine
 
 		Renderer::Init();
 		ScriptEngine::Init();
+		Physics3D::Init();
 
 
 		m_ImGuiLayer = new ImGuiLayer();
@@ -51,6 +53,7 @@ namespace GEngine
 
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
+		Physics3D::Shutdown();
 	}
 
 	void Application::Run()
@@ -60,52 +63,42 @@ namespace GEngine
 			Time::SetRunTime(m_Window->GetTime());
 			if (m_Minimized == false)
 			{
-				{
 
-					for (auto layer : m_LayerStack) {
-						layer->OnUpdate();
-					}
+				for (auto layer : m_LayerStack) {
+					layer->OnUpdate();
 				}
 				if (m_GraphicsPresent->AquireImage())
 				{
-					{
-						for (auto layer : m_LayerStack) {
-							layer->OnRender();
-						}
-					}
-					{
-						m_ImGuiLayer->Begin();
-						{
-
-							for (auto layer : m_LayerStack) {
-								layer->OnImGuiRender();
-							}
-						}
-						m_ImGuiLayer->End();
-					}
-					{
-						m_GraphicsPresent->Begin();
-						for (auto layer : m_LayerStack) {
-							layer->OnPresent();
-						}
-						m_GraphicsPresent->End();
-					}
-				}
-				{
+					
 					for (auto layer : m_LayerStack) {
-						layer->OnLateUpdate();
+						layer->OnRender();
 					}
+					
+					m_ImGuiLayer->Begin();
+					{
+
+						for (auto layer : m_LayerStack) {
+							layer->OnImGuiRender();
+						}
+					}
+					m_ImGuiLayer->End();
+					
+					m_GraphicsPresent->Begin();
+					for (auto layer : m_LayerStack) {
+						layer->OnPresent();
+					}
+					m_GraphicsPresent->End();
+					
 				}
 				
-				{
-					for (auto layer : m_LayerStack) {
-						layer->OnEndFrame();
-					}
+				for (auto layer : m_LayerStack) {
+					layer->OnLateUpdate();
 				}
-
+				
+				for (auto layer : m_LayerStack) {
+					layer->OnEndFrame();
+				}
 			}
-			
-
 			m_Window->OnUpdate();
 			Renderer::MoveToNextFrame();
 		}
