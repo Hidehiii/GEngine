@@ -11,9 +11,9 @@ namespace GEngine
 		{
 			switch (type)
 			{
-			case RigidBody2D::RigidBodyType::Static: return b2_staticBody;
-			case RigidBody2D::RigidBodyType::Dynamic: return b2_dynamicBody;
-			case RigidBody2D::RigidBodyType::Kinematic: return b2_kinematicBody;
+			case RigidBody2D::RigidBodyType::Static:		return b2_staticBody;
+			case RigidBody2D::RigidBodyType::Dynamic:		return b2_dynamicBody;
+			case RigidBody2D::RigidBodyType::Kinematic:		return b2_kinematicBody;
 			}
 			GE_CORE_ASSERT(false, "Unknown RigidBodyType!");
 			return b2_staticBody;

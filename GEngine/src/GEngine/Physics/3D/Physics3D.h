@@ -2,7 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
-
+#include "GEngine/Components/Components.h"
 #include <filesystem>
 
 #include <PhysX/include/PxPhysicsAPI.h>
@@ -33,7 +33,7 @@ namespace GEngine
 		static physx::PxDefaultCpuDispatcher* s_Dispatcher;
 
 		friend class Physics3DWorld;
-
+		friend class Physics3DBody;
 	};
 
 	class GENGINE_API PhysicsAllocatorCallBack3D : public physx::PxAllocatorCallback
@@ -157,7 +157,17 @@ namespace GEngine
 		physx::PxPlaneGeometry m_Plane;
 	};
 
-	class GENGINE_API Physics3DBody;
+	class GENGINE_API Physics3DBody
+	{
+	public:
+		Physics3DBody(RigidBody::RigidBodyType type);
+
+		void SetType(RigidBody::RigidBodyType type);
+	private:
+		physx::PxRigidDynamic*	m_BodyDynamic = nullptr;
+		physx::PxRigidStatic*	m_BodyStatic = nullptr;
+		RigidBody::RigidBodyType m_Type;
+	};
 
 
 	class GENGINE_API Physics3DWorld

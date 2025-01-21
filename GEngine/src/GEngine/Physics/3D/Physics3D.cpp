@@ -116,6 +116,42 @@ namespace GEngine
 	{
 		this->m_Plane = other.m_Plane;
 	}
+	Physics3DBody::Physics3DBody(RigidBody::RigidBodyType type)
+	{
+		m_Type = type;
+		switch (type)
+		{
+		case RigidBody::RigidBodyType::Static:
+			m_BodyStatic = Physics3D::s_Physics->createRigidStatic({ 0, 0, 0 });
+			break;
+		case RigidBody::RigidBodyType::Dynamic:
+			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
+			break;
+		case RigidBody::RigidBodyType::Kinematic:
+			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
+			break;
+		default:
+			break;
+		}
+	}
+	void Physics3DBody::SetType(RigidBody::RigidBodyType type)
+	{
+		m_Type = type;
+		switch (type)
+		{
+		case RigidBody::RigidBodyType::Static:
+			m_BodyStatic = Physics3D::s_Physics->createRigidStatic({ 0, 0, 0 });
+			break;
+		case RigidBody::RigidBodyType::Dynamic:
+			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
+			break;
+		case RigidBody::RigidBodyType::Kinematic:
+			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
+			break;
+		default:
+			break;
+		}
+	}
 	Physics3DWorld::Physics3DWorld(Vector3 gravity)
 	{
 		physx::PxSceneDesc	desc(Physics3D::s_Physics->getTolerancesScale());
