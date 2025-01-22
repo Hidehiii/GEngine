@@ -80,11 +80,11 @@ namespace GEngine
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;
         submitInfo.pCommandBuffers      = &commandBuffer;
-        submitInfo.waitSemaphoreCount   = 1;
-        submitInfo.pWaitSemaphores      = waitSemaphores;
-        submitInfo.pWaitDstStageMask    = waitStages;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores    = signalSemaphores;
+		submitInfo.waitSemaphoreCount   = 1;
+		submitInfo.pWaitSemaphores      = waitSemaphores;
+		submitInfo.pWaitDstStageMask    = waitStages;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores    = signalSemaphores;
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }

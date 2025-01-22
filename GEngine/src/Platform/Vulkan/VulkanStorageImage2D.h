@@ -13,7 +13,7 @@ namespace GEngine
 		virtual void Bind(const uint32_t slot = 0) override;
 
 		const VkImageView					GetImageView() { return m_ImageView; }
-		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
+		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		void SetImageLayout(VkImageLayout newLayout);
 	private:

@@ -13,7 +13,7 @@ namespace GEngine
 		virtual void Bind(uint32_t slot) override;
 
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
-		VkDescriptorBufferInfo GetDescriptorBufferInfo() { return m_BufferInfo; }
+		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
 	private:
 		VkBuffer		m_StorageBuffer;
 		VkDeviceMemory	m_StorageBufferMemory;

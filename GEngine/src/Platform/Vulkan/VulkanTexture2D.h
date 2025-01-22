@@ -25,7 +25,7 @@ namespace GEngine
 		const VkImage						GetImage() { return m_Image; }
 		const VkSampler						GetSampler() { return m_Sampler; }
 		const VkImageView					GetImageView() { return m_ImageView; }
-		const VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_ImageInfo; }
+		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		const VkImageAspectFlags			GetAspectFlag() { return m_AspectFlag; }
 		void SetImageLayout(VkImageLayout newLayout);

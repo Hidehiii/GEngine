@@ -251,122 +251,102 @@ namespace GEngine
 	}
 	void VulkanPipeline::UpdateDescriptorSet()
 	{
-		// 更新公共uniform buffer
+		std::vector<VkWriteDescriptorSet>		writeInfos;
+		VkWriteDescriptorSet					descriptorWrite{};
+		// 公共uniform buffer
 		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
 		for (auto buffer : publicUniformBuffer)
 		{
-			VkDescriptorBufferInfo			bufferInfo = buffer->GetDescriptorBufferInfo();
-
-			VkWriteDescriptorSet			descriptorWrite{};
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet			= m_DescriptorSet;
 			descriptorWrite.dstBinding		= buffer->GetBinding();
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptorWrite.descriptorCount = 1;
-			descriptorWrite.pBufferInfo		= &bufferInfo;
+			descriptorWrite.pBufferInfo		= buffer->GetDescriptorBufferInfo();
 			descriptorWrite.pImageInfo		= nullptr; // Optional
 			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			writeInfos.push_back(descriptorWrite);
 		}
-		// 更新材质的uniform buffer
-		{
-			VkDescriptorBufferInfo			bufferInfo = m_Material->GetUniformBuffer()->GetDescriptorBufferInfo();
+		// 材质的uniform buffer
+		descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet			= m_DescriptorSet;
+		descriptorWrite.dstBinding		= m_Material->GetUniformBuffer()->GetBinding();
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.pBufferInfo		= m_Material->GetUniformBuffer()->GetDescriptorBufferInfo();
+		descriptorWrite.pImageInfo		= nullptr; // Optional
+		descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			VkWriteDescriptorSet			descriptorWrite{};
+		writeInfos.push_back(descriptorWrite);
+		// 贴图绑定
+		auto texture2Ds					= m_Material->GetTexture2Ds();
+		for (auto& texture2D : texture2Ds)
+		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet			= m_DescriptorSet;
-			descriptorWrite.dstBinding		= m_Material->GetUniformBuffer()->GetBinding();
+			descriptorWrite.dstBinding		= texture2D.Slot;
 			descriptorWrite.dstArrayElement = 0;
-			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptorWrite.descriptorCount = 1;
-			descriptorWrite.pBufferInfo		= &bufferInfo;
-			descriptorWrite.pImageInfo		= nullptr; // Optional
+			descriptorWrite.pBufferInfo		= nullptr;
+			descriptorWrite.pImageInfo		= std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorImageInfo();
 			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-			vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
+			writeInfos.push_back(descriptorWrite);
 		}
-		// 更新贴图绑定
+		// cubeMap绑定
+		auto cubeMaps						= m_Material->GetCubeMaps();
+		for (auto& cubeMap : cubeMaps)
 		{
-			auto texture2Ds					= m_Material->GetTexture2Ds();
-			for (auto& texture2D : texture2Ds)
-			{
-				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanTexture2D>(texture2D.Texture)->GetDescriptorImageInfo();
-				VkWriteDescriptorSet			descriptorWrite{};
-				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrite.dstSet			= m_DescriptorSet;
-				descriptorWrite.dstBinding		= texture2D.Slot;
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.pBufferInfo		= nullptr;
-				descriptorWrite.pImageInfo		= &imageInfo; 
-				descriptorWrite.pTexelBufferView = nullptr; // Optional
+			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstBinding		= cubeMap.Slot;
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo		= nullptr;
+			descriptorWrite.pImageInfo		= std::dynamic_pointer_cast<VulkanCubeMap>(cubeMap.Cubemap)->GetDescriptorImageInfo();
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
-			}
+			writeInfos.push_back(descriptorWrite);
 		}
-		// 更新cubeMap绑定
+		// storage image绑定
+		auto storageImage2Ds = m_Material->GetStorageImage2Ds();
+		for (auto& image2D : storageImage2Ds)
 		{
-			auto cubeMaps						= m_Material->GetCubeMaps();
-			for (auto& cubeMap : cubeMaps)
-			{
-				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanCubeMap>(cubeMap.Cubemap)->GetDescriptorImageInfo();
-				VkWriteDescriptorSet			descriptorWrite{};
-				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrite.dstSet			= m_DescriptorSet;
-				descriptorWrite.dstBinding		= cubeMap.Slot;
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.pBufferInfo		= nullptr;
-				descriptorWrite.pImageInfo		= &imageInfo;
-				descriptorWrite.pTexelBufferView = nullptr; // Optional
+			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstBinding		= image2D.Slot;
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo		= nullptr;
+			descriptorWrite.pImageInfo		= std::dynamic_pointer_cast<VulkanStorageImage2D>(image2D.Image)->GetDescriptorImageInfo();
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
-			}
+			writeInfos.push_back(descriptorWrite);
 		}
-		// 更新storage image绑定
+		// storage buffer绑定
+		auto storageBuffers = m_Material->GetStorageBuffers();
+		for (auto& buffer : storageBuffers)
 		{
-			auto storageImage2Ds = m_Material->GetStorageImage2Ds();
-			for (auto& image2D : storageImage2Ds)
-			{
-				VkDescriptorImageInfo			imageInfo = std::dynamic_pointer_cast<VulkanStorageImage2D>(image2D.Image)->GetDescriptorImageInfo();
-				VkWriteDescriptorSet			descriptorWrite{};
-				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrite.dstSet			= m_DescriptorSet;
-				descriptorWrite.dstBinding		= image2D.Slot;
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.pBufferInfo		= nullptr;
-				descriptorWrite.pImageInfo		= &imageInfo;
-				descriptorWrite.pTexelBufferView = nullptr; // Optional
+			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstBinding		= buffer.Slot;
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo		= std::dynamic_pointer_cast<VulkanStorageBuffer>(buffer.Buffer)->GetDescriptorBufferInfo();
+			descriptorWrite.pImageInfo		= nullptr;
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
-			}
+			writeInfos.push_back(descriptorWrite);
 		}
-		// 更新storage buffer绑定
-		{
-			auto storageBuffers = m_Material->GetStorageBuffers();
-			for (auto& buffer : storageBuffers)
-			{
-				VkDescriptorBufferInfo			bufferInfo = std::dynamic_pointer_cast<VulkanStorageBuffer>(buffer.Buffer)->GetDescriptorBufferInfo();
-				VkWriteDescriptorSet			descriptorWrite{};
-				descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrite.dstSet			= m_DescriptorSet;
-				descriptorWrite.dstBinding		= buffer.Slot;
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.pBufferInfo		= &bufferInfo;
-				descriptorWrite.pImageInfo		= nullptr;
-				descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-				vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), 1, &descriptorWrite, 0, nullptr);
-			}
-		}
+		vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), writeInfos.size(), writeInfos.data(), 0, nullptr);
 	}
     void VulkanPipeline::CreatePipeline()
     {
