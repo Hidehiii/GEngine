@@ -224,20 +224,29 @@ namespace GEngine
 	void VulkanFrameBuffer::End()
 	{
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
+
+		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
+		{
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		if (m_DepthAttachmentTexture2D)
+		{
+			m_DepthAttachmentTexture2D->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+
+
 		s_CurrentVulkanFrameBuffer = nullptr;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetColorAttachment(int index)
 	{
 		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
 		Ref<VulkanTexture2D> texture = m_ColorAttachmentsTexture2D.at(index);
-		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencilAttachment()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
 		Ref<VulkanTexture2D> texture = m_DepthAttachmentTexture2D;
-		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
 	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const FrameBufferSpecificationForVulkan spec)
