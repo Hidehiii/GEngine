@@ -255,6 +255,7 @@ void Sandbox2D::OnRender()
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
+	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
 
 	RenderCommand::BeginDrawCommand();
 	m_OIT_Present->Begin();

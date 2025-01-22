@@ -4,9 +4,9 @@
 #DepthTest LEqual
 #Blend Add SrcAlpha OneMinusSrcAlpha
 #Properties
-
 StorageImage2D headIndexImage;
 StorageBuffer LinkedListSBO;
+sampler2D OpaqueColor;
 #EndProperties
 #Type vertex
 #version 450 core
@@ -36,7 +36,6 @@ void main()
 #version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
-
 layout (binding = GE_BINDING_START + 0, r32ui) uniform uimage2D headIndexImage;
 struct Node
 {
@@ -48,6 +47,7 @@ layout (binding = GE_BINDING_START + 1) buffer LinkedListSBO
 {
 	Node nodes[];	
 };
+layout (binding = GE_BINDING_START + 2) uniform sampler2D OpaqueColor;
 struct VertexOutput
 {
 	vec4 position;
@@ -83,15 +83,11 @@ void main()
     }
 
     // 混合处理
-    vec4 color = vec4(0.0, 0.0, 0.0, 0.0);  //底图
     vec2 newUV = TransformUV(IN.uv);
+    vec4 color = texture(OpaqueColor, newUV);  //底图
     for (int i = 0; i < count; ++i)
     {
         color = mix(color, fragments[i].color, fragments[i].color.a);
-    }
-    if(color.a <= 0.0001f)
-    {
-        discard;
     }
     o_color = color;
     imageAtomicExchange(headIndexImage, ivec2(gl_FragCoord.xy), -1);
