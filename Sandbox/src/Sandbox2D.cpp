@@ -240,6 +240,7 @@ void Sandbox2D::OnRender()
 	m_SkyBoxFB->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
+	m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
 	RenderCommand::EndDrawCommand();
@@ -248,7 +249,7 @@ void Sandbox2D::OnRender()
 	RenderCommand::BeginDrawCommand();
 	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
-	m_OITPrepare->Render();
+	//m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_DepthOnly->End();
 	RenderCommand::EndDrawCommand();

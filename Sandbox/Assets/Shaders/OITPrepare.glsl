@@ -35,7 +35,6 @@ void main()
 
 #Type fragment
 #version 450 core
-layout(location = 0) out vec4 o_color;
 layout(std140, binding = 2) uniform TIME
 {
 	vec4 GE_TIME;
@@ -76,5 +75,4 @@ void main()
         nodes[nodeIdx].depth = gl_FragCoord.z;
         nodes[nodeIdx].next = prevHeadIdx;
     }
-    o_color = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 }
