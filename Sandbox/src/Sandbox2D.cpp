@@ -27,10 +27,9 @@ void Sandbox2D::OnAttach()
 	fspec.Width = 720;
 	fspec.Height = 720;
 	fspec.Samples = 4;
-	m_OIT_1 = FrameBuffer::Create(fspec);
+	m_OIT_Present = FrameBuffer::Create(fspec);
 	fspec.Samples = 8;
 	m_SkyBoxFB = FrameBuffer::Create(fspec);
-	m_ComputeFB = FrameBuffer::Create(fspec);
 	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };
 	m_DepthOnly = FrameBuffer::Create(fspec);
 
@@ -85,6 +84,14 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"}
 		});
 
+	m_CopyColorDepth = Pipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/CopyColorDepth.glsl")),
+		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
+	);
+	m_CopyColorDepth->GetVertexBuffer()->SetLayout({
+		{ShaderDataType::float4,	"PositionOS"},
+		{ShaderDataType::float2,	"UV"}
+		});
 
 	m_PresentPipeline = Pipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
@@ -104,6 +111,7 @@ void Sandbox2D::OnAttach()
 	presentIndices[5] = 0;
 	m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	m_OIT->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+	m_CopyColorDepth->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	delete[] presentIndices;
 
 	m_PresentVertex[0] = { {-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 0.0f} };
@@ -169,7 +177,7 @@ void Sandbox2D::OnAttach()
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
 
 	m_OITPrepare->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
-
+	m_CopyColorDepth->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 	m_OIT->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 
@@ -214,7 +222,7 @@ void Sandbox2D::OnPresent()
 	// 直接呈现
 	Renderer::BeginScene(m_EditorCamera);
 	
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_1->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 	m_PresentPipeline->Render();
 
@@ -245,14 +253,16 @@ void Sandbox2D::OnRender()
 	m_DepthOnly->End();
 	RenderCommand::EndDrawCommand();
 
-	m_OIT->GetMaterial()->SetTexture2D("BaseColor", m_SkyBoxFB->GetColorAttachment(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
 
 	RenderCommand::BeginDrawCommand();
-	m_OIT_1->Begin();
+	m_OIT_Present->Begin();
 	Renderer::BeginScene(m_EditorCamera);
+	m_CopyColorDepth->Render();
 	m_OIT->Render();
 	Renderer::EndScene();
-	m_OIT_1->End();
+	m_OIT_Present->End();
 	RenderCommand::EndDrawCommand();
 }
 
@@ -275,10 +285,10 @@ void Sandbox2D::OnUpdate()
 
 	m_EditorCamera.OnUpdate(); 
 
-	if (m_OIT_1->GetHeight() != Application::Get().GetWindow().GetHeight() ||
-		m_OIT_1->GetWidth() != Application::Get().GetWindow().GetWidth())
+	if (m_OIT_Present->GetHeight() != Application::Get().GetWindow().GetHeight() ||
+		m_OIT_Present->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_OIT_1 = FrameBuffer::Recreate(m_OIT_1, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_OIT_Present = FrameBuffer::Recreate(m_OIT_Present, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 	if (m_DepthOnly->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_DepthOnly->GetWidth() != Application::Get().GetWindow().GetWidth())
@@ -303,7 +313,7 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthAttachment()), {100, 100});
+	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthStencilAttachment()), {100, 100});
 	//ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer_0->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }

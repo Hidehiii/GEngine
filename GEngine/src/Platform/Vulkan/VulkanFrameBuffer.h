@@ -34,7 +34,7 @@ namespace GEngine
 		virtual void End() override;
 		virtual int GetAttachmentCount() override { return m_Attachments.size(); }
 		virtual Ref<Texture2D> GetColorAttachment(int index) override;
-		virtual Ref<Texture2D> GetDepthAttachment() override;
+		virtual Ref<Texture2D> GetDepthStencilAttachment() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		VkFramebuffer GetFrameBuffer() { return m_FrameBuffer; }
 	public:

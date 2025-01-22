@@ -237,7 +237,7 @@ namespace GEngine
 		texture->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return texture;
 	}
-	Ref<Texture2D> VulkanFrameBuffer::GetDepthAttachment()
+	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencilAttachment()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
 		Ref<VulkanTexture2D> texture = m_DepthAttachmentTexture2D;

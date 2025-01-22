@@ -61,14 +61,14 @@ private:
 
 	Ref<Pipeline> m_OITPrepare;
 	Ref<Pipeline> m_OIT;
+	Ref<Pipeline> m_CopyColorDepth;
 
 	Ref<ComputePipeline> m_ComputeTest;
 	Ref<Pipeline> m_ComputeShow;
 
-	Ref<FrameBuffer> m_OIT_1;
+	Ref<FrameBuffer> m_OIT_Present;
 	Ref<FrameBuffer> m_DepthOnly;
 	Ref<FrameBuffer> m_SkyBoxFB;
-	Ref<FrameBuffer> m_ComputeFB;
 
 	std::vector<TestVertex> m_vertex;
 

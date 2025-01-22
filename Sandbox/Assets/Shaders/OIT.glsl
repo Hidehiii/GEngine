@@ -2,12 +2,11 @@
 #Name OIT
 #DepthWrite Off
 #DepthTest LEqual
-#Blend None
+#Blend Add SrcAlpha OneMinusSrcAlpha
 #Properties
 
 StorageImage2D headIndexImage;
 StorageBuffer LinkedListSBO;
-Sampler2D BaseColor;
 #EndProperties
 #Type vertex
 #version 450 core
@@ -49,7 +48,6 @@ layout (binding = GE_BINDING_START + 1) buffer LinkedListSBO
 {
 	Node nodes[];	
 };
-layout (binding = GE_BINDING_START + 2) uniform sampler2D BaseColor;
 struct VertexOutput
 {
 	vec4 position;
@@ -87,7 +85,6 @@ void main()
     // 混合处理
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);  //底图
     vec2 newUV = TransformUV(IN.uv);
-    color = texture(BaseColor, newUV);
     for (int i = 0; i < count; ++i)
     {
         color = mix(color, fragments[i].color, fragments[i].color.a);
