@@ -188,6 +188,15 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 
+		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
+		{
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		}
+		if (m_DepthAttachmentTexture2D)
+		{
+			m_DepthAttachmentTexture2D->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}
+
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
@@ -209,18 +218,7 @@ namespace GEngine
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkCommandBuffer cmdBuffer = VulkanContext::Get()->BeginSingleTimeCommands();
-
-		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
-		{
-			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(cmdBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		}
-		if (m_DepthAttachmentTexture2D)
-		{
-			m_DepthAttachmentTexture2D->SetImageLayout(cmdBuffer, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		}
-
-		VulkanContext::Get()->EndSingleTimeCommands(cmdBuffer);
+		
 
 		s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
 		s_CurrentVulkanFrameBuffer = this;
