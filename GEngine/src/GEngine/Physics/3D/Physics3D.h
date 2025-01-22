@@ -52,7 +52,11 @@ namespace GEngine
 
 		virtual void deallocate(void* ptr) override
 		{
+#ifdef GE_PLATFORM_WINDOWS
+			_aligned_free(ptr);
+#else
 			free(ptr);
+#endif
 		}
 	};
 

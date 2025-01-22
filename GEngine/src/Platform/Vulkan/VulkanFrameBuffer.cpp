@@ -218,8 +218,6 @@ namespace GEngine
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		
-
 		s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
 		s_CurrentVulkanFrameBuffer = this;
 	}

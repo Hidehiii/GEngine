@@ -41,7 +41,7 @@ namespace GEngine
 
 	void VulkanStorageImage2D::Bind(const uint32_t slot)
 	{
-		SetImageLayout(VK_IMAGE_LAYOUT_GENERAL);
+		SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_GENERAL);
 		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		m_ImageInfo.imageView	= m_ImageView;
 	}
@@ -49,6 +49,12 @@ namespace GEngine
 	void VulkanStorageImage2D::SetImageLayout(VkImageLayout newLayout)
 	{
 		Utils::TransitionImageLayout(m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, 1);
+		m_ImageLayout = newLayout;
+	}
+
+	void VulkanStorageImage2D::SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout)
+	{
+		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, 1);
 		m_ImageLayout = newLayout;
 	}
 
