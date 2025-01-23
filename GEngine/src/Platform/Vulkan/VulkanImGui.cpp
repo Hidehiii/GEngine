@@ -7,6 +7,7 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Renderer/Renderer.h"
 
 namespace GEngine {
 	VkRenderPass				s_RenderPass;
@@ -94,7 +95,7 @@ namespace GEngine {
 		info.QueueFamily				= VulkanContext::Get()->GetQueueFamily().GraphicsFamily.value();
 		info.Queue						= VulkanContext::Get()->GetGraphicsQueue();
 		info.PipelineCache				= nullptr;
-		info.MinImageCount				= 2;
+		info.MinImageCount				= Renderer::GetFramesInFlight();
 		info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
 		info.DescriptorPool				= descriptorPool;
 		info.Subpass					= 0;
