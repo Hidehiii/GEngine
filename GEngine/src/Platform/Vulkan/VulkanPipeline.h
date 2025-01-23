@@ -23,14 +23,15 @@ namespace GEngine
 	private:
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
 		void CreateDescriptorSetAndLayout();
-		void UpdateDescriptorSet();
+		void UpdateDescriptorSet(int index);
+		void UpdateAllDescriptorSet();
 		void CreatePipeline();
 	private:
-		Ref<VulkanMaterial>			m_Material;
-		Ref<VulkanVertexBuffer>		m_VertexBuffer;
+		Ref<VulkanMaterial>									m_Material;
+		Ref<VulkanVertexBuffer>								m_VertexBuffer;
 
-		VkDescriptorSetLayout		m_DescriptorSetLayout;
-		VkDescriptorSet				m_DescriptorSet;
+		VkDescriptorSetLayout								m_DescriptorSetLayout;
+		std::vector<VkDescriptorSet>						m_DescriptorSets;
 
 		std::vector<VkDynamicState> m_DynamicStates = {
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -50,7 +51,7 @@ namespace GEngine
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_GraphicsPipeline = nullptr;
 		bool												m_RecreatePipeline = false;
-		bool												m_UpdateDescriptorSet = true;
+		uint8_t												m_NeedUpdateDescripotrSetFrameCount = 0;
 		VkPipelineCache										m_PipelineCache;
 	};
 }

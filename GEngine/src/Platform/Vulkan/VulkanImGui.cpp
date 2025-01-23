@@ -132,8 +132,9 @@ namespace GEngine {
 
 	void VulkanImGui::End()
 	{
-		s_ImGuiImage->SetImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		RenderCommand::BeginDrawCommand();
+		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= s_RenderPass;
@@ -148,19 +149,15 @@ namespace GEngine {
 		renderPassInfo.clearValueCount			= 1;
 		renderPassInfo.pClearValues				= &clearColor;
 		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		
-
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
 
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
-
+		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		RenderCommand::EndDrawCommand();
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
 	{
-		s_ImGuiImage->SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return s_ImGuiImage;
 	}
 
