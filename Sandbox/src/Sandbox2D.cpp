@@ -211,6 +211,7 @@ void Sandbox2D::OnAttach()
 	m_ComputeTest = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/ComputeTest.glsl")));
 	m_ComputeTest->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
 	m_ComputeTest->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
+
 }
 
 void Sandbox2D::OnDetach()

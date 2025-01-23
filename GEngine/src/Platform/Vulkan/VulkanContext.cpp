@@ -514,7 +514,7 @@ namespace GEngine
         VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
         VkExtent2D                  extent                  = ChooseSwapExtent(swapChainSupportDetails.Capabilities, width, height);
 
-        uint32_t                    imageCount              = swapChainSupportDetails.Capabilities.minImageCount + 1;
+        uint32_t                    imageCount              = std::max(swapChainSupportDetails.Capabilities.minImageCount + 1, (unsigned int) Renderer::GetFramesInFlight());
         if (swapChainSupportDetails.Capabilities.maxImageCount > 0 &&
             imageCount > swapChainSupportDetails.Capabilities.maxImageCount)
         {

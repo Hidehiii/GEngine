@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/VulkanDescriptor.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Math/Math.h"
+#include "GEngine/Renderer/Renderer.h"
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -135,11 +136,10 @@ namespace GEngine
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
-		int									m_SyncObjectSizePerFrame = 20;
+		int									m_SyncObjectSizePerFrame = 40;
 		std::vector<VkSemaphore>			m_Semaphores;
 		std::vector<int>                    m_SemaphoreIndexs;
 		std::vector<VkFence>				m_Fences;
-		int                                 m_FenceIndex = 0;
 		VulkanFunctionEXT					m_Function;
 		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
 		int									m_UsedSecondaryCommandBufferIndex = 0;

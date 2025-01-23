@@ -4,13 +4,13 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Renderer/Renderer.h"
 
 namespace GEngine
 {
 	bool VulkanGraphicsPresent::AquireImage()
 	{
-		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence(), VK_TRUE, std::numeric_limits<uint64_t>::max());
-
+		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence(), VK_TRUE, std::numeric_limits<uint64_t>::max()));
 		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
 			VulkanContext::Get()->GetSwapChain(),
 			std::numeric_limits<uint64_t>::max(),

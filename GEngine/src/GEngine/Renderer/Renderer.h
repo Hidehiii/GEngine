@@ -28,7 +28,6 @@ namespace GEngine
 		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
 		static uint8_t GetFramesInFlight() { return s_FramesInFlight; }
 		static uint8_t GetCurrentFrame() { return s_CurrentFrame; }
-		static void MoveToNextFrame() { s_CurrentFrame = (s_CurrentFrame + 1) % s_FramesInFlight; }
 		static void SetModelUniforms(Transform& transform);
 		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
 		static void SetScreenUniform(Vector4& size);
@@ -39,10 +38,12 @@ namespace GEngine
 	private:
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
+		static void MoveToNextFrame() { s_CurrentFrame = (s_CurrentFrame + 1) % s_FramesInFlight; }
 		static Camera s_RenderTargetCamera;
 		static Vector3 s_RenderTargetCameraPosition;
 		static uint8_t s_FramesInFlight;
 		static uint8_t s_CurrentFrame;
+		friend class Application;
 	};
 }
 
