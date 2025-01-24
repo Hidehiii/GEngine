@@ -585,21 +585,19 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
-        for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
-        {
-            m_UsedGraphicsCommandBufferIndexs.push_back(0);
-            m_UsedComputeCommandBufferIndexs.push_back(0);
-        }
+        m_CommandBuffer                     = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
+        m_UsedGraphicsCommandBufferIndexs   = std::vector<int>(Renderer::GetFramesInFlight(), 0);
+        m_UsedComputeCommandBufferIndexs    = std::vector<int>(Renderer::GetFramesInFlight(), 0);
     }
 
     void VulkanContext::BeginGraphicsCommandBuffer()
     {
         m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
-        m_CurrentCmdBufferType = CommandBufferType::Graphics;
+        m_CurrentCmdBufferType  = CommandBufferType::Graphics;
     }
     VkCommandBuffer VulkanContext::EndGraphicsCommandBuffer()
     {
+        GE_CORE_ASSERT(m_CurrentCmdBufferType == CommandBufferType::Graphics, "can not call graphics cmd buffer end in other using cmd buffer type!");
         VkCommandBuffer     buffer = m_CommandBuffer.GetGraphicsCommandBuffer(m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return buffer;
     }
@@ -610,6 +608,7 @@ namespace GEngine
 	}
 	VkCommandBuffer VulkanContext::EndComputeCommandBuffer()
 	{
+        GE_CORE_ASSERT(m_CurrentCmdBufferType == CommandBufferType::Compute, "can not call compute cmd buffer end in other using cmd buffer type!");
 		VkCommandBuffer     buffer = m_CommandBuffer.GetComputeCommandBuffer(m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
 		return buffer;
 	}
