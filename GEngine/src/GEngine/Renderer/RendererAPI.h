@@ -41,8 +41,8 @@ namespace GEngine
 
 		virtual float GetTime() = 0;
 
-		virtual void BeginDrawCommand() = 0;
-		virtual void EndDrawCommand() = 0;
+		virtual void BeginGraphicsCommand() = 0;
+		virtual void EndGraphicsCommand() = 0;
 		virtual void BeginSecondaryCommand() = 0;
 		virtual void EndSecondaryCommand() = 0;
 

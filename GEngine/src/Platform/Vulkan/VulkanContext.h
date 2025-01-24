@@ -44,8 +44,10 @@ namespace GEngine
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
 		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
 		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
-		void						BeginCommandBuffer();
-		VkCommandBuffer				EndCommandBuffer();
+		void						BeginGraphicsCommandBuffer();
+		VkCommandBuffer				EndGraphicsCommandBuffer();
+		void						BeginComputeCommandBuffer();
+		VkCommandBuffer				EndComputeCommandBuffer();
 		VkCommandBuffer				GetCurrentCommandBuffer();
 		void						BeginSecondaryCommandBuffer();
 		VkCommandBuffer				EndSecondaryCommandBuffer();
@@ -54,12 +56,12 @@ namespace GEngine
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
 		VkDescriptorPool			GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
-		VkCommandBuffer				BeginSingleTimeCommands();
-		void						EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		VkCommandBuffer				BeginSingleTimeGraphicsCommands();
+		void						EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer);
 		QueueFamilyIndices			GetQueueFamily() { return m_QueueFamily; }
 		VkQueue						GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue						GetPresentQueue() { return m_PresentQueue; }
-
+		VkQueue						GetComputeQueue() { return m_ComputeQueue; }
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
 		VkFence&					GetCurrentFence();
@@ -92,6 +94,12 @@ namespace GEngine
 		void						CleanUpSwapChain();
 		void						LoadFunctionEXT(std::vector<const char*> ext);
 	private:
+		enum class CommandBufferType
+		{
+			Graphics,
+			Compute
+		};
+	private:
 		GLFWwindow*							m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;
 		std::vector<const char*>			m_Extensions;
@@ -105,6 +113,7 @@ namespace GEngine
 		VkDevice							m_Device;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
+		VkQueue								m_ComputeQueue;
 		VkSurfaceKHR						m_Surface;
 		std::vector<const char*>			m_DeviceExtensions =
 		{ 
@@ -132,7 +141,9 @@ namespace GEngine
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		int									m_CommandBufferSizePerFrame = 30;
 		VulkanCommandBuffer					m_CommandBuffer;
-		std::vector<int>					m_UsedCommandBufferIndexs;
+		CommandBufferType					m_CurrentCmdBufferType = CommandBufferType::Graphics;
+		std::vector<int>					m_UsedGraphicsCommandBufferIndexs;
+		std::vector<int>					m_UsedComputeCommandBufferIndexs;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;

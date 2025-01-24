@@ -28,6 +28,10 @@ namespace GEngine
         {
             GE_CORE_INFO("Validation layer: {0}", pCallbackData->pMessage);
         }
+        else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+        {
+            GE_CORE_TRACE("Validation layer: {0}", pCallbackData->pMessage);
+        }
         return VK_FALSE;
     }
     static VkResult CreateDebugUtilsMessengerEXT(
@@ -219,11 +223,13 @@ namespace GEngine
         createInfo = {};
         createInfo.sType            = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity  = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
                                     | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
                                     | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType      = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
                                     | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT;
         createInfo.pfnUserCallback   = DebugCallback;
     }
     void VulkanContext::SetPhysicalDevice()
@@ -289,9 +295,13 @@ namespace GEngine
         int                                 i = 0;
         for (const auto& queueFamily : queueFamilies)
         {
-            if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
+            if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) /* && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) */)
             {
                 indices.GraphicsFamily = i;
+            }
+            if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
+            {
+                indices.ComputeFamily = i;
             }
             VkBool32                        presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
@@ -313,7 +323,7 @@ namespace GEngine
 
         m_QueueFamily                               = FindQueueFamilies(m_PhysicalDevice);
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+        std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value(), indices.ComputeFamily.value() };
         float                               queuePriority = 1.0f;
         for (uint32_t queueFamily : uniqueQueueFamilies)
         {
@@ -390,6 +400,7 @@ namespace GEngine
 
 		vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
+        vkGetDeviceQueue(m_Device, indices.ComputeFamily.value(), 0, &m_ComputeQueue);
     }
     void VulkanContext::CreateSurface()
     {
@@ -534,7 +545,7 @@ namespace GEngine
 		QueueFamilyIndices          indices                 = FindQueueFamilies(m_PhysicalDevice);
 		uint32_t                    queueFamilyIndices[]    = { 
                                                             indices.GraphicsFamily.value(), 
-                                                            indices.PresentFamily.value() };
+                                                            indices.PresentFamily.value()};
 
 		if (indices.GraphicsFamily != indices.PresentFamily)
         {
@@ -577,23 +588,38 @@ namespace GEngine
         m_CommandBuffer         = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
         for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
         {
-            m_UsedCommandBufferIndexs.push_back(0);
+            m_UsedGraphicsCommandBufferIndexs.push_back(0);
+            m_UsedComputeCommandBufferIndexs.push_back(0);
         }
     }
 
-    void VulkanContext::BeginCommandBuffer()
+    void VulkanContext::BeginGraphicsCommandBuffer()
     {
-        m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
+        m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
+        m_CurrentCmdBufferType = CommandBufferType::Graphics;
     }
-    VkCommandBuffer VulkanContext::EndCommandBuffer()
+    VkCommandBuffer VulkanContext::EndGraphicsCommandBuffer()
     {
-        VkCommandBuffer     buffer = m_CommandBuffer.GetCommandBuffer(m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        VkCommandBuffer     buffer = m_CommandBuffer.GetGraphicsCommandBuffer(m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return buffer;
     }
+	void VulkanContext::BeginComputeCommandBuffer()
+	{
+		m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % m_CommandBufferSizePerFrame;
+		m_CurrentCmdBufferType = CommandBufferType::Compute;
+	}
+	VkCommandBuffer VulkanContext::EndComputeCommandBuffer()
+	{
+		VkCommandBuffer     buffer = m_CommandBuffer.GetComputeCommandBuffer(m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+		return buffer;
+	}
     VkCommandBuffer VulkanContext::GetCurrentCommandBuffer()
     {
         VkCommandBuffer cmdBuffer = GetCurrentSecondaryCommandBuffer();
-        cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetCommandBuffer(m_UsedCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        if(m_CurrentCmdBufferType == CommandBufferType::Graphics)
+            cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetGraphicsCommandBuffer(m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
+        if (m_CurrentCmdBufferType == CommandBufferType::Compute)
+            cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBuffer.GetComputeCommandBuffer(m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + m_CommandBufferSizePerFrame * Renderer::GetCurrentFrame());
         return cmdBuffer;
     }
     void VulkanContext::BeginSecondaryCommandBuffer()
@@ -711,14 +737,14 @@ namespace GEngine
         CreateFrameBuffer();
     }
 
-	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
+	VkCommandBuffer VulkanContext::BeginSingleTimeGraphicsCommands()
 	{
-        return m_CommandBuffer.BeginSingleTimeCommands();
+        return m_CommandBuffer.BeginSingleTimeGraphicsCommands();
 	}
 
-	void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+	void VulkanContext::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer)
 	{
-        m_CommandBuffer.EndSingleTimeCommands(commandBuffer, m_GraphicsQueue);
+        m_CommandBuffer.EndSingleTimeGraphicsCommands(commandBuffer, m_GraphicsQueue);
 	}
 
 	void VulkanContext::CreateFrameBuffer()

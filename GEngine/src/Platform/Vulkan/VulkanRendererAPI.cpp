@@ -55,20 +55,20 @@ namespace GEngine
     void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
     }
-    void VulkanRendererAPI::BeginDrawCommand()
+    void VulkanRendererAPI::BeginGraphicsCommand()
     {
         
         VkCommandBufferBeginInfo    beginInfo{};
         beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags             = 0; // Optional
         beginInfo.pInheritanceInfo  = nullptr; // Optional
-        VulkanContext::Get()->BeginCommandBuffer();
+        VulkanContext::Get()->BeginGraphicsCommandBuffer();
         vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
         VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
     }
-    void VulkanRendererAPI::EndDrawCommand()
+    void VulkanRendererAPI::EndGraphicsCommand()
     {
-        VkCommandBuffer commandBuffer = VulkanContext::Get()->EndCommandBuffer();
+        VkCommandBuffer commandBuffer = VulkanContext::Get()->EndGraphicsCommandBuffer();
         VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
         VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore()};
@@ -164,14 +164,14 @@ namespace GEngine
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags             = 0; // Optional
 		beginInfo.pInheritanceInfo  = nullptr; // Optional
-		VulkanContext::Get()->BeginCommandBuffer();
+		VulkanContext::Get()->BeginComputeCommandBuffer();
 		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
     }
 
     void VulkanRendererAPI::EndComputeCommand()
     {
-		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndCommandBuffer();
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndComputeCommandBuffer();
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
 		VkSemaphore waitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
@@ -189,7 +189,7 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores    = signalSemaphores;
 
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
 
     void VulkanRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)

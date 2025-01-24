@@ -70,13 +70,13 @@ namespace GEngine
 	{
 		s_RendererAPI->SetDepthTest(op);
 	}
-	inline void RenderCommand::BeginDrawCommand()
+	inline void RenderCommand::BeginGraphicsCommand()
 	{
-		s_RendererAPI->BeginDrawCommand();
+		s_RendererAPI->BeginGraphicsCommand();
 	}
-	inline void RenderCommand::EndDrawCommand()
+	inline void RenderCommand::EndGraphicsCommand()
 	{
-		s_RendererAPI->EndDrawCommand();
+		s_RendererAPI->EndGraphicsCommand();
 	}
 	inline void RenderCommand::BeginSecondaryCommand()
 	{

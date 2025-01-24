@@ -26,8 +26,8 @@ namespace GEngine
 		inline static void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
 		inline static void EnableDepthWrite(bool enabled);
 		inline static void SetDepthTest(CompareOperation op);
-		inline static void BeginDrawCommand();
-		inline static void EndDrawCommand();
+		inline static void BeginGraphicsCommand();
+		inline static void EndGraphicsCommand();
 		inline static void BeginSecondaryCommand();
 		inline static void EndSecondaryCommand();
 		inline static void SetRendererAPI(RendererAPI::API api);

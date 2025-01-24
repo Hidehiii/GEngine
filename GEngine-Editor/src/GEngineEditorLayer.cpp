@@ -216,7 +216,7 @@ namespace GEngine
 	{
 		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
-		RenderCommand::BeginDrawCommand();
+		RenderCommand::BeginGraphicsCommand();
 		m_SceneViewportFrameBuffer->Begin();
 		{
 			Renderer::BeginScene(m_EditorCamera);
@@ -225,9 +225,9 @@ namespace GEngine
 			Renderer::EndScene();
 		}
 		m_SceneViewportFrameBuffer->End();
-		RenderCommand::EndDrawCommand();
+		RenderCommand::EndGraphicsCommand();
 
-		RenderCommand::BeginDrawCommand();
+		RenderCommand::BeginGraphicsCommand();
 		m_GameViewportFrameBuffer->Begin();
 		{
 			auto camera = m_ActiveScene->MainCamera();
@@ -239,7 +239,7 @@ namespace GEngine
 			}
 		}
 		m_GameViewportFrameBuffer->End();
-		RenderCommand::EndDrawCommand();
+		RenderCommand::EndGraphicsCommand();
 	}
 
 	void GEngineEditorLayer::OnImGuiRender()

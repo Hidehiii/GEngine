@@ -47,7 +47,7 @@ namespace GEngine
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags				= 0; // Optional
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
-		VulkanContext::Get()->BeginCommandBuffer();
+		VulkanContext::Get()->BeginGraphicsCommandBuffer();
 		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();
@@ -55,7 +55,7 @@ namespace GEngine
 	void VulkanGraphicsPresent::End()
 	{
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->End();
-		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndCommandBuffer();
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->EndGraphicsCommandBuffer();
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
 		VkSemaphore submitWaitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };

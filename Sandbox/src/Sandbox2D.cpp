@@ -238,36 +238,36 @@ void Sandbox2D::OnRender()
 	m_ComputeTest->Compute(1, 1, 1);
 	ComputeCommand::EndComputeCommand();
 
-	RenderCommand::BeginDrawCommand();
+	RenderCommand::BeginGraphicsCommand();
 	m_SkyBoxFB->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
 	//m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
-	RenderCommand::EndDrawCommand();
+	RenderCommand::EndGraphicsCommand();
 	
 
-	RenderCommand::BeginDrawCommand();
+	RenderCommand::BeginGraphicsCommand();
 	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_DepthOnly->End();
-	RenderCommand::EndDrawCommand();
+	RenderCommand::EndGraphicsCommand();
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
 	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
 
-	RenderCommand::BeginDrawCommand();
+	RenderCommand::BeginGraphicsCommand();
 	m_OIT_Present->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_CopyColorDepth->Render();
 	m_OIT->Render();
 	Renderer::EndScene();
 	m_OIT_Present->End();
-	RenderCommand::EndDrawCommand();
+	RenderCommand::EndGraphicsCommand();
 }
 
 void Sandbox2D::OnUpdate()

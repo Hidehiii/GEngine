@@ -7,16 +7,21 @@ namespace GEngine
 	VulkanCommandBuffer::VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count)
 	{
 		CreateCommandPool(queueFamilyIndices);
-		m_CommandBuffers.resize(count);
+		m_GraphicsCommandBuffers.resize(count);
+		m_ComputeCommandBuffers.resize(count);
 		m_SecondaryCommandBuffers.resize(count);
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool			= m_CommandPool;
+		allocInfo.commandPool			= m_GraphicsCommandPool;
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount	= count;
 
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_CommandBuffers.data()));
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_GraphicsCommandBuffers.data()));
+
+		allocInfo.commandPool			= m_ComputeCommandPool;
+
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_ComputeCommandBuffers.data()));
 
 
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_SECONDARY;
@@ -28,20 +33,25 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Release()
 	{
-		if (m_CommandPool != VK_NULL_HANDLE)
+		if (VulkanContext::Get()->GetDevice())
 		{
-			if (VulkanContext::Get()->GetDevice())
+			if (m_GraphicsCommandPool != VK_NULL_HANDLE)
 			{
-				vkDestroyCommandPool(VulkanContext::Get()->GetDevice(), m_CommandPool, nullptr);
+				vkDestroyCommandPool(VulkanContext::Get()->GetDevice(), m_GraphicsCommandPool, nullptr);
+			}
+			if (m_ComputeCommandPool != VK_NULL_HANDLE)
+			{
+				vkDestroyCommandPool(VulkanContext::Get()->GetDevice(), m_ComputeCommandPool, nullptr);
 			}
 		}
+		
 			
 	}
-	VkCommandBuffer VulkanCommandBuffer::BeginSingleTimeCommands()
+	VkCommandBuffer VulkanCommandBuffer::BeginSingleTimeGraphicsCommands()
 	{
 		VkCommandBufferAllocateInfo			allocInfo{};
 		allocInfo.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool				= m_CommandPool;
+		allocInfo.commandPool				= m_GraphicsCommandPool;
 		allocInfo.level						= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount		= 1;
 
@@ -56,7 +66,7 @@ namespace GEngine
 
 		return commandBuffer;
 	}
-	void VulkanCommandBuffer::EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue queue)
+	void VulkanCommandBuffer::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue)
 	{
 		vkEndCommandBuffer(commandBuffer);
 		// 用fence 而不是wait
@@ -74,7 +84,7 @@ namespace GEngine
 		vkQueueSubmit(queue, 1, &submitInfo, fence);
 		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 
-		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_CommandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_GraphicsCommandPool, 1, &commandBuffer);
 		vkDestroyFence(VulkanContext::Get()->GetDevice(), fence, nullptr);
 	}
 	void VulkanCommandBuffer::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
@@ -84,6 +94,10 @@ namespace GEngine
 		poolInfo.flags				= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		poolInfo.queueFamilyIndex	= queueFamilyIndices.GraphicsFamily.value();
 
-		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_CommandPool));
+		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_GraphicsCommandPool));
+
+		poolInfo.queueFamilyIndex	= queueFamilyIndices.ComputeFamily.value();
+
+		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_ComputeCommandPool));
 	}
 }

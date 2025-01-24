@@ -8,10 +8,11 @@ namespace GEngine
 	{
 		std::optional<uint32_t> GraphicsFamily;
 		std::optional<uint32_t> PresentFamily;
+		std::optional<uint32_t>	ComputeFamily;
 
 		bool IsComplete()
 		{
-			return GraphicsFamily.has_value() && PresentFamily.has_value();
+			return GraphicsFamily.has_value() && PresentFamily.has_value() && ComputeFamily.has_value();
 		}
 
 	};
@@ -24,18 +25,21 @@ namespace GEngine
 		~VulkanCommandBuffer();
 		void Release();
 
-		VkCommandBuffer GetCommandBuffer(int index = 0) { return m_CommandBuffers.at(index); }
+		VkCommandBuffer GetGraphicsCommandBuffer(int index = 0) { return m_GraphicsCommandBuffers.at(index); }
+		VkCommandBuffer GetComputeCommandBuffer(int index = 0) { return m_ComputeCommandBuffers.at(index); }
 		VkCommandBuffer GetSecondaryCommandBuffer(int index = 0) { return m_SecondaryCommandBuffers.at(index); }
-		uint32_t		GetCommandBuffersSize() { return m_CommandBuffers.size(); }
+		uint32_t		GetCommandBuffersSize() { return m_GraphicsCommandBuffers.size(); }
 		uint32_t		GetSecondaryCommandBuffersSize() { return m_SecondaryCommandBuffers.size(); }
 
-		VkCommandBuffer BeginSingleTimeCommands();
-		void			EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue queue);
+		VkCommandBuffer BeginSingleTimeGraphicsCommands();
+		void			EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue);
 	private:
 		void			CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:
-		VkCommandPool					m_CommandPool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer>	m_CommandBuffers;
+		VkCommandPool					m_GraphicsCommandPool = VK_NULL_HANDLE;
+		VkCommandPool					m_ComputeCommandPool = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer>	m_GraphicsCommandBuffers;
+		std::vector<VkCommandBuffer>	m_ComputeCommandBuffers;
 		std::vector<VkCommandBuffer>	m_SecondaryCommandBuffers;
 	};
 }

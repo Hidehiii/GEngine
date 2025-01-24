@@ -103,9 +103,9 @@ namespace GEngine {
 		info.CheckVkResultFn			= nullptr;
 		ImGui_ImplVulkan_Init(&info, s_RenderPass);
 
-		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeCommands();
+		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
 		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
-		VulkanContext::Get()->EndSingleTimeCommands(CmdBuffer);
+		VulkanContext::Get()->EndSingleTimeGraphicsCommands(CmdBuffer);
 		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
@@ -133,7 +133,7 @@ namespace GEngine {
 
 	void VulkanImGui::End()
 	{
-		RenderCommand::BeginDrawCommand();
+		RenderCommand::BeginGraphicsCommand();
 		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		
 		VkRenderPassBeginInfo					renderPassInfo{};
@@ -154,7 +154,7 @@ namespace GEngine {
 
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
 		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		RenderCommand::EndDrawCommand();
+		RenderCommand::EndGraphicsCommand();
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
