@@ -15,20 +15,21 @@ namespace GEngine
 
 	private:
 		void CreateDescriptorSetAndLayout();
-		void UpdateDescriptorSet();
+		void UpdateDescriptorSet(int index);
+		void UpdateAllDescriptorSet();
 		void CreatePipeline();
 		void PrepareCompute();
 	private:
-		Ref<VulkanMaterial>			m_Material;
+		Ref<VulkanMaterial>									m_Material;
 
-		VkDescriptorSetLayout		m_DescriptorSetLayout;
-		VkDescriptorSet				m_DescriptorSet;
+		VkDescriptorSetLayout								m_DescriptorSetLayout;
+		std::vector<VkDescriptorSet>						m_DescriptorSets;
 
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_ComputePipeline = nullptr;
 		VkPipelineCache										m_PipelineCache;
 		bool												m_RecreatePipeline = false;
-		bool												m_UpdateDescriptorSet = true;
+		uint8_t												m_NeedUpdateDescripotrSetFrameCount = 0;
 	};
 }
 

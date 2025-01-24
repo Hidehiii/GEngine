@@ -6,6 +6,7 @@
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
+#include "GEngine/Renderer/Renderer.h"
 
 namespace GEngine
 {
@@ -27,7 +28,7 @@ namespace GEngine
 			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_ComputePipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), m_DescriptorSets.size(), m_DescriptorSets.data());
 		}
 	}
 	void VulkanComputePipeline::Compute(uint32_t x, uint32_t y, uint32_t z)
@@ -37,7 +38,7 @@ namespace GEngine
 	}
 	Ref<Material> VulkanComputePipeline::GetMaterial()
 	{
-		m_UpdateDescriptorSet = true;
+		m_NeedUpdateDescripotrSetFrameCount = Renderer::GetFramesInFlight();
 		return m_Material;
 	}
 	void VulkanComputePipeline::SetMaterial(Ref<Material>& material)
@@ -117,15 +118,23 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::Get()->GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
 
 		// 只有一个set，需要兼容gl没有set的概念
+		// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
+
+		m_DescriptorSets.resize(Renderer::GetFramesInFlight());
+
+
 		VkDescriptorSetAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool		= VulkanContext::Get()->GetDescriptorPool();
 		allocInfo.descriptorSetCount	= 1;
 		allocInfo.pSetLayouts			= &m_DescriptorSetLayout;
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSet));
+		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		{
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSets[i]));
+		}
 	}
-	void VulkanComputePipeline::UpdateDescriptorSet()
+	void VulkanComputePipeline::UpdateDescriptorSet(int index)
 	{
 		std::vector<VkWriteDescriptorSet>		writeInfos;
 		VkWriteDescriptorSet					descriptorWrite{};
@@ -134,7 +143,7 @@ namespace GEngine
 		for (auto buffer : publicUniformBuffer)
 		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding		= buffer->GetBinding();
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -147,7 +156,7 @@ namespace GEngine
 		}
 		// 更新材质的uniform buffer
 		descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet			= m_DescriptorSet;
+		descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 		descriptorWrite.dstBinding		= m_Material->GetUniformBuffer()->GetBinding();
 		descriptorWrite.dstArrayElement = 0;
 		descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -162,7 +171,7 @@ namespace GEngine
 		for (auto& texture2D : texture2Ds)
 		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding		= texture2D.Slot;
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -178,7 +187,7 @@ namespace GEngine
 		for (auto& cubeMap : cubeMaps)
 		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding		= cubeMap.Slot;
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -194,7 +203,7 @@ namespace GEngine
 		for (auto& image2D : storageImage2Ds)
 		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding		= image2D.Slot;
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -210,7 +219,7 @@ namespace GEngine
 		for (auto& buffer : storageBuffers)
 		{
 			descriptorWrite.sType			= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet			= m_DescriptorSet;
+			descriptorWrite.dstSet			= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding		= buffer.Slot;
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType	= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -223,6 +232,13 @@ namespace GEngine
 		}
 
 		vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), writeInfos.size(), writeInfos.data(), 0, nullptr);
+	}
+	void VulkanComputePipeline::UpdateAllDescriptorSet()
+	{
+		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		{
+			UpdateDescriptorSet(i);
+		}
 	}
 	void VulkanComputePipeline::CreatePipeline()
 	{
@@ -267,24 +283,26 @@ namespace GEngine
 		{
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
+			UpdateAllDescriptorSet();
 		}
 		if (m_RecreatePipeline)
 		{
 			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_ComputePipeline, nullptr);
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), 1, &m_DescriptorSet);
+			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), m_DescriptorSets.size(), m_DescriptorSets.data());
 			CreateDescriptorSetAndLayout();
 			CreatePipeline();
+			UpdateAllDescriptorSet();
 		}
-		if (m_UpdateDescriptorSet)
+		if (m_NeedUpdateDescripotrSetFrameCount)
 		{
-			UpdateDescriptorSet();
-			m_UpdateDescriptorSet = false;
+			UpdateDescriptorSet(Renderer::GetCurrentFrame());
+			m_NeedUpdateDescripotrSetFrameCount--;
 		}
 
 
 		vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
 
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, &m_DescriptorSets.at(Renderer::GetCurrentFrame()), 0, nullptr);
 	}
 }
