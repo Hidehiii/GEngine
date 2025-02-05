@@ -366,6 +366,26 @@ namespace GEngine
         shaderFloat16Int8Feature.sType                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES;
         imageCompressionControlSwapchainFeatrue.pNext   = &shaderFloat16Int8Feature;
 
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR    accelerationStructureFeature = {};
+        accelerationStructureFeature.sType                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+        shaderFloat16Int8Feature.pNext                      = &accelerationStructureFeature;
+
+        VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR   rayTracingMaintenance1Feature = {};
+        rayTracingMaintenance1Feature.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR;
+        accelerationStructureFeature.pNext                  = &rayTracingMaintenance1Feature;
+
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR   rayTracingPipelineFeature = {};
+        rayTracingPipelineFeature.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+        rayTracingMaintenance1Feature.pNext             = &rayTracingPipelineFeature;
+
+        VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR  rayTracingPositionFetchFeature = {};
+        rayTracingPositionFetchFeature.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR;
+        rayTracingPipelineFeature.pNext                     = &rayTracingPositionFetchFeature;
+
+        VkPhysicalDeviceRayQueryFeaturesKHR     rayQueryFeature = {};
+        rayQueryFeature.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+        rayTracingPositionFetchFeature.pNext    = &rayQueryFeature;
+
         
 
         vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);

@@ -217,5 +217,6 @@ namespace GEngine
 	void OpenGLRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		glDispatchCompute(x, y, z);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
 }
