@@ -1,8 +1,6 @@
 #pragma once
 #include "GEngine/Object/Scene/Scene.h"
 
-// temp 
-//#include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 namespace GEngine
 {
 	enum class ComponentFunction
@@ -29,6 +27,10 @@ namespace GEngine
 		GameObject(uint32_t handle, Scene* scene);
 		~GameObject();
 		GameObject(const GameObject&) = default;
+
+		GameObject* Parent();
+		void		SetParent(GameObject* parent);
+
 
 		void OnUpdate();
 		void OnRender();
@@ -112,7 +114,7 @@ namespace GEngine
 			return !(*this == other);
 		}
 	private:
-		Scene* m_Scene = nullptr;
+		Scene*		m_Scene		= nullptr;
 	};
 
 

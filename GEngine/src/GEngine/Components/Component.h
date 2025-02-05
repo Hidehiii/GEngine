@@ -18,11 +18,13 @@ namespace GEngine
 		virtual void OnLateUpdate() {};
 		virtual void OnDestroy() {};
 
-
-
-		void AttachGameObject(GameObject gameObject) { m_GameObject = gameObject; }
 		GameObject m_GameObject;
 
 		operator bool() { return bool(m_GameObject); }
+	private:
+		void AttachGameObject(GameObject gameObject) { m_GameObject = gameObject; }
+	private:
+		friend class GameObject;
+		friend class Scene;
 	};
 }

@@ -21,9 +21,13 @@ namespace GEngine
 		}
 
 		// Get the minimum point of the AABB
-		Vector3 GetMin() const { return m_Min; }
+		Vector3 Min() const { return m_Min; }
 		// Get the maximum point of the AABB
-		Vector3 GetMax() const { return m_Max; }
+		Vector3 Max() const { return m_Max; }
+
+		float LengthX() const { return m_Max.x - m_Min.x; }
+		float LengthY() const { return m_Max.y - m_Min.y; }
+		float LengthZ() const { return m_Max.z - m_Min.x; }
 	private:
 		void CalculateAABB(GameObject& gameObject);
 	private:

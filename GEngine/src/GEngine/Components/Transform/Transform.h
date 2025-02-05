@@ -22,6 +22,9 @@ namespace GEngine
 
 		void RecalculateModelMatrix();
 
+		void		SetParent(Transform& parent) { m_Parent = &parent; }
+		Transform*	Parent() { return m_Parent; }
+
 		Matrix4x4 GetModelMatrix()						{ RecalculateModelMatrix(); return m_ModelMatrix; }
 		Matrix4x4 GetTransformMatrix()					{ RecalculateModelMatrix(); return m_ModelMatrix; }
 
@@ -33,6 +36,7 @@ namespace GEngine
 		Quaternion GetRotation() const { return m_Rotation; }
 		Vector3 GetScale() const { return m_Scale; }
 
+		
 		void SetPosition(const Vector3& position)		{ m_Position = position; }
 		void SetRotation(const Vector3& angles)			{ m_Rotation = Quaternion(Math::Radians(angles));  }
 		void SetRotation(const Quaternion& rotation)	{ m_Rotation = rotation; }
@@ -58,6 +62,7 @@ namespace GEngine
 		Vector3 m_Scale = { 1.0f, 1.0f, 1.0f};
 	private:
 		Matrix4x4 m_ModelMatrix = Matrix4x4(1.0f);
+		Transform* m_Parent = nullptr;
 	};
 }
 

@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "GameObject.h"
 #include "GEngine/Object/Scene/Scene.h"
+#include "GEngine/Components/Components.h"
 
 namespace GEngine
 {
@@ -26,6 +27,16 @@ namespace GEngine
 
 	GameObject::~GameObject()
 	{
+	}
+
+	GameObject* GameObject::Parent()
+	{
+		return &(GetComponent<Transform>().Parent()->m_GameObject);
+	}
+
+	void GameObject::SetParent(GameObject* parent)
+	{
+		GetComponent<Transform>().SetParent(parent->GetComponent<Transform>());
 	}
 
 	void GameObject::OnUpdate()
