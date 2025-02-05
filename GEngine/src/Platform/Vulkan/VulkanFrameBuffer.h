@@ -27,19 +27,21 @@ namespace GEngine
 		VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
-		virtual int GetColorAttachmentCount() override { return m_ColorImageViews.size(); }
-
-		VkRenderPass GetRenderPass() { return m_RenderPass->GetRenderPass(); }
 		virtual void Begin() override;
 		virtual void End() override;
-		virtual int GetAttachmentCount() override { return m_Attachments.size(); }
-		virtual Ref<Texture2D> GetColorAttachment(int index) override;
-		virtual Ref<Texture2D> GetDepthStencilAttachment() override;
+
+		virtual int								GetColorAttachmentCount() override { return m_ColorImageViews.size(); }
+		virtual int								GetAttachmentCount() override { return m_Attachments.size(); }
+		virtual Ref<Texture2D>					GetColorAttachment(int index) override;
+		virtual Ref<Texture2D>					GetDepthStencilAttachment() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
-		VkFramebuffer GetFrameBuffer() { return m_FrameBuffer; }
+
+		VkRenderPass	GetRenderPass() { return m_RenderPass->GetRenderPass(); }
+		VkFramebuffer	GetFrameBuffer() { return m_FrameBuffer; }
 	public:
 		//用于给交换链创建使用
 		static Ref<VulkanFrameBuffer> Create(const FrameBufferSpecificationForVulkan spec);
+
 		static VulkanFrameBuffer* GetCurrentVulkanFrameBuffer() { return s_CurrentVulkanFrameBuffer; }
 	private:
 		void CreateRenderPass();

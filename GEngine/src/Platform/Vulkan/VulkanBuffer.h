@@ -13,19 +13,20 @@ namespace GEngine
 		VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
 		virtual ~VulkanVertexBuffer();
 
-		virtual void SetData(const void* data, uint32_t size) override;
-		virtual void SetDataInstance(const void* data, uint32_t size) override;
 		virtual void Bind() const override;
 
-
+		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetDataInstance(const void* data, uint32_t size) override;
 		virtual void SetLayout(const BufferLayout& layout) override;
-		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
+
+		virtual const BufferLayout&		GetLayout() const override { return m_Layout; }
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
-		virtual VertexTopology GetVertexTopologyType() override { return m_TopologyType; }
-		virtual bool IsInstanceRendering() override { return m_InstanceRendering; }
-		const std::vector<VkVertexInputBindingDescription>& GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
-		const std::vector<VkVertexInputAttributeDescription>& GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
+		virtual VertexTopology			GetVertexTopologyType() override { return m_TopologyType; }
+		virtual bool					IsInstanceRendering() override { return m_InstanceRendering; }
+
+		const std::vector<VkVertexInputBindingDescription>&		GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
+		const std::vector<VkVertexInputAttributeDescription>&	GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
 	private:
 		VertexTopology	m_TopologyType;
 		VkBuffer		m_VertexBuffer;

@@ -14,14 +14,14 @@ namespace GEngine
 		OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		virtual ~OpenGLFrameBuffer() override;
 
-		virtual int GetColorAttachmentCount() override { return m_ColorAttachments.size(); }
-
 		virtual void Begin() override;
 		virtual void End() override;
-		virtual int GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
+
+		virtual int								GetColorAttachmentCount() override { return m_ColorAttachments.size(); }
+		virtual int								GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
-		virtual Ref<Texture2D> GetColorAttachment(int index) override;
-		virtual Ref<Texture2D> GetDepthStencilAttachment() override;
+		virtual Ref<Texture2D>					GetColorAttachment(int index) override;
+		virtual Ref<Texture2D>					GetDepthStencilAttachment() override;
 
 	private:
 		void CreateBuffer();

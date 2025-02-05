@@ -18,27 +18,27 @@ namespace GEngine
 		static Ref<Material> Create(const std::string& shaderPath, const std::string& name = "");
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
 
-		bool HasChanged() { return m_HasChanged; }
-		void ResetHasChanged() { m_HasChanged = false; }
+		bool HasChanged()		{ return m_HasChanged; }
+		void ResetHasChanged()	{ m_HasChanged = false; }
 
 		virtual ~Material() {}
 
 		virtual void UploadData() = 0;
 
-		virtual CullMode GetCullMode() { return m_CullMode; }
-		virtual BlendMode GetBlendModeColor() { return m_BlendModeColor; }
-		virtual BlendMode GetBlendModeAlpha() { return m_BlendModeAlpha; }
-		virtual BlendFactor GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
-		virtual BlendFactor GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
-		virtual BlendFactor GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
-		virtual bool IsOpaque() { return m_BlendModeColor == BlendMode::None || m_BlendModeAlpha == BlendMode::None; }
+		virtual CullMode	GetCullMode()						{ return m_CullMode; }
+		virtual BlendMode	GetBlendModeColor()					{ return m_BlendModeColor; }
+		virtual BlendMode	GetBlendModeAlpha()					{ return m_BlendModeAlpha; }
+		virtual BlendFactor GetBlendColorSourceFactor()			{ return m_BlendColorSourceFactor; }
+		virtual BlendFactor GetBlendAlphaSourceFactor()			{ return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor GetBlendColorDestinationFactor()	{ return m_BlendColorDestinationFactor; }
+		virtual BlendFactor GetBlendAlphaDestinationFactor()	{ return m_BlendAlphaDestinationFactor; }
+		virtual bool		IsOpaque()							{ return m_BlendModeColor == BlendMode::None || m_BlendModeAlpha == BlendMode::None; }
 
-		virtual void EnableDepthWrite(bool enabled)  { m_EnableDepthWrite = enabled; }
-		virtual bool GetEnableDepthWrite()  { return m_EnableDepthWrite; }
+		virtual void EnableDepthWrite(bool enabled)		{ m_EnableDepthWrite = enabled; }
+		virtual bool GetEnableDepthWrite()				{ return m_EnableDepthWrite; }
 
-		virtual void SetDepthTestOperation(CompareOperation op)  { m_DepthTestOperation = op; }
-		virtual CompareOperation GetDepthTestOperation()  { return m_DepthTestOperation; }
+		virtual void				SetDepthTestOperation(CompareOperation op)  { m_DepthTestOperation = op; }
+		virtual CompareOperation	GetDepthTestOperation()						{ return m_DepthTestOperation; }
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
@@ -52,42 +52,42 @@ namespace GEngine
 		virtual void SetVector(const std::string& name, const Vector3& value);
 		virtual void SetVector(const std::string& name, const Vector4& value);
 
-		virtual float GetFloat(const std::string& name);
-		virtual int GetInt(const std::string& name);
-		virtual uint32_t GetUInt(const std::string& name);
-		virtual Vector4 GetVector(const std::string& name);
+		virtual float		GetFloat(const std::string& name);
+		virtual int			GetInt(const std::string& name);
+		virtual uint32_t	GetUInt(const std::string& name);
+		virtual Vector4		GetVector(const std::string& name);
 
-		virtual Ref<Shader>& GetShader() = 0;
-		virtual std::string GetName() { return m_Name; };
+		virtual Ref<Shader>&	GetShader() = 0;
+		virtual std::string		GetName() { return m_Name; };
 
 		virtual void SetShader(const Ref<Shader>& shader) = 0;
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
 
-		virtual void SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
-		virtual Ref<Texture2D> GetTexture2D(const std::string& name);
+		virtual void			SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
+		virtual Ref<Texture2D>	GetTexture2D(const std::string& name);
 
-		virtual void SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
+		virtual void				SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
 		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name);
 
-		virtual void SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
-		virtual Ref<StorageBuffer> GetStorageBuffer(const std::string& name);
+		virtual void				SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
+		virtual Ref<StorageBuffer>	GetStorageBuffer(const std::string& name);
 
-		virtual void SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
-		virtual Ref<CubeMap> GetCubeMap(const std::string& name);
+		virtual void			SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
+		virtual Ref<CubeMap>	GetCubeMap(const std::string& name);
 
-		virtual std::vector<ShaderUniform>& GetUniforms()  { return m_Uniforms; }
-		virtual std::vector<ShaderUniformTexture2D>& GetTexture2Ds()  { return m_Texture2D; }
-		virtual std::vector<ShaderUniformStorageImage2D>& GetStorageImage2Ds()  { return m_StorageImage2D; }
-		virtual std::vector<ShaderUniformStorageBuffer>& GetStorageBuffers() { return m_StorageBuffer; }
-		virtual std::vector<ShaderUniformCubeMap>& GetCubeMaps() { return m_CubeMap; }
+		virtual std::vector<ShaderUniform>&					GetUniforms()			{ return m_Uniforms; }
+		virtual std::vector<ShaderUniformTexture2D>&		GetTexture2Ds()			{ return m_Texture2D; }
+		virtual std::vector<ShaderUniformStorageImage2D>&	GetStorageImage2Ds()	{ return m_StorageImage2D; }
+		virtual std::vector<ShaderUniformStorageBuffer>&	GetStorageBuffers()		{ return m_StorageBuffer; }
+		virtual std::vector<ShaderUniformCubeMap>&			GetCubeMaps()			{ return m_CubeMap; }
 	protected:
-		ShaderUniform GetUniformByName(const std::string& name) const;
-		ShaderUniformTexture2D& GetUniformTexture2DByName(const std::string& name);
-		ShaderUniformStorageImage2D& GetUniformStorageImage2DByName(const std::string& name);
-		ShaderUniformStorageBuffer& GetUniformStorageBufferByName(const std::string& name);
-		ShaderUniformCubeMap& GetUniformCubeMapByName(const std::string& name);
+		ShaderUniform					GetUniformByName(const std::string& name) const;
+		ShaderUniformTexture2D&			GetUniformTexture2DByName(const std::string& name);
+		ShaderUniformStorageImage2D&	GetUniformStorageImage2DByName(const std::string& name);
+		ShaderUniformStorageBuffer&		GetUniformStorageBufferByName(const std::string& name);
+		ShaderUniformCubeMap&			GetUniformCubeMapByName(const std::string& name);
 	protected:
 		bool m_HasChanged = false;
 

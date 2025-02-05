@@ -14,20 +14,24 @@ namespace GEngine
 		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag);
 		virtual ~VulkanTexture2D();
 
+		virtual void Bind(const uint32_t slot = 0) override;
+
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual void SetData(const void* data, uint32_t size) override;
-		virtual void Bind(const uint32_t slot = 0) override;
 		virtual std::string GetPath() const override { return m_Path; };
+
+		virtual void SetData(const void* data, uint32_t size) override;
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象
 		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
+
 		const VkImage						GetImage() { return m_Image; }
 		const VkSampler						GetSampler() { return m_Sampler; }
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		const VkImageAspectFlags			GetAspectFlag() { return m_AspectFlag; }
+
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer,  VkImageLayout newLayout);
 	private:

@@ -19,16 +19,17 @@ namespace GEngine
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
+		float GetTime() const override;
 
 		virtual std::vector<const char*> GetRequiredExtensions() override;
 
 		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
-		virtual GraphicsContext* GetContext() const override { return m_Context; }
 
-		float GetTime() const override;
+		virtual GraphicsContext* GetContext() const override { return m_Context; }
 
 		inline virtual void* GetNativeWindow() const { return m_Window; }
 	private:

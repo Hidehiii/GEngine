@@ -58,10 +58,10 @@ namespace GEngine
 
 		operator bool() const { return m_Vertices.size() > 0 && m_Indices.size() > 0; }
 	public:
-		std::filesystem::path m_SourceFilePath;
-		std::string m_Name;
-		std::vector<Vertex> m_Vertices;
-		std::vector<uint32_t> m_Indices;
+		std::filesystem::path	m_SourceFilePath;
+		std::string				m_Name;
+		std::vector<Vertex>		m_Vertices;
+		std::vector<uint32_t>	m_Indices;
 	private:
 		std::unordered_map<Vertex, uint32_t> m_VertexsIndex;
 		friend class ModelImporter;

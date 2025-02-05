@@ -14,9 +14,9 @@ namespace GEngine
 	{
 		switch (format)
 		{
-		case RenderImage2DFormat::None: return 0;
-		case RenderImage2DFormat::RGBA8F: return 4;
-		case RenderImage2DFormat::RGB8F: return 3;
+		case RenderImage2DFormat::None:		return 0;
+		case RenderImage2DFormat::RGBA8F:	return 4;
+		case RenderImage2DFormat::RGB8F:	return 3;
 		default:
 			break;
 		}

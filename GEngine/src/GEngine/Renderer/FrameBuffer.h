@@ -50,10 +50,10 @@ namespace GEngine
 
 	enum class FrameBufferAttachmentsAction
 	{
-		None	= 0,
-		Load	= 1,
-		Clear	= 2,
-		Store	= 3
+		None	= 0,  // begin, end
+		Load	= 1,  // begin
+		Clear	= 2,  // end
+		Store	= 3   // end
 	};
 
 	struct FrameBufferSpecification
@@ -75,16 +75,16 @@ namespace GEngine
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 
-		virtual Vector2 GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
-		virtual float GetWidth() const { return (float)GetSpecification().Width; }
-		virtual float GetHeight() const { return (float)GetSpecification().Height; }
-		virtual uint32_t GetSamples() const { return GetSpecification().Samples; }
-		virtual FrameBufferAttachmentsAction GetAttachmentsBeginAction() { return GetSpecification().AttachmentsBeginAction; }
-		virtual FrameBufferAttachmentsAction GetAttachmentsEndAction() { return GetSpecification().AttachmentsEndAction; }
-		virtual int GetAttachmentCount() = 0;
-		virtual int GetColorAttachmentCount() = 0;
-		virtual Ref<Texture2D> GetColorAttachment(int index) = 0;
-		virtual Ref<Texture2D> GetDepthStencilAttachment() = 0;
+		virtual Vector2							GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
+		virtual float							GetWidth() const { return (float)GetSpecification().Width; }
+		virtual float							GetHeight() const { return (float)GetSpecification().Height; }
+		virtual uint32_t						GetSamples() const { return GetSpecification().Samples; }
+		virtual FrameBufferAttachmentsAction	GetAttachmentsBeginAction() { return GetSpecification().AttachmentsBeginAction; }
+		virtual FrameBufferAttachmentsAction	GetAttachmentsEndAction() { return GetSpecification().AttachmentsEndAction; }
+		virtual int								GetAttachmentCount() = 0;
+		virtual int								GetColorAttachmentCount() = 0;
+		virtual Ref<Texture2D>					GetColorAttachment(int index) = 0;
+		virtual Ref<Texture2D>					GetDepthStencilAttachment() = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);

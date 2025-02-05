@@ -31,8 +31,8 @@ namespace GEngine
 	class GENGINE_API ShaderMacroName
 	{
 	public:
-		static std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
-		static std::string			GE_BINDING_START;
+		static const	std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
+		static const	std::string			GE_BINDING_START;
 	};
 	enum class GENGINE_API BlendFactor
 	{

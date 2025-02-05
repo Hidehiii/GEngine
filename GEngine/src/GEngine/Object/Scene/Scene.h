@@ -22,12 +22,12 @@ namespace GEngine
 
 		static Ref<Scene> Copy(Ref<Scene> scene);
 
-		GameObject CreateGameObject(const std::string& name = std::string());
-		GameObject CreateGameObject(uint32_t uuid, const std::string& name);
-		void DuplicateGameObject(GameObject gameObject);
-		void DestroyGameObject(GameObject gameObject);
-		Camera* MainCamera();
-		DirectionalLight* MainDirectionalLight();
+		GameObject			CreateGameObject(const std::string& name = std::string());
+		GameObject			CreateGameObject(uint32_t uuid, const std::string& name);
+		void				DuplicateGameObject(GameObject gameObject);
+		void				DestroyGameObject(GameObject gameObject);
+		Camera*				MainCamera();
+		DirectionalLight*	MainDirectionalLight();
 		// Logic and physics 
 		void OnAwake();
 		void OnStart();
@@ -59,16 +59,16 @@ namespace GEngine
 		template<typename T>
 		void OnComponentRemoved(ScriptableObject scriptableObject, T& component);*/
 	private:
-		entt::registry m_Registry;
-		uint32_t m_ViewportWidth = 1920, m_ViewportHeight = 1080;
-		std::vector<GameObject> m_DeletedGameObject;
+		entt::registry					m_Registry;
+		uint32_t						m_ViewportWidth = 1920, m_ViewportHeight = 1080;
+		std::vector<GameObject>			m_DeletedGameObject;
 
-		Ref<PhysicsTimerWheel> m_PhysicsTimerWheel = nullptr;
+		Ref<PhysicsTimerWheel>			m_PhysicsTimerWheel = nullptr;
 
-		Ref<Physics2DWorld> m_PhysicsWorld2D = nullptr;
-		Ref<PhysicalContactListener2D> m_PhysicalContactListener2D = nullptr;
+		Ref<Physics2DWorld>				m_PhysicsWorld2D = nullptr;
+		Ref<PhysicalContactListener2D>	m_PhysicalContactListener2D = nullptr;
 
-		Ref<Physics3DWorld> m_PhysicsWorld3D = nullptr;
+		Ref<Physics3DWorld>				m_PhysicsWorld3D = nullptr;
 
 		friend class GameObject;
 		friend class Serializer;

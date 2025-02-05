@@ -14,12 +14,15 @@ namespace GEngine
 	public:
 		VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanPipeline() override;
+
 		virtual void PrepareRender();
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
-		virtual Ref<VertexBuffer> GetVertexBuffer() override;
-		virtual void SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
-		virtual Ref<Material> GetMaterial() override;
-		virtual void SetMaterial(Ref<Material>& material) override;
+
+		virtual Ref<VertexBuffer>	GetVertexBuffer() override;
+		virtual void				SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
+
+		virtual Ref<Material>	GetMaterial() override;
+		virtual void			SetMaterial(Ref<Material>& material) override;
 	private:
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
 		void CreateDescriptorSetAndLayout();

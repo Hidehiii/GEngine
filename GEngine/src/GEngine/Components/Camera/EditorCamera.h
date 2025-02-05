@@ -25,11 +25,11 @@ namespace GEngine::Editor
 		Matrix4x4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		Matrix4x4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
-		Vector3 GetUpDirection() const;
-		Vector3 GetRightDirection() const;
-		Vector3 GetForwardDirection() const;
-		Vector3 GetPosition() const { return m_Position; }
-		Quaternion GetOrientation() const;
+		Vector3		GetUpDirection() const;
+		Vector3		GetRightDirection() const;
+		Vector3		GetForwardDirection() const;
+		Vector3		GetPosition() const { return m_Position; }
+		Quaternion	GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
@@ -46,8 +46,8 @@ namespace GEngine::Editor
 		Vector3 CalculatePosition() const;
 
 		std::pair<float, float> PanSpeed() const;
-		float RotationSpeed() const;
-		float ZoomSpeed() const;
+		float					RotationSpeed() const;
+		float					ZoomSpeed() const;
 	private:
 
 		Matrix4x4 m_ViewMatrix;
