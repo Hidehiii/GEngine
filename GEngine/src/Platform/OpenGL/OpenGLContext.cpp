@@ -32,8 +32,6 @@ namespace GEngine
 	}
 	void OpenGLContext::SwapBuffers()
 	{
-		
-
 		glfwSwapBuffers(m_WindowHandle);
 	}
 }

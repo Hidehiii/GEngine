@@ -24,14 +24,6 @@ namespace GEngine
         {
             GE_CORE_WARN("Validation layer: {0}", pCallbackData->pMessage);
         }
-        else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-        {
-            GE_CORE_INFO("Validation layer: {0}", pCallbackData->pMessage);
-        }
-        else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-        {
-            GE_CORE_TRACE("Validation layer: {0}", pCallbackData->pMessage);
-        }
         return VK_FALSE;
     }
     static VkResult CreateDebugUtilsMessengerEXT(
@@ -298,10 +290,16 @@ namespace GEngine
             if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) /* && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) */)
             {
                 indices.GraphicsFamily = i;
+                GE_CORE_INFO("Graphics queue : {}", i);
             }
             if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
             {
                 indices.ComputeFamily = i;
+                GE_CORE_INFO("Compute queue : {}", i);
+            }
+            if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT))
+            {
+                GE_CORE_INFO("Transfer queue : {}", i);
             }
             VkBool32                        presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
@@ -321,7 +319,7 @@ namespace GEngine
     {
         QueueFamilyIndices                  indices = FindQueueFamilies(m_PhysicalDevice);
 
-        m_QueueFamily                               = FindQueueFamilies(m_PhysicalDevice);
+        m_QueueFamily                               = indices;
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value(), indices.ComputeFamily.value() };
         float                               queuePriority = 1.0f;
@@ -542,7 +540,7 @@ namespace GEngine
 		createInfo.imageArrayLayers                         = 1;
 		createInfo.imageUsage                               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices          indices                 = FindQueueFamilies(m_PhysicalDevice);
+		QueueFamilyIndices          indices                 = m_QueueFamily;
 		uint32_t                    queueFamilyIndices[]    = { 
                                                             indices.GraphicsFamily.value(), 
                                                             indices.PresentFamily.value()};
@@ -585,7 +583,7 @@ namespace GEngine
     }
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBuffer                     = VulkanCommandBuffer(FindQueueFamilies(m_PhysicalDevice), m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
+        m_CommandBuffer                     = VulkanCommandBuffer(m_QueueFamily, m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
         m_UsedGraphicsCommandBufferIndexs   = std::vector<int>(Renderer::GetFramesInFlight(), 0);
         m_UsedComputeCommandBufferIndexs    = std::vector<int>(Renderer::GetFramesInFlight(), 0);
     }

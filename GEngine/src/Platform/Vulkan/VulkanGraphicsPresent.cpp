@@ -36,6 +36,7 @@ namespace GEngine
 			submitInfo.pSignalSemaphores	= nullptr;
 			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 			VulkanContext::Get()->MoveToNextSemaphore();
+			GE_CORE_INFO("Recreate swapChain");
 			return false;
 		}
 		return true;
