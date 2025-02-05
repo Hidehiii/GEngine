@@ -14,9 +14,9 @@ namespace GEngine
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_VulkanSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_VulkanSPIRV[ShaderStage::Fragment]; }
 
-		void CreateShaderModule();
-		void DestroyShaderModule();
-		VkShaderModule GetShaderModule(std::string stage);
+		void			CreateShaderModule();
+		void			DestroyShaderModule();
+		VkShaderModule	GetShaderModule(std::string stage);
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;

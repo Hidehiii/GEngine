@@ -206,7 +206,7 @@ void Sandbox2D::OnAttach()
 		"Assets/Textures/back.png",
 		"Assets/Textures/front.png");
 
-	m_CubeMap->SetData(m_Texture, 300, 300, CubeMap::CubeMapFace::Front);
+	m_CubeMap->SetData(m_Texture, m_CubeMap->GetWidth(), m_CubeMap->GetHeight(), CubeMap::CubeMapFace::Front);
 	
 	mat->SetCubeMap("TexCube", m_CubeMap);
 
