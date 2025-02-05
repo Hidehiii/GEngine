@@ -16,6 +16,7 @@ namespace GEngine
 		virtual void Bind(const uint32_t slot = 0) = 0;
 		virtual std::string GetPath() const = 0;
 		virtual uint32_t GetMipLevels() { return m_MipLevels; }
+		virtual bool IsGenerateMipmap() { return m_GenerateMipmap; }
 
 		virtual bool operator==(const Texture& other) const = 0;
 

@@ -13,7 +13,6 @@ namespace GEngine
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		: m_Path(path)
 	{
-
 		int				width, height, channels;
 		stbi_uc*		data;
 		stbi_set_flip_vertically_on_load(1);
@@ -29,7 +28,11 @@ namespace GEngine
 		{
 			m_Format = RenderImage2DFormat::RGB8F;
 		}
-		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
+		
 		
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
@@ -45,7 +48,10 @@ namespace GEngine
 	{
 
 		m_Format = format;
-		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -57,7 +63,10 @@ namespace GEngine
 		: m_Width(width), m_Height(height)
 	{
 		m_Format = format;
-		m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(format), m_Width, m_Height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -67,10 +76,9 @@ namespace GEngine
 
 		SetData(data, size);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID, bool isMultiSample)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
 	{
 		m_RendererID = rendererID;
-		m_MultiSample = isMultiSample;
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
@@ -78,13 +86,15 @@ namespace GEngine
 	}
 	void OpenGLTexture2D::SetData(const void* data, uint32_t size)
 	{
-		
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
-		glGenerateTextureMipmap(m_RendererID);
+		if (m_GenerateMipmap)
+		{
+			glGenerateTextureMipmap(m_RendererID);
+		}
+		
 	}
 	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	
-		GE_CORE_ASSERT(m_MultiSample == false, "Can not bind a multisample texture!");
 		glBindTextureUnit(slot, m_RendererID);
 	}
 

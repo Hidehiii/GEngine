@@ -135,6 +135,20 @@ namespace GEngine
 				sourceStage			= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 				destinationStage	= VK_PIPELINE_STAGE_TRANSFER_BIT;
 			}
+			else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				sourceStage			= VK_PIPELINE_STAGE_TRANSFER_BIT;
+				destinationStage	= VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+			}
+			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+				sourceStage			= VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+				destinationStage	= VK_PIPELINE_STAGE_TRANSFER_BIT;
+			}
 			else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL) {
 				barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;

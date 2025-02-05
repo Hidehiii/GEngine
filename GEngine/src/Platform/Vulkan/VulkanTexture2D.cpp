@@ -27,8 +27,10 @@ namespace GEngine
         {
             m_Format = RenderImage2DFormat::RGB8F; // 大多数显卡vulkan 不支持这个格式
         }
-        
-        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+        if (m_GenerateMipmap)
+        {
+            m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+        }
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                    VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -56,7 +58,10 @@ namespace GEngine
         m_Width     = width;
         m_Format = format;
 
-        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			                VulkanContext::Get()->GetDevice(),
 			                m_Width,
@@ -81,7 +86,10 @@ namespace GEngine
 		m_Width = width;
         m_Format = format;
 
-        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		if (m_GenerateMipmap)
+		{
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
+		}
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			m_Width,
@@ -101,7 +109,7 @@ namespace GEngine
 		CreateSampler();
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isAttachment)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag)
     {
         m_Format = Utils::VulkanFormatToRenderImage2DFormat(format);
         m_Image         = image;
@@ -109,7 +117,6 @@ namespace GEngine
         m_ImageLayout   = layout;
         m_ImageMemory   = imageMemory;
         m_AspectFlag    = aspectFlag;
-        m_IsAttachment   = isAttachment;
         CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -147,8 +154,15 @@ namespace GEngine
 
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, 0, m_AspectFlag);
-		Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
-        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        if (m_GenerateMipmap)
+        {
+            Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
+			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
         
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);

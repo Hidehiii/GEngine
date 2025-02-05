@@ -11,25 +11,24 @@ namespace GEngine
 		OpenGLTexture2D(const std::string& path);
 		OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
-		OpenGLTexture2D(uint32_t rendererID, bool isMultiSample = false);
+		OpenGLTexture2D(uint32_t rendererID);
 		virtual ~OpenGLTexture2D();
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual void SetData(const void* data, uint32_t size) override;
-		virtual void Bind(const uint32_t slot = 0) override;
+		virtual uint32_t	GetWidth() const override { return m_Width; }
+		virtual uint32_t	GetHeight() const override { return m_Height; }
+		virtual void		SetData(const void* data, uint32_t size) override;
+		virtual void		Bind(const uint32_t slot = 0) override;
 		virtual std::string GetPath() const override { return m_Path; };
 
-		uint32_t GetRendererID() const { return m_RendererID; }
+		uint32_t			GetRendererID() const { return m_RendererID; }
 
 		virtual bool operator==(const Texture& other) const override { return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID; };
 
 	private:
-		std::string			m_Path;
-		uint32_t			m_Width, m_Height;
-		uint32_t			m_RendererID;
+		std::string				m_Path;
+		uint32_t				m_Width, m_Height;
+		uint32_t				m_RendererID;
 		RenderImage2DFormat		m_Format;
-		bool				m_MultiSample = false;
 	};
 }
 

@@ -96,8 +96,6 @@ namespace GEngine
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
         glDeleteFramebuffers(1, &m_RendererID);
-        /*glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
-        glDeleteTextures(1, &m_DepthAttachment);*/
         if (m_Specification.Samples > 1)
         {
             glDeleteFramebuffers(1, &m_MultiSampleRendererID);
@@ -251,7 +249,7 @@ namespace GEngine
 						break;
 					}
                 }
-                Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i], false);
+                Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
                 m_ColorAttachmentsTexture2D.push_back(texture);
             }
         }
@@ -273,7 +271,7 @@ namespace GEngine
                     break;
                 }
             }
-            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment, false);
+            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment);
         }
 
 

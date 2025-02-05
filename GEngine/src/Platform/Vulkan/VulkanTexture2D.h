@@ -11,7 +11,7 @@ namespace GEngine
 		VulkanTexture2D(const std::string& path);
 		VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
-		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag, bool isAttachment = true);
+		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag);
 		virtual ~VulkanTexture2D();
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
@@ -43,7 +43,6 @@ namespace GEngine
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
-		bool							m_IsAttachment = false;
 	};
 }
 
