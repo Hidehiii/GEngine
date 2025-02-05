@@ -75,24 +75,24 @@ namespace GEngine
 	class GENGINE_API ShaderDataFlag
 	{
 	public:
-		static std::string			None;
-		static std::string			Name;
-		static std::string			Blend;
-		static std::string			DepthMask;
-		static std::string			DepthTest;
-		static std::string			Properties;
-		static std::string			Type;
+		static const	std::string			None;
+		static const	std::string			Name;
+		static const	std::string			Blend;
+		static const	std::string			DepthMask;
+		static const	std::string			DepthTest;
+		static const	std::string			Properties;
+		static const	std::string			Type;
 	};
 	class GENGINE_API ShaderStage
 	{
 	public:
-		static	std::string         Vertex;
-		static	std::string         Fragment;
-		static	std::string         Pixel;
-		static	std::string			Compute;
-		static	std::string			TessellationControl;
-		static	std::string			TessellationEvaluation;
-		static	std::string			Geometry;
+		static	const	std::string         Vertex;
+		static	const	std::string         Fragment;
+		static	const	std::string         Pixel;
+		static	const	std::string			Compute;
+		static	const	std::string			TessellationControl;
+		static	const	std::string			TessellationEvaluation;
+		static	const	std::string			Geometry;
 	};
 	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
 	{

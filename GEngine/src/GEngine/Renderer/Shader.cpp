@@ -8,24 +8,24 @@ namespace GEngine
 {
 	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
-	std::string     ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = "GE_ATTACHMENT_UV_STARTS_AT_TOP";
-	std::string		ShaderMacroName::GE_BINDING_START = "GE_BINDING_START";
+	std::string     const	ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = "GE_ATTACHMENT_UV_STARTS_AT_TOP";
+	std::string		const	ShaderMacroName::GE_BINDING_START				= "GE_BINDING_START";
 
-	std::string		ShaderDataFlag::None		= "#None";
-	std::string		ShaderDataFlag::Name		= "#Name";
-	std::string		ShaderDataFlag::Blend		= "#Blend";
-	std::string		ShaderDataFlag::DepthMask	= "#DepthMask";
-	std::string		ShaderDataFlag::DepthTest	= "#DepthTest";
-	std::string		ShaderDataFlag::Properties	= "#Properties";
-	std::string		ShaderDataFlag::Type		= "#Type";
-
-	std::string     ShaderStage::Vertex			= "vertex";
-	std::string     ShaderStage::Fragment		= "fragment";
-	std::string     ShaderStage::Pixel			= "pixel";
-	std::string		ShaderStage::Compute		= "compute";
-	std::string		ShaderStage::TessellationControl	= "tessellationControl";
-	std::string		ShaderStage::TessellationEvaluation = "tessellationEvaluation";
-	std::string		ShaderStage::Geometry		= "geometry";
+	std::string		const	ShaderDataFlag::None							= "#None";
+	std::string		const	ShaderDataFlag::Name							= "#Name";
+	std::string		const	ShaderDataFlag::Blend							= "#Blend";
+	std::string		const	ShaderDataFlag::DepthMask						= "#DepthMask";
+	std::string		const	ShaderDataFlag::DepthTest						= "#DepthTest";
+	std::string		const	ShaderDataFlag::Properties						= "#Properties";
+	std::string		const	ShaderDataFlag::Type							= "#Type";
+					
+	std::string     const	ShaderStage::Vertex								= "vertex";
+	std::string     const	ShaderStage::Fragment							= "fragment";
+	std::string     const	ShaderStage::Pixel								= "pixel";
+	std::string		const	ShaderStage::Compute							= "compute";
+	std::string		const	ShaderStage::TessellationControl				= "tessellationControl";
+	std::string		const	ShaderStage::TessellationEvaluation				= "tessellationEvaluation";
+	std::string		const	ShaderStage::Geometry							= "geometry";
 
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
