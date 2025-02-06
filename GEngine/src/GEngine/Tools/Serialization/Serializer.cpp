@@ -310,7 +310,7 @@ namespace GEngine
 		out << YAML::Key << "Name" << YAML::Value << material->GetShader()->GetShaderName();
 		out << YAML::Key << "Properties";
 		out << YAML::Value << YAML::BeginMap;
-		std::vector<ShaderUniform>& uniforms = material->GetUniforms();
+		/*std::vector<ShaderUniform>& uniforms = material->GetUniforms();
 		for (auto uniform : uniforms)
 		{
 			out << YAML::Key << uniform.Name;
@@ -325,7 +325,7 @@ namespace GEngine
 			default: GE_CORE_CRITICAL("There is an unknown uniform type try to be writen into YAML file.");
 			}
 			out << YAML::EndMap;
-		}
+		}*/
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 

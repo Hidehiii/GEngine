@@ -235,7 +235,11 @@ namespace GEngine
 		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
 		uniform.Texture = texture;
 	}
-	Ref<Texture2D> Material::GetTexture2D(const std::string& name)
+	void Material::SetTexture2D(const int index, const Ref<Texture2D>& texture)
+	{
+		m_Texture2D.at(index).Texture = texture;
+	}
+	const Ref<Texture2D> Material::GetTexture2D(const std::string& name)
 	{
 		return GetUniformTexture2DByName(name).Texture;
 	}
@@ -244,7 +248,7 @@ namespace GEngine
 		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
 		uniform.Image = storageImage;
 	}
-	Ref<StorageImage2D> Material::GetStorageImage2D(const std::string& name)
+	const Ref<StorageImage2D> Material::GetStorageImage2D(const std::string& name)
 	{
 		return GetUniformStorageImage2DByName(name).Image;
 	}
@@ -253,7 +257,7 @@ namespace GEngine
 		ShaderUniformStorageBuffer& uniform = GetUniformStorageBufferByName(name);
 		uniform.Buffer = storageBuffer;
 	}
-	Ref<StorageBuffer> Material::GetStorageBuffer(const std::string& name)
+	const Ref<StorageBuffer> Material::GetStorageBuffer(const std::string& name)
 	{
 		return GetUniformStorageBufferByName(name).Buffer;
 	}
@@ -262,7 +266,7 @@ namespace GEngine
 		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
 		uniform.Cubemap = cubeMap;
 	}
-	Ref<CubeMap> Material::GetCubeMap(const std::string& name)
+	const Ref<CubeMap> Material::GetCubeMap(const std::string& name)
 	{
 		return GetUniformCubeMapByName(name).Cubemap;
 	}

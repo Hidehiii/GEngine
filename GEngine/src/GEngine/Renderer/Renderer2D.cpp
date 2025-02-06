@@ -250,7 +250,7 @@ namespace GEngine
 		if (textureIndex == -1)
 		{
 			textureIndex = s_Data.QuadTextureIndex;
-			s_Data.QuadPipeline->GetMaterial()->GetTexture2Ds().at(s_Data.QuadTextureIndex).Texture = tex;
+			s_Data.QuadPipeline->GetMaterial()->SetTexture2D(s_Data.QuadTextureIndex, tex);
 			s_Data.QuadTextureIndex++;
 		}
 

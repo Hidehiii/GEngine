@@ -55,7 +55,7 @@ namespace GEngine
 	OpenGLMaterial::~OpenGLMaterial()
 	{
 	}
-	void OpenGLMaterial::UploadData()
+	void OpenGLMaterial::Update()
 	{
 		m_Shader->Bind();
 		if(m_UniformsBuffer.Size > 0)

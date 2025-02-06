@@ -1,7 +1,7 @@
 #pragma once
 #include "GEngine/Renderer/Pipeline.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
 
 
@@ -24,17 +24,10 @@ namespace GEngine
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 	private:
-		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
-		void CreateDescriptorSetAndLayout();
-		void UpdateDescriptorSet(int index);
-		void UpdateAllDescriptorSet();
 		void CreatePipeline();
 	private:
 		Ref<VulkanMaterial>									m_Material;
 		Ref<VulkanVertexBuffer>								m_VertexBuffer;
-
-		VkDescriptorSetLayout								m_DescriptorSetLayout;
-		std::vector<VkDescriptorSet>						m_DescriptorSets;
 
 		std::vector<VkDynamicState> m_DynamicStates = {
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -54,8 +47,8 @@ namespace GEngine
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_GraphicsPipeline = nullptr;
 		bool												m_RecreatePipeline = false;
-		uint8_t												m_NeedUpdateDescripotrSetFrames = 0;
 		VkPipelineCache										m_PipelineCache;
+		VulkanFrameBuffer*									m_RenderFrameBuffer = nullptr;
 	};
 }
 

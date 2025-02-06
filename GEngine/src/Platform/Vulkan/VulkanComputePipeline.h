@@ -14,22 +14,15 @@ namespace GEngine
 		virtual void			SetMaterial(Ref<Material>& material) override;
 
 	private:
-		void CreateDescriptorSetAndLayout();
-		void UpdateDescriptorSet(int index);
-		void UpdateAllDescriptorSet();
 		void CreatePipeline();
 		void PrepareCompute();
 	private:
 		Ref<VulkanMaterial>									m_Material;
 
-		VkDescriptorSetLayout								m_DescriptorSetLayout;
-		std::vector<VkDescriptorSet>						m_DescriptorSets;
-
 		VkPipelineLayout									m_PipelineLayout;
 		VkPipeline											m_ComputePipeline = nullptr;
 		VkPipelineCache										m_PipelineCache;
 		bool												m_RecreatePipeline = false;
-		uint8_t												m_NeedUpdateDescripotrSetFrames = 0;
 	};
 }
 

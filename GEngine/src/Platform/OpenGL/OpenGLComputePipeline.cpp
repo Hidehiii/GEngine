@@ -13,7 +13,7 @@ namespace GEngine
 	}
 	void OpenGLComputePipeline::Compute(uint32_t x, uint32_t y, uint32_t z)
 	{
-		m_Material->UploadData();
+		m_Material->Update();
 		ComputeCommand::Compute(x, y, z);
 	}
 	Ref<Material> OpenGLComputePipeline::GetMaterial()

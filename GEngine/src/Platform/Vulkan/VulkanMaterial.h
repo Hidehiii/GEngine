@@ -2,6 +2,7 @@
 #include "GEngine/Renderer/Material.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "GEngine/Renderer/Renderer.h"
 
 namespace GEngine
 {
@@ -11,7 +12,7 @@ namespace GEngine
 		VulkanMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial() override;
 
-		virtual void UploadData() override;
+		virtual void Update() override;
 
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
 
@@ -22,10 +23,20 @@ namespace GEngine
 
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) override;
 
-		Ref<VulkanUniformBuffer> GetUniformBuffer() { return m_UniformBuffer; }
+		Ref<VulkanUniformBuffer>	GetUniformBuffer()			{ return m_UniformBuffer; }
+		VkDescriptorSetLayout*		GetDescriptorSetLayout()	{ return &m_DescriptorSetLayout; }
+		VkDescriptorSet*			GetDescriptorSet(int index) { return &m_DescriptorSets.at(index); }
+	private:
+		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
+		void CreateDescriptorSetAndLayout();
+		void UpdateDescriptorSet(int index);
+		void UpdateAllDescriptorSet();
 	private:
 		Ref<VulkanShader>									m_Shader;
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;
+		VkDescriptorSetLayout								m_DescriptorSetLayout;
+		std::vector<VkDescriptorSet>						m_DescriptorSets;
+		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Renderer::GetFramesInFlight()) - 1;
 	};
 
 }

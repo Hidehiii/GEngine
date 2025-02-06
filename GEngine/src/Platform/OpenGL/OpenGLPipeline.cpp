@@ -14,7 +14,7 @@ namespace GEngine
     }
     void OpenGLPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
     {
-        m_Material->UploadData();
+        m_Material->Update();
         m_VertexBuffer->Bind();
         indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount(); 
         if (m_VertexBuffer->IsInstanceRendering())

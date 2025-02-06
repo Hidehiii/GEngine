@@ -13,7 +13,7 @@ namespace GEngine
 		OpenGLMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~OpenGLMaterial() override;
 
-		virtual void UploadData() override;
+		virtual void Update() override;
 
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
 

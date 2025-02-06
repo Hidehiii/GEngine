@@ -17,13 +17,9 @@ namespace GEngine
 		static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name = "");
 		static Ref<Material> Create(const std::string& shaderPath, const std::string& name = "");
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
-
-		bool HasChanged()		{ return m_HasChanged; }
-		void ResetHasChanged()	{ m_HasChanged = false; }
-
 		virtual ~Material() {}
 
-		virtual void UploadData() = 0;
+		virtual void Update() = 0;
 
 		virtual CullMode	GetCullMode()						{ return m_CullMode; }
 		virtual BlendMode	GetBlendModeColor()					{ return m_BlendModeColor; }
@@ -65,23 +61,24 @@ namespace GEngine
 
 		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
 
-		virtual void			SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
-		virtual Ref<Texture2D>	GetTexture2D(const std::string& name);
+		virtual void					SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
+		virtual void					SetTexture2D(const int index, const Ref<Texture2D>& texture);
+		virtual const Ref<Texture2D>	GetTexture2D(const std::string& name);
 
-		virtual void				SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
-		virtual Ref<StorageImage2D> GetStorageImage2D(const std::string& name);
+		virtual void						SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
+		virtual const Ref<StorageImage2D>	GetStorageImage2D(const std::string& name);
 
-		virtual void				SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
-		virtual Ref<StorageBuffer>	GetStorageBuffer(const std::string& name);
+		virtual void						SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
+		virtual const Ref<StorageBuffer>	GetStorageBuffer(const std::string& name);
 
-		virtual void			SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
-		virtual Ref<CubeMap>	GetCubeMap(const std::string& name);
+		virtual void				SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
+		virtual const Ref<CubeMap>	GetCubeMap(const std::string& name);
 
-		virtual std::vector<ShaderUniform>&					GetUniforms()			{ return m_Uniforms; }
-		virtual std::vector<ShaderUniformTexture2D>&		GetTexture2Ds()			{ return m_Texture2D; }
-		virtual std::vector<ShaderUniformStorageImage2D>&	GetStorageImage2Ds()	{ return m_StorageImage2D; }
-		virtual std::vector<ShaderUniformStorageBuffer>&	GetStorageBuffers()		{ return m_StorageBuffer; }
-		virtual std::vector<ShaderUniformCubeMap>&			GetCubeMaps()			{ return m_CubeMap; }
+		virtual const std::vector<ShaderUniform>&					GetUniforms()			{ return m_Uniforms; }
+		virtual const std::vector<ShaderUniformTexture2D>&			GetTexture2Ds()			{ return m_Texture2D; }
+		virtual const std::vector<ShaderUniformStorageImage2D>&		GetStorageImage2Ds()	{ return m_StorageImage2D; }
+		virtual const std::vector<ShaderUniformStorageBuffer>&		GetStorageBuffers()		{ return m_StorageBuffer; }
+		virtual const std::vector<ShaderUniformCubeMap>&			GetCubeMaps()			{ return m_CubeMap; }
 	protected:
 		ShaderUniform					GetUniformByName(const std::string& name) const;
 		ShaderUniformTexture2D&			GetUniformTexture2DByName(const std::string& name);
@@ -89,9 +86,6 @@ namespace GEngine
 		ShaderUniformStorageBuffer&		GetUniformStorageBufferByName(const std::string& name);
 		ShaderUniformCubeMap&			GetUniformCubeMapByName(const std::string& name);
 	protected:
-		bool m_HasChanged = false;
-
-		
 		std::string											m_Name;
 		BlendMode											m_BlendModeColor = BlendMode::None;
 		BlendMode											m_BlendModeAlpha = BlendMode::None;

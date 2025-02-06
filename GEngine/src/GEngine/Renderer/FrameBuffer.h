@@ -46,6 +46,8 @@ namespace GEngine
 		FrameBufferAttachmentSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments)
 			: Attachments(attachments) {}
 		std::vector<FrameBufferTextureSpecification> Attachments;
+
+		/*bool operator==(const FrameBufferAttachmentSpecification& other) const { return Attachments == other.Attachments; }*/
 	};
 
 	enum class FrameBufferAttachmentsAction
@@ -64,6 +66,12 @@ namespace GEngine
 
 		FrameBufferAttachmentsAction AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
 		FrameBufferAttachmentsAction AttachmentsEndAction	= FrameBufferAttachmentsAction::Store;
+
+		/*bool operator==(const FrameBufferSpecification& other) const
+		{
+			return Attachments == other.Attachments &&
+				Samples == other.Samples;
+		}*/
 	};
 
 	class GENGINE_API FrameBuffer
