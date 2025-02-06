@@ -371,8 +371,6 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
 
-		m_RenderFrameBuffer = VulkanFrameBuffer::GetCurrentVulkanFrameBuffer();
-
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
     }

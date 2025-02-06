@@ -66,11 +66,6 @@ namespace GEngine
 
 	void Renderer::Init()
 	{
-		
-
-		RenderCommand::Init();
-		Renderer2D::Init();
-
 		// Uniform Buffers的位置是固定的，所以这里直接创建
 		// 0 的位置留给自定义
 		s_ShaderUniformData.CameraUniformBuffer		= UniformBuffer::Create(sizeof(CameraData), 1);
@@ -78,6 +73,7 @@ namespace GEngine
 		s_ShaderUniformData.ModelUniformBuffer		= UniformBuffer::Create(sizeof(ModelData),	3);
 		s_ShaderUniformData.LigthUniformBuffer		= UniformBuffer::Create(sizeof(LigthData),	4);
 		s_ShaderUniformData.ScreenUniformBuffer		= UniformBuffer::Create(sizeof(ScreenData), 5);
+		Renderer2D::Init();
 	}
 
 	void Renderer::Shutdown()

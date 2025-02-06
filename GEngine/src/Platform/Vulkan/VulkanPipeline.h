@@ -1,7 +1,6 @@
 #pragma once
 #include "GEngine/Renderer/Pipeline.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
 
 
@@ -48,7 +47,6 @@ namespace GEngine
 		VkPipeline											m_GraphicsPipeline = nullptr;
 		bool												m_RecreatePipeline = false;
 		VkPipelineCache										m_PipelineCache;
-		VulkanFrameBuffer*									m_RenderFrameBuffer = nullptr;
 	};
 }
 

@@ -33,6 +33,7 @@
 #include "GEngine/Renderer/UniformBuffer.h"
 #include "GEngine/Renderer/Material.h"
 #include "GEngine/Renderer/GraphicsPresent.h"
+#include "GEngine/Renderer/Sampler.h"
 
 
 // Components

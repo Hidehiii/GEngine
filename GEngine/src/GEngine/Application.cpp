@@ -39,6 +39,7 @@ namespace GEngine
 
 
 		Renderer::Init();
+		RenderCommand::Init();
 		ScriptEngine::Init();
 		Physics3D::Init();
 

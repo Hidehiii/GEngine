@@ -7,7 +7,9 @@ namespace GEngine
 	class GENGINE_API Sampler
 	{
 	public:
+		virtual ~Sampler() = default;
 
+		//static Ref<Sampler> Create();
 	};
 }
 
