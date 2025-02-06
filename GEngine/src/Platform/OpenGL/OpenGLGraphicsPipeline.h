@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Renderer/GraphicsPipeline.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 
 #include "Platform/OpenGL/OpenGLMaterial.h"
@@ -8,11 +8,11 @@
 
 namespace GEngine
 {
-	class GENGINE_API OpenGLPipeline : public Pipeline
+	class GENGINE_API OpenGLGraphicsPipeline : public GraphicsPipeline
 	{
 	public:
-		OpenGLPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
-		virtual ~OpenGLPipeline() override;
+		OpenGLGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
+		virtual ~OpenGLGraphicsPipeline() override;
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() override { return std::static_pointer_cast<VertexBuffer>(m_VertexBuffer); }

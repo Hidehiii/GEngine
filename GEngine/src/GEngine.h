@@ -26,7 +26,7 @@
 #include "GEngine/Renderer/RenderCommand.h"
 #include "GEngine/Renderer/RenderBuffer.h"
 #include "GEngine/Renderer/Shader.h"
-#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Renderer/GraphicsPipeline.h"
 #include "GEngine/Renderer/Texture.h"
 #include "GEngine/Renderer/SubTexture2D.h"
 #include "GEngine/Renderer/FrameBuffer.h"
@@ -34,6 +34,8 @@
 #include "GEngine/Renderer/Material.h"
 #include "GEngine/Renderer/GraphicsPresent.h"
 #include "GEngine/Renderer/Sampler.h"
+#include "GEngine/Renderer/RenderPass.h"
+#include "GEngine/Renderer/RenderPipeline.h"
 
 
 // Components

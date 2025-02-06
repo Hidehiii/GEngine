@@ -1,19 +1,11 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Renderer/RenderPass.h"
 #include <vulkan/vulkan.h>
 
 namespace GEngine
 {
-	struct RenderPassSpecification
-	{
-		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
-		FrameBufferTextureSpecification					DepthAttachment;
-		int												Samples = 1;
-		FrameBufferAttachmentsAction					AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
-		FrameBufferAttachmentsAction					AttachmentsEndAction = FrameBufferAttachmentsAction::Store;
-	};
-
 	struct RenderPassSpecificationForVulkan
 	{
 		std::vector<VkFormat>						ColorAttachmentsFormat;
@@ -24,12 +16,13 @@ namespace GEngine
 		VkAttachmentStoreOp							AttachmentsEndAction = VK_ATTACHMENT_STORE_OP_STORE;
 	};
 
-	class GENGINE_API VulkanRenderPass
+	class GENGINE_API VulkanRenderPass : public RenderPass
 	{
 	public:
 		VulkanRenderPass(const RenderPassSpecification& spec);
 		VulkanRenderPass(const RenderPassSpecificationForVulkan& spec);
-		~VulkanRenderPass();
+		virtual ~VulkanRenderPass() override;
+
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);

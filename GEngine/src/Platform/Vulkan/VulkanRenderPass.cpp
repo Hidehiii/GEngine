@@ -9,6 +9,7 @@ namespace GEngine
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& spec)
 	{
+		m_Specification = spec;
 		CreateRenderPass(spec);
 	}
 

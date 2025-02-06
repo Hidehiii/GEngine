@@ -1,18 +1,18 @@
 #include "GEpch.h"
-#include "OpenGLPipeline.h"
+#include "OpenGLGraphicsPipeline.h"
 #include "GEngine/Renderer/RenderCommand.h"
 
 namespace GEngine
 {
-    OpenGLPipeline::OpenGLPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
+    OpenGLGraphicsPipeline::OpenGLGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
         m_Material      = std::dynamic_pointer_cast<OpenGLMaterial>(material);
         m_VertexBuffer  = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vertexBuffer);
     }
-    OpenGLPipeline::~OpenGLPipeline()
+    OpenGLGraphicsPipeline::~OpenGLGraphicsPipeline()
     {
     }
-    void OpenGLPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
+    void OpenGLGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
     {
         m_Material->Update();
         m_VertexBuffer->Bind();
@@ -66,11 +66,11 @@ namespace GEngine
             }
         }
     }
-    void OpenGLPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
+    void OpenGLGraphicsPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
     {
         m_VertexBuffer = std::dynamic_pointer_cast<OpenGLVertexBuffer>(buffer);
     }
-    void OpenGLPipeline::SetMaterial(Ref<Material>& material)
+    void OpenGLGraphicsPipeline::SetMaterial(Ref<Material>& material)
     {
         m_Material = std::dynamic_pointer_cast<OpenGLMaterial>(material);
     }

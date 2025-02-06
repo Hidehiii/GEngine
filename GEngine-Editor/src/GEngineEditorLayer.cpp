@@ -18,7 +18,7 @@ namespace GEngine
 	{
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
-		m_PresentPipeline			= Pipeline::Create(
+		m_PresentPipeline			= GraphicsPipeline::Create(
 			Material::Create("Assets/Shaders/PresentImGui.glsl"),
 			VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertexData.size())
 		);

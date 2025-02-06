@@ -59,12 +59,12 @@ private:
 
 	Ref<StorageImage2D> m_ComputeImage2D;
 
-	Ref<Pipeline> m_OITPrepare;
-	Ref<Pipeline> m_OIT;
-	Ref<Pipeline> m_CopyColorDepth;
+	Ref<GraphicsPipeline> m_OITPrepare;
+	Ref<GraphicsPipeline> m_OIT;
+	Ref<GraphicsPipeline> m_CopyColorDepth;
 
 	Ref<ComputePipeline> m_ComputeTest;
-	Ref<Pipeline> m_ComputeShow;
+	Ref<GraphicsPipeline> m_ComputeShow;
 
 	Ref<FrameBuffer> m_OIT_Present;
 	Ref<FrameBuffer> m_DepthOnly;
@@ -80,7 +80,7 @@ private:
 	GameObject m_SkyBox;
 
 	std::vector<PresentVertex> m_PresentVertex;
-	Ref<Pipeline> m_PresentPipeline;
+	Ref<GraphicsPipeline> m_PresentPipeline;
 
 	Editor::EditorCamera m_EditorCamera;
 };

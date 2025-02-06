@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Renderer/GraphicsPipeline.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
 
@@ -8,11 +8,11 @@
 namespace GEngine
 {
 
-	class GENGINE_API VulkanPipeline : public Pipeline
+	class GENGINE_API VulkanGraphicsPipeline : public GraphicsPipeline
 	{
 	public:
-		VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
-		virtual ~VulkanPipeline() override;
+		VulkanGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
+		virtual ~VulkanGraphicsPipeline() override;
 
 		virtual void PrepareRender();
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
@@ -32,7 +32,7 @@ namespace GEngine
 			VK_DYNAMIC_STATE_VIEWPORT,
 			VK_DYNAMIC_STATE_SCISSOR,
 			
-			//VK_DYNAMIC_STATE_LINE_WIDTH,
+			VK_DYNAMIC_STATE_LINE_WIDTH,
 			VK_DYNAMIC_STATE_CULL_MODE,
 			VK_DYNAMIC_STATE_DEPTH_COMPARE_OP,
 			VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE,

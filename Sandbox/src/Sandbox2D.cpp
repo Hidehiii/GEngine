@@ -76,7 +76,7 @@ void Sandbox2D::OnAttach()
 	
 
 	m_PresentVertex.resize(4);
-	m_OIT = Pipeline::Create(
+	m_OIT = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OIT.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
@@ -85,7 +85,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"}
 		});
 
-	m_CopyColorDepth = Pipeline::Create(
+	m_CopyColorDepth = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/CopyColorDepth.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
@@ -94,7 +94,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float2,	"UV"}
 		});
 
-	m_PresentPipeline = Pipeline::Create(
+	m_PresentPipeline = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
@@ -122,7 +122,7 @@ void Sandbox2D::OnAttach()
 
 	int count = 12;
 	m_vertex.resize(count);
-	m_OITPrepare = Pipeline::Create(
+	m_OITPrepare = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OITPrepare.glsl")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);

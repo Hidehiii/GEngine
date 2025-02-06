@@ -8,7 +8,7 @@
 #include "GEngine/Renderer/UniformBuffer.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Time.h"
-#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Renderer/GraphicsPipeline.h"
 
 namespace GEngine
 {
@@ -47,21 +47,21 @@ namespace GEngine
 	{
 		static const uint32_t MaxInstance		= 20000;
 
-		Ref<Pipeline>			QuadPipeline;
-		uint32_t				QuadInstanceCount			= 0;
-		uint32_t				QuadTextureIndex		= 1; // 0 = white texture
-		QuadVertexInstance*		QuadInstanceBufferBase	= nullptr;
-		QuadVertexInstance*		QuadInstanceBufferPtr	= nullptr;
+		Ref<GraphicsPipeline>		QuadPipeline;
+		uint32_t					QuadInstanceCount			= 0;
+		uint32_t					QuadTextureIndex		= 1; // 0 = white texture
+		QuadVertexInstance*			QuadInstanceBufferBase	= nullptr;
+		QuadVertexInstance*			QuadInstanceBufferPtr	= nullptr;
 
-		Ref<Pipeline>		LinePipeline;
-		uint32_t			LineVertexCount = 0;
-		LineVertex*			LineVertexBufferBase	= nullptr;
-		LineVertex*			LineVertexBufferPtr		= nullptr;
+		Ref<GraphicsPipeline>		LinePipeline;
+		uint32_t					LineVertexCount = 0;
+		LineVertex*					LineVertexBufferBase	= nullptr;
+		LineVertex*					LineVertexBufferPtr		= nullptr;
 
-		Ref<Pipeline>		PointPipeline;
-		uint32_t			PointVertexCount = 0;
-		PointVertex*		PointVertexBufferBase	= nullptr;
-		PointVertex*		PointVertexBufferPtr	= nullptr;
+		Ref<GraphicsPipeline>		PointPipeline;
+		uint32_t					PointVertexCount = 0;
+		PointVertex*				PointVertexBufferBase	= nullptr;
+		PointVertex*				PointVertexBufferPtr	= nullptr;
 
 		Renderer2D::Statistics stats;
 
@@ -76,7 +76,7 @@ namespace GEngine
 		{
 			// Quad
 			{
-				s_Data.QuadPipeline = Pipeline::Create(
+				s_Data.QuadPipeline = GraphicsPipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Quad2DInstance.glsl")),
 					VertexBuffer::Create(6 * sizeof(QuadVertex), s_Data.MaxInstance * sizeof(QuadVertexInstance))
 				);
@@ -118,7 +118,7 @@ namespace GEngine
 
 			// Line
 			{
-				s_Data.LinePipeline = Pipeline::Create(
+				s_Data.LinePipeline = GraphicsPipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Line2D.glsl")),
 					VertexBuffer::Create(s_Data.MaxInstance * sizeof(LineVertex), 0, VertexTopology::Line)
 				);
@@ -144,7 +144,7 @@ namespace GEngine
 
 			// Point
 			{
-				s_Data.PointPipeline = Pipeline::Create(
+				s_Data.PointPipeline = GraphicsPipeline::Create(
 					Material::Create(Shader::Create("Assets/Shaders/2D/Point2D.glsl")),
 					VertexBuffer::Create(s_Data.MaxInstance * sizeof(PointVertex), 0, VertexTopology::Point)
 				);

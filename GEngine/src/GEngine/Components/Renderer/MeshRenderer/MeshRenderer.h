@@ -2,7 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Components/Component.h"
-#include "GEngine/Renderer/Pipeline.h"
+#include "GEngine/Renderer/GraphicsPipeline.h"
 #include "GEngine/Asset/Mesh.h"
 namespace GEngine
 {
@@ -22,8 +22,8 @@ namespace GEngine
 	private:
 		void UpdatePipeline();
 	private:
-		Ref<Pipeline>	m_Pipeline = nullptr;
-		Ref<Material>   m_Material = nullptr;
+		Ref<GraphicsPipeline>	m_Pipeline = nullptr;
+		Ref<Material>			m_Material = nullptr;
 		friend class MeshFilter;
 	};
 }

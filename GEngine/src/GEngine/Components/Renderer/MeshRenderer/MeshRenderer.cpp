@@ -31,7 +31,7 @@ namespace GEngine
 			Mesh mesh = m_GameObject.GetComponent<MeshFilter>().m_Mesh;
 			if (m_Pipeline)
 			{
-				m_Pipeline = Pipeline::Create(
+				m_Pipeline = GraphicsPipeline::Create(
 					m_Pipeline->GetMaterial(),
 					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
 				);
@@ -43,7 +43,7 @@ namespace GEngine
 				{
 					m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));
 				}
-				m_Pipeline = Pipeline::Create(
+				m_Pipeline = GraphicsPipeline::Create(
 					m_Material,
 					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
 				);

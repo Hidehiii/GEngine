@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanPipeline.h"
+#include "VulkanGraphicsPipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
@@ -13,7 +13,7 @@
 namespace GEngine
 {
 
-    VulkanPipeline::VulkanPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
         m_VertexBuffer          = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
@@ -26,7 +26,7 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreatePipelineCache(VulkanContext::Get()->GetDevice(), &pipelineCacheInfo, nullptr, &m_PipelineCache));
     }
 
-    VulkanPipeline::~VulkanPipeline()
+	VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
     {
 		if (VulkanContext::Get()->GetDevice())
 		{
@@ -37,7 +37,7 @@ namespace GEngine
         
     }
 
-    void VulkanPipeline::PrepareRender()
+    void VulkanGraphicsPipeline::PrepareRender()
     {
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
@@ -56,8 +56,6 @@ namespace GEngine
 		}
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
-		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples));
-
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
 		Viewport.y			= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
@@ -71,9 +69,8 @@ namespace GEngine
 		Scissor.offset = { 0, 0 };
 		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
 		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Scissor);
-		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetRasterizationSamplesEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSamples()));
-		//VkColorComponentFlags colorMaks[] = { VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
-		//VulkanContext::Get()->GetVulkanFunctionEXT().vkCmdSetColorWriteMaskEXT(VulkanContext::Get()->GetCurrentDrawCommandBuffer(), 0, 1, colorMaks);
+
+		vkCmdSetLineWidth(VulkanContext::Get()->GetCurrentCommandBuffer(), 1.0f);
 		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentCommandBuffer(), m_Material->GetEnableDepthWrite());
 		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
@@ -81,7 +78,7 @@ namespace GEngine
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), 0, nullptr);
     }
 
-	void VulkanPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
+	void VulkanGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
 	{
 		PrepareRender();
 		m_VertexBuffer->Bind();
@@ -136,28 +133,28 @@ namespace GEngine
 		}
 	}
 
-	Ref<VertexBuffer> VulkanPipeline::GetVertexBuffer()
+	Ref<VertexBuffer> VulkanGraphicsPipeline::GetVertexBuffer()
 	{
 		return (m_VertexBuffer);
 	}
 
-	void VulkanPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
+	void VulkanGraphicsPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
 	{
 		m_VertexBuffer = std::dynamic_pointer_cast<VulkanVertexBuffer>(buffer);
 		m_RecreatePipeline = true;
 	}
 
-	Ref<Material> VulkanPipeline::GetMaterial()
+	Ref<Material> VulkanGraphicsPipeline::GetMaterial()
 	{
 		return (m_Material);
 	}
 
-	void VulkanPipeline::SetMaterial(Ref<Material>& material)
+	void VulkanGraphicsPipeline::SetMaterial(Ref<Material>& material)
 	{
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-    void VulkanPipeline::CreatePipeline()
+    void VulkanGraphicsPipeline::CreatePipeline()
     {
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();

@@ -2,61 +2,11 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
+#include "RenderPass.h"
 #include "GEngine/Renderer/Texture.h"
 
 namespace GEngine
 {
-	enum class FrameBufferTextureFormat
-	{
-		None = 0,
-
-		// Color
-		RGBA8,
-		R32F,
-		RG16F,
-		R32I,
-		RG16I,
-		R32UI,
-		RG16UI,
-
-		// Depth,Stencil
-		DEPTH24STENCIL8,
-
-		// Depth
-		DEPTH
-	};
-
-	// Frame buffer texture specification
-	// Contains the texture format
-	struct FrameBufferTextureSpecification
-	{
-		FrameBufferTextureSpecification() = default;
-		FrameBufferTextureSpecification(FrameBufferTextureFormat format)
-			: TextureFormat(format) {}
-
-		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
-	};
-
-	// Frame buffer attachment specification
-	// Contains the frame buffer texture specification
-	// Contains the frame buffer texture format
-	struct FrameBufferAttachmentSpecification
-	{
-		FrameBufferAttachmentSpecification() = default;
-		FrameBufferAttachmentSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments)
-			: Attachments(attachments) {}
-		std::vector<FrameBufferTextureSpecification> Attachments;
-
-		/*bool operator==(const FrameBufferAttachmentSpecification& other) const { return Attachments == other.Attachments; }*/
-	};
-
-	enum class FrameBufferAttachmentsAction
-	{
-		None	= 0,  // begin, end
-		Load	= 1,  // begin
-		Clear	= 2,  // end
-		Store	= 3   // end
-	};
 
 	struct FrameBufferSpecification
 	{
@@ -94,6 +44,9 @@ namespace GEngine
 		virtual Ref<Texture2D>					GetColorAttachment(int index) = 0;
 		virtual Ref<Texture2D>					GetDepthStencilAttachment() = 0;
 
+		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const Vector2& size);
+		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
+		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const FrameBufferSpecification& spec);
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, Vector2 size);
