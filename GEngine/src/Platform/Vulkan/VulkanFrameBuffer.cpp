@@ -165,6 +165,7 @@ namespace GEngine
 	{
 		if (VulkanContext::Get()->GetDevice())
 		{
+			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
 			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
 			if (m_Specification.Samples > 1)
 			{

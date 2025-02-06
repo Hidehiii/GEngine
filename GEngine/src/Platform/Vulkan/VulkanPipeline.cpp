@@ -60,10 +60,10 @@ namespace GEngine
 			CreatePipeline();
 			UpdateAllDescriptorSet();
 		}
-		if (m_NeedUpdateDescripotrSetFrameCount)
+		if (m_NeedUpdateDescripotrSetFrames & (uint8_t)(std::pow(2, Renderer::GetCurrentFrame())))
 		{
 			UpdateDescriptorSet(Renderer::GetCurrentFrame());
-			m_NeedUpdateDescripotrSetFrameCount--;
+			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Renderer::GetCurrentFrame());
 		}
 		
 		
@@ -162,7 +162,7 @@ namespace GEngine
 
 	Ref<Material> VulkanPipeline::GetMaterial()
 	{
-		m_NeedUpdateDescripotrSetFrameCount = Renderer::GetFramesInFlight();
+		m_NeedUpdateDescripotrSetFrames = std::pow(2, Renderer::GetFramesInFlight()) - 1;
 		return (m_Material);
 	}
 

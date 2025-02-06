@@ -19,7 +19,7 @@ namespace GEngine
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
 		m_PresentPipeline			= Pipeline::Create(
-			Material::Create(Shader::Create("Assets/Shaders/PresentImGui.glsl")),
+			Material::Create("Assets/Shaders/PresentImGui.glsl"),
 			VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertexData.size())
 		);
 		m_PresentPipeline->GetVertexBuffer()->SetLayout({
@@ -168,7 +168,6 @@ namespace GEngine
 				m_ActiveScene->OnUpdate();
 			}
 		}
-		Renderer2D::ResetStats();
 
 		// Scene Viewport
 		{			
@@ -176,9 +175,7 @@ namespace GEngine
 			FrameBufferSpecification fbspec = m_SceneViewportFrameBuffer->GetSpecification();
 			if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y))
 			{
-				fbspec.Width = m_SceneViewportSize.x;
-				fbspec.Height = m_SceneViewportSize.y;
-				m_SceneViewportFrameBuffer = FrameBuffer::Create(fbspec);
+				m_SceneViewportFrameBuffer = FrameBuffer::Recreate(m_SceneViewportFrameBuffer, m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
 			if (Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
 			{
@@ -214,8 +211,6 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnRender()
 	{
-		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-
 		RenderCommand::BeginGraphicsCommand();
 		m_SceneViewportFrameBuffer->Begin();
 		{

@@ -29,7 +29,7 @@ namespace GEngine
 		VkPipeline											m_ComputePipeline = nullptr;
 		VkPipelineCache										m_PipelineCache;
 		bool												m_RecreatePipeline = false;
-		uint8_t												m_NeedUpdateDescripotrSetFrameCount = 0;
+		uint8_t												m_NeedUpdateDescripotrSetFrames = 0;
 	};
 }
 

@@ -80,8 +80,8 @@ namespace GEngine
 					entt::entity dstEntity = enttMap.at(src.get<Attribute>(srcEntity).GetUUID());
 
 					auto& srcComponent = src.get<Component>(srcEntity);
-					Component& component = dst.emplace_or_replace<Component>(dstEntity, srcComponent);
-					component.AttachGameObject({ dstEntity, scene.get() });
+					GameObject obj = { dstEntity, scene.get() };
+					obj.AddOrReplaceComponent<Component>(srcComponent);
 				}
 			}(), ...);
 	};
@@ -297,7 +297,7 @@ namespace GEngine
 		// Add physics update
 		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [&]() {
 				m_PhysicsWorld2D->Simulate(Time::GetPhysicsDeltaTime());
-				m_PhysicsWorld3D->Simulate(Time::GetPhysicsDeltaTime());
+				//m_PhysicsWorld3D->Simulate(Time::GetPhysicsDeltaTime());
 
 				// retrieve transform
 				auto view = m_Registry.view<RigidBody2D>();
