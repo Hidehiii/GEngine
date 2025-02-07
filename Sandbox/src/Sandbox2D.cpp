@@ -25,7 +25,7 @@ void Sandbox2D::OnAttach()
 	RenderPassSpecification spec;
 	spec.ColorAttachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8 };
 	spec.DepthAttachment = FrameBufferTextureFormat::DEPTH;
-	spec.Samples = 1;
+	spec.Samples = 4;
 	m_OpaquePass = RenderPass::Create(spec);
 
 	m_OIT_Present = FrameBuffer::Create(m_OpaquePass, 720, 720);
@@ -244,7 +244,6 @@ void Sandbox2D::OnRender()
 	m_SkyBoxFB->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
-	//m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
 	RenderCommand::EndGraphicsCommand();
