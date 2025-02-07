@@ -55,6 +55,7 @@ namespace GEngine
 			}
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 			m_RecreatePipeline = false;
+			m_GraphicsPipelines.clear();
 		}
         vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline());
 

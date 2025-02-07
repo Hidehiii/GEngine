@@ -22,21 +22,23 @@ void Sandbox2D::OnAttach()
 	//m_RayTracing.Init();
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
+	Ref<RenderPass> OpaquePass, DepthOnlyPass;
+
 	RenderPassSpecification spec;
 	spec.ColorAttachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8 };
 	spec.DepthAttachment = FrameBufferTextureFormat::DEPTH;
 	spec.Samples = 4;
-	m_OpaquePass = RenderPass::Create(spec);
+	OpaquePass = RenderPass::Create(spec);
 
 	spec.ColorAttachments = {};
 	spec.Samples = 1;
-	m_DepthOnlyPass = RenderPass::Create(spec);
+	DepthOnlyPass = RenderPass::Create(spec);
 
-	m_OIT_Present = FrameBuffer::Create(m_OpaquePass, 720, 720);
+	m_OIT_Present = FrameBuffer::Create(OpaquePass, 720, 720);
 
-	m_SkyBoxFB = FrameBuffer::Create(m_OpaquePass, 720, 720);
+	m_SkyBoxFB = FrameBuffer::Create(OpaquePass, 720, 720);
 
-	m_DepthOnly = FrameBuffer::Create(m_DepthOnlyPass, 720, 720);
+	m_DepthOnly = FrameBuffer::Create(DepthOnlyPass, 720, 720);
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 

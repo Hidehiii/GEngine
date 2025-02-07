@@ -6,17 +6,23 @@
 
 
 
-
 namespace GEngine
 {
 	std::vector<VulkanUniformBuffer*>	VulkanUniformBuffer::s_PublicUniformBuffer;
 
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
 	{
+		// 公共ubo索引不为0
+		if (binding != 0)
+		{
+			AddPublicUniformBuffer(this);
+		}
+
 		m_Binding						= binding;
 		size = size <= 0 ? 1 : size;
 
 		m_DescriptorSetLayoutBinding.binding			= binding;
+		m_DescriptorSetLayoutBinding.descriptorType		= binding != 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
 		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
@@ -34,11 +40,7 @@ namespace GEngine
 		m_BufferInfo.buffer		= m_UniformBuffer;
 		m_BufferInfo.offset		= m_Offset;
 		m_BufferInfo.range		= size;
-		// 公共ubo索引不为0
-		if (binding != 0)
-		{
-			AddPublicUniformBuffer(this);
-		}
+		
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
@@ -55,7 +57,7 @@ namespace GEngine
 		{
 			m_Offset = offset;
 			vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory);
-			vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
+			vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);//vkFlushMappedMemoryRanges()
 		}
 		memcpy(m_MapData, data, size);
 

@@ -548,6 +548,17 @@ namespace GEngine
 			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
 		}
 
+		void CopyBufferToBuffer(VkCommandBuffer CmdBuffer, VkBuffer src, VkBuffer dst, uint32_t size)
+		{
+
+			VkBufferCopy	copyRegion{};
+			copyRegion.srcOffset = 0;
+			copyRegion.dstOffset = 0;
+			copyRegion.size = size;
+
+			vkCmdCopyBuffer(CmdBuffer, src, dst, 1, &copyRegion);
+		}
+
 		VkBlendFactor BlendFactorToVulkanBlendFactor(BlendFactor factor)
 		{
 			switch (factor)

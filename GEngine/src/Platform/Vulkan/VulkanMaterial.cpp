@@ -202,7 +202,7 @@ namespace GEngine
 			descriptorWrite.dstSet				= m_DescriptorSets.at(index);
 			descriptorWrite.dstBinding			= buffer->GetBinding();
 			descriptorWrite.dstArrayElement		= 0;
-			descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorType		= buffer->GetDescriptorSetLayoutBinding().descriptorType;
 			descriptorWrite.descriptorCount		= 1;
 			descriptorWrite.pBufferInfo			= buffer->GetDescriptorBufferInfo();
 			descriptorWrite.pImageInfo			= nullptr; // Optional
@@ -215,7 +215,7 @@ namespace GEngine
 		descriptorWrite.dstSet					= m_DescriptorSets.at(index);
 		descriptorWrite.dstBinding				= m_UniformBuffer->GetBinding();
 		descriptorWrite.dstArrayElement			= 0;
-		descriptorWrite.descriptorType			= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorType			= m_UniformBuffer->GetDescriptorSetLayoutBinding().descriptorType;
 		descriptorWrite.descriptorCount			= 1;
 		descriptorWrite.pBufferInfo				= m_UniformBuffer->GetDescriptorBufferInfo();
 		descriptorWrite.pImageInfo				= nullptr; // Optional

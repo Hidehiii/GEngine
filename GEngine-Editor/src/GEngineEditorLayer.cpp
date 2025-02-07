@@ -47,12 +47,13 @@ namespace GEngine
 		m_PlayButtonIcon_Display	= m_PlayButtonIcon;
 		m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 
-		FrameBufferSpecification		fspec;
-		fspec.Attachments				= { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
-		fspec.Width						= 1280;
-		fspec.Height					= 720;
-		m_SceneViewportFrameBuffer		= FrameBuffer::Create(fspec);
-		m_GameViewportFrameBuffer		= FrameBuffer::Create(fspec);
+		RenderPassSpecification			spec;
+		spec.ColorAttachments			= { FrameBufferTextureFormat::RGBA8 };
+		spec.DepthAttachment			= FrameBufferTextureFormat::DEPTH;
+		Ref<RenderPass> pass = RenderPass::Create(spec);
+
+		m_SceneViewportFrameBuffer		= FrameBuffer::Create(pass, 1080, 720);
+		m_GameViewportFrameBuffer		= FrameBuffer::Create(pass, 1080, 720);
 		m_EditorCamera					= Editor::EditorCamera(30.0f, 1.778f, 0.01f, 10000.0f);
 		m_EditorScene					= CreateRef<Scene>();
 		m_ActiveScene					= m_EditorScene;
@@ -179,14 +180,13 @@ namespace GEngine
 		auto camera = m_ActiveScene->MainCamera();
 		if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspec.Width != m_GameViewportSize.x || fbspec.Height != m_GameViewportSize.y))
 		{
-			fbspec.Width	= m_GameViewportSize.x;
-			fbspec.Height	= m_GameViewportSize.y;
-			m_GameViewportFrameBuffer = FrameBuffer::Create(fbspec);
+			m_GameViewportFrameBuffer = FrameBuffer::Create(m_GameViewportFrameBuffer, m_GameViewportSize);
 		}
 		if ((camera && Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType) != fbspec.Samples))
 		{
-			fbspec.Samples = Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType);
-			m_GameViewportFrameBuffer = FrameBuffer::Create(fbspec);
+			RenderPassSpecification spec = m_GameViewportFrameBuffer->GetRenderPass()->GetSpecification();
+			spec.Samples = Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType);
+			m_GameViewportFrameBuffer = FrameBuffer::Create(RenderPass::Create(spec), fbspec.Width, fbspec.Height);
 		}
 
 		// Scene Viewport	
@@ -194,12 +194,13 @@ namespace GEngine
 		 fbspec = m_SceneViewportFrameBuffer->GetSpecification();
 		if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y))
 		{
-			m_SceneViewportFrameBuffer = FrameBuffer::Recreate(m_SceneViewportFrameBuffer, m_SceneViewportSize.x, m_SceneViewportSize.y);
+			m_SceneViewportFrameBuffer = FrameBuffer::Create(m_SceneViewportFrameBuffer, m_SceneViewportSize);
 		}
 		if (Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
 		{
-			fbspec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
-			m_SceneViewportFrameBuffer = FrameBuffer::Create(fbspec);
+			RenderPassSpecification spec = m_SceneViewportFrameBuffer->GetRenderPass()->GetSpecification();
+			spec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
+			m_SceneViewportFrameBuffer = FrameBuffer::Create(RenderPass::Create(spec), fbspec.Width, fbspec.Height);
 		}
 	}
 

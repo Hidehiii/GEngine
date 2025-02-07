@@ -7,18 +7,13 @@
 
 namespace GEngine
 {
+	// 用于识别当前pass和pipeline是否兼容
 	struct VulkanGraphicsPipelineInfo
 	{
 		VkPipeline	GraphicsPipeline;
 
 		int Samples;
 		VkRenderPass RenderPass;
-
-		bool operator==(const VulkanGraphicsPipelineInfo& other) const
-		{
-			return Samples == other.Samples &&
-				RenderPass == other.RenderPass;
-		}
 	};
 
 	class GENGINE_API VulkanGraphicsPipeline : public GraphicsPipeline

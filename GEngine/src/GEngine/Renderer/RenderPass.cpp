@@ -21,6 +21,7 @@ namespace GEngine
 			if (pass == nullptr)
 			{
 				pass = CreateRef<OpenGLRenderPass>(spec);
+				s_RenderPasses.push_back(pass);
 			}
 			return pass;
 		}
@@ -29,6 +30,7 @@ namespace GEngine
 			if (pass == nullptr)
 			{
 				pass = CreateRef<VulkanRenderPass>(spec);
+				s_RenderPasses.push_back(pass);
 			}
 			return pass;
 		}
