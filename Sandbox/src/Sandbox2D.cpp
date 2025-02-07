@@ -22,17 +22,17 @@ void Sandbox2D::OnAttach()
 	//m_RayTracing.Init();
 	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
-	FrameBufferSpecification fspec;
-	fspec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::DEPTH };
-	fspec.Width = 720;
-	fspec.Height = 720;
-	fspec.Samples = 1;
-	m_OIT_Present = FrameBuffer::Create(fspec);
-	fspec.Samples = 8;
-	m_SkyBoxFB = FrameBuffer::Create(fspec);
-	fspec.Samples = 1;
-	fspec.Attachments = { FrameBufferTextureFormat::DEPTH };
-	m_DepthOnly = FrameBuffer::Create(fspec);
+	RenderPassSpecification spec;
+	spec.ColorAttachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8 };
+	spec.DepthAttachment = FrameBufferTextureFormat::DEPTH;
+	spec.Samples = 1;
+	m_OpaquePass = RenderPass::Create(spec);
+
+	m_OIT_Present = FrameBuffer::Create(m_OpaquePass, 720, 720);
+
+	m_SkyBoxFB = FrameBuffer::Create(m_OpaquePass, 720, 720);
+
+	m_DepthOnly = FrameBuffer::Create(m_OpaquePass, 720, 720);
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -294,17 +294,17 @@ void Sandbox2D::OnUpdate()
 	if (m_OIT_Present->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_OIT_Present->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_OIT_Present = FrameBuffer::Recreate(m_OIT_Present, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_OIT_Present = FrameBuffer::Create(m_OIT_Present, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 	if (m_DepthOnly->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_DepthOnly->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_DepthOnly = FrameBuffer::Recreate(m_DepthOnly, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_DepthOnly = FrameBuffer::Create(m_DepthOnly, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 	if (m_SkyBoxFB->GetHeight() != Application::Get().GetWindow().GetHeight() ||
 		m_SkyBoxFB->GetWidth() != Application::Get().GetWindow().GetWidth())
 	{
-		m_SkyBoxFB = FrameBuffer::Recreate(m_SkyBoxFB, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		m_SkyBoxFB = FrameBuffer::Create(m_SkyBoxFB, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 }
 

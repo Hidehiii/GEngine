@@ -71,6 +71,7 @@ namespace GEngine
         CreateImageViews();
         CreateCommandBuffers();
         CreateDescriptor();
+        CreateRenderPass();
         CreateFrameBuffer();
         CreateSyncObjects();
 	}
@@ -90,7 +91,7 @@ namespace GEngine
         m_CommandBuffer.Release();
         for (auto frameBuffer : m_SwapChainFrameBuffers)
         {
-            vkDestroyFramebuffer(m_Device, frameBuffer->GetFrameBuffer(), nullptr);
+            vkDestroyFramebuffer(m_Device, frameBuffer->GetVulkanFrameBuffer(), nullptr);
         }
         for (auto imageView : m_SwapChainImageViews)
 		{
@@ -601,6 +602,35 @@ namespace GEngine
             Utils::CreateImageViews(m_Device, m_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, m_SwapChainImageViews[i]);
         }
     }
+    void VulkanContext::CreateRenderPass()
+    {
+        RenderPassSpecificationForVulkan    spec;
+        spec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
+		spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
+		spec.EnableDepthStencilAttachment   = true;
+		spec.Samples                        = 1;
+		spec.AttachmentsBeginAction         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		spec.AttachmentsEndAction           = VK_ATTACHMENT_STORE_OP_STORE;
+
+        m_SwapChainRenderPass               = VulkanRenderPass::Create(spec);
+    }
+	void VulkanContext::CreateFrameBuffer()
+	{
+		m_SwapChainFrameBuffers.resize(m_SwapChainImageViews.size());
+		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
+			std::vector<VkImageView> attachmentsVec = { m_SwapChainImageViews[i] };
+			std::vector<VkImage> imagesVec          = { m_SwapChainImages[i] };
+
+			FrameBufferSpecificationForVulkan   spec;
+			spec.ColorImages                    = imagesVec;
+			spec.ColorAttachments               = attachmentsVec;
+			spec.Width                          = m_SwapChainExtent.width;
+			spec.Height                         = m_SwapChainExtent.height;
+
+			Ref<VulkanFrameBuffer> frameBuffer = CreateRef<VulkanFrameBuffer>(m_SwapChainRenderPass, spec);
+			m_SwapChainFrameBuffers[i] = frameBuffer;
+		}
+	}
     void VulkanContext::CreateCommandBuffers()
     {
         m_CommandBuffer                     = VulkanCommandBuffer(m_QueueFamily, m_CommandBufferSizePerFrame * Renderer::GetFramesInFlight());
@@ -764,27 +794,5 @@ namespace GEngine
         m_CommandBuffer.EndSingleTimeGraphicsCommands(commandBuffer, m_GraphicsQueue);
 	}
 
-	void VulkanContext::CreateFrameBuffer()
-	{
-        m_SwapChainFrameBuffers.resize(m_SwapChainImageViews.size());
-		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
-            std::vector<VkImageView> attachmentsVec = { m_SwapChainImageViews[i] };
-            std::vector<VkImage> imagesVec = { m_SwapChainImages[i] };
-
-            FrameBufferSpecificationForVulkan   spec;
-            spec.ColorImages                    = imagesVec;
-            spec.ColorAttachments               = attachmentsVec;
-            spec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
-            spec.Width                          = m_SwapChainExtent.width;
-            spec.Height                         = m_SwapChainExtent.height;
-            spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
-            spec.EnableDepthStencilAttachment   = true;
-            spec.Samples                        = 1;
-            spec.AttachmentsBeginAction         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            spec.AttachmentsEndAction           = VK_ATTACHMENT_STORE_OP_STORE;
-
-			Ref<VulkanFrameBuffer> frameBuffer  = CreateRef<VulkanFrameBuffer>(spec);
-			m_SwapChainFrameBuffers[i]          = frameBuffer;
-		}
-	}
+	
 }

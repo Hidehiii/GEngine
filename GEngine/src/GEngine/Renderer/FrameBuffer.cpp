@@ -10,15 +10,7 @@ namespace GEngine
 
 	Ref<FrameBuffer> FrameBuffer::Create(const Ref<RenderPass>& renderPass, const Vector2& size)
 	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return Create(renderPass, size.x, size.y);
-		case RendererAPI::API::Vulkan:  return Create(renderPass, size.x, size.y);
-		}
-
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
+		return Create(renderPass, size.x, size.y);
 	}
 
 	Ref<FrameBuffer> FrameBuffer::Create(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
@@ -34,33 +26,7 @@ namespace GEngine
 		return nullptr;
 	}
 
-	Ref<FrameBuffer> FrameBuffer::Create(const Ref<RenderPass>& renderPass, const FrameBufferSpecification& spec)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return CreateRef<OpenGLFrameBuffer>(renderPass, spec);
-		case RendererAPI::API::Vulkan:  return CreateRef<VulkanFrameBuffer>(renderPass, spec);
-		}
-
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
-
-	Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& spec)
-    {
-        switch (Renderer::GetAPI())
-        {
-		case RendererAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return CreateRef<OpenGLFrameBuffer>(spec);
-		case RendererAPI::API::Vulkan:  return CreateRef<VulkanFrameBuffer>(spec);
-		}
-
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
-
-	Ref<FrameBuffer> FrameBuffer::Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+	Ref<FrameBuffer> FrameBuffer::Create(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -73,8 +39,8 @@ namespace GEngine
 		return nullptr;
 	}
 
-	Ref<FrameBuffer> FrameBuffer::Recreate(const Ref<FrameBuffer>& buffer, Vector2 size)
+	Ref<FrameBuffer> FrameBuffer::Create(const Ref<FrameBuffer>& buffer, Vector2 size)
 	{
-		return Recreate(buffer, size.x, size.y);
+		return Create(buffer, size.x, size.y);
 	}
 }

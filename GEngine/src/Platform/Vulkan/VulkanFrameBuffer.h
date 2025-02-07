@@ -11,20 +11,14 @@ namespace GEngine
 		std::vector<VkImageView>	ColorAttachments;
 		std::vector<VkImage>		ColorImages;
 		uint32_t					Width, Height;
-		std::vector<VkFormat>		ColorAttachmentsFormat;
-		std::vector<VkImageLayout>	ColorAttachmentsFinalLayout;
-		bool						EnableDepthStencilAttachment = false;
-		int							Samples = 1;
-		VkAttachmentLoadOp			AttachmentsBeginAction = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		VkAttachmentStoreOp			AttachmentsEndAction = VK_ATTACHMENT_STORE_OP_STORE;
 	};
 
 	class GENGINE_API VulkanFrameBuffer : public FrameBuffer
 	{
 	public:
-		VulkanFrameBuffer(const FrameBufferSpecification& spec);
+		VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
 		VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
-		VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec);
+		VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
 		virtual void Begin() override;
@@ -35,16 +29,16 @@ namespace GEngine
 		virtual Ref<Texture2D>					GetColorAttachment(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencilAttachment() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
+		virtual	Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
-		VkRenderPass	GetRenderPass() { return m_RenderPass->GetRenderPass(); }
-		VkFramebuffer	GetFrameBuffer() { return m_FrameBuffer; }
+		VkFramebuffer	GetVulkanFrameBuffer() { return m_FrameBuffer; }
+		VkRenderPass	GetVulkanRenderPass() { return m_RenderPass->GetRenderPass(); }
 	public:
 		//用于给交换链创建使用
-		static Ref<VulkanFrameBuffer> Create(const FrameBufferSpecificationForVulkan spec);
+		static Ref<VulkanFrameBuffer> Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
 
 		static VulkanFrameBuffer* GetCurrentVulkanFrameBuffer() { return s_CurrentVulkanFrameBuffer; }
 	private:
-		void CreateRenderPass();
 		void CreateBuffer();
 	private:
 		static VulkanFrameBuffer*	s_CurrentVulkanFrameBuffer;

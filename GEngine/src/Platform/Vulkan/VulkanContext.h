@@ -87,6 +87,7 @@ namespace GEngine
 		VkExtent2D					ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, const unsigned int width, const unsigned int height);
 		void						CreateSwapChain(const unsigned int width, const unsigned int height);
 		void						CreateImageViews();
+		void						CreateRenderPass();
 		void						CreateFrameBuffer();
 		void						CreateCommandBuffers();
 		void						CreateDescriptor();
@@ -144,6 +145,7 @@ namespace GEngine
 		VkFormat							m_SwapChainImageFormat;
 		VkExtent2D							m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
+		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		int									m_CommandBufferSizePerFrame = 30;
 		VulkanCommandBuffer					m_CommandBuffer;

@@ -57,20 +57,17 @@ namespace GEngine
         }
     }
 
-    OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& spec)
+    OpenGLFrameBuffer::OpenGLFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
     {
-        m_Specification = spec;
-        for (auto format : m_Specification.Attachments.Attachments)
-        {
-            if (Utils::isDepthFormat(format.TextureFormat))
-            {
-                m_DepthAttachmentSpec = format;
-            }
-            else
-            {
-                m_ColorAttachmentsSpecs.emplace_back(format);
-            }
-		}
+        m_Specification.ColorAttachments        = renderPass->GetSpecification().ColorAttachments;
+        m_Specification.DepthAttachment         = renderPass->GetSpecification().DepthAttachment;
+        m_Specification.Samples                 = renderPass->GetSpecification().Samples;
+        m_Specification.AttachmentsBeginAction  = renderPass->GetSpecification().AttachmentsBeginAction;
+        m_Specification.AttachmentsEndAction    = renderPass->GetSpecification().AttachmentsEndAction;
+        m_Specification.Width                   = width;
+        m_Specification.Height                  = height;
+
+        m_RenderPass = std::dynamic_pointer_cast<OpenGLRenderPass>(renderPass);
 
         CreateBuffer();
     }
@@ -79,17 +76,8 @@ namespace GEngine
         m_Specification         = buffer->GetSpecification();
         m_Specification.Width   = width;
         m_Specification.Height  = height;
-        for (auto format : m_Specification.Attachments.Attachments)
-        {
-            if (Utils::isDepthFormat(format.TextureFormat))
-            {
-                m_DepthAttachmentSpec = format;
-            }
-            else
-            {
-                m_ColorAttachmentsSpecs.emplace_back(format);
-            }
-        }
+
+        m_RenderPass = std::dynamic_pointer_cast<OpenGLRenderPass>(buffer->GetRenderPass());
 
         CreateBuffer();
     }
@@ -113,15 +101,15 @@ namespace GEngine
             glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleRendererID);
 
             // Attachments
-            if (m_ColorAttachmentsSpecs.size())
+            if (m_Specification.ColorAttachments.size())
             {
-                m_MultiSampleColorAttachments.resize(m_ColorAttachmentsSpecs.size());
+                m_MultiSampleColorAttachments.resize(m_Specification.ColorAttachments.size());
                 Utils::CreateTextures(m_Specification.Samples > 1, m_MultiSampleColorAttachments.data(), m_MultiSampleColorAttachments.size());
 
                 for (size_t i = 0; i < m_MultiSampleColorAttachments.size(); i++)
                 {
                     Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleColorAttachments[i]);
-                    switch (m_ColorAttachmentsSpecs[i].TextureFormat)
+                    switch (m_Specification.ColorAttachments[i].TextureFormat)
                     {
                     case FrameBufferTextureFormat::RGBA8:
                     {
@@ -162,11 +150,11 @@ namespace GEngine
                 }
             }
 
-            if (m_DepthAttachmentSpec.TextureFormat != FrameBufferTextureFormat::None)
+            if (m_Specification.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
             {
                 Utils::CreateTextures(m_Specification.Samples > 1, &m_MultiSampleDepthAttachment, 1);
                 Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleDepthAttachment);
-                switch (m_DepthAttachmentSpec.TextureFormat)
+                switch (m_Specification.DepthAttachment.TextureFormat)
                 {
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                 {
@@ -203,15 +191,15 @@ namespace GEngine
         glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
         // Attachments
-        if (m_ColorAttachmentsSpecs.size())
+        if (m_Specification.ColorAttachments.size())
         {
-            m_ColorAttachments.resize(m_ColorAttachmentsSpecs.size());
+            m_ColorAttachments.resize(m_Specification.ColorAttachments.size());
             Utils::CreateTextures(false, m_ColorAttachments.data(), m_ColorAttachments.size());
 
             for (size_t i = 0; i < m_ColorAttachments.size(); i++)
             {
                 Utils::BindTexture(false, m_ColorAttachments[i]);
-                switch (m_ColorAttachmentsSpecs[i].TextureFormat)
+                switch (m_Specification.ColorAttachments[i].TextureFormat)
                 {
                     case FrameBufferTextureFormat::RGBA8:
                     {
@@ -254,11 +242,11 @@ namespace GEngine
             }
         }
 
-        if (m_DepthAttachmentSpec.TextureFormat != FrameBufferTextureFormat::None)
+        if (m_Specification.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
         {
             Utils::CreateTextures(false, &m_DepthAttachment, 1);
             Utils::BindTexture(false, m_DepthAttachment);
-            switch (m_DepthAttachmentSpec.TextureFormat)
+            switch (m_Specification.DepthAttachment.TextureFormat)
             {
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                 {

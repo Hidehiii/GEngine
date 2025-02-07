@@ -4,13 +4,14 @@
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "OpenGLTexture2D.h"
 #include "GEngine/Math/Math.h"
+#include "Platform/OpenGL/OpenGLRenderPass.h"
 
 namespace GEngine
 {
 	class GENGINE_API OpenGLFrameBuffer : public FrameBuffer
 	{
 	public:
-		OpenGLFrameBuffer(const FrameBufferSpecification& spec);
+		OpenGLFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
 		OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		virtual ~OpenGLFrameBuffer() override;
 
@@ -22,11 +23,13 @@ namespace GEngine
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual Ref<Texture2D>					GetColorAttachment(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencilAttachment() override;
+		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
 	private:
 		void CreateBuffer();
 	private:
 		uint32_t										m_RendererID = 0;
+		Ref<OpenGLRenderPass>							m_RenderPass;
 		uint32_t										m_MultiSampleRendererID = 0;
 		uint32_t										m_DepthAttachment = 0;
 		std::vector<uint32_t>							m_ColorAttachments;

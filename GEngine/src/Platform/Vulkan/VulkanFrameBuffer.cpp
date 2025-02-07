@@ -8,21 +8,18 @@ namespace GEngine
 {
 	VulkanFrameBuffer* VulkanFrameBuffer::s_CurrentVulkanFrameBuffer = nullptr;
 
-	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecification& spec)
+	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
-		m_Specification = spec;
-		for (auto format : m_Specification.Attachments.Attachments)
-		{
-			if (Utils::isDepthFormat(format.TextureFormat))
-			{
-				m_DepthAttachmentSpec = format;
-			}
-			else
-			{
-				m_ColorAttachmentsSpecs.emplace_back(format);
-			}
-		}
-		CreateRenderPass();
+		m_Specification.ColorAttachments		= renderPass->GetSpecification().ColorAttachments;
+		m_Specification.DepthAttachment			= renderPass->GetSpecification().DepthAttachment;
+		m_Specification.Samples					= renderPass->GetSpecification().Samples;
+		m_Specification.AttachmentsBeginAction	= renderPass->GetSpecification().AttachmentsBeginAction;
+		m_Specification.AttachmentsEndAction	= renderPass->GetSpecification().AttachmentsEndAction;
+		m_Specification.Width					= width;
+		m_Specification.Height					= height;
+
+		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
+
 		CreateBuffer();
 	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
@@ -30,40 +27,24 @@ namespace GEngine
 		m_Specification			= buffer->GetSpecification();
 		m_Specification.Width	= width;
 		m_Specification.Height	= height;
-		for (auto format : m_Specification.Attachments.Attachments)
-		{
-			if (Utils::isDepthFormat(format.TextureFormat))
-			{
-				m_DepthAttachmentSpec = format;
-			}
-			else
-			{
-				m_ColorAttachmentsSpecs.emplace_back(format);
-			}
-		}
-		CreateRenderPass();
+
+		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(buffer->GetRenderPass());
+
 		CreateBuffer();
 	}
-	VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferSpecificationForVulkan spec)
+	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec)
 	{
-		m_SpecificationForVulkan		= spec;
-		m_Specification.Width			= spec.Width;
-		m_Specification.Height			= spec.Height;
-		m_Specification.Samples			= spec.Samples;
-		
-		RenderPassSpecificationForVulkan renderPassSpec;
-		renderPassSpec.ColorAttachmentsFinalLayout	= spec.ColorAttachmentsFinalLayout;
-		renderPassSpec.ColorAttachmentsFormat		= spec.ColorAttachmentsFormat;
-		renderPassSpec.EnableDepthStencilAttachment = spec.EnableDepthStencilAttachment;
-		renderPassSpec.Samples						= spec.Samples;
-		renderPassSpec.AttachmentsBeginAction		= spec.AttachmentsBeginAction;
-		renderPassSpec.AttachmentsEndAction			= spec.AttachmentsEndAction;
+		m_SpecificationForVulkan				= spec;
 
-		m_RenderPass = CreateRef<VulkanRenderPass>(renderPassSpec);
+		m_Specification.Width					= spec.Width;
+		m_Specification.Height					= spec.Height;
+		m_Specification.Samples					= renderPass->GetSpecificationForVulkan().Samples;
+
+		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
 		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkFormat						colorFormat = spec.ColorAttachmentsFormat.at(i);
+			VkFormat						colorFormat = renderPass->GetSpecificationForVulkan().ColorAttachmentsFormat.at(i);
 			m_Images.push_back(spec.ColorImages.at(i));
 			m_Attachments.push_back(spec.ColorAttachments.at(i));
 			m_ColorImageViews.push_back(spec.ColorAttachments.at(i));
@@ -93,7 +74,7 @@ namespace GEngine
 				m_ImagesMemory.push_back(tempImageMemory);
 			}
 		}
-		if (spec.EnableDepthStencilAttachment)
+		if (renderPass->GetSpecificationForVulkan().EnableDepthStencilAttachment)
 		{
 			VkDeviceMemory					imageMemory;
 			VkImage							image;
@@ -250,30 +231,20 @@ namespace GEngine
 		Ref<VulkanTexture2D> texture = m_DepthAttachmentTexture2D;
 		return texture;
 	}
-	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const FrameBufferSpecificationForVulkan spec)
+	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec)
 	{
-		return CreateRef<VulkanFrameBuffer>(spec);
-	}
-	void VulkanFrameBuffer::CreateRenderPass()
-	{
-		RenderPassSpecification				spec;
-		spec.ColorAttachments				= m_ColorAttachmentsSpecs;
-		spec.DepthAttachment				= m_DepthAttachmentSpec;
-		spec.Samples						= m_Specification.Samples;
-		spec.AttachmentsBeginAction			= m_Specification.AttachmentsBeginAction;
-		spec.AttachmentsEndAction			= m_Specification.AttachmentsEndAction;
-		m_RenderPass = CreateRef<VulkanRenderPass>(spec);
+		return CreateRef<VulkanFrameBuffer>(renderPass, spec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()
 	{
 
-		for (int i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
+		for (int i = 0; i < m_Specification.ColorAttachments.size(); i++)
 		{
 			VkImage						image;
 			VkImageView					imageView;
 			VkDeviceMemory				imageMemory;
 			VkFormat					colorFormat;
-			switch (m_ColorAttachmentsSpecs.at(i).TextureFormat)
+			switch (m_Specification.ColorAttachments.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
 			{
@@ -369,7 +340,7 @@ namespace GEngine
 		VkImageView						imageView;
 		VkFormat						depthFormat;
 		VkFlags							depthAspectFlag;
-		switch (m_DepthAttachmentSpec.TextureFormat)
+		switch (m_Specification.DepthAttachment.TextureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 		{

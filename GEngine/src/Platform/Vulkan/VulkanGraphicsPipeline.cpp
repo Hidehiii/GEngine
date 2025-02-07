@@ -361,7 +361,7 @@ namespace GEngine
 		pipelineInfo.pColorBlendState		= &ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
 		pipelineInfo.layout					= m_PipelineLayout;
-		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetRenderPass();
+		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional

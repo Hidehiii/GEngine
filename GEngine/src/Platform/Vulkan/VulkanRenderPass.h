@@ -1,6 +1,5 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/RenderPass.h"
 #include <vulkan/vulkan.h>
 
@@ -12,8 +11,8 @@ namespace GEngine
 		std::vector<VkImageLayout>					ColorAttachmentsFinalLayout;
 		bool 										EnableDepthStencilAttachment;
 		int											Samples = 1;
-		VkAttachmentLoadOp							AttachmentsBeginAction = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		VkAttachmentStoreOp							AttachmentsEndAction = VK_ATTACHMENT_STORE_OP_STORE;
+		VkAttachmentLoadOp							AttachmentsBeginAction	= VK_ATTACHMENT_LOAD_OP_CLEAR;
+		VkAttachmentStoreOp							AttachmentsEndAction	= VK_ATTACHMENT_STORE_OP_STORE;
 	};
 
 	class GENGINE_API VulkanRenderPass : public RenderPass
@@ -23,7 +22,8 @@ namespace GEngine
 		VulkanRenderPass(const RenderPassSpecificationForVulkan& spec);
 		virtual ~VulkanRenderPass() override;
 
-		VkRenderPass GetRenderPass() { return m_RenderPass; }
+		VkRenderPass						GetRenderPass() { return m_RenderPass; }
+		RenderPassSpecificationForVulkan	GetSpecificationForVulkan() { return m_SpecificationForVulkan; }
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);
 	private:
@@ -31,6 +31,7 @@ namespace GEngine
 		
 	private:
 		VkRenderPass						m_RenderPass;
+		RenderPassSpecificationForVulkan	m_SpecificationForVulkan;
 	};
 }
 

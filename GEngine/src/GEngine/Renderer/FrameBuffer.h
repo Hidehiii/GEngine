@@ -11,7 +11,9 @@ namespace GEngine
 	struct FrameBufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;
-		FrameBufferAttachmentSpecification Attachments;
+		//FrameBufferAttachmentSpecification Attachments;
+		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
+		FrameBufferTextureSpecification					DepthAttachment;
 		uint32_t Samples = 1;
 
 		FrameBufferAttachmentsAction AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
@@ -43,19 +45,16 @@ namespace GEngine
 		virtual int								GetColorAttachmentCount() = 0;
 		virtual Ref<Texture2D>					GetColorAttachment(int index) = 0;
 		virtual Ref<Texture2D>					GetDepthStencilAttachment() = 0;
+		virtual Ref<RenderPass>					GetRenderPass() = 0;
 
 		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const Vector2& size);
 		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
-		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const FrameBufferSpecification& spec);
-		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
-		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
-		static Ref<FrameBuffer>	Recreate(const Ref<FrameBuffer>& buffer, Vector2 size);
+		static Ref<FrameBuffer>	Create(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
+		static Ref<FrameBuffer>	Create(const Ref<FrameBuffer>& buffer, Vector2 size);
 		operator bool() const { return this != nullptr; }
 
 	protected:
 		FrameBufferSpecification						m_Specification;
-		FrameBufferTextureSpecification					m_DepthAttachmentSpec = FrameBufferTextureFormat::None;
-		std::vector<FrameBufferTextureSpecification>	m_ColorAttachmentsSpecs;
 	protected:
 		static Vector2	GetCurrentFrameBufferSize() { return s_CurrentFrameBufferSize; }
 		static Vector2									s_CurrentFrameBufferSize;
