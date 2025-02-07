@@ -31,7 +31,10 @@ namespace GEngine
 		if (VulkanContext::Get()->GetDevice())
 		{
 			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+			for (auto pipeline : m_GraphicsPipelines)
+			{
+				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
+			}
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
         
@@ -44,17 +47,16 @@ namespace GEngine
 
 		m_Material->Update();
 
-		if (m_GraphicsPipeline == nullptr)
-		{
-			CreatePipeline();
-		}
 		if (m_RecreatePipeline)
 		{
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_GraphicsPipeline, nullptr);
+			for (auto pipeline : m_GraphicsPipelines)
+			{
+				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
+			}
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			CreatePipeline();
+			m_RecreatePipeline = false;
 		}
-        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline());
 
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
@@ -154,8 +156,19 @@ namespace GEngine
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-    void VulkanGraphicsPipeline::CreatePipeline()
+    VkPipeline VulkanGraphicsPipeline::FindOrCreatePipeline()
     {
+
+		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
+		{
+			if (m_GraphicsPipelines.at(i).RenderPass == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass() &&
+				m_GraphicsPipelines.at(i).Samples == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples)
+			{
+				return m_GraphicsPipelines.at(i).GraphicsPipeline;
+			}
+		}
+
+
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();
 
@@ -366,9 +379,20 @@ namespace GEngine
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline));
+		VkPipeline pipeline;
+
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &pipeline));
 
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
+
+		VulkanGraphicsPipelineInfo	info{};
+		info.GraphicsPipeline		= pipeline;
+		info.Samples				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples;
+		info.RenderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
+
+		m_GraphicsPipelines.push_back(info);
+
+		return pipeline;
     }
 }

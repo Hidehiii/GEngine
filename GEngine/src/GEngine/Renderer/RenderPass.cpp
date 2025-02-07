@@ -6,6 +6,8 @@
 
 namespace GEngine
 {
+	std::vector<Ref<RenderPass>> RenderPass::s_RenderPasses;
+
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)
 	{
 		switch (Renderer::GetAPI())
@@ -15,14 +17,36 @@ namespace GEngine
 			return nullptr;
 		}
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLRenderPass>(spec);
+			Ref<RenderPass> pass = GetRenderPass(spec);
+			if (pass == nullptr)
+			{
+				pass = CreateRef<OpenGLRenderPass>(spec);
+			}
+			return pass;
 		}
 		case RendererAPI::API::Vulkan: {
-			return CreateRef<VulkanRenderPass>(spec);
+			Ref<RenderPass> pass = GetRenderPass(spec);
+			if (pass == nullptr)
+			{
+				pass = CreateRef<VulkanRenderPass>(spec);
+			}
+			return pass;
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+
+	Ref<RenderPass> RenderPass::GetRenderPass(const RenderPassSpecification& spec)
+	{
+		for (auto pass : s_RenderPasses)
+		{
+			if (pass->GetSpecification() == spec)
+			{
+				return pass;
+			}
+		}
 		return nullptr;
 	}
 }

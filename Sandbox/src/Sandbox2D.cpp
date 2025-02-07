@@ -28,11 +28,15 @@ void Sandbox2D::OnAttach()
 	spec.Samples = 4;
 	m_OpaquePass = RenderPass::Create(spec);
 
+	spec.ColorAttachments = {};
+	spec.Samples = 1;
+	m_DepthOnlyPass = RenderPass::Create(spec);
+
 	m_OIT_Present = FrameBuffer::Create(m_OpaquePass, 720, 720);
 
 	m_SkyBoxFB = FrameBuffer::Create(m_OpaquePass, 720, 720);
 
-	m_DepthOnly = FrameBuffer::Create(m_OpaquePass, 720, 720);
+	m_DepthOnly = FrameBuffer::Create(m_DepthOnlyPass, 720, 720);
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
@@ -252,6 +256,7 @@ void Sandbox2D::OnRender()
 	RenderCommand::BeginGraphicsCommand();
 	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
+	m_Scene->OnRender();
 	m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_DepthOnly->End();

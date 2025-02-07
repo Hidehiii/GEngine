@@ -7,6 +7,19 @@
 
 namespace GEngine
 {
+	struct VulkanGraphicsPipelineInfo
+	{
+		VkPipeline	GraphicsPipeline;
+
+		int Samples;
+		VkRenderPass RenderPass;
+
+		bool operator==(const VulkanGraphicsPipelineInfo& other) const
+		{
+			return Samples == other.Samples &&
+				RenderPass == other.RenderPass;
+		}
+	};
 
 	class GENGINE_API VulkanGraphicsPipeline : public GraphicsPipeline
 	{
@@ -23,7 +36,7 @@ namespace GEngine
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 	private:
-		void CreatePipeline();
+		VkPipeline FindOrCreatePipeline();
 	private:
 		Ref<VulkanMaterial>									m_Material;
 		Ref<VulkanVertexBuffer>								m_VertexBuffer;
@@ -44,7 +57,7 @@ namespace GEngine
 		};
 		
 		VkPipelineLayout									m_PipelineLayout;
-		VkPipeline											m_GraphicsPipeline = nullptr;
+		std::vector<VulkanGraphicsPipelineInfo>				m_GraphicsPipelines;
 		bool												m_RecreatePipeline = false;
 		VkPipelineCache										m_PipelineCache;
 	};

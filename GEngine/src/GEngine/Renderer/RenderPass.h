@@ -32,6 +32,8 @@ namespace GEngine
 			: TextureFormat(format) {}
 
 		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
+
+		bool operator==(const FrameBufferTextureSpecification& other) const { return TextureFormat == other.TextureFormat; }
 	};
 
 	// Frame buffer attachment specification
@@ -62,6 +64,15 @@ namespace GEngine
 		int												Samples = 1;
 		FrameBufferAttachmentsAction					AttachmentsBeginAction	= FrameBufferAttachmentsAction::Clear;
 		FrameBufferAttachmentsAction					AttachmentsEndAction	= FrameBufferAttachmentsAction::Store;
+
+		bool operator==(const RenderPassSpecification& other) const
+		{
+			return ColorAttachments == other.ColorAttachments &&
+				DepthAttachment == other.DepthAttachment &&
+				Samples == other.Samples &&
+				AttachmentsBeginAction == other.AttachmentsBeginAction &&
+				AttachmentsEndAction == other.AttachmentsEndAction;
+		}
 	};
 
 	class GENGINE_API RenderPass
@@ -71,10 +82,14 @@ namespace GEngine
 
 		virtual RenderPassSpecification GetSpecification() { return m_Specification; }
 
-		static Ref<RenderPass> Create(const RenderPassSpecification& spec);
+		static Ref<RenderPass> GetRenderPass(const RenderPassSpecification& spec);
 
+		static Ref<RenderPass> Create(const RenderPassSpecification& spec);
+		
 	protected:
 		RenderPassSpecification		m_Specification;
+	protected:
+		static std::vector<Ref<RenderPass>>		s_RenderPasses;
 	};
 }
 

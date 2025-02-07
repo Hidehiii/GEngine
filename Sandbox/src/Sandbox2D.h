@@ -67,6 +67,7 @@ private:
 	Ref<GraphicsPipeline> m_ComputeShow;
 
 	Ref<RenderPass>	m_OpaquePass;
+	Ref<RenderPass> m_DepthOnlyPass;
 
 	Ref<FrameBuffer> m_OIT_Present;
 	Ref<FrameBuffer> m_DepthOnly;
