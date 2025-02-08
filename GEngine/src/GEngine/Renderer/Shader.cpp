@@ -566,6 +566,14 @@ namespace GEngine
 	}
 	
 
+	void Shader::Preprocess(std::string& source)
+	{
+		SetGlslVersionString(source);
+		SetMacroBool(source);
+		SetMacroExp(source);
+		SetMacroMaterialDefine(source);
+	}
+
 	void Shader::SetGlslVersionString(std::string& source)
 	{
 		source = "#version 450 core\n" + source;

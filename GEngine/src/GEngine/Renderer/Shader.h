@@ -219,7 +219,8 @@ namespace GEngine
 
 		static Ref<Shader>									Create(const std::string& path);
 	protected:
-		
+		virtual void										Preprocess(std::string& source);
+
 		virtual void										SetMacroBool(std::string& source) = 0;
 		virtual void										SetMacroExp(std::string& source) = 0;
 

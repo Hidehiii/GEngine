@@ -359,10 +359,7 @@ namespace GEngine
 			}
 			else
 			{
-				SetGlslVersionString(source);
-				SetMacroBool(source);
-				SetMacroExp(source);
-				SetMacroMaterialDefine(source);
+				Preprocess(source);
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
