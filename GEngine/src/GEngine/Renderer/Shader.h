@@ -223,6 +223,7 @@ namespace GEngine
 		virtual void										SetMacroBool(std::string& source) = 0;
 		virtual void										SetMacroExp(std::string& source) = 0;
 
+		virtual void										SetGlslVersionString(std::string& source);
 		virtual void										SetMacroMaterialDefine(std::string& source);
 	protected:
 		// slot 从40开始

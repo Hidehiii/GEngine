@@ -566,6 +566,11 @@ namespace GEngine
 	}
 	
 
+	void Shader::SetGlslVersionString(std::string& source)
+	{
+		source = "#version 450 core\n" + source;
+	}
+
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())

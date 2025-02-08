@@ -10,7 +10,6 @@ StorageBuffer LinkedListSBO;
 StorageBuffer GeometrySBO;
 #EndProperties
 #Type vertex
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
@@ -28,7 +27,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout (binding = GE_BINDING_START, r32ui) uniform uimage2D headIndexImage;
 struct Node

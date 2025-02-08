@@ -6,7 +6,6 @@
 SamplerCube TexCube;
 #EndProperties
 #Type vertex
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 struct VertexOutput
@@ -28,7 +27,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
 layout (binding = GE_BINDING_START + 0) uniform samplerCube TexCube;

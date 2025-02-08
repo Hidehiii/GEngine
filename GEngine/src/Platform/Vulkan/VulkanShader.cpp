@@ -282,6 +282,7 @@ namespace GEngine
 			}
 			else
 			{
+				SetGlslVersionString(source);
 				SetMacroBool(source);
 				SetMacroExp(source);
 				SetMacroMaterialDefine(source);

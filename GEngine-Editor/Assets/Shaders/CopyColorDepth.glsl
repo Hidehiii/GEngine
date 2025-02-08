@@ -6,7 +6,6 @@ sampler2D GE_PREVIOUS_COLOR;
 sampler2D GE_PREVIOUS_DEPTH;
 #EndProperties
 #Type vertex
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_Position;
 layout(location = 1) in vec2 i_UV;
@@ -22,7 +21,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput

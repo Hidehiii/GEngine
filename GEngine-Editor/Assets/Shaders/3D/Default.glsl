@@ -7,7 +7,6 @@
 #EndProperties
 
 #Type vertex
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec4 i_Color;
@@ -31,7 +30,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput

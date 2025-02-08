@@ -10,11 +10,10 @@ sampler2D Tex_3;
 sampler2D Tex_4;
 sampler2D Tex_5;
 sampler2D Tex_6;
-sampler2D       Tex_7;
+sampler2D Tex_7;
 #EndProperties
 
 #Type vertex
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec2 i_UV;
@@ -47,7 +46,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput

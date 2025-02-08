@@ -9,7 +9,6 @@ StorageBuffer LinkedListSBO;
 sampler2D OpaqueColor;
 #EndProperties
 #Type vertex
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
@@ -27,7 +26,6 @@ void main()
 }
 
 #Type fragment
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
 layout (binding = GE_BINDING_START + 0, r32ui) uniform uimage2D headIndexImage;
