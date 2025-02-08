@@ -19,7 +19,7 @@ namespace GEngine
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		glBindBufferBase(GL_UNIFORM_BUFFER, m_Binding, m_RendererID);
+		glBindBufferRange(GL_UNIFORM_BUFFER, m_Binding, m_RendererID, offset, size);
 		glNamedBufferSubData(m_RendererID, offset, size, data); 
 	}
 }
