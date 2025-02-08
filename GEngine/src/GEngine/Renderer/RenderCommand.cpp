@@ -118,6 +118,10 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetMinUniformBufferOffsetAlignment();
 	}
+	inline uint32_t RenderCommand::GetMaxUniformBufferSize()
+	{
+		return s_RendererAPI->GetMaxUniformBufferSize();
+	}
 	inline Vector3 RenderCommand::GetMaxComputeWorkGroupCount()
 	{
 		return s_RendererAPI->GetMaxComputeWorkGroupCount();

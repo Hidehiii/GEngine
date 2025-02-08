@@ -138,6 +138,13 @@ namespace GEngine
 		return deviceProperties.limits.minUniformBufferOffsetAlignment;
     }
 
+    uint32_t VulkanRendererAPI::GetMaxUniformBufferSize()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+		return deviceProperties.limits.maxUniformBufferRange;
+    }
+
     Vector3 VulkanRendererAPI::GetMaxComputeWorkGroupCount()
     {
 		VkPhysicalDeviceProperties      deviceProperties;

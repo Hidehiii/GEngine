@@ -9,7 +9,7 @@ namespace GEngine
 	Vector3 Renderer::s_RenderTargetCameraPosition = Vector3();
 	uint8_t Renderer::s_FramesInFlight = 2;
 	uint8_t Renderer::s_CurrentFrame = 0;
-	uint32_t Renderer::s_DynamicUniformBufferSizeScale = 150;
+	uint32_t Renderer::s_DynamicUniformBufferSizeScaleFactor = 150;
 	std::vector<uint32_t> Renderer::s_DynamicUniformBufferOffsetIndices;
 	std::vector<uint32_t> Renderer::s_DynamicUniformBufferOffsets;
 	std::vector<uint32_t> Renderer::s_DynamicUniformBufferAlignment;
@@ -149,7 +149,8 @@ namespace GEngine
 		uint32_t minUboAligment = RenderCommand::GetMinUniformBufferOffsetAlignment();
 		size = (size + minUboAligment - 1) & ~(minUboAligment - 1);
 		s_DynamicUniformBufferAlignment.push_back(size);
-		buffer = UniformBuffer::Create(size * s_DynamicUniformBufferSizeScale, binding);
+		GE_CORE_ASSERT(size * s_DynamicUniformBufferSizeScaleFactor <= RenderCommand::GetMaxUniformBufferSize(), "Dynamic UBO could not be larger than the max size of UBO!");
+		buffer = UniformBuffer::Create(size * s_DynamicUniformBufferSizeScaleFactor, binding);
 
 		s_DynamicUniformBufferOffsets.push_back(0);
 	}
@@ -180,7 +181,12 @@ namespace GEngine
 		s_DynamicUniformBufferOffsets.at(index) = s_DynamicUniformBufferAlignment.at(index) * s_DynamicUniformBufferOffsetIndices.at(index);
 
 		s_DynamicUniformBufferOffsetIndices.at(index)++;
-		s_DynamicUniformBufferOffsetIndices.at(index) %= s_DynamicUniformBufferSizeScale;
+		s_DynamicUniformBufferOffsetIndices.at(index) %= s_DynamicUniformBufferSizeScaleFactor;
+	}
+
+	void Renderer::SetDynamicUniformBufferSizeScaleFactor(uint32_t factor)
+	{
+		s_DynamicUniformBufferSizeScaleFactor = factor;
 	}
 
 	void Renderer::DrawCubeWireframe(Transform& transform, Vector4 color)

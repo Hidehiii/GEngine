@@ -10,6 +10,7 @@ namespace GEngine
 
 	std::string     const	ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = "GE_ATTACHMENT_UV_STARTS_AT_TOP";
 	std::string		const	ShaderMacroName::GE_BINDING_START				= "GE_BINDING_START";
+	std::string		const	ShaderMacroName::GE_MATERIAL_DEFINE				= "GE_MATERIAL_DEFINE";
 
 	std::string		const	ShaderDataFlag::None							= "#None";
 	std::string		const	ShaderDataFlag::Name							= "#Name";
@@ -588,7 +589,7 @@ namespace GEngine
 	}
 	void Shader::SetMacroMaterialDefine(std::string& source)
 	{
-		std::string macro = "GE_MATERIAL_DEFINE";
+		std::string macro = ShaderMacroName::GE_MATERIAL_DEFINE;
 		std::string exp = "layout(std140, binding = 0) uniform MATERIAL {";
 		for (auto uniform : m_UniformCache)
 		{

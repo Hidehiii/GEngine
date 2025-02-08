@@ -198,6 +198,12 @@ namespace GEngine
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &aligment);
 		return aligment;
 	}
+	uint32_t OpenGLRendererAPI::GetMaxUniformBufferSize()
+	{
+		GLint size;
+		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &size);
+		return size;
+	}
 	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupCount()
 	{
 		int x, y, z;

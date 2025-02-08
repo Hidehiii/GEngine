@@ -33,23 +33,33 @@ namespace GEngine
 
 		const static std::vector<uint32_t> GetDynamicUniformBufferOffsets() { return s_DynamicUniformBufferOffsets; }
 
-		static void SetRenererAPI(RendererAPI::API api);
-		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
+		
+		
 		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
 		static void SetScreenUniform(Vector4& size);
 
 		static void DrawCubeWireframe(Transform& transform, Vector4 color);
 	private:
+		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
+		static void SetRenererAPI(RendererAPI::API api);
+		static void SetDynamicUniformBufferSizeScaleFactor(uint32_t factor);
+
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
 		static void MoveToNextFrame() { s_CurrentFrame = (s_CurrentFrame + 1) % s_FramesInFlight; }
 		static void AddDynamicUniformBuffer(Ref<UniformBuffer>& buffer, uint32_t size, uint32_t binding, int& index);
 		static void UpdateDynamicUniformOffset(int index);
+
+		// current camera
 		static Camera s_RenderTargetCamera;
 		static Vector3 s_RenderTargetCameraPosition;
+
+		// frames in flight
 		static uint8_t s_FramesInFlight;
 		static uint8_t s_CurrentFrame;
-		static uint32_t s_DynamicUniformBufferSizeScale;
+
+		// dynamic ubo
+		static uint32_t s_DynamicUniformBufferSizeScaleFactor;
 		static std::vector<uint32_t> s_DynamicUniformBufferOffsetIndices;
 		static std::vector<uint32_t> s_DynamicUniformBufferOffsets;
 		static std::vector<uint32_t> s_DynamicUniformBufferAlignment;
