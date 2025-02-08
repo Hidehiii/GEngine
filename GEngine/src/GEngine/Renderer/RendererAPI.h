@@ -50,6 +50,8 @@ namespace GEngine
 		virtual uint32_t GetMaxCombinedTextureCount() = 0;
 		virtual uint32_t GetMaxPerStageTextureCount() = 0;
 
+		virtual uint32_t GetMinUniformBufferOffsetAlignment() = 0;
+
 		// compute
 		virtual Vector3 GetMaxComputeWorkGroupCount() = 0;
 		virtual Vector3 GetMaxComputeWorkGroupSize() = 0;

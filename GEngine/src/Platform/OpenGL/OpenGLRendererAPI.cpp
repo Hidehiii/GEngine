@@ -192,6 +192,12 @@ namespace GEngine
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &count);
 		return count;
 	}
+	uint32_t OpenGLRendererAPI::GetMinUniformBufferOffsetAlignment()
+	{
+		GLint aligment;
+		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &aligment);
+		return aligment;
+	}
 	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupCount()
 	{
 		int x, y, z;

@@ -16,13 +16,10 @@ namespace GEngine
 
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
-		int GetBinding() { return m_Binding; }
 	private:
 		VkBuffer					m_UniformBuffer;
 		VkDeviceMemory				m_UniformBufferMemory;
 		void*						m_MapData;
-		uint32_t					m_Offset = 0;
-		int							m_Binding;
 		VkDescriptorBufferInfo		m_BufferInfo{};
 		VkDescriptorSetLayoutBinding m_DescriptorSetLayoutBinding;
 

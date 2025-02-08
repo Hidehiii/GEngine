@@ -7,6 +7,7 @@ sampler2D GE_PRESENT_IMGUI;
 #EndProperties
 #Type vertex
 #version 450 core
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec2 i_uv;
 struct VertexOutput

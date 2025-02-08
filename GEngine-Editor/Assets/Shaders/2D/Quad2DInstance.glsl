@@ -1,8 +1,6 @@
+
 #Name Quad2DInstance
-#Blend Add SrcAlpha OneMinusSrcAlpha
-#DepthWrite Off
-#DepthTest LEqual
-#Cull Back
+
 #Properties
 
 sampler2D Tex_0;
@@ -12,11 +10,12 @@ sampler2D Tex_3;
 sampler2D Tex_4;
 sampler2D Tex_5;
 sampler2D Tex_6;
-sampler2D Tex_7;
+sampler2D       Tex_7;
 #EndProperties
+
 #Type vertex
 #version 450 core
-#include"Assets/Shaders/Core/Core.glsl"
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec2 i_UV;
 layout(location = 2) in vec2 i_Tiling;
@@ -26,7 +25,6 @@ layout(location = 5) in vec4 i_ModelMatrixRow_1;
 layout(location = 6) in vec4 i_ModelMatrixRow_2;
 layout(location = 7) in vec4 i_ModelMatrixRow_3;
 layout(location = 8) in vec4 i_ModelMatrixRow_4;
-
 struct VertexOutput
 {
 	vec2 UV;
@@ -50,7 +48,7 @@ void main()
 
 #Type fragment
 #version 450 core
-#include"Assets/Shaders/Core/Core.glsl"
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput
 {

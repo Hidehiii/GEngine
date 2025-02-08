@@ -222,122 +222,11 @@ namespace GEngine
 		Utils::ProcessShaderCull(source, m_CullMode);
 
 		// find Properties
-		size_t pos						= source.find(propertyToken, 0);
-		if (pos != std::string::npos)
-		{
-			// split properties by \n
-			size_t eol			= source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t nextLinePos	= source.find_first_not_of("\r\n", eol);
-			size_t end			= source.find(propertyEndToken, pos);
-			std::string properties = source.substr(nextLinePos, end - nextLinePos);
-			std::vector<std::string> props = Utils::SplitString(properties, '\n');
-			for (auto& prop : props)
-			{
-				//prop = Utils::RemoveCharFromString(prop, ' ');
-				prop = Utils::RemoveCharFromString(prop, '\r');
-				prop = Utils::RemoveCharFromString(prop, '\n');
-				prop = Utils::RemoveCharFromString(prop, '\t');
-				prop = Utils::RemoveCharFromString(prop, ';');
-			}
-			for (auto it = props.begin(); it != props.end();)
-			{
-				if (it->empty())
-					it = props.erase(it);
-				else
-					++it;
-			}
-			uint32_t location = 0;
-			uint32_t slot = Shader::s_SlotOffset;
-			// split properties by " "
-			for (auto& prop : props)
-			{
-				std::vector<std::string> propData = Utils::SplitString(prop, ' ');
-				for (auto& prop : propData)
-				{
-					prop = Utils::RemoveCharFromString(prop, ' ');
-				}
-				for (auto it = propData.begin(); it != propData.end();)
-				{
-					if (it->empty())
-						it = propData.erase(it);
-					else
-						++it;
-				}
-				GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
-				std::string propName = propData[1];
-				std::string propType = propData[0];
-				if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D &&
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube && 
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageImage2D &&
-					Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageBuffer)
-				{
-					ShaderUniform			uniform;
-					uniform.Name			= propName;
-					uniform.Type			= Utils::ShaderUniformTypeFromString(propType);
-					uniform.Size			= ShaderUniformTypeSize(uniform.Type);
-					uniform.Location		= location;
-					location				+= uniform.Size;
-					m_UniformCache.push_back(uniform);
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
-				}
-				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::Sampler2D)
-				{
-					ShaderUniformTexture2D	uniform;
-					uniform.Name			= propName;
-					uniform.Slot			= slot;
-					uniform.Texture			= Texture2D::White();
-					
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, slot);
-
-					slot++;
-					m_Texture2DCache.push_back(uniform);
-				}
-				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
-				{
-					ShaderUniformCubeMap	uniform;
-					uniform.Name			= propName;
-					uniform.Slot			= slot;
-					uniform.Cubemap			= CubeMap::White();
-
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, slot);
-
-					slot++;
-					m_CubeMapCache.push_back(uniform);
-				}
-				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageImage2D)
-				{
-					ShaderUniformStorageImage2D	uniform;
-					uniform.Name				= propName;
-					uniform.Slot				= slot;
-					uniform.Image				= nullptr;
-
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, slot);
-
-					slot++;
-					m_StorageImage2DCache.push_back(uniform);
-				}
-				if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageBuffer)
-				{
-					ShaderUniformStorageBuffer	uniform;
-					uniform.Name				= propName;
-					uniform.Slot				= slot;
-					uniform.Buffer				= nullptr;
-
-					GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, slot);
-
-					slot++;
-					m_StorageBufferCache.push_back(uniform);
-				}
-			}
-		}
-
-
+		Utils::ProcessShaderProperties(source, m_UniformCache, m_Texture2DCache, m_CubeMapCache, m_StorageImage2DCache, m_StorageBufferCache, 0, Shader::s_SlotOffset, 0);
 
 		// find Type
 
-		pos = source.find(typeToken, 0);
+		size_t pos = source.find(typeToken, 0);
 
 		while (pos != std::string::npos)
 		{
@@ -395,6 +284,7 @@ namespace GEngine
 			{
 				SetMacroBool(source);
 				SetMacroExp(source);
+				SetMacroMaterialDefine(source);
 				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{

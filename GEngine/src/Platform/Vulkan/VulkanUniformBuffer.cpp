@@ -18,12 +18,9 @@ namespace GEngine
 			AddPublicUniformBuffer(this);
 		}
 
-		m_Binding						= binding;
-		size = size <= 0 ? 1 : size;
-
 		m_DescriptorSetLayoutBinding.binding			= binding;
 		m_DescriptorSetLayoutBinding.descriptorType		= binding != 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
 		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
@@ -35,10 +32,10 @@ namespace GEngine
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
 							m_UniformBuffer, 
 							m_UniformBufferMemory);
-		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, 0, size, 0, &m_MapData);
 
 		m_BufferInfo.buffer		= m_UniformBuffer;
-		m_BufferInfo.offset		= m_Offset;
+		m_BufferInfo.offset		= 0;
 		m_BufferInfo.range		= size;
 		
 	}
@@ -53,17 +50,10 @@ namespace GEngine
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		if (offset != m_Offset)
-		{
-			m_Offset = offset;
-			vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory);
-			vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, m_Offset, size, 0, &m_MapData);//vkFlushMappedMemoryRanges()
-		}
-		memcpy(m_MapData, data, size);
+		memcpy(((std::byte*)m_MapData) + offset, data, size);
+		//memcpy(m_MapData, data, size);
 
-		m_BufferInfo.buffer				= m_UniformBuffer;
-		m_BufferInfo.offset				= m_Offset;
-		m_BufferInfo.range				= size;
+		m_BufferInfo.range = size;
 	}
 	void VulkanUniformBuffer::AddPublicUniformBuffer(VulkanUniformBuffer* buffer)
 	{

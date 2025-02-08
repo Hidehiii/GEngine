@@ -35,13 +35,8 @@ void main()
 
 #Type fragment
 #version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 0) uniform MATERIAL
-{
-	vec4 p0;
-	vec4 p1;
-	float p2;
-};
 struct VertexOutput
 {
 	vec4 color;

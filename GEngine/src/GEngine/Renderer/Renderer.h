@@ -30,9 +30,11 @@ namespace GEngine
 		static uint8_t			GetFramesInFlight() { return s_FramesInFlight; }
 		static uint8_t			GetCurrentFrame() { return s_CurrentFrame; }
 
+
+		const static std::vector<uint32_t> GetDynamicUniformBufferOffsets() { return s_DynamicUniformBufferOffsets; }
+
 		static void SetRenererAPI(RendererAPI::API api);
 		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
-		static void SetModelUniforms(Transform& transform);
 		static void SetLightUniforms(Vector3& main_dir, Vector3& main_color);
 		static void SetScreenUniform(Vector4& size);
 
@@ -41,10 +43,17 @@ namespace GEngine
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
 		static void MoveToNextFrame() { s_CurrentFrame = (s_CurrentFrame + 1) % s_FramesInFlight; }
+		static void AddDynamicUniformBuffer(Ref<UniformBuffer>& buffer, uint32_t size, uint32_t binding);
+		static void UpdateDynamicUniformBufferOffset();
 		static Camera s_RenderTargetCamera;
 		static Vector3 s_RenderTargetCameraPosition;
 		static uint8_t s_FramesInFlight;
 		static uint8_t s_CurrentFrame;
+		static uint32_t s_DynamicUniformBufferSizeScale;
+		static uint32_t s_DynamicUniformBufferOffsetIndex;
+		static std::vector<uint32_t> s_DynamicUniformBufferOffsets;
+		static std::vector<uint32_t> s_DynamicUniformBufferAlignment;
+
 		friend class Application;
 	};
 }

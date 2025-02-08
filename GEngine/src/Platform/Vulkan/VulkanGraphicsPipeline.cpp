@@ -12,7 +12,6 @@
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
-
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
     {
         m_Material              = std::dynamic_pointer_cast<VulkanMaterial>(material);
@@ -78,7 +77,8 @@ namespace GEngine
 		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentCommandBuffer(), m_Material->GetEnableDepthWrite());
 		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
 
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), 0, nullptr);
+		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
+		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
     }
 
 	void VulkanGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)

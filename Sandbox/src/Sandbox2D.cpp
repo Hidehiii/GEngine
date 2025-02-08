@@ -243,7 +243,9 @@ void Sandbox2D::OnRender()
 {
 	
 	ComputeCommand::BeginComputeCommand();
+	Renderer::BeginScene(m_EditorCamera);
 	m_ComputeTest->Compute(1, 1, 1);
+	Renderer::EndScene();
 	ComputeCommand::EndComputeCommand();
 
 	RenderCommand::BeginGraphicsCommand();

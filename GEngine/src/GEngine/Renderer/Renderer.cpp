@@ -9,6 +9,10 @@ namespace GEngine
 	Vector3 Renderer::s_RenderTargetCameraPosition = Vector3();
 	uint8_t Renderer::s_FramesInFlight = 2;
 	uint8_t Renderer::s_CurrentFrame = 0;
+	uint32_t Renderer::s_DynamicUniformBufferSizeScale = 150;
+	uint32_t Renderer::s_DynamicUniformBufferOffsetIndex = 0;
+	std::vector<uint32_t> Renderer::s_DynamicUniformBufferOffsets;
+	std::vector<uint32_t> Renderer::s_DynamicUniformBufferAlignment;
 
 	struct CameraData
 	{
@@ -24,11 +28,6 @@ namespace GEngine
 		// z: fixed time
 		// w: physical delta time
 		Vector4 GE_TIME;
-	};
-
-	struct ModelData
-	{
-		Matrix4x4 GE_MATRIX_M;
 	};
 
 	struct LigthData
@@ -52,9 +51,6 @@ namespace GEngine
 		TimeData			TimeDataBuffer;
 		Ref<UniformBuffer>	TimeUniformBuffer;
 
-		ModelData			ModelDataBuffer;
-		Ref<UniformBuffer>	ModelUniformBuffer;
-
 		LigthData			LigthDataBuffer;
 		Ref<UniformBuffer>	LigthUniformBuffer;
 
@@ -68,11 +64,13 @@ namespace GEngine
 	{
 		// Uniform Buffers的位置是固定的，所以这里直接创建
 		// 0 的位置留给自定义
-		s_ShaderUniformData.CameraUniformBuffer		= UniformBuffer::Create(sizeof(CameraData), 1);
-		s_ShaderUniformData.TimeUniformBuffer		= UniformBuffer::Create(sizeof(TimeData),	2);
-		s_ShaderUniformData.ModelUniformBuffer		= UniformBuffer::Create(sizeof(ModelData),	3);
-		s_ShaderUniformData.LigthUniformBuffer		= UniformBuffer::Create(sizeof(LigthData),	4);
-		s_ShaderUniformData.ScreenUniformBuffer		= UniformBuffer::Create(sizeof(ScreenData), 5);
+		AddDynamicUniformBuffer(s_ShaderUniformData.CameraUniformBuffer,	sizeof(CameraData), 1);
+		AddDynamicUniformBuffer(s_ShaderUniformData.TimeUniformBuffer,		sizeof(TimeData),	2);
+		//AddDynamicUniformBuffer(s_ShaderUniformData.LigthUniformBuffer,		sizeof(LigthData),	3);
+		AddDynamicUniformBuffer(s_ShaderUniformData.ScreenUniformBuffer,	sizeof(ScreenData), 4);
+
+		s_DynamicUniformBufferOffsets = std::vector<uint32_t>(s_DynamicUniformBufferAlignment.size(), 0);
+
 		Renderer2D::Init();
 	}
 
@@ -90,6 +88,8 @@ namespace GEngine
 		SetCameraUniforms(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());
 		SetTimeUniforms();
 		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
+		UpdateDynamicUniformBufferOffset();
+
 		Renderer2D::BeginScene();
 
 		s_RenderTargetCamera = camera;
@@ -101,6 +101,7 @@ namespace GEngine
 		SetCameraUniforms(Math::Inverse(transform.GetModelMatrix()), camera.GetProjectionMatrix(), transform.GetPosition());
 		SetTimeUniforms();
 		SetScreenUniform(Vector4(FrameBuffer::GetCurrentFrameBufferSize().x, FrameBuffer::GetCurrentFrameBufferSize().y, 0, 0));
+		UpdateDynamicUniformBufferOffset();
 		Renderer2D::BeginScene();
 
 		s_RenderTargetCamera = camera;
@@ -123,19 +124,20 @@ namespace GEngine
 		s_ShaderUniformData.CameraDataBuffer.GE_MATRIX_VP = p * v;
 		s_ShaderUniformData.CameraDataBuffer.GE_CAMERA_POSITION = { pos, 1.0f };
 
-		s_ShaderUniformData.CameraUniformBuffer->SetData(&s_ShaderUniformData.CameraDataBuffer, sizeof(CameraData));
+		s_ShaderUniformData.CameraUniformBuffer->SetData(&s_ShaderUniformData.CameraDataBuffer, sizeof(CameraData), s_DynamicUniformBufferOffsetIndex * s_DynamicUniformBufferAlignment.at(0));
 	}
 	void Renderer::SetTimeUniforms()
 	{
 		s_ShaderUniformData.TimeDataBuffer.GE_TIME = Vector4{ Time::GetDeltaTime(), Time::GetRunTime(), Time::GetFixedTime(), Time::GetPhysicsDeltaTime() };
 
-		s_ShaderUniformData.TimeUniformBuffer->SetData(&s_ShaderUniformData.TimeDataBuffer, sizeof(TimeData));
+		s_ShaderUniformData.TimeUniformBuffer->SetData(&s_ShaderUniformData.TimeDataBuffer, sizeof(TimeData), s_DynamicUniformBufferOffsetIndex * s_DynamicUniformBufferAlignment.at(1));
 	}
-	void Renderer::SetModelUniforms(Transform& transform)
+	void Renderer::AddDynamicUniformBuffer(Ref<UniformBuffer>& buffer, uint32_t size, uint32_t binding)
 	{
-		s_ShaderUniformData.ModelDataBuffer.GE_MATRIX_M = transform.GetModelMatrix();
-
-		s_ShaderUniformData.ModelUniformBuffer->SetData(&s_ShaderUniformData.ModelDataBuffer, sizeof(ModelData));
+		uint32_t minUboAligment = RenderCommand::GetMinUniformBufferOffsetAlignment();
+		size = (size + minUboAligment - 1) & ~(minUboAligment - 1);
+		s_DynamicUniformBufferAlignment.push_back(size);
+		buffer = UniformBuffer::Create(size * s_DynamicUniformBufferSizeScale, binding);
 	}
 	void Renderer::SetLightUniforms(Vector3& main_dir, Vector3& main_color)
 	{
@@ -143,14 +145,24 @@ namespace GEngine
 		s_ShaderUniformData.LigthDataBuffer.GE_MAIN_LIGHT_COLOR = { main_color, 1.0f };
 
 
-		s_ShaderUniformData.LigthUniformBuffer->SetData(&s_ShaderUniformData.LigthDataBuffer, sizeof(LigthData));
+		s_ShaderUniformData.LigthUniformBuffer->SetData(&s_ShaderUniformData.LigthDataBuffer, sizeof(LigthData), s_DynamicUniformBufferOffsetIndex * s_DynamicUniformBufferAlignment.at(2));
 	}
 
 	void Renderer::SetScreenUniform(Vector4& size)
 	{
 		s_ShaderUniformData.ScreenDataBuffer.GE_SCREEN_SIZE = size;
 
-		s_ShaderUniformData.ScreenUniformBuffer->SetData(&s_ShaderUniformData.ScreenDataBuffer, sizeof(ScreenData));
+		s_ShaderUniformData.ScreenUniformBuffer->SetData(&s_ShaderUniformData.ScreenDataBuffer, sizeof(ScreenData), s_DynamicUniformBufferOffsetIndex * s_DynamicUniformBufferAlignment.at(2));
+	}
+
+	void Renderer::UpdateDynamicUniformBufferOffset()
+	{
+		for (int i = 0;i < s_DynamicUniformBufferOffsets.size();i++)
+		{
+			s_DynamicUniformBufferOffsets.at(i) = s_DynamicUniformBufferOffsetIndex * s_DynamicUniformBufferAlignment.at(i);
+		}
+		s_DynamicUniformBufferOffsetIndex++;
+		s_DynamicUniformBufferOffsetIndex %= s_DynamicUniformBufferSizeScale;
 	}
 
 	void Renderer::DrawCubeWireframe(Transform& transform, Vector4 color)

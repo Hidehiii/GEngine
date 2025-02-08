@@ -97,9 +97,5 @@ namespace GEngine
 	{
 		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
 	}
-	void OpenGLMaterial::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
-	{
-		
-	}
 
 }

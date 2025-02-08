@@ -47,6 +47,7 @@ namespace GEngine
 		virtual void SetVector(const std::string& name, const Vector2& value);
 		virtual void SetVector(const std::string& name, const Vector3& value);
 		virtual void SetVector(const std::string& name, const Vector4& value);
+		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value);
 
 		virtual float		GetFloat(const std::string& name);
 		virtual int			GetInt(const std::string& name);
@@ -59,7 +60,7 @@ namespace GEngine
 		virtual void SetShader(const Ref<Shader>& shader) = 0;
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
-		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) = 0;
+		
 
 		virtual void					SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
 		virtual void					SetTexture2D(const int index, const Ref<Texture2D>& texture);

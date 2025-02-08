@@ -104,9 +104,6 @@ namespace GEngine
 	void VulkanMaterial::SetShader(const Ref<Shader>& shader)
 	{
 	}
-	void VulkanMaterial::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
-	{
-	}
 
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
@@ -200,7 +197,7 @@ namespace GEngine
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet				= m_DescriptorSets.at(index);
-			descriptorWrite.dstBinding			= buffer->GetBinding();
+			descriptorWrite.dstBinding			= buffer->GetDescriptorSetLayoutBinding().binding;
 			descriptorWrite.dstArrayElement		= 0;
 			descriptorWrite.descriptorType		= buffer->GetDescriptorSetLayoutBinding().descriptorType;
 			descriptorWrite.descriptorCount		= 1;
@@ -213,7 +210,7 @@ namespace GEngine
 		// ²ÄÖÊµÄuniform buffer
 		descriptorWrite.sType					= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrite.dstSet					= m_DescriptorSets.at(index);
-		descriptorWrite.dstBinding				= m_UniformBuffer->GetBinding();
+		descriptorWrite.dstBinding				= m_UniformBuffer->GetDescriptorSetLayoutBinding().binding;
 		descriptorWrite.dstArrayElement			= 0;
 		descriptorWrite.descriptorType			= m_UniformBuffer->GetDescriptorSetLayoutBinding().descriptorType;
 		descriptorWrite.descriptorCount			= 1;

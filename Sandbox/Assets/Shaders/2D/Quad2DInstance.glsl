@@ -15,6 +15,7 @@ sampler2D       Tex_7;
 
 #Type vertex
 #version 450 core
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_PositionOS;
 layout(location = 1) in vec2 i_UV;
 layout(location = 2) in vec2 i_Tiling;
@@ -24,13 +25,6 @@ layout(location = 5) in vec4 i_ModelMatrixRow_1;
 layout(location = 6) in vec4 i_ModelMatrixRow_2;
 layout(location = 7) in vec4 i_ModelMatrixRow_3;
 layout(location = 8) in vec4 i_ModelMatrixRow_4;
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
 struct VertexOutput
 {
 	vec2 UV;
@@ -54,6 +48,7 @@ void main()
 
 #Type fragment
 #version 450 core
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_Color;
 struct VertexOutput
 {

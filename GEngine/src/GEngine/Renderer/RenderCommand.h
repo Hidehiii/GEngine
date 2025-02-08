@@ -37,6 +37,8 @@ namespace GEngine
 		inline static uint32_t GetMaxCombinedTextureCount();
 		inline static uint32_t GetMaxPerStageTextureCount();
 
+		inline static uint32_t GetMinUniformBufferOffsetAlignment();
+
 		// compute
 		inline static Vector3 GetMaxComputeWorkGroupCount();
 		inline static Vector3 GetMaxComputeWorkGroupSize();

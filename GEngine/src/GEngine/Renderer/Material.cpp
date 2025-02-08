@@ -188,6 +188,14 @@ namespace GEngine
 			m_UniformsBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
 		}
 	}
+	void Material::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
+	{
+		ShaderUniform uniform = GetUniformByName(name);
+		if (uniform.Size)
+		{
+			m_UniformsBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
+		}
+	}
 	float Material::GetFloat(const std::string& name)
 	{
 		ShaderUniform uniform = GetUniformByName(name);

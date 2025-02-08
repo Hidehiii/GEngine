@@ -114,6 +114,10 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetMaxPerStageTextureCount();
 	}
+	inline uint32_t RenderCommand::GetMinUniformBufferOffsetAlignment()
+	{
+		return s_RendererAPI->GetMinUniformBufferOffsetAlignment();
+	}
 	inline Vector3 RenderCommand::GetMaxComputeWorkGroupCount()
 	{
 		return s_RendererAPI->GetMaxComputeWorkGroupCount();

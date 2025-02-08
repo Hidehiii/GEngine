@@ -1,10 +1,9 @@
 
 #Name Line2D
 
-
 #Type vertex
 #version 450 core
-#include"Assets/Shaders/Core/Core.glsl"
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
 struct VertexOutput
@@ -20,7 +19,7 @@ void main()
 
 #Type fragment
 #version 450 core
-#include"Assets/Shaders/Core/Core.glsl"
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
 struct VertexOutput
 {

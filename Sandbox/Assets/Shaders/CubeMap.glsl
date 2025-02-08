@@ -7,18 +7,8 @@ SamplerCube TexCube;
 #EndProperties
 #Type vertex
 #version 450 core
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 i_position;
-layout(std140, binding = 1) uniform CAMERA
-{
-	mat4 GE_MATRIX_V;
-	mat4 GE_MATRIX_P;
-	mat4 GE_MATRIX_VP;
-	vec4 GE_CAMERA_POSITION;
-};
-layout(std140, binding = 3) uniform MODEL
-{
-	mat4 GE_MATRIX_M;
-};
 struct VertexOutput
 {
 	vec4 position;
@@ -39,18 +29,8 @@ void main()
 
 #Type fragment
 #version 450 core
+#include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
-layout(std140, binding = 1) uniform CAMERA
-{
-    mat4 GE_MATRIX_V;
-    mat4 GE_MATRIX_P;
-    mat4 GE_MATRIX_VP;
-    vec4 GE_CAMERA_POSITION;
-};
-layout(std140, binding = 2) uniform TIME
-{
-	vec4 GE_TIME;
-};
 layout (binding = GE_BINDING_START + 0) uniform samplerCube TexCube;
 struct VertexOutput
 {

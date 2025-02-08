@@ -94,19 +94,6 @@ namespace GEngine
 		static	const	std::string			TessellationEvaluation;
 		static	const	std::string			Geometry;
 	};
-	static uint32_t ShaderUniformTypeSize(ShaderUniformType type)
-	{
-		switch (type)
-		{
-		case ShaderUniformType::Int:	return 4;
-		case ShaderUniformType::Float:	return 4;
-		case ShaderUniformType::Vector: return 4 * 4;
-		case ShaderUniformType::Color:	return 4 * 4;
-		case ShaderUniformType::Mat3:	return 4 * 4 * 3;
-		case ShaderUniformType::Mat4:	return 4 * 4 * 4;
-		}
-		return 0;
-	}
 	
 	struct ShaderUniform
 	{
@@ -151,378 +138,52 @@ namespace GEngine
 
 	namespace Utils
 	{
-		static std::string ToLower(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
-			return string;
-		}
-		static std::string ToUpper(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
-			return string;
-		}
+		uint32_t ShaderUniformTypeSize(ShaderUniformType type);
+		std::string ShaderUniformTypeToGlslType(ShaderUniformType type);
+		std::string ToLower(std::string string);
+		std::string ToUpper(std::string string);
+		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag);
 
-		static uint8_t ShaderVertexInputFlagToLocation(const std::string& flag)
-		{
-			if (ToLower(flag) == "position")	return 0;
-			if (ToLower(flag) == "color")		return 1;
-			if (ToLower(flag) == "normal")		return 2;
-			if (ToLower(flag) == "tangent")		return 3;
-			if (ToLower(flag) == "uv0")			return 4;
-			if (ToLower(flag) == "uv1")			return 5;
-			if (ToLower(flag) == "uv2")			return 6;
-			if (ToLower(flag) == "uv3")			return 7;
-			GE_CORE_ASSERT(false, "invalid vertex input");
-		}
+		bool ShaderBoolFromString(const std::string& value);
 
-		static bool ShaderBoolFromString(const std::string& value)
-		{
-			if (ToLower(value) == "on")				return true;
-			if (ToLower(value) == "1")				return true;
-			if (ToLower(value) == "true")			return true;
-			return false;
-		}
+		CompareOperation ShaderCompareOperationFromString(const std::string& value);
 
-		static CompareOperation ShaderCompareOperationFromString(const std::string& value)
-		{
-			if (ToLower(value) == "less")				return CompareOperation::Less;
-			if (ToLower(value) == "greater")			return CompareOperation::Greater;
-			if (ToLower(value) == "lessequal")			return CompareOperation::LessEqual;
-			if (ToLower(value) == "lequal")				return CompareOperation::LessEqual;
-			if (ToLower(value) == "greaterequal")		return CompareOperation::GreaterEqual;
-			if (ToLower(value) == "gequal")				return CompareOperation::GreaterEqual;
-			if (ToLower(value) == "equal")				return CompareOperation::Equal;
-			if (ToLower(value) == "notequal")			return CompareOperation::NotEqual;
-			if (ToLower(value) == "always")				return CompareOperation::Always;
+		CullMode ShaderCullModeFromString(const std::string& value);
 
-			return CompareOperation::LessEqual;
-		}
+		std::vector<std::string> SplitString(const std::string& string, char delimiter);
 
-		static CullMode ShaderCullModeFromString(const std::string& value)
-		{
-			if (ToLower(value) == "none") return CullMode::None;
-			if (ToLower(value) == "back") return CullMode::Back;
-			if (ToLower(value) == "front") return CullMode::Front;
-			return CullMode::Back;
-		}
+		std::string RemoveCharFromString(const std::string& string, char character);
 
-		static std::vector<std::string> SplitString(const std::string& string, char delimiter)
-		{
-			std::vector<std::string> result;
-			std::stringstream ss(string);
-			std::string item;
-			while (std::getline(ss, item, delimiter))
-			{
-				item = item.substr(0, item.size());
-				if (item.empty() == false)
-					result.push_back(item);
-			}
-			return result;
-		}
-
-		static std::string RemoveCharFromString(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					++it;
-			}
-			return result;
-		}
-
-		static std::string RemoveCharFromStringInHead(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					return result;
-			}
-			return result;
-		}
-		static std::string RemoveCharFromStringInTail(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (int i = result.size() - 1; i >= 0; i--)
-			{
-				if (result.at(i) == character)
-					result.erase(i);
-				else
-					return result;
-			}
-			return result;
-		}
+		std::string RemoveCharFromStringInHead(const std::string& string, char character);
+		std::string RemoveCharFromStringInTail(const std::string& string, char character);
 
 
-		static ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
-		{
-			if (ToLower(type) == "int")				return ShaderUniformType::Int;
-			if (ToLower(type) == "float")			return ShaderUniformType::Float;
-			if (ToLower(type) == "vector")			return ShaderUniformType::Vector;
-			if (ToLower(type) == "color")			return ShaderUniformType::Color;
-			if (ToLower(type) == "mat3")			return ShaderUniformType::Mat3;
-			if (ToLower(type) == "mat4")			return ShaderUniformType::Mat4;
-			if (ToLower(type) == "sampler2d")		return ShaderUniformType::Sampler2D;
-			if (ToLower(type) == "samplercube")		return ShaderUniformType::SamplerCube;
-			if (ToLower(type) == "storageimage2d")	return ShaderUniformType::StorageImage2D;
-			if (ToLower(type) == "storagebuffer")	return ShaderUniformType::StorageBuffer;
-			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
-			return ShaderUniformType::None;
-		}
+		ShaderUniformType ShaderUniformTypeFromString(const std::string& type);
 
-		static BlendFactor ShaderBlendFactorFromString(const std::string& factor)
-		{
-			if (ToUpper(factor) == "SRCALPHA")			return BlendFactor::SRC_ALPHA;
-			if (ToUpper(factor) == "DSTALPHA")			return BlendFactor::DST_ALPHA;
-			if (ToUpper(factor) == "SRCCOLOR")			return BlendFactor::SRC_COLOR;
-			if (ToUpper(factor) == "DSTCOLOR")			return BlendFactor::DST_COLOR;
-			if (ToUpper(factor) == "ONEMINUSSRCALPHA")	return BlendFactor::ONE_MINUS_SRC_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return BlendFactor::ONE_MINUS_DST_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return BlendFactor::ONE_MINUS_SRC_COLOR;
-			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return BlendFactor::ONE_MINUS_DST_COLOR;
-			if (ToUpper(factor) == "ONE")				return BlendFactor::ONE;
-			if (ToUpper(factor) == "ZERO")				return BlendFactor::ZERO;
+		BlendFactor ShaderBlendFactorFromString(const std::string& factor);
 
-			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
-		}
+		BlendMode ShaderBlendModeFromString(const std::string& type);
+		const char* GetCacheDirectory();
 
-		static BlendMode ShaderBlendModeFromString(const std::string& type)
-		{
-			if (ToLower(type) == "none")			return BlendMode::None;
-			if (ToLower(type) == "add")				return BlendMode::Add;
-			if (ToLower(type) == "substract")		return BlendMode::Substract;
-			if (ToLower(type) == "reversesubstract")		return BlendMode::ReverseSubstract;
-			if (ToLower(type) == "min")		return BlendMode::Min;
-			if (ToLower(type) == "max")		return BlendMode::Max;
+		void CreateCacheDirectoryIfNeeded();
 
-			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return BlendMode::None;
-		}
-		static const char* GetCacheDirectory()
-		{
-			// TODO: make sure the assets directory is valid
-			return "Assets/Cache/Shaders";
-		}
+		void SetShaderMacroBool(std::string& source, const std::string& macro, bool value);
 
-		static void CreateCacheDirectoryIfNeeded()
-		{
-			std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
-		}
+		void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp);
+		void InsertShaderVertexInput(std::string& source, const std::string& vertexInput);
+		std::string ProcessShaderName(const std::string& source);
+		void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha,
+			BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha);
+		void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite);
+		void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation);
+		void ProcessShaderCull(const std::string& source, CullMode& mode);
+		std::string ProcessShaderVertexInput(const std::string& source);
 
-		static void SetShaderMacroBool(std::string& source, const std::string& macro, bool value)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, "#define " + macro + " " + (value ? "1" : "0") + "\n");
-		}
+		std::string ReadFile(const std::string& path);
 
-		static void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
-		}
-		static void InsertShaderVertexInput(std::string& source, const std::string& vertexInput)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, vertexInput);
-		}
-		static std::string ProcessShaderName(const std::string& source)
-		{
-			std::string output;
-
-			const char* token = "#Name";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return output;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string name = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = name.find(' ', index)) != std::string::npos)
-			{
-				name.erase(index, 1);
-			}
-			output = name;
-			GE_CORE_TRACE("Shader name: {0}", name);
-			return output;
-		}
-		static void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha, BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
-		{
-			const char* token = "#Blend";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string blendString = source.substr(begin, eol - begin);
-			blendString = Utils::RemoveCharFromString(blendString, ';');
-			blendString = Utils::RemoveCharFromString(blendString, '\r');
-			blendString = Utils::RemoveCharFromString(blendString, '\n');
-			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 6, "Syntax error");
-			modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-			modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
-			if (blends.size() == 3)
-			{
-				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
-				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(1));
-				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(2));
-				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
-			}
-			else if (blends.size() == 6)
-			{
-				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(3));
-				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(4));
-				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(5));
-			}
-			else
-			{
-				GE_CORE_TRACE("Blend type: {0}", blends.at(0));
-			}
-		}
-		static void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite)
-		{
-			const char* token = "#DepthWrite";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string depthMaskProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
-			{
-				depthMaskProp.erase(index, 1);
-			}
-			enableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
-			GE_CORE_TRACE("DepthWrite: {0}", enableDepthWrite);
-		}
-		static void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation)
-		{
-			const char* token = "#DepthTest";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string depthTestProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
-			{
-				depthTestProp.erase(index, 1);
-			}
-			depthTestOperation = Utils::ShaderCompareOperationFromString(depthTestProp);
-			GE_CORE_TRACE("DepthTest: {0}", depthTestProp);
-		}
-		static void ProcessShaderCull(const std::string& source, CullMode& mode)
-		{
-			const char* token = "#Cull";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string cullProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = cullProp.find(' ', index)) != std::string::npos)
-			{
-				cullProp.erase(index, 1);
-			}
-			mode = Utils::ShaderCullModeFromString(cullProp);
-			GE_CORE_TRACE("Cull: {0}", cullProp);
-		}
-		static std::string ProcessShaderVertexInput(const std::string& source)
-		{
-			std::string output;
-
-			const char* token = "#VertexInput";
-			const char* endToken = "#EndVertexInput";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return output;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			size_t end = source.find(endToken, pos);
-			std::string properties = source.substr(nextLinePos, end - nextLinePos);
-
-			std::vector<std::string> props = Utils::SplitString(properties, '\n');
-			for (auto& prop : props)
-			{
-				//prop = Utils::RemoveCharFromString(prop, ' ');
-				prop = Utils::RemoveCharFromString(prop, '\r');
-				prop = Utils::RemoveCharFromString(prop, '\n');
-				prop = Utils::RemoveCharFromString(prop, '\t');
-				prop = Utils::RemoveCharFromString(prop, ';');
-			}
-			for (auto it = props.begin(); it != props.end();)
-			{
-				if (it->empty())
-					it = props.erase(it);
-				else
-					++it;
-			}
-			for (auto prop : props)
-			{
-				std::string flag = Utils::SplitString(prop, ':').at(1);
-				std::string pro = Utils::SplitString(prop, ':').at(0);
-				output += "layout(location=" + std::to_string(Utils::ShaderVertexInputFlagToLocation(flag)) + ") in " + pro + ";\n";
-			}
-			GE_CORE_INFO(output);
-			return output;
-		}
-
-		static std::string ReadFile(const std::string& path)
-		{
-			std::string src;
-			std::ifstream file(path, std::ios::in | std::ios::binary);
-
-			GE_CORE_ASSERT(file, " file " + path + " not found");
-
-			file.seekg(0, std::ios::end);
-			src.resize(file.tellg());
-			file.seekg(0, std::ios::beg);
-			file.read(&src[0], src.size());
-			file.close();
-			return src;
-		}
+		void ProcessShaderProperties(const std::string& source, std::vector<ShaderUniform>& uniformCache, std::vector<ShaderUniformTexture2D>& texture2DCache,
+			std::vector<ShaderUniformCubeMap>& cubeMapCache, std::vector<ShaderUniformStorageImage2D>& storageImage2DCache,
+			std::vector<ShaderUniformStorageBuffer>& storageBufferCache, uint32_t locationStart, uint32_t slotStart, uint32_t storageBufferSlotOffset);
 	}
 
 	class GENGINE_API Shader
@@ -560,6 +221,8 @@ namespace GEngine
 		
 		virtual void										SetMacroBool(std::string& source) = 0;
 		virtual void										SetMacroExp(std::string& source) = 0;
+
+		virtual void										SetMacroMaterialDefine(std::string& source);
 	protected:
 		// slot 从40开始
 		static const uint32_t s_SlotOffset = 40;

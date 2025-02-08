@@ -1,3 +1,4 @@
+GE_MATERIAL_DEFINE
 layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;
@@ -9,16 +10,12 @@ layout(std140, binding = 2) uniform TIME
 {
 	vec4 GE_TIME;
 };
-layout(std140, binding = 3) uniform MODEL
-{
-	mat4 GE_MATRIX_M;
-};
-layout(std140, binding = 4) uniform LIGHT
+layout(std140, binding = 3) uniform LIGHT
 {
 	vec4 GE_MAIN_LIGHT_DIRECTION;
 	vec4 GE_MAIN_LIGHT_COLOR;
 };
-layout(std140, binding = 5) uniform SCREEN
+layout(std140, binding = 4) uniform SCREEN
 {
 	vec4 GE_SCREEN_SIZE;	
 };

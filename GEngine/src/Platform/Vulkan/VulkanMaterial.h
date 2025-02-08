@@ -21,8 +21,6 @@ namespace GEngine
 
 		virtual void SetShader(const Ref<Shader>& shader) override;
 
-		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value) override;
-
 		Ref<VulkanUniformBuffer>	GetUniformBuffer()			{ return m_UniformBuffer; }
 		VkDescriptorSetLayout*		GetDescriptorSetLayout()	{ return &m_DescriptorSetLayout; }
 		VkDescriptorSet*			GetDescriptorSet(int index) { return &m_DescriptorSets.at(index); }
