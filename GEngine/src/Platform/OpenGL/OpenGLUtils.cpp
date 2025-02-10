@@ -91,5 +91,44 @@ namespace GEngine
 			}
 			return GLenum();
 		}
+		GLenum SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode)
+		{
+			if (filter == SamplerFilter::Liner && mipmapMode == SamplerFilter::Liner)
+			{
+				return GL_LINEAR_MIPMAP_LINEAR;
+			}
+			else if (filter == SamplerFilter::Liner && mipmapMode == SamplerFilter::Nearest)
+			{
+				return GL_LINEAR_MIPMAP_NEAREST;
+			}
+			else if (filter == SamplerFilter::Nearest && mipmapMode == SamplerFilter::Liner)
+			{
+				return GL_NEAREST_MIPMAP_LINEAR;
+			}
+			else if (filter == SamplerFilter::Nearest && mipmapMode == SamplerFilter::Nearest)
+			{
+				return GL_NEAREST_MIPMAP_NEAREST;
+			}
+			return GL_LINEAR_MIPMAP_LINEAR;
+		}
+		GLenum SamplerAddressModeToGLWrapMode(SamplerAddressMode mode)
+		{
+			switch (mode)
+			{
+			case SamplerAddressMode::Repeat:
+				return GL_REPEAT;
+			case SamplerAddressMode::MirroredRepeat:
+				return GL_MIRRORED_REPEAT;
+			case SamplerAddressMode::ClampToEdge:
+				return GL_CLAMP_TO_EDGE;
+			case SamplerAddressMode::ClampToBorder:
+				return GL_CLAMP_TO_BORDER;
+			case SamplerAddressMode::MirrorClampToEdge:
+				return GL_MIRROR_CLAMP_TO_EDGE;
+			default:
+				break;
+			}
+			return GL_REPEAT;
+		}
 	}
 }

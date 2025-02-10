@@ -24,9 +24,9 @@ namespace GEngine
 		virtual VertexTopology			GetVertexTopologyType() override { return m_TopologyType; }
 		virtual bool					IsInstanceRendering() override { return m_InstanceRendering; }
 	private:
-		uint32_t								m_VertexBufferRendererID;
-		uint32_t								m_InstanceBufferRendererID;
-		uint32_t								m_VertexArrayRendererID;
+		uint32_t								m_VertexBuffer;
+		uint32_t								m_InstanceBuffer;
+		uint32_t								m_VertexArray;
 		BufferLayout							m_Layout;
 		Ref<IndexBuffer>						m_IndexBuffer;
 		VertexTopology							m_TopologyType;
@@ -43,7 +43,7 @@ namespace GEngine
 		virtual void Bind() const override;
 		virtual uint32_t GetCount() const override { return m_Count;  };
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_Buffer;
 		uint32_t m_Count;
 	};
 }

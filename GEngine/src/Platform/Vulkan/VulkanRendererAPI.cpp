@@ -110,6 +110,22 @@ namespace GEngine
         return (float)glfwGetTime();
     }
 
+    std::vector<std::string> VulkanRendererAPI::GetExtensions()
+    {
+        std::vector<std::string> ext;
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(VulkanContext::Get()->GetPhysicalDevice(), nullptr, &extensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(VulkanContext::Get()->GetPhysicalDevice(), nullptr, &extensionCount, availableExtensions.data());
+
+        for (const auto& extension : availableExtensions)
+        {
+            ext.push_back(extension.extensionName);
+        }
+        return ext;
+    }
+
     uint32_t VulkanRendererAPI::GetMaxTextureSize()
     {
 		VkPhysicalDeviceProperties      deviceProperties;

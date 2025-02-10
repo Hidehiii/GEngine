@@ -17,7 +17,7 @@ namespace GEngine
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::OpenGL:
-			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetRendererID();
+			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
 		case RendererAPI::API::Vulkan:
 		{
 			for (int i = s_VulkanTexture2DUsed.size() - 1; i >= 0; i--)

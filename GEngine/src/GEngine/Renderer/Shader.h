@@ -26,7 +26,9 @@ namespace GEngine
 		Sampler2D		= 7,
 		SamplerCube		= 8,
 		StorageImage2D	= 9,
-		StorageBuffer	= 10
+		StorageBuffer	= 10,
+		Texture2D		= 11,
+		Sampler			= 12,
 	};
 	class GENGINE_API ShaderMacroName
 	{

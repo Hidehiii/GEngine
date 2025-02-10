@@ -30,8 +30,9 @@ namespace GEngine
 		inline static void EndGraphicsCommand();
 		inline static void BeginSecondaryCommand();
 		inline static void EndSecondaryCommand();
-		inline static void SetRendererAPI(RendererAPI::API api);
+		
 
+		inline static std::vector<std::string> GetExtensions();
 
 		inline static uint32_t GetMaxTextureSize();
 		inline static uint32_t GetMaxCombinedTextureCount();
@@ -49,7 +50,11 @@ namespace GEngine
 		inline static void EndComputeCommand();
 		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
 	private:
+		inline static void SetRendererAPI(RendererAPI::API api);
+	private:
 		inline static RendererAPI* s_RendererAPI;
+
+		friend class Renderer;
 	};
 }
 

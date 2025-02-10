@@ -102,6 +102,10 @@ namespace GEngine
 			break;
 		}
 	}
+	inline std::vector<std::string> RenderCommand::GetExtensions()
+	{
+		return s_RendererAPI->GetExtensions();
+	}
 	inline uint32_t RenderCommand::GetMaxTextureSize()
 	{
 		return s_RendererAPI->GetMaxTextureSize();

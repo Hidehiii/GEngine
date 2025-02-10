@@ -103,14 +103,11 @@ namespace GEngine
 
 	VulkanShader::VulkanShader(const std::string& path)
 	{
-		
-
 		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
 		auto shaderSources	= PreProcess(src);
 		CompileOrGetVulkanBinaries(shaderSources);
-		//CompileOrGetOpenGLBinaries(shaderSources);
 	}
 	VulkanShader::~VulkanShader()
 	{
@@ -198,10 +195,6 @@ namespace GEngine
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
-		const char* propertyToken		= "#Properties";
-		const char* propertyEndToken	= "#EndProperties";
-		size_t propertyTokenLength		= strlen(propertyToken);
-
 		const char* typeToken			= "#Type";
 		size_t typeTokenLength			= strlen(typeToken);
 
@@ -247,18 +240,13 @@ namespace GEngine
 		}
 		return shaderSources;
 	}
-	void VulkanShader::Compile(std::unordered_map<std::string, std::string>& source)
-	{
-	}
 	void VulkanShader::CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources)
 	{
 		shaderc::Compiler			compiler;
 		shaderc::CompileOptions		options;
 		options.SetIncluder(std::make_unique<ShaderIncluder>());
-		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		const bool optimize			= false;
-		if (optimize)
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+		options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 		std::filesystem::path cacheDirectory		= Utils::GetCacheDirectory();
 
@@ -286,6 +274,7 @@ namespace GEngine
 				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
+					GE_CORE_ERROR("Error shader context:\n{}", source);
 					GE_CORE_ASSERT(false, module.GetErrorMessage());
 				}
 
@@ -302,70 +291,19 @@ namespace GEngine
 			}
 		}
 
-		/*for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);*/
-	}
-	void VulkanShader::CompileOrGetOpenGLBinaries(const std::unordered_map<std::string, std::string>& shaderSources)
-	{
-		auto& shaderData = m_OpenGLSPIRV;
-
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		const bool optimize = false;
-		if (optimize)
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-
-		shaderData.clear();
-		m_OpenGLSourceCode.clear();
-		for (auto&& [stage, source] : shaderSources)
-		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
-
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
-			{
-				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data = shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
-			}
-			else
-			{
-
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str());
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ASSERT(false, module.GetErrorMessage());
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}
+		for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);
 	}
 	void VulkanShader::Reflect(const std::string stage, const std::vector<uint32_t>& shaderData)
 	{
 		spirv_cross::Compiler			compiler(shaderData);
 		spirv_cross::ShaderResources	resources			= compiler.get_shader_resources();
 
-		GE_CORE_TRACE("VulkanShader::Reflect - {0} {1}", stage, m_FilePath);
+		GE_CORE_INFO("VulkanShader::Reflect - {0} {1}", stage, m_FilePath);
 		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
-		GE_CORE_TRACE("    {0} resources", resources.sampled_images.size());
+		GE_CORE_TRACE("    {0} sampled images", resources.sampled_images.size());
+		GE_CORE_TRACE("    {0} separate images", resources.separate_images.size());
+		GE_CORE_TRACE("    {0} separate samplers", resources.separate_samplers.size());
 
 		GE_CORE_TRACE("Uniform buffers:");
 		for (const auto& resource : resources.uniform_buffers)

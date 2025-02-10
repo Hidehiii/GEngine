@@ -773,6 +773,51 @@ namespace GEngine
 			}
 			return VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		}
+		VkFilter SamplerFilterToVkFilter(SamplerFilter filter)
+		{
+			switch (filter)
+			{
+			case SamplerFilter::Liner:
+				return VK_FILTER_LINEAR;
+			case SamplerFilter::Nearest:
+				return VK_FILTER_NEAREST;
+			default:
+				break;
+			}
+			return VK_FILTER_LINEAR;
+		}
+		VkSamplerAddressMode SamplerAddressModeToVkSamplerAddressMode(SamplerAddressMode mode)
+		{
+			switch (mode)
+			{
+			case SamplerAddressMode::Repeat:
+				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			case SamplerAddressMode::MirroredRepeat:
+				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+			case SamplerAddressMode::ClampToEdge:
+				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+			case SamplerAddressMode::ClampToBorder:
+				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+			case SamplerAddressMode::MirrorClampToEdge:
+				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+			default:
+				break;
+			}
+			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		}
+		VkSamplerMipmapMode SamplerFilterToVkSamplerMipmapMode(SamplerFilter filter)
+		{
+			switch (filter)
+			{
+			case SamplerFilter::Liner:
+				return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			case SamplerFilter::Nearest:
+				return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			default:
+				break;
+			}
+			return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		}
 		VkPipelineShaderStageCreateInfo CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName)
 		{
 			VkPipelineShaderStageCreateInfo		info{};

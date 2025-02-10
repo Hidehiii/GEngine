@@ -20,14 +20,14 @@ namespace GEngine
 		virtual void		Bind(const uint32_t slot = 0) override;
 		virtual std::string GetPath() const override { return m_Path; };
 
-		uint32_t			GetRendererID() const { return m_RendererID; }
+		uint32_t			GetOpenGLID() const { return m_Texture2D; }
 
-		virtual bool operator==(const Texture& other) const override { return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID; };
+		virtual bool operator==(const Texture& other) const override { return m_Texture2D == ((OpenGLTexture2D&)other).m_Texture2D; };
 
 	private:
 		std::string				m_Path;
 		uint32_t				m_Width, m_Height;
-		uint32_t				m_RendererID;
+		uint32_t				m_Texture2D;
 		RenderImage2DFormat		m_Format;
 	};
 }

@@ -174,6 +174,18 @@ namespace GEngine
 	{
 		return (float)glfwGetTime();
 	}
+	std::vector<std::string> OpenGLRendererAPI::GetExtensions()
+	{
+		std::vector<std::string> ext;
+		GLint numExtensions;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+
+		for (GLint i = 0; i < numExtensions; i++) {
+			const char* currentExt = (const char*)glGetStringi(GL_EXTENSIONS, i);
+			ext.push_back(currentExt);
+		}
+		return ext;
+	}
 	uint32_t OpenGLRendererAPI::GetMaxTextureSize()
 	{
 		int size;

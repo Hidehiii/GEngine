@@ -46,6 +46,8 @@ namespace GEngine
 		virtual void BeginSecondaryCommand() = 0;
 		virtual void EndSecondaryCommand() = 0;
 
+		virtual std::vector<std::string> GetExtensions() = 0;
+
 		virtual uint32_t GetMaxTextureSize() = 0;
 		virtual uint32_t GetMaxCombinedTextureCount() = 0;
 		virtual uint32_t GetMaxPerStageTextureCount() = 0;

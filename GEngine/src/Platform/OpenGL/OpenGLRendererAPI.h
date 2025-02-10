@@ -37,6 +37,8 @@ namespace GEngine
 
 		virtual float GetTime() override;
 
+		virtual std::vector<std::string> GetExtensions() override;
+
 		virtual uint32_t GetMaxTextureSize() override;
 		virtual uint32_t GetMaxCombinedTextureCount() override;
 		virtual uint32_t GetMaxPerStageTextureCount() override;

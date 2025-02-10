@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include "GEngine/Renderer/ImageFormat.h"
 #include "GEngine/Renderer/Shader.h"
+#include "GEngine/Renderer/Sampler.h"
 namespace GEngine
 {
 	namespace Utils
@@ -13,6 +14,9 @@ namespace GEngine
 		GLenum ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
 
 		GLenum BlendFactorToGLBlendFactor(BlendFactor factor);
+
+		GLenum SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode);
+		GLenum SamplerAddressModeToGLWrapMode(SamplerAddressMode mode);
 	}
 }
 

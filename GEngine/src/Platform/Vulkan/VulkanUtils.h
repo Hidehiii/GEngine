@@ -3,6 +3,7 @@
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/ImageFormat.h"
 #include "GEngine/Renderer/Shader.h"
+#include "GEngine/Renderer/Sampler.h"
 
 #ifdef GE_PLATFORM_WINDOWS
 #define VK_CHECK_RESULT(f)																								\
@@ -51,6 +52,9 @@ namespace GEngine
 		VkCompareOp				CompareOPToVkCompareOP(CompareOperation op);
 		VkAttachmentLoadOp		AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op);
 		VkAttachmentStoreOp		AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op);
+		VkFilter				SamplerFilterToVkFilter(SamplerFilter filter);
+		VkSamplerAddressMode	SamplerAddressModeToVkSamplerAddressMode(SamplerAddressMode mode);
+		VkSamplerMipmapMode		SamplerFilterToVkSamplerMipmapMode(SamplerFilter filter);
 	}
 	
 }

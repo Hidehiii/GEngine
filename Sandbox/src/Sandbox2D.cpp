@@ -221,6 +221,18 @@ void Sandbox2D::OnAttach()
 	m_ComputeTest->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
 	m_ComputeTest->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
+	auto exts = RenderCommand::GetExtensions();
+	for (auto e : exts)
+	{
+		GE_INFO(e);
+	}
+
+	GraphicsPipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.glsl")),
+		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
+	);
+
+	
 }
 
 void Sandbox2D::OnDetach()

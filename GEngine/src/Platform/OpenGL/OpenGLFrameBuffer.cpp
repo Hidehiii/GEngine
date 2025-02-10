@@ -83,10 +83,10 @@ namespace GEngine
     }
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
-        glDeleteFramebuffers(1, &m_RendererID);
+        glDeleteFramebuffers(1, &m_FrameBuffer);
         if (m_Specification.Samples > 1)
         {
-            glDeleteFramebuffers(1, &m_MultiSampleRendererID);
+            glDeleteFramebuffers(1, &m_MultiSampleFrameBuffer);
             glDeleteTextures(m_MultiSampleColorAttachments.size(), m_MultiSampleColorAttachments.data());
             glDeleteTextures(1, &m_MultiSampleDepthAttachment);
         }
@@ -96,9 +96,9 @@ namespace GEngine
 
         if (m_Specification.Samples > 1)
         {
-            glCreateFramebuffers(1, &m_MultiSampleRendererID);
+            glCreateFramebuffers(1, &m_MultiSampleFrameBuffer);
 
-            glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleRendererID);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
 
             // Attachments
             if (m_Specification.ColorAttachments.size())
@@ -186,9 +186,9 @@ namespace GEngine
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        glCreateFramebuffers(1, &m_RendererID);
+        glCreateFramebuffers(1, &m_FrameBuffer);
         
-        glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
 
         // Attachments
         if (m_Specification.ColorAttachments.size())
@@ -283,11 +283,11 @@ namespace GEngine
     {
         if (m_Specification.Samples > 1)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleRendererID);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
         }
         else
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
         }
         
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
@@ -311,8 +311,8 @@ namespace GEngine
         {
 			GLint currentFbo;
 			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleRendererID);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RendererID);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
         }
@@ -325,8 +325,8 @@ namespace GEngine
         {
 			GLint currentFbo;
 			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleRendererID);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RendererID);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);

@@ -17,6 +17,12 @@ namespace GEngine
 		virtual void SetVSync(bool enable) override { }
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { }
 	private:
-		GLFWwindow* m_WindowHandle;
+		bool CheckExtensionsSupport();
+	private:
+		GLFWwindow*					m_WindowHandle;
+		std::vector<const char*>	m_Extensions =
+		{
+
+		};
 	};
 }

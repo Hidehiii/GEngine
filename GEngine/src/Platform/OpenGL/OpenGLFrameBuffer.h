@@ -28,9 +28,9 @@ namespace GEngine
 	private:
 		void CreateBuffer();
 	private:
-		uint32_t										m_RendererID = 0;
+		uint32_t										m_FrameBuffer = 0;
 		Ref<OpenGLRenderPass>							m_RenderPass;
-		uint32_t										m_MultiSampleRendererID = 0;
+		uint32_t										m_MultiSampleFrameBuffer = 0;
 		uint32_t										m_DepthAttachment = 0;
 		std::vector<uint32_t>							m_ColorAttachments;
 		uint32_t										m_MultiSampleDepthAttachment = 0;

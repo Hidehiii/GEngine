@@ -11,7 +11,7 @@ namespace GEngine
 
 		virtual void Bind(const uint32_t slot = 0) override;
 	private:
-		uint32_t	m_RendererID = 0;
+		uint32_t	m_Image = 0;
 		uint32_t			m_Width, m_Height;
 		ComputeImage2DFormat	m_Format;
 	};

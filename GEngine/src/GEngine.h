@@ -36,6 +36,7 @@
 #include "GEngine/Renderer/Sampler.h"
 #include "GEngine/Renderer/RenderPass.h"
 #include "GEngine/Renderer/RenderPipeline.h"
+#include "GEngine/Renderer/Sampler.h"
 
 
 // Components

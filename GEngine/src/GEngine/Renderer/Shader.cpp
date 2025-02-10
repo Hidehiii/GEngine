@@ -184,6 +184,8 @@ namespace GEngine
 			if (ToLower(type) == "samplercube")		return ShaderUniformType::SamplerCube;
 			if (ToLower(type) == "storageimage2d")	return ShaderUniformType::StorageImage2D;
 			if (ToLower(type) == "storagebuffer")	return ShaderUniformType::StorageBuffer;
+			if (ToLower(type) == "texture2d")		return ShaderUniformType::Texture2D;
+			if (ToLower(type) == "sampler")			return ShaderUniformType::Sampler;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
 		}
@@ -264,7 +266,7 @@ namespace GEngine
 				name.erase(index, 1);
 			}
 			output = name;
-			GE_CORE_TRACE("Shader name: {0}", name);
+			GE_CORE_INFO("Shader name: {0}", name);
 			return output;
 		}
 		void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha,

@@ -8,17 +8,17 @@ namespace GEngine
 		
 
 		m_TopologyType = type;
-		glCreateBuffers(1, &m_VertexBufferRendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glCreateBuffers(1, &m_VertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 
-		glCreateVertexArrays(1, &m_VertexArrayRendererID);
+		glCreateVertexArrays(1, &m_VertexArray);
 
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
-			glCreateBuffers(1, &m_InstanceBufferRendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+			glCreateBuffers(1, &m_InstanceBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
 		}
 	}
@@ -27,50 +27,50 @@ namespace GEngine
 	{
 		
 		m_TopologyType = type;
-		glCreateBuffers(1, &m_VertexBufferRendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glCreateBuffers(1, &m_VertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
-			glCreateBuffers(1, &m_InstanceBufferRendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+			glCreateBuffers(1, &m_InstanceBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
 			
 		}
 	}
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		glDeleteBuffers(1, &m_VertexBufferRendererID);
+		glDeleteBuffers(1, &m_VertexBuffer);
 		if (m_InstanceRendering)
 		{
-			glDeleteBuffers(1, &m_InstanceBufferRendererID);
+			glDeleteBuffers(1, &m_InstanceBuffer);
 		}
 	}
 	void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 	void OpenGLVertexBuffer::SetDataInstance(const void* data, uint32_t size)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 	void OpenGLVertexBuffer::Bind() const
 	{
 		
-		glBindVertexArray(m_VertexArrayRendererID);
-		//glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glBindVertexArray(m_VertexArray);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 	}
 
 	void OpenGLVertexBuffer::SetLayout(const BufferLayout& layout)
 	{
 		m_Layout = layout;
-		glBindVertexArray(m_VertexArrayRendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+		glBindVertexArray(m_VertexArray);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 
 		uint32_t index = 0;
 		for (auto& element : m_Layout)
@@ -84,7 +84,7 @@ namespace GEngine
 			{
 				if (element.IsInstance)
 				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideInstance(), (const void*)element.Offset);
@@ -92,7 +92,7 @@ namespace GEngine
 				}
 				else
 				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
@@ -107,7 +107,7 @@ namespace GEngine
 			{
 				if (element.IsInstance)
 				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBufferRendererID);
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						m_Layout.GetStrideInstance(), (const void*)element.Offset);
@@ -115,7 +115,7 @@ namespace GEngine
 				}
 				else
 				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferRendererID);
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
 						m_Layout.GetStride(), (const void*)element.Offset);
@@ -147,7 +147,7 @@ namespace GEngine
 
 	void OpenGLVertexBuffer::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
-		glBindVertexArray(m_VertexArrayRendererID);
+		glBindVertexArray(m_VertexArray);
 		indexBuffer->Bind();
 		m_IndexBuffer = indexBuffer;
 	}
@@ -158,18 +158,18 @@ namespace GEngine
 	{
 		
 
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		glCreateBuffers(1, &m_Buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 	}
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
-		glDeleteBuffers(1, &m_RendererID);
+		glDeleteBuffers(1, &m_Buffer);
 	}
 	void OpenGLIndexBuffer::Bind() const
 	{
 		
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
 	}
 }

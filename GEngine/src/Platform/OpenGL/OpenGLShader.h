@@ -38,19 +38,13 @@ namespace GEngine
 	private:
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 
-		void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
 		void CompileOrGetOpenGLBinaries(std::unordered_map<GLenum, std::string>& shaderSources);
 		void CreateProgram();
 		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
-		uint32_t											m_RendererID = 0;
+		uint32_t											m_Shader = 0;
 
-		std::unordered_map<GLenum, std::vector<uint32_t>>	m_VulkanSPIRV;
 		std::unordered_map<GLenum, std::vector<uint32_t>>	m_OpenGLSPIRV;
-
-		std::unordered_map<GLenum, std::string>				m_OpenGLSourceCode;
-
-		
 
 		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
 			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, false}
