@@ -62,6 +62,7 @@ private:
 	Ref<GraphicsPipeline> m_OITPrepare;
 	Ref<GraphicsPipeline> m_OIT;
 	Ref<GraphicsPipeline> m_CopyColorDepth;
+	Ref<GraphicsPipeline> m_SeparateTextureSampler;
 
 	Ref<ComputePipeline> m_ComputeTest;
 	Ref<GraphicsPipeline> m_ComputeShow;

@@ -56,7 +56,6 @@ namespace GEngine
 	void OpenGLRendererAPI::DrawTriangles(uint32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	void OpenGLRendererAPI::DrawLines(uint32_t indexCount)
 	{
@@ -69,7 +68,6 @@ namespace GEngine
 	void OpenGLRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
 	{
 		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	void OpenGLRendererAPI::EnableDepthWrite(bool enabled)
 	{

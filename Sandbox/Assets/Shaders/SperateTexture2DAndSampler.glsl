@@ -3,7 +3,7 @@
 #DepthWrite Off
 #Blend None
 #Properties
-Sampler2D tex;
+
 #EndProperties
 #Type vertex
 #include "Assets/Shaders/Core/Core.glsl"

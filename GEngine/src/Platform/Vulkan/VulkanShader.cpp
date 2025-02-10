@@ -246,7 +246,7 @@ namespace GEngine
 		shaderc::CompileOptions		options;
 		options.SetIncluder(std::make_unique<ShaderIncluder>());
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-		options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		//options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 		std::filesystem::path cacheDirectory		= Utils::GetCacheDirectory();
 
