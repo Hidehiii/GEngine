@@ -51,6 +51,7 @@ namespace GEngine
 		virtual uint32_t GetMaxTextureSize() = 0;
 		virtual uint32_t GetMaxCombinedTextureCount() = 0;
 		virtual uint32_t GetMaxPerStageTextureCount() = 0;
+		virtual uint32_t GetMaxTextureArrayLayers() = 0;
 
 		virtual uint32_t GetMinUniformBufferOffsetAlignment() = 0;
 		virtual uint32_t GetMaxUniformBufferSize() = 0;

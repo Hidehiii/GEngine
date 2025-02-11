@@ -118,6 +118,10 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetMaxPerStageTextureCount();
 	}
+	inline uint32_t RenderCommand::GetMaxTextureArrayLayers()
+	{
+		return s_RendererAPI->GetMaxTextureArrayLayers();
+	}
 	inline uint32_t RenderCommand::GetMinUniformBufferOffsetAlignment()
 	{
 		return s_RendererAPI->GetMinUniformBufferOffsetAlignment();

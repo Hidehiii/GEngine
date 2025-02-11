@@ -1,4 +1,4 @@
-GE_MATERIAL_DEFINE
+GE_MATERIAL_DEFINE;
 layout(std140, binding = 1) uniform CAMERA
 {
 	mat4 GE_MATRIX_V;

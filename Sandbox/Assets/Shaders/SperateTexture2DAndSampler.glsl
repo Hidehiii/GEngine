@@ -29,8 +29,8 @@ void main()
 #Type fragment
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
-layout (binding = GE_BINDING_START + 0) uniform texture2D tex;
 layout (binding = GE_BINDING_START + 1) uniform sampler samp;
+layout (binding = GE_BINDING_START + 0) uniform highp texture2D tex;
 struct VertexOutput
 {
 	vec4 position;

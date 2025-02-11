@@ -37,6 +37,7 @@ namespace GEngine
 		inline static uint32_t GetMaxTextureSize();
 		inline static uint32_t GetMaxCombinedTextureCount();
 		inline static uint32_t GetMaxPerStageTextureCount();
+		inline static uint32_t GetMaxTextureArrayLayers();
 
 		inline static uint32_t GetMinUniformBufferOffsetAlignment();
 		inline static uint32_t GetMaxUniformBufferSize();

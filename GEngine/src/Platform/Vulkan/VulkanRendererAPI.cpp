@@ -147,6 +147,13 @@ namespace GEngine
 		return deviceProperties.limits.maxPerStageDescriptorSampledImages;
     }
 
+    uint32_t VulkanRendererAPI::GetMaxTextureArrayLayers()
+    {
+		VkPhysicalDeviceProperties      deviceProperties;
+		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
+		return deviceProperties.limits.maxImageArrayLayers;
+    }
+
     uint32_t VulkanRendererAPI::GetMinUniformBufferOffsetAlignment()
     {
 		VkPhysicalDeviceProperties      deviceProperties;

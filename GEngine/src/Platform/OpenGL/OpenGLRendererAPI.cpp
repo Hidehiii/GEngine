@@ -202,6 +202,12 @@ namespace GEngine
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &count);
 		return count;
 	}
+	uint32_t OpenGLRendererAPI::GetMaxTextureArrayLayers()
+	{
+		GLint maxArrayTextureLayers;
+		glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArrayTextureLayers);
+		return maxArrayTextureLayers;
+	}
 	uint32_t OpenGLRendererAPI::GetMinUniformBufferOffsetAlignment()
 	{
 		GLint aligment;

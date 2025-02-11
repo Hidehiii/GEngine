@@ -613,7 +613,7 @@ namespace GEngine
 			exp += uniform.Name;
 			exp += ";";
 		}
-		exp += "};";
+		exp += "}";
 		Utils::SetShaderMacroExpression(source, macro, exp);
 	}
 	std::string ShaderLibrary::Add(Ref<Shader>& shader)
