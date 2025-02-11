@@ -51,8 +51,7 @@ void Sandbox2D::OnAttach()
 			if (path.extension() == ".glsl" || path.extension() == ".GLSL")
 			{
 				GE_TRACE("Shader: {0} loading", path);
-				ShaderLibrary::Load(path.string());
-				GE_TRACE("Shader: {0} loaded", path);
+				Shader::Create(path.string());
 			}
 		}
 		for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
@@ -62,8 +61,7 @@ void Sandbox2D::OnAttach()
 			if (path.extension() == ".glsl" || path.extension() == ".GLSL")
 			{
 				GE_TRACE("Shader: {0} loading", path);
-				ShaderLibrary::Load(path.string());
-				GE_TRACE("Shader: {0} loaded", path);
+				Shader::Create(path.string());
 			}
 		}
 	}
@@ -227,7 +225,7 @@ void Sandbox2D::OnAttach()
 		GE_INFO(e);
 	}
 
-	m_SeparateTextureSampler = GraphicsPipeline::Create(
+	/*m_SeparateTextureSampler = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.glsl")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
@@ -235,7 +233,7 @@ void Sandbox2D::OnAttach()
 		{ShaderDataType::float4,	"PositionOS"}
 		});
 	m_SeparateTextureSampler->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
-	m_SeparateTextureSampler->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
+	m_SeparateTextureSampler->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());*/
 }
 
 void Sandbox2D::OnDetach()
@@ -267,7 +265,7 @@ void Sandbox2D::OnRender()
 	m_SkyBoxFB->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
-	m_SeparateTextureSampler->Render();
+	//m_SeparateTextureSampler->Render();
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
 	RenderCommand::EndGraphicsCommand();

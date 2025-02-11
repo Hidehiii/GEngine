@@ -6,7 +6,7 @@
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/Renderer.h"
-#include <vulkan/vulkan.h>
+#include <Platform/Vulkan/VMA/vk_mem_alloc.h>
 #include <GLFW/glfw3.h>
 
 
@@ -40,6 +40,7 @@ namespace GEngine
 
 		void						RecreateSwapChain(unsigned int width, unsigned int height);
 		static VulkanContext*		Get() { return s_ContextInstance; }
+		VmaAllocator				GetVmaAllocator() { return m_VmaAllocator; }
 		VkDevice					GetDevice() { return m_Device; }
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
 		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
@@ -77,6 +78,7 @@ namespace GEngine
 		void						SetPhysicalDevice();
 		bool						IsDeviceSuitable(VkPhysicalDevice device);
 		void						CreateLogicalDevice();
+		void						CreateVmaAllocator();
 		void						CreateSurface();
 		bool						CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		void						CheckInstanceExtensionSupport(VkPhysicalDevice device);
@@ -112,6 +114,7 @@ namespace GEngine
 		VkDebugUtilsMessengerEXT			m_DebugMessenger;
 		VkPhysicalDevice					m_PhysicalDevice;
 		VkDevice							m_Device;
+		VmaAllocator						m_VmaAllocator;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkQueue								m_ComputeQueue;

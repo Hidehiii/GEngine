@@ -67,6 +67,7 @@ namespace GEngine
         CreateSurface();
         SetPhysicalDevice();
         CreateLogicalDevice();
+        CreateVmaAllocator();
         CreateSwapChain(width, height);
         CreateImageViews();
         CreateCommandBuffers();
@@ -420,6 +421,15 @@ namespace GEngine
 		vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
         vkGetDeviceQueue(m_Device, indices.ComputeFamily.value(), 0, &m_ComputeQueue);
+    }
+    void VulkanContext::CreateVmaAllocator()
+    {
+        VmaAllocatorCreateInfo  info = {};
+        info.physicalDevice     = m_PhysicalDevice;
+        info.device             = m_Device;
+        info.instance           = m_Instance;
+
+        VK_CHECK_RESULT(vmaCreateAllocator(&info, &m_VmaAllocator));
     }
     void VulkanContext::CreateSurface()
     {
