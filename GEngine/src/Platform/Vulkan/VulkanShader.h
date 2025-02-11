@@ -1,7 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/Shader.h"
-
+#include "GEngine/Renderer/RendererAPI.h"
 #include <vulkan/vulkan.h>
 namespace GEngine
 {
@@ -34,7 +34,10 @@ namespace GEngine
 			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, true}
 		};
 		std::vector<std::pair<std::string, std::string>>	m_MacroExps = {
-			{ ShaderMacroName::GE_BINDING_START, std::to_string(s_SlotOffset)}
+			{ ShaderMacroName::GE_BINDING_START, std::to_string(s_SlotOffset)},
+			{ ShaderMacroName::GE_GRAPHICS_API_OPENGL, std::to_string((int)RendererAPI::API::OpenGL)},
+			{ ShaderMacroName::GE_GRAPHICS_API_VULKAN, std::to_string((int)RendererAPI::API::Vulkan)},
+			{ ShaderMacroName::GE_GRAPHICS_API, std::to_string((int)RendererAPI::API::Vulkan)},
 		};
 
 		VkShaderModule m_VertexShaderModule = nullptr, m_FragmentShaderModule = nullptr, m_ComputeShaderModule = nullptr, m_TessellationControlShaderModule = nullptr,

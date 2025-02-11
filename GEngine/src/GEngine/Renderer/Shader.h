@@ -29,6 +29,7 @@ namespace GEngine
 		StorageBuffer	= 10,
 		Texture2D		= 11,
 		Sampler			= 12,
+		Sampler2DArray	= 13,
 	};
 	class GENGINE_API ShaderMacroName
 	{
@@ -36,6 +37,9 @@ namespace GEngine
 		static const	std::string			GE_ATTACHMENT_UV_STARTS_AT_TOP;
 		static const	std::string			GE_BINDING_START; 
 		static const	std::string			GE_MATERIAL_DEFINE;
+		static const	std::string			GE_GRAPHICS_API_OPENGL;
+		static const	std::string			GE_GRAPHICS_API_VULKAN;
+		static const	std::string			GE_GRAPHICS_API;
 	};
 	enum class GENGINE_API BlendFactor
 	{

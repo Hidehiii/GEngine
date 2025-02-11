@@ -226,7 +226,6 @@ void Sandbox2D::OnAttach()
 	{
 		GE_INFO(e);
 	}
-	GE_INFO(RenderCommand::GetMaxTextureArrayLayers());
 
 	m_SeparateTextureSampler = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.glsl")),

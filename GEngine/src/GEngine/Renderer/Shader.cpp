@@ -8,25 +8,29 @@ namespace GEngine
 {
 	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
-	std::string     const	ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = "GE_ATTACHMENT_UV_STARTS_AT_TOP";
-	std::string		const	ShaderMacroName::GE_BINDING_START				= "GE_BINDING_START";
-	std::string		const	ShaderMacroName::GE_MATERIAL_DEFINE				= "GE_MATERIAL_DEFINE";
+	std::string     const	ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = VAR_NAME(GE_ATTACHMENT_UV_STARTS_AT_TOP);
+	std::string		const	ShaderMacroName::GE_BINDING_START				= VAR_NAME(GE_BINDING_START);
+	std::string		const	ShaderMacroName::GE_MATERIAL_DEFINE				= VAR_NAME(GE_MATERIAL_DEFINE);
+	std::string		const	ShaderMacroName::GE_GRAPHICS_API_OPENGL			= VAR_NAME(GE_GRAPHICS_API_OPENGL);
+	std::string		const	ShaderMacroName::GE_GRAPHICS_API_VULKAN			= VAR_NAME(GE_GRAPHICS_API_VULKAN);
+	std::string		const	ShaderMacroName::GE_GRAPHICS_API				= VAR_NAME(GE_GRAPHICS_API);
+	
 
-	std::string		const	ShaderDataFlag::None							= "#None";
-	std::string		const	ShaderDataFlag::Name							= "#Name";
-	std::string		const	ShaderDataFlag::Blend							= "#Blend";
-	std::string		const	ShaderDataFlag::DepthMask						= "#DepthMask";
-	std::string		const	ShaderDataFlag::DepthTest						= "#DepthTest";
-	std::string		const	ShaderDataFlag::Properties						= "#Properties";
-	std::string		const	ShaderDataFlag::Type							= "#Type";
+	std::string		const	ShaderDataFlag::None							= VAR_NAME(#None);
+	std::string		const	ShaderDataFlag::Name							= VAR_NAME(#Name);
+	std::string		const	ShaderDataFlag::Blend							= VAR_NAME(#Blend);
+	std::string		const	ShaderDataFlag::DepthMask						= VAR_NAME(#DepthMask);
+	std::string		const	ShaderDataFlag::DepthTest						= VAR_NAME(#DepthTest);
+	std::string		const	ShaderDataFlag::Properties						= VAR_NAME(#Properties);
+	std::string		const	ShaderDataFlag::Type							= VAR_NAME(#Type);
 					
-	std::string     const	ShaderStage::Vertex								= "vertex";
-	std::string     const	ShaderStage::Fragment							= "fragment";
-	std::string     const	ShaderStage::Pixel								= "pixel";
-	std::string		const	ShaderStage::Compute							= "compute";
-	std::string		const	ShaderStage::TessellationControl				= "tessellationControl";
-	std::string		const	ShaderStage::TessellationEvaluation				= "tessellationEvaluation";
-	std::string		const	ShaderStage::Geometry							= "geometry";
+	std::string     const	ShaderStage::Vertex								= VAR_NAME(vertex);
+	std::string     const	ShaderStage::Fragment							= VAR_NAME(fragment);
+	std::string     const	ShaderStage::Pixel								= VAR_NAME(pixel);
+	std::string		const	ShaderStage::Compute							= VAR_NAME(compute);
+	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(tessellationcontrol);
+	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(tessellationevaluation);
+	std::string		const	ShaderStage::Geometry							= VAR_NAME(geometry);
 
 	namespace Utils
 	{
@@ -50,17 +54,17 @@ namespace GEngine
 			case ShaderUniformType::None:
 				break;
 			case ShaderUniformType::Int:
-				return "int";
+				return VAR_NAME(int);
 			case ShaderUniformType::Float:
-				return "float";
+				return VAR_NAME(float);
 			case ShaderUniformType::Vector:
-				return "vec4";
+				return VAR_NAME(vec4);
 			case ShaderUniformType::Color:
-				return "vec4";
+				return VAR_NAME(vec4);
 			case ShaderUniformType::Mat3:
-				return "mat3";
+				return VAR_NAME(mat3);
 			case ShaderUniformType::Mat4:
-				return "mat4";
+				return VAR_NAME(mat4);
 			case ShaderUniformType::Sampler2D:
 				break;
 			case ShaderUniformType::SamplerCube:
@@ -85,42 +89,42 @@ namespace GEngine
 		}
 		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag)
 		{
-			if (ToLower(flag) == "position")	return 0;
-			if (ToLower(flag) == "color")		return 1;
-			if (ToLower(flag) == "normal")		return 2;
-			if (ToLower(flag) == "tangent")		return 3;
-			if (ToLower(flag) == "uv0")			return 4;
-			if (ToLower(flag) == "uv1")			return 5;
-			if (ToLower(flag) == "uv2")			return 6;
-			if (ToLower(flag) == "uv3")			return 7;
+			if (ToLower(flag) == VAR_NAME(position))	return 0;
+			if (ToLower(flag) == VAR_NAME(color))		return 1;
+			if (ToLower(flag) == VAR_NAME(normal))		return 2;
+			if (ToLower(flag) == VAR_NAME(tangent))		return 3;
+			if (ToLower(flag) == VAR_NAME(uv0))			return 4;
+			if (ToLower(flag) == VAR_NAME(uv1))			return 5;
+			if (ToLower(flag) == VAR_NAME(uv2))			return 6;
+			if (ToLower(flag) == VAR_NAME(uv3))			return 7;
 			GE_CORE_ASSERT(false, "invalid vertex input");
 		}
 		bool ShaderBoolFromString(const std::string& value)
 		{
-			if (ToLower(value) == "on")				return true;
-			if (ToLower(value) == "1")				return true;
-			if (ToLower(value) == "true")			return true;
+			if (ToLower(value) == VAR_NAME(on))				return true;
+			if (ToLower(value) == VAR_NAME(1))				return true;
+			if (ToLower(value) == VAR_NAME(true))			return true;
 			return false;
 		}
 		CompareOperation ShaderCompareOperationFromString(const std::string& value)
 		{
-			if (ToLower(value) == "less")				return CompareOperation::Less;
-			if (ToLower(value) == "greater")			return CompareOperation::Greater;
-			if (ToLower(value) == "lessequal")			return CompareOperation::LessEqual;
-			if (ToLower(value) == "lequal")				return CompareOperation::LessEqual;
-			if (ToLower(value) == "greaterequal")		return CompareOperation::GreaterEqual;
-			if (ToLower(value) == "gequal")				return CompareOperation::GreaterEqual;
-			if (ToLower(value) == "equal")				return CompareOperation::Equal;
-			if (ToLower(value) == "notequal")			return CompareOperation::NotEqual;
-			if (ToLower(value) == "always")				return CompareOperation::Always;
+			if (ToLower(value) == VAR_NAME(less))				return CompareOperation::Less;
+			if (ToLower(value) == VAR_NAME(greater))			return CompareOperation::Greater;
+			if (ToLower(value) == VAR_NAME(lessequal))			return CompareOperation::LessEqual;
+			if (ToLower(value) == VAR_NAME(lequal))				return CompareOperation::LessEqual;
+			if (ToLower(value) == VAR_NAME(greaterequal))		return CompareOperation::GreaterEqual;
+			if (ToLower(value) == VAR_NAME(gequal))				return CompareOperation::GreaterEqual;
+			if (ToLower(value) == VAR_NAME(equal))				return CompareOperation::Equal;
+			if (ToLower(value) == VAR_NAME(notequal))			return CompareOperation::NotEqual;
+			if (ToLower(value) == VAR_NAME(always))				return CompareOperation::Always;
 
 			return CompareOperation::LessEqual;
 		}
 		CullMode ShaderCullModeFromString(const std::string& value)
 		{
-			if (ToLower(value) == "none") return CullMode::None;
-			if (ToLower(value) == "back") return CullMode::Back;
-			if (ToLower(value) == "front") return CullMode::Front;
+			if (ToLower(value) == VAR_NAME(none)) return CullMode::None;
+			if (ToLower(value) == VAR_NAME(back)) return CullMode::Back;
+			if (ToLower(value) == VAR_NAME(front)) return CullMode::Front;
 			return CullMode::Back;
 		}
 		std::vector<std::string> SplitString(const std::string& string, char delimiter)
@@ -174,44 +178,45 @@ namespace GEngine
 		}
 		ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "int")				return ShaderUniformType::Int;
-			if (ToLower(type) == "float")			return ShaderUniformType::Float;
-			if (ToLower(type) == "vector")			return ShaderUniformType::Vector;
-			if (ToLower(type) == "color")			return ShaderUniformType::Color;
-			if (ToLower(type) == "mat3")			return ShaderUniformType::Mat3;
-			if (ToLower(type) == "mat4")			return ShaderUniformType::Mat4;
-			if (ToLower(type) == "sampler2d")		return ShaderUniformType::Sampler2D;
-			if (ToLower(type) == "samplercube")		return ShaderUniformType::SamplerCube;
-			if (ToLower(type) == "storageimage2d")	return ShaderUniformType::StorageImage2D;
-			if (ToLower(type) == "storagebuffer")	return ShaderUniformType::StorageBuffer;
-			if (ToLower(type) == "texture2d")		return ShaderUniformType::Texture2D;
-			if (ToLower(type) == "sampler")			return ShaderUniformType::Sampler;
+			if (ToLower(type) == VAR_NAME(int))					return ShaderUniformType::Int;
+			if (ToLower(type) == VAR_NAME(float))				return ShaderUniformType::Float;
+			if (ToLower(type) == VAR_NAME(vector))				return ShaderUniformType::Vector;
+			if (ToLower(type) == VAR_NAME(color))				return ShaderUniformType::Color;
+			if (ToLower(type) == VAR_NAME(mat3))				return ShaderUniformType::Mat3;
+			if (ToLower(type) == VAR_NAME(mat4))				return ShaderUniformType::Mat4;
+			if (ToLower(type) == VAR_NAME(sampler2d))			return ShaderUniformType::Sampler2D;
+			if (ToLower(type) == VAR_NAME(samplercube))			return ShaderUniformType::SamplerCube;
+			if (ToLower(type) == VAR_NAME(storageimage2d))		return ShaderUniformType::StorageImage2D;
+			if (ToLower(type) == VAR_NAME(storagebuffer))		return ShaderUniformType::StorageBuffer;
+			if (ToLower(type) == VAR_NAME(texture2d))			return ShaderUniformType::Texture2D;
+			if (ToLower(type) == VAR_NAME(sampler))				return ShaderUniformType::Sampler;
+			if (ToLower(type) == VAR_NAME(sampler2darray))		return ShaderUniformType::Sampler2DArray;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
 			return ShaderUniformType::None;
 		}
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor)
 		{
-			if (ToUpper(factor) == "SRCALPHA")			return BlendFactor::SRC_ALPHA;
-			if (ToUpper(factor) == "DSTALPHA")			return BlendFactor::DST_ALPHA;
-			if (ToUpper(factor) == "SRCCOLOR")			return BlendFactor::SRC_COLOR;
-			if (ToUpper(factor) == "DSTCOLOR")			return BlendFactor::DST_COLOR;
-			if (ToUpper(factor) == "ONEMINUSSRCALPHA")	return BlendFactor::ONE_MINUS_SRC_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSDSTALPHA")	return BlendFactor::ONE_MINUS_DST_ALPHA;
-			if (ToUpper(factor) == "ONEMINUSSRCCOLOR")	return BlendFactor::ONE_MINUS_SRC_COLOR;
-			if (ToUpper(factor) == "ONEMINUSDSTCOLOR")	return BlendFactor::ONE_MINUS_DST_COLOR;
-			if (ToUpper(factor) == "ONE")				return BlendFactor::ONE;
-			if (ToUpper(factor) == "ZERO")				return BlendFactor::ZERO;
+			if (ToUpper(factor) == VAR_NAME(SRCALPHA))			return BlendFactor::SRC_ALPHA;
+			if (ToUpper(factor) == VAR_NAME(DSTALPHA))			return BlendFactor::DST_ALPHA;
+			if (ToUpper(factor) == VAR_NAME(SRCCOLOR))			return BlendFactor::SRC_COLOR;
+			if (ToUpper(factor) == VAR_NAME(DSTCOLOR))			return BlendFactor::DST_COLOR;
+			if (ToUpper(factor) == VAR_NAME(ONEMINUSSRCALPHA))	return BlendFactor::ONE_MINUS_SRC_ALPHA;
+			if (ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BlendFactor::ONE_MINUS_DST_ALPHA;
+			if (ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BlendFactor::ONE_MINUS_SRC_COLOR;
+			if (ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BlendFactor::ONE_MINUS_DST_COLOR;
+			if (ToUpper(factor) == VAR_NAME(ONE))				return BlendFactor::ONE;
+			if (ToUpper(factor) == VAR_NAME(ZERO))				return BlendFactor::ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
 		}
 		BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
-			if (ToLower(type) == "none")				return BlendMode::None;
-			if (ToLower(type) == "add")					return BlendMode::Add;
-			if (ToLower(type) == "substract")			return BlendMode::Substract;
-			if (ToLower(type) == "reversesubstract")	return BlendMode::ReverseSubstract;
-			if (ToLower(type) == "min")					return BlendMode::Min;
-			if (ToLower(type) == "max")					return BlendMode::Max;
+			if (ToLower(type) == VAR_NAME(none))				return BlendMode::None;
+			if (ToLower(type) == VAR_NAME(add))					return BlendMode::Add;
+			if (ToLower(type) == VAR_NAME(substract))			return BlendMode::Substract;
+			if (ToLower(type) == VAR_NAME(reversesubstract))	return BlendMode::ReverseSubstract;
+			if (ToLower(type) == VAR_NAME(min))					return BlendMode::Min;
+			if (ToLower(type) == VAR_NAME(max))					return BlendMode::Max;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return BlendMode::None;
