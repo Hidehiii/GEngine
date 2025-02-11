@@ -84,7 +84,7 @@ namespace GEngine
 				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
 				{
 					GE_TRACE("Shader: {0} loading", path);
-					ShaderLibrary::Load(path.string());
+					Shader::Create(path.string());
 				}
 			}
 			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
@@ -94,7 +94,7 @@ namespace GEngine
 				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
 				{
 					GE_TRACE("Shader: {0} loading", path);
-					ShaderLibrary::Load(path.string());
+					Shader::Create(path.string());
 				}
 			}
 		}

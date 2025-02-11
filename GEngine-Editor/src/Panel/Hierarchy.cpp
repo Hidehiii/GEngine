@@ -307,7 +307,7 @@ namespace GEngine
 				ImGui::Columns(1);
 			}
 		);
-
+		// TODO; 没有shader library了
 		DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
 			{
 				auto shaderString = ShaderLibrary::GetShaderNames();

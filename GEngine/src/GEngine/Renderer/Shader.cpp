@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders = std::unordered_map<std::string, Ref<Shader>>();
+	std::unordered_map<std::string, Ref<Shader>> Shader::s_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
 	std::string     const	ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP = VAR_NAME(GE_ATTACHMENT_UV_STARTS_AT_TOP);
 	std::string		const	ShaderMacroName::GE_BINDING_START				= VAR_NAME(GE_BINDING_START);
@@ -596,15 +596,33 @@ namespace GEngine
 		}
 		case RendererAPI::API::OpenGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
+			if (GetShader(shader->GetShaderName()) != nullptr)
+			{
+				return GetShader(shader->GetShaderName());
+			}
+			s_Shaders[shader->GetShaderName()] = shader;
 			return shader;
 		}
 		case RendererAPI::API::Vulkan: {
 			Ref<Shader> shader = CreateRef<VulkanShader>(path);
+			if (GetShader(shader->GetShaderName()) != nullptr)
+			{
+				return GetShader(shader->GetShaderName());
+			}
+			s_Shaders[shader->GetShaderName()] = shader;
 			return shader;
 		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+	Ref<Shader> Shader::GetShader(const std::string& name)
+	{
+		if (s_Shaders.find(name) != s_Shaders.end())
+		{
+			return s_Shaders.at(name);
+		}
 		return nullptr;
 	}
 	void Shader::SetMacroMaterialDefine(std::string& source)
@@ -620,32 +638,5 @@ namespace GEngine
 		}
 		exp += "}";
 		Utils::SetShaderMacroExpression(source, macro, exp);
-	}
-	std::string ShaderLibrary::Add(Ref<Shader>& shader)
-	{
-		auto& name = shader->GetShaderName();
-		GE_CORE_ASSERT(Exists(name) == false, "Shader already exists!");
-		m_Shaders[name] = shader;
-		return name;
-	}
-	Ref<Shader> ShaderLibrary::Load(const std::string& path)
-	{
-		auto shader = Shader::Create(path);
-		Add(shader);
-		return shader;
-	}
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
-	{
-		GE_CORE_ASSERT(Exists(name), "Shader not found!");
-		return m_Shaders[name];
-	}
-	std::vector<std::string> ShaderLibrary::GetShaderNames()
-	{
-		std::vector<std::string> names;
-		for (auto& pair : m_Shaders)
-		{
-			names.push_back(pair.first);
-		}
-		return names;
 	}
 }

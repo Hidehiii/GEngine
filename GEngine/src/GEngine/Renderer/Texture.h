@@ -41,6 +41,8 @@ namespace GEngine
 
 	private:
 		static Ref<Texture2D>	s_WhiteTexture2D;
+		// path, texture2d
+		static std::unordered_map<std::string, Ref<Texture2D>>	s_Texture2Ds;
 	};
 
 	class GENGINE_API CubeMap : public Texture
@@ -66,6 +68,8 @@ namespace GEngine
 		static Ref<CubeMap> White();
 	private:
 		static Ref<CubeMap> s_WhiteCubeMap;
+		// path, cubeMap
+		static std::unordered_map<std::string, Ref<CubeMap>>	s_CubeMaps;
 	};
 }
 

@@ -223,7 +223,7 @@ namespace GEngine
 		virtual std::vector<uint32_t>						GetVertexShaderSource() = 0;
 		virtual std::vector<uint32_t>						GetFragmentShaderSource() = 0;
 
-		static Ref<Shader>									Create(const std::string& path);
+		
 	protected:
 		virtual void										Preprocess(std::string& source);
 
@@ -255,27 +255,11 @@ namespace GEngine
 		CullMode											m_CullMode						= CullMode::Back;
 		const std::string									m_ShaderMainFuncName			= "main";
 		
-	};
-
-	class GENGINE_API ShaderLibrary
-	{
 	public:
-		static std::string Add(Ref<Shader>& shader);
-		static Ref<Shader> Load(const std::string& path);
-		static Ref<Shader> Get(const std::string& name);
-		static Ref<Shader> GetShader(const std::string& name) { return Get(name);}
-		static size_t Size() { return m_Shaders.size(); }
-		static std::vector<std::string> GetShaderNames();
-		static bool Exists(const std::string& name) { return m_Shaders.find(name) != m_Shaders.end(); }
+		static Ref<Shader>									GetShader(const std::string& name);
+		static Ref<Shader>									Create(const std::string& path);
 	private:
-		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+		// name, shader
+		static std::unordered_map<std::string, Ref<Shader>>	s_Shaders;
 	};
-
-
-
-
-
-
-
-	
 }
