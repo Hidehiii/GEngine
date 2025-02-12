@@ -18,15 +18,6 @@ vector prop4;
 layout(location = 0) in vec4 i_position;
 layout(location = 1) in vec4 i_color;
 layout(location = 2) in vec4 i_normal;
-
-layout(std140, binding = 0) uniform MATERIAL
-{
-	alignas(16) vec4 prop1;
-	alignas(16) float prop2;
-	alignas(16) int prop3;
-	alignas(16) vec4 prop;
-}
-
 struct VertexOutput
 {
 	vec4 color;
@@ -44,16 +35,6 @@ void main()
 #version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 o_color;
-
-layout(std140, binding = 0) uniform MATERIAL
-{
-	alignas(16) vec4 prop1;
-	alignas(16) float prop2;
-	alignas(16) int prop3;
-	alignas(16) vec4 prop;
-}
-
-
 struct VertexOutput
 {
 	vec4 color;
