@@ -19,7 +19,7 @@ namespace GEngine
 		
 		uint32_t GetOpenGLID() const { return m_CubeMap; }
 
-		virtual bool operator==(const Texture& other) const override { return m_CubeMap == ((OpenGLCubeMap&)other).m_CubeMap; };
+		virtual bool operator==(const CubeMap& other) const override { return m_CubeMap == ((OpenGLCubeMap&)other).m_CubeMap; };
 	private:
 		void LoadImageData();
 	private:

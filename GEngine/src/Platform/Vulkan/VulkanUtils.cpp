@@ -232,6 +232,10 @@ namespace GEngine
 		}
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag)
 		{
+			CopyBufferToImage(buffer, image, width, height, 1, mipLevel, baseArrayLayer, aspectFlag, 1);
+		}
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t depth, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount)
+		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
 
 			VkBufferImageCopy					region{};
@@ -242,13 +246,13 @@ namespace GEngine
 			region.imageSubresource.aspectMask	= aspectFlag;
 			region.imageSubresource.mipLevel	= mipLevel;
 			region.imageSubresource.baseArrayLayer = baseArrayLayer;
-			region.imageSubresource.layerCount	= 1;
+			region.imageSubresource.layerCount	= layerCount;
 
 			region.imageOffset = { 0, 0, 0 };
 			region.imageExtent = {
 				width,
 				height,
-				1
+				depth
 			};
 
 			vkCmdCopyBufferToImage(
@@ -637,25 +641,29 @@ namespace GEngine
 		}
 		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer)
 		{
+			CopyImageToImage(width, height, 1, src, srcLayout, srcAspectFlag, srcMipLevel, srcBaseArrayLayer, dst, dstLayout, dstAspectFlag, dstMipLevel, dstBaseArrayLayer, 1);
+		}
+		void CopyImageToImage(uint32_t width, uint32_t height, uint32_t depth, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer, uint32_t layerCount)
+		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
 			VkImageSubresourceLayers	srcLayers{};
-			srcLayers.aspectMask			= srcAspectFlag;
-			srcLayers.mipLevel				= srcMipLevel;
-			srcLayers.baseArrayLayer		= srcBaseArrayLayer;
-			srcLayers.layerCount			= 1;
+			srcLayers.aspectMask		= srcAspectFlag;
+			srcLayers.mipLevel			= srcMipLevel;
+			srcLayers.baseArrayLayer	= srcBaseArrayLayer;
+			srcLayers.layerCount		= layerCount;
 
 			VkImageSubresourceLayers	dstLayers{};
 			dstLayers.aspectMask		= dstAspectFlag;
 			dstLayers.mipLevel			= dstMipLevel;
 			dstLayers.baseArrayLayer	= dstBaseArrayLayer;
-			dstLayers.layerCount		= 1;
+			dstLayers.layerCount		= layerCount;
 
 			VkImageCopy				region{};
 			region.srcSubresource	= srcLayers;
 			region.srcOffset		= { 0, 0, 0 };
 			region.dstSubresource	= dstLayers;
 			region.dstOffset		= { 0, 0, 0 };
-			region.extent			= { width, height, 1 };
+			region.extent			= { width, height, depth };
 
 			vkCmdCopyImage(commandBuffer,
 				src,

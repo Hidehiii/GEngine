@@ -15,12 +15,10 @@ namespace GEngine
 		virtual std::string GetPath() const = 0;
 		virtual uint32_t	GetMipLevels() { return m_MipLevels; }
 		virtual bool		IsGenerateMipmap() { return m_GenerateMipmap; }
+		virtual void		SetGenerateMipmap(bool enable) { m_GenerateMipmap = enable; }
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 		virtual void Bind(const uint32_t slot = 0) = 0;
-		
-
-		virtual bool operator==(const Texture& other) const = 0;
 
 	protected:
 		uint32_t m_Width, m_Height;
@@ -38,6 +36,10 @@ namespace GEngine
 		static Ref<Texture2D> Create(const std::string& path);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 
+		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height) = 0;
+
+		virtual bool operator==(const Texture2D& other) const = 0;
+
 		// 默认白色纹理
 		static Ref<Texture2D> White();
 
@@ -51,13 +53,15 @@ namespace GEngine
 	{
 	public:
 
-		virtual void SetData(const Ref<Texture2D>& texture, uint32_t layer) = 0;
+		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) = 0;
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) = 0;
 
 		virtual uint32_t		GetLayerCount() { return m_Layers; }
 
+		virtual bool operator==(const Texture2DArray& other) const = 0;
+
 		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
-	private:
+	protected:
 		uint32_t m_Layers;
 	};
 
@@ -79,6 +83,8 @@ namespace GEngine
 		static Ref<CubeMap> Create(uint32_t width, uint32_t height, bool generateMipmap = false, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,
 			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap = false);
+
+		virtual bool operator==(const CubeMap& other) const = 0;
 
 		// 默认白色
 		static Ref<CubeMap> White();

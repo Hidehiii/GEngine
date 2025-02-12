@@ -94,6 +94,23 @@ namespace GEngine
 		}
 		
 	}
+	void OpenGLTexture2D::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height)
+	{
+		GLint currentFbo;
+		GLuint fbo;
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
+		glCreateFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID(), 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture2D);
+		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+		glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
+		glDeleteFramebuffers(1, &fbo);
+		if (m_GenerateMipmap)
+		{
+			glGenerateTextureMipmap(m_Texture2D);
+		}
+	}
 	void OpenGLTexture2D::Bind(const uint32_t slot)
 	{	
 		glBindTextureUnit(slot, m_Texture2D);

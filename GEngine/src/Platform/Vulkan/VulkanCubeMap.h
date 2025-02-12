@@ -20,7 +20,7 @@ namespace GEngine
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) override;
 		
 		
-		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanCubeMap&)other).m_Image; };
+		virtual bool operator==(const CubeMap& other) const override { return m_Image == ((VulkanCubeMap&)other).m_Image; };
 
 		const VkSampler						GetSampler() { return m_Sampler; }
 		const VkImageView					GetImageView() { return m_ImageView; }

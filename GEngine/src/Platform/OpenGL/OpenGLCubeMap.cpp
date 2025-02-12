@@ -68,12 +68,12 @@ namespace GEngine
 	}
 	void OpenGLCubeMap::SetData(const void* data, uint32_t size)
 	{
-		GE_CORE_ASSERT(size == 6 * m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format), "data size is not correct");
-		for (int i = 0; i < 6; i++)
+		uint32_t tempSize = m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format);
+		for (int i = 0; i < 6 / tempSize; i++)
 		{
-			uint32_t tempSize = m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format);
+			uint32_t offset = tempSize * i;
 			void* tempData = new std::byte[tempSize];
-			memcpy(tempData, ((std::byte*)data) + tempSize, tempSize);
+			memcpy(tempData, ((std::byte*)data) + offset, tempSize);
 			SetData(tempData, tempSize, (CubeMapFace)i);
 			delete[](std::byte*)tempData;
 		}

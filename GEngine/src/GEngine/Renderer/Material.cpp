@@ -311,14 +311,14 @@ namespace GEngine
 	{
 		return GetUniformCubeMapByName(name).Cubemap;
 	}
-	void Material::SetTexture2DArray(const std::string& name, const int layer, const Ref<Texture2D>& texture)
+	void Material::SetTexture2DArray(const std::string& name, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture)
 	{
 		ShaderUniformTexture2DArray& uniform = GetUniformTexture2DArrayByName(name);
-		uniform.TextureArray->SetData(texture, layer);
+		uniform.TextureArray->SetData(texture, width, height, layer);
 	}
-	void Material::SetTexture2DArray(const int index, const int layer, const Ref<Texture2D>& texture)
+	void Material::SetTexture2DArray(const int index, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture)
 	{
-		m_Texture2DArray.at(index).TextureArray->SetData(texture, layer);
+		m_Texture2DArray.at(index).TextureArray->SetData(texture, width, height, layer);
 	}
 	void Material::SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array)
 	{

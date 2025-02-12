@@ -19,9 +19,10 @@ namespace GEngine
 		virtual std::string GetPath() const override { return m_Path; };
 
 		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height) override;
 
 		// VK的相等不是比较ID，而是比较是否是同一个对象
-		virtual bool operator==(const Texture& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
+		virtual bool operator==(const Texture2D& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
 
 		const VkImage						GetImage() { return m_Image; }
 		const VkSampler						GetSampler() { return m_Sampler; }

@@ -80,8 +80,8 @@ namespace GEngine
 		virtual void				SetCubeMap(const int index, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture);
 		virtual const Ref<CubeMap>	GetCubeMap(const std::string& name);
 
-		virtual void								SetTexture2DArray(const std::string& name, const int layer, const Ref<Texture2D>& texture);
-		virtual void								SetTexture2DArray(const int index, const int layer, const Ref<Texture2D>& texture);
+		virtual void								SetTexture2DArray(const std::string& name, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture);
+		virtual void								SetTexture2DArray(const int index, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture);
 		virtual void								SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array);
 		virtual void								SetTexture2DArray(const int index, const Ref<Texture2DArray>& array);
 		virtual const Ref<Texture2DArray>			GetTexture2DArray(const std::string& name);

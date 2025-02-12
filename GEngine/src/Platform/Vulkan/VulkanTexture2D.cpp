@@ -167,6 +167,27 @@ namespace GEngine
         vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
         vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
     }
+    void VulkanTexture2D::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height)
+    {
+		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		std::dynamic_pointer_cast<VulkanTexture2D>(texture)->SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Utils::CopyImageToImage(width, height, std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImage(),
+			std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImageLayout(),
+			std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetAspectFlag(),
+			0, 0,
+			m_Image, m_ImageLayout, m_AspectFlag,
+			0, 0);
+
+		if (m_GenerateMipmap)
+		{
+			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, 1);
+			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+    }
     void VulkanTexture2D::Bind(const uint32_t slot)
     {
         SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

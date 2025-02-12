@@ -32,7 +32,7 @@ namespace GEngine
 			m_MipLevels,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
 		CreateSampler();
 	}
 
@@ -80,7 +80,7 @@ namespace GEngine
 			m_MipLevels,
 			m_Image,
 			m_ImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
 		CreateSampler();
 		LoadImageData();
 	}
@@ -100,12 +100,12 @@ namespace GEngine
 
 	void VulkanCubeMap::SetData(const void* data, uint32_t size)
 	{
-		GE_CORE_ASSERT(size == 6 * m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format), "data size is not correct");
-		for (int i = 0; i < 6; i++)
+		uint32_t tempSize = m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format);
+		for (int i = 0; i < 6 / tempSize; i++)
 		{
-			uint32_t tempSize = m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format);
+			uint32_t offset = tempSize * i;
 			void* tempData = new std::byte[tempSize];
-			memcpy(tempData, ((std::byte*)data) + tempSize, tempSize);
+			memcpy(tempData, ((std::byte*)data) + offset, tempSize);
 			SetData(tempData, tempSize, (CubeMapFace)i);
 			delete[](std::byte*)tempData;
 		}
@@ -135,7 +135,7 @@ namespace GEngine
 		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
 		if (m_GenerateMipmap)
 		{
-			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
+			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, 6);
 			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 		else
@@ -157,7 +157,7 @@ namespace GEngine
 
 		if (m_GenerateMipmap)
 		{
-			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 6);
+			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, 6);
 			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 		else
