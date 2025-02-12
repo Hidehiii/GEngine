@@ -13,8 +13,6 @@ namespace GEngine
 
 		virtual void Bind(const uint32_t slot = 0) override;
 
-		virtual uint32_t	GetWidth() const override { return m_Width; }
-		virtual uint32_t	GetHeight() const override { return m_Height; }
 		virtual std::string GetPath() const override;
 
 		virtual void SetData(const void* data, uint32_t size) override;
@@ -36,8 +34,6 @@ namespace GEngine
 		void LoadImageData();
 	private:
 		std::vector<std::string>		m_Path;
-		RenderImage2DFormat				m_Format;
-		uint32_t						m_Width, m_Height;
 		VkImage							m_Image = nullptr;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;

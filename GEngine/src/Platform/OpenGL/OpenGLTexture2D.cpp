@@ -44,9 +44,9 @@ namespace GEngine
 		stbi_image_free(data);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
-		: m_Width(width), m_Height(height)
 	{
-
+		m_Width = width;
+		m_Height = height;
 		m_Format = format;
 		if (m_GenerateMipmap)
 		{
@@ -60,8 +60,9 @@ namespace GEngine
 		glTextureParameteri(m_Texture2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
-		: m_Width(width), m_Height(height)
 	{
+		m_Width = width;
+		m_Height = height;
 		m_Format = format;
 		if (m_GenerateMipmap)
 		{

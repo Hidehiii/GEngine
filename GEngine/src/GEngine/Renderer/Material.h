@@ -67,25 +67,38 @@ namespace GEngine
 		virtual const Ref<Texture2D>	GetTexture2D(const std::string& name);
 
 		virtual void						SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
+		virtual void						SetStorageImage2D(const int index, const Ref<StorageImage2D>& storageImage);
 		virtual const Ref<StorageImage2D>	GetStorageImage2D(const std::string& name);
 
 		virtual void						SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
+		virtual void						SetStorageBuffer(const int index, const Ref<StorageBuffer>& storageBuffer);
 		virtual const Ref<StorageBuffer>	GetStorageBuffer(const std::string& name);
 
 		virtual void				SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
+		virtual void				SetCubeMap(const int index, const Ref<CubeMap>& cubeMap);
+		virtual void				SetCubeMap(const std::string& name, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture);
+		virtual void				SetCubeMap(const int index, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture);
 		virtual const Ref<CubeMap>	GetCubeMap(const std::string& name);
+
+		virtual void								SetTexture2DArray(const std::string& name, const int layer, const Ref<Texture2D>& texture);
+		virtual void								SetTexture2DArray(const int index, const int layer, const Ref<Texture2D>& texture);
+		virtual void								SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array);
+		virtual void								SetTexture2DArray(const int index, const Ref<Texture2DArray>& array);
+		virtual const Ref<Texture2DArray>			GetTexture2DArray(const std::string& name);
 
 		virtual const std::vector<ShaderUniform>&					GetUniforms()			{ return m_Uniforms; }
 		virtual const std::vector<ShaderUniformTexture2D>&			GetTexture2Ds()			{ return m_Texture2D; }
 		virtual const std::vector<ShaderUniformStorageImage2D>&		GetStorageImage2Ds()	{ return m_StorageImage2D; }
 		virtual const std::vector<ShaderUniformStorageBuffer>&		GetStorageBuffers()		{ return m_StorageBuffer; }
 		virtual const std::vector<ShaderUniformCubeMap>&			GetCubeMaps()			{ return m_CubeMap; }
+		virtual const std::vector<ShaderUniformTexture2DArray>&		GetTexture2DArrays()	{ return m_Texture2DArray; }
 	protected:
 		ShaderUniform					GetUniformByName(const std::string& name) const;
 		ShaderUniformTexture2D&			GetUniformTexture2DByName(const std::string& name);
 		ShaderUniformStorageImage2D&	GetUniformStorageImage2DByName(const std::string& name);
 		ShaderUniformStorageBuffer&		GetUniformStorageBufferByName(const std::string& name);
 		ShaderUniformCubeMap&			GetUniformCubeMapByName(const std::string& name);
+		ShaderUniformTexture2DArray&	GetUniformTexture2DArrayByName(const std::string& name);
 	protected:
 		std::string											m_Name;
 		BlendMode											m_BlendModeColor = BlendMode::None;
@@ -99,6 +112,7 @@ namespace GEngine
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2D;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBuffer;
 		std::vector<ShaderUniformCubeMap>					m_CubeMap;
+		std::vector<ShaderUniformTexture2DArray>			m_Texture2DArray;
 		BlendFactor											m_BlendColorSourceFactor = BlendFactor::ONE;
 		BlendFactor											m_BlendColorDestinationFactor = BlendFactor::ZERO;
 		BlendFactor											m_BlendAlphaSourceFactor = BlendFactor::ONE;

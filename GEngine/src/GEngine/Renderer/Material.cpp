@@ -126,6 +126,18 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "There is no uniform cube map with name {0} in the shader!", name);
 		return ShaderUniformCubeMap();
 	}
+	ShaderUniformTexture2DArray& Material::GetUniformTexture2DArrayByName(const std::string& name)
+	{
+		for (int i = 0; i < m_Texture2DArray.size(); i++)
+		{
+			if (m_Texture2DArray.at(i).Name == name)
+			{
+				return m_Texture2DArray.at(i);
+			}
+		}
+		GE_CORE_ASSERT(false, "There is no uniform texture2D array with name {} in shader ", name);
+		return ShaderUniformTexture2DArray();
+	}
 	void Material::SetCullMode(CullMode mode)
 	{
 		m_CullMode = mode;
@@ -256,6 +268,10 @@ namespace GEngine
 		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
 		uniform.Image = storageImage;
 	}
+	void Material::SetStorageImage2D(const int index, const Ref<StorageImage2D>& storageImage)
+	{
+		m_StorageImage2D.at(index).Image = storageImage;
+	}
 	const Ref<StorageImage2D> Material::GetStorageImage2D(const std::string& name)
 	{
 		return GetUniformStorageImage2DByName(name).Image;
@@ -264,6 +280,10 @@ namespace GEngine
 	{
 		ShaderUniformStorageBuffer& uniform = GetUniformStorageBufferByName(name);
 		uniform.Buffer = storageBuffer;
+	}
+	void Material::SetStorageBuffer(const int index, const Ref<StorageBuffer>& storageBuffer)
+	{
+		m_StorageBuffer.at(index).Buffer = storageBuffer;
 	}
 	const Ref<StorageBuffer> Material::GetStorageBuffer(const std::string& name)
 	{
@@ -274,8 +294,43 @@ namespace GEngine
 		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
 		uniform.Cubemap = cubeMap;
 	}
+	void Material::SetCubeMap(const int index, const Ref<CubeMap>& cubeMap)
+	{
+		m_CubeMap.at(index).Cubemap = cubeMap;
+	}
+	void Material::SetCubeMap(const std::string& name, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture)
+	{
+		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
+		uniform.Cubemap->SetData(texture, width, height, face);
+	}
+	void Material::SetCubeMap(const int index, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture)
+	{
+		m_CubeMap.at(index).Cubemap->SetData(texture, width, height, face);
+	}
 	const Ref<CubeMap> Material::GetCubeMap(const std::string& name)
 	{
 		return GetUniformCubeMapByName(name).Cubemap;
+	}
+	void Material::SetTexture2DArray(const std::string& name, const int layer, const Ref<Texture2D>& texture)
+	{
+		ShaderUniformTexture2DArray& uniform = GetUniformTexture2DArrayByName(name);
+		uniform.TextureArray->SetData(texture, layer);
+	}
+	void Material::SetTexture2DArray(const int index, const int layer, const Ref<Texture2D>& texture)
+	{
+		m_Texture2DArray.at(index).TextureArray->SetData(texture, layer);
+	}
+	void Material::SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array)
+	{
+		ShaderUniformTexture2DArray& uniform = GetUniformTexture2DArrayByName(name);
+		uniform.TextureArray = array;
+	}
+	void Material::SetTexture2DArray(const int index, const Ref<Texture2DArray>& array)
+	{
+		m_Texture2DArray.at(index).TextureArray = array;
+	}
+	const Ref<Texture2DArray> Material::GetTexture2DArray(const std::string& name)
+	{
+		return GetUniformTexture2DArrayByName(name).TextureArray;
 	}
 }

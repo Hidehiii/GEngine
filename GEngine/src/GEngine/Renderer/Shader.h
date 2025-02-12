@@ -143,6 +143,13 @@ namespace GEngine
 		Ref<CubeMap>	Cubemap;
 	};
 
+	struct ShaderUniformTexture2DArray
+	{
+		std::string				Name;
+		uint32_t				Slot;
+		Ref<Texture2DArray>		TextureArray;
+	};
+
 	namespace Utils
 	{
 		uint32_t ShaderUniformTypeSize(ShaderUniformType type);
@@ -217,6 +224,7 @@ namespace GEngine
 		virtual std::vector<ShaderUniformStorageImage2D>	GetStorageImage2D()  { return m_StorageImage2DCache; }
 		virtual std::vector<ShaderUniformStorageBuffer>		GetStorageBuffer() { return m_StorageBufferCache; }
 		virtual std::vector<ShaderUniformCubeMap>			GetCubeMap() { return m_CubeMapCache; }
+		virtual std::vector<ShaderUniformTexture2DArray>	GetTexture2DArray() { return m_Texture2DArrayCache; }
 
 		virtual std::string									GetShaderMainFuncName() { return m_ShaderMainFuncName; }
 
@@ -243,6 +251,7 @@ namespace GEngine
 		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
 		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
 		std::vector<ShaderUniformCubeMap>					m_CubeMapCache;
+		std::vector<ShaderUniformTexture2DArray>			m_Texture2DArrayCache;
 		bool												m_EnableDepthWrite				= true;
 		CompareOperation									m_DepthTestOperation			= CompareOperation::LessEqual;
 		bool												m_EnableColorWrite				= true;

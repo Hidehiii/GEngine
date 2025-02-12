@@ -13,17 +13,17 @@ namespace GEngine
 		m_Width = width;
 		m_Height = height;
 		m_GenerateMipmap = generateMipmap;
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_CubeMap);
 		if (m_GenerateMipmap)
 		{
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}
-		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureStorage2D(m_CubeMap, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	OpenGLCubeMap::OpenGLCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
@@ -53,18 +53,18 @@ namespace GEngine
 			m_Format = RenderImage2DFormat::RGB8F;
 		}
 		stbi_image_free(data);
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_CubeMap);
+		glTextureStorage2D(m_CubeMap, m_MipLevels, Utils::RenderImage2DFormatToGLInternalFormat(m_Format), m_Width, m_Height);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(m_CubeMap, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		LoadImageData();
 	}
 	OpenGLCubeMap::~OpenGLCubeMap()
 	{
-		glDeleteTextures(1, &m_RendererID);
+		glDeleteTextures(1, &m_CubeMap);
 	}
 	void OpenGLCubeMap::SetData(const void* data, uint32_t size)
 	{
@@ -80,11 +80,11 @@ namespace GEngine
 	}
 	void OpenGLCubeMap::SetData(const void* data, uint32_t size, CubeMapFace face)
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_CubeMap);
 		glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (uint16_t)face, 0, 0, 0, m_Width, m_Height, Utils::RenderImage2DFormatToGLDataFormat(m_Format), GL_UNSIGNED_BYTE, data);
 		if (m_GenerateMipmap)
 		{
-			glGenerateTextureMipmap(m_RendererID);
+			glGenerateTextureMipmap(m_CubeMap);
 		}
 		
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -97,19 +97,19 @@ namespace GEngine
 		glCreateFramebuffers(1, &fbo);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID(), 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_CubeMap);
 		glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (uint16_t)face, 0, 0, 0, 0, 0, width, height);
 		glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
 		glDeleteFramebuffers(1, &fbo);
 		if (m_GenerateMipmap)
 		{
-			glGenerateTextureMipmap(m_RendererID);
+			glGenerateTextureMipmap(m_CubeMap);
 		}
 		
 	}
 	void OpenGLCubeMap::Bind(const uint32_t slot)
 	{
-		glBindTextureUnit(slot, m_RendererID);
+		glBindTextureUnit(slot, m_CubeMap);
 	}
 	std::string OpenGLCubeMap::GetPath() const
 	{

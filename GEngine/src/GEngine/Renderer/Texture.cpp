@@ -5,6 +5,8 @@
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLCubeMap.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
+#include "Platform/OpenGL/OpenGLTexture2DArray.h"
+#include "Platform/Vulkan/VulkanTexture2DArray.h"
 
 namespace GEngine
 {
@@ -130,5 +132,24 @@ namespace GEngine
 			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CubeMapFace::Front);
 		}							
 		return s_WhiteCubeMap;
+	}
+	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: {
+			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		}
+		case RendererAPI::API::OpenGL: {
+			return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
+		}
+		case RendererAPI::API::Vulkan: {
+			return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
+		}
+		}
+
+		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
 	}
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <VMA/vk_mem_alloc.h>
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Renderer/ImageFormat.h"
 #include "GEngine/Renderer/Shader.h"

@@ -83,6 +83,7 @@ namespace GEngine
 		{
 			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
+
 		RenderCommand::SetCull(m_CullMode);
 		RenderCommand::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
 		RenderCommand::SetDepthTest(m_DepthTestOperation);
