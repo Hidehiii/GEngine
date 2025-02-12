@@ -36,3 +36,7 @@ group "Tools"
 group ""
 
 include "Sandbox"
+
+group "Example"
+	include "Example"
+group ""

@@ -1,0 +1,100 @@
+Scene: Untitled
+GameObjects:
+  - GameObject: 560956712
+    Name: Buttom
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0, -0.499998838, 0]
+      Rotation: [0.653282881, -0.270597398, 0.27059871, 0.65328002]
+      Rotation_Angles: [90.0002441, -45, 1.44890191e-05]
+      Scale: [101.099998, 123.5, 0.999467134]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+  - GameObject: 2211817725
+    Name: Left2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-0.349999994, 4.76837158e-07, -0.349999994]
+      Rotation: [0, 0.382683456, 0, 0.923879504]
+      Rotation_Angles: [0, 45.0000038, 0]
+      Scale: [96.1999969, 73.3000031, 1]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+  - GameObject: 1407406628
+    Name: Right2
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0.349999994, 0, -0.349999994]
+      Rotation: [0, -0.382683456, 0, 0.923879504]
+      Rotation_Angles: [0, -45.0000038, 0]
+      Scale: [60.7000008, 50.5, 0.999998868]
+    ImageRenderer:
+      Color: [1, 1, 1, 1]
+      Texture: None
+      Tiling: [1, 1]
+  - GameObject: 1080682128
+    Name: Camera
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-1.1533004, 1.72097373, 3.14569545]
+      Rotation: [-0.237921059, -0.191113427, 0.0478080772, 0.951095998]
+      Rotation_Angles: [-30.0545197, -19.9247284, 11.1547918]
+      Scale: [1, 1, 1]
+    Camera:
+      CameraParameters:
+        CameraType: 1
+        OrthoGraphicSize: 10
+        OrthoGraphicNear: -1
+        OrthoGraphicFar: 1
+        PerspectiveFOV: 35
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+      RenderOrder: 0
+      isPrimary: true
+  - GameObject: 1200650547
+    Name: Top
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0, 0.5, 0]
+      Rotation: [0.65328145, 0.270598054, -0.270598054, 0.65328145]
+      Rotation_Angles: [90, 45, 0]
+      Scale: [68.5, 73, 1]
+    ImageRenderer:
+      Color: [0.698820412, 0.784653544, 0.953795373, 1]
+      Texture: None
+      Tiling: [1, 1]
+  - GameObject: 1835223749
+    Name: Left
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [-0.349999994, 0, 0.349999994]
+      Rotation: [0, -0.382683456, 0, 0.923879504]
+      Rotation_Angles: [0, -45, 0]
+      Scale: [61, 63.9000015, 1]
+    ImageRenderer:
+      Color: [0.534849584, 0.611273885, 0.920792103, 1]
+      Texture: None
+      Tiling: [1, 1]
+  - GameObject: 4072720291
+    Name: Right
+    Attribute:
+      IsActive: true
+    Transform:
+      Position: [0.349999994, 0, 0.349999994]
+      Rotation: [0, 0.382683456, 0, 0.923879504]
+      Rotation_Angles: [0, 45, 0]
+      Scale: [70.4000015, 69, 0.999999881]
+    ImageRenderer:
+      Color: [0.2005032, 0.418109506, 0.778877854, 1]
+      Texture: None
+      Tiling: [1, 1]
