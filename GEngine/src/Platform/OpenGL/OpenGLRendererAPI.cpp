@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLCommandBuffer.h"
 
 namespace GEngine
 {
@@ -167,6 +168,18 @@ namespace GEngine
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
+	}
+	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	{
+		return nullptr;
+	}
+	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+		return nullptr;
+	}
+	void OpenGLRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
+	{
+		buffer->End();
 	}
 	float OpenGLRendererAPI::GetTime()
 	{

@@ -6,14 +6,16 @@ namespace GEngine
 	OpenGLCommandBuffer::OpenGLCommandBuffer()
 	{
 	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, std::vector<CommandBuffer*> waitBuffers)
 	{
 		m_FrameBuffer = buffer;
+		m_WaitBuffers = waitBuffers;
 		m_FrameBuffer->Begin(this);
 	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera, std::vector<CommandBuffer*> waitBuffers)
 	{
 		m_FrameBuffer = buffer;
+		m_WaitBuffers = waitBuffers;
 		m_FrameBuffer->Begin(this);
 	}
 	void OpenGLCommandBuffer::End()

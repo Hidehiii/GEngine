@@ -3,10 +3,14 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Renderer/RenderBuffer.h"
+#include "GEngine/Components/Camera/EditorCamera.h"
 #include "Material.h"
 
 namespace GEngine
 {
+	class CommandBuffer;
+	class FrameBuffer;
+
 	class GENGINE_API RendererAPI
 	{
 	public:
@@ -41,10 +45,13 @@ namespace GEngine
 
 		virtual float GetTime() = 0;
 
-		virtual void BeginGraphicsCommand() = 0;
-		virtual void EndGraphicsCommand() = 0;
-		virtual void BeginSecondaryCommand() = 0;
-		virtual void EndSecondaryCommand() = 0;
+		virtual void			BeginGraphicsCommand() = 0;
+		virtual void			EndGraphicsCommand() = 0;
+		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
+		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
+		virtual void			EndGraphicsCommand(CommandBuffer* buffer) = 0;
+		virtual void			BeginSecondaryCommand() = 0;
+		virtual void			EndSecondaryCommand() = 0;
 
 		virtual std::vector<std::string> GetExtensions() = 0;
 

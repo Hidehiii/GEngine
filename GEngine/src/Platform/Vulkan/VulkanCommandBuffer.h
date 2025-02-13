@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Renderer/CommandBuffer.h"
+#include "GEngine/Renderer/Renderer.h"
 #include <vulkan/vulkan.h>
 #include <optional>
 namespace GEngine
@@ -48,10 +49,10 @@ namespace GEngine
 	{
 	public:
 		VulkanCommandBuffer(VkCommandBuffer buffer);
-		virtual ~VulkanCommandBuffer() = default;
+		virtual ~VulkanCommandBuffer();
 
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera, std::vector<CommandBuffer*> waitBuffers) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera, std::vector<CommandBuffer*> waitBuffers) override;
 
 		virtual void End() override;
 
@@ -62,9 +63,11 @@ namespace GEngine
 
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
+		VkSemaphore		GetSemaphore() { return m_Semaphores.at(Renderer::GetCurrentFrame()); }
 	private:
-		VkCommandBuffer		m_CommandBuffer;
-		Ref<FrameBuffer>	m_FrameBuffer;
+		VkCommandBuffer				m_CommandBuffer;
+		Ref<FrameBuffer>			m_FrameBuffer;
+		std::vector<VkSemaphore>	m_Semaphores;
 	};
 }
 

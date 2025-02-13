@@ -21,8 +21,8 @@ namespace GEngine
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		static void BeginScene(CommandBuffer* cmdBuffer, const Editor::EditorCamera& camera);
-		static void BeginScene(CommandBuffer* cmdBuffer, Camera& camera);
+		static void BeginScene(CommandBuffer* cmdBuffer, Vector2 frameBufferSize, const Editor::EditorCamera& camera);
+		static void BeginScene(CommandBuffer* cmdBuffer, Vector2 frameBufferSize, Camera& camera);
 		static void EndScene(CommandBuffer* cmdBuffer);
 
 		static void BeginScene(const Editor::EditorCamera& camera);

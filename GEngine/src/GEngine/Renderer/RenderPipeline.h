@@ -1,22 +1,28 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Components/Camera/Camera.h"
 
 namespace GEngine
 {
+	class Camera;
+
 	class GENGINE_API RenderPipeline
 	{
 	public:
-		// 继承后需要在构造函数里创建pass和framebuffer
+		// 继承后需要在构造函数里创建pass
 		virtual ~RenderPipeline() = default;
-
-		virtual std::vector<Ref<FrameBuffer>>	GetFrameBuffers() { return m_FrameBuffers; }
-		virtual Ref<FrameBuffer>				GetFrameBuffer(int index) { return m_FrameBuffers.at(index); }
 
 		// 自定义渲染流程
 		virtual void Render() = 0;
 
-	protected:
+		// 自定义最终输出
+		virtual void RenderOutput() = 0;
+
+	private:
+		// 按顺序执行所有pass
+		std::vector<Ref<RenderPass>>	m_RenderPasses;
+		// frame buffer 会根据每个屏幕大小确定
 		std::vector<Ref<FrameBuffer>>	m_FrameBuffers;
 	};
 }

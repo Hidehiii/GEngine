@@ -2,6 +2,7 @@
 #include "VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+
 namespace GEngine
 {
 	VulkanCommandBufferPool::VulkanCommandBufferPool(QueueFamilyIndices queueFamilyIndices, int count)
@@ -104,15 +105,31 @@ namespace GEngine
 	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer)
 	{
 		m_CommandBuffer = buffer;
+		m_Semaphores.resize(Renderer::GetFramesInFlight());
+		for (int i = 0; i < m_Semaphores.size(); i++)
+		{
+			VkSemaphoreCreateInfo   semaphoreInfo{};
+			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_Semaphores[i]));
+		}
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	VulkanCommandBuffer::~VulkanCommandBuffer()
+	{
+		for (int i = 0; i < m_Semaphores.size(); i++)
+		{
+			vkDestroySemaphore(VulkanContext::Get()->GetDevice(), m_Semaphores[i], nullptr);
+		}
+	}
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, std::vector<CommandBuffer*> waitBuffers)
 	{
 		m_FrameBuffer = buffer;
+		m_WaitBuffers = waitBuffers;
 		m_FrameBuffer->Begin(this);
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera, std::vector<CommandBuffer*> waitBuffers)
 	{
 		m_FrameBuffer = buffer;
+		m_WaitBuffers = waitBuffers;
 		m_FrameBuffer->Begin(this);
 	}
 	void VulkanCommandBuffer::End()

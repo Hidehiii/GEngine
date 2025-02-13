@@ -88,6 +88,19 @@ namespace GEngine
 	{
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
+
+	void BeginScene(CommandBuffer* cmdBuffer, Vector2 frameBufferSize, const Editor::EditorCamera& camera)
+	{
+
+	}
+	void BeginScene(CommandBuffer* cmdBuffer, Vector2 frameBufferSize, Camera& camera)
+	{
+
+	}
+	void EndScene(CommandBuffer* cmdBuffer)
+	{
+
+	}
 	void Renderer::BeginScene(const Editor::EditorCamera& camera)
 	{
 		SetCameraUniforms(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPosition());

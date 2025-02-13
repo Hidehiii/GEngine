@@ -88,6 +88,42 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
+    CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+    {
+        return nullptr;
+    }
+    CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+    {
+        return nullptr;
+    }
+    void VulkanRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
+    {
+        VkCommandBuffer cmd = ((VulkanCommandBuffer*)buffer)->GetCommandBuffer();
+        buffer->End();
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+
+        std::vector<VkSemaphore> waitSemaphores;
+        auto waitBuffers = buffer->GetWaitBuffers();
+        for (int i = 0; i < waitBuffers.size(); i++)
+        {
+            waitSemaphores.push_back(((VulkanCommandBuffer*)waitBuffers.at(i))->GetSemaphore());
+        }
+		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSemaphore signalSemaphores[] = { ((VulkanCommandBuffer*)buffer)->GetSemaphore() };
+
+		VkSubmitInfo                    submitInfo{};
+		submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount   = 1;
+		submitInfo.pCommandBuffers      = &cmd;
+		submitInfo.waitSemaphoreCount   = waitSemaphores.size();
+		submitInfo.pWaitSemaphores      = waitSemaphores.data();
+		submitInfo.pWaitDstStageMask    = waitStages.data();
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores    = signalSemaphores;
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+    }
     void VulkanRendererAPI::BeginSecondaryCommand()
     {
 		VkCommandBufferBeginInfo    beginInfo{};

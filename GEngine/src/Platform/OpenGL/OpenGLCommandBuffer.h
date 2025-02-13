@@ -9,8 +9,8 @@ namespace GEngine
 		OpenGLCommandBuffer();
 		virtual ~OpenGLCommandBuffer() = default;
 
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera, std::vector<CommandBuffer*> waitBuffers) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera, std::vector<CommandBuffer*> waitBuffers) override;
 
 		virtual void End() override;
 
