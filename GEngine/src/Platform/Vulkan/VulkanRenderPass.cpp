@@ -23,8 +23,8 @@ namespace GEngine
 			VkAttachmentDescription2	Attachment{};
 			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
-			Attachment.loadOp			= spec.AttachmentsBeginAction;
-			Attachment.storeOp			= spec.AttachmentsEndAction;
+			Attachment.loadOp			= spec.ColorBegin;
+			Attachment.storeOp			= spec.ColorEnd;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -43,10 +43,10 @@ namespace GEngine
 			VkAttachmentDescription2	Attachment{};
 			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= VK_SAMPLE_COUNT_1_BIT;
-			Attachment.loadOp			= spec.AttachmentsBeginAction;
-			Attachment.storeOp			= spec.AttachmentsEndAction;
-			Attachment.stencilLoadOp	= spec.AttachmentsBeginAction;
-			Attachment.stencilStoreOp	= spec.AttachmentsEndAction;
+			Attachment.loadOp			= spec.DepthStencilrBegin;
+			Attachment.storeOp			= spec.DepthStencilEnd;
+			Attachment.stencilLoadOp	= spec.DepthStencilrBegin;
+			Attachment.stencilStoreOp	= spec.DepthStencilEnd;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
 			Attachment.format			= Utils::FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 			Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -178,28 +178,28 @@ namespace GEngine
 		{
 			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, 
 				VK_SAMPLE_COUNT_1_BIT, 
-				Utils::AttachmentsActionToVkAttachmentLoadOp(spec.AttachmentsBeginAction), 
-				Utils::AttachmentsActionToVkAttachmentStoreOp(spec.AttachmentsEndAction));
+				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
+				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
 				des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
-					Utils::AttachmentsActionToVkAttachmentLoadOp(spec.AttachmentsBeginAction),
-					Utils::AttachmentsActionToVkAttachmentStoreOp(spec.AttachmentsEndAction));
+					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
+					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
 				attachments.push_back(des);
 			}
 		}
 		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
-				Utils::AttachmentsActionToVkAttachmentLoadOp(spec.AttachmentsBeginAction),
-				Utils::AttachmentsActionToVkAttachmentStoreOp(spec.AttachmentsEndAction));
+				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
+				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
 				des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
-					Utils::AttachmentsActionToVkAttachmentLoadOp(spec.AttachmentsBeginAction),
-					Utils::AttachmentsActionToVkAttachmentStoreOp(spec.AttachmentsEndAction));
+					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
+					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 				attachments.push_back(des);
 			}
 		}

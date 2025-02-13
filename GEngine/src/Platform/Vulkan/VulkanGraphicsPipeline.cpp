@@ -136,6 +136,10 @@ namespace GEngine
 		}
 	}
 
+	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0)
+	{
+	}
+
 	Ref<VertexBuffer> VulkanGraphicsPipeline::GetVertexBuffer()
 	{
 		return (m_VertexBuffer);
@@ -162,8 +166,7 @@ namespace GEngine
 
 		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
 		{
-			if (m_GraphicsPipelines.at(i).RenderPass == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass() &&
-				m_GraphicsPipelines.at(i).Samples == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples)
+			if (m_GraphicsPipelines.at(i).RenderPass == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass())
 			{
 				return m_GraphicsPipelines.at(i).GraphicsPipeline;
 			}
@@ -389,7 +392,6 @@ namespace GEngine
 
 		VulkanGraphicsPipelineInfo	info{};
 		info.GraphicsPipeline		= pipeline;
-		info.Samples				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples;
 		info.RenderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
 
 		m_GraphicsPipelines.push_back(info);

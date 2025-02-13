@@ -185,7 +185,6 @@ namespace GEngine
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.m_PerspectiveNear;
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.m_PerspectiveFar;
 
-			out << YAML::Key << "AntiAliasingType" << YAML::Value << (int)camera.m_AntiAliasingType;
 			out << YAML::EndMap;
 
 
@@ -428,7 +427,6 @@ namespace GEngine
 					float perspectiveFOV		= cameraParameters["PerspectiveFOV"].as<float>();
 					float perspectiveNear		= cameraParameters["PerspectiveNear"].as<float>();
 					float perspectiveFar		= cameraParameters["PerspectiveFar"].as<float>();
-					int antiAliasingType		= cameraParameters["AntiAliasingType"].as<int>();
 					newGameObject.AddComponent<Camera>(cameraType);
 					newGameObject.GetComponent<Camera>().m_OrthoGraphicSize		= orthoGraphicSize;
 					newGameObject.GetComponent<Camera>().m_OrthoGraphicNear		= orthoGraphicNear;
@@ -436,7 +434,6 @@ namespace GEngine
 					newGameObject.GetComponent<Camera>().m_PerspectiveFOV		= perspectiveFOV;
 					newGameObject.GetComponent<Camera>().m_PerspectiveNear		= perspectiveNear;
 					newGameObject.GetComponent<Camera>().m_PerspectiveFar		= perspectiveFar;
-					newGameObject.GetComponent<Camera>().m_AntiAliasingType		= (AntiAliasingType)antiAliasingType;
 					newGameObject.GetComponent<Camera>().RenderOrder			= camera["RenderOrder"].as<int>();
 					newGameObject.GetComponent<Camera>().isPrimary				= camera["isPrimary"].as<bool>();
 				}

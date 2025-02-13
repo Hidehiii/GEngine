@@ -62,8 +62,6 @@ namespace GEngine
         m_Specification.ColorAttachments        = renderPass->GetSpecification().ColorAttachments;
         m_Specification.DepthAttachment         = renderPass->GetSpecification().DepthAttachment;
         m_Specification.Samples                 = renderPass->GetSpecification().Samples;
-        m_Specification.AttachmentsBeginAction  = renderPass->GetSpecification().AttachmentsBeginAction;
-        m_Specification.AttachmentsEndAction    = renderPass->GetSpecification().AttachmentsEndAction;
         m_Specification.Width                   = width;
         m_Specification.Height                  = height;
 
@@ -293,9 +291,13 @@ namespace GEngine
         glViewport(0, 0, m_Specification.Width, m_Specification.Height);
         glDisable(GL_FRAMEBUFFER_SRGB);
         glDepthMask(GL_TRUE);
-		if (m_Specification.AttachmentsBeginAction == FrameBufferAttachmentsAction::Clear)
+		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		{
+			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
         s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
@@ -318,14 +320,41 @@ namespace GEngine
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 		glDisable(GL_FRAMEBUFFER_SRGB);
 		glDepthMask(GL_TRUE);
-		if (m_Specification.AttachmentsBeginAction == FrameBufferAttachmentsAction::Clear)
+		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		{
+			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
     }
     void OpenGLFrameBuffer::End(CommandBuffer* cmdBuffer)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op)
+    {
+		if (m_Specification.Samples > 1)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
+		}
+
+		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+		glDisable(GL_FRAMEBUFFER_SRGB);
+		glDepthMask(GL_TRUE);
+		if (op.ColorBegin == RenderPassBeginOperation::Clear)
+		{
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+		if (op.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		{
+			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
     {

@@ -619,8 +619,10 @@ namespace GEngine
 		spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
 		spec.EnableDepthStencilAttachment   = true;
 		spec.Samples                        = 1;
-		spec.AttachmentsBeginAction         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		spec.AttachmentsEndAction           = VK_ATTACHMENT_STORE_OP_STORE;
+		spec.ColorBegin         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		spec.ColorEnd           = VK_ATTACHMENT_STORE_OP_STORE;
+		spec.DepthStencilrBegin = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		spec.DepthStencilEnd    = VK_ATTACHMENT_STORE_OP_STORE;
 
         m_SwapChainRenderPass               = VulkanRenderPass::Create(spec);
     }

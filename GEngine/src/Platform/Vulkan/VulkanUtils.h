@@ -52,8 +52,8 @@ namespace GEngine
 		VkBlendFactor			BlendFactorToVulkanBlendFactor(BlendFactor factor);
 		VkCullModeFlagBits		CullModeToVkCullMode(CullMode mode);
 		VkCompareOp				CompareOPToVkCompareOP(CompareOperation op);
-		VkAttachmentLoadOp		AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op);
-		VkAttachmentStoreOp		AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op);
+		VkAttachmentLoadOp		RenderPassBeginOperationToVkAttachmentLoadOp(RenderPassBeginOperation op);
+		VkAttachmentStoreOp		RenderPassEndOperationToVkAttachmentStoreOp(RenderPassEndOperation op);
 		VkFilter				SamplerFilterToVkFilter(SamplerFilter filter);
 		VkSamplerAddressMode	SamplerAddressModeToVkSamplerAddressMode(SamplerAddressMode mode);
 		VkSamplerMipmapMode		SamplerFilterToVkSamplerMipmapMode(SamplerFilter filter);

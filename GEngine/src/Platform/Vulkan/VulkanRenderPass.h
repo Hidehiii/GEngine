@@ -11,8 +11,10 @@ namespace GEngine
 		std::vector<VkImageLayout>					ColorAttachmentsFinalLayout;
 		bool 										EnableDepthStencilAttachment;
 		int											Samples = 1;
-		VkAttachmentLoadOp							AttachmentsBeginAction	= VK_ATTACHMENT_LOAD_OP_CLEAR;
-		VkAttachmentStoreOp							AttachmentsEndAction	= VK_ATTACHMENT_STORE_OP_STORE;
+		VkAttachmentLoadOp							ColorBegin	= VK_ATTACHMENT_LOAD_OP_CLEAR;
+		VkAttachmentStoreOp							ColorEnd	= VK_ATTACHMENT_STORE_OP_STORE;
+		VkAttachmentLoadOp							DepthStencilrBegin	= VK_ATTACHMENT_LOAD_OP_CLEAR;
+		VkAttachmentStoreOp							DepthStencilEnd		= VK_ATTACHMENT_STORE_OP_STORE;
 	};
 
 	class GENGINE_API VulkanRenderPass : public RenderPass

@@ -11,19 +11,9 @@ namespace GEngine
 	struct FrameBufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;
-		//FrameBufferAttachmentSpecification Attachments;
 		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
 		FrameBufferTextureSpecification					DepthAttachment;
 		uint32_t Samples = 1;
-
-		FrameBufferAttachmentsAction AttachmentsBeginAction = FrameBufferAttachmentsAction::Clear;
-		FrameBufferAttachmentsAction AttachmentsEndAction	= FrameBufferAttachmentsAction::Store;
-
-		/*bool operator==(const FrameBufferSpecification& other) const
-		{
-			return Attachments == other.Attachments &&
-				Samples == other.Samples;
-		}*/
 	};
 
 	class CommandBuffer;
@@ -39,13 +29,12 @@ namespace GEngine
 
 		virtual void Begin(CommandBuffer* cmdBuffer) = 0;
 		virtual void End(CommandBuffer* cmdBuffer) = 0;
+		virtual void Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op) = 0;
 
 		virtual Vector2							GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float							GetHeight() const { return (float)GetSpecification().Height; }
 		virtual uint32_t						GetSamples() const { return GetSpecification().Samples; }
-		virtual FrameBufferAttachmentsAction	GetAttachmentsBeginAction() { return GetSpecification().AttachmentsBeginAction; }
-		virtual FrameBufferAttachmentsAction	GetAttachmentsEndAction() { return GetSpecification().AttachmentsEndAction; }
 		virtual int								GetAttachmentCount() = 0;
 		virtual int								GetColorAttachmentCount() = 0;
 		virtual Ref<Texture2D>					GetColorAttachment(int index) = 0;

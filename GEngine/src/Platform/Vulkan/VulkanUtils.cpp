@@ -755,27 +755,24 @@ namespace GEngine
 			}
 			return VK_COMPARE_OP_LESS_OR_EQUAL;
 		}
-		VkAttachmentLoadOp AttachmentsActionToVkAttachmentLoadOp(FrameBufferAttachmentsAction op)
+		VkAttachmentLoadOp RenderPassBeginOperationToVkAttachmentLoadOp(RenderPassBeginOperation op)
 		{
 			switch (op)
 			{
-			case FrameBufferAttachmentsAction::None:	return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			case FrameBufferAttachmentsAction::Load:	return VK_ATTACHMENT_LOAD_OP_LOAD;
-			case FrameBufferAttachmentsAction::Clear:	return VK_ATTACHMENT_LOAD_OP_CLEAR;
-			case FrameBufferAttachmentsAction::Store:	GE_CORE_ASSERT(false, "Unkonwn fb load action"); break;
+			case RenderPassBeginOperation::None:	return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			case RenderPassBeginOperation::Load:	return VK_ATTACHMENT_LOAD_OP_LOAD;
+			case RenderPassBeginOperation::Clear:	return VK_ATTACHMENT_LOAD_OP_CLEAR;
 			default:
 				break;
 			}
 			return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		}
-		VkAttachmentStoreOp AttachmentsActionToVkAttachmentStoreOp(FrameBufferAttachmentsAction op)
+		VkAttachmentStoreOp RenderPassEndOperationToVkAttachmentStoreOp(RenderPassEndOperation op)
 		{
 			switch (op)
 			{
-			case FrameBufferAttachmentsAction::None:	return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			case FrameBufferAttachmentsAction::Load:	GE_CORE_ASSERT(false, "Unknown fb store action");
-			case FrameBufferAttachmentsAction::Clear:	GE_CORE_ASSERT(false, "Unknown fb store action");
-			case FrameBufferAttachmentsAction::Store:	return VK_ATTACHMENT_STORE_OP_STORE;
+			case RenderPassEndOperation::None:	return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			case RenderPassEndOperation::Store:	return VK_ATTACHMENT_STORE_OP_STORE;
 			default:
 				break;
 			}

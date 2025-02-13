@@ -10,10 +10,8 @@ namespace GEngine
 	// 用于识别当前pass和pipeline是否兼容
 	struct VulkanGraphicsPipelineInfo
 	{
-		VkPipeline	GraphicsPipeline;
-
-		int Samples;
-		VkRenderPass RenderPass;
+		VkPipeline		GraphicsPipeline;
+		VkRenderPass	RenderPass;
 	};
 
 	class GENGINE_API VulkanGraphicsPipeline : public GraphicsPipeline
@@ -24,6 +22,7 @@ namespace GEngine
 
 		virtual void PrepareRender();
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+		virtual void Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() override;
 		virtual void				SetVertexBuffer(Ref<VertexBuffer>& buffer) override;

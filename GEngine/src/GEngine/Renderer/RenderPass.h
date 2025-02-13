@@ -49,12 +49,38 @@ namespace GEngine
 		/*bool operator==(const FrameBufferAttachmentSpecification& other) const { return Attachments == other.Attachments; }*/
 	};
 
-	enum class FrameBufferAttachmentsAction
+	enum class RenderPassBeginOperation
 	{
-		None = 0,  // begin, end
+		None = 0,  // begin
 		Load = 1,  // begin
-		Clear = 2,  // end
-		Store = 3   // end
+		Clear = 2,
+	};
+
+	enum class RenderPassEndOperation
+	{
+		None = 0,
+		Store = 1,
+	};
+
+	struct RenderPassOperation
+	{
+		RenderPassBeginOperation	ColorBegin			= RenderPassBeginOperation::Clear;
+		RenderPassEndOperation		ColorEnd			= RenderPassEndOperation::Store;
+		RenderPassBeginOperation	DepthStencilBegin	= RenderPassBeginOperation::Clear;
+		RenderPassEndOperation		DepthStencilEnd		= RenderPassEndOperation::Store;
+
+		bool operator==(const RenderPassOperation& other) const
+		{
+			return ColorBegin == other.ColorBegin &&
+				ColorEnd == other.ColorEnd &&
+				DepthStencilBegin == other.DepthStencilBegin &&
+				DepthStencilEnd == other.DepthStencilEnd;
+		}
+
+		bool operator!=(const RenderPassOperation& other) const
+		{
+			return !this->operator==(other);
+		}
 	};
 
 	struct RenderPassSpecification
@@ -62,18 +88,18 @@ namespace GEngine
 		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
 		FrameBufferTextureSpecification					DepthAttachment;
 		int												Samples = 1;
-		FrameBufferAttachmentsAction					AttachmentsBeginAction	= FrameBufferAttachmentsAction::Clear;
-		FrameBufferAttachmentsAction					AttachmentsEndAction	= FrameBufferAttachmentsAction::Store;
+		RenderPassOperation								Operation;
 
 		bool operator==(const RenderPassSpecification& other) const
 		{
 			return ColorAttachments == other.ColorAttachments &&
 				DepthAttachment == other.DepthAttachment &&
 				Samples == other.Samples &&
-				AttachmentsBeginAction == other.AttachmentsBeginAction &&
-				AttachmentsEndAction == other.AttachmentsEndAction;
+				Operation == other.Operation;
 		}
 	};
+
+	
 
 	class GENGINE_API RenderPass
 	{
