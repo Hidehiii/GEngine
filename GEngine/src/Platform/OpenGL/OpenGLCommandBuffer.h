@@ -18,6 +18,8 @@ namespace GEngine
 		virtual void Render(Ref<GraphicsPipeline>&pipeline) override;
 
 		virtual void Compute(Ref<ComputePipeline>&pipeline) override;
+	private:
+		Ref<FrameBuffer>	m_FrameBuffer;
 	};
 }
 

@@ -8,9 +8,11 @@ namespace GEngine
 	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
+		m_FrameBuffer = buffer;
 	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
+		m_FrameBuffer = buffer;
 	}
 	void OpenGLCommandBuffer::End()
 	{

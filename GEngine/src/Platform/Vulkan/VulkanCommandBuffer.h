@@ -60,7 +60,8 @@ namespace GEngine
 
 		virtual void Compute(Ref<ComputePipeline>&pipeline) override;
 	private:
-		VkCommandBuffer m_CommandBuffer;
+		VkCommandBuffer		m_CommandBuffer;
+		Ref<FrameBuffer>	m_FrameBuffer;
 	};
 }
 
