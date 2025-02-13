@@ -304,6 +304,29 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+    void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer)
+    {
+		if (m_Specification.Samples > 1)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
+		}
+
+		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+		glDisable(GL_FRAMEBUFFER_SRGB);
+		glDepthMask(GL_TRUE);
+		if (m_Specification.AttachmentsBeginAction == FrameBufferAttachmentsAction::Clear)
+		{
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+    }
+    void OpenGLFrameBuffer::End(CommandBuffer* cmdBuffer)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
     Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");

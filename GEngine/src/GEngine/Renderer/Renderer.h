@@ -11,6 +11,7 @@
 
 namespace GEngine
 {
+	class CommandBuffer;
 
 	class GENGINE_API Renderer
 	{
@@ -19,6 +20,10 @@ namespace GEngine
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
+
+		static void BeginScene(CommandBuffer* cmdBuffer, const Editor::EditorCamera& camera);
+		static void BeginScene(CommandBuffer* cmdBuffer, Camera& camera);
+		static void EndScene(CommandBuffer* cmdBuffer);
 
 		static void BeginScene(const Editor::EditorCamera& camera);
 		static void BeginScene(Camera& camera);

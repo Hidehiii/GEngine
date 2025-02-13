@@ -59,6 +59,9 @@ namespace GEngine
 		virtual void Render(Ref<GraphicsPipeline>&pipeline) override;
 
 		virtual void Compute(Ref<ComputePipeline>&pipeline) override;
+
+
+		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
 	private:
 		VkCommandBuffer		m_CommandBuffer;
 		Ref<FrameBuffer>	m_FrameBuffer;

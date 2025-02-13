@@ -26,6 +26,8 @@ namespace GEngine
 		}*/
 	};
 
+	class CommandBuffer;
+
 	class GENGINE_API FrameBuffer
 	{
 	public:
@@ -34,6 +36,9 @@ namespace GEngine
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+
+		virtual void Begin(CommandBuffer* cmdBuffer) = 0;
+		virtual void End(CommandBuffer* cmdBuffer) = 0;
 
 		virtual Vector2							GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }

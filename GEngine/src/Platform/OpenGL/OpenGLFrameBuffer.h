@@ -18,6 +18,9 @@ namespace GEngine
 		virtual void Begin() override;
 		virtual void End() override;
 
+		virtual void Begin(CommandBuffer* cmdBuffer) override;
+		virtual void End(CommandBuffer* cmdBuffer) override;
+
 		virtual int								GetColorAttachmentCount() override { return m_ColorAttachments.size(); }
 		virtual int								GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }

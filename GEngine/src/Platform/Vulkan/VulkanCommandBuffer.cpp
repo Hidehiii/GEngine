@@ -108,13 +108,16 @@ namespace GEngine
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
 		m_FrameBuffer = buffer;
+		m_FrameBuffer->Begin(this);
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
 		m_FrameBuffer = buffer;
+		m_FrameBuffer->Begin(this);
 	}
 	void VulkanCommandBuffer::End()
 	{
+		m_FrameBuffer->End(this);
 	}
 	void VulkanCommandBuffer::Render(Ref<Scene>& scene)
 	{

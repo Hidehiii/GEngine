@@ -219,6 +219,53 @@ namespace GEngine
 
 		s_CurrentVulkanFrameBuffer = nullptr;
 	}
+	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
+	{
+		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
+		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
+		{
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		}
+		if (m_DepthAttachmentTexture2D)
+		{
+			m_DepthAttachmentTexture2D->SetImageLayout(cmd, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}
+
+		VkRenderPassBeginInfo					renderPassInfo{};
+		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
+		renderPassInfo.framebuffer				= m_FrameBuffer;
+		renderPassInfo.renderArea.offset		= { 0, 0 };
+		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
+		renderPassInfo.renderArea.extent.height = m_Specification.Height;
+
+		Vector4									setClearColor = VulkanContext::Get()->GetClearColor();
+		VkClearValue							clearColor = {};
+		clearColor.color						= { { setClearColor.r, setClearColor.g, setClearColor.b, setClearColor.a} };
+
+		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
+		if (m_DepthStencilImage != nullptr)
+		{
+			clearValues.at(clearValues.size() - 1) = { 1.0f, 0 };
+		}
+		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues				= clearValues.data();
+		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	}
+	void VulkanFrameBuffer::End(CommandBuffer* cmdBuffer)
+	{
+		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
+		vkCmdEndRenderPass(cmd);
+
+		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
+		{
+			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		if (m_DepthAttachmentTexture2D)
+		{
+			m_DepthAttachmentTexture2D->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+	}
 	Ref<Texture2D> VulkanFrameBuffer::GetColorAttachment(int index)
 	{
 		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
