@@ -1,5 +1,6 @@
 #include <GEngine.h>
 #include <GEngine/EntryPoint.h> // Entry Point
+#include "DeferredRender.h"
 class DeferredRenderExample : public GEngine::Application
 {
 public:

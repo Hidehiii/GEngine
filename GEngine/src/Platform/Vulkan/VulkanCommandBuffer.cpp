@@ -4,7 +4,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
-	VulkanCommandBuffer::VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count)
+	VulkanCommandBufferPool::VulkanCommandBufferPool(QueueFamilyIndices queueFamilyIndices, int count)
 	{
 		CreateCommandPool(queueFamilyIndices);
 		m_GraphicsCommandBuffers.resize(count);
@@ -27,11 +27,11 @@ namespace GEngine
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, m_SecondaryCommandBuffers.data()));
 	}
-	VulkanCommandBuffer::~VulkanCommandBuffer()
+	VulkanCommandBufferPool::~VulkanCommandBufferPool()
 	{
 		
 	}
-	void VulkanCommandBuffer::Release()
+	void VulkanCommandBufferPool::Release()
 	{
 		if (VulkanContext::Get()->GetDevice())
 		{
@@ -47,7 +47,7 @@ namespace GEngine
 		
 			
 	}
-	VkCommandBuffer VulkanCommandBuffer::BeginSingleTimeGraphicsCommands()
+	VkCommandBuffer VulkanCommandBufferPool::BeginSingleTimeGraphicsCommands()
 	{
 		VkCommandBufferAllocateInfo			allocInfo{};
 		allocInfo.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -66,7 +66,7 @@ namespace GEngine
 
 		return commandBuffer;
 	}
-	void VulkanCommandBuffer::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue)
+	void VulkanCommandBufferPool::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue)
 	{
 		vkEndCommandBuffer(commandBuffer);
 		// 用fence 而不是wait
@@ -87,7 +87,7 @@ namespace GEngine
 		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_GraphicsCommandPool, 1, &commandBuffer);
 		vkDestroyFence(VulkanContext::Get()->GetDevice(), fence, nullptr);
 	}
-	void VulkanCommandBuffer::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
+	void VulkanCommandBufferPool::CreateCommandPool(QueueFamilyIndices queueFamilyIndices)
 	{
 		VkCommandPoolCreateInfo		poolInfo{};
 		poolInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -99,5 +99,28 @@ namespace GEngine
 		poolInfo.queueFamilyIndex	= queueFamilyIndices.ComputeFamily.value();
 
 		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_ComputeCommandPool));
+	}
+
+	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer)
+	{
+		m_CommandBuffer = buffer;
+	}
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+	}
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
+	{
+	}
+	void VulkanCommandBuffer::End()
+	{
+	}
+	void VulkanCommandBuffer::Render(Ref<Scene>& scene)
+	{
+	}
+	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline)
+	{
+	}
+	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline)
+	{
 	}
 }

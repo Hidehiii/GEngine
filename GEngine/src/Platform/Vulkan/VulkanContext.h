@@ -150,8 +150,8 @@ namespace GEngine
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
-		int									m_CommandBufferSizePerFrame = 30;
-		VulkanCommandBuffer					m_CommandBuffer;
+		int									m_CommandBufferPoolSizePerFrame = 30;
+		VulkanCommandBufferPool				m_CommandBufferPool;
 		CommandBufferType					m_CurrentCmdBufferType = CommandBufferType::Graphics;
 		std::vector<int>					m_UsedGraphicsCommandBufferIndexs;
 		std::vector<int>					m_UsedComputeCommandBufferIndexs;

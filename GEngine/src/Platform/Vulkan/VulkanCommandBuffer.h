@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Core/Core.h"
+#include "GEngine/Renderer/CommandBuffer.h"
 #include <vulkan/vulkan.h>
 #include <optional>
 namespace GEngine
@@ -17,12 +17,12 @@ namespace GEngine
 
 	};
 
-	class GENGINE_API VulkanCommandBuffer
+	class GENGINE_API VulkanCommandBufferPool
 	{
 	public:
-		VulkanCommandBuffer() = default;
-		VulkanCommandBuffer(QueueFamilyIndices queueFamilyIndices, int count = 10);
-		~VulkanCommandBuffer();
+		VulkanCommandBufferPool() = default;
+		VulkanCommandBufferPool(QueueFamilyIndices queueFamilyIndices, int count = 10);
+		~VulkanCommandBufferPool();
 		void Release();
 
 		VkCommandBuffer GetGraphicsCommandBuffer(int index = 0) { return m_GraphicsCommandBuffers.at(index); }
@@ -41,6 +41,26 @@ namespace GEngine
 		std::vector<VkCommandBuffer>	m_GraphicsCommandBuffers;
 		std::vector<VkCommandBuffer>	m_ComputeCommandBuffers;
 		std::vector<VkCommandBuffer>	m_SecondaryCommandBuffers;
+	};
+
+
+	class GENGINE_API VulkanCommandBuffer : public CommandBuffer
+	{
+	public:
+		VulkanCommandBuffer(VkCommandBuffer buffer);
+		virtual ~VulkanCommandBuffer() = default;
+
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera) override;
+
+		virtual void End() override;
+
+		virtual void Render(Ref<Scene>&scene) override;
+		virtual void Render(Ref<GraphicsPipeline>&pipeline) override;
+
+		virtual void Compute(Ref<ComputePipeline>&pipeline) override;
+	private:
+		VkCommandBuffer m_CommandBuffer;
 	};
 }
 
