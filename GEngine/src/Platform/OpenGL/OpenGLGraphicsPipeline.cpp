@@ -66,10 +66,10 @@ namespace GEngine
             }
         }
     }
-    void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0)
+    void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
     {
 		m_Material->Update();
-		m_VertexBuffer->Bind();
+		m_VertexBuffer->Bind(cmdBuffer);
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
 		if (m_VertexBuffer->IsInstanceRendering())
 		{
@@ -77,17 +77,17 @@ namespace GEngine
 			{
 			case VertexTopology::Triangle:
 			{
-				RenderCommand::DrawTriangleInstance(indexCount, instanceCount);
+				RenderCommand::DrawTriangleInstance(cmdBuffer, indexCount, instanceCount);
 				break;
 			}
 			case VertexTopology::Line:
 			{
-				RenderCommand::DrawLines(indexCount);
+				RenderCommand::DrawLines(cmdBuffer, indexCount);
 				break;
 			}
 			case VertexTopology::Point:
 			{
-				RenderCommand::DrawPoints(indexCount);
+				RenderCommand::DrawPoints(cmdBuffer, indexCount);
 				break;
 			}
 			default:
@@ -101,17 +101,17 @@ namespace GEngine
 			{
 			case VertexTopology::Triangle:
 			{
-				RenderCommand::DrawTriangles(indexCount);
+				RenderCommand::DrawTriangles(cmdBuffer, indexCount);
 				break;
 			}
 			case VertexTopology::Line:
 			{
-				RenderCommand::DrawLines(indexCount);
+				RenderCommand::DrawLines(cmdBuffer, indexCount);
 				break;
 			}
 			case VertexTopology::Point:
 			{
-				RenderCommand::DrawPoints(indexCount);
+				RenderCommand::DrawPoints(cmdBuffer, indexCount);
 				break;
 			}
 			default:

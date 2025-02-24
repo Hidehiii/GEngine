@@ -2,6 +2,8 @@
 #include "VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "VulkanGraphicsPipeline.h"
+#include "VulkanComputePipeline.h"
 
 namespace GEngine
 {
@@ -120,16 +122,14 @@ namespace GEngine
 			vkDestroySemaphore(VulkanContext::Get()->GetDevice(), m_Semaphores[i], nullptr);
 		}
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, std::vector<CommandBuffer*> waitBuffers)
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
-		m_FrameBuffer = buffer;
-		m_WaitBuffers = waitBuffers;
+		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
 		m_FrameBuffer->Begin(this);
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera, std::vector<CommandBuffer*> waitBuffers)
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
-		m_FrameBuffer = buffer;
-		m_WaitBuffers = waitBuffers;
+		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
 		m_FrameBuffer->Begin(this);
 	}
 	void VulkanCommandBuffer::End()
@@ -139,10 +139,12 @@ namespace GEngine
 	void VulkanCommandBuffer::Render(Ref<Scene>& scene)
 	{
 	}
-	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline)
+	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount, uint32_t indexCount)
 	{
+		std::static_pointer_cast<VulkanGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, instanceCount, indexCount);
 	}
-	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline)
+	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z)
 	{
+		std::static_pointer_cast<VulkanComputePipeline>(pipeline)->Compute(this, x, y, z);
 	}
 }

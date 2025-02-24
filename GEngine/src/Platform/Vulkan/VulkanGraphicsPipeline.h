@@ -20,16 +20,22 @@ namespace GEngine
 		VulkanGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanGraphicsPipeline() override;
 
-		virtual void PrepareRender();
+		
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
-		virtual void Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+		
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() override;
 		virtual void				SetVertexBuffer(Ref<VertexBuffer>& buffer) override;
 
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
+
+	protected:
+		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+
 	private:
+		void PrepareRender();
+		void PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer);
 		VkPipeline FindOrCreatePipeline();
 	private:
 		Ref<VulkanMaterial>									m_Material;
@@ -54,6 +60,8 @@ namespace GEngine
 		std::vector<VulkanGraphicsPipelineInfo>				m_GraphicsPipelines;
 		bool												m_RecreatePipeline = false;
 		VkPipelineCache										m_PipelineCache;
+
+		friend class VulkanCommandBuffer;
 	};
 }
 

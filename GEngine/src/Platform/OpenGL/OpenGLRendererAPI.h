@@ -21,6 +21,12 @@ namespace GEngine
 
 		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) override;
 
+		virtual void DrawTriangles(CommandBuffer* buffer, uint32_t indexCount = 0) override;
+		virtual void DrawLines(CommandBuffer* buffer, uint32_t indexCount = 0) override;
+		virtual void DrawPoints(CommandBuffer* buffer, uint32_t indexCount = 0) override;
+
+		virtual void DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount) override;
+
 		virtual void EnableDepthWrite(bool enabled) override;
 		virtual void SetDepthTest(CompareOperation op) override;
 		virtual void SetCull(CullMode mode) override;
@@ -58,6 +64,7 @@ namespace GEngine
 		virtual void BeginComputeCommand() override {}
 		virtual void EndComputeCommand() override {}
 		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) override;
+		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) override;
 	};
 }
 

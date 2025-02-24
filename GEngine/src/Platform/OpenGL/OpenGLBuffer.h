@@ -5,6 +5,9 @@
 
 namespace GEngine
 {
+
+	class OpenGLIndexBuffer;
+
 	class GENGINE_API OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
@@ -20,17 +23,19 @@ namespace GEngine
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
 		
 		virtual const BufferLayout&		GetLayout() const override { return m_Layout; }
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
+		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
 		virtual VertexTopology			GetVertexTopologyType() override { return m_TopologyType; }
 		virtual bool					IsInstanceRendering() override { return m_InstanceRendering; }
+
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
 		uint32_t								m_VertexBuffer;
 		uint32_t								m_InstanceBuffer;
 		uint32_t								m_VertexArray;
-		BufferLayout							m_Layout;
-		Ref<IndexBuffer>						m_IndexBuffer;
-		VertexTopology							m_TopologyType;
-		bool									m_InstanceRendering = false;
+		Ref<OpenGLIndexBuffer>					m_IndexBuffer = nullptr;
+
+		friend class OpenGLGraphicsPipeline;
 	};
 
 
@@ -41,10 +46,14 @@ namespace GEngine
 		virtual ~OpenGLIndexBuffer();
 
 		virtual void Bind() const override;
-		virtual uint32_t GetCount() const override { return m_Count;  };
+
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
 		uint32_t m_Buffer;
-		uint32_t m_Count;
+		
+
+		friend class OpenGLVertexBuffer;
 	};
 }
 

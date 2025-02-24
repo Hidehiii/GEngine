@@ -24,4 +24,9 @@ namespace GEngine
 	{
 		m_Material = std::dynamic_pointer_cast<OpenGLMaterial>(material);
 	}
+	void OpenGLComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
+	{
+		m_Material->Update();
+		ComputeCommand::Compute(x, y, z);
+	}
 }

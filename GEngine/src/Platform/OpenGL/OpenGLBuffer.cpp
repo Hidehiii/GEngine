@@ -147,16 +147,19 @@ namespace GEngine
 
 	void OpenGLVertexBuffer::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
+		m_IndexBuffer = std::static_pointer_cast<OpenGLIndexBuffer>(indexBuffer);
+	}
+
+	void OpenGLVertexBuffer::Bind(CommandBuffer* cmd) const
+	{
 		glBindVertexArray(m_VertexArray);
-		indexBuffer->Bind();
-		m_IndexBuffer = indexBuffer;
+		m_IndexBuffer->Bind(cmd);
 	}
 
 	// Index Buffer
 	OpenGLIndexBuffer::OpenGLIndexBuffer(const uint32_t* indices, uint32_t count)
-		: m_Count(count)
 	{
-		
+		m_Count = count;
 
 		glCreateBuffers(1, &m_Buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
@@ -168,8 +171,10 @@ namespace GEngine
 	}
 	void OpenGLIndexBuffer::Bind() const
 	{
-		
-
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
+	}
+	void OpenGLIndexBuffer::Bind(CommandBuffer* cmd) const
+	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
 	}
 }

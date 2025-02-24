@@ -70,6 +70,22 @@ namespace GEngine
 	{
 		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 	}
+	void OpenGLRendererAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
+	{
+		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+	}
+	void OpenGLRendererAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
+	{
+		glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
+	}
+	void OpenGLRendererAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
+	{
+		glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
+	}
+	void OpenGLRendererAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
+	{
+		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+	}
 	void OpenGLRendererAPI::EnableDepthWrite(bool enabled)
 	{
 		if (enabled)
@@ -171,15 +187,21 @@ namespace GEngine
 	}
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
-		return nullptr;
+		auto cmd = new OpenGLCommandBuffer();
+		cmd->Begin(buffer, camera);
+		return cmd;
 	}
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
-		return nullptr;
+		auto cmd = new OpenGLCommandBuffer();
+		cmd->Begin(buffer, camera);
+		return cmd;
 	}
 	void OpenGLRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
 	{
 		buffer->End();
+		delete buffer;
+		buffer = nullptr;
 	}
 	float OpenGLRendererAPI::GetTime()
 	{
@@ -256,6 +278,11 @@ namespace GEngine
 		return x;
 	}
 	void OpenGLRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
+	{
+		glDispatchCompute(x, y, z);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	}
+	void OpenGLRendererAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		glDispatchCompute(x, y, z);
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

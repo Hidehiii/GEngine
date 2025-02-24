@@ -34,6 +34,12 @@ namespace GEngine
 
 		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) = 0;
 
+		virtual void DrawTriangles(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
+		virtual void DrawLines(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
+		virtual void DrawPoints(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
+
+		virtual void DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount) = 0;
+
 		virtual void SetLineWidth(float width) = 0;
 		virtual void SetPointSize(float size) = 0;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
@@ -71,6 +77,7 @@ namespace GEngine
 		virtual void BeginComputeCommand() = 0;
 		virtual void EndComputeCommand() = 0;
 		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
+		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) = 0;
 
 
 		inline static API GetAPI() { return s_API; }

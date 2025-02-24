@@ -81,6 +81,45 @@ namespace GEngine
 		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
     }
 
+	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer)
+	{
+		m_Material->Update();
+
+		if (m_RecreatePipeline)
+		{
+			for (auto pipeline : m_GraphicsPipelines)
+			{
+				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
+			}
+			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
+			m_RecreatePipeline = false;
+			m_GraphicsPipelines.clear();
+		}
+		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline());
+
+		VkViewport			Viewport{};
+		Viewport.x			= 0.0f;
+		Viewport.y			= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight();
+		Viewport.width		= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetWidth();
+		Viewport.height		= -(std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight());
+		Viewport.minDepth	= 0.0f;
+		Viewport.maxDepth	= 1.0f;
+		vkCmdSetViewport(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 0, 1, &Viewport);
+
+		VkRect2D		Scissor{};
+		Scissor.offset	= { 0, 0 };
+		Scissor.extent	= { (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetWidth(), (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight() };
+		vkCmdSetScissor(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 0, 1, &Scissor);
+
+		vkCmdSetLineWidth(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 1.0f);
+		vkCmdSetDepthCompareOp(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
+		vkCmdSetDepthWriteEnable(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), m_Material->GetEnableDepthWrite());
+		vkCmdSetCullMode(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
+
+		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
+		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
+	}
+
 	void VulkanGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
 	{
 		PrepareRender();
@@ -136,8 +175,59 @@ namespace GEngine
 		}
 	}
 
-	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0)
+	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
 	{
+		PrepareRender(cmdBuffer, frameBuffer);
+		m_VertexBuffer->Bind(cmdBuffer);
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
+		if (m_VertexBuffer->IsInstanceRendering())
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				RenderCommand::DrawTriangleInstance(cmdBuffer, indexCount, instanceCount);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				RenderCommand::DrawLines(cmdBuffer, indexCount);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				RenderCommand::DrawPoints(cmdBuffer, indexCount);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
+		else
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				RenderCommand::DrawTriangles(cmdBuffer, indexCount);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				RenderCommand::DrawLines(cmdBuffer, indexCount);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				RenderCommand::DrawPoints(cmdBuffer, indexCount);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
 	}
 
 	Ref<VertexBuffer> VulkanGraphicsPipeline::GetVertexBuffer()

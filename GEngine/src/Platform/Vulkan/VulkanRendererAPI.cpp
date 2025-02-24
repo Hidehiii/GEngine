@@ -2,6 +2,7 @@
 #include "VulkanRendererAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include <set>
 
 namespace GEngine
@@ -45,6 +46,22 @@ namespace GEngine
     void VulkanRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
     {
         vkCmdDrawIndexed(VulkanContext::Get()->GetCurrentCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
+    }
+    void VulkanRendererAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
+    {
+        vkCmdDrawIndexed(static_cast<VulkanCommandBuffer*>(buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+    }
+    void VulkanRendererAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
+    {
+        vkCmdDrawIndexed(static_cast<VulkanCommandBuffer*>(buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+    }
+    void VulkanRendererAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
+    {
+        vkCmdDrawIndexed(static_cast<VulkanCommandBuffer*>(buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+    }
+    void VulkanRendererAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
+    {
+        vkCmdDrawIndexed(static_cast<VulkanCommandBuffer*>(buffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
     }
     void VulkanRendererAPI::SetLineWidth(float width)
     {
@@ -90,11 +107,31 @@ namespace GEngine
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
     {
-        return nullptr;
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+		VulkanContext::Get()->BeginGraphicsCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
+
+        auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer());
+        cmd->Begin(buffer, camera);
+        return cmd;
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
     {
-        return nullptr;
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+		VulkanContext::Get()->BeginGraphicsCommandBuffer();
+		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
+
+		auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer());
+		cmd->Begin(buffer, camera);
+		return cmd;
     }
     void VulkanRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
     {
@@ -104,7 +141,7 @@ namespace GEngine
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
         std::vector<VkSemaphore> waitSemaphores;
-        auto waitBuffers = buffer->GetWaitBuffers();
+        auto waitBuffers = buffer->GetWaitCommands();
         for (int i = 0; i < waitBuffers.size(); i++)
         {
             waitSemaphores.push_back(((VulkanCommandBuffer*)waitBuffers.at(i))->GetSemaphore());
@@ -123,6 +160,9 @@ namespace GEngine
 		submitInfo.pSignalSemaphores    = signalSemaphores;
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+
+        delete buffer;
+        buffer = nullptr;
     }
     void VulkanRendererAPI::BeginSecondaryCommand()
     {
@@ -268,6 +308,11 @@ namespace GEngine
     void VulkanRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
     {
         vkCmdDispatch(VulkanContext::Get()->GetCurrentCommandBuffer(), x, y, z);
+    }
+
+    void VulkanRendererAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
+    {
+        vkCmdDispatch(static_cast<VulkanCommandBuffer*>(buffer)->GetCommandBuffer(), x, y, z);
     }
 
 }

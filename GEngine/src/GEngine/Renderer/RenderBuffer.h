@@ -140,6 +140,7 @@ namespace GEngine
 		uint32_t					m_StrideInstance = 0;
 	};
 
+	class CommandBuffer;
 	class IndexBuffer;
 
 	class GENGINE_API VertexBuffer
@@ -161,6 +162,19 @@ namespace GEngine
 
 		static Ref<VertexBuffer> Create(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
 		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const = 0;
+
+	protected:
+		VertexTopology							m_TopologyType;
+		BufferLayout							m_Layout;
+		
+
+		bool									m_InstanceRendering = false;
+
+
+
+		friend class CommandBuffer;
 	};
 
 	class GENGINE_API IndexBuffer
@@ -170,8 +184,16 @@ namespace GEngine
 
 		virtual void Bind() const = 0;
 
-		virtual uint32_t GetCount() const = 0;
+		virtual uint32_t GetCount() const { return m_Count; };
 
 		static Ref<IndexBuffer> Create(const uint32_t* indices, uint32_t count);
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const = 0;
+
+	protected:
+
+		uint32_t m_Count;
+
+		friend class VertexBuffer;
 	};
 }

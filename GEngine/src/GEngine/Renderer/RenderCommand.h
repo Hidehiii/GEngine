@@ -3,7 +3,8 @@
 #include "GEngine/Core/Core.h"
 #include "RendererAPI.h"
 #include "GEngine/Math/Math.h"
-
+#include "GEngine/Renderer/CommandBuffer.h"
+#include "GEngine/Components/Camera/EditorCamera.h"
 
 
 namespace GEngine
@@ -14,10 +15,10 @@ namespace GEngine
 		inline void static Init();
 		inline static void SetClearColor(const Vector4& color);
 		inline static void Clear();
-		inline static void DrawTriangles(const uint32_t count);
-		inline static void DrawTriangleInstance(const uint32_t count, const uint32_t instanceCount);
-		inline static void DrawLines(const uint32_t count);
-		inline static void DrawPoints(const uint32_t count);
+		inline static void DrawTriangles(const uint32_t indexcount);
+		inline static void DrawTriangleInstance(const uint32_t indexcount, const uint32_t instanceCount);
+		inline static void DrawLines(const uint32_t indexcount);
+		inline static void DrawPoints(const uint32_t indexcount);
 		inline static void SetLineWidth(float width);
 		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -31,6 +32,15 @@ namespace GEngine
 		inline static void BeginSecondaryCommand();
 		inline static void EndSecondaryCommand();
 		
+
+		inline static void DrawTriangles(CommandBuffer* buffer, const uint32_t indexcount);
+		inline static void DrawTriangleInstance(CommandBuffer* buffer, const uint32_t indexcount, const uint32_t instanceCount);
+		inline static void DrawLines(CommandBuffer* buffer, const uint32_t indexcount);
+		inline static void DrawPoints(CommandBuffer* buffer, const uint32_t indexcount);
+
+		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		virtual void			EndGraphicsCommand(CommandBuffer* buffer);
 
 		inline static std::vector<std::string> GetExtensions();
 

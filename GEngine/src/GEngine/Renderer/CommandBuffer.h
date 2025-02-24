@@ -14,19 +14,20 @@ namespace GEngine
 	public:
 		virtual ~CommandBuffer() = default;
 
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, std::vector<CommandBuffer*> waitBuffers) = 0;
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera, std::vector<CommandBuffer*> waitBuffers) = 0;
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
 
 		virtual void End() = 0;
 
 		virtual void Render(Ref<Scene>& scene) = 0;
-		virtual void Render(Ref<GraphicsPipeline>& pipeline) = 0;
+		virtual void Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 
-		virtual void Compute(Ref<ComputePipeline>& pipeline) = 0;
+		virtual void Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z) = 0;
 
-		virtual std::vector<CommandBuffer*>	GetWaitBuffers() { return m_WaitBuffers; }
+		virtual void						SetWaitCommands(std::vector<CommandBuffer*> commands) { m_WaitCommands = commands; }
+		virtual std::vector<CommandBuffer*>	GetWaitCommands() { return m_WaitCommands; }
 	protected:
-		std::vector<CommandBuffer*>		m_WaitBuffers;
+		std::vector<CommandBuffer*>		m_WaitCommands;
 	};
 }
 

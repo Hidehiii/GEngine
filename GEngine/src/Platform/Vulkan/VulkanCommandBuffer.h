@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Renderer/CommandBuffer.h"
 #include "GEngine/Renderer/Renderer.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <optional>
 namespace GEngine
@@ -51,22 +52,22 @@ namespace GEngine
 		VulkanCommandBuffer(VkCommandBuffer buffer);
 		virtual ~VulkanCommandBuffer();
 
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera, std::vector<CommandBuffer*> waitBuffers) override;
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera, std::vector<CommandBuffer*> waitBuffers) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
+		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera) override;
 
 		virtual void End() override;
 
 		virtual void Render(Ref<Scene>&scene) override;
-		virtual void Render(Ref<GraphicsPipeline>&pipeline) override;
+		virtual void Render(Ref<GraphicsPipeline>&pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
-		virtual void Compute(Ref<ComputePipeline>&pipeline) override;
+		virtual void Compute(Ref<ComputePipeline>&pipeline, uint32_t x, uint32_t y, uint32_t z) override;
 
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
 		VkSemaphore		GetSemaphore() { return m_Semaphores.at(Renderer::GetCurrentFrame()); }
 	private:
 		VkCommandBuffer				m_CommandBuffer;
-		Ref<FrameBuffer>			m_FrameBuffer;
+		Ref<VulkanFrameBuffer>		m_FrameBuffer;
 		std::vector<VkSemaphore>	m_Semaphores;
 	};
 }

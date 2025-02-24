@@ -6,6 +6,10 @@
 
 namespace GEngine
 {
+
+
+	class VulkanIndexBuffer;
+
 	class GENGINE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
@@ -21,24 +25,29 @@ namespace GEngine
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
 		virtual const BufferLayout&		GetLayout() const override { return m_Layout; }
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
+		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
 		virtual VertexTopology			GetVertexTopologyType() override { return m_TopologyType; }
 		virtual bool					IsInstanceRendering() override { return m_InstanceRendering; }
 
 		const std::vector<VkVertexInputBindingDescription>&		GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
 		const std::vector<VkVertexInputAttributeDescription>&	GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
+
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
-		VertexTopology	m_TopologyType;
+		
 		VkBuffer		m_VertexBuffer;
 		VkBuffer		m_InstanceBuffer;
 		VkDeviceMemory	m_VertexBufferMemory;
 		VkDeviceMemory	m_InstanceBufferMemory;
-		BufferLayout	m_Layout;
+		
 		uint32_t		m_Offset = 0;
-		Ref<IndexBuffer>						m_IndexBuffer = nullptr;
 		std::vector<VkVertexInputBindingDescription>	m_VertexInputBindingDescription;
 		std::vector<VkVertexInputAttributeDescription>	m_VertexInputAttributeDescriptions;
-		bool									m_InstanceRendering = false;
+
+		Ref<VulkanIndexBuffer>					m_IndexBuffer = nullptr;
+
+		friend class VulkanGraphicsPipeline;
 	};
 
 	class GENGINE_API VulkanIndexBuffer : public IndexBuffer
@@ -48,12 +57,16 @@ namespace GEngine
 		virtual ~VulkanIndexBuffer();
 
 		virtual void Bind() const override;
-		virtual uint32_t GetCount() const override { return m_Count; };
+		
+
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
-		uint32_t m_RendererID;
-		uint32_t m_Count;
+		
 		VkBuffer		m_IndexBuffer;
 		VkDeviceMemory	m_IndexBufferMemory;
+
+		friend class VulkanVertexBuffer;
 	};
 
 

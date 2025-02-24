@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "RenderBuffer.h"
 #include "RenderPass.h"
+#include "FrameBuffer.h"
 namespace GEngine
 {
 	class CommandBuffer;
@@ -12,7 +13,7 @@ namespace GEngine
 	public:
 		virtual ~GraphicsPipeline() = default;
 		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
-		virtual void Render(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
+		
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() = 0;
 		virtual void				SetVertexBuffer(Ref<VertexBuffer>& buffer) = 0;
@@ -21,6 +22,10 @@ namespace GEngine
 		virtual void			SetMaterial(Ref<Material>& material) = 0;
 
 		static Ref<GraphicsPipeline> Create(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
+	protected:
+		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
+
+		friend class CommandBuffer;
 	};
 }
 

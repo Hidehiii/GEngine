@@ -22,21 +22,21 @@ namespace GEngine
 		s_RendererAPI->Clear();
 	}
 
-	inline void RenderCommand::DrawTriangles(const uint32_t count = 0)
+	inline void RenderCommand::DrawTriangles(const uint32_t indexcount)
 	{
-		s_RendererAPI->DrawTriangles(count);
+		s_RendererAPI->DrawTriangles(indexcount);
 	}
-	inline void RenderCommand::DrawTriangleInstance(const uint32_t count, const uint32_t instanceCount)
+	inline void RenderCommand::DrawTriangleInstance(const uint32_t indexcount, const uint32_t instanceCount)
 	{
-		s_RendererAPI->DrawTrianglesInstance(count, instanceCount);
+		s_RendererAPI->DrawTrianglesInstance(indexcount, instanceCount);
 	}
-	inline void RenderCommand::DrawLines(const uint32_t count)
+	inline void RenderCommand::DrawLines(const uint32_t indexcount)
 	{
-		s_RendererAPI->DrawLines(count);
+		s_RendererAPI->DrawLines(indexcount);
 	}
-	inline void RenderCommand::DrawPoints(const uint32_t count)
+	inline void RenderCommand::DrawPoints(const uint32_t indexcount)
 	{
-		s_RendererAPI->DrawPoints(count);
+		s_RendererAPI->DrawPoints(indexcount);
 	}
 	inline void RenderCommand::SetLineWidth(float width)
 	{
@@ -85,6 +85,34 @@ namespace GEngine
 	inline void RenderCommand::EndSecondaryCommand()
 	{
 		s_RendererAPI->EndSecondaryCommand();
+	}
+	inline void RenderCommand::DrawTriangles(CommandBuffer* buffer, const uint32_t indexcount)
+	{
+		s_RendererAPI->DrawTriangles(buffer, indexcount);
+	}
+	inline void RenderCommand::DrawTriangleInstance(CommandBuffer* buffer, const uint32_t indexcount, const uint32_t instanceCount)
+	{
+		s_RendererAPI->DrawTrianglesInstance(buffer, indexcount, instanceCount);
+	}
+	inline void RenderCommand::DrawLines(CommandBuffer* buffer, const uint32_t indexcount)
+	{
+		s_RendererAPI->DrawLines(buffer, indexcount);
+	}
+	inline void RenderCommand::DrawPoints(CommandBuffer* buffer, const uint32_t indexcount)
+	{
+		s_RendererAPI->DrawPoints(buffer, indexcount);
+	}
+	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	{
+		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
+	}
+	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
+	}
+	void RenderCommand::EndGraphicsCommand(CommandBuffer* buffer)
+	{
+		s_RendererAPI->EndGraphicsCommand(buffer);
 	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{

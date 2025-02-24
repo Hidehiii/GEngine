@@ -160,7 +160,17 @@ namespace GEngine
 
     void VulkanVertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
     {
-        m_IndexBuffer = indexBuffer;
+        m_IndexBuffer = std::static_pointer_cast<VulkanIndexBuffer>(indexBuffer);
+    }
+
+    void VulkanVertexBuffer::Bind(CommandBuffer* cmd) const
+    {
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(static_cast<VulkanCommandBuffer*>(cmd)->GetCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
+		if (m_InstanceRendering)
+			vkCmdBindVertexBuffers(static_cast<VulkanCommandBuffer*>(cmd)->GetCommandBuffer(), 1, 1, &m_InstanceBuffer, offsets);
+		if (m_IndexBuffer)
+			m_IndexBuffer->Bind(cmd);
     }
     
     VulkanIndexBuffer::VulkanIndexBuffer(const uint32_t* indices, uint32_t count)
@@ -189,5 +199,9 @@ namespace GEngine
     {
 		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
 		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    }
+    void VulkanIndexBuffer::Bind(CommandBuffer* cmd) const
+    {
+        vkCmdBindIndexBuffer(static_cast<VulkanCommandBuffer*>(cmd)->GetCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
 }
