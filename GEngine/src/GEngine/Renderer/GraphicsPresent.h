@@ -5,6 +5,9 @@
 
 namespace GEngine
 {
+	class CommandBuffer;
+
+
 	class GENGINE_API GraphicsPresent
 	{
 	public:
@@ -13,10 +16,17 @@ namespace GEngine
 		virtual void Begin() {}
 		virtual void End() {}
 
-		void OnWindowResize(const Vector2 size) { m_WindowSize = size; }
-	public:
-		static Scope<GraphicsPresent> Create();
+		static void AddWaitCommand(CommandBuffer* cmd)					{ s_WaitCommands.push_back(cmd); }
+		static void SetWaitCommands(std::vector<CommandBuffer*> cmds)	{ s_WaitCommands = cmds; }
 	protected:
-		Vector2		m_WindowSize = Vector2(0.0f, 0.0f);
+		void OnWindowResize(const Vector2 size) { m_WindowResize = size; }
+
+		static Scope<GraphicsPresent> Create();
+
+		friend class Application;
+	protected:
+		Vector2								m_WindowResize = Vector2(0.0f, 0.0f);
+
+		static std::vector<CommandBuffer*>	s_WaitCommands;
 	};
 }

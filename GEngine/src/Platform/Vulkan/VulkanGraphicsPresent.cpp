@@ -18,11 +18,11 @@ namespace GEngine
 			VK_NULL_HANDLE,
 			&m_SwapChainImageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR ||
-			(m_WindowSize.x != 0 && m_WindowSize.y != 0))
+			(m_WindowResize.x != 0 && m_WindowResize.y != 0))
 		{
 			VulkanContext::Get()->RecreateSwapChain(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-			m_WindowSize.x = 0;
-			m_WindowSize.y = 0;
+			m_WindowResize.x = 0;
+			m_WindowResize.y = 0;
 			VkSemaphore submitWaitSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			VkSubmitInfo					submitInfo{};

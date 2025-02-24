@@ -3,9 +3,12 @@
 #include "GEngine/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
+#include "GEngine/Renderer/CommandBuffer.h"
 
 namespace GEngine
 {
+	std::vector<CommandBuffer*>	GraphicsPresent::s_WaitCommands;
+
 	Scope<GraphicsPresent> GraphicsPresent::Create()
 	{
 		switch (Renderer::GetAPI())
