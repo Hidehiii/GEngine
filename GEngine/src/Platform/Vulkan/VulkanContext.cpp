@@ -774,17 +774,25 @@ namespace GEngine
 
     void VulkanContext::LoadFunctionEXT(std::vector<const char*> ext)
     {
-		if (std::find(ext.begin(), ext.end(), VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME) != ext.end())
-		{
-			// load vkCmdSetRasterizationSamplesEXT
-			m_Function.vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT)vkGetDeviceProcAddr(m_Device, "vkCmdSetRasterizationSamplesEXT");
+			m_Function.vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetRasterizationSamplesEXT));
             if(m_Function.vkCmdSetRasterizationSamplesEXT)
                 GE_CORE_INFO("Load Functoin (vkCmdSetRasterizationSamplesEXT)");
 
-            m_Function.vkCmdSetColorWriteMaskEXT = (PFN_vkCmdSetColorWriteMaskEXT)vkGetDeviceProcAddr(m_Device, "vkCmdSetColorWriteMaskEXT");
+            m_Function.vkCmdSetColorWriteMaskEXT = (PFN_vkCmdSetColorWriteMaskEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetColorWriteMaskEXT));
             if(m_Function.vkCmdSetColorWriteMaskEXT)
                 GE_CORE_INFO("Load Functoin (vkCmdSetColorWriteMaskEXT)");
-		}
+
+            m_Function.vkCmdSetColorBlendEquationEXT = (PFN_vkCmdSetColorBlendEquationEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetColorBlendEquationEXT));
+            if(m_Function.vkCmdSetColorBlendEquationEXT)
+                GE_CORE_INFO("Load Functoin (vkCmdSetColorBlendEquationEXT)");
+
+            m_Function.vkCmdSetColorBlendEnableEXT = (PFN_vkCmdSetColorBlendEnableEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetColorBlendEnableEXT));
+            if(m_Function.vkCmdSetColorBlendEnableEXT)
+                GE_CORE_INFO("Load Functoin (vkCmdSetColorBlendEnableEXT)");
+
+			m_Function.vkCmdSetPolygonModeEXT = (PFN_vkCmdSetPolygonModeEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetPolygonModeEXT));
+			if (m_Function.vkCmdSetPolygonModeEXT)
+				GE_CORE_INFO("Load Functoin (vkCmdSetPolygonModeEXT)");
     }
 
     void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)

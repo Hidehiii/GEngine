@@ -37,6 +37,7 @@ namespace GEngine
 		void PrepareRender();
 		void PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer);
 		VkPipeline FindOrCreatePipeline();
+		//VkPipeline FindOrCreatePipeline(const Ref<FrameBuffer>& frameBuffer);
 	private:
 		Ref<VulkanMaterial>									m_Material;
 		Ref<VulkanVertexBuffer>								m_VertexBuffer;

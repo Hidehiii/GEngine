@@ -261,6 +261,13 @@ namespace GEngine
 				return m_GraphicsPipelines.at(i).GraphicsPipeline;
 			}
 		}
+		/*for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
+		{
+			if (m_GraphicsPipelines.at(i).RenderPass == std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass())
+			{
+				return m_GraphicsPipelines.at(i).GraphicsPipeline;
+			}
+		}*/
 
 
 		// TODO 
@@ -360,6 +367,7 @@ namespace GEngine
 		Multisampling.sType									= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		Multisampling.sampleShadingEnable					= VK_FALSE;
 		Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples);
+		//Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(frameBuffer->GetSpecification().Samples);
 		Multisampling.minSampleShading						= 1.0f;
 		Multisampling.pSampleMask							= nullptr;
 		Multisampling.alphaToCoverageEnable					= VK_FALSE;
@@ -422,6 +430,7 @@ namespace GEngine
 		}
 
 		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetColorAttachmentCount(), ColorBlendAttachment);
+		//std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetColorAttachmentCount(), ColorBlendAttachment);
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
 		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -469,6 +478,7 @@ namespace GEngine
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
 		pipelineInfo.layout					= m_PipelineLayout;
 		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
+		//pipelineInfo.renderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional

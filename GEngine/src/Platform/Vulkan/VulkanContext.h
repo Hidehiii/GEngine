@@ -15,7 +15,10 @@ namespace GEngine
 	struct VulkanFunctionEXT
 	{
 		PFN_vkCmdSetRasterizationSamplesEXT vkCmdSetRasterizationSamplesEXT = VK_NULL_HANDLE;
-		PFN_vkCmdSetColorWriteMaskEXT vkCmdSetColorWriteMaskEXT = VK_NULL_HANDLE;
+		PFN_vkCmdSetColorWriteMaskEXT		vkCmdSetColorWriteMaskEXT		= VK_NULL_HANDLE;
+		PFN_vkCmdSetColorBlendEquationEXT	vkCmdSetColorBlendEquationEXT	= VK_NULL_HANDLE;
+		PFN_vkCmdSetColorBlendEnableEXT		vkCmdSetColorBlendEnableEXT		= VK_NULL_HANDLE;
+		PFN_vkCmdSetPolygonModeEXT			vkCmdSetPolygonModeEXT			= VK_NULL_HANDLE;
 	};
 	
 
