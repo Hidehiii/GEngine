@@ -7,7 +7,7 @@
 
 namespace GEngine
 {
-	std::vector<CommandBuffer*>	GraphicsPresent::s_WaitCommands;
+	std::set<CommandBuffer*>	GraphicsPresent::s_WaitCommands;
 
 	Scope<GraphicsPresent> GraphicsPresent::Create()
 	{

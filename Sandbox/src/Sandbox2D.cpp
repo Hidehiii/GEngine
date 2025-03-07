@@ -219,11 +219,11 @@ void Sandbox2D::OnAttach()
 	m_ComputeTest->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
 	m_ComputeTest->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
-	auto exts = RenderCommand::GetExtensions();
+	/*auto exts = RenderCommand::GetExtensions();
 	for (auto e : exts)
 	{
 		GE_INFO(e);
-	}
+	}*/
 
 	/*m_SeparateTextureSampler = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.glsl")),
@@ -269,16 +269,20 @@ void Sandbox2D::OnRender()
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
 	RenderCommand::EndGraphicsCommand();
+
+	auto cmd = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
+	cmd->Render(m_OITPrepare);
+	RenderCommand::EndGraphicsCommand(cmd);
 	
 
-	RenderCommand::BeginGraphicsCommand();
+	/*RenderCommand::BeginGraphicsCommand();
 	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
 	m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_DepthOnly->End();
-	RenderCommand::EndGraphicsCommand();
+	RenderCommand::EndGraphicsCommand();*/
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());

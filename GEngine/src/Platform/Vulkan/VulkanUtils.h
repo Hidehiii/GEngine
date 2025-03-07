@@ -30,7 +30,7 @@ namespace GEngine
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size);
 		void CopyBufferToBuffer(VkCommandBuffer CmdBuffer, VkBuffer src, VkBuffer dst, uint32_t size);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag);
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t depth, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount);
 		void CopyImageToImage(uint32_t width, uint32_t height, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer);
 		void CopyImageToImage(uint32_t width, uint32_t height, uint32_t depth, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer, uint32_t layerCount);
 

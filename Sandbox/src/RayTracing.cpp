@@ -38,7 +38,7 @@ void RayTracing::Init()
 	srand(time(0));
 	m_Distribution = std::uniform_real_distribution<float>(-1.0, 1.0);
 	m_Texture = GEngine::Texture2D::Create(m_ScreenSize.x, m_ScreenSize.y);
-	m_Texture->SetData(m_TextureData.data(), m_TextureData.size() * 4);
+	//m_Texture->SetData((const void*)m_TextureData.data(), m_TextureData.size() * 4);
 
 	m_Spheres.emplace_back(GEngine::Vector3(-23.0f, 10.0f, -20.0f), 10.0f, GEngine::Vector3(0.2f, 0.2f, 0.4f), 0.25f, 0.0f, GEngine::Vector3(0.4f, 0.3f, 0.2f), 10.0f);
 	m_Spheres.emplace_back(GEngine::Vector3(23.0f, 10.0f, -20.0f), 10.0f, GEngine::Vector3(0.2f, 0.2f, 0.4f), 0.25f, 0.0f, GEngine::Vector3(0.1f, 0.3f, 0.4f), 10.0f);
@@ -95,7 +95,7 @@ void RayTracing::OnUpdate(GEngine::Editor::EditorCamera& camera)
 		}
 	);
 	m_FrameCount++;
-	m_Texture->SetData(m_TextureData.data(), m_TextureData.size() * 4);
+	//m_Texture->SetData(m_TextureData.data(), m_TextureData.size() * 4);
 	GEngine::Renderer2D::DrawQuad(GEngine::Vector3(), GEngine::Vector3(), GEngine::Vector3(8, 8, 1), GEngine::Vector4(1.0f), m_Texture);
 }
 

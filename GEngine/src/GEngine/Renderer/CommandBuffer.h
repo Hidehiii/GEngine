@@ -6,6 +6,7 @@
 #include "GEngine/Renderer/FrameBuffer.h"
 #include "GEngine/Components/Camera/Camera.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
+#include <set>
 
 namespace GEngine
 {
@@ -24,10 +25,11 @@ namespace GEngine
 
 		virtual void Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z) = 0;
 
-		virtual void						SetWaitCommands(std::vector<CommandBuffer*> commands) { m_WaitCommands = commands; }
-		virtual std::vector<CommandBuffer*>	GetWaitCommands() { return m_WaitCommands; }
+		virtual void						AddWaitCommand(CommandBuffer* command) { m_WaitCommands.insert(command); }
+		virtual std::set<CommandBuffer*>	GetWaitCommands() { return m_WaitCommands; }
+		virtual void						ClearWaitCommands() { m_WaitCommands.clear(); }
 	protected:
-		std::vector<CommandBuffer*>		m_WaitCommands;
+		std::set<CommandBuffer*>		m_WaitCommands;
 	};
 }
 

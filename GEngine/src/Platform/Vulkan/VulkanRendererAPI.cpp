@@ -141,10 +141,10 @@ namespace GEngine
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
         std::vector<VkSemaphore> waitSemaphores;
-        auto waitBuffers = buffer->GetWaitCommands();
-        for (int i = 0; i < waitBuffers.size(); i++)
+        auto waitCmds = buffer->GetWaitCommands();
+        for (auto it = waitCmds.begin(); it != waitCmds.end(); it++)
         {
-            waitSemaphores.push_back(((VulkanCommandBuffer*)waitBuffers.at(i))->GetSemaphore());
+            waitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
         }
 		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkSemaphore signalSemaphores[] = { ((VulkanCommandBuffer*)buffer)->GetSemaphore() };

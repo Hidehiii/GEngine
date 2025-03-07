@@ -2,8 +2,6 @@
 
 #include <GEngine.h>
 
-#include "RayTracing.h"
-
 using namespace GEngine;
 
 struct TestVertex

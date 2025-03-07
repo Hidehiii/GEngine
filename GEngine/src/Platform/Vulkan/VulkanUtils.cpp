@@ -234,7 +234,7 @@ namespace GEngine
 		{
 			CopyBufferToImage(buffer, image, width, height, 1, mipLevel, baseArrayLayer, aspectFlag, 1);
 		}
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t depth, uint32_t height, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount)
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount)
 		{
 			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
 

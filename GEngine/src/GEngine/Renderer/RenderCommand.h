@@ -38,9 +38,9 @@ namespace GEngine
 		inline static void DrawLines(CommandBuffer* buffer, const uint32_t indexcount);
 		inline static void DrawPoints(CommandBuffer* buffer, const uint32_t indexcount);
 
-		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		virtual void			EndGraphicsCommand(CommandBuffer* buffer);
+		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		inline static void			EndGraphicsCommand(CommandBuffer* buffer);
 
 		inline static std::vector<std::string> GetExtensions();
 
