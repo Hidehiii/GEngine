@@ -29,7 +29,8 @@ namespace GEngine
 
 		virtual void Begin(CommandBuffer* cmdBuffer) = 0;
 		virtual void End(CommandBuffer* cmdBuffer) = 0;
-		virtual void Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op) = 0;
+
+		virtual void SetRenderPassOperation(const RenderPassOperation& op) = 0;
 
 		virtual Vector2							GetSize() const { return { (float)GetSpecification().Width, (float)GetSpecification().Height }; }
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }

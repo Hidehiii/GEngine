@@ -21,7 +21,7 @@ namespace GEngine
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
 		virtual void End(CommandBuffer* cmdBuffer) override;
 
-		virtual void Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op) override;
+		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
 		virtual int								GetColorAttachmentCount() override { return m_ColorAttachments.size(); }
 		virtual int								GetAttachmentCount() override { return m_DepthAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };

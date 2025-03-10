@@ -40,7 +40,7 @@ namespace GEngine
 
 		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
 		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void			EndGraphicsCommand(CommandBuffer* buffer);
+		inline static void				EndGraphicsCommand(CommandBuffer* buffer);
 
 		inline static std::vector<std::string> GetExtensions();
 

@@ -217,47 +217,11 @@ namespace GEngine
 
 		s_CurrentVulkanFrameBuffer = nullptr;
 	}
-	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op)
+	void VulkanFrameBuffer::SetRenderPassOperation(const RenderPassOperation& op)
 	{
-		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
-		for (int i = 0; i < m_ColorAttachmentsTexture2D.size(); i++)
-		{
-			m_ColorAttachmentsTexture2D.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		}
-		if (m_DepthAttachmentTexture2D)
-		{
-			m_DepthAttachmentTexture2D->SetImageLayout(cmd, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		}
-
-		Ref<VulkanRenderPass> renderpass = m_RenderPass;
-		if (m_RenderPass->GetSpecification().Operation != op)
-		{
-			RenderPassSpecification		spec = renderpass->GetSpecification();
-			spec.Operation				= op;
-			renderpass					= std::dynamic_pointer_cast<VulkanRenderPass>(RenderPass::Create(spec));
-		}
-
-
-		VkRenderPassBeginInfo					renderPassInfo{};
-		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass				= renderpass->GetRenderPass();
-		renderPassInfo.framebuffer				= m_FrameBuffer;
-		renderPassInfo.renderArea.offset		= { 0, 0 };
-		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
-		renderPassInfo.renderArea.extent.height = m_Specification.Height;
-
-		Vector4									setClearColor = VulkanContext::Get()->GetClearColor();
-		VkClearValue							clearColor = {};
-		clearColor.color						= { { setClearColor.r, setClearColor.g, setClearColor.b, setClearColor.a} };
-
-		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
-		if (m_DepthStencilImage != nullptr)
-		{
-			clearValues.at(clearValues.size() - 1) = { 1.0f, 0 };
-		}
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
-		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		auto spec		= m_RenderPass->GetSpecification();
+		spec.Operation	= op;
+		m_RenderPass	= std::dynamic_pointer_cast<VulkanRenderPass>(RenderPass::Create(spec));
 	}
 	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{

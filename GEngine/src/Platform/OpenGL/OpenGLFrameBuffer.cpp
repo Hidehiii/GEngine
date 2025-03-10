@@ -333,28 +333,11 @@ namespace GEngine
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer, const RenderPassOperation& op)
+    void OpenGLFrameBuffer::SetRenderPassOperation(const RenderPassOperation& op)
     {
-		if (m_Specification.Samples > 1)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
-		}
-		else
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
-		}
-
-		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
-		glDisable(GL_FRAMEBUFFER_SRGB);
-		glDepthMask(GL_TRUE);
-		if (op.ColorBegin == RenderPassBeginOperation::Clear)
-		{
-			glClear(GL_COLOR_BUFFER_BIT);
-		}
-		if (op.DepthStencilBegin == RenderPassBeginOperation::Clear)
-		{
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		}
+        auto spec       = m_RenderPass->GetSpecification();
+        spec.Operation  = op;
+        m_RenderPass    = std::dynamic_pointer_cast<OpenGLRenderPass>(RenderPass::Create(spec));
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
     {
