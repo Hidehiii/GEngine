@@ -31,6 +31,7 @@ namespace GEngine
 		Renderer::SetRenererAPI((RendererAPI::API)m_Config->m_RendererAPI);
 		Renderer::SetFramesInFlight(m_Config->m_FramesInFlight);
 		Renderer::SetDynamicUniformBufferSizeScaleFactor(m_Config->m_DynamicUniformBufferSizeScaleFactor);
+		Renderer::SetCommandBufferCount(m_Config->m_CommandBufferCount);
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));

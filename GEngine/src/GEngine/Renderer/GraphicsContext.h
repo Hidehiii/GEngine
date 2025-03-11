@@ -3,6 +3,8 @@
 
 namespace GEngine
 {
+	class CommandBuffer;
+
 	class GENGINE_API GraphicsContext
 	{
 	public:
@@ -12,6 +14,9 @@ namespace GEngine
 		virtual void SwapBuffers() = 0;
 		virtual void SetVSync(bool enable) = 0;
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) = 0;
+
+	protected:
+		virtual CommandBuffer* GetCommandBuffer() = 0;
 	public:
 		bool m_WindowsResized = false;
 	};

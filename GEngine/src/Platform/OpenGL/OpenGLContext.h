@@ -5,6 +5,8 @@
 
 namespace GEngine
 {
+	class OpenGLCommandBuffer;
+
 	class GENGINE_API OpenGLContext : public GraphicsContext
 	{
 	public:
@@ -16,13 +18,22 @@ namespace GEngine
 		virtual void SwapBuffers() override;
 		virtual void SetVSync(bool enable) override { }
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { }
+
+		static OpenGLContext* Get() { return s_ContextInstance; }
+	protected:
+		virtual CommandBuffer* GetCommandBuffer() override;
 	private:
 		bool CheckExtensionsSupport();
 	private:
 		GLFWwindow*					m_WindowHandle;
+		static OpenGLContext*		s_ContextInstance;
 		std::vector<const char*>	m_Extensions =
 		{
 
 		};
+		std::vector<OpenGLCommandBuffer*>	m_CommandBuffers;
+		uint32_t							m_CommandBufferIndex = 0;
+
+		friend class OpenGLRendererAPI;
 	};
 }

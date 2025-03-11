@@ -10,5 +10,6 @@ namespace GEngine
 		uint8_t		m_FramesInFlight = 2;
 		bool		m_VSync = false;
 		uint32_t	m_DynamicUniformBufferSizeScaleFactor = 128;
+		uint32_t	m_CommandBufferCount = 1000;
 	};
 }

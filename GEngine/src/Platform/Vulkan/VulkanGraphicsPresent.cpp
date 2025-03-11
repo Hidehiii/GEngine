@@ -66,7 +66,7 @@ namespace GEngine
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
 
-#if 1
+#if 0
 		std::vector<VkSemaphore> submitWaitSemaphores;
 		for (auto it = s_WaitCommands.begin(); it != s_WaitCommands.end(); it++)
 		{

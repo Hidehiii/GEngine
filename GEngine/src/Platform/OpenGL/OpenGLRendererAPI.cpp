@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "OpenGLUtils.h"
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
+#include "OpenGLContext.h"
 
 namespace GEngine
 {
@@ -187,21 +188,20 @@ namespace GEngine
 	}
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
-		auto cmd = new OpenGLCommandBuffer();
+		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
 		cmd->Begin(buffer, camera);
 		return cmd;
 	}
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
-		auto cmd = new OpenGLCommandBuffer();
+		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
 		cmd->Begin(buffer, camera);
 		return cmd;
 	}
 	void OpenGLRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
 	{
-		buffer->End();
-		delete buffer;
-		buffer = nullptr;
+		GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Graphics, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
+		((OpenGLCommandBuffer*)buffer)->End();
 	}
 	float OpenGLRendererAPI::GetTime()
 	{

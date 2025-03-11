@@ -1,15 +1,18 @@
 #include "GEpch.h"
 #include "OpenGLContext.h"
-
+#include "OpenGLCommandBuffer.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace GEngine
 {
+	OpenGLContext* OpenGLContext::s_ContextInstance = nullptr;
+
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)
 	{
 		GE_CORE_ASSERT(windowHandle, "Window handle is null!");
+		s_ContextInstance = this;
 	}
 	OpenGLContext::~OpenGLContext()
 	{
@@ -33,6 +36,10 @@ namespace GEngine
 	void OpenGLContext::SwapBuffers()
 	{
 		glfwSwapBuffers(m_WindowHandle);
+	}
+	CommandBuffer* OpenGLContext::GetCommandBuffer()
+	{
+		return m_CommandBuffers.at(m_CommandBufferIndex++ % m_CommandBuffers.size());
 	}
 	bool OpenGLContext::CheckExtensionsSupport()
 	{

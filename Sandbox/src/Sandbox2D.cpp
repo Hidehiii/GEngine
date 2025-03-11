@@ -270,19 +270,19 @@ void Sandbox2D::OnRender()
 	m_SkyBoxFB->End();
 	RenderCommand::EndGraphicsCommand();
 
-	auto cmd = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
+	/*auto cmd = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
 	cmd->Render(m_OITPrepare);
-	RenderCommand::EndGraphicsCommand(cmd);
+	RenderCommand::EndGraphicsCommand(cmd);*/
 	
 
-	/*RenderCommand::BeginGraphicsCommand();
+	RenderCommand::BeginGraphicsCommand();
 	m_DepthOnly->Begin();
 	Renderer::BeginScene(m_EditorCamera);
 	m_Scene->OnRender();
 	m_OITPrepare->Render();
 	Renderer::EndScene();
 	m_DepthOnly->End();
-	RenderCommand::EndGraphicsCommand();*/
+	RenderCommand::EndGraphicsCommand();
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());

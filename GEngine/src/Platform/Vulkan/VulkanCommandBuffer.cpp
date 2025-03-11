@@ -104,11 +104,12 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_ComputeCommandPool));
 	}
 
-	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer, VkSemaphore semaphore ,VkFence fence)
+	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore ,VkFence fence)
 	{
 		m_CommandBuffer = buffer;
 		m_Semaphore		= semaphore;
 		m_Fence			= fence;
+		m_Type			= type;
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{

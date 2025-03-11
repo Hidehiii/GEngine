@@ -48,6 +48,7 @@ namespace GEngine
 		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
 		static void SetRenererAPI(RendererAPI::API api);
 		static void SetDynamicUniformBufferSizeScaleFactor(uint32_t factor);
+		static void SetCommandBufferCount(uint32_t count);
 
 		static void SetCameraUniforms(Matrix4x4& v, Matrix4x4& p, Vector3& pos);
 		static void SetTimeUniforms();
@@ -74,6 +75,9 @@ namespace GEngine
 		static int s_TimeUniformOffsetIndex;
 		static int s_LightUniformOffsetIndex;
 		static int s_ScreenUniformOffsetIndex;
+
+		// cmd buffer count
+		static uint32_t s_CommandBufferCount;
 
 		friend class Application;
 	};

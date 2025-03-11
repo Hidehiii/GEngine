@@ -73,6 +73,8 @@ namespace GEngine
 		void                        MoveToNextSemaphore();
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
+	protected:
+		CommandBuffer*				GetCommandBuffer() override { return m_CommandBuffers.at(m_CommandBufferIndex++ % m_CommandBuffers.size()); }
 	private:
 		void						CreateInstance();
 		bool						CheckValidationLayerSupport();
@@ -168,6 +170,11 @@ namespace GEngine
 		VulkanFunctionEXT					m_Function;
 		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
 		int									m_UsedSecondaryCommandBufferIndex = 0;
+
+		std::vector<VulkanCommandBuffer*>	m_CommandBuffers;
+		uint32_t							m_CommandBufferIndex = 0;
+
+		friend class VulkanRendererAPI;
 	};
 	
 }

@@ -107,39 +107,40 @@ namespace GEngine
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
     {
+        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer();
+
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags             = 0; // Optional
 		beginInfo.pInheritanceInfo  = nullptr; // Optional
-		VulkanContext::Get()->BeginGraphicsCommandBuffer();
-		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
+		
+        vkResetCommandBuffer(cmd->GetCommandBuffer(), 0);
+        VK_CHECK_RESULT(vkBeginCommandBuffer(cmd->GetCommandBuffer(), &beginInfo));
 
-        auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer());
         cmd->Begin(buffer, camera);
         return cmd;
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
     {
+        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer();
+
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags             = 0; // Optional
 		beginInfo.pInheritanceInfo  = nullptr; // Optional
-		VulkanContext::Get()->BeginGraphicsCommandBuffer();
-		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
 
-		auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), VulkanContext::Get()->GetCurrentSemaphore(), VulkanContext::Get()->GetCurrentFence());
-
-        VulkanContext::Get()->MoveToNextSemaphore();
+		vkResetCommandBuffer(cmd->GetCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd->GetCommandBuffer(), &beginInfo));
 
 		cmd->Begin(buffer, camera);
 		return cmd;
     }
     void VulkanRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
     {
+        GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Graphics, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
+
         VkCommandBuffer cmd = ((VulkanCommandBuffer*)buffer)->GetCommandBuffer();
-        buffer->End();
+        ((VulkanCommandBuffer*)buffer)->End();
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 

@@ -49,13 +49,8 @@ namespace GEngine
 	class GENGINE_API VulkanCommandBuffer : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VkCommandBuffer buffer, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
+		VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
 		virtual ~VulkanCommandBuffer();
-
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
-		virtual void Begin(Ref<FrameBuffer>&buffer, const Camera & camera) override;
-
-		virtual void End() override;
 
 		virtual void Render(Ref<Scene>&scene) override;
 		virtual void Render(Ref<GraphicsPipeline>&pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
@@ -66,11 +61,18 @@ namespace GEngine
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
 		VkSemaphore		GetSemaphore() { return m_Semaphore; }
 		VkFence			GetFence() { return m_Fence; }
+	protected:
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera) override;
+
+		virtual void End() override;
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
 		VkSemaphore					m_Semaphore;
 		VkFence						m_Fence;
+
+		friend class VulkanRendererAPI;
 	};
 }
 

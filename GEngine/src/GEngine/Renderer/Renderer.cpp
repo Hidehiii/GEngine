@@ -19,6 +19,8 @@ namespace GEngine
 	int Renderer::s_LightUniformOffsetIndex = 0;
 	int Renderer::s_ScreenUniformOffsetIndex = 0;
 
+	uint32_t Renderer::s_CommandBufferCount = 1000;
+
 	struct CameraData
 	{
 		Matrix4x4 GE_MATRIX_V;
@@ -200,6 +202,11 @@ namespace GEngine
 	void Renderer::SetDynamicUniformBufferSizeScaleFactor(uint32_t factor)
 	{
 		s_DynamicUniformBufferSizeScaleFactor = factor;
+	}
+
+	void Renderer::SetCommandBufferCount(uint32_t count)
+	{
+		s_CommandBufferCount = count;
 	}
 
 	void Renderer::DrawCubeWireframe(Transform& transform, Vector4 color)
