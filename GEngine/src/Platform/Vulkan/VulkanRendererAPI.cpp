@@ -129,7 +129,10 @@ namespace GEngine
 		vkResetCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), &beginInfo));
 
-		auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer());
+		auto cmd = new VulkanCommandBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), VulkanContext::Get()->GetCurrentSemaphore(), VulkanContext::Get()->GetCurrentFence());
+
+        VulkanContext::Get()->MoveToNextSemaphore();
+
 		cmd->Begin(buffer, camera);
 		return cmd;
     }

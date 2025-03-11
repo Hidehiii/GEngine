@@ -104,23 +104,15 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_ComputeCommandPool));
 	}
 
-	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer)
+	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer, VkSemaphore semaphore ,VkFence fence)
 	{
 		m_CommandBuffer = buffer;
-		m_Semaphores.resize(Renderer::GetFramesInFlight());
-		for (int i = 0; i < m_Semaphores.size(); i++)
-		{
-			VkSemaphoreCreateInfo   semaphoreInfo{};
-			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_Semaphores[i]));
-		}
+		m_Semaphore		= semaphore;
+		m_Fence			= fence;
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		for (int i = 0; i < m_Semaphores.size(); i++)
-		{
-			vkDestroySemaphore(VulkanContext::Get()->GetDevice(), m_Semaphores[i], nullptr);
-		}
+
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{

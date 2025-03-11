@@ -49,7 +49,7 @@ namespace GEngine
 	class GENGINE_API VulkanCommandBuffer : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VkCommandBuffer buffer);
+		VulkanCommandBuffer(VkCommandBuffer buffer, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
 		virtual ~VulkanCommandBuffer();
 
 		virtual void Begin(Ref<FrameBuffer>&buffer, const Editor::EditorCamera & camera) override;
@@ -64,11 +64,13 @@ namespace GEngine
 
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
-		VkSemaphore		GetSemaphore() { return m_Semaphores.at(Renderer::GetCurrentFrame()); }
+		VkSemaphore		GetSemaphore() { return m_Semaphore; }
+		VkFence			GetFence() { return m_Fence; }
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
-		std::vector<VkSemaphore>	m_Semaphores;
+		VkSemaphore					m_Semaphore;
+		VkFence						m_Fence;
 	};
 }
 

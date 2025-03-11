@@ -43,6 +43,8 @@ namespace GEngine
 	}
 	void VulkanGraphicsPresent::Begin()
 	{
+		ClearWaitCommands();
+
 		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &VulkanContext::Get()->GetCurrentFence());
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -63,6 +65,16 @@ namespace GEngine
 		VulkanContext::Get()->MoveToNextSemaphore();
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+
+#if 1
+		std::vector<VkSemaphore> submitWaitSemaphores;
+		for (auto it = s_WaitCommands.begin(); it != s_WaitCommands.end(); it++)
+		{
+			submitWaitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
+		}
+		std::vector<VkPipelineStageFlags> waitStages(submitWaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSemaphore signalSemaphores[] = { VulkanContext::Get()->GetCurrentSemaphore() };
+#endif
 
 		VkSubmitInfo					submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;

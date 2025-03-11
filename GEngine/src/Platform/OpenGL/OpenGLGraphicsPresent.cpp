@@ -7,6 +7,8 @@ namespace GEngine
 {
 	void OpenGLGraphicsPresent::Begin()
 	{
+		ClearWaitCommands();
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glEnable(GL_FRAMEBUFFER_SRGB);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
