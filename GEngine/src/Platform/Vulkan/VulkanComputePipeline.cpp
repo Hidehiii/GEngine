@@ -48,7 +48,7 @@ namespace GEngine
 	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
 	{
 		PrepareCompute(cmdBuffer);
-		ComputeCommand::Compute(x, y, z);
+		ComputeCommand::Compute(cmdBuffer, x, y, z);
 	}
 	void VulkanComputePipeline::CreatePipeline()
 	{

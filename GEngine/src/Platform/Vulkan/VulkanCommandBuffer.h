@@ -30,11 +30,13 @@ namespace GEngine
 		VkCommandBuffer GetGraphicsCommandBuffer(int index = 0) { return m_GraphicsCommandBuffers.at(index); }
 		VkCommandBuffer GetComputeCommandBuffer(int index = 0) { return m_ComputeCommandBuffers.at(index); }
 		VkCommandBuffer GetSecondaryCommandBuffer(int index = 0) { return m_SecondaryCommandBuffers.at(index); }
-		uint32_t		GetCommandBuffersSize() { return m_GraphicsCommandBuffers.size(); }
+		uint32_t		GetGraphicsCommandBuffersSize() { return m_GraphicsCommandBuffers.size(); }
 		uint32_t		GetSecondaryCommandBuffersSize() { return m_SecondaryCommandBuffers.size(); }
 
-		VkCommandBuffer BeginSingleTimeGraphicsCommands();
-		void			EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue);
+		VkCommandBuffer BeginSingleTimeGraphicsCommand();
+		void			EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer);
+		VkCommandBuffer BeginSingleTimeComputeCommand();
+		void			EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer);
 	private:
 		void			CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:
@@ -62,8 +64,8 @@ namespace GEngine
 		VkSemaphore		GetSemaphore() { return m_Semaphore; }
 		VkFence			GetFence() { return m_Fence; }
 	protected:
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera) override;
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera);
 
 		virtual void End() override;
 	private:

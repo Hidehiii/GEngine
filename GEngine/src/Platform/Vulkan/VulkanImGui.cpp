@@ -103,9 +103,9 @@ namespace GEngine {
 		info.CheckVkResultFn			= nullptr;
 		ImGui_ImplVulkan_Init(&info, s_RenderPass);
 
-		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
-		VulkanContext::Get()->EndSingleTimeGraphicsCommands(CmdBuffer);
+		VulkanContext::Get()->EndSingleTimeGraphicsCommand(CmdBuffer);
 		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}

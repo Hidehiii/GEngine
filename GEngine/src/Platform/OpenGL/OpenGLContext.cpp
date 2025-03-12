@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLContext.h"
 #include "OpenGLCommandBuffer.h"
+#include "GEngine/Renderer/Renderer.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -29,9 +30,11 @@ namespace GEngine
 		GE_CORE_INFO("    OpenGL Version {0}:", (char*)glGetString(GL_VERSION));
 
 		CheckExtensionsSupport();
+		CreateCommandBuffers();
 	}
 	void OpenGLContext::Uninit()
 	{
+		DestroyCommandBuffers();
 	}
 	void OpenGLContext::SwapBuffers()
 	{
@@ -61,5 +64,21 @@ namespace GEngine
 			}
 		}
 		return true;
+	}
+	void OpenGLContext::CreateCommandBuffers()
+	{
+		for (int i = 0; i < Renderer::GetCommandBufferCount(); i++)
+		{
+			m_CommandBuffers.push_back(new OpenGLCommandBuffer);
+		}
+	}
+	void OpenGLContext::DestroyCommandBuffers()
+	{
+		for (int i = 0; i < m_CommandBuffers.size(); i++)
+		{
+			delete m_CommandBuffers.at(i);
+			m_CommandBuffers.at(i) = nullptr;
+		}
+		m_CommandBuffers.clear();
 	}
 }

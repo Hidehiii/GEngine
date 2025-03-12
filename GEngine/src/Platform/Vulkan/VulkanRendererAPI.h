@@ -66,6 +66,10 @@ namespace GEngine
 		virtual Vector3 GetMaxComputeWorkGroupSize() override;
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
 
+		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera) override;
+		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
+		virtual void			EndComputeCommand(CommandBuffer* buffer) override;
+
 		virtual void BeginComputeCommand() override;
 		virtual void EndComputeCommand() override;
 		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) override;

@@ -34,6 +34,7 @@ namespace GEngine
 		const static Vector3	GetRenderTargetCameraPosition() { return s_RenderTargetCameraPosition; }
 		static uint8_t			GetFramesInFlight() { return s_FramesInFlight; }
 		static uint8_t			GetCurrentFrame() { return s_CurrentFrame; }
+		static uint32_t			GetCommandBufferCount() { return s_CommandBufferCount; }
 
 
 		const static std::vector<uint32_t> GetDynamicUniformBufferOffsets() { return s_DynamicUniformBufferOffsets; }

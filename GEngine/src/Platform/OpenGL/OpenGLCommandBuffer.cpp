@@ -5,17 +5,19 @@
 
 namespace GEngine
 {
-	OpenGLCommandBuffer::OpenGLCommandBuffer(CommandBufferType type)
+	OpenGLCommandBuffer::OpenGLCommandBuffer()
+	{
+		
+	}
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, CommandBufferType type)
 	{
 		m_Type = type;
-	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
-	{
 		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
 		m_FrameBuffer->Begin(this);
 	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera, CommandBufferType type)
 	{
+		m_Type = type;
 		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
 		m_FrameBuffer->Begin(this);
 	}

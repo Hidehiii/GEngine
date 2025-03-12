@@ -189,13 +189,13 @@ namespace GEngine
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
 		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
-		cmd->Begin(buffer, camera);
+		cmd->Begin(buffer, camera, CommandBufferType::Graphics);
 		return cmd;
 	}
 	CommandBuffer* OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
 		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
-		cmd->Begin(buffer, camera);
+		cmd->Begin(buffer, camera, CommandBufferType::Graphics);
 		return cmd;
 	}
 	void OpenGLRendererAPI::EndGraphicsCommand(CommandBuffer* buffer)
@@ -276,6 +276,23 @@ namespace GEngine
 		int x;
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
 		return x;
+	}
+	CommandBuffer* OpenGLRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	{
+		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
+		cmd->Begin(buffer, camera, CommandBufferType::Compute);
+		return cmd;
+	}
+	CommandBuffer* OpenGLRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+		auto cmd = (OpenGLCommandBuffer*)OpenGLContext::Get()->GetCommandBuffer();
+		cmd->Begin(buffer, camera, CommandBufferType::Compute);
+		return cmd;
+	}
+	void OpenGLRendererAPI::EndComputeCommand(CommandBuffer* buffer)
+	{
+		GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Compute, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
+		((OpenGLCommandBuffer*)buffer)->End();
 	}
 	void OpenGLRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
 	{

@@ -31,9 +31,6 @@ namespace GEngine
 		virtual std::set<CommandBuffer*>	GetWaitCommands() { return m_WaitCommands; }
 		virtual void						ClearWaitCommands() { m_WaitCommands.clear(); }
 		virtual CommandBufferType			GetType() { return m_Type; }
-	protected:
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
 
 		virtual void End() = 0;
 	protected:

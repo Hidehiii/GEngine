@@ -107,7 +107,7 @@ namespace GEngine
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
     {
-        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer();
+        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -122,7 +122,7 @@ namespace GEngine
     }
     CommandBuffer* VulkanRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
     {
-        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer();
+        auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -164,9 +164,6 @@ namespace GEngine
 		submitInfo.pSignalSemaphores    = signalSemaphores;
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-
-        delete buffer;
-        buffer = nullptr;
     }
     void VulkanRendererAPI::BeginSecondaryCommand()
     {
@@ -273,6 +270,69 @@ namespace GEngine
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
         return deviceProperties.limits.maxComputeWorkGroupInvocations;
+    }
+
+    CommandBuffer* VulkanRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+    {
+		auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
+
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+
+		vkResetCommandBuffer(cmd->GetCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd->GetCommandBuffer(), &beginInfo));
+
+		cmd->Begin(buffer, camera);
+		return cmd;
+    }
+
+    CommandBuffer* VulkanRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+    {
+		auto cmd = (VulkanCommandBuffer*)VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
+
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType             = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags             = 0; // Optional
+		beginInfo.pInheritanceInfo  = nullptr; // Optional
+
+		vkResetCommandBuffer(cmd->GetCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd->GetCommandBuffer(), &beginInfo));
+
+		cmd->Begin(buffer, camera);
+		return cmd;
+    }
+
+    void VulkanRendererAPI::EndComputeCommand(CommandBuffer* buffer)
+    {
+		GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Compute, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
+
+		VkCommandBuffer cmd = ((VulkanCommandBuffer*)buffer)->GetCommandBuffer();
+		((VulkanCommandBuffer*)buffer)->End();
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+
+		std::vector<VkSemaphore> waitSemaphores;
+		auto waitCmds = buffer->GetWaitCommands();
+		for (auto it = waitCmds.begin(); it != waitCmds.end(); it++)
+		{
+			waitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
+		}
+		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+		VkSemaphore signalSemaphores[] = { ((VulkanCommandBuffer*)buffer)->GetSemaphore() };
+
+		VkSubmitInfo                    submitInfo{};
+		submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount   = 1;
+		submitInfo.pCommandBuffers      = &cmd;
+		submitInfo.waitSemaphoreCount   = waitSemaphores.size();
+		submitInfo.pWaitSemaphores      = waitSemaphores.data();
+		submitInfo.pWaitDstStageMask    = waitStages.data();
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores    = signalSemaphores;
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
     }
 
     void VulkanRendererAPI::BeginComputeCommand()

@@ -60,8 +60,10 @@ namespace GEngine
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
 		VkDescriptorPool			GetDescriptorPool() { return m_Descriptor.GetDescriptorPool(); }
-		VkCommandBuffer				BeginSingleTimeGraphicsCommands();
-		void						EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer);
+		VkCommandBuffer				BeginSingleTimeGraphicsCommand();
+		void						EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer);
+		VkCommandBuffer				BeginSingleTimeComputeCommand();
+		void						EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer);
 		QueueFamilyIndices			GetQueueFamily() { return m_QueueFamily; }
 		VkQueue						GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue						GetPresentQueue() { return m_PresentQueue; }
@@ -74,7 +76,7 @@ namespace GEngine
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 	protected:
-		CommandBuffer*				GetCommandBuffer() override { return m_CommandBuffers.at(m_CommandBufferIndex++ % m_CommandBuffers.size()); }
+		CommandBuffer*				GetCommandBuffer(CommandBufferType type);
 	private:
 		void						CreateInstance();
 		bool						CheckValidationLayerSupport();
@@ -102,11 +104,6 @@ namespace GEngine
 		void						CleanUpSwapChain();
 		void						LoadFunctionEXT(std::vector<const char*> ext);
 	private:
-		enum class CommandBufferType
-		{
-			Graphics,
-			Compute
-		};
 	private:
 		GLFWwindow*							m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;
@@ -155,7 +152,6 @@ namespace GEngine
 		std::vector<VkImageView>			m_SwapChainImageViews;
 		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
-		int									m_CommandBufferPoolSizePerFrame = 30;
 		VulkanCommandBufferPool				m_CommandBufferPool;
 		CommandBufferType					m_CurrentCmdBufferType = CommandBufferType::Graphics;
 		std::vector<int>					m_UsedGraphicsCommandBufferIndexs;
@@ -163,7 +159,6 @@ namespace GEngine
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
-		int									m_SyncObjectSizePerFrame = 40;
 		std::vector<VkSemaphore>			m_Semaphores;
 		std::vector<int>                    m_SemaphoreIndexs;
 		std::vector<VkFence>				m_Fences;
@@ -171,8 +166,10 @@ namespace GEngine
 		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
 		int									m_UsedSecondaryCommandBufferIndex = 0;
 
-		std::vector<VulkanCommandBuffer*>	m_CommandBuffers;
-		uint32_t							m_CommandBufferIndex = 0;
+		std::vector<VulkanCommandBuffer*>	m_GraphicsCommandBuffers;
+		uint32_t							m_GraphicsCommandBufferIndex = 0;
+		std::vector<VulkanCommandBuffer*>	m_ComputeCommandBuffers;
+		uint32_t							m_ComputeCommandBufferIndex = 0;
 
 		friend class VulkanRendererAPI;
 	};

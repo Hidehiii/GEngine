@@ -50,7 +50,7 @@ namespace GEngine
 		
 			
 	}
-	VkCommandBuffer VulkanCommandBufferPool::BeginSingleTimeGraphicsCommands()
+	VkCommandBuffer VulkanCommandBufferPool::BeginSingleTimeGraphicsCommand()
 	{
 		VkCommandBufferAllocateInfo			allocInfo{};
 		allocInfo.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -69,7 +69,7 @@ namespace GEngine
 
 		return commandBuffer;
 	}
-	void VulkanCommandBufferPool::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer, VkQueue queue)
+	void VulkanCommandBufferPool::EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 		// 用fence 而不是wait
@@ -84,7 +84,47 @@ namespace GEngine
 		submitInfo.commandBufferCount	= 1;
 		submitInfo.pCommandBuffers		= &commandBuffer;
 
-		vkQueueSubmit(queue, 1, &submitInfo, fence);
+		vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, fence);
+		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+
+		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_GraphicsCommandPool, 1, &commandBuffer);
+		vkDestroyFence(VulkanContext::Get()->GetDevice(), fence, nullptr);
+	}
+	VkCommandBuffer VulkanCommandBufferPool::BeginSingleTimeComputeCommand()
+	{
+		VkCommandBufferAllocateInfo			allocInfo{};
+		allocInfo.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool				= m_ComputeCommandPool;
+		allocInfo.level						= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount		= 1;
+
+		VkCommandBuffer commandBuffer;
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, &commandBuffer));
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		return commandBuffer;
+	}
+	void VulkanCommandBufferPool::EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer)
+	{
+		vkEndCommandBuffer(commandBuffer);
+		// 用fence 而不是wait
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+		VkFence fence;
+		VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceCreateInfo, nullptr, &fence));
+
+		VkSubmitInfo					submitInfo{};
+		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount	= 1;
+		submitInfo.pCommandBuffers		= &commandBuffer;
+
+		vkQueueSubmit(VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, fence);
 		vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 
 		vkFreeCommandBuffers(VulkanContext::Get()->GetDevice(), m_GraphicsCommandPool, 1, &commandBuffer);

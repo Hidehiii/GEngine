@@ -101,11 +101,11 @@ namespace GEngine
 		}
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag, uint32_t mipLevel)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 
 			TransitionImageLayout(commandBuffer, image, format, oldLayout, newLayout, layerCount, aspectFlag, mipLevel);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 		void TransitionImageLayout(VkCommandBuffer CmdBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, VkFlags aspectFlag, uint32_t mipLevel)
 		{
@@ -236,7 +236,7 @@ namespace GEngine
 		}
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t depth, uint32_t mipLevel, uint32_t baseArrayLayer, VkFlags aspectFlag, uint32_t layerCount)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 
 			VkBufferImageCopy					region{};
 			region.bufferOffset					= 0;
@@ -264,7 +264,7 @@ namespace GEngine
 				&region
 			);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 
 
@@ -486,7 +486,7 @@ namespace GEngine
 		}
 		void BlitImage(VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 
 			VkImageBlit								region{};
 			region.srcSubresource.mipLevel			= srcMipLevel;
@@ -511,7 +511,7 @@ namespace GEngine
 				&region,
 				VK_FILTER_LINEAR);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 		void BlitImage(VkCommandBuffer CmdBuffer, VkImage src, VkImageLayout srcLayout, Vector2 srcSize, uint32_t srcMipLevel, VkImage dst, VkImageLayout dstLayout, Vector2 dstSize, uint32_t dstMipLevel, VkImageAspectFlags aspectFlag)
 		{
@@ -540,7 +540,7 @@ namespace GEngine
 		}
 		void CopyBufferToBuffer(VkBuffer src, VkBuffer dst, uint32_t size)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 
 			VkBufferCopy	copyRegion{};
 			copyRegion.srcOffset = 0;
@@ -549,7 +549,7 @@ namespace GEngine
 
 			vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 
 		void CopyBufferToBuffer(VkCommandBuffer CmdBuffer, VkBuffer src, VkBuffer dst, uint32_t size)
@@ -645,7 +645,7 @@ namespace GEngine
 		}
 		void CopyImageToImage(uint32_t width, uint32_t height, uint32_t depth, VkImage src, VkImageLayout srcLayout, VkImageAspectFlags srcAspectFlag, uint32_t srcMipLevel, uint32_t srcBaseArrayLayer, VkImage dst, VkImageLayout dstLayout, VkImageAspectFlags dstAspectFlag, uint32_t dstMipLevel, uint32_t dstBaseArrayLayer, uint32_t layerCount)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 			VkImageSubresourceLayers	srcLayers{};
 			srcLayers.aspectMask		= srcAspectFlag;
 			srcLayers.mipLevel			= srcMipLevel;
@@ -673,11 +673,11 @@ namespace GEngine
 				1,
 				&region);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 		void GenerateMipmap(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkImageAspectFlags aspectFlag, uint32_t baseArrayLayer, uint32_t layerCount)
 		{
-			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommands();
+			VkCommandBuffer	commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 
 			VkImageMemoryBarrier	barrier{};
 			barrier.sType				= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -737,7 +737,7 @@ namespace GEngine
 				0, nullptr,
 				1, &barrier);
 
-			VulkanContext::Get()->EndSingleTimeGraphicsCommands(commandBuffer);
+			VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 		}
 		VkCompareOp CompareOPToVkCompareOP(CompareOperation op)
 		{

@@ -104,10 +104,12 @@ namespace GEngine
 	}
 	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
+		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
 		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
 	}
 	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
+		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
 		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
 	}
 	void RenderCommand::EndGraphicsCommand(CommandBuffer* buffer)
@@ -178,8 +180,24 @@ namespace GEngine
 	{
 		s_RendererAPI->EndComputeCommand();
 	}
+	inline CommandBuffer* RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	{
+		return s_RendererAPI->BeginComputeCommand(buffer, camera);
+	}
+	inline CommandBuffer* RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+		return s_RendererAPI->BeginComputeCommand(buffer, camera);
+	}
+	inline void RenderCommand::EndComputeCommand(CommandBuffer* buffer)
+	{
+		s_RendererAPI->EndComputeCommand(buffer);
+	}
 	inline void RenderCommand::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		s_RendererAPI->Compute(x, y, z);
+	}
+	inline void RenderCommand::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
+	{
+		s_RendererAPI->Compute(buffer, x, y, z);
 	}
 }

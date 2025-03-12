@@ -21,9 +21,11 @@ namespace GEngine
 
 		static OpenGLContext* Get() { return s_ContextInstance; }
 	protected:
-		virtual CommandBuffer* GetCommandBuffer() override;
+		virtual CommandBuffer* GetCommandBuffer();
 	private:
 		bool CheckExtensionsSupport();
+		void CreateCommandBuffers();
+		void DestroyCommandBuffers();
 	private:
 		GLFWwindow*					m_WindowHandle;
 		static OpenGLContext*		s_ContextInstance;

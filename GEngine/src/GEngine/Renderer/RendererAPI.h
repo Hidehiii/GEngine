@@ -74,8 +74,12 @@ namespace GEngine
 		virtual Vector3 GetMaxComputeWorkGroupSize() = 0;
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() = 0;
 
-		virtual void BeginComputeCommand() = 0;
-		virtual void EndComputeCommand() = 0;
+		virtual void			BeginComputeCommand() = 0;
+		virtual void			EndComputeCommand() = 0;
+		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
+		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
+		virtual void			EndComputeCommand(CommandBuffer* buffer) = 0;
+
 		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
 		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) = 0;
 

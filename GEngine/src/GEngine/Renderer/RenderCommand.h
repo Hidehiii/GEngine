@@ -57,9 +57,14 @@ namespace GEngine
 		inline static Vector3 GetMaxComputeWorkGroupSize();
 		inline static uint32_t GetMaxComputeWorkGroupInvocations();
 
-		inline static void BeginComputeCommand();
-		inline static void EndComputeCommand();
+		inline static void				BeginComputeCommand();
+		inline static void				EndComputeCommand();
+		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		inline static void				EndComputeCommand(CommandBuffer* buffer);
+
 		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
+		inline static void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z);
 	private:
 		inline static void SetRendererAPI(RendererAPI::API api);
 	private:
