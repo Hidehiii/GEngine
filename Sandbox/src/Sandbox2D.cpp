@@ -250,6 +250,16 @@ void Sandbox2D::OnPresent()
 	m_PresentPipeline->Render();
 
 	Renderer::EndScene();
+
+#if 0
+
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
+
+	Renderer::BeginScene(m_EditorCamera);
+	GraphicsPresent::Render(m_PresentPipeline);
+	Renderer::EndScene();
+#endif 
 }
 
 void Sandbox2D::OnRender()
@@ -261,6 +271,9 @@ void Sandbox2D::OnRender()
 	Renderer::EndScene();
 	ComputeCommand::EndComputeCommand();
 
+
+
+
 	RenderCommand::BeginGraphicsCommand();
 	m_SkyBoxFB->Begin();
 	Renderer::BeginScene(m_EditorCamera);
@@ -269,10 +282,6 @@ void Sandbox2D::OnRender()
 	Renderer::EndScene();
 	m_SkyBoxFB->End();
 	RenderCommand::EndGraphicsCommand();
-
-	/*auto cmd = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
-	cmd->Render(m_OITPrepare);
-	RenderCommand::EndGraphicsCommand(cmd);*/
 	
 
 	RenderCommand::BeginGraphicsCommand();
@@ -296,6 +305,36 @@ void Sandbox2D::OnRender()
 	Renderer::EndScene();
 	m_OIT_Present->End();
 	RenderCommand::EndGraphicsCommand();
+
+#if 0
+	auto cmd0 = ComputeCommand::BeginComputeCommand(m_DepthOnly, m_EditorCamera);
+	cmd0->Compute(m_ComputeTest, 1, 1, 1);
+	ComputeCommand::EndComputeCommand(cmd0);
+
+	auto cmd1 = RenderCommand::BeginGraphicsCommand(m_SkyBoxFB, m_EditorCamera);
+	cmd1->AddWaitCommand(cmd0);
+	cmd1->Render(m_Scene);
+	RenderCommand::EndGraphicsCommand(cmd1);
+
+	auto cmd2 = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
+	cmd2->AddWaitCommand(cmd0);
+	cmd2->Render(m_Scene);
+	cmd2->Render(m_OITPrepare);
+	RenderCommand::EndGraphicsCommand(cmd2);
+
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
+	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
+
+	auto cmd3 = RenderCommand::BeginGraphicsCommand(m_OIT_Present, m_EditorCamera);
+	cmd3->AddWaitCommand(cmd1);
+	cmd3->AddWaitCommand(cmd2);
+	cmd3->Render(m_CopyColorDepth);
+	cmd3->Render(m_OIT);
+	RenderCommand::EndGraphicsCommand(cmd3);
+
+	GraphicsPresent::AddWaitCommand(cmd3);
+#endif
 }
 
 void Sandbox2D::OnUpdate()

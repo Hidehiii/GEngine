@@ -12,11 +12,20 @@
 
 namespace GEngine {
 	
-
+	VkRenderPass				s_RenderPass;
+	VkFramebuffer				s_FrameBuffer;
+	VkImage						s_ColorImage;
+	VkImageView					s_ColorImageView;
+	VkDeviceMemory				s_ColorImageMemory;
+	Vector2						s_Spec;
+	Ref<VulkanTexture2D>		s_ImGuiImage;
+	VulkanCommandBuffer*		s_CommandBuffer;
+	VkSemaphore					s_Semaphore;
+	VkFence						s_Fence;
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
-		m_Spec.x				= Application::Get().GetWindow().GetWidth();
-		m_Spec.y				= Application::Get().GetWindow().GetHeight();
+		s_Spec.x				= Application::Get().GetWindow().GetWidth();
+		s_Spec.y				= Application::Get().GetWindow().GetHeight();
 
 		std::vector<VkAttachmentDescription>	attachments;
 		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FrameBufferTextureFormat::RGBA8, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -51,7 +60,7 @@ namespace GEngine {
 		renderPassInfo.dependencyCount	= 1;
 		renderPassInfo.pDependencies	= &dependency;
 
-		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &s_RenderPass));
 
 		CreateBuffer();
 		CreateCommandBufferAndSyncObjects();
@@ -97,7 +106,7 @@ namespace GEngine {
 		info.Subpass					= 0;
 		info.Allocator					= nullptr;
 		info.CheckVkResultFn			= nullptr;
-		ImGui_ImplVulkan_Init(&info, m_RenderPass);
+		ImGui_ImplVulkan_Init(&info, s_RenderPass);
 
 		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
@@ -113,15 +122,15 @@ namespace GEngine {
 
 	void VulkanImGui::Begin()
 	{
-		if ((m_Spec.x != Application::Get().GetWindow().GetWidth() ||
-			m_Spec.y != Application::Get().GetWindow().GetHeight()) &&
+		if ((s_Spec.x != Application::Get().GetWindow().GetWidth() ||
+			s_Spec.y != Application::Get().GetWindow().GetHeight()) &&
 			(Application::Get().GetWindow().GetWidth() != 0 &&
 				Application::Get().GetWindow().GetHeight() != 0))
 		{
-			m_Spec.x = Application::Get().GetWindow().GetWidth();
-			m_Spec.y = Application::Get().GetWindow().GetHeight();
+			s_Spec.x = Application::Get().GetWindow().GetWidth();
+			s_Spec.y = Application::Get().GetWindow().GetHeight();
 			
-			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
+			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), s_FrameBuffer, nullptr);
 			CreateBuffer();
 		}
 		ImGui_ImplVulkan_NewFrame();
@@ -130,9 +139,9 @@ namespace GEngine {
 	void VulkanImGui::End()
 	{
 		RenderCommand::BeginGraphicsCommand();
-		m_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 #if 0
-		VkCommandBuffer cmd = m_CommandBuffer->GetCommandBuffer();
+		VkCommandBuffer cmd = s_CommandBuffer->GetCommandBuffer();
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -142,16 +151,16 @@ namespace GEngine {
 		vkResetCommandBuffer(cmd, 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &beginInfo));
 
-		m_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		s_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 #endif
 		
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass				= m_RenderPass;
-		renderPassInfo.framebuffer				= m_FrameBuffer;
+		renderPassInfo.renderPass				= s_RenderPass;
+		renderPassInfo.framebuffer				= s_FrameBuffer;
 		renderPassInfo.renderArea.offset		= { 0, 0 };
-		renderPassInfo.renderArea.extent.width	= m_Spec.x;
-		renderPassInfo.renderArea.extent.height = m_Spec.y;
+		renderPassInfo.renderArea.extent.width	= s_Spec.x;
+		renderPassInfo.renderArea.extent.height = s_Spec.y;
 
 		VkClearValue							clearColor = {};
 		clearColor.color						= { { 0.0f, 0.0f, 0.0f, 0.0f} };
@@ -162,7 +171,7 @@ namespace GEngine {
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
 
 		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
-		m_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		RenderCommand::EndGraphicsCommand();
 
 #if 0
@@ -170,18 +179,18 @@ namespace GEngine {
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
 		vkCmdEndRenderPass(cmd);
-		m_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		s_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
 		std::vector<VkSemaphore> waitSemaphores;
-		auto waitCmds = m_CommandBuffer->GetWaitCommands();
+		auto waitCmds = s_CommandBuffer->GetWaitCommands();
 		for (auto it = waitCmds.begin(); it != waitCmds.end(); it++)
 		{
 			waitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
 		}
 		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		VkSemaphore signalSemaphores[] = { m_CommandBuffer->GetSemaphore() };
+		VkSemaphore signalSemaphores[] = { s_CommandBuffer->GetSemaphore() };
 
 		VkSubmitInfo                    submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -194,20 +203,22 @@ namespace GEngine {
 		submitInfo.pSignalSemaphores	= signalSemaphores;
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+
+		GraphicsPresent::AddWaitCommand(cmd);
 #endif
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
 	{
-		return m_ImGuiImage;
+		return s_ImGuiImage;
 	}
 
 	void VulkanImGui::CreateBuffer()
 	{
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
-			m_Spec.x,
-			m_Spec.y,
+			s_Spec.x,
+			s_Spec.y,
 			VK_FORMAT_R8G8B8A8_UNORM,
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -216,34 +227,34 @@ namespace GEngine {
 			1,
 			0,
 			1,
-			m_ColorImage,
-			m_ColorImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, m_ColorImageView);
+			s_ColorImage,
+			s_ColorImageMemory);
+		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, s_ColorImageView);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass		= m_RenderPass;
+		framebufferInfo.renderPass		= s_RenderPass;
 		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments	= &m_ColorImageView;
-		framebufferInfo.width = m_Spec.x;
-		framebufferInfo.height = m_Spec.y;
+		framebufferInfo.pAttachments	= &s_ColorImageView;
+		framebufferInfo.width = s_Spec.x;
+		framebufferInfo.height = s_Spec.y;
 		framebufferInfo.layers			= 1;
 
-		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
+		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));
 
-		m_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, m_ColorImage, m_ColorImageView, m_ColorImageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, s_ColorImageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void VulkanImGui::CreateCommandBufferAndSyncObjects()
 	{
 		VkSemaphoreCreateInfo   semaphoreInfo{};
 		semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_Semaphore));
+		VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphore));
 
 		VkFenceCreateInfo       fenceInfo{};
 		fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags			= VK_FENCE_CREATE_SIGNALED_BIT;
-		VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceInfo, nullptr, &m_Fence));
+		VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceInfo, nullptr, &s_Fence));
 
 		VkCommandBuffer cmd;
 
@@ -254,7 +265,7 @@ namespace GEngine {
 		allocInfo.commandBufferCount	= 1;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, &cmd));
 
-		m_CommandBuffer = new VulkanCommandBuffer(cmd, CommandBufferType::Graphics, m_Semaphore, m_Fence);
+		s_CommandBuffer = new VulkanCommandBuffer(cmd, CommandBufferType::Graphics, s_Semaphore, s_Fence);
 	}
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "GEngine/ImGui/PlatformImGui.h"
-#include <vulkan/vulkan.h>
 
+#include "GEngine/Math/Math.h"
 
 class GLFWwindow;
 namespace GEngine
@@ -25,16 +25,7 @@ namespace GEngine
 		void CreateBuffer();
 		void CreateCommandBufferAndSyncObjects();
 	private:
-		VkRenderPass				m_RenderPass;
-		VkFramebuffer				m_FrameBuffer;
-		VkImage						m_ColorImage;
-		VkImageView					m_ColorImageView;
-		VkDeviceMemory				m_ColorImageMemory;
-		Vector2						m_Spec;
-		Ref<VulkanTexture2D>		m_ImGuiImage;
-		VulkanCommandBuffer*		m_CommandBuffer;
-		VkSemaphore					m_Semaphore;
-		VkFence						m_Fence;
+		
 	};
 
 }
