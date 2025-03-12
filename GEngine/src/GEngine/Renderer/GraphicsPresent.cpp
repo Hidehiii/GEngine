@@ -8,6 +8,27 @@
 namespace GEngine
 {
 	std::set<CommandBuffer*>	GraphicsPresent::s_WaitCommands;
+	std::vector<CommandBuffer*>	GraphicsPresent::s_CommandBuffers;
+
+	CommandBuffer* GraphicsPresent::GetCommandBuffer()
+	{
+		return s_CommandBuffers.at(Renderer::GetCurrentFrame());
+	}
+
+	void GraphicsPresent::Render(Ref<Scene>& scene)
+	{
+		GetCommandBuffer()->Render(scene);
+	}
+
+	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount, uint32_t indexCount)
+	{
+		GetCommandBuffer()->Render(pipeline, instanceCount, indexCount);
+	}
+
+	void GraphicsPresent::Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z)
+	{
+		GetCommandBuffer()->Compute(pipeline, x, y, z);
+	}
 
 	Scope<GraphicsPresent> GraphicsPresent::Create()
 	{

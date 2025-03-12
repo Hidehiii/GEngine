@@ -664,11 +664,11 @@ namespace GEngine
             m_GraphicsCommandBuffers.push_back(new VulkanCommandBuffer(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
                 CommandBufferType::Graphics,
                 m_Semaphores.at(i),
-                VK_NULL_HANDLE));
+                m_Fences.at(i)));
             m_ComputeCommandBuffers.push_back(new VulkanCommandBuffer(m_CommandBufferPool.GetComputeCommandBuffer(i),
                 CommandBufferType::Compute,
                 m_Semaphores.at(i),
-                VK_NULL_HANDLE));
+                m_Fences.at(i)));
         }
 #endif
     }

@@ -37,6 +37,8 @@ namespace GEngine
 		void			EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer);
 		VkCommandBuffer BeginSingleTimeComputeCommand();
 		void			EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer);
+
+		VkCommandPool	GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
 	private:
 		void			CreateCommandPool(QueueFamilyIndices queueFamilyIndices);
 	private:

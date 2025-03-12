@@ -75,6 +75,7 @@ namespace GEngine
 		void                        MoveToNextSemaphore();
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
+		VkCommandPool				GetGraphicsCommandPool() { return m_CommandBufferPool.GetGraphicsCommandPool(); }
 	protected:
 		CommandBuffer*				GetCommandBuffer(CommandBufferType type);
 	private:

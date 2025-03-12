@@ -1,20 +1,25 @@
 #pragma once
 #include "GEngine/Renderer/GraphicsPresent.h"
-
+#include <vulkan/vulkan.h>
 
 namespace GEngine
 {
+
+	class VulkanCommandBuffer;
+
 	class GENGINE_API VulkanGraphicsPresent : public GraphicsPresent
 	{
 	public:
-		VulkanGraphicsPresent() {}
+		VulkanGraphicsPresent();
 		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
 
 	private:
-		uint32_t	m_SwapChainImageIndex = 0;
-		bool		m_RecreateSwapChain = false;
+		uint32_t							m_SwapChainImageIndex = 0;
+		bool								m_RecreateSwapChain = false;
+		std::vector<VkSemaphore>			m_Semaphores;
+		std::vector<VkFence>				m_Fences;
 	};
 }
 

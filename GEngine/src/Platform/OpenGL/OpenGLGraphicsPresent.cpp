@@ -1,13 +1,20 @@
 #include "GEpch.h"
 #include "OpenGLGraphicsPresent.h"
+#include "OpenGLCommandBuffer.h"
 #include "GEngine/Renderer/Renderer.h"
 #include <glad/glad.h>
 
 namespace GEngine
 {
+	OpenGLGraphicsPresent::OpenGLGraphicsPresent()
+	{
+		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		{
+			s_CommandBuffers.push_back(new OpenGLCommandBuffer());
+		}
+	}
 	void OpenGLGraphicsPresent::Begin()
 	{
-		ClearWaitCommands();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glEnable(GL_FRAMEBUFFER_SRGB);
