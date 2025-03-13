@@ -21,6 +21,9 @@ namespace GEngine
 		virtual void End() override;
 
 		virtual Ref<Texture2D> GetImGuiTexture() override;
+
+		virtual void AddWaitCommand(Ref<CommandBuffer> cmd) override;
+		virtual void ClearWaitCommands() override;
 	private:
 		void CreateBuffer();
 		void CreateCommandBufferAndSyncObjects();

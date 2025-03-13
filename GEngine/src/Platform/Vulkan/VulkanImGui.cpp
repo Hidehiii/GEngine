@@ -213,6 +213,16 @@ namespace GEngine {
 		return s_ImGuiImage;
 	}
 
+	void VulkanImGui::AddWaitCommand(Ref<CommandBuffer> cmd)
+	{
+		s_CommandBuffer->AddWaitCommand(cmd);
+	}
+
+	void VulkanImGui::ClearWaitCommands()
+	{
+		s_CommandBuffer->ClearWaitCommands();
+	}
+
 	void VulkanImGui::CreateBuffer()
 	{
 		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),

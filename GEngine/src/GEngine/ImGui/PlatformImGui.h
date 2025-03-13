@@ -6,6 +6,9 @@
 class GLFWwindow;
 namespace GEngine
 {
+
+	class CommandBuffer;
+
 	class GENGINE_API PlatformImGui
 	{
 	public:
@@ -17,5 +20,8 @@ namespace GEngine
 		virtual void End() = 0;
 
 		virtual Ref<Texture2D> GetImGuiTexture() = 0;
+
+		virtual void AddWaitCommand(Ref<CommandBuffer> cmd) {};
+		virtual void ClearWaitCommands() {};
 	};
 }
