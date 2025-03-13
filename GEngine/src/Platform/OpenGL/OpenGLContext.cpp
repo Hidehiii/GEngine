@@ -34,13 +34,12 @@ namespace GEngine
 	}
 	void OpenGLContext::Uninit()
 	{
-		DestroyCommandBuffers();
 	}
 	void OpenGLContext::SwapBuffers()
 	{
 		glfwSwapBuffers(m_WindowHandle);
 	}
-	CommandBuffer* OpenGLContext::GetCommandBuffer()
+	Ref<OpenGLCommandBuffer> OpenGLContext::GetCommandBuffer()
 	{
 		return m_CommandBuffers.at(m_CommandBufferIndex++ % m_CommandBuffers.size());
 	}
@@ -69,16 +68,8 @@ namespace GEngine
 	{
 		for (int i = 0; i < Renderer::GetCommandBufferCount(); i++)
 		{
-			m_CommandBuffers.push_back(new OpenGLCommandBuffer);
+			m_CommandBuffers.push_back(OpenGLCommandBuffer::Create());
 		}
 	}
-	void OpenGLContext::DestroyCommandBuffers()
-	{
-		for (int i = 0; i < m_CommandBuffers.size(); i++)
-		{
-			delete m_CommandBuffers.at(i);
-			m_CommandBuffers.at(i) = nullptr;
-		}
-		m_CommandBuffers.clear();
-	}
+
 }

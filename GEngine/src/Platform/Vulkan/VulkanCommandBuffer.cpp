@@ -153,7 +153,15 @@ namespace GEngine
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-
+		if (VulkanContext::Get()->GetDevice())
+		{
+			vkDestroyFence(VulkanContext::Get()->GetDevice(), m_Fence, nullptr);
+			vkDestroySemaphore(VulkanContext::Get()->GetDevice(), m_Semaphore, nullptr);
+		}
+	}
+	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore, VkFence fence)
+	{
+		return CreateRef<VulkanCommandBuffer>(buffer, type, semaphore, fence);
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{

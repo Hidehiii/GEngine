@@ -38,9 +38,9 @@ namespace GEngine
 
 		virtual void			BeginGraphicsCommand() override {}
 		virtual void			EndGraphicsCommand() override{}
-		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera) override;
-		virtual CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
-		virtual void			EndGraphicsCommand(CommandBuffer* buffer) override;
+		virtual Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera) override;
+		virtual Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
+		virtual void			EndGraphicsCommand(Ref<CommandBuffer> buffer) override;
 		virtual void			BeginSecondaryCommand() override {}
 		virtual void			EndSecondaryCommand() override {}
 
@@ -61,9 +61,9 @@ namespace GEngine
 		virtual Vector3 GetMaxComputeWorkGroupSize() override;
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
 
-		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera) override;
-		virtual CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
-		virtual void			EndComputeCommand(CommandBuffer* buffer) override;
+		virtual Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera) override;
+		virtual Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
+		virtual void			EndComputeCommand(Ref<CommandBuffer> buffer) override;
 
 		virtual void BeginComputeCommand() override {}
 		virtual void EndComputeCommand() override {}

@@ -135,7 +135,7 @@ namespace GEngine
     {
         m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) = (m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + 1) % Renderer::GetCommandBufferCount();
     }
-    CommandBuffer* VulkanContext::GetCommandBuffer(CommandBufferType type)
+    Ref<VulkanCommandBuffer> VulkanContext::GetCommandBuffer(CommandBufferType type)
     {
         if (type == CommandBufferType::Compute)
             return m_ComputeCommandBuffers.at(m_ComputeCommandBufferIndex++ % m_ComputeCommandBuffers.size());
@@ -661,11 +661,11 @@ namespace GEngine
         m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
         for (int i = 0; i < Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight(); i++)
         {
-            m_GraphicsCommandBuffers.push_back(new VulkanCommandBuffer(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
+            m_GraphicsCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
                 CommandBufferType::Graphics,
                 m_Semaphores.at(i),
                 m_Fences.at(i)));
-            m_ComputeCommandBuffers.push_back(new VulkanCommandBuffer(m_CommandBufferPool.GetComputeCommandBuffer(i),
+            m_ComputeCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetComputeCommandBuffer(i),
                 CommandBufferType::Compute,
                 m_Semaphores.at(i),
                 m_Fences.at(i)));

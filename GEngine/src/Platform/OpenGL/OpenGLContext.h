@@ -21,11 +21,10 @@ namespace GEngine
 
 		static OpenGLContext* Get() { return s_ContextInstance; }
 	protected:
-		virtual CommandBuffer* GetCommandBuffer();
+		virtual Ref<OpenGLCommandBuffer> GetCommandBuffer();
 	private:
 		bool CheckExtensionsSupport();
 		void CreateCommandBuffers();
-		void DestroyCommandBuffers();
 	private:
 		GLFWwindow*					m_WindowHandle;
 		static OpenGLContext*		s_ContextInstance;
@@ -33,7 +32,7 @@ namespace GEngine
 		{
 
 		};
-		std::vector<OpenGLCommandBuffer*>	m_CommandBuffers;
+		std::vector<Ref<OpenGLCommandBuffer>>	m_CommandBuffers;
 		uint32_t							m_CommandBufferIndex = 0;
 
 		friend class OpenGLRendererAPI;

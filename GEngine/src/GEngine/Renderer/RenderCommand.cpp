@@ -102,17 +102,17 @@ namespace GEngine
 	{
 		s_RendererAPI->DrawPoints(buffer, indexcount);
 	}
-	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	Ref<CommandBuffer> RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
 		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
 		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
 	}
-	CommandBuffer* RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	Ref<CommandBuffer> RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
 		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
 		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
 	}
-	void RenderCommand::EndGraphicsCommand(CommandBuffer* buffer)
+	void RenderCommand::EndGraphicsCommand(Ref<CommandBuffer> buffer)
 	{
 		s_RendererAPI->EndGraphicsCommand(buffer);
 	}
@@ -180,15 +180,15 @@ namespace GEngine
 	{
 		s_RendererAPI->EndComputeCommand();
 	}
-	inline CommandBuffer* RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	inline Ref<CommandBuffer> RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
 		return s_RendererAPI->BeginComputeCommand(buffer, camera);
 	}
-	inline CommandBuffer* RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	inline Ref<CommandBuffer> RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
 		return s_RendererAPI->BeginComputeCommand(buffer, camera);
 	}
-	inline void RenderCommand::EndComputeCommand(CommandBuffer* buffer)
+	inline void RenderCommand::EndComputeCommand(Ref<CommandBuffer> buffer)
 	{
 		s_RendererAPI->EndComputeCommand(buffer);
 	}

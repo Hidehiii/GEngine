@@ -27,14 +27,14 @@ namespace GEngine
 
 		virtual void Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z) = 0;
 
-		virtual void						AddWaitCommand(CommandBuffer* command) { m_WaitCommands.insert(command); }
-		virtual std::set<CommandBuffer*>	GetWaitCommands() { return m_WaitCommands; }
-		virtual void						ClearWaitCommands() { m_WaitCommands.clear(); }
-		virtual CommandBufferType			GetType() { return m_Type; }
+		virtual void							AddWaitCommand(Ref<CommandBuffer> command) { m_WaitCommands.insert(command); }
+		virtual std::set<Ref<CommandBuffer>>	GetWaitCommands() { return m_WaitCommands; }
+		virtual void							ClearWaitCommands() { m_WaitCommands.clear(); }
+		virtual CommandBufferType				GetType() { return m_Type; }
 
 		virtual void End() = 0;
 	protected:
-		std::set<CommandBuffer*>		m_WaitCommands;
+		std::set<Ref<CommandBuffer>>		m_WaitCommands;
 		CommandBufferType				m_Type = CommandBufferType::None;
 	};
 }

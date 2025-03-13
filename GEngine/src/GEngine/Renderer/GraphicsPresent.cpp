@@ -7,10 +7,10 @@
 
 namespace GEngine
 {
-	std::set<CommandBuffer*>	GraphicsPresent::s_WaitCommands;
-	std::vector<CommandBuffer*>	GraphicsPresent::s_CommandBuffers;
+	std::set<Ref<CommandBuffer>>	GraphicsPresent::s_WaitCommands;
+	std::vector<Ref<CommandBuffer>>	GraphicsPresent::s_CommandBuffers;
 
-	CommandBuffer* GraphicsPresent::GetCommandBuffer()
+	Ref<CommandBuffer> GraphicsPresent::GetCommandBuffer()
 	{
 		return s_CommandBuffers.at(Renderer::GetCurrentFrame());
 	}

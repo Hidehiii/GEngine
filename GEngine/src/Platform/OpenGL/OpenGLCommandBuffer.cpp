@@ -9,6 +9,10 @@ namespace GEngine
 	{
 		
 	}
+	Ref<OpenGLCommandBuffer> OpenGLCommandBuffer::Create()
+	{
+		return CreateRef<OpenGLCommandBuffer>();
+	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, CommandBufferType type)
 	{
 		m_Type = type;

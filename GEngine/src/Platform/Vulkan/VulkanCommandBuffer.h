@@ -65,6 +65,8 @@ namespace GEngine
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
 		VkSemaphore		GetSemaphore() { return m_Semaphore; }
 		VkFence			GetFence() { return m_Fence; }
+
+		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
 	protected:
 		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
 		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera);

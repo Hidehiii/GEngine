@@ -77,7 +77,7 @@ namespace GEngine
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 		VkCommandPool				GetGraphicsCommandPool() { return m_CommandBufferPool.GetGraphicsCommandPool(); }
 	protected:
-		CommandBuffer*				GetCommandBuffer(CommandBufferType type);
+		Ref<VulkanCommandBuffer>	GetCommandBuffer(CommandBufferType type);
 	private:
 		void						CreateInstance();
 		bool						CheckValidationLayerSupport();
@@ -167,9 +167,9 @@ namespace GEngine
 		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
 		int									m_UsedSecondaryCommandBufferIndex = 0;
 
-		std::vector<VulkanCommandBuffer*>	m_GraphicsCommandBuffers;
+		std::vector<Ref<VulkanCommandBuffer>>	m_GraphicsCommandBuffers;
 		uint32_t							m_GraphicsCommandBufferIndex = 0;
-		std::vector<VulkanCommandBuffer*>	m_ComputeCommandBuffers;
+		std::vector<Ref<VulkanCommandBuffer>>	m_ComputeCommandBuffers;
 		uint32_t							m_ComputeCommandBufferIndex = 0;
 
 		friend class VulkanRendererAPI;

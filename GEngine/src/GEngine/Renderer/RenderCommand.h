@@ -38,9 +38,9 @@ namespace GEngine
 		inline static void DrawLines(CommandBuffer* buffer, const uint32_t indexcount);
 		inline static void DrawPoints(CommandBuffer* buffer, const uint32_t indexcount);
 
-		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		inline static CommandBuffer*	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void				EndGraphicsCommand(CommandBuffer* buffer);
+		inline static Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		inline static Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		inline static void				EndGraphicsCommand(Ref<CommandBuffer> buffer);
 
 		inline static std::vector<std::string> GetExtensions();
 
@@ -59,9 +59,9 @@ namespace GEngine
 
 		inline static void				BeginComputeCommand();
 		inline static void				EndComputeCommand();
-		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void				EndComputeCommand(CommandBuffer* buffer);
+		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		inline static void				EndComputeCommand(Ref<CommandBuffer> buffer);
 
 		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
 		inline static void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z);

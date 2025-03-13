@@ -10,7 +10,7 @@ namespace GEngine
 	{
 		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
 		{
-			s_CommandBuffers.push_back(new OpenGLCommandBuffer());
+			s_CommandBuffers.push_back(OpenGLCommandBuffer::Create());
 		}
 	}
 	void OpenGLGraphicsPresent::Begin()

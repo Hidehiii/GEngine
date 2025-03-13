@@ -12,16 +12,16 @@
 
 namespace GEngine {
 	
-	VkRenderPass				s_RenderPass;
-	VkFramebuffer				s_FrameBuffer;
-	VkImage						s_ColorImage;
-	VkImageView					s_ColorImageView;
-	VkDeviceMemory				s_ColorImageMemory;
-	Vector2						s_Spec;
-	Ref<VulkanTexture2D>		s_ImGuiImage;
-	VulkanCommandBuffer*		s_CommandBuffer;
-	VkSemaphore					s_Semaphore;
-	VkFence						s_Fence;
+	static VkRenderPass					s_RenderPass;
+	static VkFramebuffer				s_FrameBuffer;
+	static VkImage						s_ColorImage;
+	static VkImageView					s_ColorImageView;
+	static VkDeviceMemory				s_ColorImageMemory;
+	static Vector2						s_Spec;
+	static Ref<VulkanTexture2D>			s_ImGuiImage;
+	static Ref<VulkanCommandBuffer>		s_CommandBuffer;
+	static VkSemaphore					s_Semaphore;
+	static VkFence						s_Fence;
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
 		s_Spec.x				= Application::Get().GetWindow().GetWidth();
@@ -187,7 +187,7 @@ namespace GEngine {
 		auto waitCmds = s_CommandBuffer->GetWaitCommands();
 		for (auto it = waitCmds.begin(); it != waitCmds.end(); it++)
 		{
-			waitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
+			waitSemaphores.push_back(std::dynamic_pointer_cast<VulkanCommandBuffer>(*it)->GetSemaphore());
 		}
 		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkSemaphore signalSemaphores[] = { s_CommandBuffer->GetSemaphore() };
@@ -265,7 +265,7 @@ namespace GEngine {
 		allocInfo.commandBufferCount	= 1;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, &cmd));
 
-		s_CommandBuffer = new VulkanCommandBuffer(cmd, CommandBufferType::Graphics, s_Semaphore, s_Fence);
+		s_CommandBuffer = VulkanCommandBuffer::Create(cmd, CommandBufferType::Graphics, s_Semaphore, s_Fence);
 	}
 
 }

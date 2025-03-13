@@ -8,6 +8,9 @@
 
 namespace GEngine
 {
+
+	class CommandBuffer;
+
 	class GENGINE_API ImGuiLayer : public Layer
 	{
 	public:
@@ -26,6 +29,8 @@ namespace GEngine
 		void SetDarkThemeColor();
 		ImGuiContext* GetContext() { return m_Context; }
 		Ref<Texture2D>	GetImGuiImage() { return m_PlatformImGui->GetImGuiTexture(); }
+
+		virtual void AddWaitCommand(CommandBuffer* cmd) {};
 	private:
 		bool			m_BlockEvents = true;
 		float			m_Time = 0.0f;

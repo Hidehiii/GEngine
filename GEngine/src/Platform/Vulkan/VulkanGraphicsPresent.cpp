@@ -39,7 +39,7 @@ namespace GEngine
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)
 		{
-			s_CommandBuffers.at(i) = new VulkanCommandBuffer(cmds.at(i), CommandBufferType::Graphics, m_Semaphores.at(i), m_Fences.at(i));
+			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), CommandBufferType::Graphics, m_Semaphores.at(i), m_Fences.at(i));
 		}
 	}
 	bool VulkanGraphicsPresent::AquireImage()
@@ -114,8 +114,8 @@ namespace GEngine
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags				= 0; // Optional
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
-		vkResetCommandBuffer(((VulkanCommandBuffer*)s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(((VulkanCommandBuffer*)s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer(), &beginInfo));
+		vkResetCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer(), &beginInfo));
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->Begin();
 #endif
 	}
@@ -157,11 +157,11 @@ namespace GEngine
 
 #if 0
 		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->End();
-		VK_CHECK_RESULT(vkEndCommandBuffer(((VulkanCommandBuffer*)s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer()));
+		VK_CHECK_RESULT(vkEndCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Renderer::GetCurrentFrame()))->GetCommandBuffer()));
 		std::vector<VkSemaphore> submitWaitSemaphores;
 		for (auto it = s_WaitCommands.begin(); it != s_WaitCommands.end(); it++)
 		{
-			submitWaitSemaphores.push_back(((VulkanCommandBuffer*)*it)->GetSemaphore());
+			submitWaitSemaphores.push_back(std::dynamic_pointer_cast<VulkanCommandBuffer>(*it)->GetSemaphore());
 		}
 		std::vector<VkPipelineStageFlags> waitStages(submitWaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkSemaphore signalSemaphores[] = { m_Semaphores.at(Renderer::GetCurrentFrame()) };
@@ -171,7 +171,7 @@ namespace GEngine
 		submitInfo.commandBufferCount	= 1;
 		submitInfo.pCommandBuffers		= &commandBuffer;
 		submitInfo.waitSemaphoreCount	= 1;
-		submitInfo.pWaitSemaphores		= submitWaitSemaphores;
+		submitInfo.pWaitSemaphores		= submitWaitSemaphores.data();
 		submitInfo.pWaitDstStageMask	= waitStages;
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores	= signalSemaphores;

@@ -36,15 +36,15 @@ namespace GEngine
 	{
 		RenderCommand::Compute(x, y, z);
 	}
-	inline CommandBuffer* ComputeCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	inline Ref<CommandBuffer> ComputeCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
 	{
 		return RenderCommand::BeginComputeCommand(buffer, camera);
 	}
-	inline CommandBuffer* ComputeCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	inline Ref<CommandBuffer> ComputeCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
 		return RenderCommand::BeginComputeCommand(buffer, camera);
 	}
-	inline void ComputeCommand::EndComputeCommand(CommandBuffer* buffer)
+	inline void ComputeCommand::EndComputeCommand(Ref<CommandBuffer> buffer)
 	{
 		RenderCommand::EndComputeCommand(buffer);
 	}

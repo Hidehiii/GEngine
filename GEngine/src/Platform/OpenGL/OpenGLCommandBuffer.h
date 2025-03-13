@@ -16,6 +16,9 @@ namespace GEngine
 		virtual void Render(Ref<GraphicsPipeline>&pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 		virtual void Compute(Ref<ComputePipeline>&pipeline, uint32_t x, uint32_t y, uint32_t z) override;
+
+
+		static Ref<OpenGLCommandBuffer>	Create();
 	protected:
 		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, CommandBufferType type);
 		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera, CommandBufferType type);

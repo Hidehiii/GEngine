@@ -21,9 +21,9 @@ namespace GEngine
 		inline static void EndSecondaryCommand();
 		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
 
-		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		inline static CommandBuffer*	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void				EndComputeCommand(CommandBuffer* buffer);
+		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
+		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
+		inline static void					EndComputeCommand(Ref<CommandBuffer> buffer);
 
 		inline static void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z);
 	};
