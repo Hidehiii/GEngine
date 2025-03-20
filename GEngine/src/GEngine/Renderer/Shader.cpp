@@ -77,6 +77,7 @@ namespace GEngine
 				break;
 			}
 		}
+		
 		std::string ToLower(std::string string)
 		{
 			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
@@ -105,6 +106,19 @@ namespace GEngine
 			if (ToLower(value) == VAR_NAME(1))				return true;
 			if (ToLower(value) == VAR_NAME(true))			return true;
 			return false;
+		}
+		std::string ShaderTypeFromString(const std::string& type)
+		{
+			if (ToLower(type) == ShaderStage::Vertex)					return ShaderStage::Vertex;
+			if (ToLower(type) == ShaderStage::Fragment || 
+				ToLower(type) == ShaderStage::Pixel)					return ShaderStage::Fragment;
+			if (ToLower(type) == ShaderStage::Compute)					return ShaderStage::Compute;
+			if (ToLower(type) == ShaderStage::TessellationControl)		return ShaderStage::TessellationControl;
+			if (ToLower(type) == ShaderStage::TessellationEvaluation)	return ShaderStage::TessellationEvaluation;
+			if (ToLower(type) == ShaderStage::Geometry)					return ShaderStage::Geometry;
+
+			GE_CORE_ASSERT(false, "Unknown shader type!");
+			return "";
 		}
 		CompareOperation ShaderCompareOperationFromString(const std::string& value)
 		{
@@ -423,6 +437,103 @@ namespace GEngine
 			}
 			GE_CORE_INFO(output);
 			return output;
+		}
+		void ProcessShaderBlocks(const std::string& source, std::unordered_map<std::string, std::string>& blocks)
+		{
+			const char* token			= "#BeginBlock";
+			const char* endToken		= "#EndBlock";
+
+			size_t pos					= 0;
+			pos							= source.find(token, pos);
+			while (pos != source.npos)
+			{
+				size_t elo				= source.find_first_of("\r\n", pos);
+				GE_CORE_ASSERT(elo != std::string::npos, "Syntax error");
+				size_t begin			= pos + strlen(token) + 1;
+				std::string blockName	= source.substr(begin, elo - begin);
+				blockName				= RemoveCharFromString(blockName, ' ');
+				begin					= source.find_first_not_of("\r\n", elo);
+				pos						= source.find(endToken, begin);
+				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
+				std::string content		= source.substr(begin, pos - begin);
+				GE_CORE_ASSERT(blocks.find(blockName) == blocks.end(), "block name {} is used", blockName);
+				blocks[blockName]		= content;
+				pos						= source.find(token, pos);
+			}
+			
+		}
+		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes)
+		{
+			const char* token			= "##Pass";
+			const char* endToken		= "##EndPass";
+			size_t pos					= 0;
+			pos							= source.find(token, pos);
+			while (pos != source.npos)
+			{
+				size_t elo				= source.find_first_of("\r\n", pos);
+				GE_CORE_ASSERT(elo != std::string::npos, "Syntax error");
+				size_t begin			= pos + strlen(token) + 1;
+				std::string passName	= source.substr(begin, elo - begin);
+				passName				= RemoveCharFromString(passName, ' ');
+				begin					= source.find_first_not_of("\r\n", elo);
+				pos						= source.find(endToken, begin);
+				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
+				std::string content		= source.substr(begin, pos - begin);
+				ShaderPass pass{};
+				ProcessShaderBlend(content, pass.State.BlendColor, pass.State.BlendAlpha, 
+					pass.State.BlendColorSrc, pass.State.BlendColorDst, pass.State.BlendAlphaSrc, pass.State.BlendAlphaDst);
+				ProcessShaderDepthWrite(content, pass.State.ColorWrite);
+				ProcessShaderDepthTest(content, pass.State.DepthTestOp);
+				ProcessShaderCull(content, pass.State.Cull);
+				std::string blockName;
+				if (ProcessShaderStage(content, ShaderStage::Vertex, blockName))
+				{
+					pass.Stages[ShaderStage::Vertex] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Fragment, blockName))
+				{
+					pass.Stages[ShaderStage::Fragment] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Pixel, blockName))
+				{
+					pass.Stages[ShaderStage::Fragment] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Compute, blockName))
+				{
+					pass.Stages[ShaderStage::Compute] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Geometry, blockName))
+				{
+					pass.Stages[ShaderStage::Geometry] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::TessellationControl, blockName))
+				{
+					pass.Stages[ShaderStage::TessellationControl] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::TessellationEvaluation, blockName))
+				{
+					pass.Stages[ShaderStage::TessellationEvaluation] = blocks[blockName];
+				}
+				GE_CORE_ASSERT(passes.find(passName) == passes.end(), "pass name {} is uesd", passName);
+				passes[passName]		= pass;
+				pos						= source.find(token, pos);
+			}
+		}
+		bool ProcessShaderStage(const std::string& source, const std::string& stage, std::string& blockName)
+		{
+			const char* token			= stage.c_str();
+			size_t tokenLength			= strlen(token);
+			size_t pos					= source.find(token, 0);
+			if (pos == std::string::npos)
+			{
+				return false;
+			}
+			size_t eol					= source.find_first_of("\r\n", pos);
+			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			size_t begin				= pos + tokenLength + 1;
+			blockName					= source.substr(begin, eol - begin);
+			RemoveCharFromString(blockName, ' ');
+			return true;
 		}
 		std::string ReadFile(const std::string& path)
 		{

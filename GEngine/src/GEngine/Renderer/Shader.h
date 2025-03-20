@@ -150,6 +150,26 @@ namespace GEngine
 		Ref<Texture2DArray>		TextureArray;
 	};
 
+	struct RenderState
+	{
+		bool				DepthWrite					= true;
+		CompareOperation	DepthTestOp					= CompareOperation::LessEqual;
+		bool				ColorWrite					= true;
+		BlendFactor			BlendColorSrc				= BlendFactor::ONE;
+		BlendFactor			BlendColorDst				= BlendFactor::ZERO;
+		BlendFactor			BlendAlphaSrc				= BlendFactor::ONE;
+		BlendFactor			BlendAlphaDst				= BlendFactor::ZERO;
+		BlendMode			BlendColor					= BlendMode::None;
+		BlendMode			BlendAlpha					= BlendMode::None;
+		CullMode			Cull						= CullMode::Back;
+	};
+
+	struct ShaderPass
+	{
+		RenderState										State;
+		std::unordered_map<std::string, std::string>	Stages;
+	};
+
 	namespace Utils
 	{
 		uint32_t ShaderUniformTypeSize(ShaderUniformType type);
@@ -159,7 +179,7 @@ namespace GEngine
 		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag);
 
 		bool ShaderBoolFromString(const std::string& value);
-
+		std::string ShaderTypeFromString(const std::string& type);
 		CompareOperation ShaderCompareOperationFromString(const std::string& value);
 
 		CullMode ShaderCullModeFromString(const std::string& value);
@@ -198,6 +218,9 @@ namespace GEngine
 		void ProcessShaderProperties(const std::string& source, std::vector<ShaderUniform>& uniformCache, std::vector<ShaderUniformTexture2D>& texture2DCache,
 			std::vector<ShaderUniformCubeMap>& cubeMapCache, std::vector<ShaderUniformStorageImage2D>& storageImage2DCache,
 			std::vector<ShaderUniformStorageBuffer>& storageBufferCache, uint32_t locationStart, uint32_t slotStart, uint32_t storageBufferSlotOffset);
+		void ProcessShaderBlocks(const std::string& source, std::unordered_map<std::string, std::string>& blocks);
+		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes);
+		bool ProcessShaderStage(const std::string& source, const std::string& stage, std::string& blockName);
 	}
 
 	class GENGINE_API Shader
@@ -205,15 +228,15 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual BlendMode									GetBlendModeColor() { return m_BlendModeColor; }
-		virtual BlendMode									GetBlendModeAlpha() { return m_BlendModeAlpha; }
-		virtual CullMode									GetCullMode() { return m_CullMode; }
-		virtual BlendFactor									GetBlendColorSourceFactor() { return m_BlendColorSourceFactor; }
-		virtual BlendFactor									GetBlendColorDestinationFactor() { return m_BlendColorDestinationFactor; }
-		virtual BlendFactor									GetBlendAlphaSourceFactor() { return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor									GetBlendAlphaDestinationFactor() { return m_BlendAlphaDestinationFactor; }
+		virtual BlendMode									GetBlendColor() { return m_BlendModeColor; }
+		virtual BlendMode									GetBlendAlpha() { return m_BlendModeAlpha; }
+		virtual CullMode									GetCull() { return m_CullMode; }
+		virtual BlendFactor									GetBlendColorSrc() { return m_BlendColorSourceFactor; }
+		virtual BlendFactor									GetBlendColorDst() { return m_BlendColorDestinationFactor; }
+		virtual BlendFactor									GetBlendAlphaSrc() { return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor									GetBlendAlphaDst() { return m_BlendAlphaDestinationFactor; }
 		virtual bool										GetEnableDepthWrite()  { return m_EnableDepthWrite; }
-		virtual CompareOperation							GetDepthTestOperation()  { return m_DepthTestOperation; }
+		virtual CompareOperation							GetDepthTestOp()  { return m_DepthTestOperation; }
 
 		virtual std::vector<ShaderUniform>					GetUniforms()  { return m_UniformCache; }
 		virtual const std::string&							GetShaderName() const  { return m_Name; }
@@ -262,6 +285,8 @@ namespace GEngine
 		BlendMode											m_BlendModeColor				= BlendMode::None;
 		BlendMode											m_BlendModeAlpha				= BlendMode::None;
 		CullMode											m_CullMode						= CullMode::Back;
+		std::unordered_map<std::string, std::string>		m_ShaderBlocks;
+		std::unordered_map<std::string, ShaderPass>			m_ShaderPasses;
 		const std::string									m_ShaderMainFuncName			= "main";
 		
 	public:

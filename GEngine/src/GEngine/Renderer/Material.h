@@ -10,7 +10,7 @@
 
 namespace GEngine
 {
-	
+
 	class GENGINE_API Material
 	{
 	public:
@@ -21,20 +21,20 @@ namespace GEngine
 
 		virtual void Update() = 0;
 
-		virtual CullMode	GetCullMode()						{ return m_CullMode; }
-		virtual BlendMode	GetBlendModeColor()					{ return m_BlendModeColor; }
-		virtual BlendMode	GetBlendModeAlpha()					{ return m_BlendModeAlpha; }
-		virtual BlendFactor GetBlendColorSourceFactor()			{ return m_BlendColorSourceFactor; }
-		virtual BlendFactor GetBlendAlphaSourceFactor()			{ return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor GetBlendColorDestinationFactor()	{ return m_BlendColorDestinationFactor; }
-		virtual BlendFactor GetBlendAlphaDestinationFactor()	{ return m_BlendAlphaDestinationFactor; }
+		virtual CullMode	GetCull()						{ return m_CullMode; }
+		virtual BlendMode	GetBlendColor()					{ return m_BlendModeColor; }
+		virtual BlendMode	GetBlendAlpha()					{ return m_BlendModeAlpha; }
+		virtual BlendFactor GetBlendColorSrc()			{ return m_BlendColorSourceFactor; }
+		virtual BlendFactor GetBlendAlphaSrc()			{ return m_BlendAlphaSourceFactor; }
+		virtual BlendFactor GetBlendColorDst()	{ return m_BlendColorDestinationFactor; }
+		virtual BlendFactor GetBlendAlphaDst()	{ return m_BlendAlphaDestinationFactor; }
 		virtual bool		IsOpaque()							{ return m_BlendModeColor == BlendMode::None || m_BlendModeAlpha == BlendMode::None; }
 
 		virtual void EnableDepthWrite(bool enabled)		{ m_EnableDepthWrite = enabled; }
-		virtual bool GetEnableDepthWrite()				{ return m_EnableDepthWrite; }
+		virtual bool IsEnableDepthWrite()				{ return m_EnableDepthWrite; }
 
-		virtual void				SetDepthTestOperation(CompareOperation op)  { m_DepthTestOperation = op; }
-		virtual CompareOperation	GetDepthTestOperation()						{ return m_DepthTestOperation; }
+		virtual void				SetDepthTestOp(CompareOperation op)  { m_DepthTestOperation = op; }
+		virtual CompareOperation	GetDepthTestOp()						{ return m_DepthTestOperation; }
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);

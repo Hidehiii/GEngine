@@ -46,28 +46,20 @@ namespace GEngine
 {
 	namespace Utils {
 		
-		
 
-		static GLenum ShaderTypeFromString(const std::string& type)
+		GLenum ShaderStageToGL(const std::string& stage)
 		{
-			if (ToLower(type) == ShaderStage::Vertex)
-				return GL_VERTEX_SHADER;
-			if (ToLower(type) == ShaderStage::Fragment || ToLower(type) == ShaderStage::Pixel)
-				return GL_FRAGMENT_SHADER;
-			if (ToLower(type) == ShaderStage::Compute)
-				return GL_COMPUTE_SHADER;
-			if (ToLower(type) == ShaderStage::TessellationControl)
-				return GL_TESS_CONTROL_SHADER;
-			if (ToLower(type) == ShaderStage::TessellationEvaluation)
-				return GL_TESS_EVALUATION_SHADER;
-			if (ToLower(type) == ShaderStage::Geometry)
-				return GL_GEOMETRY_SHADER;
-
-			GE_CORE_ASSERT(false, "Unknown shader type!");
+			if (stage == ShaderStage::Vertex)					return GL_VERTEX_SHADER;
+			if (stage == ShaderStage::Fragment)					return GL_FRAGMENT_SHADER;
+			if (stage == ShaderStage::Compute)					return GL_COMPUTE_SHADER;
+			if (stage == ShaderStage::TessellationControl)		return GL_TESS_CONTROL_SHADER;
+			if (stage == ShaderStage::TessellationEvaluation)	return GL_TESS_EVALUATION_SHADER;
+			if (stage == ShaderStage::Geometry)					return GL_GEOMETRY_SHADER;
+			GE_CORE_ASSERT(false, "");
 			return 0;
 		}
 
-		static std::string StringFromShaderType(GLenum type)
+		std::string GLToShaderStage(GLenum type)
 		{
 			switch (type)
 			{
@@ -82,7 +74,7 @@ namespace GEngine
 			return 0;
 		}
 
-		static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
+		shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
 		{
 			switch (stage)
 			{
@@ -97,7 +89,7 @@ namespace GEngine
 			return (shaderc_shader_kind)0;
 		}
 
-		static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
+		const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
 		{
 			switch (stage)
 			{
@@ -107,21 +99,6 @@ namespace GEngine
 			case GL_TESS_CONTROL_SHADER:	return ".cached_opengl.tesc";
 			case GL_TESS_EVALUATION_SHADER:	return ".cached_opengl_tese";
 			case GL_GEOMETRY_SHADER:		return ".cached_opengl_geom";
-			}
-			GE_CORE_ASSERT(false, "");
-			return "";
-		}
-
-		static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
-		{
-			switch (stage)
-			{
-			case GL_VERTEX_SHADER:			return ".cached_vulkan.vert";
-			case GL_FRAGMENT_SHADER:		return ".cached_vulkan.frag";
-			case GL_COMPUTE_SHADER:			return ".cached_vulkan.comp";
-			case GL_TESS_CONTROL_SHADER:	return ".cached_vulkan.tesc";
-			case GL_TESS_EVALUATION_SHADER:	return ".cached_vulkan_tese";
-			case GL_GEOMETRY_SHADER:		return ".cached_vulkan_geom";
 			}
 			GE_CORE_ASSERT(false, "");
 			return "";
@@ -215,9 +192,9 @@ namespace GEngine
 			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
 		}
 	}
-	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
+	std::unordered_map<std::string, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
-		std::unordered_map<GLenum, std::string> shaderSources;
+		std::unordered_map<std::string, std::string> shaderSources;
 
 		const char* typeToken			= "#Type";
 		size_t typeTokenLength			= strlen(typeToken);
@@ -257,7 +234,7 @@ namespace GEngine
 			{
 				type.erase(index, 1);
 			}
-			GE_CORE_ASSERT(Utils::ShaderTypeFromString(type), "Invalid shader type specified");
+			GE_CORE_ASSERT(Utils::ShaderTypeFromString(type).empty() == false, "Invalid shader type specified");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(typeToken, nextLinePos);
@@ -266,7 +243,7 @@ namespace GEngine
 		return shaderSources;
 	}
 
-	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<GLenum, std::string>& shaderSources)
+	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<std::string, std::string>& shaderSources)
 	{
 		auto& shaderData = m_OpenGLSPIRV;
 
@@ -284,7 +261,7 @@ namespace GEngine
 		for (auto&& [stage, source] : shaderSources)
 		{
 			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(Utils::ShaderStageToGL(stage)));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 			if (in.is_open())
@@ -300,7 +277,7 @@ namespace GEngine
 			else
 			{
 				Preprocess(source);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(Utils::ShaderStageToGL(stage)), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					GE_CORE_ERROR("Error shader context:\n{}", source);
@@ -321,7 +298,7 @@ namespace GEngine
 		}
 
 		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
+			Reflect(Utils::ShaderStageToGL(stage), data);
 	}
 
 	void OpenGLShader::CreateProgram()
@@ -331,7 +308,7 @@ namespace GEngine
 		std::vector<GLuint> shaderIDs;
 		for (auto&& [stage, spirv] : m_OpenGLSPIRV)
 		{
-			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
+			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
 			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
 			glSpecializeShader(shaderID, m_ShaderMainFuncName.c_str(), 0, nullptr, nullptr);
 			glAttachShader(program, shaderID);
@@ -368,7 +345,7 @@ namespace GEngine
 		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources				= compiler.get_shader_resources();
 
-		GE_CORE_INFO("OpenGLShader::Reflect - {0} {1}", Utils::StringFromShaderType(stage), m_FilePath);
+		GE_CORE_INFO("OpenGLShader::Reflect - {0} {1}", Utils::GLToShaderStage(stage), m_FilePath);
 		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
 		GE_CORE_TRACE("    {0} sampled images", resources.sampled_images.size());
 		GE_CORE_TRACE("    {0} separate images", resources.separate_images.size());

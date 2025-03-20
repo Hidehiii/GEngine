@@ -5,6 +5,16 @@
 #include <vulkan/vulkan.h>
 namespace GEngine
 {
+	struct VulkanShaderModule
+	{
+		VkShaderModule VertexModule						= nullptr;
+		VkShaderModule FragmentModule					= nullptr;
+		VkShaderModule ComputeModule					= nullptr;
+		VkShaderModule TessellationControlModule		= nullptr;
+		VkShaderModule TessellationEvaluationModule		= nullptr;
+		VkShaderModule GeometryModule					= nullptr;
+	};
+
 	class GENGINE_API VulkanShader : public Shader
 	{
 	public:
@@ -42,6 +52,7 @@ namespace GEngine
 
 		VkShaderModule m_VertexShaderModule = nullptr, m_FragmentShaderModule = nullptr, m_ComputeShaderModule = nullptr, m_TessellationControlShaderModule = nullptr,
 						m_TessellationEvaluationShaderModule = nullptr, m_GeometryShaderModule = nullptr;
+		std::vector<VulkanShaderModule>						m_ShaderModules;
 	};
 }
 

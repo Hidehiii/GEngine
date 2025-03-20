@@ -23,7 +23,7 @@ struct VertexOutput
 	vec4 color;
 	vec4 normal;
 };
-layout (set = 1, location = 0) out VertexOutput OUT;
+layout (location = 0) out VertexOutput OUT;
 void main()
 {
 	OUT.color = i_color;

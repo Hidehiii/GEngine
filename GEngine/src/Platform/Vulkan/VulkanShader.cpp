@@ -47,37 +47,7 @@ namespace GEngine
 {
 	namespace Utils
 	{
-
-		static std::string ShaderTypeFromString(const std::string& type)
-		{
-			if (ToLower(type) == ShaderStage::Vertex)
-				return ShaderStage::Vertex;
-			if (ToLower(type) == ShaderStage::Fragment || ToLower(type) == ShaderStage::Pixel)
-				return ShaderStage::Fragment;
-			if (ToLower(type) == ShaderStage::Compute)
-				return ShaderStage::Compute;
-			if (ToLower(type) == ShaderStage::TessellationControl)
-				return ShaderStage::TessellationControl;
-			if (ToLower(type) == ShaderStage::TessellationEvaluation)
-				return ShaderStage::TessellationEvaluation;
-			if (ToLower(type) == ShaderStage::Geometry)
-				return ShaderStage::Geometry;
-
-			GE_CORE_ASSERT(false, "Unknown shader type!");
-			return 0;
-		}
-		static const char* GLShaderStageCachedOpenGLFileExtension(std::string stage)
-		{
-			if (stage == ShaderStage::Vertex)					return ".cached_opengl.vert";
-			if (stage == ShaderStage::Fragment)					return ".cached_opengl.frag";
-			if (stage == ShaderStage::Compute)					return ".cached_opengl.comp";
-			if (stage == ShaderStage::TessellationControl)		return ".cached_opengl.tesc";
-			if (stage == ShaderStage::TessellationEvaluation)	return ".cached_opengl.tese";
-			if (stage == ShaderStage::Geometry)					return ".cached_opengl.geom";
-			GE_CORE_ASSERT(false, "");
-			return "";
-		}
-		static const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
+		const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
 		{
 			if (stage == ShaderStage::Vertex)					return ".cached_vulkan.vert";
 			if (stage == ShaderStage::Fragment)					return ".cached_vulkan.frag";
@@ -88,7 +58,7 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "");
 			return "";
 		}
-		static shaderc_shader_kind ShaderStageToShaderC(std::string stage)
+		shaderc_shader_kind ShaderStageToShaderC(std::string stage)
 		{
 			if (stage == ShaderStage::Vertex)					return shaderc_glsl_vertex_shader;
 			if (stage == ShaderStage::Fragment)					return shaderc_glsl_fragment_shader;
