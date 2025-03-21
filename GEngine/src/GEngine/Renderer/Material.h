@@ -10,6 +10,8 @@
 
 namespace GEngine
 {
+	
+	class CommandBuffer;
 
 	class GENGINE_API Material
 	{
@@ -19,7 +21,7 @@ namespace GEngine
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
 		virtual ~Material() {}
 
-		virtual void Update() = 0;
+		virtual void Update(CommandBuffer* cmdBuffer) = 0;
 
 		virtual CullMode	GetCull()						{ return m_CullMode; }
 		virtual BlendMode	GetBlendColor()					{ return m_BlendModeColor; }

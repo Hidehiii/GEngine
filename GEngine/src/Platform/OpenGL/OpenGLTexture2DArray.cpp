@@ -29,7 +29,7 @@ namespace GEngine
     {
         glDeleteTextures(1, &m_TextureArray);
     }
-    void OpenGLTexture2DArray::Bind(const uint32_t slot)
+    void OpenGLTexture2DArray::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
     {
         glBindTextureUnit(slot, m_TextureArray);
     }

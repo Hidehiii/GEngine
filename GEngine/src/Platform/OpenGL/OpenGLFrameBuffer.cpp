@@ -277,35 +277,6 @@ namespace GEngine
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void OpenGLFrameBuffer::Begin()
-    {
-        if (m_Specification.Samples > 1)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
-        }
-        else
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
-        }
-        
-        glViewport(0, 0, m_Specification.Width, m_Specification.Height);
-        glDisable(GL_FRAMEBUFFER_SRGB);
-        glDepthMask(GL_TRUE);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
-		{
-			glClear(GL_COLOR_BUFFER_BIT);
-		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
-		{
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		}
-
-        s_CurrentFrameBufferSize = Vector2(m_Specification.Width, m_Specification.Height);
-    }
-    void OpenGLFrameBuffer::End()
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
     void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer)
     {
 		if (m_Specification.Samples > 1)

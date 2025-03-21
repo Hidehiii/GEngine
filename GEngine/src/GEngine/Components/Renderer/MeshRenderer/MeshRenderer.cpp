@@ -11,7 +11,7 @@ namespace GEngine
 		if (m_Pipeline)
 		{
 			m_Material->SetMatrix4x4("GE_MATRIX_M", m_GameObject.GetComponent<Transform>().GetModelMatrix());
-			m_Pipeline->Render();
+			//m_Pipeline->Render();
 		}
 		else
 		{

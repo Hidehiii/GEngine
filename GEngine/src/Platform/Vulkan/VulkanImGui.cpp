@@ -12,16 +12,16 @@
 
 namespace GEngine {
 	
-	static VkRenderPass					s_RenderPass;
-	static VkFramebuffer				s_FrameBuffer;
-	static VkImage						s_ColorImage;
-	static VkImageView					s_ColorImageView;
-	static VkDeviceMemory				s_ColorImageMemory;
-	static Vector2						s_Spec;
-	static Ref<VulkanTexture2D>			s_ImGuiImage;
-	static Ref<VulkanCommandBuffer>		s_CommandBuffer;
-	static VkSemaphore					s_Semaphore;
-	static VkFence						s_Fence;
+	static VkRenderPass									s_RenderPass;
+	static VkFramebuffer								s_FrameBuffer;
+	static VkImage										s_ColorImage;
+	static VkImageView									s_ColorImageView;
+	static VkDeviceMemory								s_ColorImageMemory;
+	static Vector2										s_Spec;
+	static Ref<VulkanTexture2D>							s_ImGuiImage;
+	static std::vector<Ref<VulkanCommandBuffer>>		s_CommandBuffers;
+	static std::vector<VkSemaphore>						s_Semaphores;
+	static std::vector<VkFence>							s_Fences;
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
 		s_Spec.x				= Application::Get().GetWindow().GetWidth();
@@ -138,10 +138,8 @@ namespace GEngine {
 
 	void VulkanImGui::End()
 	{
-		RenderCommand::BeginGraphicsCommand();
-		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-#if 0
-		VkCommandBuffer cmd = s_CommandBuffer->GetCommandBuffer();
+
+		VkCommandBuffer cmd = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetCommandBuffer();
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -152,8 +150,7 @@ namespace GEngine {
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &beginInfo));
 
 		s_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-#endif
-		
+
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass				= s_RenderPass;
@@ -163,18 +160,11 @@ namespace GEngine {
 		renderPassInfo.renderArea.extent.height = s_Spec.y;
 
 		VkClearValue							clearColor = {};
-		clearColor.color						= { { 0.0f, 0.0f, 0.0f, 0.0f} };
+		clearColor.color = { { 0.0f, 0.0f, 0.0f, 0.0f} };
 
-		renderPassInfo.clearValueCount			= 1;
-		renderPassInfo.pClearValues				= &clearColor;
-		vkCmdBeginRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanContext::Get()->GetCurrentCommandBuffer());
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
 
-		vkCmdEndRenderPass(VulkanContext::Get()->GetCurrentCommandBuffer());
-		s_ImGuiImage->SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		RenderCommand::EndGraphicsCommand();
-
-#if 0
 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
@@ -183,14 +173,9 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
-		std::vector<VkSemaphore> waitSemaphores;
-		auto waitCmds = s_CommandBuffer->GetWaitCommands();
-		for (auto it = waitCmds.begin(); it != waitCmds.end(); it++)
-		{
-			waitSemaphores.push_back(std::dynamic_pointer_cast<VulkanCommandBuffer>(*it)->GetSemaphore());
-		}
+		std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetWaitSemaphores();
 		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		VkSemaphore signalSemaphores[] = { s_CommandBuffer->GetSemaphore() };
+		std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetSignalSemaphores();
 
 		VkSubmitInfo                    submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -199,13 +184,13 @@ namespace GEngine {
 		submitInfo.waitSemaphoreCount	= waitSemaphores.size();
 		submitInfo.pWaitSemaphores		= waitSemaphores.data();
 		submitInfo.pWaitDstStageMask	= waitStages.data();
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores	= signalSemaphores;
+		submitInfo.signalSemaphoreCount = signalSemaphores.size();
+		submitInfo.pSignalSemaphores	= signalSemaphores.data();
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 
-		GraphicsPresent::AddWaitCommand(cmd);
-#endif
+		s_CommandBuffers.at(Renderer::GetCurrentFrame())->ClearWaitSemaphores();
+		s_CommandBuffers.at(Renderer::GetCurrentFrame())->ClearSignalSemaphores();
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
@@ -213,14 +198,9 @@ namespace GEngine {
 		return s_ImGuiImage;
 	}
 
-	void VulkanImGui::AddWaitCommand(Ref<CommandBuffer> cmd)
+	Ref<CommandBuffer> VulkanImGui::GetCommandBuffer()
 	{
-		s_CommandBuffer->AddWaitCommand(cmd);
-	}
-
-	void VulkanImGui::ClearWaitCommands()
-	{
-		s_CommandBuffer->ClearWaitCommands();
+		return s_CommandBuffers.at(Renderer::GetCurrentFrame());
 	}
 
 	void VulkanImGui::CreateBuffer()
@@ -257,25 +237,41 @@ namespace GEngine {
 
 	void VulkanImGui::CreateCommandBufferAndSyncObjects()
 	{
-		VkSemaphoreCreateInfo   semaphoreInfo{};
-		semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphore));
+		s_Semaphores.resize(Renderer::GetFramesInFlight());
+		s_Fences.resize(Renderer::GetFramesInFlight());
+		s_CommandBuffers.resize(Renderer::GetFramesInFlight());
 
-		VkFenceCreateInfo       fenceInfo{};
-		fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags			= VK_FENCE_CREATE_SIGNALED_BIT;
-		VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceInfo, nullptr, &s_Fence));
 
-		VkCommandBuffer cmd;
+		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		{
+			VkSemaphoreCreateInfo   semaphoreInfo{};
+			semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphores[i]));
+		}
+		
+		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		{
+			VkFenceCreateInfo       fenceInfo{};
+			fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceInfo.flags			= VK_FENCE_CREATE_SIGNALED_BIT;
+			VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceInfo, nullptr, &s_Fences[i]));
+		}
+		
+
+		std::vector<VkCommandBuffer>	cmds;
+		cmds.resize(Renderer::GetFramesInFlight());
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool			= VulkanContext::Get()->GetGraphicsCommandPool();
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount	= 1;
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, &cmd));
+		allocInfo.commandBufferCount = Renderer::GetFramesInFlight();
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, cmds.data()));
 
-		s_CommandBuffer = VulkanCommandBuffer::Create(cmd, CommandBufferType::Graphics, s_Semaphore, s_Fence);
+		for (int i = 0; i < s_CommandBuffers.size(); i++)
+		{
+			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), CommandBufferType::Graphics);
+		}
 	}
 
 }

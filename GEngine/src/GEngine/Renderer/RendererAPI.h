@@ -28,12 +28,6 @@ namespace GEngine
 		virtual void SetClearColor(const Vector4& color) = 0;
 		virtual void Clear() = 0;
 
-		virtual void DrawTriangles(uint32_t indexCount = 0) = 0;
-		virtual void DrawLines(uint32_t indexCount = 0) = 0;
-		virtual void DrawPoints(uint32_t indexCount = 0) = 0;
-
-		virtual void DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount) = 0;
-
 		virtual void DrawTriangles(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
 		virtual void DrawLines(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
 		virtual void DrawPoints(CommandBuffer* buffer, uint32_t indexCount = 0) = 0;
@@ -51,14 +45,6 @@ namespace GEngine
 
 		virtual float GetTime() = 0;
 
-		virtual void			BeginGraphicsCommand() = 0;
-		virtual void			EndGraphicsCommand() = 0;
-		virtual Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
-		virtual Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
-		virtual void			EndGraphicsCommand(Ref<CommandBuffer> buffer) = 0;
-		virtual void			BeginSecondaryCommand() = 0;
-		virtual void			EndSecondaryCommand() = 0;
-
 		virtual std::vector<std::string> GetExtensions() = 0;
 
 		virtual uint32_t GetMaxTextureSize() = 0;
@@ -69,18 +55,17 @@ namespace GEngine
 		virtual uint32_t GetMinUniformBufferOffsetAlignment() = 0;
 		virtual uint32_t GetMaxUniformBufferSize() = 0;
 
+		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() = 0;
+		virtual Ref<CommandBuffer> GetComputeCommandBuffer() = 0;
+
 		// compute
 		virtual Vector3 GetMaxComputeWorkGroupCount() = 0;
 		virtual Vector3 GetMaxComputeWorkGroupSize() = 0;
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() = 0;
 
-		virtual void			BeginComputeCommand() = 0;
-		virtual void			EndComputeCommand() = 0;
-		virtual Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera) = 0;
-		virtual Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
-		virtual void			EndComputeCommand(Ref<CommandBuffer> buffer) = 0;
+		virtual void RegisterSynchronousCommands(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) = 0;
 
-		virtual void Compute(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
+
 		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) = 0;
 
 

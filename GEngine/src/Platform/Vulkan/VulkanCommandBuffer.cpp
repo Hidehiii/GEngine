@@ -144,38 +144,94 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateCommandPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &m_ComputeCommandPool));
 	}
 
-	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore ,VkFence fence)
+	VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type)
 	{
 		m_CommandBuffer = buffer;
-		m_Semaphore		= semaphore;
-		m_Fence			= fence;
 		m_Type			= type;
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		if (VulkanContext::Get()->GetDevice())
-		{
-			vkDestroyFence(VulkanContext::Get()->GetDevice(), m_Fence, nullptr);
-			vkDestroySemaphore(VulkanContext::Get()->GetDevice(), m_Semaphore, nullptr);
-		}
-	}
-	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore, VkFence fence)
-	{
-		return CreateRef<VulkanCommandBuffer>(buffer, type, semaphore, fence);
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
 	{
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
+
+		vkResetCommandBuffer(m_CommandBuffer, 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+
 		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-		m_FrameBuffer->Begin(this);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->Begin(this);
+			Renderer::BeginScene(camera);
+		}
+		
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera)
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, Camera& camera)
 	{
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
+
+		vkResetCommandBuffer(m_CommandBuffer, 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+
 		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-		m_FrameBuffer->Begin(this);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->Begin(this);
+			Renderer::BeginScene(camera);
+		}
+	}
+	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
+	{
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
+
+		vkResetCommandBuffer(m_CommandBuffer, 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+
+		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->Begin(this);
+		}
+	}
+	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)
+	{
+		return CreateRef<VulkanCommandBuffer>(buffer, type);
 	}
 	void VulkanCommandBuffer::End()
 	{
-		m_FrameBuffer->End(this);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->End(this);
+			Renderer::EndScene();
+		}
+		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
+
+		std::vector<VkPipelineStageFlags> waitStages(m_WaitSemaphores.size(), m_Type == CommandBufferType::Graphics ? VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT : VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+
+		VkSubmitInfo                    submitInfo{};
+		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount	= 1;
+		submitInfo.pCommandBuffers		= &m_CommandBuffer;
+		submitInfo.waitSemaphoreCount	= m_WaitSemaphores.size();
+		submitInfo.pWaitSemaphores		= m_WaitSemaphores.data();
+		submitInfo.pWaitDstStageMask	= waitStages.data();
+		submitInfo.signalSemaphoreCount = m_SignalSemaphores.size();
+		submitInfo.pSignalSemaphores	= m_SignalSemaphores.data();
+
+		VK_CHECK_RESULT(vkQueueSubmit(m_Type == CommandBufferType::Graphics ? VulkanContext::Get()->GetGraphicsQueue() : VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		
+		ClearSignalSemaphores();
+		ClearWaitSemaphores();
 	}
 	void VulkanCommandBuffer::Render(Ref<Scene>& scene)
 	{

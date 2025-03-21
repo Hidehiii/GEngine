@@ -2,32 +2,46 @@
 #include "OpenGLCommandBuffer.h"
 #include "OpenGLGraphicsPipeline.h"
 #include "OpenGLComputePipeline.h"
+#include "GEngine/Renderer/Renderer.h"
 
 namespace GEngine
 {
-	OpenGLCommandBuffer::OpenGLCommandBuffer()
+	OpenGLCommandBuffer::OpenGLCommandBuffer(CommandBufferType type)
 	{
+		m_Type = type;
+	}
+	Ref<OpenGLCommandBuffer> OpenGLCommandBuffer::Create(CommandBufferType type)
+	{
+		return CreateRef<OpenGLCommandBuffer>(type);
+	}
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	{
+		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->Begin(this);
+			Renderer::BeginScene(camera);
+		}
 		
 	}
-	Ref<OpenGLCommandBuffer> OpenGLCommandBuffer::Create()
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, Camera& camera)
 	{
-		return CreateRef<OpenGLCommandBuffer>();
-	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera, CommandBufferType type)
-	{
-		m_Type = type;
 		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
-		m_FrameBuffer->Begin(this);
-	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Camera& camera, CommandBufferType type)
-	{
-		m_Type = type;
-		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
-		m_FrameBuffer->Begin(this);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->Begin(this);
+			Renderer::BeginScene(camera);
+		}
+		
 	}
 	void OpenGLCommandBuffer::End()
 	{
-		m_FrameBuffer->End(this);
+		if (m_Type == CommandBufferType::Graphics)
+		{
+			m_FrameBuffer->End(this);
+			Renderer::EndScene();
+		}
+		
 	}
 	void OpenGLCommandBuffer::Render(Ref<Scene>& scene)
 	{

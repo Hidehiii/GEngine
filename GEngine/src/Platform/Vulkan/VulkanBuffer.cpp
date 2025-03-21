@@ -74,16 +74,6 @@ namespace GEngine
         memcpy(mappedData, data, size);
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory);
     }
-    void VulkanVertexBuffer::Bind() const
-    {
-        GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &m_VertexBuffer, offsets);
-        if(m_InstanceRendering)
-            vkCmdBindVertexBuffers(VulkanContext::Get()->GetCurrentCommandBuffer(), 1, 1, &m_InstanceBuffer, offsets);
-        if(m_IndexBuffer)
-            m_IndexBuffer->Bind();
-    }
 
 
     void VulkanVertexBuffer::SetLayout(const BufferLayout& layout)
@@ -193,12 +183,6 @@ namespace GEngine
 			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, nullptr);
         }
         
-    }
-
-    void VulkanIndexBuffer::Bind() const
-    {
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-		vkCmdBindIndexBuffer(VulkanContext::Get()->GetCurrentCommandBuffer(), m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
     void VulkanIndexBuffer::Bind(CommandBuffer* cmd) const
     {

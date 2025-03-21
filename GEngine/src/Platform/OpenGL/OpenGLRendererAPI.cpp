@@ -55,22 +55,6 @@ namespace GEngine
 		glDepthMask(GL_TRUE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
-	void OpenGLRendererAPI::DrawTriangles(uint32_t indexCount)
-	{
-		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLRendererAPI::DrawLines(uint32_t indexCount)
-	{
-		glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLRendererAPI::DrawPoints(uint32_t indexCount)
-	{
-		glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLRendererAPI::DrawTrianglesInstance(uint32_t indexCount, uint32_t instanceCount)
-	{
-		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-	}
 	void OpenGLRendererAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
@@ -186,22 +170,13 @@ namespace GEngine
 	{
 		glViewport(x, y, width, height);
 	}
-	Ref<CommandBuffer> OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	Ref<CommandBuffer> OpenGLRendererAPI::GetGraphicsCommandBuffer()
 	{
-		auto cmd = (OpenGLContext::Get()->GetCommandBuffer());
-		cmd->Begin(buffer, camera, CommandBufferType::Graphics);
-		return cmd;
+		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
 	}
-	Ref<CommandBuffer> OpenGLRendererAPI::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	Ref<CommandBuffer> OpenGLRendererAPI::GetComputeCommandBuffer()
 	{
-		auto cmd = (OpenGLContext::Get()->GetCommandBuffer());
-		cmd->Begin(buffer, camera, CommandBufferType::Graphics);
-		return cmd;
-	}
-	void OpenGLRendererAPI::EndGraphicsCommand(Ref<CommandBuffer> buffer)
-	{
-		GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Graphics, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
-		(OpenGLContext::Get()->GetCommandBuffer())->End();
+		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
 	}
 	float OpenGLRendererAPI::GetTime()
 	{
@@ -277,28 +252,7 @@ namespace GEngine
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
 		return x;
 	}
-	Ref<CommandBuffer> OpenGLRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
-	{
-		auto cmd = (OpenGLContext::Get()->GetCommandBuffer());
-		cmd->Begin(buffer, camera, CommandBufferType::Compute);
-		return cmd;
-	}
-	Ref<CommandBuffer> OpenGLRendererAPI::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
-	{
-		auto cmd = (OpenGLContext::Get()->GetCommandBuffer());
-		cmd->Begin(buffer, camera, CommandBufferType::Compute);
-		return cmd;
-	}
-	void OpenGLRendererAPI::EndComputeCommand(Ref<CommandBuffer> buffer)
-	{
-		GE_CORE_ASSERT(buffer->GetType() == CommandBufferType::Compute, "could not call EndGraphicsCommand with commandBuffer without Graphics type.");
-		(OpenGLContext::Get()->GetCommandBuffer())->End();
-	}
-	void OpenGLRendererAPI::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
-	{
-		glDispatchCompute(x, y, z);
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	}
+
 	void OpenGLRendererAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		glDispatchCompute(x, y, z);

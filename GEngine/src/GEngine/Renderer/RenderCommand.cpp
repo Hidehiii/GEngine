@@ -21,23 +21,6 @@ namespace GEngine
 	{
 		s_RendererAPI->Clear();
 	}
-
-	inline void RenderCommand::DrawTriangles(const uint32_t indexcount)
-	{
-		s_RendererAPI->DrawTriangles(indexcount);
-	}
-	inline void RenderCommand::DrawTriangleInstance(const uint32_t indexcount, const uint32_t instanceCount)
-	{
-		s_RendererAPI->DrawTrianglesInstance(indexcount, instanceCount);
-	}
-	inline void RenderCommand::DrawLines(const uint32_t indexcount)
-	{
-		s_RendererAPI->DrawLines(indexcount);
-	}
-	inline void RenderCommand::DrawPoints(const uint32_t indexcount)
-	{
-		s_RendererAPI->DrawPoints(indexcount);
-	}
 	inline void RenderCommand::SetLineWidth(float width)
 	{
 		s_RendererAPI->SetLineWidth(width);
@@ -70,22 +53,6 @@ namespace GEngine
 	{
 		s_RendererAPI->SetDepthTest(op);
 	}
-	inline void RenderCommand::BeginGraphicsCommand()
-	{
-		s_RendererAPI->BeginGraphicsCommand();
-	}
-	inline void RenderCommand::EndGraphicsCommand()
-	{
-		s_RendererAPI->EndGraphicsCommand();
-	}
-	inline void RenderCommand::BeginSecondaryCommand()
-	{
-		s_RendererAPI->BeginSecondaryCommand();
-	}
-	inline void RenderCommand::EndSecondaryCommand()
-	{
-		s_RendererAPI->EndSecondaryCommand();
-	}
 	inline void RenderCommand::DrawTriangles(CommandBuffer* buffer, const uint32_t indexcount)
 	{
 		s_RendererAPI->DrawTriangles(buffer, indexcount);
@@ -102,19 +69,13 @@ namespace GEngine
 	{
 		s_RendererAPI->DrawPoints(buffer, indexcount);
 	}
-	Ref<CommandBuffer> RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
+	Ref<CommandBuffer> RenderCommand::GetGraphicsCommandBuffer()
 	{
-		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
-		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
+		return s_RendererAPI->GetGraphicsCommandBuffer();
 	}
-	Ref<CommandBuffer> RenderCommand::BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	Ref<CommandBuffer> RenderCommand::GetComputeCommandBuffer()
 	{
-		GE_CORE_ASSERT(buffer != nullptr, "buffer could not be null");
-		return s_RendererAPI->BeginGraphicsCommand(buffer, camera);
-	}
-	void RenderCommand::EndGraphicsCommand(Ref<CommandBuffer> buffer)
-	{
-		s_RendererAPI->EndGraphicsCommand(buffer);
+		return s_RendererAPI->GetComputeCommandBuffer();
 	}
 	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
 	{
@@ -172,30 +133,12 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetMaxComputeWorkGroupInvocations();
 	}
-	inline void RenderCommand::BeginComputeCommand()
+
+	inline void RenderCommand::RegisterSynchronousCommands(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
 	{
-		s_RendererAPI->BeginComputeCommand();
+		s_RendererAPI->RegisterSynchronousCommands(first, second);
 	}
-	inline void RenderCommand::EndComputeCommand()
-	{
-		s_RendererAPI->EndComputeCommand();
-	}
-	inline Ref<CommandBuffer> RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera)
-	{
-		return s_RendererAPI->BeginComputeCommand(buffer, camera);
-	}
-	inline Ref<CommandBuffer> RenderCommand::BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
-	{
-		return s_RendererAPI->BeginComputeCommand(buffer, camera);
-	}
-	inline void RenderCommand::EndComputeCommand(Ref<CommandBuffer> buffer)
-	{
-		s_RendererAPI->EndComputeCommand(buffer);
-	}
-	inline void RenderCommand::Compute(const uint32_t x, const uint32_t y, const uint32_t z)
-	{
-		s_RendererAPI->Compute(x, y, z);
-	}
+
 	inline void RenderCommand::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		s_RendererAPI->Compute(buffer, x, y, z);

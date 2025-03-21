@@ -10,8 +10,6 @@ namespace GEngine
 		OpenGLComputePipeline(const Ref<Material>& material);
 		virtual ~OpenGLComputePipeline() override;
 
-		virtual void Compute(uint32_t x, uint32_t y, uint32_t z) override;
-
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 

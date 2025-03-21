@@ -59,12 +59,7 @@ namespace GEngine
 		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
-	void OpenGLVertexBuffer::Bind() const
-	{
-		
-		glBindVertexArray(m_VertexArray);
-		//glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-	}
+
 
 	void OpenGLVertexBuffer::SetLayout(const BufferLayout& layout)
 	{
@@ -168,10 +163,6 @@ namespace GEngine
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		glDeleteBuffers(1, &m_Buffer);
-	}
-	void OpenGLIndexBuffer::Bind() const
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer);
 	}
 	void OpenGLIndexBuffer::Bind(CommandBuffer* cmd) const
 	{

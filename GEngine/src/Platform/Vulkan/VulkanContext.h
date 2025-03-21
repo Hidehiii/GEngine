@@ -48,14 +48,6 @@ namespace GEngine
 		VkExtent2D					GetSwapChainExtent() { return m_SwapChainExtent; }
 		std::vector<VkImage>		GetSwapChainImage() { return m_SwapChainImages; }
 		VkPhysicalDevice			GetPhysicalDevice() { return m_PhysicalDevice; }
-		void						BeginGraphicsCommandBuffer();
-		VkCommandBuffer				EndGraphicsCommandBuffer();
-		void						BeginComputeCommandBuffer();
-		VkCommandBuffer				EndComputeCommandBuffer();
-		VkCommandBuffer				GetCurrentCommandBuffer();
-		void						BeginSecondaryCommandBuffer();
-		VkCommandBuffer				EndSecondaryCommandBuffer();
-		VkCommandBuffer				GetCurrentSecondaryCommandBuffer();
 		void						SetClearColor(Vector4 color) { m_ClearColor = color; }
 		Vector4						GetClearColor() { return m_ClearColor; }
 		VkInstance					GetInstance() { return m_Instance; }
@@ -70,13 +62,11 @@ namespace GEngine
 		VkQueue						GetComputeQueue() { return m_ComputeQueue; }
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		VkFence&					GetCurrentFence();
-		VkSemaphore&				GetCurrentSemaphore();
-		void                        MoveToNextSemaphore();
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 		VkCommandPool				GetGraphicsCommandPool() { return m_CommandBufferPool.GetGraphicsCommandPool(); }
 	protected:
+		VkSemaphore					GetSemaphore();
 		Ref<VulkanCommandBuffer>	GetCommandBuffer(CommandBufferType type);
 	private:
 		void						CreateInstance();
@@ -154,18 +144,14 @@ namespace GEngine
 		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBufferPool				m_CommandBufferPool;
-		CommandBufferType					m_CurrentCmdBufferType = CommandBufferType::Graphics;
-		std::vector<int>					m_UsedGraphicsCommandBufferIndexs;
-		std::vector<int>					m_UsedComputeCommandBufferIndexs;
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
 		std::vector<VkSemaphore>			m_Semaphores;
-		std::vector<int>                    m_SemaphoreIndexs;
+		uint32_t							m_SemaphoreIndex = 0;
 		std::vector<VkFence>				m_Fences;
+		uint32_t							m_FenceIndex = 0;
 		VulkanFunctionEXT					m_Function;
-		std::vector<std::pair<std::thread::id, int>> m_UsedSecondaryCommandBuffers;
-		int									m_UsedSecondaryCommandBufferIndex = 0;
 
 		std::vector<Ref<VulkanCommandBuffer>>	m_GraphicsCommandBuffers;
 		uint32_t							m_GraphicsCommandBufferIndex = 0;

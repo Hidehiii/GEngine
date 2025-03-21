@@ -74,5 +74,4 @@
 // compute
 #include "GEngine/Compute/StorageBuffer.h"
 #include "GEngine/Compute/StorageImage.h"
-#include "GEngine/Compute/ComputeCommand.h"
 #include "GEngine/Compute/ComputePipeline.h"

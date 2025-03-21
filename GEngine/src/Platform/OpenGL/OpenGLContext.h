@@ -1,12 +1,11 @@
 #pragma once
 
 #include "GEngine/Renderer/GraphicsContext.h"
+#include "OpenGLCommandBuffer.h"
 #include <GLFW/glfw3.h>
 
 namespace GEngine
 {
-	class OpenGLCommandBuffer;
-
 	class GENGINE_API OpenGLContext : public GraphicsContext
 	{
 	public:
@@ -21,7 +20,7 @@ namespace GEngine
 
 		static OpenGLContext* Get() { return s_ContextInstance; }
 	protected:
-		virtual Ref<OpenGLCommandBuffer> GetCommandBuffer();
+		virtual Ref<OpenGLCommandBuffer> GetCommandBuffer(CommandBufferType type);
 	private:
 		bool CheckExtensionsSupport();
 		void CreateCommandBuffers();
@@ -32,8 +31,10 @@ namespace GEngine
 		{
 
 		};
-		std::vector<Ref<OpenGLCommandBuffer>>	m_CommandBuffers;
-		uint32_t							m_CommandBufferIndex = 0;
+		std::vector<Ref<OpenGLCommandBuffer>>	m_GraphicsCommandBuffers;
+		uint32_t								m_GraphicsCommandBufferIndex = 0;
+		std::vector<Ref<OpenGLCommandBuffer>>	m_ComputeCommandBuffers;
+		uint32_t								m_ComputeCommandBufferIndex = 0;
 
 		friend class OpenGLRendererAPI;
 	};

@@ -12,7 +12,6 @@ namespace GEngine
 	{
 	public:
 		virtual ~GraphicsPipeline() = default;
-		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 		
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() = 0;

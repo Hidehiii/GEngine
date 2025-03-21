@@ -53,32 +53,37 @@ namespace GEngine
 	class GENGINE_API VulkanCommandBuffer : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
+		VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type);
 		virtual ~VulkanCommandBuffer();
+
+		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
+		virtual void Begin(Ref<FrameBuffer>& buffer, Camera& camera) override;
+		virtual void Begin(Ref<FrameBuffer>& buffer) override;
+
+		virtual void End() override;
 
 		virtual void Render(Ref<Scene>&scene) override;
 		virtual void Render(Ref<GraphicsPipeline>&pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 		virtual void Compute(Ref<ComputePipeline>&pipeline, uint32_t x, uint32_t y, uint32_t z) override;
 
+		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type);
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
-		VkSemaphore		GetSemaphore() { return m_Semaphore; }
-		VkFence			GetFence() { return m_Fence; }
+		
+		void AddWaitSemaphore(VkSemaphore s) { m_WaitSemaphores.push_back(s); }
+		void AddSignalSemaphore(VkSemaphore s) { m_SignalSemaphores.push_back(s); }
 
-		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type, VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
-	protected:
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Camera& camera);
+		void ClearWaitSemaphores() { m_WaitSemaphores.clear(); }
+		void ClearSignalSemaphores() { m_SignalSemaphores.clear(); }
 
-		virtual void End() override;
+		std::vector<VkSemaphore> GetSignalSemaphores() { return m_SignalSemaphores; }
+		std::vector<VkSemaphore> GetWaitSemaphores() { return m_WaitSemaphores; }
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
-		VkSemaphore					m_Semaphore;
-		VkFence						m_Fence;
-
-		friend class VulkanRendererAPI;
+		std::vector<VkSemaphore>	m_WaitSemaphores;
+		std::vector<VkSemaphore>	m_SignalSemaphores;
 	};
 }
 

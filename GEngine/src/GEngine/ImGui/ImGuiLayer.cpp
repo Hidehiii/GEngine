@@ -5,7 +5,7 @@
 #include "GEngine/Renderer/RenderCommand.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include "GEngine/Renderer/CommandBuffer.h"
 #include "ImGui/backends/imgui_impl_glfw.cpp"
 #include "Platform/OpenGL/OpenGLImGui.h"
 #include "Platform/Vulkan/VulkanImGui.h"
@@ -159,5 +159,9 @@ namespace GEngine
 		colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+	}
+	Ref<CommandBuffer> ImGuiLayer::GetCommandBuffer()
+	{
+		return m_PlatformImGui->GetCommandBuffer();
 	}
 }

@@ -107,7 +107,7 @@ namespace GEngine
 		}
 		
 	}
-	void OpenGLCubeMap::Bind(const uint32_t slot)
+	void OpenGLCubeMap::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{
 		glBindTextureUnit(slot, m_CubeMap);
 	}

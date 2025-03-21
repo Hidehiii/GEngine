@@ -17,8 +17,6 @@ namespace GEngine
 		VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
 		virtual ~VulkanVertexBuffer();
 
-		virtual void Bind() const override;
-
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetDataInstance(const void* data, uint32_t size) override;
 		virtual void SetLayout(const BufferLayout& layout) override;
@@ -55,8 +53,6 @@ namespace GEngine
 	public:
 		VulkanIndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~VulkanIndexBuffer();
-
-		virtual void Bind() const override;
 		
 
 	protected:

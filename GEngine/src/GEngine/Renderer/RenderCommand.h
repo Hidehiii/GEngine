@@ -15,10 +15,6 @@ namespace GEngine
 		inline void static Init();
 		inline static void SetClearColor(const Vector4& color);
 		inline static void Clear();
-		inline static void DrawTriangles(const uint32_t indexcount);
-		inline static void DrawTriangleInstance(const uint32_t indexcount, const uint32_t instanceCount);
-		inline static void DrawLines(const uint32_t indexcount);
-		inline static void DrawPoints(const uint32_t indexcount);
 		inline static void SetLineWidth(float width);
 		inline static void SetPointSize(float size);
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -27,10 +23,6 @@ namespace GEngine
 		inline static void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
 		inline static void EnableDepthWrite(bool enabled);
 		inline static void SetDepthTest(CompareOperation op);
-		inline static void BeginGraphicsCommand();
-		inline static void EndGraphicsCommand();
-		inline static void BeginSecondaryCommand();
-		inline static void EndSecondaryCommand();
 		
 
 		inline static void DrawTriangles(CommandBuffer* buffer, const uint32_t indexcount);
@@ -38,9 +30,9 @@ namespace GEngine
 		inline static void DrawLines(CommandBuffer* buffer, const uint32_t indexcount);
 		inline static void DrawPoints(CommandBuffer* buffer, const uint32_t indexcount);
 
-		inline static Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		inline static Ref<CommandBuffer>	BeginGraphicsCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void				EndGraphicsCommand(Ref<CommandBuffer> buffer);
+		static Ref<CommandBuffer>	GetGraphicsCommandBuffer();
+		static Ref<CommandBuffer>	GetComputeCommandBuffer();
+
 
 		inline static std::vector<std::string> GetExtensions();
 
@@ -57,13 +49,8 @@ namespace GEngine
 		inline static Vector3 GetMaxComputeWorkGroupSize();
 		inline static uint32_t GetMaxComputeWorkGroupInvocations();
 
-		inline static void				BeginComputeCommand();
-		inline static void				EndComputeCommand();
-		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Camera& camera);
-		inline static Ref<CommandBuffer>	BeginComputeCommand(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera);
-		inline static void				EndComputeCommand(Ref<CommandBuffer> buffer);
+		inline static void RegisterSynchronousCommands(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
 
-		inline static void Compute(const uint32_t x, const uint32_t y, const uint32_t z);
 		inline static void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z);
 	private:
 		inline static void SetRendererAPI(RendererAPI::API api);

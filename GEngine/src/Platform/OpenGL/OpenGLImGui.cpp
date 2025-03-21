@@ -8,6 +8,7 @@
 #include "GEngine/Renderer/FrameBuffer.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Platform/OpenGL/OpenGLCommandBuffer.h"
 namespace GEngine
 {
 	RenderPassSpecification		s_Spec;
@@ -41,12 +42,16 @@ namespace GEngine
 	void OpenGLImGui::End()
 	{
 		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-		s_FrameBuffer->Begin();
+		s_FrameBuffer->Begin(nullptr);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		s_FrameBuffer->End();
+		s_FrameBuffer->End(nullptr);
 	}
 	Ref<Texture2D> OpenGLImGui::GetImGuiTexture()
 	{
 		return s_FrameBuffer->GetColorAttachment(0);
+	}
+	Ref<CommandBuffer> OpenGLImGui::GetCommandBuffer()
+	{
+		return CreateRef<OpenGLCommandBuffer>(CommandBufferType::Graphics);
 	}
 }

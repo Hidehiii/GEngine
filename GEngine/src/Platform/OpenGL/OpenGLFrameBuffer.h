@@ -15,9 +15,6 @@ namespace GEngine
 		OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		virtual ~OpenGLFrameBuffer() override;
 
-		virtual void Begin() override;
-		virtual void End() override;
-
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
 		virtual void End(CommandBuffer* cmdBuffer) override;
 

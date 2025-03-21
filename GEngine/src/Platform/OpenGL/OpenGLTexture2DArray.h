@@ -9,7 +9,7 @@ namespace GEngine
 		OpenGLTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format);
 		virtual ~OpenGLTexture2DArray() override;
 
-		virtual void Bind(const uint32_t slot = 0) override;
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override;
 
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) override;

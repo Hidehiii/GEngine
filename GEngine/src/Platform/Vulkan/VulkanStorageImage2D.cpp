@@ -39,9 +39,9 @@ namespace GEngine
 		}
 	}
 
-	void VulkanStorageImage2D::Bind(const uint32_t slot)
+	void VulkanStorageImage2D::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{
-		SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_GENERAL);
+		SetImageLayout(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), VK_IMAGE_LAYOUT_GENERAL);
 		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		m_ImageInfo.imageView	= m_ImageView;
 	}

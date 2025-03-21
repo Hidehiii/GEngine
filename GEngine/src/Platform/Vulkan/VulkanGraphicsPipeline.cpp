@@ -39,51 +39,9 @@ namespace GEngine
         
     }
 
-    void VulkanGraphicsPipeline::PrepareRender()
-    {
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-		GE_CORE_ASSERT(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer(), "There is no framebuffer be using");
-
-		m_Material->Update();
-
-		if (m_RecreatePipeline)
-		{
-			for (auto pipeline : m_GraphicsPipelines)
-			{
-				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
-			}
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			m_RecreatePipeline = false;
-			m_GraphicsPipelines.clear();
-		}
-        vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline());
-
-		VkViewport			Viewport{};
-		Viewport.x			= 0.0f;
-		Viewport.y			= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight();
-		Viewport.width		= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth();
-		Viewport.height		= -(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight());
-		Viewport.minDepth	= 0.0f;
-		Viewport.maxDepth	= 1.0f;
-		vkCmdSetViewport(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Viewport);
-
-		VkRect2D											Scissor{};
-		Scissor.offset = { 0, 0 };
-		Scissor.extent = { (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetWidth(), (unsigned int)(int)VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetHeight() };
-		vkCmdSetScissor(VulkanContext::Get()->GetCurrentCommandBuffer(), 0, 1, &Scissor);
-
-		vkCmdSetLineWidth(VulkanContext::Get()->GetCurrentCommandBuffer(), 1.0f);
-		vkCmdSetDepthCompareOp(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
-		vkCmdSetDepthWriteEnable(VulkanContext::Get()->GetCurrentCommandBuffer(), m_Material->GetEnableDepthWrite());
-		vkCmdSetCullMode(VulkanContext::Get()->GetCurrentCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
-
-		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
-    }
-
 	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer)
 	{
-		m_Material->Update();
+		m_Material->Update(cmdBuffer);
 
 		if (m_RecreatePipeline)
 		{
@@ -95,7 +53,7 @@ namespace GEngine
 			m_RecreatePipeline = false;
 			m_GraphicsPipelines.clear();
 		}
-		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline());
+		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline(frameBuffer));
 
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
@@ -112,67 +70,12 @@ namespace GEngine
 		vkCmdSetScissor(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 0, 1, &Scissor);
 
 		vkCmdSetLineWidth(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 1.0f);
-		vkCmdSetDepthCompareOp(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation()));
-		vkCmdSetDepthWriteEnable(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), m_Material->GetEnableDepthWrite());
-		vkCmdSetCullMode(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCullMode()));
+		vkCmdSetDepthCompareOp(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp()));
+		vkCmdSetDepthWriteEnable(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), m_Material->IsEnableDepthWrite());
+		vkCmdSetCullMode(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCull()));
 
 		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
 		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
-	}
-
-	void VulkanGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
-	{
-		PrepareRender();
-		m_VertexBuffer->Bind();
-		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
-		if (m_VertexBuffer->IsInstanceRendering())
-		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VertexTopology::Triangle:
-			{
-				RenderCommand::DrawTriangleInstance(indexCount, instanceCount);
-				break;
-			}
-			case VertexTopology::Line:
-			{
-				RenderCommand::DrawLines(indexCount);
-				break;
-			}
-			case VertexTopology::Point:
-			{
-				RenderCommand::DrawPoints(indexCount);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
-		}
-		else
-		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VertexTopology::Triangle:
-			{
-				RenderCommand::DrawTriangles(indexCount);
-				break;
-			}
-			case VertexTopology::Line:
-			{
-				RenderCommand::DrawLines(indexCount);
-				break;
-			}
-			case VertexTopology::Point:
-			{
-				RenderCommand::DrawPoints(indexCount);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
-		}
 	}
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
@@ -251,23 +154,17 @@ namespace GEngine
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-    VkPipeline VulkanGraphicsPipeline::FindOrCreatePipeline()
-    {
-
+    
+	VkPipeline VulkanGraphicsPipeline::FindOrCreatePipeline(const Ref<FrameBuffer>& frameBuffer)
+	{
 		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
-		{
-			if (m_GraphicsPipelines.at(i).RenderPass == VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass())
-			{
-				return m_GraphicsPipelines.at(i).GraphicsPipeline;
-			}
-		}
-		/*for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
 		{
 			if (m_GraphicsPipelines.at(i).RenderPass == std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass())
 			{
 				return m_GraphicsPipelines.at(i).GraphicsPipeline;
 			}
-		}*/
+		}
+		
 
 
 		// TODO 
@@ -360,14 +257,13 @@ namespace GEngine
 		Rasterizer.rasterizerDiscardEnable					= VK_FALSE;
 		Rasterizer.polygonMode								= VK_POLYGON_MODE_FILL;
 		Rasterizer.lineWidth								= 1.0f;
-		Rasterizer.cullMode									= Utils::CullModeToVkCullMode(m_Material->GetCullMode());
+		Rasterizer.cullMode									= Utils::CullModeToVkCullMode(m_Material->GetCull());
 		Rasterizer.frontFace								= VK_FRONT_FACE_CLOCKWISE;
 
 		VkPipelineMultisampleStateCreateInfo				Multisampling{};
 		Multisampling.sType									= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		Multisampling.sampleShadingEnable					= VK_FALSE;
-		Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetSpecification().Samples);
-		//Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(frameBuffer->GetSpecification().Samples);
+		Multisampling.rasterizationSamples					= Utils::SampleCountToVulkanFlag(frameBuffer->GetSpecification().Samples);
 		Multisampling.minSampleShading						= 1.0f;
 		Multisampling.pSampleMask							= nullptr;
 		Multisampling.alphaToCoverageEnable					= VK_FALSE;
@@ -376,10 +272,10 @@ namespace GEngine
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
 		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		ColorBlendAttachment.blendEnable					= VK_TRUE;
-		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSourceFactor());
-		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDestinationFactor());
+		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSrc());
+		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDst());
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendModeColor())
+		switch (m_Material->GetBlendColor())
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
@@ -402,10 +298,10 @@ namespace GEngine
 		default:
 			break;
 		}
-		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSourceFactor());
-		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDestinationFactor());
+		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSrc());
+		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDst());
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendModeAlpha())
+		switch (m_Material->GetBlendAlpha())
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
@@ -428,9 +324,7 @@ namespace GEngine
 		default:
 			break;
 		}
-
-		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetColorAttachmentCount(), ColorBlendAttachment);
-		//std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetColorAttachmentCount(), ColorBlendAttachment);
+		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetColorAttachmentCount(), ColorBlendAttachment);
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
 		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -455,8 +349,8 @@ namespace GEngine
 		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
 		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable			= VK_TRUE;
-		depthStencil.depthWriteEnable			= m_Material->GetEnableDepthWrite() ? VK_TRUE : VK_FALSE;
-		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOperation());
+		depthStencil.depthWriteEnable			= m_Material->IsEnableDepthWrite() ? VK_TRUE : VK_FALSE;
+		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp());
 		depthStencil.depthBoundsTestEnable		= VK_FALSE;
 		depthStencil.minDepthBounds				= 0.0f; // Optional
 		depthStencil.maxDepthBounds				= 1.0f; // Optional
@@ -477,8 +371,7 @@ namespace GEngine
 		pipelineInfo.pColorBlendState		= &ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
 		pipelineInfo.layout					= m_PipelineLayout;
-		pipelineInfo.renderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
-		//pipelineInfo.renderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
+		pipelineInfo.renderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex		= -1; // Optional
@@ -491,9 +384,8 @@ namespace GEngine
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
 
 		VulkanGraphicsPipelineInfo	info{};
-		info.GraphicsPipeline		= pipeline;
-		info.RenderPass				= VulkanFrameBuffer::GetCurrentVulkanFrameBuffer()->GetVulkanRenderPass();
-
+		info.GraphicsPipeline = pipeline;
+		info.RenderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
 		m_GraphicsPipelines.push_back(info);
 
 		return pipeline;

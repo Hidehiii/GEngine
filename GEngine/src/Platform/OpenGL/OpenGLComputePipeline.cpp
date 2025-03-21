@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLComputePipeline.h"
-#include "GEngine/Compute/ComputeCommand.h"
+#include "GEngine/Renderer/RenderCommand.h"
 
 namespace GEngine
 {
@@ -10,11 +10,6 @@ namespace GEngine
 	}
 	OpenGLComputePipeline::~OpenGLComputePipeline()
 	{
-	}
-	void OpenGLComputePipeline::Compute(uint32_t x, uint32_t y, uint32_t z)
-	{
-		m_Material->Update();
-		ComputeCommand::Compute(x, y, z);
 	}
 	Ref<Material> OpenGLComputePipeline::GetMaterial()
 	{
@@ -26,7 +21,7 @@ namespace GEngine
 	}
 	void OpenGLComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
 	{
-		m_Material->Update();
-		ComputeCommand::Compute(x, y, z);
+		m_Material->Update(cmdBuffer);
+		RenderCommand::Compute(cmdBuffer, x, y, z);
 	}
 }

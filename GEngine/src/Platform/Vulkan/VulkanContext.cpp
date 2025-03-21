@@ -123,17 +123,9 @@ namespace GEngine
 		CreateImageViews();
 		CreateFrameBuffer();
     }
-    VkFence& VulkanContext::GetCurrentFence()
+    VkSemaphore VulkanContext::GetSemaphore()
     {
-        return m_Fences.at(Renderer::GetCurrentFrame());
-    }
-    VkSemaphore& VulkanContext::GetCurrentSemaphore()
-    {
-        return m_Semaphores.at(m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCurrentFrame() * Renderer::GetCommandBufferCount());
-    }
-    void VulkanContext::MoveToNextSemaphore()
-    {
-        m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) = (m_SemaphoreIndexs.at(Renderer::GetCurrentFrame()) + 1) % Renderer::GetCommandBufferCount();
+        return m_Semaphores.at(m_SemaphoreIndex++ % m_Semaphores.size());
     }
     Ref<VulkanCommandBuffer> VulkanContext::GetCommandBuffer(CommandBufferType type)
     {
@@ -655,104 +647,14 @@ namespace GEngine
     void VulkanContext::CreateCommandBuffers()
     {
         m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
-        m_UsedGraphicsCommandBufferIndexs   = std::vector<int>(Renderer::GetFramesInFlight(), 0);
-        m_UsedComputeCommandBufferIndexs    = std::vector<int>(Renderer::GetFramesInFlight(), 0);
-#if 1
         m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
         for (int i = 0; i < Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight(); i++)
         {
             m_GraphicsCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
-                CommandBufferType::Graphics,
-                m_Semaphores.at(i),
-                m_Fences.at(i)));
+                CommandBufferType::Graphics));
             m_ComputeCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetComputeCommandBuffer(i),
-                CommandBufferType::Compute,
-                m_Semaphores.at(i),
-                m_Fences.at(i)));
+                CommandBufferType::Compute));
         }
-#endif
-    }
-
-    void VulkanContext::BeginGraphicsCommandBuffer()
-    {
-        m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % Renderer::GetCommandBufferCount();
-        m_CurrentCmdBufferType  = CommandBufferType::Graphics;
-    }
-    VkCommandBuffer VulkanContext::EndGraphicsCommandBuffer()
-    {
-        GE_CORE_ASSERT(m_CurrentCmdBufferType == CommandBufferType::Graphics, "can not call graphics cmd buffer end in other using cmd buffer type!");
-        VkCommandBuffer     buffer = m_CommandBufferPool.GetGraphicsCommandBuffer(m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCommandBufferCount() * Renderer::GetCurrentFrame());
-        return buffer;
-    }
-	void VulkanContext::BeginComputeCommandBuffer()
-	{
-		m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) = (m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + 1) % Renderer::GetCommandBufferCount();
-		m_CurrentCmdBufferType = CommandBufferType::Compute;
-	}
-	VkCommandBuffer VulkanContext::EndComputeCommandBuffer()
-	{
-        GE_CORE_ASSERT(m_CurrentCmdBufferType == CommandBufferType::Compute, "can not call compute cmd buffer end in other using cmd buffer type!");
-		VkCommandBuffer     buffer = m_CommandBufferPool.GetComputeCommandBuffer(m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCommandBufferCount() * Renderer::GetCurrentFrame());
-		return buffer;
-	}
-    VkCommandBuffer VulkanContext::GetCurrentCommandBuffer()
-    {
-        VkCommandBuffer cmdBuffer = GetCurrentSecondaryCommandBuffer();
-        if(m_CurrentCmdBufferType == CommandBufferType::Graphics)
-            cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBufferPool.GetGraphicsCommandBuffer(m_UsedGraphicsCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCommandBufferCount() * Renderer::GetCurrentFrame());
-        if (m_CurrentCmdBufferType == CommandBufferType::Compute)
-            cmdBuffer = cmdBuffer != nullptr ? cmdBuffer : m_CommandBufferPool.GetComputeCommandBuffer(m_UsedComputeCommandBufferIndexs.at(Renderer::GetCurrentFrame()) + Renderer::GetCommandBufferCount() * Renderer::GetCurrentFrame());
-        return cmdBuffer;
-    }
-    void VulkanContext::BeginSecondaryCommandBuffer()
-    {
-        // 根据当前thread id 分配secondary command buffer
-        GE_CORE_ASSERT(m_UsedSecondaryCommandBuffers.size() < m_CommandBufferPool.GetSecondaryCommandBuffersSize(), "There is no avilable secondary command buffer");
-        bool isUsing = true;
-        while (isUsing)
-        {
-            m_UsedSecondaryCommandBufferIndex = (m_UsedSecondaryCommandBufferIndex + 1) % m_CommandBufferPool.GetSecondaryCommandBuffersSize();
-            for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
-            {
-                if (m_UsedSecondaryCommandBuffers.at(i).second == m_UsedSecondaryCommandBufferIndex)
-                {
-                    isUsing = false;
-                    break;
-                }
-            }
-            isUsing = !isUsing;
-            if (isUsing == false)
-            {
-                m_UsedSecondaryCommandBuffers.emplace_back(THREAD_ID, m_UsedSecondaryCommandBufferIndex);
-            }
-        }
-    }
-    VkCommandBuffer VulkanContext::EndSecondaryCommandBuffer()
-    {
-		VkCommandBuffer cmdBuffer = nullptr;
-		for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
-		{
-			if (m_UsedSecondaryCommandBuffers.at(i).first == THREAD_ID)
-			{
-				cmdBuffer = m_CommandBufferPool.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
-                m_UsedSecondaryCommandBuffers.erase(m_UsedSecondaryCommandBuffers.begin() + i);
-				break;
-			}
-		}
-		return cmdBuffer;
-    }
-    VkCommandBuffer VulkanContext::GetCurrentSecondaryCommandBuffer()
-    {
-        VkCommandBuffer cmdBuffer = nullptr;
-        for (int i = 0; i < m_UsedSecondaryCommandBuffers.size(); i++)
-        {
-            if (m_UsedSecondaryCommandBuffers.at(i).first == THREAD_ID)
-            {
-                cmdBuffer = m_CommandBufferPool.GetSecondaryCommandBuffer(m_UsedSecondaryCommandBuffers.at(i).second);
-                break;
-            }
-        }
-        return cmdBuffer;
     }
 	void VulkanContext::CreateDescriptor()
 	{
@@ -776,11 +678,6 @@ namespace GEngine
             fenceInfo.sType         = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags         = VK_FENCE_CREATE_SIGNALED_BIT;
             VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Fences[i]));
-        }
-
-        for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
-        {
-            m_SemaphoreIndexs.push_back(0);
         }
     }
 

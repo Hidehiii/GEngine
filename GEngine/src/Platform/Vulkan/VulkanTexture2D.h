@@ -14,7 +14,7 @@ namespace GEngine
 		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag);
 		virtual ~VulkanTexture2D();
 
-		virtual void Bind(const uint32_t slot = 0) override;
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override;
 
 		virtual std::string GetPath() const override { return m_Path; };
 

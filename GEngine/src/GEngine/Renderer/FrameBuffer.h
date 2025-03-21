@@ -24,9 +24,6 @@ namespace GEngine
 		virtual ~FrameBuffer() = default;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 
-		virtual void Begin() = 0;
-		virtual void End() = 0;
-
 		virtual void Begin(CommandBuffer* cmdBuffer) = 0;
 		virtual void End(CommandBuffer* cmdBuffer) = 0;
 

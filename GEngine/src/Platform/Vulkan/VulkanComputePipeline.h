@@ -9,7 +9,6 @@ namespace GEngine
 	public:
 		VulkanComputePipeline(const Ref<Material>& material);
 		virtual ~VulkanComputePipeline() override;
-		virtual void			Compute(uint32_t x, uint32_t y, uint32_t z) override;
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 	protected:
@@ -18,7 +17,6 @@ namespace GEngine
 		friend class VulkanCommandBuffer;
 	private:
 		void CreatePipeline();
-		void PrepareCompute();
 		void PrepareCompute(CommandBuffer* cmdBuffer);
 	private:
 		Ref<VulkanMaterial>									m_Material;

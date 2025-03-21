@@ -44,9 +44,9 @@ namespace GEngine
 			vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
 		}
     }
-	void VulkanTexture2DArray::Bind(const uint32_t slot)
+	void VulkanTexture2DArray::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{
-		SetImageLayout(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		SetImageLayout(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView	= m_ImageView;
 		m_ImageInfo.sampler		= m_Sampler;

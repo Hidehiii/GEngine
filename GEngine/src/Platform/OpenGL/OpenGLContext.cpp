@@ -2,6 +2,7 @@
 #include "OpenGLContext.h"
 #include "OpenGLCommandBuffer.h"
 #include "GEngine/Renderer/Renderer.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -39,9 +40,13 @@ namespace GEngine
 	{
 		glfwSwapBuffers(m_WindowHandle);
 	}
-	Ref<OpenGLCommandBuffer> OpenGLContext::GetCommandBuffer()
+	Ref<OpenGLCommandBuffer> OpenGLContext::GetCommandBuffer(CommandBufferType type)
 	{
-		return m_CommandBuffers.at(m_CommandBufferIndex++ % m_CommandBuffers.size());
+		if (type == CommandBufferType::Graphics)
+			return m_GraphicsCommandBuffers.at(m_GraphicsCommandBufferIndex++ % m_GraphicsCommandBuffers.size());
+		if (type == CommandBufferType::Compute)
+			return m_ComputeCommandBuffers.at(m_ComputeCommandBufferIndex++ % m_ComputeCommandBuffers.size());
+		return nullptr;
 	}
 	bool OpenGLContext::CheckExtensionsSupport()
 	{
@@ -68,7 +73,8 @@ namespace GEngine
 	{
 		for (int i = 0; i < Renderer::GetCommandBufferCount(); i++)
 		{
-			m_CommandBuffers.push_back(OpenGLCommandBuffer::Create());
+			m_GraphicsCommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Graphics));
+			m_ComputeCommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Compute));
 		}
 	}
 

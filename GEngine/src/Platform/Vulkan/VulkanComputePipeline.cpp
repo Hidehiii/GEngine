@@ -2,7 +2,7 @@
 #include "VulkanComputePipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Compute/ComputeCommand.h"
+#include "GEngine/Renderer/RenderCommand.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
@@ -31,11 +31,6 @@ namespace GEngine
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
 	}
-	void VulkanComputePipeline::Compute(uint32_t x, uint32_t y, uint32_t z)
-	{
-		PrepareCompute();
-		ComputeCommand::Compute(x, y, z);
-	}
 	Ref<Material> VulkanComputePipeline::GetMaterial()
 	{
 		return m_Material;
@@ -48,7 +43,7 @@ namespace GEngine
 	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
 	{
 		PrepareCompute(cmdBuffer);
-		ComputeCommand::Compute(cmdBuffer, x, y, z);
+		RenderCommand::Compute(cmdBuffer, x, y, z);
 	}
 	void VulkanComputePipeline::CreatePipeline()
 	{
@@ -83,32 +78,9 @@ namespace GEngine
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
 	}
-	void VulkanComputePipeline::PrepareCompute()
-	{
-		GE_CORE_ASSERT(VulkanContext::Get()->GetCurrentCommandBuffer(), "There is no commandbuffer be using");
-
-		m_Material->Update();
-
-		if (m_ComputePipeline == nullptr)
-		{
-			CreatePipeline();
-		}
-		if (m_RecreatePipeline)
-		{
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_ComputePipeline, nullptr);
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			CreatePipeline();
-		}
-
-
-		vkCmdBindPipeline(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
-
-		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
-		vkCmdBindDescriptorSets(VulkanContext::Get()->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
-	}
 	void VulkanComputePipeline::PrepareCompute(CommandBuffer* cmdBuffer)
 	{
-		m_Material->Update();
+		m_Material->Update(cmdBuffer);
 
 		if (m_ComputePipeline == nullptr)
 		{

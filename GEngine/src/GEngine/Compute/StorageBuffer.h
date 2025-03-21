@@ -3,6 +3,7 @@
 
 namespace GEngine
 {
+	class CommandBuffer;
 	class GENGINE_API StorageBuffer
 	{
 	public:

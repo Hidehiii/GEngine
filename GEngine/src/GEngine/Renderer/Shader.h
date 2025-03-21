@@ -235,7 +235,7 @@ namespace GEngine
 		virtual BlendFactor									GetBlendColorDst() { return m_BlendColorDestinationFactor; }
 		virtual BlendFactor									GetBlendAlphaSrc() { return m_BlendAlphaSourceFactor; }
 		virtual BlendFactor									GetBlendAlphaDst() { return m_BlendAlphaDestinationFactor; }
-		virtual bool										GetEnableDepthWrite()  { return m_EnableDepthWrite; }
+		virtual bool										IsEnableDepthWrite()  { return m_EnableDepthWrite; }
 		virtual CompareOperation							GetDepthTestOp()  { return m_DepthTestOperation; }
 
 		virtual std::vector<ShaderUniform>					GetUniforms()  { return m_UniformCache; }

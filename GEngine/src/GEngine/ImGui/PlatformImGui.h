@@ -21,7 +21,6 @@ namespace GEngine
 
 		virtual Ref<Texture2D> GetImGuiTexture() = 0;
 
-		virtual void AddWaitCommand(Ref<CommandBuffer> cmd) {};
-		virtual void ClearWaitCommands() {};
+		virtual Ref<CommandBuffer> GetCommandBuffer() = 0;
 	};
 }

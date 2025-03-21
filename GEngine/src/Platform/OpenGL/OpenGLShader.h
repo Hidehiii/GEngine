@@ -33,6 +33,22 @@ namespace GEngine
 		void SetUniformFloat(const std::string& name, float value);
 		void SetUniformFloat4(const std::string& name, const Vector4& vector);
 		void SetUniformTexture2D(const std::string& name, int slot);
+
+
+		virtual void SetInt1(const std::string& name, int value, const std::string& pass);
+		virtual void SetIntArray(const std::string& name, int* value, uint32_t count, const std::string& pass);
+		virtual void SetFloat1(const std::string& name, float value, const std::string& pass);
+		virtual void SetFloat2(const std::string& name, const Vector2& value, const std::string& pass);
+		virtual void SetFloat3(const std::string& name, const Vector3& value, const std::string& pass);
+		virtual void SetFloat4(const std::string& name, const Vector4& value, const std::string& pass);
+		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value, const std::string& pass);
+		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const std::string& pass);
+
+		void SetUniformMat4(const std::string& name, const Matrix4x4& matrix, const std::string& pass);
+		void SetUniformInt(const std::string& name, int value, const std::string& pass);
+		void SetUniformFloat(const std::string& name, float value, const std::string& pass);
+		void SetUniformFloat4(const std::string& name, const Vector4& vector, const std::string& pass);
+		void SetUniformTexture2D(const std::string& name, int slot, const std::string& pass);
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;
@@ -44,7 +60,7 @@ namespace GEngine
 		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
 		uint32_t											m_Shader = 0;
-		std::vector<uint32_t>								m_Shaders;
+		std::unordered_map<std::string, uint32_t>			m_Shaders;
 
 		std::unordered_map<std::string, std::vector<uint32_t>>	m_OpenGLSPIRV;
 

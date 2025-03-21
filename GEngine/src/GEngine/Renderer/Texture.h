@@ -6,6 +6,8 @@
 
 namespace GEngine
 {
+	class CommandBuffer;
+
 	class GENGINE_API Texture
 	{
 	public:
@@ -18,7 +20,7 @@ namespace GEngine
 		virtual void		SetGenerateMipmap(bool enable) { m_GenerateMipmap = enable; }
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
-		virtual void Bind(const uint32_t slot = 0) = 0;
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) = 0;
 
 	protected:
 		uint32_t m_Width, m_Height;

@@ -16,6 +16,8 @@ namespace GEngine
 		virtual void End() override;
 
 		virtual Ref<Texture2D> GetImGuiTexture() override;
+
+		virtual Ref<CommandBuffer> GetCommandBuffer() override;
 	};
 }
 

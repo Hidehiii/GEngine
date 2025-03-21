@@ -19,9 +19,6 @@ namespace GEngine
 	public:
 		VulkanGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 		virtual ~VulkanGraphicsPipeline() override;
-
-		
-		virtual void Render(uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 		
 
 		virtual Ref<VertexBuffer>	GetVertexBuffer() override;
@@ -34,10 +31,8 @@ namespace GEngine
 		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 	private:
-		void PrepareRender();
 		void PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer);
-		VkPipeline FindOrCreatePipeline();
-		//VkPipeline FindOrCreatePipeline(const Ref<FrameBuffer>& frameBuffer);
+		VkPipeline FindOrCreatePipeline(const Ref<FrameBuffer>& frameBuffer);
 	private:
 		Ref<VulkanMaterial>									m_Material;
 		Ref<VulkanVertexBuffer>								m_VertexBuffer;

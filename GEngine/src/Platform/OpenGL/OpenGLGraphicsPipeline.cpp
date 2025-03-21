@@ -12,63 +12,9 @@ namespace GEngine
     OpenGLGraphicsPipeline::~OpenGLGraphicsPipeline()
     {
     }
-    void OpenGLGraphicsPipeline::Render(uint32_t instanceCount, uint32_t indexCount)
-    {
-        m_Material->Update();
-        m_VertexBuffer->Bind();
-        indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount(); 
-        if (m_VertexBuffer->IsInstanceRendering())
-        {
-            switch (m_VertexBuffer->GetVertexTopologyType())
-            {
-            case VertexTopology::Triangle:
-            {
-                RenderCommand::DrawTriangleInstance(indexCount, instanceCount);
-                break;
-            }
-            case VertexTopology::Line:
-            {
-                RenderCommand::DrawLines(indexCount);
-                break;
-            }
-            case VertexTopology::Point:
-            {
-                RenderCommand::DrawPoints(indexCount);
-                break;
-            }
-            default:
-                GE_CORE_ASSERT(false, "Unknow type");
-                break;
-            }
-        }
-        else
-        {
-            switch (m_VertexBuffer->GetVertexTopologyType())
-            {
-            case VertexTopology::Triangle:
-            {
-                RenderCommand::DrawTriangles(indexCount);
-                break;
-            }
-            case VertexTopology::Line:
-            {
-                RenderCommand::DrawLines(indexCount);
-                break;
-            }
-            case VertexTopology::Point:
-            {
-                RenderCommand::DrawPoints(indexCount);
-                break;
-            }
-            default:
-                GE_CORE_ASSERT(false, "Unknow type");
-                break;
-            }
-        }
-    }
     void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
     {
-		m_Material->Update();
+		m_Material->Update(cmdBuffer);
 		m_VertexBuffer->Bind(cmdBuffer);
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
 		if (m_VertexBuffer->IsInstanceRendering())

@@ -243,6 +243,7 @@ void Sandbox2D::OnDetach()
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
+#if 0
 	Renderer::BeginScene(m_EditorCamera);
 	
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
@@ -251,8 +252,8 @@ void Sandbox2D::OnPresent()
 
 	Renderer::EndScene();
 
-#if 0
 
+#else
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
@@ -264,77 +265,38 @@ void Sandbox2D::OnPresent()
 
 void Sandbox2D::OnRender()
 {
-	
-	ComputeCommand::BeginComputeCommand();
-	Renderer::BeginScene(m_EditorCamera);
-	m_ComputeTest->Compute(1, 1, 1);
-	Renderer::EndScene();
-	ComputeCommand::EndComputeCommand();
+	auto cmd0 = RenderCommand::GetComputeCommandBuffer();
+	auto cmd1 = RenderCommand::GetGraphicsCommandBuffer();
+	auto cmd2 = RenderCommand::GetGraphicsCommandBuffer();
+	auto cmd3 = RenderCommand::GetGraphicsCommandBuffer();
 
+	RenderCommand::RegisterSynchronousCommands(cmd0, cmd1);
+	RenderCommand::RegisterSynchronousCommands(cmd0, cmd2);
+	RenderCommand::RegisterSynchronousCommands(cmd1, cmd3);
+	RenderCommand::RegisterSynchronousCommands(cmd2, cmd3);
+	RenderCommand::RegisterSynchronousCommands(cmd3, Application::Get().GetImGuiLayer()->GetCommandBuffer());
+	RenderCommand::RegisterSynchronousCommands(Application::Get().GetImGuiLayer()->GetCommandBuffer(), GraphicsPresent::GetCommandBuffer());
 
-
-
-	RenderCommand::BeginGraphicsCommand();
-	m_SkyBoxFB->Begin();
-	Renderer::BeginScene(m_EditorCamera);
-	m_Scene->OnRender();
-	//m_SeparateTextureSampler->Render();
-	Renderer::EndScene();
-	m_SkyBoxFB->End();
-	RenderCommand::EndGraphicsCommand();
-	
-
-	RenderCommand::BeginGraphicsCommand();
-	m_DepthOnly->Begin();
-	Renderer::BeginScene(m_EditorCamera);
-	m_Scene->OnRender();
-	m_OITPrepare->Render();
-	Renderer::EndScene();
-	m_DepthOnly->End();
-	RenderCommand::EndGraphicsCommand();
-
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
-	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
-
-	RenderCommand::BeginGraphicsCommand();
-	m_OIT_Present->Begin();
-	Renderer::BeginScene(m_EditorCamera);
-	m_CopyColorDepth->Render();
-	m_OIT->Render();
-	Renderer::EndScene();
-	m_OIT_Present->End();
-	RenderCommand::EndGraphicsCommand();
-
-#if 0
-	auto cmd0 = ComputeCommand::BeginComputeCommand(m_DepthOnly, m_EditorCamera);
+	cmd0->Begin(m_DepthOnly, m_EditorCamera);
 	cmd0->Compute(m_ComputeTest, 1, 1, 1);
-	ComputeCommand::EndComputeCommand(cmd0);
+	cmd0->End();
 
-	auto cmd1 = RenderCommand::BeginGraphicsCommand(m_SkyBoxFB, m_EditorCamera);
-	cmd1->AddWaitCommand(cmd0);
+	cmd1->Begin(m_SkyBoxFB, m_EditorCamera);
 	cmd1->Render(m_Scene);
-	RenderCommand::EndGraphicsCommand(cmd1);
+	cmd1->End();
 
-	auto cmd2 = RenderCommand::BeginGraphicsCommand(m_DepthOnly, m_EditorCamera);
-	cmd2->AddWaitCommand(cmd0);
-	cmd2->Render(m_Scene);
+	cmd2->Begin(m_DepthOnly, m_EditorCamera);
 	cmd2->Render(m_OITPrepare);
-	RenderCommand::EndGraphicsCommand(cmd2);
+	cmd2->End();
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
 	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
 
-	auto cmd3 = RenderCommand::BeginGraphicsCommand(m_OIT_Present, m_EditorCamera);
-	cmd3->AddWaitCommand(cmd1);
-	cmd3->AddWaitCommand(cmd2);
+	cmd3->Begin(m_OIT_Present, m_EditorCamera);
 	cmd3->Render(m_CopyColorDepth);
 	cmd3->Render(m_OIT);
-	RenderCommand::EndGraphicsCommand(cmd3);
-
-	GraphicsPresent::AddWaitCommand(cmd3);
-#endif
+	cmd3->End();
 }
 
 void Sandbox2D::OnUpdate()
@@ -375,8 +337,7 @@ void Sandbox2D::OnUpdate()
 
 void Sandbox2D::OnImGuiRender()
 {
-	
-	
+
 
 	ImGui::Begin("Attachment");
 	ImGui::Text("sdadsdasdsdadasdasdad");

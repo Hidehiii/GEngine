@@ -9,7 +9,7 @@
 namespace GEngine
 {
 
-	
+	class CommandBuffer;
 
 	class GENGINE_API ImGuiLayer : public Layer
 	{
@@ -30,8 +30,7 @@ namespace GEngine
 		ImGuiContext* GetContext() { return m_Context; }
 		Ref<Texture2D>	GetImGuiImage() { return m_PlatformImGui->GetImGuiTexture(); }
 
-		virtual void AddWaitCommand(Ref<CommandBuffer> cmd) { m_PlatformImGui->AddWaitCommand(cmd); };
-		virtual void ClearWaitCommands() { m_PlatformImGui->ClearWaitCommands(); };
+		virtual Ref<CommandBuffer> GetCommandBuffer();
 	private:
 		bool			m_BlockEvents = true;
 		float			m_Time = 0.0f;

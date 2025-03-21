@@ -11,7 +11,7 @@ namespace GEngine
 		VulkanCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap = false);
 		virtual ~VulkanCubeMap();
 
-		virtual void Bind(const uint32_t slot = 0) override;
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override;
 
 		virtual std::string GetPath() const override;
 

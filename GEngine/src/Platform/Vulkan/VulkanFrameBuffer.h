@@ -21,9 +21,6 @@ namespace GEngine
 		VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
 		virtual ~VulkanFrameBuffer() override;
 
-		virtual void Begin() override;
-		virtual void End() override;
-
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
 		virtual void End(CommandBuffer* cmdBuffer) override;
 

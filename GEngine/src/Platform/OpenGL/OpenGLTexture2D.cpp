@@ -111,7 +111,7 @@ namespace GEngine
 			glGenerateTextureMipmap(m_Texture2D);
 		}
 	}
-	void OpenGLTexture2D::Bind(const uint32_t slot)
+	void OpenGLTexture2D::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{	
 		glBindTextureUnit(slot, m_Texture2D);
 	}

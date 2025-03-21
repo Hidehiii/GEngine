@@ -27,17 +27,17 @@ namespace GEngine
 				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
 			}
 			// Read blend type and factor
-			m_BlendModeColor					= m_Shader->GetBlendModeColor();
-			m_BlendModeAlpha					= m_Shader->GetBlendModeAlpha();
-			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSourceFactor();
-			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSourceFactor();
-			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDestinationFactor();
-			m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDestinationFactor();
+			m_BlendModeColor				= m_Shader->GetBlendColor();
+			m_BlendModeAlpha				= m_Shader->GetBlendAlpha();
+			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSrc();
+			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSrc();
+			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDst();
+			m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDst();
 			// cull mode
-			m_CullMode					= m_Shader->GetCullMode();
+			m_CullMode					= m_Shader->GetCull();
 			// Read depth test and depth mask
-			m_EnableDepthWrite			= m_Shader->GetEnableDepthWrite();
-			m_DepthTestOperation		= m_Shader->GetDepthTestOperation();
+			m_EnableDepthWrite			= m_Shader->IsEnableDepthWrite();
+			m_DepthTestOperation		= m_Shader->GetDepthTestOp();
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
 			// StorageImage2D
@@ -55,7 +55,7 @@ namespace GEngine
 	OpenGLMaterial::~OpenGLMaterial()
 	{
 	}
-	void OpenGLMaterial::Update()
+	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer)
 	{
 		m_Shader->Bind();
 		if(m_UniformsBuffer.Size > 0)
@@ -64,19 +64,19 @@ namespace GEngine
 		for (auto& texture2D : m_Texture2D)
 		{
 			m_Shader->SetInt1(texture2D.Name, texture2D.Slot);
-			texture2D.Texture->Bind(texture2D.Slot);
+			texture2D.Texture->Bind(cmdBuffer, texture2D.Slot);
 		}
 
 		for (auto& image2D : m_StorageImage2D)
 		{
 			m_Shader->SetInt1(image2D.Name, image2D.Slot);
-			image2D.Image->Bind(image2D.Slot);
+			image2D.Image->Bind(cmdBuffer, image2D.Slot);
 		}
 
 		for (auto& cubeMap : m_CubeMap)
 		{
 			m_Shader->SetInt1(cubeMap.Name, cubeMap.Slot);
-			cubeMap.Cubemap->Bind(cubeMap.Slot);
+			cubeMap.Cubemap->Bind(cmdBuffer, cubeMap.Slot);
 		}
 
 		for (auto& storageBuffer : m_StorageBuffer)
