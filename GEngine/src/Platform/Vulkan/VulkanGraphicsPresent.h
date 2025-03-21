@@ -18,7 +18,6 @@ namespace GEngine
 	private:
 		uint32_t							m_SwapChainImageIndex = 0;
 		bool								m_RecreateSwapChain = false;
-		std::vector<VkSemaphore>			m_Semaphores;
 		std::vector<VkFence>				m_Fences;
 	};
 }

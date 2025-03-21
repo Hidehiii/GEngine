@@ -164,8 +164,6 @@ namespace GEngine
 				return m_GraphicsPipelines.at(i).GraphicsPipeline;
 			}
 		}
-		
-
 
 		// TODO 
 		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();

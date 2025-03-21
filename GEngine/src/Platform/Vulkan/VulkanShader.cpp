@@ -261,8 +261,8 @@ namespace GEngine
 			}
 		}
 
-		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
+		/*for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);*/
 	}
 	void VulkanShader::Reflect(const std::string stage, const std::vector<uint32_t>& shaderData)
 	{

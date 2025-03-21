@@ -95,6 +95,7 @@ namespace GEngine
 			UpdateDescriptorSet(Renderer::GetCurrentFrame());
 			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Renderer::GetCurrentFrame());
 		}
+		UpdateDescriptorSet(Renderer::GetCurrentFrame());
 	}
 
 	void VulkanMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
@@ -108,15 +109,15 @@ namespace GEngine
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
 		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
-		// ¹«¹²ubo
+		// å…¬å…±ubo
 		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
 		for (auto buffer : publicUniformBuffer)
 		{
 			layoutBindings.push_back(buffer->GetDescriptorSetLayoutBinding());
 		}
-		// ²ÄÖÊubo
+		// æè´¨ubo
 		layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
-		// ÌùÍ¼°ó¶¨
+		// è´´å›¾ç»‘å®š
 		for (auto& texture2D : m_Texture2D)
 		{
 			VkDescriptorSetLayoutBinding		layoutBinding{};
@@ -128,7 +129,7 @@ namespace GEngine
 
 			layoutBindings.push_back(layoutBinding);
 		}
-		// storage image °ó¶¨
+		// storage image ç»‘å®š
 		for (auto& image2D : m_StorageImage2D)
 		{
 			VkDescriptorSetLayoutBinding		layoutBinding{};
@@ -140,7 +141,7 @@ namespace GEngine
 
 			layoutBindings.push_back(layoutBinding);
 		}
-		// storage buffer °ó¶¨
+		// storage buffer ç»‘å®š
 		for (auto& buffer : m_StorageBuffer)
 		{
 			VkDescriptorSetLayoutBinding		layoutBinding{};
@@ -152,7 +153,7 @@ namespace GEngine
 
 			layoutBindings.push_back(layoutBinding);
 		}
-		//cube map °ó¶¨
+		//cube map ç»‘å®š
 		for (auto& cubeMap : m_CubeMap)
 		{
 			VkDescriptorSetLayoutBinding		layoutBinding{};
@@ -172,8 +173,8 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::Get()->GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout));
 
-		// Ö»ÓÃÒ»¸öset£¬ĞèÒª¼æÈİglÃ»ÓĞsetµÄ¸ÅÄî
-		// ´´½¨¶à¸ösetÓÃÓÚ¶àÖ¡Ê±ºòµÄ²»Í¬°ó¶¨ºÍ¸üĞÂ£¬²»È»»á¸üĞÂµ½ÔÚcmdBufferÀïÓÃµÄset
+		// åªç”¨ä¸€ä¸ªsetï¼Œéœ€è¦å…¼å®¹glæ²¡æœ‰setçš„æ¦‚å¿µ
+		// åˆ›å»ºå¤šä¸ªsetç”¨äºå¤šå¸§æ—¶å€™çš„ä¸åŒç»‘å®šå’Œæ›´æ–°ï¼Œä¸ç„¶ä¼šæ›´æ–°åˆ°åœ¨cmdBufferé‡Œç”¨çš„set
 		m_DescriptorSets.resize(Renderer::GetFramesInFlight());
 
 		VkDescriptorSetAllocateInfo		allocInfo{};
@@ -191,7 +192,7 @@ namespace GEngine
 	{
 		std::vector<VkWriteDescriptorSet>		writeInfos;
 		VkWriteDescriptorSet					descriptorWrite{};
-		// ¹«¹²uniform buffer
+		// å…¬å…±uniform buffer
 		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
 		for (auto buffer : publicUniformBuffer)
 		{
@@ -207,7 +208,7 @@ namespace GEngine
 
 			writeInfos.push_back(descriptorWrite);
 		}
-		// ²ÄÖÊµÄuniform buffer
+		// æè´¨çš„uniform buffer
 		descriptorWrite.sType					= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrite.dstSet					= m_DescriptorSets.at(index);
 		descriptorWrite.dstBinding				= m_UniformBuffer->GetDescriptorSetLayoutBinding().binding;
@@ -219,7 +220,7 @@ namespace GEngine
 		descriptorWrite.pTexelBufferView		= nullptr; // Optional
 
 		writeInfos.push_back(descriptorWrite);
-		// ÌùÍ¼°ó¶¨
+		// è´´å›¾ç»‘å®š
 		for (auto& texture2D : m_Texture2D)
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -234,7 +235,7 @@ namespace GEngine
 
 			writeInfos.push_back(descriptorWrite);
 		}
-		// cubeMap°ó¶¨;
+		// cubeMapç»‘å®š;
 		for (auto& cubeMap : m_CubeMap)
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -249,7 +250,7 @@ namespace GEngine
 
 			writeInfos.push_back(descriptorWrite);
 		}
-		// storage image°ó¶¨
+		// storage imageç»‘å®š
 		for (auto& image2D : m_StorageImage2D)
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -264,7 +265,7 @@ namespace GEngine
 
 			writeInfos.push_back(descriptorWrite);
 		}
-		// storage buffer°ó¶¨
+		// storage bufferç»‘å®š
 		for (auto& buffer : m_StorageBuffer)
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -281,12 +282,5 @@ namespace GEngine
 		}
 
 		vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), writeInfos.size(), writeInfos.data(), 0, nullptr);
-	}
-	void VulkanMaterial::UpdateAllDescriptorSet()
-	{
-		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
-		{
-			UpdateDescriptorSet(i);
-		}
 	}
 }

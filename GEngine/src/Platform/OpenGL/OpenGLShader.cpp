@@ -316,7 +316,7 @@ namespace GEngine
 		shaderc::CompileOptions options;
 		options.SetIncluder(std::make_unique<ShaderIncluder>());
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		// TODO : 这样真的没问题？
+		// TODO : 杩欐牱鐪熺殑娌￠棶棰橈紵
 		//options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
 		//options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -362,8 +362,8 @@ namespace GEngine
 			}
 		}
 
-		for (auto&& [stage, data] : shaderData)
-			Reflect(Utils::ShaderStageToGL(stage), data);
+		/*for (auto&& [stage, data] : shaderData)
+			Reflect(Utils::ShaderStageToGL(stage), data);*/
 	}
 
 	void OpenGLShader::CreateProgram()

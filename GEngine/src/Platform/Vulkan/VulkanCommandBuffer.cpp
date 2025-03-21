@@ -72,7 +72,7 @@ namespace GEngine
 	void VulkanCommandBufferPool::EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
-		// 用fence 而不是wait
+		// 鐢╢ence 鑰屼笉鏄痺ait
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
@@ -112,7 +112,7 @@ namespace GEngine
 	void VulkanCommandBufferPool::EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
-		// 用fence 而不是wait
+		// 鐢╢ence 鑰屼笉鏄痺ait
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
@@ -166,9 +166,8 @@ namespace GEngine
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			m_FrameBuffer->Begin(this);
-			Renderer::BeginScene(camera);
 		}
-		
+		Renderer::BeginScene(camera);
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, Camera& camera)
 	{
@@ -184,8 +183,8 @@ namespace GEngine
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			m_FrameBuffer->Begin(this);
-			Renderer::BeginScene(camera);
 		}
+		Renderer::BeginScene(camera);
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{

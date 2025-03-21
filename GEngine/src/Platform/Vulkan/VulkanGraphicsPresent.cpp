@@ -11,15 +11,8 @@ namespace GEngine
 
 	VulkanGraphicsPresent::VulkanGraphicsPresent()
 	{
-		m_Semaphores.resize(Renderer::GetFramesInFlight());
 		m_Fences.resize(Renderer::GetFramesInFlight());
 		s_CommandBuffers.resize(Renderer::GetFramesInFlight());
-		for (int i = 0; i < m_Semaphores.size(); i++)
-		{
-			VkSemaphoreCreateInfo   semaphoreInfo{};
-			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_Semaphores[i]));
-		}
 		for (int i = 0; i < m_Fences.size(); i++)
 		{
 			VkFenceCreateInfo       fenceInfo{};
@@ -46,13 +39,14 @@ namespace GEngine
 	bool VulkanGraphicsPresent::AquireImage()
 	{
 		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Renderer::GetCurrentFrame()), VK_TRUE, std::numeric_limits<uint64_t>::max()));
+		VkSemaphore s = VulkanContext::Get()->GetSemaphore();
 		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
 			VulkanContext::Get()->GetSwapChain(),
 			std::numeric_limits<uint64_t>::max(),
-			m_Semaphores.at(Renderer::GetCurrentFrame()),
+			s,
 			VK_NULL_HANDLE,
 			&m_SwapChainImageIndex);
-		VkSemaphore submitWaitSemaphores[] = { m_Semaphores.at(Renderer::GetCurrentFrame()) };
+		VkSemaphore submitWaitSemaphores[] = { s };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		VkSubmitInfo					submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -98,7 +92,8 @@ namespace GEngine
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 		std::vector<VkSemaphore> submitWaitSemaphores = cmd->GetWaitSemaphores();
 		std::vector<VkPipelineStageFlags> waitStages(submitWaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		VkSemaphore signalSemaphores[] = { m_Semaphores.at(Renderer::GetCurrentFrame()) };
+		VkSemaphore s = VulkanContext::Get()->GetSemaphore();
+		VkSemaphore signalSemaphores[] = { s };
 
 		VkSubmitInfo					submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -113,7 +108,7 @@ namespace GEngine
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, m_Fences.at(Renderer::GetCurrentFrame())));
 		VkSwapchainKHR swapChains[] = { VulkanContext::Get()->GetSwapChain() };
 
-		VkSemaphore presentWaitSemaphores[] = { m_Semaphores.at(Renderer::GetCurrentFrame()) };
+		VkSemaphore presentWaitSemaphores[] = { s };
 
 		VkPresentInfoKHR			presentInfo{};
 		presentInfo.sType			= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

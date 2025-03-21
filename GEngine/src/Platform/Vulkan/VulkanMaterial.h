@@ -28,7 +28,6 @@ namespace GEngine
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
 		void CreateDescriptorSetAndLayout();
 		void UpdateDescriptorSet(int index);
-		void UpdateAllDescriptorSet();
 	private:
 		Ref<VulkanShader>									m_Shader;
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;

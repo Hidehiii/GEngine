@@ -243,24 +243,12 @@ void Sandbox2D::OnDetach()
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
-#if 0
-	Renderer::BeginScene(m_EditorCamera);
-	
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
-	m_PresentPipeline->Render();
-
-	Renderer::EndScene();
-
-
-#else
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
 	Renderer::BeginScene(m_EditorCamera);
 	GraphicsPresent::Render(m_PresentPipeline);
 	Renderer::EndScene();
-#endif 
 }
 
 void Sandbox2D::OnRender()
