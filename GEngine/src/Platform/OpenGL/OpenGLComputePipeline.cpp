@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLComputePipeline.h"
-#include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Graphics/RenderCommand.h"
 
 namespace GEngine
 {

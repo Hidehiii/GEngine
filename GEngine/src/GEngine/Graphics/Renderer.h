@@ -1,13 +1,13 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "RenderBuffer.h"
+#include "GraphicsBuffer.h"
 #include "RenderCommand.h"
 #include "Shader.h"
 #include "GEngine/Components/Components.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/UniformBuffer.h"
-#include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Graphics/UniformBuffer.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 
 namespace GEngine
 {
@@ -29,7 +29,7 @@ namespace GEngine
 		static void BeginScene(Camera& camera);
 		static void EndScene();
 
-		static RendererAPI::API	GetAPI() { return RendererAPI::GetAPI(); }
+		static GraphicsAPI::API	GetAPI() { return GraphicsAPI::GetAPI(); }
 		const static Camera		GetRenderTargetCamera() { return s_RenderTargetCamera; }
 		const static Vector3	GetRenderTargetCameraPosition() { return s_RenderTargetCameraPosition; }
 		static uint8_t			GetFramesInFlight() { return s_FramesInFlight; }
@@ -47,7 +47,7 @@ namespace GEngine
 		static void DrawCubeWireframe(Transform& transform, Vector4 color);
 	private:
 		static void SetFramesInFlight(uint8_t frames) { s_FramesInFlight = frames; }
-		static void SetRenererAPI(RendererAPI::API api);
+		static void SetRenererAPI(GraphicsAPI::API api);
 		static void SetDynamicUniformBufferSizeScaleFactor(uint32_t factor);
 		static void SetCommandBufferCount(uint32_t count);
 

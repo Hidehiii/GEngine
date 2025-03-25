@@ -5,7 +5,7 @@
 #include "ImGui/backends/imgui_impl_glfw.h"
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include "ImGui/backends/imgui_impl_opengl3.cpp"
-#include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"

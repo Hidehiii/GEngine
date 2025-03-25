@@ -1,9 +1,9 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "RendererAPI.h"
+#include "GraphicsAPI.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/CommandBuffer.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 
 
@@ -53,9 +53,9 @@ namespace GEngine
 
 		inline static void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z);
 	private:
-		inline static void SetRendererAPI(RendererAPI::API api);
+		inline static void SetRendererAPI(GraphicsAPI::API api);
 	private:
-		inline static RendererAPI* s_RendererAPI;
+		inline static GraphicsAPI* s_RendererAPI;
 
 		friend class Renderer;
 	};

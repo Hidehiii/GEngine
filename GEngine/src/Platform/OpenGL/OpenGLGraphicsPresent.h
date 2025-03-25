@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/GraphicsPresent.h"
+#include "GEngine/Graphics/GraphicsPresent.h"
 
 namespace GEngine
 {

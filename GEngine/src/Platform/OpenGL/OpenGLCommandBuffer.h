@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/CommandBuffer.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include "Platform/OpenGL/OpenGLFrameBuffer.h"
 
 namespace GEngine

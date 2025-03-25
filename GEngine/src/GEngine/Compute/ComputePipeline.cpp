@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "ComputePipeline.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/OpenGL/OpenGLComputePipeline.h"
 #include "Platform/Vulkan/VulkanComputePipeline.h"
 
@@ -10,9 +10,9 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:	return CreateRef<OpenGLComputePipeline>(material); break;
-		case RendererAPI::API::Vulkan:	return CreateRef<VulkanComputePipeline>(material); break;
-		case RendererAPI::API::None:
+		case GraphicsAPI::API::OpenGL:	return CreateRef<OpenGLComputePipeline>(material); break;
+		case GraphicsAPI::API::Vulkan:	return CreateRef<VulkanComputePipeline>(material); break;
+		case GraphicsAPI::API::None:
 		default:
 			GE_CORE_ASSERT(false, "Unknow render api");
 			break;

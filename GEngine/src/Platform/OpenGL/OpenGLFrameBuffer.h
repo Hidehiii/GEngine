@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 #include "OpenGLTexture2D.h"
 #include "GEngine/Math/Math.h"
 #include "Platform/OpenGL/OpenGLRenderPass.h"

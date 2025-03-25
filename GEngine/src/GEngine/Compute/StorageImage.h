@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/ImageFormat.h"
+#include "GEngine/Graphics/ImageFormat.h"
 
 namespace GEngine
 {

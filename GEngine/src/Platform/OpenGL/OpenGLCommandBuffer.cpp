@@ -2,7 +2,7 @@
 #include "OpenGLCommandBuffer.h"
 #include "OpenGLGraphicsPipeline.h"
 #include "OpenGLComputePipeline.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 
 namespace GEngine
 {

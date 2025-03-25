@@ -1,8 +1,9 @@
 #include "GEpch.h"
 #include "MeshRenderer.h"
 #include "GEngine/Components/3D/MeshFilter/MeshFilter.h"
-#include "GEngine/Renderer/RenderCommand.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Components/Transform/Transform.h"
+#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {

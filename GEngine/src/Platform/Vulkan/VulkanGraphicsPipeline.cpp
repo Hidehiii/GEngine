@@ -6,8 +6,8 @@
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
-#include "GEngine/Renderer/RenderCommand.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Renderer.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine

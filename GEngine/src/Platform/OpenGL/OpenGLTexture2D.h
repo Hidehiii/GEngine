@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 #include <glad/glad.h>
 
 namespace GEngine

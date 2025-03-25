@@ -2,9 +2,9 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Core/Buffer.h"
-#include "GEngine/Renderer/Shader.h"
+#include "GEngine/Graphics/Shader.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 
 
 

@@ -2,7 +2,7 @@
 #include "VulkanContext.h"
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "GEngine/Core/CoreThread.h"
 #include <set>
 

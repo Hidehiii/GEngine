@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/RenderPass.h"
+#include "GEngine/Graphics/RenderPass.h"
 #include <vulkan/vulkan.h>
 
 namespace GEngine

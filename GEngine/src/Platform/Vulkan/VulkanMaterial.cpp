@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "VulkanMaterial.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"

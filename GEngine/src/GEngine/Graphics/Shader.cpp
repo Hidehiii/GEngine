@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Shader.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 
@@ -701,11 +701,11 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{
@@ -714,7 +714,7 @@ namespace GEngine
 			s_Shaders[shader->GetShaderName()] = shader;
 			return shader;
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			Ref<Shader> shader = CreateRef<VulkanShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{
@@ -725,7 +725,7 @@ namespace GEngine
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<Shader> Shader::GetShader(const std::string& name)

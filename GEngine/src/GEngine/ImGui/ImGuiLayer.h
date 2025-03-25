@@ -4,7 +4,7 @@
 #include "ImGui/imgui.h"
 #include <ImGuizmo.h>
 #include "PlatformImGui.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 
 namespace GEngine
 {

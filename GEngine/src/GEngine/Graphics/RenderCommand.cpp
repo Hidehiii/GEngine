@@ -77,17 +77,17 @@ namespace GEngine
 	{
 		return s_RendererAPI->GetComputeCommandBuffer();
 	}
-	inline void RenderCommand::SetRendererAPI(RendererAPI::API api)
+	inline void RenderCommand::SetRendererAPI(GraphicsAPI::API api)
 	{
 		switch (api)
 		{
-		case GEngine::RendererAPI::API::None:
+		case GraphicsAPI::API::None:
 			GE_CORE_ASSERT(false, "Renderer api is not supported");
 			break;
-		case GEngine::RendererAPI::API::OpenGL:
+		case GraphicsAPI::API::OpenGL:
 			s_RendererAPI = new OpenGLRendererAPI();
 			break;
-		case GEngine::RendererAPI::API::Vulkan:
+		case GraphicsAPI::API::Vulkan:
 			s_RendererAPI = new VulkanRendererAPI();
 		default:
 			break;

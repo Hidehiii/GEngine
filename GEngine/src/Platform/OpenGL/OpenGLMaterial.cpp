@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLMaterial.h"
 
-#include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Graphics/RenderCommand.h"
 
 namespace GEngine
 {

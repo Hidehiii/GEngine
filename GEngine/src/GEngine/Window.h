@@ -7,7 +7,7 @@
 #include "GEngine/Events/KeyEvent.h"
 #include "GEngine/Events/MouseEvent.h"
 
-#include "GEngine/Renderer/GraphicsContext.h"
+#include "GEngine/Graphics/GraphicsContext.h"
 
 namespace GEngine
 {

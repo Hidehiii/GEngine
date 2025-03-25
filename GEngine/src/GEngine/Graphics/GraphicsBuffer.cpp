@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "RenderBuffer.h"
+#include "GraphicsBuffer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
 #include "Renderer.h"
@@ -10,38 +10,38 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLVertexBuffer>(size, sizeInstance, type);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanVertexBuffer>(size, sizeInstance, type);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 			}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLVertexBuffer>(vertices, size, sizeInstance, type);
 			}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanVertexBuffer>(vertices, size, sizeInstance, type);
 		}
 		}
 		
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 
@@ -49,19 +49,19 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 			}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLIndexBuffer>(indices, count);
 			}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanIndexBuffer>(indices, count);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 

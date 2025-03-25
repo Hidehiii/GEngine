@@ -5,10 +5,10 @@
 #include "Texture.h"
 #include "RenderCommand.h"
 #include "GEngine/Components/Transform/Transform.h"
-#include "GEngine/Renderer/UniformBuffer.h"
+#include "GEngine/Graphics/UniformBuffer.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Time.h"
-#include "GEngine/Renderer/GraphicsPipeline.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 
 namespace GEngine
 {

@@ -2,7 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Components/Component.h"
-#include "GEngine/Renderer/GraphicsPipeline.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Asset/Mesh.h"
 namespace GEngine
 {

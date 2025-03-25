@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/Texture.h"
-#include "GEngine/Renderer/SubTexture2D.h"
+#include "GEngine/Graphics/Texture.h"
+#include "GEngine/Graphics/SubTexture2D.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Components/Component.h"
 

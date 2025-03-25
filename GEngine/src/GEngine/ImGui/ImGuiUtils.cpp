@@ -2,7 +2,7 @@
 #include "GEngine/Utils/GUIUtils.h"
 #include "ImGui/imgui.h"
 #include "ImGui/backends/imgui_impl_vulkan.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLFrameBuffer.h"
@@ -16,9 +16,9 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:
+		case GraphicsAPI::API::OpenGL:
 			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
-		case RendererAPI::API::Vulkan:
+		case GraphicsAPI::API::Vulkan:
 		{
 			for (int i = s_VulkanTexture2DUsed.size() - 1; i >= 0; i--)
 			{
@@ -56,9 +56,9 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:
+		case GraphicsAPI::API::OpenGL:
 			return { 0.0f, 1.0f };
-		case RendererAPI::API::Vulkan:
+		case GraphicsAPI::API::Vulkan:
 			return { 0.0f, 0.0f };
 
 		default:
@@ -73,9 +73,9 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:
+		case GraphicsAPI::API::OpenGL:
 			return { 1.0f, 0.0f };
-		case RendererAPI::API::Vulkan:
+		case GraphicsAPI::API::Vulkan:
 			return { 1.0f, 1.0f };
 
 		default:

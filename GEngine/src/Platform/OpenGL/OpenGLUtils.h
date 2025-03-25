@@ -1,8 +1,8 @@
 #pragma once
 #include <glad/glad.h>
-#include "GEngine/Renderer/ImageFormat.h"
-#include "GEngine/Renderer/Shader.h"
-#include "GEngine/Renderer/Sampler.h"
+#include "GEngine/Graphics/ImageFormat.h"
+#include "GEngine/Graphics/Shader.h"
+#include "GEngine/Graphics/Sampler.h"
 namespace GEngine
 {
 	namespace Utils

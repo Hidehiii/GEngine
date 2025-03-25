@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GEngine/Renderer/GraphicsContext.h"
+#include "GEngine/Graphics/GraphicsContext.h"
 #include "OpenGLCommandBuffer.h"
 #include <GLFW/glfw3.h>
 

@@ -2,10 +2,10 @@
 #include "ImGuiLayer.h"
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
-#include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Graphics/RenderCommand.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "GEngine/Renderer/CommandBuffer.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include "ImGui/backends/imgui_impl_glfw.cpp"
 #include "Platform/OpenGL/OpenGLImGui.h"
 #include "Platform/Vulkan/VulkanImGui.h"
@@ -28,10 +28,10 @@ namespace GEngine
 	void ImGuiLayer::OnAttach()
 	{
 		
-		switch (RendererAPI::GetAPI())
+		switch (GraphicsAPI::GetAPI())
 		{
-		case RendererAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
-		case RendererAPI::API::Vulkan: m_PlatformImGui = new VulkanImGui(); break;
+		case GraphicsAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
+		case GraphicsAPI::API::Vulkan: m_PlatformImGui = new VulkanImGui(); break;
 		default: GE_CORE_ASSERT(false, "Unknown renderer api");
 		}
 

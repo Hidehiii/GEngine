@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Buffer.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 #include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Compute/StorageBuffer.h"
 #include <algorithm>

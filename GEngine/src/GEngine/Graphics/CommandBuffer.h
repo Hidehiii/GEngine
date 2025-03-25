@@ -1,9 +1,9 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Object/Scene/Scene.h"
-#include "GEngine/Renderer/GraphicsPipeline.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Compute/ComputePipeline.h"
-#include "GEngine/Renderer/FrameBuffer.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 #include "GEngine/Components/Camera/Camera.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include <set>

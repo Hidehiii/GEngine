@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLContext.h"
 #include "OpenGLCommandBuffer.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

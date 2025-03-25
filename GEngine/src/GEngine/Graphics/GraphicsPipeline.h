@@ -1,7 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "Material.h"
-#include "RenderBuffer.h"
+#include "GraphicsBuffer.h"
 #include "RenderPass.h"
 #include "FrameBuffer.h"
 namespace GEngine

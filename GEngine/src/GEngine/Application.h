@@ -6,9 +6,9 @@
 #include "LayerStack.h"
 #include "ImGui/ImGuiLayer.h"
 #include "GEngine/Core/Time.h"
-#include "Renderer/RenderCommand.h"
+#include "Graphics/RenderCommand.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/GraphicsPresent.h"
+#include "GEngine/Graphics/GraphicsPresent.h"
 #include "GEngine/Core/Config.h"
 #include <filesystem>
 

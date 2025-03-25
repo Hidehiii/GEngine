@@ -3,7 +3,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
 #include "RenderPass.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 
 namespace GEngine
 {

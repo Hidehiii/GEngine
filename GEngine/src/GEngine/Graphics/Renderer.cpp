@@ -129,9 +129,9 @@ namespace GEngine
 	{
 		Renderer2D::EndScene();
 	}
-	void Renderer::SetRenererAPI(RendererAPI::API api)
+	void Renderer::SetRenererAPI(GraphicsAPI::API api)
 	{
-		RendererAPI::SetAPI(api);
+		GraphicsAPI::SetAPI(api);
 		RenderCommand::SetRendererAPI(api);
 	}
 

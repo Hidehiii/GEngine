@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/GraphicsPipeline.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 
 #include "Platform/OpenGL/OpenGLMaterial.h"

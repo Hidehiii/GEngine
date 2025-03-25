@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/Sampler.h"
+#include "GEngine/Graphics/Sampler.h"
 #include <vulkan/vulkan.h>
 namespace GEngine
 {

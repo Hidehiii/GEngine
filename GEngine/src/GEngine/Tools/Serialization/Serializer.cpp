@@ -5,7 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/Material.h"
+#include "GEngine/Graphics/Material.h"
 #include "GEngine/Core/Config.h"
 #include<filesystem>
 

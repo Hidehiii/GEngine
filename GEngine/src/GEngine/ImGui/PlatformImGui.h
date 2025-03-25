@@ -1,7 +1,7 @@
 #pragma once
 #include "ImGui/imgui.h"
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 
 class GLFWwindow;
 namespace GEngine

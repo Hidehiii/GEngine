@@ -3,8 +3,8 @@
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "GEngine/Renderer/RenderCommand.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Renderer.h"
 
 namespace GEngine
 {

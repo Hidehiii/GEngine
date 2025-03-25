@@ -2,11 +2,11 @@
 #include "VulkanComputePipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Renderer/RenderCommand.h"
+#include "GEngine/Graphics/RenderCommand.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "VulkanCommandBuffer.h"
 
 namespace GEngine

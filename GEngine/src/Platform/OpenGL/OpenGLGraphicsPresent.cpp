@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLGraphicsPresent.h"
 #include "OpenGLCommandBuffer.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include <glad/glad.h>
 
 namespace GEngine

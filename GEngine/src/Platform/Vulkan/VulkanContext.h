@@ -1,11 +1,11 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/GraphicsContext.h"
+#include "GEngine/Graphics/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanDescriptor.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include <Platform/Vulkan/VMA/vk_mem_alloc.h>
 #include <GLFW/glfw3.h>
 

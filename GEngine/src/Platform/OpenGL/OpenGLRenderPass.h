@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/RenderPass.h"
+#include "GEngine/Graphics/RenderPass.h"
 
 namespace GEngine
 {

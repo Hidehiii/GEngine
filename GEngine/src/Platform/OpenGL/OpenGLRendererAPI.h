@@ -1,12 +1,12 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/RendererAPI.h"
+#include "GEngine/Graphics/GraphicsAPI.h"
 
 
 namespace GEngine
 {
-	class GENGINE_API OpenGLRendererAPI : public RendererAPI
+	class GENGINE_API OpenGLRendererAPI : public GraphicsAPI
 	{
 	public:
 		virtual void Init() override;

@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/RendererAPI.h"
+#include "GEngine/Graphics/GraphicsAPI.h"
 
 #include <optional>
 #include <vulkan/vulkan.h>
@@ -9,7 +9,7 @@ namespace GEngine
 {
 	
 
-	class GENGINE_API VulkanRendererAPI : public RendererAPI
+	class GENGINE_API VulkanRendererAPI : public GraphicsAPI
 	{
 	public:
 		virtual void Init() override;

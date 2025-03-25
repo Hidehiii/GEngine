@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLShader.h"
-#include "GEngine/Renderer/Material.h"
+#include "GEngine/Graphics/Material.h"
 #include <glad/glad.h>
 #include <shaderc/shaderc.hpp>
 #include <SPIRVCross/spirv_cross.hpp>

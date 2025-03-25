@@ -17,57 +17,57 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2D>(width, height, format);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanTexture2D>(width, height, format);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2D>(path);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanTexture2D>(path);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2D>(width, height, data, size, format);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanTexture2D>(width, height, data, size, format);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<Texture2D> Texture2D::White()
@@ -84,38 +84,38 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLCubeMap>(width, height, generateMipmap, format);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 	Ref<CubeMap> CubeMap::White()
@@ -137,19 +137,19 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 }

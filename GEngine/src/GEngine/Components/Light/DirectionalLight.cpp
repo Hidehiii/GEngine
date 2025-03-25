@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "DirectionalLight.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 
 namespace GEngine
 {

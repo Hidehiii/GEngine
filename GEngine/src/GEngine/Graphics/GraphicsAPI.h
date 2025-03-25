@@ -2,7 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Renderer/RenderBuffer.h"
+#include "GEngine/Graphics/GraphicsBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "Material.h"
 
@@ -11,7 +11,7 @@ namespace GEngine
 	class CommandBuffer;
 	class FrameBuffer;
 
-	class GENGINE_API RendererAPI
+	class GENGINE_API GraphicsAPI
 	{
 	public:
 		enum class API

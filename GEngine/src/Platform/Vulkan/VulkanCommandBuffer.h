@@ -1,6 +1,6 @@
 #pragma once
-#include "GEngine/Renderer/CommandBuffer.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/CommandBuffer.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <optional>

@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/Material.h"
+#include "GEngine/Graphics/Material.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "GEngine/Core/Buffer.h"
 #include "Platform/OpenGL/OpenGLUniformBuffer.h"

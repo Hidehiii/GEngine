@@ -1,8 +1,8 @@
 #pragma once
-#include "GEngine/Renderer/Material.h"
+#include "GEngine/Graphics/Material.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/Renderer.h"
 
 namespace GEngine
 {

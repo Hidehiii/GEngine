@@ -1,5 +1,5 @@
 #pragma once
-#include "GEngine/Renderer/Texture.h"
+#include "GEngine/Graphics/Texture.h"
 
 namespace GEngine
 {

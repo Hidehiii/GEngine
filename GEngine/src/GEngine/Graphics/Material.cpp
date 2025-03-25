@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "Material.h"
-#include "GEngine/Renderer/Renderer.h"
-#include "GEngine/Renderer/RendererAPI.h"
+#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/GraphicsAPI.h"
 
 #include "Platform/OpenGL/OpenGLMaterial.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
@@ -12,60 +12,60 @@ namespace GEngine
     {
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLMaterial>(shader, name);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanMaterial>(shader, name);
 			return nullptr;
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
         return nullptr;
     }
 	Ref<Material> Material::Create(const std::string& shaderPath, const std::string& name)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(shaderPath), name);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
 			return nullptr;
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
     Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
     {
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 			return nullptr;
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
     }
 	ShaderUniform Material::GetUniformByName(const std::string& name) const

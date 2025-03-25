@@ -6,8 +6,8 @@
 #include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Renderer/RenderCommand.h"
-#include "GEngine/Renderer/Renderer.h"
+#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Renderer.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace GEngine {

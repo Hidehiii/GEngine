@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "ImageRenderer.h"
-#include "GEngine/Renderer/Renderer.h"
-#include "GEngine/Renderer/Renderer2D.h"
+#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Renderer2D.h"
 
 namespace GEngine
 {

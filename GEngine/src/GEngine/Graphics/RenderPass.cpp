@@ -12,11 +12,11 @@ namespace GEngine
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: {
-			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+		case GraphicsAPI::API::None: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: {
+		case GraphicsAPI::API::OpenGL: {
 			Ref<RenderPass> pass = GetRenderPass(spec);
 			if (pass == nullptr)
 			{
@@ -25,7 +25,7 @@ namespace GEngine
 			}
 			return pass;
 		}
-		case RendererAPI::API::Vulkan: {
+		case GraphicsAPI::API::Vulkan: {
 			Ref<RenderPass> pass = GetRenderPass(spec);
 			if (pass == nullptr)
 			{
@@ -36,7 +36,7 @@ namespace GEngine
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
+		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 

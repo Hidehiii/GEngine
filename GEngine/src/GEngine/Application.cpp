@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "Application.h"
-#include "Renderer/RenderCommand.h"
-#include "Renderer/Renderer.h"
+#include "Graphics/RenderCommand.h"
+#include "Graphics/Renderer.h"
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "tools/Serialization/Serializer.h"
 #include "Utils/GUIUtils.h"
@@ -28,7 +28,7 @@ namespace GEngine
 
 		m_Config = Ref<Config>(new Config());
 		Serializer::Deserialize(m_ConfigPath, m_Config);
-		Renderer::SetRenererAPI((RendererAPI::API)m_Config->m_RendererAPI);
+		Renderer::SetRenererAPI((GraphicsAPI::API)m_Config->m_RendererAPI);
 		Renderer::SetFramesInFlight(m_Config->m_FramesInFlight);
 		Renderer::SetDynamicUniformBufferSizeScaleFactor(m_Config->m_DynamicUniformBufferSizeScaleFactor);
 		Renderer::SetCommandBufferCount(m_Config->m_CommandBufferCount);

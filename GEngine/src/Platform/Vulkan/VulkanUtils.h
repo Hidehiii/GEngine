@@ -1,9 +1,9 @@
 #pragma once
 #include <VMA/vk_mem_alloc.h>
-#include "GEngine/Renderer/FrameBuffer.h"
-#include "GEngine/Renderer/ImageFormat.h"
-#include "GEngine/Renderer/Shader.h"
-#include "GEngine/Renderer/Sampler.h"
+#include "GEngine/Graphics/FrameBuffer.h"
+#include "GEngine/Graphics/ImageFormat.h"
+#include "GEngine/Graphics/Shader.h"
+#include "GEngine/Graphics/Sampler.h"
 
 #ifdef GE_PLATFORM_WINDOWS
 #define VK_CHECK_RESULT(f)																								\

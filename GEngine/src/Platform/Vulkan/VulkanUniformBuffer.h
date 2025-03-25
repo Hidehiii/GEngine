@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Renderer/UniformBuffer.h"
+#include "GEngine/Graphics/UniformBuffer.h"
 #include <vulkan/vulkan.h>
 
 namespace GEngine
