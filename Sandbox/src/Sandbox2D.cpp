@@ -321,6 +321,12 @@ void Sandbox2D::OnUpdate()
 	{
 		m_SkyBoxFB = FrameBuffer::Create(m_SkyBoxFB, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
+
+	m_PresentPipeline->GetMaterial()->SetFloat("f", 1.0f);
+	m_PresentPipeline->GetMaterial()->SetVector("v", Vector4(1.0f, 2.0f, 3.0f, 0.0f));
+
+	GE_INFO(m_PresentPipeline->GetMaterial()->GetFloat("f"));
+	GE_INFO(m_PresentPipeline->GetMaterial()->GetVector("v"));
 }
 
 void Sandbox2D::OnImGuiRender()

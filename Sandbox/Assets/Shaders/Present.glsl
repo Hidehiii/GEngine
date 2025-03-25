@@ -4,6 +4,8 @@
 #Properties
 sampler2D GE_PRESENT_FRAME_BUFFER;
 sampler2D GE_PRESENT_IMGUI;
+float f;
+vector v;
 #EndProperties
 #Type vertex
 #include "Assets/Shaders/Core/Core.glsl"

@@ -214,7 +214,7 @@ namespace GEngine
 		if (uniform.Size)
 		{
 			float value;
-			value = m_UniformsBuffer.Read<float>(uniform.Location, uniform.Size);
+			value = m_UniformsBuffer.Read<float>(uniform.Location);
 			return value;
 		}
 		return 0.0f;
@@ -225,7 +225,8 @@ namespace GEngine
 		if (uniform.Size)
 		{
 			int value;
-			value = m_UniformsBuffer.Read<int>(uniform.Location, uniform.Size);
+			value = m_UniformsBuffer.Read<int>(uniform.Location);
+			return value;
 		}
 		return 0;
 	}
@@ -235,7 +236,8 @@ namespace GEngine
 		if (uniform.Size)
 		{
 			int value;
-			value = m_UniformsBuffer.Read<uint32_t>(uniform.Location, uniform.Size);
+			value = m_UniformsBuffer.Read<uint32_t>(uniform.Location);
+			return value;
 		}
 		return uint32_t();
 	}
@@ -245,7 +247,7 @@ namespace GEngine
 		if (uniform.Size)
 		{
 			Vector4 value;
-			value = m_UniformsBuffer.Read<Vector4>(uniform.Location, uniform.Size);
+			value = m_UniformsBuffer.Read<Vector4>(uniform.Location);
 			return value;
 		}
 		return Vector4();
