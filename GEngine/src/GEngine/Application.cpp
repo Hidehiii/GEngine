@@ -153,12 +153,4 @@ namespace GEngine
 	{
 		m_LayerStack.PushOverlay(overlay);
 	}
-	Layer* Application::PopLayer(Layer* layer)
-	{
-		return m_LayerStack.PopLayer(layer);
-	}
-	Layer* Application::PopOverlay()
-	{
-		return m_LayerStack.PopOverlay();
-	}
 }

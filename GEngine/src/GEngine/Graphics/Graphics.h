@@ -44,6 +44,11 @@ namespace GEngine
 
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
+
+		static void UpdateCameraUniform(Camera& camera);
+		static void UpdateCameraUniform(const Editor::EditorCamera& camera);
+		static void UpdateTimeUniform(Vector4& time);
+		static void UpdateScreenUniform(Vector4& size);
 	private:
 		static void Init(const GraphicsSpecification& spec);
 		static void FrameMove();

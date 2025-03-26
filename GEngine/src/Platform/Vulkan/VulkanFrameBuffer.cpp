@@ -202,8 +202,6 @@ namespace GEngine
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		s_CurrentFrameBufferSize = { (float)m_Specification.Width, (float)m_Specification.Height };
 	}
 	void VulkanFrameBuffer::End(CommandBuffer* cmdBuffer)
 	{

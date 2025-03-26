@@ -44,8 +44,6 @@ namespace GEngine
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
-		Layer* PopLayer(Layer* layer);
-		Layer* PopOverlay();
 
 		inline ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
