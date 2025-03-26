@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "RenderPass.h"
-#include "Renderer.h"
+#include "Graphics.h"
 #include "Platform/OpenGL/OpenGLRenderPass.h"
 #include "Platform/Vulkan/VulkanRenderPass.h"
 
@@ -10,7 +10,7 @@ namespace GEngine
 
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

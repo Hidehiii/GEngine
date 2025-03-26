@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Shader.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 
@@ -699,7 +699,7 @@ namespace GEngine
 
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLContext.h"
 #include "OpenGLCommandBuffer.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -71,7 +71,7 @@ namespace GEngine
 	}
 	void OpenGLContext::CreateCommandBuffers()
 	{
-		for (int i = 0; i < Renderer::GetCommandBufferCount(); i++)
+		for (int i = 0; i < Graphics::GetCommandBufferCount(); i++)
 		{
 			m_GraphicsCommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Graphics));
 			m_ComputeCommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Compute));

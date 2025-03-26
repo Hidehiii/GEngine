@@ -6,8 +6,7 @@
 #include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Graphics/RenderCommand.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace GEngine {
@@ -22,6 +21,10 @@ namespace GEngine {
 	static std::vector<Ref<VulkanCommandBuffer>>		s_CommandBuffers;
 	static std::vector<VkSemaphore>						s_Semaphores;
 	static std::vector<VkFence>							s_Fences;
+	VulkanImGui::~VulkanImGui()
+	{
+		ImGui_ImplVulkan_Shutdown();
+	}
 	void VulkanImGui::OnAttach(GLFWwindow* window)
 	{
 		s_Spec.x				= Application::Get().GetWindow().GetWidth();
@@ -100,7 +103,7 @@ namespace GEngine {
 		info.QueueFamily				= VulkanContext::Get()->GetQueueFamily().GraphicsFamily.value();
 		info.Queue						= VulkanContext::Get()->GetGraphicsQueue();
 		info.PipelineCache				= nullptr;
-		info.MinImageCount				= Renderer::GetFramesInFlight();
+		info.MinImageCount				= Graphics::GetFramesInFlight();
 		info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
 		info.DescriptorPool				= descriptorPool;
 		info.Subpass					= 0;
@@ -113,11 +116,6 @@ namespace GEngine {
 		VulkanContext::Get()->EndSingleTimeGraphicsCommand(CmdBuffer);
 		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
-	}
-
-	void VulkanImGui::OnDetach()
-	{
-		ImGui_ImplVulkan_Shutdown();
 	}
 
 	void VulkanImGui::Begin()
@@ -139,7 +137,7 @@ namespace GEngine {
 	void VulkanImGui::End()
 	{
 
-		VkCommandBuffer cmd = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetCommandBuffer();
+		VkCommandBuffer cmd = s_CommandBuffers.at(Graphics::GetFrame())->GetCommandBuffer();
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -173,9 +171,9 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
-		std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetWaitSemaphores();
+		std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitSemaphores();
 		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Renderer::GetCurrentFrame())->GetSignalSemaphores();
+		std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetSignalSemaphores();
 
 		VkSubmitInfo                    submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -189,8 +187,8 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 
-		s_CommandBuffers.at(Renderer::GetCurrentFrame())->ClearWaitSemaphores();
-		s_CommandBuffers.at(Renderer::GetCurrentFrame())->ClearSignalSemaphores();
+		s_CommandBuffers.at(Graphics::GetFrame())->ClearWaitSemaphores();
+		s_CommandBuffers.at(Graphics::GetFrame())->ClearSignalSemaphores();
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
@@ -200,7 +198,7 @@ namespace GEngine {
 
 	Ref<CommandBuffer> VulkanImGui::GetCommandBuffer()
 	{
-		return s_CommandBuffers.at(Renderer::GetCurrentFrame());
+		return s_CommandBuffers.at(Graphics::GetFrame());
 	}
 
 	void VulkanImGui::CreateBuffer()
@@ -237,19 +235,19 @@ namespace GEngine {
 
 	void VulkanImGui::CreateCommandBufferAndSyncObjects()
 	{
-		s_Semaphores.resize(Renderer::GetFramesInFlight());
-		s_Fences.resize(Renderer::GetFramesInFlight());
-		s_CommandBuffers.resize(Renderer::GetFramesInFlight());
+		s_Semaphores.resize(Graphics::GetFramesInFlight());
+		s_Fences.resize(Graphics::GetFramesInFlight());
+		s_CommandBuffers.resize(Graphics::GetFramesInFlight());
 
 
-		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
 		{
 			VkSemaphoreCreateInfo   semaphoreInfo{};
 			semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphores[i]));
 		}
 		
-		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
 		{
 			VkFenceCreateInfo       fenceInfo{};
 			fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -259,13 +257,13 @@ namespace GEngine {
 		
 
 		std::vector<VkCommandBuffer>	cmds;
-		cmds.resize(Renderer::GetFramesInFlight());
+		cmds.resize(Graphics::GetFramesInFlight());
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool			= VulkanContext::Get()->GetGraphicsCommandPool();
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = Renderer::GetFramesInFlight();
+		allocInfo.commandBufferCount = Graphics::GetFramesInFlight();
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, cmds.data()));
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)

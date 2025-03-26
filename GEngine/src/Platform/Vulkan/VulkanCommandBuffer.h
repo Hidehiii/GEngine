@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Graphics/CommandBuffer.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <optional>
@@ -56,8 +56,6 @@ namespace GEngine
 		VulkanCommandBuffer(VkCommandBuffer buffer, CommandBufferType type);
 		virtual ~VulkanCommandBuffer();
 
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
-		virtual void Begin(Ref<FrameBuffer>& buffer, Camera& camera) override;
 		virtual void Begin(Ref<FrameBuffer>& buffer) override;
 
 		virtual void End() override;

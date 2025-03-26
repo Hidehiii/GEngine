@@ -236,44 +236,42 @@ void Sandbox2D::OnAttach()
 	m_SeparateTextureSampler->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());*/
 }
 
-void Sandbox2D::OnDetach()
-{
-}
-
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
-	Renderer::BeginScene(m_EditorCamera);
+	Graphics::UpdateCameraUniform(m_EditorCamera);
 	GraphicsPresent::Render(m_PresentPipeline);
-	Renderer::EndScene();
 }
 
 void Sandbox2D::OnRender()
 {
-	auto cmd0 = RenderCommand::GetComputeCommandBuffer();
-	auto cmd1 = RenderCommand::GetGraphicsCommandBuffer();
-	auto cmd2 = RenderCommand::GetGraphicsCommandBuffer();
-	auto cmd3 = RenderCommand::GetGraphicsCommandBuffer();
+	auto cmd0 = Graphics::GetComputeCommandBuffer();
+	auto cmd1 = Graphics::GetGraphicsCommandBuffer();
+	auto cmd2 = Graphics::GetGraphicsCommandBuffer();
+	auto cmd3 = Graphics::GetGraphicsCommandBuffer();
 
-	RenderCommand::RegisterSynchronousCommands(cmd0, cmd1);
-	RenderCommand::RegisterSynchronousCommands(cmd0, cmd2);
-	RenderCommand::RegisterSynchronousCommands(cmd1, cmd3);
-	RenderCommand::RegisterSynchronousCommands(cmd2, cmd3);
-	RenderCommand::RegisterSynchronousCommands(cmd3, Application::Get().GetImGuiLayer()->GetCommandBuffer());
-	RenderCommand::RegisterSynchronousCommands(Application::Get().GetImGuiLayer()->GetCommandBuffer(), GraphicsPresent::GetCommandBuffer());
+	Graphics::SetCommandsBarrier(cmd0, cmd1);
+	Graphics::SetCommandsBarrier(cmd0, cmd2);
+	Graphics::SetCommandsBarrier(cmd1, cmd3);
+	Graphics::SetCommandsBarrier(cmd2, cmd3);
+	Graphics::SetCommandsBarrier(cmd3, Application::Get().GetImGuiLayer()->GetCommandBuffer());
+	Graphics::SetCommandsBarrier(Application::Get().GetImGuiLayer()->GetCommandBuffer(), GraphicsPresent::GetCommandBuffer());
 
-	cmd0->Begin(m_DepthOnly, m_EditorCamera);
+	cmd0->Begin(m_DepthOnly);
+	Graphics::UpdateCameraUniform(m_EditorCamera);
 	cmd0->Compute(m_ComputeTest, 1, 1, 1);
 	cmd0->End();
 
-	cmd1->Begin(m_SkyBoxFB, m_EditorCamera);
+	cmd1->Begin(m_SkyBoxFB);
+	Graphics::UpdateCameraUniform(m_EditorCamera);
 	cmd1->Render(m_Scene);
 	cmd1->End();
 
-	cmd2->Begin(m_DepthOnly, m_EditorCamera);
+	cmd2->Begin(m_DepthOnly);
+	Graphics::UpdateCameraUniform(m_EditorCamera);
 	cmd2->Render(m_OITPrepare);
 	cmd2->End();
 
@@ -281,7 +279,8 @@ void Sandbox2D::OnRender()
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
 	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
 
-	cmd3->Begin(m_OIT_Present, m_EditorCamera);
+	cmd3->Begin(m_OIT_Present);
+	Graphics::UpdateCameraUniform(m_EditorCamera);
 	cmd3->Render(m_CopyColorDepth);
 	cmd3->Render(m_OIT);
 	cmd3->End();

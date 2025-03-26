@@ -46,139 +46,8 @@ namespace GEngine
 	OpenGLGraphicsAPI::~OpenGLGraphicsAPI()
 	{
 	}
-	void OpenGLGraphicsAPI::Init()
-	{
 
-	}
-	void OpenGLGraphicsAPI::Uninit()
-	{
-	}
-	void OpenGLGraphicsAPI::SetClearColor(const Vector4& color)
-	{
-		glClearColor(color.r, color.g, color.b, color.a);
-		glClearDepth(1.0f);
-		glClearStencil(0.0f);
-	}
-	void OpenGLGraphicsAPI::Clear()
-	{
-		glDepthMask(GL_TRUE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-	void OpenGLGraphicsAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
-	{
-		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLGraphicsAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
-	{
-		glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLGraphicsAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
-	{
-		glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
-	}
-	void OpenGLGraphicsAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
-	{
-		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-	}
-	void OpenGLGraphicsAPI::EnableDepthWrite(bool enabled)
-	{
-		if (enabled)
-			glDepthMask(GL_TRUE);
-		else
-			glDepthMask(GL_FALSE);
-	}
-	void OpenGLGraphicsAPI::SetDepthTest(CompareOperation op)
-	{
-		switch (op)
-		{
-		case CompareOperation::Less:		glDepthFunc(GL_LESS); break;
-		case CompareOperation::Greater:		glDepthFunc(GL_GREATER); break;
-		case CompareOperation::LessEqual:	glDepthFunc(GL_LEQUAL); break;
-		case CompareOperation::GreaterEqual:glDepthFunc(GL_GEQUAL); break;
-		case CompareOperation::Equal:		glDepthFunc(GL_EQUAL); break;
-		case CompareOperation::NotEqual:	glDepthFunc(GL_NOTEQUAL); break;
-		case CompareOperation::Always:		glDepthFunc(GL_ALWAYS); break;
-		default:
-			break;
-		}
-	}
-	void OpenGLGraphicsAPI::SetCull(CullMode mode)
-	{
-		switch (mode)
-		{
-		case CullMode::None:	glDisable(GL_CULL_FACE); break;
-		case CullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
-		case CullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
-		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
-		}
-	}
-	void OpenGLGraphicsAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
-	{
-		GLenum colorMode = GL_FUNC_ADD, alphaMode = GL_FUNC_ADD;
-		switch (modeColor)
-		{
-		case BlendMode::None:
-			glDisable(GL_BLEND);
-			return;
-		case BlendMode::Add:
-			colorMode = GL_FUNC_ADD;
-			break;
-		case BlendMode::Substract:
-			colorMode = (GL_FUNC_SUBTRACT);
-			break;
-		case BlendMode::ReverseSubstract:
-			colorMode = (GL_FUNC_REVERSE_SUBTRACT);
-			break;
-		case BlendMode::Min:
-			colorMode = (GL_MIN);
-			break;
-		case BlendMode::Max:
-			colorMode = (GL_MAX);
-			break;
-		default:
-			break;
-		}
-		switch (modeAlpha)
-		{
-		case BlendMode::None:
-			glDisable(GL_BLEND);
-			return;
-		case BlendMode::Add:
-			alphaMode = GL_FUNC_ADD;
-			break;
-		case BlendMode::Substract:
-			alphaMode = GL_FUNC_SUBTRACT;
-			break;
-		case BlendMode::ReverseSubstract:
-			alphaMode = GL_FUNC_REVERSE_SUBTRACT;
-			break;
-		case BlendMode::Min:
-			alphaMode = GL_MIN;
-			break;
-		case BlendMode::Max:
-			alphaMode = GL_MAX;
-			break;
-		default:
-			break;
-		}
-		glBlendEquationSeparate(colorMode, alphaMode);
-		glBlendFuncSeparate(Utils::BlendFactorToGLBlendFactor(srcColor),
-			Utils::BlendFactorToGLBlendFactor(dstColor),
-			Utils::BlendFactorToGLBlendFactor(srcAlpha),
-			Utils::BlendFactorToGLBlendFactor(dstAlpha));
-	}
-	void OpenGLGraphicsAPI::SetLineWidth(float width)
-	{
-		glLineWidth(width);
-	}
-	void OpenGLGraphicsAPI::SetPointSize(float size)
-	{
-		glPointSize(size);
-	}
-	void OpenGLGraphicsAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
-		glViewport(x, y, width, height);
-	}
+
 	Ref<CommandBuffer> OpenGLGraphicsAPI::GetGraphicsCommandBuffer()
 	{
 		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
@@ -186,10 +55,6 @@ namespace GEngine
 	Ref<CommandBuffer> OpenGLGraphicsAPI::GetComputeCommandBuffer()
 	{
 		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
-	}
-	float OpenGLGraphicsAPI::GetTime()
-	{
-		return (float)glfwGetTime();
 	}
 	std::vector<std::string> OpenGLGraphicsAPI::GetExtensions()
 	{

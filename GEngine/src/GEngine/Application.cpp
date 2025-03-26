@@ -1,7 +1,6 @@
 #include "GEpch.h"
 #include "Application.h"
 #include "Graphics/Graphics.h"
-#include "Graphics/Renderer.h"
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "tools/Serialization/Serializer.h"
 #include "Utils/GUIUtils.h"

@@ -2,7 +2,7 @@
 #include "GEngine/Graphics/Material.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {
@@ -33,7 +33,7 @@ namespace GEngine
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;
 		VkDescriptorSetLayout								m_DescriptorSetLayout;
 		std::vector<VkDescriptorSet>						m_DescriptorSets;
-		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Renderer::GetFramesInFlight()) - 1;
+		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFramesInFlight()) - 1;
 	};
 
 }

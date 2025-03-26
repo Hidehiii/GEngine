@@ -1,7 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLUtils.h"
 
-
 namespace GEngine
 {
 	namespace Utils

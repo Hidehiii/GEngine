@@ -37,7 +37,6 @@ public:
 	virtual ~Sandbox2D() = default;
 
 	virtual void OnAttach() override;
-	virtual void OnDetach() override;
 	virtual void OnPresent() override;
 	virtual void OnRender() override;
 

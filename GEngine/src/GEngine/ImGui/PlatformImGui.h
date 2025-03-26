@@ -14,7 +14,6 @@ namespace GEngine
 	public:
 		PlatformImGui() {};
 		virtual void OnAttach(GLFWwindow* window) = 0;
-		virtual void OnDetach() = 0;
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;

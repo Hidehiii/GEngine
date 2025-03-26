@@ -2,7 +2,7 @@
 #include "GEngine/Utils/GUIUtils.h"
 #include "ImGui/imgui.h"
 #include "ImGui/backends/imgui_impl_vulkan.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLFrameBuffer.h"
@@ -14,7 +14,7 @@ namespace GEngine
 	std::vector< VkDescriptorSet> s_VulkanTextureID;
 	void* GUIUtils::GetTextureID(const Ref<Texture2D>& texture)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::OpenGL:
 			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
@@ -54,7 +54,7 @@ namespace GEngine
 
 	Vector2 GUIUtils::GetUV0()
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::OpenGL:
 			return { 0.0f, 1.0f };
@@ -71,7 +71,7 @@ namespace GEngine
 
 	Vector2 GUIUtils::GetUV1()
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::OpenGL:
 			return { 1.0f, 0.0f };

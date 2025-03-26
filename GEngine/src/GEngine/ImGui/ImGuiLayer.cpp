@@ -2,7 +2,7 @@
 #include "ImGuiLayer.h"
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
-#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "GEngine/Graphics/CommandBuffer.h"
@@ -23,12 +23,15 @@ namespace GEngine
 	{
 		delete m_PlatformImGui;
 		m_PlatformImGui = nullptr;
+
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 	}
 
 	void ImGuiLayer::OnAttach()
 	{
 		
-		switch (GraphicsAPI::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
 		case GraphicsAPI::API::Vulkan: m_PlatformImGui = new VulkanImGui(); break;
@@ -68,16 +71,6 @@ namespace GEngine
 		
 		// Setup Platform/Renderer backends
 		m_PlatformImGui->OnAttach(window);
-	}
-
-	void ImGuiLayer::OnDetach()
-	{
-		
-		m_PlatformImGui->OnDetach();
-		
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
-	
 	}
 
 

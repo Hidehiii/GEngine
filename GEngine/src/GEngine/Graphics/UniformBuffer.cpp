@@ -6,7 +6,8 @@
 
 namespace GEngine
 {
-	std::vector<Ref<UniformBuffer>>			UniformBufferDynamic::s_GlobalUniforms;
+	std::vector<Ref<UniformBufferDynamic>>			UniformBufferDynamic::s_GlobalUniforms;
+	std::vector<uint32_t>							UniformBufferDynamic::s_GlobalUniformOffsets;
 
 	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 	{
@@ -25,7 +26,7 @@ namespace GEngine
 
 	Ref<UniformBufferDynamic> UniformBufferDynamic::Create(uint32_t size, uint32_t count, uint32_t binding, bool global)
 	{
-		Ref<UniformBuffer>	buf;
+		Ref<UniformBufferDynamic>	buf;
 
 		switch (Graphics::GetGraphicsAPI())
 		{

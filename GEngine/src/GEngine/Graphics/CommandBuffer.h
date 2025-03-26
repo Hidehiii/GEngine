@@ -29,8 +29,6 @@ namespace GEngine
 
 		virtual CommandBufferType				GetType() { return m_Type; }
 
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) = 0;
-		virtual void Begin(Ref<FrameBuffer>& buffer, Camera& camera) = 0;
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
 		virtual void End() = 0;
 	protected:

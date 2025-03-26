@@ -260,10 +260,10 @@ namespace GEngine
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "RendererAPI" << YAML::Value << (int)config->m_RendererAPI; 
+		out << YAML::Key << "RendererAPI" << YAML::Value << (int)config->m_GraphicsAPI;
 		out << YAML::Key << "FramesInFlight" << YAML::Value << (int)config->m_FramesInFlight;
 		out << YAML::Key << "VSync" << YAML::Value << (int)config->m_VSync;
-		out << YAML::Key << "DynamicUniformBufferSizeScaleFactor" << YAML::Value << (int)config->m_DynamicUniformBufferSizeScaleFactor;
+		out << YAML::Key << "DynamicUniformBufferSizeScaleFactor" << YAML::Value << (int)config->m_DynamicUniformCount;
 		out << YAML::Key << "CommandBufferCount" << YAML::Value << (int)config->m_CommandBufferCount;
 
 		out << YAML::EndMap;
@@ -362,10 +362,10 @@ namespace GEngine
 			return;
 		}
 
-		config->m_RendererAPI							= data["RendererAPI"].as<uint8_t>();
+		config->m_GraphicsAPI							= data["RendererAPI"].as<uint8_t>();
 		config->m_FramesInFlight						= data["FramesInFlight"].as<uint8_t>();
 		config->m_VSync									= data["VSync"].as<int>();
-		config->m_DynamicUniformBufferSizeScaleFactor	= data["DynamicUniformBufferSizeScaleFactor"].as<uint32_t>();
+		config->m_DynamicUniformCount					= data["DynamicUniformBufferSizeScaleFactor"].as<uint32_t>();
 		config->m_CommandBufferCount					= data["CommandBufferCount"].as<uint32_t>();
 	}
 	

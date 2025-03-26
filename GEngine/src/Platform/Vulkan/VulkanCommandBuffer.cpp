@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "VulkanGraphicsPipeline.h"
 #include "VulkanComputePipeline.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {
@@ -152,40 +153,6 @@ namespace GEngine
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
 	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
-	{
-		VkCommandBufferBeginInfo    beginInfo{};
-		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags				= 0; // Optional
-		beginInfo.pInheritanceInfo	= nullptr; // Optional
-
-		vkResetCommandBuffer(m_CommandBuffer, 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
-
-		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-		if (m_Type == CommandBufferType::Graphics)
-		{
-			m_FrameBuffer->Begin(this);
-		}
-		Renderer::BeginScene(camera);
-	}
-	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer, Camera& camera)
-	{
-		VkCommandBufferBeginInfo    beginInfo{};
-		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags				= 0; // Optional
-		beginInfo.pInheritanceInfo	= nullptr; // Optional
-
-		vkResetCommandBuffer(m_CommandBuffer, 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
-
-		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-		if (m_Type == CommandBufferType::Graphics)
-		{
-			m_FrameBuffer->Begin(this);
-		}
-		Renderer::BeginScene(camera);
-	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
 		VkCommandBufferBeginInfo    beginInfo{};
@@ -201,6 +168,8 @@ namespace GEngine
 		{
 			m_FrameBuffer->Begin(this);
 		}
+
+		Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0, 0 });
 	}
 	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)
 	{
@@ -211,7 +180,6 @@ namespace GEngine
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			m_FrameBuffer->End(this);
-			Renderer::EndScene();
 		}
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
 

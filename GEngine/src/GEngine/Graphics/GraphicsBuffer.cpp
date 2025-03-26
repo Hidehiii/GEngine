@@ -2,13 +2,13 @@
 #include "GraphicsBuffer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "Renderer.h"
+#include "Graphics.h"
 
 namespace GEngine
 {
 	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -27,7 +27,7 @@ namespace GEngine
 	}
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -47,7 +47,7 @@ namespace GEngine
 
 	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

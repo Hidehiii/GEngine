@@ -1,7 +1,6 @@
 #include "GEpch.h"
 #include "VulkanMaterial.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "GEngine/Graphics/Renderer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
@@ -111,10 +110,10 @@ namespace GEngine
 	{
 		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
 		// 公共ubo
-		std::vector<Ref<UniformBuffer>> globalUniformBuffer = UniformBuffer::GetGlobalUniforms();
+		std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
 		for (auto buffer : globalUniformBuffer)
 		{
-			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBuffer>(buffer)->GetDescriptorSetLayoutBinding());
+			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer)->GetDescriptorSetLayoutBinding());
 		}
 		// 材质ubo
 		layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
@@ -194,10 +193,10 @@ namespace GEngine
 		std::vector<VkWriteDescriptorSet>		writeInfos;
 		VkWriteDescriptorSet					descriptorWrite{};
 		// 公共uniform buffer
-		std::vector<Ref<UniformBuffer>> globalUniformBuffer = UniformBuffer::GetGlobalUniforms();
+		std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
 		for (auto buffer : globalUniformBuffer)
 		{
-			Ref<VulkanUniformBuffer> buf		= std::dynamic_pointer_cast<VulkanUniformBuffer>(buffer);
+			Ref<VulkanUniformBufferDynamic> buf		= std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer);
 
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet				= m_DescriptorSets.at(index);

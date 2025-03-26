@@ -96,7 +96,7 @@ void RayTracing::OnUpdate(GEngine::Editor::EditorCamera& camera)
 	);
 	m_FrameCount++;
 	//m_Texture->SetData(m_TextureData.data(), m_TextureData.size() * 4);
-	GEngine::Renderer2D::DrawQuad(GEngine::Vector3(), GEngine::Vector3(), GEngine::Vector3(8, 8, 1), GEngine::Vector4(1.0f), m_Texture);
+	//GEngine::Renderer2D::DrawQuad(GEngine::Vector3(), GEngine::Vector3(), GEngine::Vector3(8, 8, 1), GEngine::Vector4(1.0f), m_Texture);
 }
 
 GEngine::Vector4 RayTracing::PerPixelRayTrace(uint32_t x, uint32_t y, GEngine::Editor::EditorCamera& camera)

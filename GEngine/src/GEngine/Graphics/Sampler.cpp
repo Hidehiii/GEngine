@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Sampler.h"
-#include "Renderer.h"
+#include "Graphics.h"
 #include "Platform/OpenGL/OpenGLSampler.h"
 #include "Platform/Vulkan/VulkanSampler.h"
 
@@ -10,7 +10,7 @@ namespace GEngine
 
 	Ref<Sampler> Sampler::GetSampler(const SamplerSpecification& spec)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

@@ -15,55 +15,7 @@ namespace GEngine
     VulkanGraphicsAPI::~VulkanGraphicsAPI()
     {
     }
-    void VulkanGraphicsAPI::Init()
-    {
-		
-    }
-    void VulkanGraphicsAPI::Uninit()
-    {
 
-    }
-    void VulkanGraphicsAPI::SetClearColor(const Vector4& color)
-    {
-        VulkanContext::Get()->SetClearColor(color);
-    }
-    void VulkanGraphicsAPI::Clear()
-    {
-    }
-    void VulkanGraphicsAPI::EnableDepthWrite(bool enabled)
-    {
-    }
-    void VulkanGraphicsAPI::SetCull(CullMode mode)
-    {
-    }
-    void VulkanGraphicsAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
-    {
-    }
-    void VulkanGraphicsAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
-    {
-        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
-    }
-    void VulkanGraphicsAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
-    {
-        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
-    }
-    void VulkanGraphicsAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
-    {
-        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
-    }
-    void VulkanGraphicsAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
-    {
-        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
-    }
-    void VulkanGraphicsAPI::SetLineWidth(float width)
-    {
-    }
-    void VulkanGraphicsAPI::SetPointSize(float size)
-    {
-    }
-    void VulkanGraphicsAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-    {
-    }
 
     Ref<CommandBuffer> VulkanGraphicsAPI::GetGraphicsCommandBuffer()
     {
@@ -73,11 +25,6 @@ namespace GEngine
     Ref<CommandBuffer> VulkanGraphicsAPI::GetComputeCommandBuffer()
     {
         return VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
-    }
-
-    float VulkanGraphicsAPI::GetTime()
-    {
-        return (float)glfwGetTime();
     }
 
     std::vector<std::string> VulkanGraphicsAPI::GetExtensions()

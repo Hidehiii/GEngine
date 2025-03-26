@@ -5,7 +5,7 @@
 #include "Platform/Vulkan/VulkanDescriptor.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include <Platform/Vulkan/VMA/vk_mem_alloc.h>
 #include <GLFW/glfw3.h>
 

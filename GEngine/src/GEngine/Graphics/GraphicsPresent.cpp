@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "GraphicsPresent.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
 #include "GEngine/Graphics/CommandBuffer.h"
@@ -11,7 +11,7 @@ namespace GEngine
 
 	Ref<CommandBuffer> GraphicsPresent::GetCommandBuffer()
 	{
-		return s_CommandBuffers.at(Renderer::GetCurrentFrame());
+		return s_CommandBuffers.at(Graphics::GetFrame());
 	}
 
 	void GraphicsPresent::Render(Ref<Scene>& scene)
@@ -31,7 +31,7 @@ namespace GEngine
 
 	Scope<GraphicsPresent> GraphicsPresent::Create()
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case GraphicsAPI::API::OpenGL:  return CreateScope<OpenGLGraphicsPresent>();

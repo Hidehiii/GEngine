@@ -2,11 +2,10 @@
 #include "VulkanComputePipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
-#include "GEngine/Graphics/Renderer.h"
 #include "VulkanCommandBuffer.h"
 
 namespace GEngine
@@ -43,7 +42,7 @@ namespace GEngine
 	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
 	{
 		PrepareCompute(cmdBuffer);
-		RenderCommand::Compute(cmdBuffer, x, y, z);
+		vkCmdDispatch(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), x, y, z);
 	}
 	void VulkanComputePipeline::CreatePipeline()
 	{
@@ -96,7 +95,7 @@ namespace GEngine
 
 		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
 
-		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
-		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
+		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
+		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
 	}
 }

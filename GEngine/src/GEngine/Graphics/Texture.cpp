@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Texture.h"
-#include "Renderer.h"
+#include "Graphics.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLCubeMap.h"
@@ -15,7 +15,7 @@ namespace GEngine
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -34,7 +34,7 @@ namespace GEngine
 	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -53,7 +53,7 @@ namespace GEngine
 	}
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -82,7 +82,7 @@ namespace GEngine
 
 	Ref<CubeMap> CubeMap::Create(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -101,7 +101,7 @@ namespace GEngine
 	}
 	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -135,7 +135,7 @@ namespace GEngine
 	}
 	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

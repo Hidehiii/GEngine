@@ -47,9 +47,6 @@ namespace GEngine
 
 	protected:
 		FrameBufferSpecification						m_Specification;
-	protected:
-		static Vector2	GetCurrentFrameBufferSize() { return s_CurrentFrameBufferSize; }
-		static Vector2									s_CurrentFrameBufferSize;
 
 		friend class Renderer;
 	};

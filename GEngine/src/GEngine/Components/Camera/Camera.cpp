@@ -2,7 +2,7 @@
 #include "Camera.h"
 #include "GEngine/Components/Components.h"
 
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {

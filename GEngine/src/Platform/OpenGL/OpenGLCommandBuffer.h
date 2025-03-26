@@ -10,9 +10,7 @@ namespace GEngine
 		OpenGLCommandBuffer(CommandBufferType type);
 		virtual ~OpenGLCommandBuffer() = default;
 
-		virtual void Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera) override;
-		virtual void Begin(Ref<FrameBuffer>& buffer, Camera& camera) override;
-		virtual void Begin(Ref<FrameBuffer>& buffer) override {}
+		virtual void Begin(Ref<FrameBuffer>& buffer) override;
 		virtual void End() override;
 
 		virtual void Render(Ref<Scene>&scene) override;

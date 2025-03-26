@@ -2,7 +2,8 @@
 #include "OpenGLCommandBuffer.h"
 #include "OpenGLGraphicsPipeline.h"
 #include "OpenGLComputePipeline.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Math/Math.h"
 
 namespace GEngine
 {
@@ -14,32 +15,20 @@ namespace GEngine
 	{
 		return CreateRef<OpenGLCommandBuffer>(type);
 	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, const Editor::EditorCamera& camera)
+	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
 		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			m_FrameBuffer->Begin(this);
-			Renderer::BeginScene(camera);
 		}
-		
-	}
-	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer, Camera& camera)
-	{
-		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
-		if (m_Type == CommandBufferType::Graphics)
-		{
-			m_FrameBuffer->Begin(this);
-			Renderer::BeginScene(camera);
-		}
-		
+		Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0.0f, 0.0f });
 	}
 	void OpenGLCommandBuffer::End()
 	{
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			m_FrameBuffer->End(this);
-			Renderer::EndScene();
 		}
 		
 	}

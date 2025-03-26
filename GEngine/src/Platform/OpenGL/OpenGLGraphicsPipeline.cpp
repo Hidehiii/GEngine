@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLGraphicsPipeline.h"
-#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 
 namespace GEngine

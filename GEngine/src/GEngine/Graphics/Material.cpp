@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Material.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
 
 #include "Platform/OpenGL/OpenGLMaterial.h"
@@ -10,7 +10,7 @@ namespace GEngine
 {
     Ref<Material> Material::Create(const Ref<Shader>& shader, const std::string& name)
     {
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -30,7 +30,7 @@ namespace GEngine
     }
 	Ref<Material> Material::Create(const std::string& shaderPath, const std::string& name)
 	{
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
@@ -50,7 +50,7 @@ namespace GEngine
 	}
     Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
     {
-		switch (Renderer::GetAPI())
+		switch (Graphics::GetGraphicsAPI())
 		{
 		case GraphicsAPI::API::None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");

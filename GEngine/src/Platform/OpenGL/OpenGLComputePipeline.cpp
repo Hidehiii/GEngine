@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLComputePipeline.h"
-#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {
@@ -22,6 +22,7 @@ namespace GEngine
 	void OpenGLComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
 	{
 		m_Material->Update(cmdBuffer);
-		RenderCommand::Compute(cmdBuffer, x, y, z);
+		glDispatchCompute(x, y, z);
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
 }

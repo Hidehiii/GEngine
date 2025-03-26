@@ -1,22 +1,24 @@
 #pragma once
-#include <glad/glad.h>
 #include "GEngine/Graphics/ImageFormat.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Sampler.h"
+
+#include <glad/glad.h>
+
 namespace GEngine
 {
 	namespace Utils
 	{
-		GLenum	RenderImage2DFormatToGLInternalFormat(RenderImage2DFormat format);
-		GLenum	RenderImage2DFormatToGLDataFormat(RenderImage2DFormat format);
+		uint32_t	RenderImage2DFormatToGLInternalFormat(RenderImage2DFormat format);
+		uint32_t	RenderImage2DFormatToGLDataFormat(RenderImage2DFormat format);
 
-		GLenum	ComputeImage2DFormatToGLInternalFormat(ComputeImage2DFormat format);
-		GLenum	ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
+		uint32_t	ComputeImage2DFormatToGLInternalFormat(ComputeImage2DFormat format);
+		uint32_t	ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
 
-		GLenum	BlendFactorToGLBlendFactor(BlendFactor factor);
+		uint32_t	BlendFactorToGLBlendFactor(BlendFactor factor);
 
-		GLenum	SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode);
-		GLenum	SamplerAddressModeToGLWrapMode(SamplerAddressMode mode);
+		uint32_t	SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode);
+		uint32_t	SamplerAddressModeToGLWrapMode(SamplerAddressMode mode);
 
 		void	EnableDepthWrite(bool enable);
 		void	SetDepthTest(CompareOperation op);

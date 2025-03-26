@@ -1,8 +1,7 @@
 #include "GEpch.h"
 #include "Scene.h"
 #include "GEngine/Core/Time.h"
-#include "GEngine/Graphics/Renderer.h"
-#include "GEngine/Graphics/Renderer2D.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Components/Components.h"
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Physics/2D/Physics2D.h"
@@ -361,8 +360,10 @@ namespace GEngine
 
 	bool ObjSort(GameObject& a, GameObject& b)
 	{
-		return Math::Distance(Renderer::GetRenderTargetCameraPosition(), a.GetComponent<Transform>().m_Position) > 
-			Math::Distance(Renderer::GetRenderTargetCameraPosition(), b.GetComponent<Transform>().m_Position);
+		/*return Math::Distance(Graphics::GetRenderTargetCameraPosition(), a.GetComponent<Transform>().m_Position) >
+			Math::Distance(Graphics::GetRenderTargetCameraPosition(), b.GetComponent<Transform>().m_Position);*/
+		GE_CORE_ASSERT(false, "");
+		return false;
 	}
 	// 渲染场景中的所有对象
 	void Scene::OnRender()

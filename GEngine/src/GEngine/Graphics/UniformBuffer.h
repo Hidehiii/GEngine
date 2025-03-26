@@ -24,8 +24,8 @@ class GENGINE_API UniformBufferDynamic
 
 		static Ref<UniformBufferDynamic> Create(uint32_t size, uint32_t count, uint32_t binding, bool global);
 
-		static const std::vector<Ref<UniformBuffer>>&	GetGlobalUniforms()			{ return s_GlobalUniforms; }
-		static const std::vector<uint32_t>&				GetGlobalUniformOffsets()	{ return s_GlobalUniformOffsets; }
+		static const std::vector<Ref<UniformBufferDynamic>>&	GetGlobalUniforms()			{ return s_GlobalUniforms; }
+		static const std::vector<uint32_t>&						GetGlobalUniformOffsets()	{ return s_GlobalUniformOffsets; }
 	protected:
 		void UpdateGlobalUniformOffset();
 	protected:
@@ -35,8 +35,8 @@ class GENGINE_API UniformBufferDynamic
 		uint32_t	m_Binding = 0;
 		uint32_t	m_GlobalIndex = -1;
 	private:
-		static std::vector<Ref<UniformBuffer>>		s_GlobalUniforms;
-		static std::vector<uint32_t>				s_GlobalUniformOffsets;
+		static std::vector<Ref<UniformBufferDynamic>>		s_GlobalUniforms;
+		static std::vector<uint32_t>						s_GlobalUniformOffsets;
 	};}
 
 

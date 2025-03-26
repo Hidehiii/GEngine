@@ -21,9 +21,7 @@
 #include "GEngine/Math/Matrix4x4.h"
 
 // Graphics
-#include "GEngine/Graphics/Renderer.h"
-#include "GEngine/Graphics/Renderer2D.h"
-#include "GEngine/Graphics/RenderCommand.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsBuffer.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/GraphicsPipeline.h"
