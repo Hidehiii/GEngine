@@ -50,7 +50,8 @@ namespace GEngine
 		static void UpdateTimeUniform(Vector4& time);
 		static void UpdateScreenUniform(Vector4& size);
 	private:
-		static void Init(const GraphicsSpecification& spec);
+		static void Setup(const GraphicsSpecification& spec);
+		static void Init();
 		static void FrameMove();
 		static void SetViewport(uint32_t width, uint32_t height);
 

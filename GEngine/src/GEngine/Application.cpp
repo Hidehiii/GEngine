@@ -36,7 +36,7 @@ namespace GEngine
 		graphicsSpec.ViewportWidth				= (uint32_t)spec.Size.x;
 		graphicsSpec.ViewportHeight				= (uint32_t)spec.Size.y;
 
-		Graphics::Init(graphicsSpec);
+		Graphics::Setup(graphicsSpec);
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
@@ -45,6 +45,7 @@ namespace GEngine
 		m_GraphicsPresent = GraphicsPresent::Create();
 
 
+		Graphics::Init();
 		ScriptEngine::Init();
 		Physics3D::Init();
 

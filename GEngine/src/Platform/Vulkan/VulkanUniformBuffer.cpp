@@ -69,16 +69,16 @@ namespace GEngine
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
-			size,
+			m_TotalSize,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			m_UniformBuffer,
 			m_UniformBufferMemory);
-		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, 0, size, 0, &m_MapData);
+		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, 0, m_TotalSize, 0, &m_MapData);
 
 		m_BufferInfo.buffer = m_UniformBuffer;
 		m_BufferInfo.offset = 0;
-		m_BufferInfo.range	= size;
+		m_BufferInfo.range	= m_TotalSize;
 
 	}
 	VulkanUniformBufferDynamic::~VulkanUniformBufferDynamic()
@@ -93,7 +93,7 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(size <= m_Aligment, "");
 
-		m_Offset = m_Offset + m_Aligment <= m_TotalSize ? m_Offset + m_Aligment : 0;
+		m_Offset = m_Offset + m_Aligment < m_TotalSize ? m_Offset + m_Aligment : 0;
 
 		memcpy(((std::byte*)m_MapData) + m_Offset, data, size);
 

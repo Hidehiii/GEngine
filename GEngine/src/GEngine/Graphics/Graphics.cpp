@@ -54,8 +54,8 @@ namespace GEngine
 
 	static UniformData	s_UniformData;
 
-	void Graphics::Init(const GraphicsSpecification& spec)
-    {
+	void Graphics::Setup(const GraphicsSpecification& spec)
+	{
 		switch (spec.API)
 		{
 		case GraphicsAPI::API::None:
@@ -76,7 +76,10 @@ namespace GEngine
 		s_DynamicUniformCount	= spec.DynamicUniformCount;
 		s_ViewportWidth			= spec.ViewportWidth;
 		s_ViewportHeight		= spec.ViewportHeight;
+	}
 
+	void Graphics::Init()
+    {
 		s_UniformData.CameraBuffer	= UniformBufferDynamic::Create(sizeof(CameraUniformData), s_DynamicUniformCount, 1, true);
 		s_UniformData.TimeBuffer	= UniformBufferDynamic::Create(sizeof(TimeUniformData), s_DynamicUniformCount, 2, true);
 
