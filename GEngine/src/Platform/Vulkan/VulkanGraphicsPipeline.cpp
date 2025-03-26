@@ -6,9 +6,8 @@
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
-#include "GEngine/Graphics/RenderCommand.h"
-#include "GEngine/Graphics/Renderer.h"
-
+#include "GEngine/Graphics/Graphics.h"
+#include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanContext.h"
 namespace GEngine
 {
@@ -74,8 +73,8 @@ namespace GEngine
 		vkCmdSetDepthWriteEnable(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), m_Material->IsEnableDepthWrite());
 		vkCmdSetCullMode(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCull()));
 
-		auto offsets = Renderer::GetDynamicUniformBufferOffsets();
-		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Renderer::GetCurrentFrame()), offsets.size(), offsets.data());
+		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
+		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
 	}
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
@@ -85,51 +84,11 @@ namespace GEngine
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
 		if (m_VertexBuffer->IsInstanceRendering())
 		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VertexTopology::Triangle:
-			{
-				RenderCommand::DrawTriangleInstance(cmdBuffer, indexCount, instanceCount);
-				break;
-			}
-			case VertexTopology::Line:
-			{
-				RenderCommand::DrawLines(cmdBuffer, indexCount);
-				break;
-			}
-			case VertexTopology::Point:
-			{
-				RenderCommand::DrawPoints(cmdBuffer, indexCount);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
+			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
 		}
 		else
 		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VertexTopology::Triangle:
-			{
-				RenderCommand::DrawTriangles(cmdBuffer, indexCount);
-				break;
-			}
-			case VertexTopology::Line:
-			{
-				RenderCommand::DrawLines(cmdBuffer, indexCount);
-				break;
-			}
-			case VertexTopology::Point:
-			{
-				RenderCommand::DrawPoints(cmdBuffer, indexCount);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
+			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
 		}
 	}
 

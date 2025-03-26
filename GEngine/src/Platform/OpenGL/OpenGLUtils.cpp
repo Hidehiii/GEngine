@@ -130,5 +130,92 @@ namespace GEngine
 			}
 			return GL_REPEAT;
 		}
+		void EnableDepthWrite(bool enable)
+		{
+			if (enable)
+				glDepthMask(GL_TRUE);
+			else
+				glDepthMask(GL_FALSE);
+		}
+		void SetDepthTest(CompareOperation op)
+		{
+			switch (op)
+			{
+			case CompareOperation::Less:		glDepthFunc(GL_LESS); break;
+			case CompareOperation::Greater:		glDepthFunc(GL_GREATER); break;
+			case CompareOperation::LessEqual:	glDepthFunc(GL_LEQUAL); break;
+			case CompareOperation::GreaterEqual:glDepthFunc(GL_GEQUAL); break;
+			case CompareOperation::Equal:		glDepthFunc(GL_EQUAL); break;
+			case CompareOperation::NotEqual:	glDepthFunc(GL_NOTEQUAL); break;
+			case CompareOperation::Always:		glDepthFunc(GL_ALWAYS); break;
+			default:
+				break;
+			}
+		}
+		void SetCull(CullMode mode)
+		{
+			switch (mode)
+			{
+			case CullMode::None:	glDisable(GL_CULL_FACE); break;
+			case CullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
+			case CullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
+			default:				GE_CORE_CRITICAL("Unknown cull mode!"); break;
+			}
+		}
+		void SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+		{
+			GLenum colorMode = GL_FUNC_ADD, alphaMode = GL_FUNC_ADD;
+			switch (modeColor)
+			{
+			case BlendMode::None:
+				glDisable(GL_BLEND);
+				return;
+			case BlendMode::Add:
+				colorMode = GL_FUNC_ADD;
+				break;
+			case BlendMode::Substract:
+				colorMode = (GL_FUNC_SUBTRACT);
+				break;
+			case BlendMode::ReverseSubstract:
+				colorMode = (GL_FUNC_REVERSE_SUBTRACT);
+				break;
+			case BlendMode::Min:
+				colorMode = (GL_MIN);
+				break;
+			case BlendMode::Max:
+				colorMode = (GL_MAX);
+				break;
+			default:
+				break;
+			}
+			switch (modeAlpha)
+			{
+			case BlendMode::None:
+				glDisable(GL_BLEND);
+				return;
+			case BlendMode::Add:
+				alphaMode = GL_FUNC_ADD;
+				break;
+			case BlendMode::Substract:
+				alphaMode = GL_FUNC_SUBTRACT;
+				break;
+			case BlendMode::ReverseSubstract:
+				alphaMode = GL_FUNC_REVERSE_SUBTRACT;
+				break;
+			case BlendMode::Min:
+				alphaMode = GL_MIN;
+				break;
+			case BlendMode::Max:
+				alphaMode = GL_MAX;
+				break;
+			default:
+				break;
+			}
+			glBlendEquationSeparate(colorMode, alphaMode);
+			glBlendFuncSeparate(Utils::BlendFactorToGLBlendFactor(srcColor),
+				Utils::BlendFactorToGLBlendFactor(dstColor),
+				Utils::BlendFactorToGLBlendFactor(srcAlpha),
+				Utils::BlendFactorToGLBlendFactor(dstAlpha));
+		}
 	}
 }

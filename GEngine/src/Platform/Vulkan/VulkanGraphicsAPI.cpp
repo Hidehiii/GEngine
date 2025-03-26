@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanRendererAPI.h"
+#include "VulkanGraphicsAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
@@ -8,72 +8,79 @@
 
 namespace GEngine
 {
-    void VulkanRendererAPI::Init()
+    VulkanGraphicsAPI::VulkanGraphicsAPI()
+    {
+        s_API = GraphicsAPI::API::Vulkan;
+    }
+    VulkanGraphicsAPI::~VulkanGraphicsAPI()
+    {
+    }
+    void VulkanGraphicsAPI::Init()
     {
 		
     }
-    void VulkanRendererAPI::Uninit()
+    void VulkanGraphicsAPI::Uninit()
     {
 
     }
-    void VulkanRendererAPI::SetClearColor(const Vector4& color)
+    void VulkanGraphicsAPI::SetClearColor(const Vector4& color)
     {
         VulkanContext::Get()->SetClearColor(color);
     }
-    void VulkanRendererAPI::Clear()
+    void VulkanGraphicsAPI::Clear()
     {
     }
-    void VulkanRendererAPI::EnableDepthWrite(bool enabled)
+    void VulkanGraphicsAPI::EnableDepthWrite(bool enabled)
     {
     }
-    void VulkanRendererAPI::SetCull(CullMode mode)
+    void VulkanGraphicsAPI::SetCull(CullMode mode)
     {
     }
-    void VulkanRendererAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+    void VulkanGraphicsAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
     {
     }
-    void VulkanRendererAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
-    {
-        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
-    }
-    void VulkanRendererAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
+    void VulkanGraphicsAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
     {
         vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
-    void VulkanRendererAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
+    void VulkanGraphicsAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
     {
         vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
     }
-    void VulkanRendererAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
+    void VulkanGraphicsAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
+    {
+        vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+    }
+    void VulkanGraphicsAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
     {
         vkCmdDrawIndexed(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
     }
-    void VulkanRendererAPI::SetLineWidth(float width)
+    void VulkanGraphicsAPI::SetLineWidth(float width)
     {
     }
-    void VulkanRendererAPI::SetPointSize(float size)
+    void VulkanGraphicsAPI::SetPointSize(float size)
     {
     }
-    void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    void VulkanGraphicsAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
     {
     }
 
-    Ref<CommandBuffer> VulkanRendererAPI::GetGraphicsCommandBuffer()
+    Ref<CommandBuffer> VulkanGraphicsAPI::GetGraphicsCommandBuffer()
     {
         return VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
     }
 
-    Ref<CommandBuffer> VulkanRendererAPI::GetComputeCommandBuffer()
+    Ref<CommandBuffer> VulkanGraphicsAPI::GetComputeCommandBuffer()
     {
         return VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
     }
 
-    float VulkanRendererAPI::GetTime()
+    float VulkanGraphicsAPI::GetTime()
     {
         return (float)glfwGetTime();
     }
 
-    std::vector<std::string> VulkanRendererAPI::GetExtensions()
+    std::vector<std::string> VulkanGraphicsAPI::GetExtensions()
     {
         std::vector<std::string> ext;
 		uint32_t extensionCount;
@@ -89,49 +96,49 @@ namespace GEngine
         return ext;
     }
 
-    uint32_t VulkanRendererAPI::GetMaxTextureSize()
+    uint32_t VulkanGraphicsAPI::GetMaxTextureSize()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
         return deviceProperties.limits.maxImageDimension2D;
     }
 
-    uint32_t VulkanRendererAPI::GetMaxCombinedTextureCount()
+    uint32_t VulkanGraphicsAPI::GetMaxCombinedTextureCount()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
 		return deviceProperties.limits.maxDescriptorSetSampledImages;
     }
 
-    uint32_t VulkanRendererAPI::GetMaxPerStageTextureCount()
+    uint32_t VulkanGraphicsAPI::GetMaxPerStageTextureCount()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
 		return deviceProperties.limits.maxPerStageDescriptorSampledImages;
     }
 
-    uint32_t VulkanRendererAPI::GetMaxTextureArrayLayers()
+    uint32_t VulkanGraphicsAPI::GetMaxTextureArrayLayers()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
 		return deviceProperties.limits.maxImageArrayLayers;
     }
 
-    uint32_t VulkanRendererAPI::GetMinUniformBufferOffsetAlignment()
+    uint32_t VulkanGraphicsAPI::GetMinUniformBufferOffsetAlignment()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
 		return deviceProperties.limits.minUniformBufferOffsetAlignment;
     }
 
-    uint32_t VulkanRendererAPI::GetMaxUniformBufferSize()
+    uint32_t VulkanGraphicsAPI::GetMaxUniformBufferSize()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
 		return deviceProperties.limits.maxUniformBufferRange;
     }
 
-    Vector3 VulkanRendererAPI::GetMaxComputeWorkGroupCount()
+    Vector3 VulkanGraphicsAPI::GetMaxComputeWorkGroupCount()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
@@ -141,7 +148,7 @@ namespace GEngine
         return Vector3(x, y, z);
     }
 
-    Vector3 VulkanRendererAPI::GetMaxComputeWorkGroupSize()
+    Vector3 VulkanGraphicsAPI::GetMaxComputeWorkGroupSize()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
@@ -151,21 +158,21 @@ namespace GEngine
 		return Vector3(x, y, z);
     }
 
-    uint32_t VulkanRendererAPI::GetMaxComputeWorkGroupInvocations()
+    uint32_t VulkanGraphicsAPI::GetMaxComputeWorkGroupInvocations()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);
         return deviceProperties.limits.maxComputeWorkGroupInvocations;
     }
 
-    void VulkanRendererAPI::RegisterSynchronousCommands(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
+    void VulkanGraphicsAPI::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
     {
         VkSemaphore s = VulkanContext::Get()->GetSemaphore();
         std::dynamic_pointer_cast<VulkanCommandBuffer>(first)->AddSignalSemaphore(s);
         std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
     }
 
-    void VulkanRendererAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
+    void VulkanGraphicsAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
     {
         vkCmdDispatch(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), x, y, z);
     }

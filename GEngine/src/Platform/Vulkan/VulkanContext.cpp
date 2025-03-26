@@ -2,7 +2,7 @@
 #include "VulkanContext.h"
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Core/CoreThread.h"
 #include <set>
 
@@ -555,7 +555,7 @@ namespace GEngine
         VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
         VkExtent2D                  extent                  = ChooseSwapExtent(swapChainSupportDetails.Capabilities, width, height);
 
-        uint32_t                    imageCount              = std::max(swapChainSupportDetails.Capabilities.minImageCount + 1, (unsigned int) Renderer::GetFramesInFlight());
+        uint32_t                    imageCount              = std::max(swapChainSupportDetails.Capabilities.minImageCount + 1, (unsigned int) Graphics::GetFramesInFlight());
         if (swapChainSupportDetails.Capabilities.maxImageCount > 0 &&
             imageCount > swapChainSupportDetails.Capabilities.maxImageCount)
         {
@@ -646,9 +646,9 @@ namespace GEngine
 	}
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
-        m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
-        for (int i = 0; i < Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight(); i++)
+        m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
+        m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
+        for (int i = 0; i < Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight(); i++)
         {
             m_GraphicsCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
                 CommandBufferType::Graphics));
@@ -663,8 +663,8 @@ namespace GEngine
 
     void VulkanContext::CreateSyncObjects()
     {
-        m_Semaphores.resize(Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
-        m_Fences.resize(Renderer::GetCommandBufferCount() * Renderer::GetFramesInFlight());
+        m_Semaphores.resize(Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
+        m_Fences.resize(Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
 
         for (int i = 0; i < m_Semaphores.size(); i++)
         {

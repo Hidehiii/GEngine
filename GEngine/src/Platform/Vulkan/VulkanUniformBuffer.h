@@ -22,13 +22,6 @@ namespace GEngine
 		void*						m_MapData;
 		VkDescriptorBufferInfo		m_BufferInfo{};
 		VkDescriptorSetLayoutBinding m_DescriptorSetLayoutBinding;
-
-	public:
-		static void AddPublicUniformBuffer(VulkanUniformBuffer* buffer);
-		static void RemovePublicUniformBuffer(VulkanUniformBuffer* buffer);
-		static std::vector<VulkanUniformBuffer*> GetPublicUniformBuffer() { return s_PublicUniformBuffer; }
-	private:
-		static std::vector<VulkanUniformBuffer*> s_PublicUniformBuffer;
 	};
 }
 

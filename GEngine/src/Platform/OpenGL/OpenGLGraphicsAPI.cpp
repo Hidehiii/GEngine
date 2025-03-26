@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLRendererAPI.h"
+#include "OpenGLGraphicsAPI.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "OpenGLUtils.h"
@@ -8,8 +8,10 @@
 
 namespace GEngine
 {
-	void OpenGLRendererAPI::Init()
+	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
+		s_API = GraphicsAPI::API::OpenGL;
+
 #ifdef GE_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -41,44 +43,51 @@ namespace GEngine
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_MULTISAMPLE);
 	}
-	void OpenGLRendererAPI::Uninit()
+	OpenGLGraphicsAPI::~OpenGLGraphicsAPI()
 	{
 	}
-	void OpenGLRendererAPI::SetClearColor(const Vector4& color)
+	void OpenGLGraphicsAPI::Init()
+	{
+
+	}
+	void OpenGLGraphicsAPI::Uninit()
+	{
+	}
+	void OpenGLGraphicsAPI::SetClearColor(const Vector4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
 		glClearDepth(1.0f);
 		glClearStencil(0.0f);
 	}
-	void OpenGLRendererAPI::Clear()
+	void OpenGLGraphicsAPI::Clear()
 	{
 		glDepthMask(GL_TRUE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
-	void OpenGLRendererAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
+	void OpenGLGraphicsAPI::DrawTriangles(CommandBuffer* buffer, uint32_t indexCount)
 	{
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
-	void OpenGLRendererAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
+	void OpenGLGraphicsAPI::DrawLines(CommandBuffer* buffer, uint32_t indexCount)
 	{
 		glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
-	void OpenGLRendererAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
+	void OpenGLGraphicsAPI::DrawPoints(CommandBuffer* buffer, uint32_t indexCount)
 	{
 		glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
-	void OpenGLRendererAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
+	void OpenGLGraphicsAPI::DrawTrianglesInstance(CommandBuffer* buffer, uint32_t indexCount, uint32_t instanceCount)
 	{
 		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 	}
-	void OpenGLRendererAPI::EnableDepthWrite(bool enabled)
+	void OpenGLGraphicsAPI::EnableDepthWrite(bool enabled)
 	{
 		if (enabled)
 			glDepthMask(GL_TRUE);
 		else
 			glDepthMask(GL_FALSE);
 	}
-	void OpenGLRendererAPI::SetDepthTest(CompareOperation op)
+	void OpenGLGraphicsAPI::SetDepthTest(CompareOperation op)
 	{
 		switch (op)
 		{
@@ -93,7 +102,7 @@ namespace GEngine
 			break;
 		}
 	}
-	void OpenGLRendererAPI::SetCull(CullMode mode)
+	void OpenGLGraphicsAPI::SetCull(CullMode mode)
 	{
 		switch (mode)
 		{
@@ -103,7 +112,7 @@ namespace GEngine
 		default:GE_CORE_CRITICAL("Unknown cull mode!"); break;
 		}
 	}
-	void OpenGLRendererAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
+	void OpenGLGraphicsAPI::SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
 	{
 		GLenum colorMode = GL_FUNC_ADD, alphaMode = GL_FUNC_ADD;
 		switch (modeColor)
@@ -158,31 +167,31 @@ namespace GEngine
 			Utils::BlendFactorToGLBlendFactor(srcAlpha),
 			Utils::BlendFactorToGLBlendFactor(dstAlpha));
 	}
-	void OpenGLRendererAPI::SetLineWidth(float width)
+	void OpenGLGraphicsAPI::SetLineWidth(float width)
 	{
 		glLineWidth(width);
 	}
-	void OpenGLRendererAPI::SetPointSize(float size)
+	void OpenGLGraphicsAPI::SetPointSize(float size)
 	{
 		glPointSize(size);
 	}
-	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+	void OpenGLGraphicsAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
 	}
-	Ref<CommandBuffer> OpenGLRendererAPI::GetGraphicsCommandBuffer()
+	Ref<CommandBuffer> OpenGLGraphicsAPI::GetGraphicsCommandBuffer()
 	{
 		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
 	}
-	Ref<CommandBuffer> OpenGLRendererAPI::GetComputeCommandBuffer()
+	Ref<CommandBuffer> OpenGLGraphicsAPI::GetComputeCommandBuffer()
 	{
 		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
 	}
-	float OpenGLRendererAPI::GetTime()
+	float OpenGLGraphicsAPI::GetTime()
 	{
 		return (float)glfwGetTime();
 	}
-	std::vector<std::string> OpenGLRendererAPI::GetExtensions()
+	std::vector<std::string> OpenGLGraphicsAPI::GetExtensions()
 	{
 		std::vector<std::string> ext;
 		GLint numExtensions;
@@ -194,43 +203,43 @@ namespace GEngine
 		};
 		return ext;
 	}
-	uint32_t OpenGLRendererAPI::GetMaxTextureSize()
+	uint32_t OpenGLGraphicsAPI::GetMaxTextureSize()
 	{
 		int size;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
 		return size;
 	}
-	uint32_t OpenGLRendererAPI::GetMaxCombinedTextureCount()
+	uint32_t OpenGLGraphicsAPI::GetMaxCombinedTextureCount()
 	{
 		int count;
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &count);
 		return count;
 	}
-	uint32_t OpenGLRendererAPI::GetMaxPerStageTextureCount()
+	uint32_t OpenGLGraphicsAPI::GetMaxPerStageTextureCount()
 	{
 		int count;
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &count);
 		return count;
 	}
-	uint32_t OpenGLRendererAPI::GetMaxTextureArrayLayers()
+	uint32_t OpenGLGraphicsAPI::GetMaxTextureArrayLayers()
 	{
 		GLint maxArrayTextureLayers;
 		glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArrayTextureLayers);
 		return maxArrayTextureLayers;
 	}
-	uint32_t OpenGLRendererAPI::GetMinUniformBufferOffsetAlignment()
+	uint32_t OpenGLGraphicsAPI::GetMinUniformBufferOffsetAlignment()
 	{
 		GLint aligment;
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &aligment);
 		return aligment;
 	}
-	uint32_t OpenGLRendererAPI::GetMaxUniformBufferSize()
+	uint32_t OpenGLGraphicsAPI::GetMaxUniformBufferSize()
 	{
 		GLint size;
 		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &size);
 		return size;
 	}
-	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupCount()
+	Vector3 OpenGLGraphicsAPI::GetMaxComputeWorkGroupCount()
 	{
 		int x, y, z;
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &x);
@@ -238,7 +247,7 @@ namespace GEngine
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &z);
 		return Vector3(x, y, z);
 	}
-	Vector3 OpenGLRendererAPI::GetMaxComputeWorkGroupSize()
+	Vector3 OpenGLGraphicsAPI::GetMaxComputeWorkGroupSize()
 	{
 		int x, y, z;
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &x);
@@ -246,14 +255,14 @@ namespace GEngine
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &z);
 		return Vector3(x, y, z);
 	}
-	uint32_t OpenGLRendererAPI::GetMaxComputeWorkGroupInvocations()
+	uint32_t OpenGLGraphicsAPI::GetMaxComputeWorkGroupInvocations()
 	{
 		int x;
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
 		return x;
 	}
 
-	void OpenGLRendererAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
+	void OpenGLGraphicsAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
 	{
 		glDispatchCompute(x, y, z);
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

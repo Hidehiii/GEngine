@@ -36,6 +36,6 @@ namespace GEngine
 		std::vector<Ref<OpenGLCommandBuffer>>	m_ComputeCommandBuffers;
 		uint32_t								m_ComputeCommandBufferIndex = 0;
 
-		friend class OpenGLRendererAPI;
+		friend class OpenGLGraphicsAPI;
 	};
 }

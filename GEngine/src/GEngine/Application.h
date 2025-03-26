@@ -6,7 +6,6 @@
 #include "LayerStack.h"
 #include "ImGui/ImGuiLayer.h"
 #include "GEngine/Core/Time.h"
-#include "Graphics/RenderCommand.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/GraphicsPresent.h"
 #include "GEngine/Core/Config.h"
@@ -45,12 +44,14 @@ namespace GEngine
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
+		Layer* PopLayer(Layer* layer);
+		Layer* PopOverlay();
 
 		inline ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
-		inline Ref<Config> GetConfig() { return m_Config; }
+		inline const Ref<Config> GetConfig() { return m_Config; }
 
 		inline const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 	private:

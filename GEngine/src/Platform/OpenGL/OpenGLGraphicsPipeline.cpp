@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLGraphicsPipeline.h"
 #include "GEngine/Graphics/RenderCommand.h"
+#include <glad/glad.h>
 
 namespace GEngine
 {
@@ -23,17 +24,17 @@ namespace GEngine
 			{
 			case VertexTopology::Triangle:
 			{
-				RenderCommand::DrawTriangleInstance(cmdBuffer, indexCount, instanceCount);
+				glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
 			}
 			case VertexTopology::Line:
 			{
-				RenderCommand::DrawLines(cmdBuffer, indexCount);
+				glDrawElementsInstanced(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
 			}
 			case VertexTopology::Point:
 			{
-				RenderCommand::DrawPoints(cmdBuffer, indexCount);
+				glDrawElementsInstanced(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
 			}
 			default:
@@ -47,17 +48,17 @@ namespace GEngine
 			{
 			case VertexTopology::Triangle:
 			{
-				RenderCommand::DrawTriangles(cmdBuffer, indexCount);
+				glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;
 			}
 			case VertexTopology::Line:
 			{
-				RenderCommand::DrawLines(cmdBuffer, indexCount);
+				glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;
 			}
 			case VertexTopology::Point:
 			{
-				RenderCommand::DrawPoints(cmdBuffer, indexCount);
+				glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;
 			}
 			default:

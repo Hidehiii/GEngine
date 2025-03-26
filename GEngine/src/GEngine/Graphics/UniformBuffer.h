@@ -16,9 +16,7 @@ namespace GEngine
 	protected:
 		uint32_t m_Binding = 0;
 	};
-
-
-	class GENGINE_API UniformBufferDynamic    
+class GENGINE_API UniformBufferDynamic
 	{
 	public:
 		virtual ~UniformBufferDynamic() {}
@@ -39,8 +37,7 @@ namespace GEngine
 	private:
 		static std::vector<Ref<UniformBuffer>>		s_GlobalUniforms;
 		static std::vector<uint32_t>				s_GlobalUniformOffsets;
-	};
-}
+	};}
 
 
 

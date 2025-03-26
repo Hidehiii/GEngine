@@ -2,6 +2,7 @@
 #include "VulkanMaterial.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Renderer.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
@@ -90,12 +91,12 @@ namespace GEngine
 			cubeMap.Cubemap->Bind(cmdBuffer, cubeMap.Slot);
 		}
 
-		if (m_NeedUpdateDescripotrSetFrames & (uint8_t)(std::pow(2, Renderer::GetCurrentFrame())))
+		if (m_NeedUpdateDescripotrSetFrames & (uint8_t)(std::pow(2, Graphics::GetFrame())))
 		{
-			UpdateDescriptorSet(Renderer::GetCurrentFrame());
-			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Renderer::GetCurrentFrame());
+			UpdateDescriptorSet(Graphics::GetFrame());
+			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Graphics::GetFrame());
 		}
-		UpdateDescriptorSet(Renderer::GetCurrentFrame());
+		UpdateDescriptorSet(Graphics::GetFrame());
 	}
 
 	void VulkanMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
@@ -110,10 +111,10 @@ namespace GEngine
 	{
 		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
 		// 公共ubo
-		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
-		for (auto buffer : publicUniformBuffer)
+		std::vector<Ref<UniformBuffer>> globalUniformBuffer = UniformBuffer::GetGlobalUniforms();
+		for (auto buffer : globalUniformBuffer)
 		{
-			layoutBindings.push_back(buffer->GetDescriptorSetLayoutBinding());
+			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBuffer>(buffer)->GetDescriptorSetLayoutBinding());
 		}
 		// 材质ubo
 		layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
@@ -175,7 +176,7 @@ namespace GEngine
 
 		// 只用一个set，需要兼容gl没有set的概念
 		// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
-		m_DescriptorSets.resize(Renderer::GetFramesInFlight());
+		m_DescriptorSets.resize(Graphics::GetFramesInFlight());
 
 		VkDescriptorSetAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -183,7 +184,7 @@ namespace GEngine
 		allocInfo.descriptorSetCount	= 1;
 		allocInfo.pSetLayouts			= &m_DescriptorSetLayout;
 
-		for (int i = 0; i < Renderer::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
 		{
 			VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSets[i]));
 		}
@@ -193,16 +194,18 @@ namespace GEngine
 		std::vector<VkWriteDescriptorSet>		writeInfos;
 		VkWriteDescriptorSet					descriptorWrite{};
 		// 公共uniform buffer
-		std::vector<VulkanUniformBuffer*> publicUniformBuffer = VulkanUniformBuffer::GetPublicUniformBuffer();
-		for (auto buffer : publicUniformBuffer)
+		std::vector<Ref<UniformBuffer>> globalUniformBuffer = UniformBuffer::GetGlobalUniforms();
+		for (auto buffer : globalUniformBuffer)
 		{
+			Ref<VulkanUniformBuffer> buf		= std::dynamic_pointer_cast<VulkanUniformBuffer>(buffer);
+
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet				= m_DescriptorSets.at(index);
-			descriptorWrite.dstBinding			= buffer->GetDescriptorSetLayoutBinding().binding;
+			descriptorWrite.dstBinding			= buf->GetDescriptorSetLayoutBinding().binding;
 			descriptorWrite.dstArrayElement		= 0;
-			descriptorWrite.descriptorType		= buffer->GetDescriptorSetLayoutBinding().descriptorType;
+			descriptorWrite.descriptorType		= buf->GetDescriptorSetLayoutBinding().descriptorType;
 			descriptorWrite.descriptorCount		= 1;
-			descriptorWrite.pBufferInfo			= buffer->GetDescriptorBufferInfo();
+			descriptorWrite.pBufferInfo			= buf->GetDescriptorBufferInfo();
 			descriptorWrite.pImageInfo			= nullptr; // Optional
 			descriptorWrite.pTexelBufferView	= nullptr; // Optional
 

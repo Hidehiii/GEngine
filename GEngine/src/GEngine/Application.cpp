@@ -1,6 +1,6 @@
 #include "GEpch.h"
 #include "Application.h"
-#include "Graphics/RenderCommand.h"
+#include "Graphics/Graphics.h"
 #include "Graphics/Renderer.h"
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "tools/Serialization/Serializer.h"
@@ -28,10 +28,16 @@ namespace GEngine
 
 		m_Config = Ref<Config>(new Config());
 		Serializer::Deserialize(m_ConfigPath, m_Config);
-		Renderer::SetRenererAPI((GraphicsAPI::API)m_Config->m_RendererAPI);
-		Renderer::SetFramesInFlight(m_Config->m_FramesInFlight);
-		Renderer::SetDynamicUniformBufferSizeScaleFactor(m_Config->m_DynamicUniformBufferSizeScaleFactor);
-		Renderer::SetCommandBufferCount(m_Config->m_CommandBufferCount);
+
+		GraphicsSpecification					graphicsSpec{};
+		graphicsSpec.API						= (GraphicsAPI::API)m_Config->m_GraphicsAPI;
+		graphicsSpec.CommandBufferCount			= m_Config->m_CommandBufferCount;
+		graphicsSpec.DynamicUniformCount		= m_Config->m_DynamicUniformCount;
+		graphicsSpec.FramesInFlight				= m_Config->m_FramesInFlight;
+		graphicsSpec.ViewportWidth				= (uint32_t)spec.Size.x;
+		graphicsSpec.ViewportHeight				= (uint32_t)spec.Size.y;
+
+		Graphics::Init(graphicsSpec);
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
@@ -40,8 +46,6 @@ namespace GEngine
 		m_GraphicsPresent = GraphicsPresent::Create();
 
 
-		Renderer::Init();
-		RenderCommand::Init();
 		ScriptEngine::Init();
 		Physics3D::Init();
 
@@ -55,7 +59,6 @@ namespace GEngine
 		Serializer::Serialize(m_ConfigPath, m_Config);
 
 		ScriptEngine::Shutdown();
-		Renderer::Shutdown();
 		Physics3D::Shutdown();
 	}
 
@@ -103,7 +106,7 @@ namespace GEngine
 				}
 			}
 			m_Window->OnUpdate();
-			Renderer::MoveToNextFrame();
+			Graphics::FrameMove();
 		}
 	}
 	void Application::Close()
@@ -139,8 +142,7 @@ namespace GEngine
 			return false;
 		}
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
-		m_GraphicsPresent->OnWindowResize(Vector2(e.GetWidth(), e.GetHeight()));
+		Graphics::SetViewport(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 	void Application::PushLayer(Layer* layer)
@@ -150,5 +152,13 @@ namespace GEngine
 	void Application::PushOverlay(Layer* overlay)
 	{
 		m_LayerStack.PushOverlay(overlay);
+	}
+	Layer* Application::PopLayer(Layer* layer)
+	{
+		return m_LayerStack.PopLayer(layer);
+	}
+	Layer* Application::PopOverlay()
+	{
+		return m_LayerStack.PopOverlay();
 	}
 }

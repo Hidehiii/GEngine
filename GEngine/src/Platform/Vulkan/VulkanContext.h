@@ -159,7 +159,7 @@ namespace GEngine
 		std::vector<Ref<VulkanCommandBuffer>>	m_ComputeCommandBuffers;
 		uint32_t							m_ComputeCommandBufferIndex = 0;
 
-		friend class VulkanRendererAPI;
+		friend class VulkanGraphicsAPI;
 	};
 	
 }

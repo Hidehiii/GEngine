@@ -1,7 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLMaterial.h"
-
-#include "GEngine/Graphics/RenderCommand.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 
 namespace GEngine
 {
@@ -84,10 +83,10 @@ namespace GEngine
 			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
 
-		RenderCommand::SetCull(m_CullMode);
-		RenderCommand::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
-		RenderCommand::SetDepthTest(m_DepthTestOperation);
-		RenderCommand::EnableDepthWrite(m_EnableDepthWrite);
+		Utils::SetCull(m_CullMode);
+		Utils::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
+		Utils::SetDepthTest(m_DepthTestOperation);
+		Utils::EnableDepthWrite(m_EnableDepthWrite);
 	}
 	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
 	{

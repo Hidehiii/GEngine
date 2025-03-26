@@ -13,7 +13,7 @@ namespace GEngine
 {
 	class CommandBuffer;
 
-	class GENGINE_API Renderer
+	class GENGINE_API Renderer12123132
 	{
 	public:
 		static void Init();
