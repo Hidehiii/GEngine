@@ -16,8 +16,6 @@ namespace GEngine
 
 	GLFWWindow::GLFWWindow(const WindowProps& props)
 	{
-		
-		
 		Init(props);
 	}
 

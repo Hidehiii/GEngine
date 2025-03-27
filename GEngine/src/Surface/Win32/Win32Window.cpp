@@ -1,5 +1,7 @@
 #include "GEpch.h"
 #include "Win32Window.h"
+#include "GEngine/Graphics/Graphics.h"
+#include "Platform/D3DX12/D3D12Context.h"
 
 namespace GEngine
 {
@@ -29,6 +31,10 @@ namespace GEngine
 
 	Win32Window::Win32Window(const WindowProps& props)
 	{
+		m_Data.Title = props.Title;
+		m_Data.Width = props.Width;
+		m_Data.Height = props.Height;
+
 #if defined(DEBUG) | defined(_DEBUG) | defined(GE_DEBUG)
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
@@ -54,35 +60,42 @@ namespace GEngine
 		AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 		int width = R.right - R.left;
 		int height = R.bottom - R.top;
-		HWND mhMainWnd = CreateWindow(L"MainWnd", StringToLPCWSTR(props.Title), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
-		if (!mhMainWnd)
+		m_Window = CreateWindow(L"MainWnd", StringToLPCWSTR(props.Title), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
+		if (!(m_Window))
 		{
 			MessageBox(0, L"CreateWindow Failed", 0, 0);
 			GE_CORE_ASSERT(false, "");
 		}
 
-		ShowWindow(mhMainWnd, SW_SHOW);
-		UpdateWindow(mhMainWnd);
+		ShowWindow(m_Window, SW_SHOW);
+		UpdateWindow(m_Window);
 
-		MSG msg = { 0 };
-		while (msg.message != WM_QUIT)
+		if (Graphics::GetGraphicsAPI() == GraphicsAPI::API::Direct3DX12)
 		{
-			if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			else
-			{
-
-			}
+			m_Context = new D3D12Context(m_Window);
 		}
+
+		m_Context->Init(m_Data.Width, m_Data.Height);
 	}
 	Win32Window::~Win32Window()
 	{
 	}
 	void Win32Window::OnUpdate()
 	{
+		if (m_Message.message == WM_QUIT)
+		{
+			GE_CORE_INFO("Win32 window quit");
+			return;
+		}
+		if (PeekMessage(&m_Message, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&m_Message);
+			DispatchMessage(&m_Message);
+		}
+		else
+		{
+
+		}
 	}
 	float Win32Window::GetTime() const
 	{

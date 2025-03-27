@@ -28,7 +28,8 @@ namespace GEngine
 
 		inline virtual void* GetNativeWindow() const override { return nullptr; }
 	private:
-		//GLFWwindow* m_Window;
+		HWND m_Window;
+		MSG m_Message = { 0 };
 		GraphicsContext* m_Context;
 
 		struct WindowData

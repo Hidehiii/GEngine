@@ -49,7 +49,7 @@ namespace GEngine
 	}
 	Ref<Texture2D> OpenGLImGui::GetImGuiTexture()
 	{
-		return s_FrameBuffer->GetColorAttachment(0);
+		return s_FrameBuffer->GetColorRT(0);
 	}
 	Ref<CommandBuffer> OpenGLImGui::GetCommandBuffer()
 	{

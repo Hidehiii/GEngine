@@ -33,10 +33,10 @@ namespace GEngine
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float							GetHeight() const { return (float)GetSpecification().Height; }
 		virtual uint32_t						GetSamples() const { return GetSpecification().Samples; }
-		virtual int								GetAttachmentCount() = 0;
-		virtual int								GetColorAttachmentCount() = 0;
-		virtual Ref<Texture2D>					GetColorAttachment(int index) = 0;
-		virtual Ref<Texture2D>					GetDepthStencilAttachment() = 0;
+		virtual int								GetRTCount() = 0;
+		virtual int								GetColorRTCount() = 0;
+		virtual Ref<Texture2D>					GetColorRT(int index) = 0;
+		virtual Ref<Texture2D>					GetDepthStencilRT() = 0;
 		virtual Ref<RenderPass>					GetRenderPass() = 0;
 
 		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const Vector2& size);

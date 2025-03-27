@@ -281,7 +281,7 @@ namespace GEngine
 		default:
 			break;
 		}
-		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetColorAttachmentCount(), ColorBlendAttachment);
+		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetColorRTCount(), ColorBlendAttachment);
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};
 		ColorBlending.sType									= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

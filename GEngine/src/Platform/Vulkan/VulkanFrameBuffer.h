@@ -26,10 +26,10 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetColorAttachmentCount() override { return m_ColorImageViews.size(); }
-		virtual int								GetAttachmentCount() override { return m_Attachments.size(); }
-		virtual Ref<Texture2D>					GetColorAttachment(int index) override;
-		virtual Ref<Texture2D>					GetDepthStencilAttachment() override;
+		virtual int								GetColorRTCount() override { return m_ColorImageViews.size(); }
+		virtual int								GetRTCount() override { return m_Attachments.size(); }
+		virtual Ref<Texture2D>					GetColorRT(int index) override;
+		virtual Ref<Texture2D>					GetDepthStencilRT() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual	Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
@@ -57,8 +57,8 @@ namespace GEngine
 		VkImageView					m_DepthStencilImageView = nullptr;
 		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;
 
-		std::vector<Ref<VulkanTexture2D>> m_ColorAttachmentsTexture2D;
-		Ref<VulkanTexture2D>			m_DepthAttachmentTexture2D = nullptr;
+		std::vector<Ref<VulkanTexture2D>> m_ColorRTs;
+		Ref<VulkanTexture2D>			m_DepthStencilRT = nullptr;
 	};
 }
 

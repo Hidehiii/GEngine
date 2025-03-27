@@ -86,7 +86,7 @@ namespace GEngine
         {
             glDeleteFramebuffers(1, &m_MultiSampleFrameBuffer);
             glDeleteTextures(m_MultiSampleColorAttachments.size(), m_MultiSampleColorAttachments.data());
-            glDeleteTextures(1, &m_MultiSampleDepthAttachment);
+            glDeleteTextures(1, &m_MultiSampleDepthStencilAttachment);
         }
     }
     void OpenGLFrameBuffer::CreateBuffer()
@@ -150,18 +150,18 @@ namespace GEngine
 
             if (m_Specification.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
             {
-                Utils::CreateTextures(m_Specification.Samples > 1, &m_MultiSampleDepthAttachment, 1);
-                Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleDepthAttachment);
+                Utils::CreateTextures(m_Specification.Samples > 1, &m_MultiSampleDepthStencilAttachment, 1);
+                Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleDepthStencilAttachment);
                 switch (m_Specification.DepthAttachment.TextureFormat)
                 {
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                 {
-                    Utils::AttachDepthTexture(m_MultiSampleDepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+                    Utils::AttachDepthTexture(m_MultiSampleDepthStencilAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
                 }
                 case FrameBufferTextureFormat::DEPTH:
                 {
-                    Utils::AttachDepthTexture(m_MultiSampleDepthAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+                    Utils::AttachDepthTexture(m_MultiSampleDepthStencilAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
                 }
                 }
@@ -236,28 +236,28 @@ namespace GEngine
 					}
                 }
                 Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
-                m_ColorAttachmentsTexture2D.push_back(texture);
+                m_ColorRTs.push_back(texture);
             }
         }
 
         if (m_Specification.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
         {
-            Utils::CreateTextures(false, &m_DepthAttachment, 1);
-            Utils::BindTexture(false, m_DepthAttachment);
+            Utils::CreateTextures(false, &m_DepthStencilAttachment, 1);
+            Utils::BindTexture(false, m_DepthStencilAttachment);
             switch (m_Specification.DepthAttachment.TextureFormat)
             {
                 case FrameBufferTextureFormat::DEPTH24STENCIL8:
                 {
-                    Utils::AttachDepthTexture(m_DepthAttachment, 1, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+                    Utils::AttachDepthTexture(m_DepthStencilAttachment, 1, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 				    break;
 				}
                 case FrameBufferTextureFormat::DEPTH:
                 {
-                    Utils::AttachDepthTexture(m_DepthAttachment, 1, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+                    Utils::AttachDepthTexture(m_DepthStencilAttachment, 1, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
                 }
             }
-            m_DepthAttachmentTexture2D = CreateRef<OpenGLTexture2D>(m_DepthAttachment);
+            m_DepthStencilRT = CreateRef<OpenGLTexture2D>(m_DepthStencilAttachment);
         }
 
 
@@ -310,7 +310,7 @@ namespace GEngine
         spec.Operation  = op;
         m_RenderPass    = std::dynamic_pointer_cast<OpenGLRenderPass>(RenderPass::Create(spec));
     }
-    Ref<Texture2D> OpenGLFrameBuffer::GetColorAttachment(int index)
+    Ref<Texture2D> OpenGLFrameBuffer::GetColorRT(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
         if (m_Specification.Samples > 1)
@@ -322,11 +322,11 @@ namespace GEngine
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
         }
-        return m_ColorAttachmentsTexture2D.at(index);
+        return m_ColorRTs.at(index);
     }
-    Ref<Texture2D> OpenGLFrameBuffer::GetDepthStencilAttachment()
+    Ref<Texture2D> OpenGLFrameBuffer::GetDepthStencilRT()
     {
-        GE_CORE_ASSERT(m_DepthAttachment != 0, "No depth frame buffer");
+        GE_CORE_ASSERT(m_DepthStencilAttachment != 0, "No depth frame buffer");
         if (m_Specification.Samples > 1)
         {
 			GLint currentFbo;
@@ -337,6 +337,6 @@ namespace GEngine
             glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
         }
-        return m_DepthAttachmentTexture2D;
+        return m_DepthStencilRT;
     }
 }

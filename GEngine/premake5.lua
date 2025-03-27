@@ -62,6 +62,9 @@ project "GEngine"
 		"yaml-cpp",
 		"Box2D",
 		"opengl32.lib",
+		"d3dcompiler.lib",
+		"D3D12.lib",
+		"dxgi.lib",
 		"%{Library.mono}",
 		"%{Library.Vulkan}",
 	}
