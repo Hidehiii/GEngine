@@ -3,6 +3,16 @@
 
 namespace GEngine
 {
+	LPCWSTR StringToLPCWSTR(const std::string& str)
+	{
+		size_t	strSize = str.length() + 1;
+		size_t convertedChars = 0;
+		wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * (str.length() - 1));
+		mbstowcs_s(&convertedChars, wcstring, strSize, str.c_str(), _TRUNCATE);
+
+		return wcstring;
+	}
+
 	LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg)
@@ -44,7 +54,7 @@ namespace GEngine
 		AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 		int width = R.right - R.left;
 		int height = R.bottom - R.top;
-		HWND mhMainWnd = CreateWindow(L"MainWnd", L"DX12Chapter4", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
+		HWND mhMainWnd = CreateWindow(L"MainWnd", StringToLPCWSTR(props.Title), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
 		if (!mhMainWnd)
 		{
 			MessageBox(0, L"CreateWindow Failed", 0, 0);
