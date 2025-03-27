@@ -52,6 +52,7 @@ project "GEngine"
 		"%{IncludeDir.FBX}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.DirectXHeaders}"
 	}
 
 	links

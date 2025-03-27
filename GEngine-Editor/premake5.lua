@@ -27,7 +27,10 @@ project "GEngine-Editor"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.FBX}"
+		"%{IncludeDir.FBX}",
+		"%{IncludeDir.mono}",
+		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.DirectXHeaders}"
 	}
 
 	links

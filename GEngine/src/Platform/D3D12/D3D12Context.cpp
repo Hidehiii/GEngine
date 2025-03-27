@@ -21,6 +21,7 @@ namespace GEngine
 		CreateDevice();
 		CreateCommandQueue();
 		CreateSwapChain(width, height);
+		CreateCommandAllocator();
 	}
 	void D3D12Context::Uninit()
 	{
@@ -33,6 +34,14 @@ namespace GEngine
 	}
 	void D3D12Context::SetRequiredExtensions(std::vector<const char*> extensions)
 	{
+	}
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12Context::BeginSingleTimeGraphicsCommand()
+	{
+		return m_CommandAllocator.BeginSingleTimeGraphicsCommand();
+	}
+	void D3D12Context::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+	{
+		m_CommandAllocator.EndSingleTimeGraphicsCommand(commandList);
 	}
 	void D3D12Context::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter)
 	{
@@ -152,5 +161,21 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<IDXGISwapChain1>	swapChain;
 		D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_CommandQueue.Get(), m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
 		D3D12_THROW_IF_FAILED(swapChain.As(&m_SwapChain));
+	}
+	void D3D12Context::CreateCommandAllocator()
+	{
+		m_CommandAllocator = D3D12CommandAllocator();
+	}
+	void D3D12Context::CreateDescriptorHeap()
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC		rtvHeapDesc = {};
+		rtvHeapDesc.NumDescriptors		= Graphics::GetFramesInFlight();
+		rtvHeapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		rtvHeapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+		D3D12_THROW_IF_FAILED(m_Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RtvHeap)));
+	}
+	void D3D12Context::CreateFrameResources()
+	{
 	}
 }

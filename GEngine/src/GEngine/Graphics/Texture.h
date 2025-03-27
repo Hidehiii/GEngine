@@ -44,7 +44,8 @@ namespace GEngine
 
 		// 默认白色纹理
 		static Ref<Texture2D> White();
-
+	protected:
+		std::string				m_Path;
 	private:
 		static Ref<Texture2D>	s_WhiteTexture2D;
 		// path, texture2d

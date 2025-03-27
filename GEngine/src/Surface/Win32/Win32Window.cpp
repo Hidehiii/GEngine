@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "Win32Window.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "Platform/D3DX12/D3D12Context.h"
+#include "Platform/D3D12/D3D12Context.h"
 
 namespace GEngine
 {

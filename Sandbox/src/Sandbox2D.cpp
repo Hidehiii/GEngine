@@ -239,7 +239,7 @@ void Sandbox2D::OnAttach()
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorAttachment(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorRT(0));
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
 	Graphics::UpdateCameraUniform(m_EditorCamera);
@@ -275,9 +275,9 @@ void Sandbox2D::OnRender()
 	cmd2->Render(m_OITPrepare);
 	cmd2->End();
 
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorAttachment(0));
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilAttachment());
-	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorAttachment(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorRT(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilRT());
+	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorRT(0));
 
 	cmd3->Begin(m_OIT_Present);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
@@ -338,7 +338,7 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthStencilAttachment()), {100, 100});
+	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthStencilRT()), {100, 100});
 	//ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer_0->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }
