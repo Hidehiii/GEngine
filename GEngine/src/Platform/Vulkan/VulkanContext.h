@@ -145,7 +145,7 @@ namespace GEngine
 		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBufferPool				m_CommandBufferPool;
-		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
 		std::vector<VkSemaphore>			m_Semaphores;

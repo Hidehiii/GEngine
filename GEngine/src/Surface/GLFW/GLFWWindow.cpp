@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "WindowsWindow.h"
+#include "GLFWWindow.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
@@ -14,25 +14,20 @@ namespace GEngine
 		GE_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	Window* Window::Create(const WindowProps& props)
-	{
-		return new WindowsWindow(props);
-	}
-
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	GLFWWindow::GLFWWindow(const WindowProps& props)
 	{
 		
 		
 		Init(props);
 	}
 
-	WindowsWindow::~WindowsWindow()
+	GLFWWindow::~GLFWWindow()
 	{
 		
 		Shutdown();
 	}
 
-	void WindowsWindow::Init(const WindowProps& props)
+	void GLFWWindow::Init(const WindowProps& props)
 	{
 		
 
@@ -172,20 +167,20 @@ namespace GEngine
 		});
 	}
 
-	void WindowsWindow::Shutdown()
+	void GLFWWindow::Shutdown()
 	{
 		glfwDestroyWindow(m_Window);
 		m_Context->Uninit();
 	}
 
-	void WindowsWindow::OnUpdate()
+	void GLFWWindow::OnUpdate()
 	{
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
 
 	// only used for Vulkan
-	std::vector<const char*> WindowsWindow::GetRequiredExtensions()
+	std::vector<const char*> GLFWWindow::GetRequiredExtensions()
 	{
 		uint32_t					glfwExtensionCount = 0;
 		const char**				glfwExtensions;
@@ -195,7 +190,7 @@ namespace GEngine
 		return extensions;
 	}
 
-	void WindowsWindow::SetVSync(bool enabled)
+	void GLFWWindow::SetVSync(bool enabled)
 	{
 		if (GraphicsAPI::GetAPI() == GraphicsAPI::API::OpenGL)
 		{
@@ -209,11 +204,11 @@ namespace GEngine
 		m_Data.VSync = enabled;
 	}
 
-	bool WindowsWindow::IsVSync() const
+	bool GLFWWindow::IsVSync() const
 	{
 		return m_Data.VSync;
 	}
-	float WindowsWindow::GetTime() const
+	float GLFWWindow::GetTime() const
 	{
 		return (float)glfwGetTime();
 	}

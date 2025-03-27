@@ -6,7 +6,6 @@
 #include "GEngine/Events/ApplicationEvent.h"
 #include "GEngine/Events/KeyEvent.h"
 #include "GEngine/Events/MouseEvent.h"
-
 #include "GEngine/Graphics/GraphicsContext.h"
 
 namespace GEngine
@@ -14,8 +13,8 @@ namespace GEngine
 	struct WindowProps
 	{
 		std::string Title;
-		uint32_t Width;
-		uint32_t Height;
+		uint32_t	Width;
+		uint32_t	Height;
 
 		WindowProps(const std::string& title = "GEngine",
 			uint32_t width = 1280,

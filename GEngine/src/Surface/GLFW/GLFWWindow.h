@@ -9,11 +9,11 @@ struct GLFWwindow;
 
 namespace GEngine
 {
-	class WindowsWindow : public Window
+	class GLFWWindow : public Window
 	{
 	public:
-		WindowsWindow(const WindowProps& props);
-		virtual ~WindowsWindow();
+		GLFWWindow(const WindowProps& props);
+		virtual ~GLFWWindow();
 
 		void OnUpdate() override;
 
@@ -31,7 +31,7 @@ namespace GEngine
 
 		virtual GraphicsContext* GetContext() const override { return m_Context; }
 
-		inline virtual void* GetNativeWindow() const { return m_Window; }
+		inline virtual void* GetNativeWindow() const override { return m_Window; }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();

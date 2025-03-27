@@ -18,8 +18,3 @@
 #include <unordered_set>
 
 #include "GEngine/Core/Log.h"
-#include "GEngine/Debug/Instrumentation.h"
-
-#ifdef GE_PLATFORM_WINDOWS
-	#include<Windows.h>
-#endif

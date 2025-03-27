@@ -18,7 +18,8 @@ namespace GEngine
 		{
 			None = 0, 
 			OpenGL = 1,
-			Vulkan = 2
+			Vulkan = 2,
+			Direct3DX12 = 3
 		};
 
 	public:
