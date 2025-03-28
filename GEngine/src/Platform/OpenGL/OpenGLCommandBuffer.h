@@ -24,7 +24,6 @@ namespace GEngine
 	private:
 		Ref<OpenGLFrameBuffer>	m_FrameBuffer;
 
-		friend class OpenGLRendererAPI;
 	};
 }
 

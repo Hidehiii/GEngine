@@ -19,8 +19,9 @@ namespace GEngine
 	{
 		CreateFactory();
 		CreateDevice();
-		CreateCommandQueue();
+		CreateQueues();
 		CreateSwapChain(width, height);
+		GetDescriptorSize();
 		CreateCommandAllocator();
 	}
 	void D3D12Context::Uninit()
@@ -130,13 +131,19 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_Device)));
 		}
 	}
-	void D3D12Context::CreateCommandQueue()
+	void D3D12Context::CreateQueues()
 	{
 		D3D12_COMMAND_QUEUE_DESC	queueDesc = {};
 		queueDesc.Flags				= D3D12_COMMAND_QUEUE_FLAG_NONE;
 		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CommandQueue)));
+		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)));
+
+		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_COMPUTE;
+		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_ComputeQueue)));
+
+		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_COPY;
+		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_TransferQueue)));
 	}
 	void D3D12Context::CreateSwapChain(const unsigned int width, const unsigned int height)
 	{
@@ -159,7 +166,7 @@ namespace GEngine
 		fullscreenDesc.Windowed				= TRUE;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1>	swapChain;
-		D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_CommandQueue.Get(), m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
+		D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
 		D3D12_THROW_IF_FAILED(swapChain.As(&m_SwapChain));
 	}
 	void D3D12Context::CreateCommandAllocator()
@@ -177,5 +184,11 @@ namespace GEngine
 	}
 	void D3D12Context::CreateFrameResources()
 	{
+	}
+	void D3D12Context::GetDescriptorSize()
+	{
+		m_RtvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		m_DsvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		m_CbvSrvUavDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 }

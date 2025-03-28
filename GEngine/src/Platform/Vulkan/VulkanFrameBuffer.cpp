@@ -6,12 +6,11 @@
 
 namespace GEngine
 {
-	VulkanFrameBuffer* VulkanFrameBuffer::s_CurrentVulkanFrameBuffer = nullptr;
 
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
-		m_Specification.ColorAttachments		= renderPass->GetSpecification().ColorAttachments;
-		m_Specification.DepthAttachment			= renderPass->GetSpecification().DepthAttachment;
+		m_Specification.ColorRTs				= renderPass->GetSpecification().ColorRTs;
+		m_Specification.DepthStencilRT			= renderPass->GetSpecification().DepthStencilRT;
 		m_Specification.Samples					= renderPass->GetSpecification().Samples;
 		m_Specification.Width					= width;
 		m_Specification.Height					= height;
@@ -236,13 +235,13 @@ namespace GEngine
 	void VulkanFrameBuffer::CreateBuffer()
 	{
 
-		for (int i = 0; i < m_Specification.ColorAttachments.size(); i++)
+		for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 		{
 			VkImage						image;
 			VkImageView					imageView;
 			VkDeviceMemory				imageMemory;
 			VkFormat					colorFormat;
-			switch (m_Specification.ColorAttachments.at(i).TextureFormat)
+			switch (m_Specification.ColorRTs.at(i).TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
 			{
@@ -338,7 +337,7 @@ namespace GEngine
 		VkImageView						imageView;
 		VkFormat						depthFormat;
 		VkFlags							depthAspectFlag;
-		switch (m_Specification.DepthAttachment.TextureFormat)
+		switch (m_Specification.DepthStencilRT.TextureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 		{

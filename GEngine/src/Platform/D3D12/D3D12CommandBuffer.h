@@ -15,14 +15,21 @@ namespace GEngine
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeGraphicsCommand();
 		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeComputeCommand();
+		void												EndSingleTimeComputeCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeTransferCommand();
+		void												EndSingleTimeTransferCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>	GetCommandAllocator() { return m_CommandAllocator; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>					m_CommandAllocator;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>>	m_GraphicsCommandList;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>>	m_ComputeCommandList;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>>	m_SingleTimeGraphicsCommandList;
-		uint32_t														m_SingleTimeGraphicsCommandListIndex = 0;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>>	m_TransferCommandList;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>				m_SingleTimeGraphicsCommandList;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>				m_SingleTimeComputeCommandList;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>				m_SingleTimeTransferCommandList;
+		Microsoft::WRL::ComPtr<ID3D12Fence>								m_SingleTimeCommandFence;
 	};
 
 	class GENGINE_API D3D12CommandBuffer : public CommandBuffer

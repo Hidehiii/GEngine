@@ -15,6 +15,7 @@ namespace GEngine
 		None,
 		Graphics,
 		Compute,
+		Transfer,
 	};
 
 	class GENGINE_API CommandBuffer

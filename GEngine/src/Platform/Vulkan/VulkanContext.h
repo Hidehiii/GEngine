@@ -56,10 +56,13 @@ namespace GEngine
 		void						EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer);
 		VkCommandBuffer				BeginSingleTimeComputeCommand();
 		void						EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer);
+		VkCommandBuffer				BeginSingleTimeTransferCommand();
+		void						EndSingleTimeTransferCommand(VkCommandBuffer commandBuffer);
 		QueueFamilyIndices			GetQueueFamily() { return m_QueueFamily; }
 		VkQueue						GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue						GetPresentQueue() { return m_PresentQueue; }
 		VkQueue						GetComputeQueue() { return m_ComputeQueue; }
+		VkQueue						GetTransferQueue() { return m_TransferQueue; }
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
 		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
@@ -112,6 +115,7 @@ namespace GEngine
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkQueue								m_ComputeQueue;
+		VkQueue								m_TransferQueue;
 		VkSurfaceKHR						m_Surface;
 		std::vector<const char*>			m_DeviceExtensions =
 		{ 
@@ -158,6 +162,8 @@ namespace GEngine
 		uint32_t							m_GraphicsCommandBufferIndex = 0;
 		std::vector<Ref<VulkanCommandBuffer>>	m_ComputeCommandBuffers;
 		uint32_t							m_ComputeCommandBufferIndex = 0;
+		std::vector<Ref<VulkanCommandBuffer>>	m_TransferCommandBuffers;
+		uint32_t							m_TransferCommandBufferIndex = 0;
 
 		friend class VulkanGraphicsAPI;
 	};

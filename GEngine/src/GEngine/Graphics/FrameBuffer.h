@@ -11,8 +11,8 @@ namespace GEngine
 	struct FrameBufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;
-		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
-		FrameBufferTextureSpecification					DepthAttachment;
+		std::vector<FrameBufferTextureSpecification>	ColorRTs;
+		FrameBufferTextureSpecification					DepthStencilRT;
 		uint32_t Samples = 1;
 	};
 

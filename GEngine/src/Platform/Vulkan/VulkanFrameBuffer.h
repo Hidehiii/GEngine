@@ -38,12 +38,9 @@ namespace GEngine
 	public:
 		//用于给交换链创建使用
 		static Ref<VulkanFrameBuffer> Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
-
-		static VulkanFrameBuffer* GetCurrentVulkanFrameBuffer() { return s_CurrentVulkanFrameBuffer; }
 	private:
 		void CreateBuffer();
 	private:
-		static VulkanFrameBuffer*	s_CurrentVulkanFrameBuffer;
 		VkFramebuffer				m_FrameBuffer = nullptr;
 		Ref<VulkanRenderPass>		m_RenderPass = nullptr;
 		std::vector<VkImage>		m_Images;

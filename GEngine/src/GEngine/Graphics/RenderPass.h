@@ -85,15 +85,15 @@ namespace GEngine
 
 	struct RenderPassSpecification
 	{
-		std::vector<FrameBufferTextureSpecification>	ColorAttachments;
-		FrameBufferTextureSpecification					DepthAttachment;
+		std::vector<FrameBufferTextureSpecification>	ColorRTs;
+		FrameBufferTextureSpecification					DepthStencilRT;
 		int												Samples = 1;
 		RenderPassOperation								Operation;
 
 		bool operator==(const RenderPassSpecification& other) const
 		{
-			return ColorAttachments == other.ColorAttachments &&
-				DepthAttachment == other.DepthAttachment &&
+			return ColorRTs == other.ColorRTs &&
+				DepthStencilRT == other.DepthStencilRT &&
 				Samples == other.Samples &&
 				Operation == other.Operation;
 		}

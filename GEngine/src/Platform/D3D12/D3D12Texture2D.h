@@ -25,7 +25,7 @@ namespace GEngine
 		virtual bool operator==(const Texture2D& other) const override { return m_Texture == ((D3D12Texture2D&)other).m_Texture; };
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>	m_Texture;
-		D3D12_RESOURCE_STATES					m_State = D3D12_RESOURCE_STATE_COMMON;
+		D3D12_RESOURCE_STATES					m_State = D3D12_RESOURCE_STATE_COPY_DEST;
 	};
 }
 

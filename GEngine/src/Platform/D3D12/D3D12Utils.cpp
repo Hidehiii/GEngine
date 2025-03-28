@@ -40,7 +40,7 @@ namespace GEngine
 				IID_PPV_ARGS(&buffer)
 			));
 		}
-		void CopyDataToTextures(uint32_t width, uint32_t height, uint32_t pixelSize, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer, void* data)
+		void CopyDataToTextures(uint32_t width, uint32_t height, uint32_t pixelSize, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer, const void* data)
 		{
 			D3D12_SUBRESOURCE_DATA		textureData{};
 			textureData.pData			= data;
@@ -52,6 +52,42 @@ namespace GEngine
 			UpdateSubresources(commandList.Get(), texture.Get(), uploadBuffer.Get(), 0, 0, 1, &textureData);
 
 			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
+		}
+		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
+		{
+			commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), src, dst));
+		}
+		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
+		{
+			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+			TransitionResourceStage(commandList, resource, src, dst);
+			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
+		}
+		void SetFenceValue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
+		{
+			D3D12_THROW_IF_FAILED(queue->Signal(fence.Get(), value));
+			if (fence->GetCompletedValue() != value)
+			{
+				D3D12_THROW_IF_FAILED(fence->SetEventOnCompletion(value, event));
+				WaitForSingleObject(event, INFINITE);
+			}
+		}
+		void WaitForFence(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
+		{
+			if (fence->GetCompletedValue() < value)
+			{
+				D3D12_THROW_IF_FAILED(fence->SetEventOnCompletion(value, event));
+				WaitForSingleObject(event, INFINITE);
+			}
+		}
+		HANDLE& CreateFenceEvent(LPSECURITY_ATTRIBUTES IpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR IpName)
+		{
+			HANDLE event = CreateEvent(IpEventAttributes, bManualReset, bInitialState, IpName);
+			if (event == nullptr)
+			{
+				D3D12_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+			}
+			return event;
 		}
 	}
 }

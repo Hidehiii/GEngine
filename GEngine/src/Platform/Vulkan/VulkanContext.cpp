@@ -133,6 +133,8 @@ namespace GEngine
             return m_ComputeCommandBuffers.at(m_ComputeCommandBufferIndex++ % m_ComputeCommandBuffers.size());
         if (type == CommandBufferType::Graphics)
             return m_GraphicsCommandBuffers.at(m_GraphicsCommandBufferIndex++ % m_GraphicsCommandBuffers.size());
+        if (type == CommandBufferType::Transfer)
+            return m_TransferCommandBuffers.at(m_TransferCommandBufferIndex++ % m_TransferCommandBuffers.size());
         return nullptr;
     }
     void VulkanContext::CreateInstance()
@@ -302,6 +304,7 @@ namespace GEngine
             }
             if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT))
             {
+                indices.TransferFamily = i;
                 GE_CORE_INFO("Transfer queue : {}", i);
             }
             VkBool32                        presentSupport = false;
@@ -324,15 +327,15 @@ namespace GEngine
 
         m_QueueFamily                               = indices;
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value(), indices.ComputeFamily.value() };
+        std::set<uint32_t>                  uniqueQueueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value(), indices.ComputeFamily.value(), indices.TransferFamily.value() };
         float                               queuePriority = 1.0f;
         for (uint32_t queueFamily : uniqueQueueFamilies)
         {
-            VkDeviceQueueCreateInfo         queueCreateInfo = {};
-            queueCreateInfo.sType           = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueCreateInfo.queueFamilyIndex = queueFamily;
-            queueCreateInfo.queueCount      = 1;
-            queueCreateInfo.pQueuePriorities = &queuePriority;
+            VkDeviceQueueCreateInfo             queueCreateInfo = {};
+            queueCreateInfo.sType               = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex    = queueFamily;
+            queueCreateInfo.queueCount          = 1;
+            queueCreateInfo.pQueuePriorities    = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
@@ -422,6 +425,7 @@ namespace GEngine
 		vkGetDeviceQueue(m_Device, indices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.PresentFamily.value(), 0, &m_PresentQueue);
         vkGetDeviceQueue(m_Device, indices.ComputeFamily.value(), 0, &m_ComputeQueue);
+        vkGetDeviceQueue(m_Device, indices.TransferFamily.value(), 0, &m_TransferQueue);
     }
     void VulkanContext::CreateVmaAllocator()
     {
@@ -742,6 +746,16 @@ namespace GEngine
     void VulkanContext::EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer)
     {
         m_CommandBufferPool.EndSingleTimeComputeCommand(commandBuffer);
+    }
+
+    VkCommandBuffer VulkanContext::BeginSingleTimeTransferCommand()
+    {
+        return m_CommandBufferPool.BeginSingleTimeTransferCommand();
+    }
+
+    void VulkanContext::EndSingleTimeTransferCommand(VkCommandBuffer commandBuffer)
+    {
+        m_CommandBufferPool.EndSingleTimeTransferCommand(commandBuffer);
     }
 
 	

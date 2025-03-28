@@ -11,10 +11,11 @@ namespace GEngine
 		std::optional<uint32_t> GraphicsFamily;
 		std::optional<uint32_t> PresentFamily;
 		std::optional<uint32_t>	ComputeFamily;
+		std::optional<uint32_t>	TransferFamily;
 
 		bool IsComplete()
 		{
-			return GraphicsFamily.has_value() && PresentFamily.has_value() && ComputeFamily.has_value();
+			return GraphicsFamily.has_value() && PresentFamily.has_value() && ComputeFamily.has_value() && TransferFamily.has_value();
 		}
 
 	};
@@ -29,6 +30,7 @@ namespace GEngine
 
 		VkCommandBuffer GetGraphicsCommandBuffer(int index = 0) { return m_GraphicsCommandBuffers.at(index); }
 		VkCommandBuffer GetComputeCommandBuffer(int index = 0) { return m_ComputeCommandBuffers.at(index); }
+		VkCommandBuffer GetTransferCommandBuffer(int index = 0) { return m_TransferCommandBuffers.at(index); }
 		VkCommandBuffer GetSecondaryCommandBuffer(int index = 0) { return m_SecondaryCommandBuffers.at(index); }
 		uint32_t		GetGraphicsCommandBuffersSize() { return m_GraphicsCommandBuffers.size(); }
 		uint32_t		GetSecondaryCommandBuffersSize() { return m_SecondaryCommandBuffers.size(); }
@@ -37,6 +39,8 @@ namespace GEngine
 		void			EndSingleTimeGraphicsCommand(VkCommandBuffer commandBuffer);
 		VkCommandBuffer BeginSingleTimeComputeCommand();
 		void			EndSingleTimeComputeCommand(VkCommandBuffer commandBuffer);
+		VkCommandBuffer	BeginSingleTimeTransferCommand();
+		void			EndSingleTimeTransferCommand(VkCommandBuffer commandBuffer);
 
 		VkCommandPool	GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
 	private:
@@ -44,8 +48,10 @@ namespace GEngine
 	private:
 		VkCommandPool					m_GraphicsCommandPool = VK_NULL_HANDLE;
 		VkCommandPool					m_ComputeCommandPool = VK_NULL_HANDLE;
+		VkCommandPool					m_TransferCommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer>	m_GraphicsCommandBuffers;
 		std::vector<VkCommandBuffer>	m_ComputeCommandBuffers;
+		std::vector<VkCommandBuffer>	m_TransferCommandBuffers;
 		std::vector<VkCommandBuffer>	m_SecondaryCommandBuffers;
 	};
 

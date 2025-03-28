@@ -51,6 +51,10 @@ namespace GEngine
 	}
 	void D3D12Texture2D::SetData(const void* data, uint32_t size)
 	{
+		const UINT64 uploadBufferSize = GetRequiredIntermediateSize(m_Texture.Get(), 0, 1);
+		Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer;
+		Utils::CreateBuffers(uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, uploadBuffer);
+		Utils::CopyDataToTextures(m_Width, m_Height, RenderImage2DFormatChannelSize(m_Format), m_Texture, uploadBuffer, data);
 	}
 	void D3D12Texture2D::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height)
 	{

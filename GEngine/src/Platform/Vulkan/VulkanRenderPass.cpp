@@ -174,30 +174,30 @@ namespace GEngine
 	void VulkanRenderPass::CreateRenderPass(const RenderPassSpecification& spec)
 	{
 		std::vector<VkAttachmentDescription2>  attachments;
-		for (int i = 0; i < spec.ColorAttachments.size(); i++)
+		for (int i = 0; i < spec.ColorRTs.size(); i++)
 		{
-			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, 
+			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.ColorRTs.at(i).TextureFormat,
 				VK_SAMPLE_COUNT_1_BIT, 
 				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
 				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
-				des = Utils::CreateAttachmentDescription2(spec.ColorAttachments.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
+				des = Utils::CreateAttachmentDescription2(spec.ColorRTs.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
 					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
 					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
 				attachments.push_back(des);
 			}
 		}
-		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
+			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthStencilRT.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
 				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
 				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
-				des = Utils::CreateAttachmentDescription2(spec.DepthAttachment.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
+				des = Utils::CreateAttachmentDescription2(spec.DepthStencilRT.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
 					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
 					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 				attachments.push_back(des);
@@ -209,21 +209,21 @@ namespace GEngine
 		if (spec.Samples > 1)
 		{
 			int index = 0;
-			for (int i = 0; i < spec.ColorAttachments.size(); i++)
+			for (int i = 0; i < spec.ColorRTs.size(); i++)
 			{
-				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, index);
+				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, index);
 				resolveAttachmentRefs.push_back(ref);
 				index++;
-				ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, index);
+				ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, index);
 				colorAttachmentRefs.push_back(ref);
 				index++;
 			}
 		}
 		else
 		{
-			for (int i = 0; i < spec.ColorAttachments.size(); i++)
+			for (int i = 0; i < spec.ColorRTs.size(); i++)
 			{
-				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorAttachments.at(i).TextureFormat, i);
+				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, i);
 				colorAttachmentRefs.push_back(ref);
 			}
 		}
@@ -239,16 +239,16 @@ namespace GEngine
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
 		subpass.pResolveAttachments		= resolveAttachmentRefs.data();
 		subpass.pDepthStencilAttachment = nullptr;
-		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			if (spec.Samples > 1)
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2 + 1);
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size() * 2 + 1);
 
 				VkSubpassDescriptionDepthStencilResolve	subpassDepthStencilResolve{};
 
 				VkAttachmentReference2	ref{};
-				ref = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size() * 2);
+				ref = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size() * 2);
 
 				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
 				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &ref;
@@ -258,7 +258,7 @@ namespace GEngine
 			}
 			else
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthAttachment.TextureFormat, spec.ColorAttachments.size());
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size());
 			}
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
@@ -269,14 +269,14 @@ namespace GEngine
 		dependency.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass			= 0;
-		if (spec.ColorAttachments.size() > 0)
+		if (spec.ColorRTs.size() > 0)
 		{
 			dependency.srcStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
-		if (spec.DepthAttachment.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
