@@ -3,6 +3,7 @@
 #include <dxgi1_6.h>
 #include <d3d12.h>
 #include <directx/d3dx12.h>
+#include "GEngine/Graphics/FrameBuffer.h"
 
 inline std::string HrToString(HRESULT hr)
 {
@@ -45,6 +46,8 @@ namespace GEngine
 		void WaitForFence(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event);
 
 		HANDLE& CreateFenceEvent(LPSECURITY_ATTRIBUTES IpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR IpName);
+
+		DXGI_FORMAT	FrameBufferTextureFormatToDXGIFormat(FrameBufferTextureFormat format);
 	}
 }
 

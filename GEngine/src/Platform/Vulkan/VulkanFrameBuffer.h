@@ -55,7 +55,7 @@ namespace GEngine
 		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;
 
 		std::vector<Ref<VulkanTexture2D>> m_ColorRTs;
-		Ref<VulkanTexture2D>			m_DepthStencilRT = nullptr;
+		Ref<VulkanTexture2D>				m_DepthStencilRT = nullptr;
 	};
 }
 

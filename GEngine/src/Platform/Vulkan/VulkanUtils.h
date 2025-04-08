@@ -48,6 +48,7 @@ namespace GEngine
 		VkSampleCountFlagBits	SampleCountToVulkanFlag(int sample);
 		VkFormat				RenderImage2DFormatToVulkanFormat(RenderImage2DFormat format);
 		VkFormat				ComputeImage2DFormatToVulkanFormat(ComputeImage2DFormat format);
+		VkFormat				FrameBufferTextureFormatToVulkanFormat(FrameBufferTextureFormat format);
 		RenderImage2DFormat		VulkanFormatToRenderImage2DFormat(VkFormat format);
 		VkBlendFactor			BlendFactorToVulkanBlendFactor(BlendFactor factor);
 		VkCullModeFlagBits		CullModeToVkCullMode(CullMode mode);

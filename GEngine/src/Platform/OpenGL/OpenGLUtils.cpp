@@ -71,6 +71,64 @@ namespace GEngine
 			}
 			return GLenum();
 		}
+		uint32_t FrameBufferTextureFormatToGLInternalFormat(FrameBufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FrameBufferTextureFormat::None:
+				break;
+			case FrameBufferTextureFormat::RGBA8:
+				return GL_RGBA8;
+			case FrameBufferTextureFormat::R32F:
+				return GL_R32F;
+			case FrameBufferTextureFormat::RG16F:
+				return GL_RG16F;
+			case FrameBufferTextureFormat::R32I:
+				return GL_R32I;
+			case FrameBufferTextureFormat::RG16I:
+				return GL_RG16I;
+			case FrameBufferTextureFormat::R32UI:
+				return GL_R32UI;
+			case FrameBufferTextureFormat::RG16UI:
+				return GL_RG16UI;
+			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				return GL_DEPTH24_STENCIL8;
+			case FrameBufferTextureFormat::DEPTH:
+				return GL_DEPTH_COMPONENT32F;
+			default:
+				break;
+			}
+			return uint32_t();
+		}
+		uint32_t FrameBufferTextureFormatToGLDataFormat(FrameBufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FrameBufferTextureFormat::None:
+				break;
+			case FrameBufferTextureFormat::RGBA8:
+				return GL_RGBA;
+			case FrameBufferTextureFormat::R32F:
+				return GL_R;
+			case FrameBufferTextureFormat::RG16F:
+				return GL_RG;
+			case FrameBufferTextureFormat::R32I:
+				return GL_R;
+			case FrameBufferTextureFormat::RG16I:
+				return GL_RG;
+			case FrameBufferTextureFormat::R32UI:
+				return GL_R;
+			case FrameBufferTextureFormat::RG16UI:
+				return GL_RG;
+			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				return GL_DEPTH_STENCIL_ATTACHMENT;
+			case FrameBufferTextureFormat::DEPTH:
+				return GL_DEPTH_ATTACHMENT;
+			default:
+				break;
+			}
+			return uint32_t();
+		}
 		GLenum BlendFactorToGLBlendFactor(BlendFactor factor)
 		{
 			switch (factor)

@@ -616,6 +616,35 @@ namespace GEngine
 			}
 			return VkFormat();
 		}
+		VkFormat FrameBufferTextureFormatToVulkanFormat(FrameBufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FrameBufferTextureFormat::None:
+				return VkFormat();
+			case FrameBufferTextureFormat::RGBA8:
+				return VK_FORMAT_R8G8B8A8_UNORM;
+			case FrameBufferTextureFormat::R32F:
+				return VK_FORMAT_R32_SFLOAT;
+			case FrameBufferTextureFormat::RG16F:
+				return VK_FORMAT_R16G16_SFLOAT;
+			case FrameBufferTextureFormat::R32I:
+				return VK_FORMAT_R32_SINT;
+			case FrameBufferTextureFormat::RG16I:
+				return VK_FORMAT_R16G16_SINT;
+			case FrameBufferTextureFormat::R32UI:
+				return VK_FORMAT_R32_UINT;
+			case FrameBufferTextureFormat::RG16UI:
+				return VK_FORMAT_R16G16_UINT;
+			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				return VK_FORMAT_D24_UNORM_S8_UINT;
+			case FrameBufferTextureFormat::DEPTH:
+				return VK_FORMAT_D32_SFLOAT;
+			default:
+				break;
+			}
+			return VkFormat();
+		}
 		RenderImage2DFormat VulkanFormatToRenderImage2DFormat(VkFormat format)
 		{
 			switch (format)

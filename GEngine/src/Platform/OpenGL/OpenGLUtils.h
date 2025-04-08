@@ -2,6 +2,7 @@
 #include "GEngine/Graphics/ImageFormat.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Sampler.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 
 #include <glad/glad.h>
 
@@ -14,6 +15,9 @@ namespace GEngine
 
 		uint32_t	ComputeImage2DFormatToGLInternalFormat(ComputeImage2DFormat format);
 		uint32_t	ComputeImage2DFormatToGLDataFormat(ComputeImage2DFormat format);
+
+		uint32_t	FrameBufferTextureFormatToGLInternalFormat(FrameBufferTextureFormat format);
+		uint32_t	FrameBufferTextureFormatToGLDataFormat(FrameBufferTextureFormat format);
 
 		uint32_t	BlendFactorToGLBlendFactor(BlendFactor factor);
 

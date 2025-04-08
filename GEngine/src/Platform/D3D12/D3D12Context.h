@@ -7,6 +7,7 @@
 #include <d3d12.h>
 #include <directx/d3dx12.h>
 #include "D3D12CommandBuffer.h"
+#include "GEngine/Math/Math.h"
 
 namespace GEngine
 {
@@ -61,6 +62,8 @@ namespace GEngine
 
 		uint32_t										m_SwapChainWidth, m_SwapChainHeight;
 		bool											m_UseWarpDevice;
+
+		Vector4											m_ClearValue = { 0, 0, 0, 0 };
 	};
 }
 

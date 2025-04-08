@@ -29,8 +29,8 @@ namespace GEngine
 	private:
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DsvHeap;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_ColorRTs;
-		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilRT = nullptr;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_ColorRenderTargets;
+		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilRenderTarget = nullptr;
 		Ref<D3D12RenderPass>									m_RenderPass;
 	};
 

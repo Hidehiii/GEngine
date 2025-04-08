@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLFrameBuffer.h"
+#include "OpenGLUtils.h"
 
 #include <glad/glad.h>
 namespace GEngine
@@ -107,44 +108,8 @@ namespace GEngine
                 for (size_t i = 0; i < m_MultiSampleColorAttachments.size(); i++)
                 {
                     Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleColorAttachments[i]);
-                    switch (m_Specification.ColorRTs[i].TextureFormat)
-                    {
-                    case FrameBufferTextureFormat::RGBA8:
-                    {
-                        Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
-                        break;
-                    }
-                    case FrameBufferTextureFormat::R32F:
-                    {
-                        Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32F, GL_R, m_Specification.Width, m_Specification.Height, i);
-                        break;
-                    }
-                    case FrameBufferTextureFormat::RG16F:
-                    {
-						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-                    }
-					case FrameBufferTextureFormat::R32I:
-					{
-						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32I, GL_R, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::RG16I:
-					{
-						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16I, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::R32UI:
-					{
-						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_R32UI, GL_R, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::RG16UI:
-					{
-						Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, GL_RG16UI, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-                    }
+					Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.ColorRTs[i].TextureFormat),
+						Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.ColorRTs[i].TextureFormat), m_Specification.Width, m_Specification.Height, i);
                 }
             }
 
@@ -197,44 +162,9 @@ namespace GEngine
             for (size_t i = 0; i < m_ColorAttachments.size(); i++)
             {
                 Utils::BindTexture(false, m_ColorAttachments[i]);
-                switch (m_Specification.ColorRTs[i].TextureFormat)
-                {
-                    case FrameBufferTextureFormat::RGBA8:
-                    {
-                        Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
-                        break;
-                    }
-                    case FrameBufferTextureFormat::R32F:
-                    {
-                        Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32F, GL_R, m_Specification.Width, m_Specification.Height, i);
-                        break;
-                    }
-					case FrameBufferTextureFormat::RG16F:
-					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::R32I:
-					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32I, GL_R, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::RG16I:
-					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16I, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::R32UI:
-					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_R32UI, GL_R, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-					case FrameBufferTextureFormat::RG16UI:
-					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], 1, GL_RG16UI, GL_RG, m_Specification.Width, m_Specification.Height, i);
-						break;
-					}
-                }
+                Utils::AttachColorTexture(m_ColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.ColorRTs[i].TextureFormat), 
+                    Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.ColorRTs[i].TextureFormat), m_Specification.Width, m_Specification.Height, i);
+
                 Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
                 m_ColorRTs.push_back(texture);
             }

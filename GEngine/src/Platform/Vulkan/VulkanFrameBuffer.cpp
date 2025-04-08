@@ -240,48 +240,7 @@ namespace GEngine
 			VkImage						image;
 			VkImageView					imageView;
 			VkDeviceMemory				imageMemory;
-			VkFormat					colorFormat;
-			switch (m_Specification.ColorRTs.at(i).TextureFormat)
-			{
-			case FrameBufferTextureFormat::RGBA8:
-			{
-				colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
-				break;
-			}
-			case FrameBufferTextureFormat::R32F:
-			{
-				colorFormat = VK_FORMAT_R32_SFLOAT;
-				break;
-			}
-			case FrameBufferTextureFormat::RG16F:
-			{
-				colorFormat = VK_FORMAT_R16G16_SFLOAT;
-				break;
-			}
-			case FrameBufferTextureFormat::R32I:
-			{
-				colorFormat = VK_FORMAT_R32_SINT;
-				break;
-			}
-			case FrameBufferTextureFormat::RG16I:
-			{
-				colorFormat = VK_FORMAT_R16G16_SINT;
-				break;
-			}
-			case FrameBufferTextureFormat::R32UI:
-			{
-				colorFormat = VK_FORMAT_R32_UINT;
-				break;
-			}
-			case FrameBufferTextureFormat::RG16UI:
-			{
-				colorFormat = VK_FORMAT_R16G16_UINT;
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknown format");
-				break;
-			}
+			VkFormat					colorFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.ColorRTs.at(i).TextureFormat);
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width,
