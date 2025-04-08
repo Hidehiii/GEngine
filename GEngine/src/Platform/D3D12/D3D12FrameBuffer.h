@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Graphics/FrameBuffer.h"
 #include "D3D12RenderPass.h"
+#include "D3D12Texture2D.h"
 #include <directx/d3dx12.h>
 
 namespace GEngine
@@ -17,8 +18,8 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetColorRTCount() override { return m_ColorAttachments.size(); }
-		virtual int								GetRTCount() override { return m_DepthStencilAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
+		virtual int								GetColorRTCount() override { return m_ColorRenderTargets.size(); }
+		virtual int								GetRTCount() override { return m_DepthStencilRenderTarget == nullptr ? m_ColorRenderTargets.size() : m_ColorRenderTargets.size() + 1; };
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual Ref<Texture2D>					GetColorRT(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencilRT() override;
@@ -32,6 +33,8 @@ namespace GEngine
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_ColorRenderTargets;
 		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilRenderTarget = nullptr;
 		Ref<D3D12RenderPass>									m_RenderPass;
+		std::vector<Ref<D3D12Texture2D>>						m_ColorRTs;
+		Ref<D3D12Texture2D>										m_DepthStencilRT = nullptr;
 	};
 
 }

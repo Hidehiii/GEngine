@@ -34,6 +34,12 @@ namespace GEngine
 
 	class GENGINE_API D3D12CommandBuffer : public CommandBuffer
 	{
+	public:
+
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	GetCommandList() { return m_CommandList; }
+	private:
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	m_CommandList;
 	};
 
 }

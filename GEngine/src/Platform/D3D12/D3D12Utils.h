@@ -39,8 +39,8 @@ namespace GEngine
 
 		void CopyDataToTextures(uint32_t width, uint32_t height, uint32_t pixelSize, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer, const void* data);
 
-		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
-		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
+		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
+		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
 
 		void SetFenceValue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event);
 		void WaitForFence(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event);

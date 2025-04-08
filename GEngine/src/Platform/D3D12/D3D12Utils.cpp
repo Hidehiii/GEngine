@@ -53,14 +53,15 @@ namespace GEngine
 
 			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
 		}
-		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
+		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
 		{
-			commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), src, dst));
+			if(src != dst)
+				commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), src, dst));
 		}
-		void TransitionResourceStage(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
+		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
 		{
 			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
-			TransitionResourceStage(commandList, resource, src, dst);
+			TransitionResourceState(commandList, resource, src, dst);
 			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
 		}
 		void SetFenceValue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
