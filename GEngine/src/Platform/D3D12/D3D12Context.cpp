@@ -38,11 +38,15 @@ namespace GEngine
 	}
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12Context::BeginSingleTimeGraphicsCommand()
 	{
-		return m_CommandAllocator.BeginSingleTimeGraphicsCommand();
+		return m_CommandPool.BeginSingleTimeGraphicsCommand();
 	}
 	void D3D12Context::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
 	{
-		m_CommandAllocator.EndSingleTimeGraphicsCommand(commandList);
+		m_CommandPool.EndSingleTimeGraphicsCommand(commandList);
+	}
+	Ref<D3D12CommandBuffer> D3D12Context::GetCommandBuffer(CommandBufferType type)
+	{
+		return m_CommandPool.GetCommandBuffer(type);
 	}
 	void D3D12Context::GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter)
 	{
@@ -151,7 +155,7 @@ namespace GEngine
 		m_SwapChainHeight = height;
 
 		DXGI_SWAP_CHAIN_DESC1			swapChainDesc = {};
-		swapChainDesc.BufferCount		= Graphics::GetFramesInFlight();
+		swapChainDesc.BufferCount		= Graphics::GetFrameCount();
 		swapChainDesc.Width				= width;
 		swapChainDesc.Height			= height;
 		swapChainDesc.Format			= DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -171,16 +175,21 @@ namespace GEngine
 	}
 	void D3D12Context::CreateCommandAllocator()
 	{
-		m_CommandAllocator = D3D12CommandAllocator();
+		m_CommandPool = D3D12CommandPool();
 	}
 	void D3D12Context::CreateDescriptorHeap()
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC		rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors		= Graphics::GetFramesInFlight();
+		rtvHeapDesc.NumDescriptors		= Graphics::GetFrameCount();
 		rtvHeapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 		D3D12_THROW_IF_FAILED(m_Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RtvHeap)));
+
+		D3D12_DESCRIPTOR_HEAP_DESC		rtvHeapDesc = {};
+		rtvHeapDesc.NumDescriptors		= Graphics::GetFrameCount();
+		rtvHeapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		rtvHeapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	}
 	void D3D12Context::CreateFrameResources()
 	{

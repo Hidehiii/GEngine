@@ -215,13 +215,16 @@ namespace GEngine
 		vkResetCommandBuffer(m_CommandBuffer, 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
 
-		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
+		
 		if (m_Type == CommandBufferType::Graphics)
 		{
+			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
+			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
 			m_FrameBuffer->Begin(this);
 		}
 
-		Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0, 0 });
+		if(buffer != nullptr)
+			Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0, 0 });
 	}
 	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)
 	{
@@ -235,7 +238,14 @@ namespace GEngine
 		}
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
 
-		std::vector<VkPipelineStageFlags> waitStages(m_WaitSemaphores.size(), m_Type == CommandBufferType::Graphics ? VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT : VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+		std::vector<VkPipelineStageFlags> waitStages;
+		
+		if (m_Type == CommandBufferType::Graphics)
+			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		if(m_Type == CommandBufferType::Compute)
+			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+		if(m_Type == CommandBufferType::Transfer)
+			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		VkSubmitInfo                    submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -247,7 +257,12 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = m_SignalSemaphores.size();
 		submitInfo.pSignalSemaphores	= m_SignalSemaphores.data();
 
-		VK_CHECK_RESULT(vkQueueSubmit(m_Type == CommandBufferType::Graphics ? VulkanContext::Get()->GetGraphicsQueue() : VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		if(m_Type == CommandBufferType::Graphics)
+			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		if(m_Type == CommandBufferType::Compute)
+			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+		if (m_Type == CommandBufferType::Transfer)
+			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetTransferQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 		
 		ClearSignalSemaphores();
 		ClearWaitSemaphores();

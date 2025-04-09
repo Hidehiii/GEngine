@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "OpenGLFrameBuffer.h"
 #include "OpenGLUtils.h"
+#include "GEngine/Graphics/Graphics.h"
 
 #include <glad/glad.h>
 namespace GEngine
@@ -221,6 +222,8 @@ namespace GEngine
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 		glDisable(GL_FRAMEBUFFER_SRGB);
 		glDepthMask(GL_TRUE);
+        glDepthRange(Graphics::IsReverseDepth() ? 1 : 0, Graphics::IsReverseDepth() ? 0 : 1);
+        glClearDepth(Graphics::IsReverseDepth() ? 0 : 1);
 		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
 		{
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -232,6 +235,12 @@ namespace GEngine
     }
     void OpenGLFrameBuffer::End(CommandBuffer* cmdBuffer)
     {
+        if (m_Specification.Samples > 1)
+        {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
+			glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     void OpenGLFrameBuffer::SetRenderPassOperation(const RenderPassOperation& op)
@@ -243,30 +252,11 @@ namespace GEngine
     Ref<Texture2D> OpenGLFrameBuffer::GetColorRT(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
-        if (m_Specification.Samples > 1)
-        {
-			GLint currentFbo;
-			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
-            glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
-        }
         return m_ColorRTs.at(index);
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetDepthStencilRT()
     {
         GE_CORE_ASSERT(m_DepthStencilAttachment != 0, "No depth frame buffer");
-        if (m_Specification.Samples > 1)
-        {
-			GLint currentFbo;
-			glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
-            glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-            glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, currentFbo);
-        }
         return m_DepthStencilRT;
     }
 }

@@ -29,9 +29,13 @@ namespace GEngine
 		void CreateResources();
 	private:
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RtvHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleRtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DsvHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleDsvHeap;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_ColorRenderTargets;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_MultiSampleColorRenderTargets;
 		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilRenderTarget = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource>					m_MultiSampleDepthStencilRenderTarget = nullptr;
 		Ref<D3D12RenderPass>									m_RenderPass;
 		std::vector<Ref<D3D12Texture2D>>						m_ColorRTs;
 		Ref<D3D12Texture2D>										m_DepthStencilRT = nullptr;

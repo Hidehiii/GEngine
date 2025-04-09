@@ -21,11 +21,14 @@ namespace GEngine
 	{
 	public:
 		static void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
+		static void SetReverseDepth(bool reverse);
 
 		static GraphicsAPI::API		GetGraphicsAPI();
-		static uint8_t				GetFramesInFlight();
+		static uint8_t				GetFrameCount();
 		static uint8_t				GetFrame();
 		static uint32_t				GetCommandBufferCount();
+
+		static bool					IsReverseDepth();
 
 		static Ref<CommandBuffer>	GetGraphicsCommandBuffer();
 		static Ref<CommandBuffer>	GetComputeCommandBuffer();
@@ -58,12 +61,13 @@ namespace GEngine
 		friend class Application;
 	private:
 		static GraphicsAPI* s_GraphicsAPI;
-		static uint8_t		s_FramesInFlight;
+		static uint8_t		s_FrameCount;
 		static uint8_t		s_Frame;
 		static uint32_t		s_CommandBufferCount;
 		static uint32_t		s_DynamicUniformCount;
 		static uint32_t		s_ViewportWidth;
 		static uint32_t		s_ViewportHeight;
+		static bool			s_ReverseDepth;
 	};
 }
 

@@ -35,6 +35,9 @@ namespace GEngine
 		UINT												GetDsvDescriptorSize() { return m_DsvDescriptorSize; }
 		UINT												GetCbvSrvUavDescriptorSize() { return m_CbvSrvUavDescriptorSize; }
 		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
+		Vector4&											GetClearColor() { return m_ClearColor; }
+	protected:
+		Ref<D3D12CommandBuffer>		GetCommandBuffer(CommandBufferType type);
 	private:
 		void						GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter = false);
 		void						CreateFactory();
@@ -55,15 +58,16 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_TransferQueue;
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>			m_SwapChain;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>	m_RtvHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>	m_DsvHeap;
 		UINT											m_RtvDescriptorSize;
 		UINT											m_DsvDescriptorSize;
 		UINT											m_CbvSrvUavDescriptorSize;
-		D3D12CommandAllocator							m_CommandAllocator;
+		D3D12CommandPool								m_CommandPool;
 
 		uint32_t										m_SwapChainWidth, m_SwapChainHeight;
 		bool											m_UseWarpDevice;
 
-		Vector4											m_ClearValue = { 0, 0, 0, 0 };
+		Vector4											m_ClearColor = { 0, 0, 0, 0 };
 	};
 }
 

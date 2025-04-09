@@ -42,6 +42,8 @@ namespace GEngine
 	{
 		m_Material->Update(cmdBuffer);
 
+		auto cmd = static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer();
+
 		if (m_RecreatePipeline)
 		{
 			for (auto pipeline : m_GraphicsPipelines)
@@ -52,7 +54,7 @@ namespace GEngine
 			m_RecreatePipeline = false;
 			m_GraphicsPipelines.clear();
 		}
-		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline(frameBuffer));
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline(frameBuffer));
 
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
@@ -61,20 +63,20 @@ namespace GEngine
 		Viewport.height		= -(std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight());
 		Viewport.minDepth	= 0.0f;
 		Viewport.maxDepth	= 1.0f;
-		vkCmdSetViewport(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 0, 1, &Viewport);
+		vkCmdSetViewport(cmd, 0, 1, &Viewport);
 
 		VkRect2D		Scissor{};
 		Scissor.offset	= { 0, 0 };
 		Scissor.extent	= { (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetWidth(), (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight() };
-		vkCmdSetScissor(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 0, 1, &Scissor);
+		vkCmdSetScissor(cmd, 0, 1, &Scissor);
 
-		vkCmdSetLineWidth(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), 1.0f);
-		vkCmdSetDepthCompareOp(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp()));
-		vkCmdSetDepthWriteEnable(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), m_Material->IsEnableDepthWrite());
-		vkCmdSetCullMode(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), Utils::CullModeToVkCullMode(m_Material->GetCull()));
-
+		vkCmdSetLineWidth(cmd, 1.0f);
+		vkCmdSetDepthCompareOp(cmd, Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp()));
+		vkCmdSetDepthWriteEnable(cmd, m_Material->IsEnableDepthWrite());
+		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull()));
+		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
-		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
 	}
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
@@ -309,8 +311,8 @@ namespace GEngine
 		depthStencil.depthWriteEnable			= m_Material->IsEnableDepthWrite() ? VK_TRUE : VK_FALSE;
 		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp());
 		depthStencil.depthBoundsTestEnable		= VK_FALSE;
-		depthStencil.minDepthBounds				= 0.0f; // Optional
-		depthStencil.maxDepthBounds				= 1.0f; // Optional
+		depthStencil.minDepthBounds				= Graphics::IsReverseDepth() ? 1.0f : 0.0f;
+		depthStencil.maxDepthBounds				= Graphics::IsReverseDepth() ? 0.0f : 1.0f;
 		depthStencil.stencilTestEnable			= VK_FALSE;
 		depthStencil.front						= {}; // Optional
 		depthStencil.back						= {}; // Optional

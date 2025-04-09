@@ -103,7 +103,7 @@ namespace GEngine {
 		info.QueueFamily				= VulkanContext::Get()->GetQueueFamily().GraphicsFamily.value();
 		info.Queue						= VulkanContext::Get()->GetGraphicsQueue();
 		info.PipelineCache				= nullptr;
-		info.MinImageCount				= Graphics::GetFramesInFlight();
+		info.MinImageCount				= Graphics::GetFrameCount();
 		info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
 		info.DescriptorPool				= descriptorPool;
 		info.Subpass					= 0;
@@ -235,19 +235,19 @@ namespace GEngine {
 
 	void VulkanImGui::CreateCommandBufferAndSyncObjects()
 	{
-		s_Semaphores.resize(Graphics::GetFramesInFlight());
-		s_Fences.resize(Graphics::GetFramesInFlight());
-		s_CommandBuffers.resize(Graphics::GetFramesInFlight());
+		s_Semaphores.resize(Graphics::GetFrameCount());
+		s_Fences.resize(Graphics::GetFrameCount());
+		s_CommandBuffers.resize(Graphics::GetFrameCount());
 
 
-		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
 			VkSemaphoreCreateInfo   semaphoreInfo{};
 			semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphores[i]));
 		}
 		
-		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
 			VkFenceCreateInfo       fenceInfo{};
 			fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -257,13 +257,13 @@ namespace GEngine {
 		
 
 		std::vector<VkCommandBuffer>	cmds;
-		cmds.resize(Graphics::GetFramesInFlight());
+		cmds.resize(Graphics::GetFrameCount());
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool			= VulkanContext::Get()->GetGraphicsCommandPool();
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = Graphics::GetFramesInFlight();
+		allocInfo.commandBufferCount = Graphics::GetFrameCount();
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, cmds.data()));
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)

@@ -39,6 +39,7 @@ namespace GEngine
 		static const	std::string			GE_MATERIAL_DEFINE;
 		static const	std::string			GE_GRAPHICS_API_OPENGL;
 		static const	std::string			GE_GRAPHICS_API_VULKAN;
+		static const	std::string			GE_GRAPHICS_API_D3D12;
 		static const	std::string			GE_GRAPHICS_API;
 	};
 	enum class GENGINE_API BlendFactor

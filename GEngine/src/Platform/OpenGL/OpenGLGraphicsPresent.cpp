@@ -8,7 +8,7 @@ namespace GEngine
 {
 	OpenGLGraphicsPresent::OpenGLGraphicsPresent()
 	{
-		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
 			s_CommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Graphics));
 		}
@@ -17,6 +17,8 @@ namespace GEngine
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glEnable(GL_FRAMEBUFFER_SRGB);
+		glDepthRange(Graphics::IsReverseDepth() ? 1 : 0, Graphics::IsReverseDepth() ? 0 : 1);
+		glClearDepth(Graphics::IsReverseDepth() ? 0 : 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glViewport(0, 0, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
 	}

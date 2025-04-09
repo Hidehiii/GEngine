@@ -9,12 +9,13 @@
 namespace GEngine
 {
 	GraphicsAPI*				Graphics::s_GraphicsAPI				= nullptr;
-	uint8_t						Graphics::s_FramesInFlight			= 0;
+	uint8_t						Graphics::s_FrameCount				= 0;
 	uint8_t						Graphics::s_Frame					= 0;
 	uint32_t					Graphics::s_CommandBufferCount		= 1000;
 	uint32_t					Graphics::s_DynamicUniformCount		= 128;
 	uint32_t					Graphics::s_ViewportWidth			= 0;
 	uint32_t					Graphics::s_ViewportHeight			= 0;
+	bool						Graphics::s_ReverseDepth			= false;
 
 	struct CameraUniformData
 	{
@@ -71,7 +72,7 @@ namespace GEngine
 		}
 
 		s_Frame					= 0;
-		s_FramesInFlight		= spec.FramesInFlight;
+		s_FrameCount			= spec.FramesInFlight;
 		s_CommandBufferCount	= spec.CommandBufferCount;
 		s_DynamicUniformCount	= spec.DynamicUniformCount;
 		s_ViewportWidth			= spec.ViewportWidth;
@@ -87,7 +88,7 @@ namespace GEngine
     }
 	void Graphics::FrameMove()
 	{
-		s_Frame = s_Frame + 1 < s_FramesInFlight ? s_Frame + 1 : 0;
+		s_Frame = s_Frame + 1 < s_FrameCount ? s_Frame + 1 : 0;
 	}
 	void Graphics::SetViewport(uint32_t width, uint32_t height)
 	{
@@ -98,13 +99,17 @@ namespace GEngine
 	{
 		s_GraphicsAPI->SetCommandsBarrier(first, second);
 	}
+	void Graphics::SetReverseDepth(bool reverse)
+	{
+		s_ReverseDepth = reverse;
+	}
 	GraphicsAPI::API Graphics::GetGraphicsAPI()
 	{
 		return s_GraphicsAPI->GetAPI();
 	}
-	uint8_t Graphics::GetFramesInFlight()
+	uint8_t Graphics::GetFrameCount()
 	{
-		return s_FramesInFlight;
+		return s_FrameCount;
 	}
 	uint8_t Graphics::GetFrame()
 	{
@@ -113,6 +118,10 @@ namespace GEngine
 	uint32_t Graphics::GetCommandBufferCount()
 	{
 		return s_CommandBufferCount;
+	}
+	bool Graphics::IsReverseDepth()
+	{
+		return s_ReverseDepth;
 	}
 	Ref<CommandBuffer> Graphics::GetGraphicsCommandBuffer()
 	{

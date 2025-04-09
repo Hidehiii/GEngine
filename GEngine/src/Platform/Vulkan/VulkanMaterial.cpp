@@ -175,7 +175,7 @@ namespace GEngine
 
 		// 只用一个set，需要兼容gl没有set的概念
 		// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
-		m_DescriptorSets.resize(Graphics::GetFramesInFlight());
+		m_DescriptorSets.resize(Graphics::GetFrameCount());
 
 		VkDescriptorSetAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -183,7 +183,7 @@ namespace GEngine
 		allocInfo.descriptorSetCount	= 1;
 		allocInfo.pSetLayouts			= &m_DescriptorSetLayout;
 
-		for (int i = 0; i < Graphics::GetFramesInFlight(); i++)
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
 			VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSets[i]));
 		}

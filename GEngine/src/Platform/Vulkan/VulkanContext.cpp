@@ -559,7 +559,7 @@ namespace GEngine
         VkPresentModeKHR            presentMode             = ChooseSwapPresentMode(swapChainSupportDetails.PresentModes);
         VkExtent2D                  extent                  = ChooseSwapExtent(swapChainSupportDetails.Capabilities, width, height);
 
-        uint32_t                    imageCount              = std::max(swapChainSupportDetails.Capabilities.minImageCount + 1, (unsigned int) Graphics::GetFramesInFlight());
+        uint32_t                    imageCount              = std::max(swapChainSupportDetails.Capabilities.minImageCount + 1, (unsigned int) Graphics::GetFrameCount());
         if (swapChainSupportDetails.Capabilities.maxImageCount > 0 &&
             imageCount > swapChainSupportDetails.Capabilities.maxImageCount)
         {
@@ -650,9 +650,9 @@ namespace GEngine
 	}
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
-        m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
-        for (int i = 0; i < Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight(); i++)
+        m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
+        m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
+        for (int i = 0; i < Graphics::GetCommandBufferCount() * Graphics::GetFrameCount(); i++)
         {
             m_GraphicsCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
                 CommandBufferType::Graphics));
@@ -667,8 +667,8 @@ namespace GEngine
 
     void VulkanContext::CreateSyncObjects()
     {
-        m_Semaphores.resize(Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
-        m_Fences.resize(Graphics::GetCommandBufferCount() * Graphics::GetFramesInFlight());
+        m_Semaphores.resize(Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
+        m_Fences.resize(Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
 
         for (int i = 0; i < m_Semaphores.size(); i++)
         {

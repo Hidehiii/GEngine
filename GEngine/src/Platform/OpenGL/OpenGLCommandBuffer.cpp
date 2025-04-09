@@ -17,12 +17,16 @@ namespace GEngine
 	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
-		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
+		
 		if (m_Type == CommandBufferType::Graphics)
 		{
+			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
+			m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
 			m_FrameBuffer->Begin(this);
 		}
-		Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0.0f, 0.0f });
+
+		if(buffer != nullptr)
+			Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0.0f, 0.0f });
 	}
 	void OpenGLCommandBuffer::End()
 	{

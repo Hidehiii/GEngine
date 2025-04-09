@@ -2,6 +2,7 @@
 #include "VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
 
 namespace GEngine
@@ -196,7 +197,7 @@ namespace GEngine
 		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
 		if (m_DepthStencilImage != nullptr)
 		{
-			clearValues.at(clearValues.size() - 1) = { 1.0f, 0 };
+			clearValues.at(clearValues.size() - 1) = { Graphics::IsReverseDepth() ? 0 : 1.0f, 0 };
 		}
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
