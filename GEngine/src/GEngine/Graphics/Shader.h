@@ -101,6 +101,8 @@ namespace GEngine
 		static	const	std::string			TessellationControl;
 		static	const	std::string			TessellationEvaluation;
 		static	const	std::string			Geometry;
+		static	const	std::string			Task;
+		static	const	std::string			Mesh;
 	};
 	
 	struct ShaderUniform
@@ -239,9 +241,18 @@ namespace GEngine
 		virtual bool										IsEnableDepthWrite()  { return m_EnableDepthWrite; }
 		virtual CompareOperation							GetDepthTestOp()  { return m_DepthTestOperation; }
 
+		virtual BlendMode									GetBlendColor(const std::string& pass) { return m_ShaderPasses[pass].State.BlendColor; }
+		virtual BlendMode									GetBlendAlpha(const std::string& pass) { return m_ShaderPasses[pass].State.BlendAlpha; }
+		virtual CullMode									GetCull(const std::string& pass) { return m_ShaderPasses[pass].State.Cull; }
+		virtual BlendFactor									GetBlendColorSrc(const std::string& pass) { return m_ShaderPasses[pass].State.BlendColorSrc; }
+		virtual BlendFactor									GetBlendColorDst(const std::string& pass) { return m_ShaderPasses[pass].State.BlendColorDst; }
+		virtual BlendFactor									GetBlendAlphaSrc(const std::string& pass) { return m_ShaderPasses[pass].State.BlendAlphaSrc; }
+		virtual BlendFactor									GetBlendAlphaDst(const std::string& pass) { return m_ShaderPasses[pass].State.BlendAlphaDst; }
+		virtual bool										IsEnableDepthWrite(const std::string& pass) { return m_ShaderPasses[pass].State.DepthWrite; }
+		virtual CompareOperation							GetDepthTestOp(const std::string& pass) { return m_ShaderPasses[pass].State.DepthTestOp; }
+
 		virtual std::vector<ShaderUniform>					GetUniforms()  { return m_UniformCache; }
 		virtual const std::string&							GetShaderName() const  { return m_Name; }
-		virtual void										SetShaderName(std::string name)  { m_Name = name; }
 		virtual std::string									GetShaderPath() { return m_FilePath; }
 		virtual std::vector<ShaderUniformTexture2D>			GetTexture2D()  { return m_Texture2DCache; }
 		virtual uint32_t									GetTexture2DCount()  { return m_Texture2DCache.size(); }

@@ -76,8 +76,17 @@ namespace GEngine
 		m_FilePath = path;
 		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
+
 		auto shaderSources	= PreProcess(src);
 		CompileOrGetVulkanBinaries(shaderSources);
+
+		return;
+		// multi pass
+		PreProcess(src);
+		for (auto pass : m_ShaderPasses)
+		{
+			// 编译完直接创建module就释放掉
+		}
 	}
 	VulkanShader::~VulkanShader()
 	{
@@ -134,7 +143,7 @@ namespace GEngine
 		else if (stage == ShaderStage::Geometry)
 			return m_GeometryShaderModule;
 
-		GE_CORE_ASSERT(false, "Unknown shader stage");
+		//GE_CORE_ASSERT(false, "Unknown shader stage");
 		return nullptr;
 	}
 	void VulkanShader::SetMacroBool(std::string& source)
@@ -209,6 +218,17 @@ namespace GEngine
 			shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
 		return shaderSources;
+		// multi pass
+		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
+		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses);
+		/*for (auto pass : m_ShaderPasses)
+		{
+			VulkanShaderModule module;
+			if (pass.second.Stages.find(ShaderStage::Vertex) != pass.second.Stages.end())
+			{
+				module.VertexModule = CreateShaderModule(pass.second.Stages[ShaderStage::Vertex]);
+			}
+		}*/
 	}
 	void VulkanShader::CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources)
 	{

@@ -13,6 +13,8 @@ namespace GEngine
 		VkShaderModule TessellationControlModule		= nullptr;
 		VkShaderModule TessellationEvaluationModule		= nullptr;
 		VkShaderModule GeometryModule					= nullptr;
+		VkShaderModule TaskModule						= nullptr;
+		VkShaderModule MeshModule						= nullptr;
 	};
 
 	class GENGINE_API VulkanShader : public Shader
@@ -50,9 +52,10 @@ namespace GEngine
 			{ ShaderMacroName::GE_GRAPHICS_API, std::to_string((int)GraphicsAPI::API::Vulkan)},
 		};
 
+		std::unordered_map<std::string, VulkanShaderModule>		m_ShaderModules;
+
 		VkShaderModule m_VertexShaderModule = nullptr, m_FragmentShaderModule = nullptr, m_ComputeShaderModule = nullptr, m_TessellationControlShaderModule = nullptr,
 						m_TessellationEvaluationShaderModule = nullptr, m_GeometryShaderModule = nullptr;
-		std::vector<VulkanShaderModule>						m_ShaderModules;
 	};
 }
 

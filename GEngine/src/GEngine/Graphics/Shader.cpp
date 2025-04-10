@@ -32,6 +32,8 @@ namespace GEngine
 	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(tessellationcontrol);
 	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(tessellationevaluation);
 	std::string		const	ShaderStage::Geometry							= VAR_NAME(geometry);
+	std::string		const	ShaderStage::Geometry							= VAR_NAME(task);
+	std::string		const	ShaderStage::Geometry							= VAR_NAME(mesh);
 
 	namespace Utils
 	{
@@ -514,6 +516,14 @@ namespace GEngine
 				if (ProcessShaderStage(content, ShaderStage::TessellationEvaluation, blockName))
 				{
 					pass.Stages[ShaderStage::TessellationEvaluation] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Task, blockName))
+				{
+					pass.Stages[ShaderStage::Task] = blocks[blockName];
+				}
+				if (ProcessShaderStage(content, ShaderStage::Mesh, blockName))
+				{
+					pass.Stages[ShaderStage::Mesh] = blocks[blockName];
 				}
 				GE_CORE_ASSERT(passes.find(passName) == passes.end(), "pass name {} is uesd", passName);
 				passes[passName]		= pass;

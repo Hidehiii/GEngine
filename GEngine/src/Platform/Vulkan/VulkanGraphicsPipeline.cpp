@@ -127,39 +127,52 @@ namespace GEngine
 		}
 
 		// TODO 
-		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();
+		auto shader = std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader());
+		shader->CreateShaderModule();
 
-		std::string shaderMainFuncName = m_Material->GetShader()->GetShaderMainFuncName().c_str();
+		std::string shaderMainFuncName						= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Vertex))
+		if (shader->GetShaderModule(ShaderStage::Vertex))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Vertex),
+				shader->GetShaderModule(ShaderStage::Vertex),
 				shaderMainFuncName.c_str()));
 		}
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Fragment))
+		if (shader->GetShaderModule(ShaderStage::Fragment))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Fragment),
+				shader->GetShaderModule(ShaderStage::Fragment),
 				shaderMainFuncName.c_str()));
 		}
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::TessellationControl))
+		if (shader->GetShaderModule(ShaderStage::TessellationControl))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::TessellationControl),
+				shader->GetShaderModule(ShaderStage::TessellationControl),
 				shaderMainFuncName.c_str()));
 		}
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::TessellationEvaluation))
+		if (shader->GetShaderModule(ShaderStage::TessellationEvaluation))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::TessellationEvaluation),
+				shader->GetShaderModule(ShaderStage::TessellationEvaluation),
 				shaderMainFuncName.c_str()));
 		}
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Geometry))
+		if (shader->GetShaderModule(ShaderStage::Geometry))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Geometry),
+				shader->GetShaderModule(ShaderStage::Geometry),
+				shaderMainFuncName.c_str()));
+		}
+		if (shader->GetShaderModule(ShaderStage::Task))
+		{
+			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TASK_BIT_EXT,
+				shader->GetShaderModule(ShaderStage::Task),
+				shaderMainFuncName.c_str()));
+		}
+		if (shader->GetShaderModule(ShaderStage::Mesh))
+		{
+			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_MESH_BIT_EXT,
+				shader->GetShaderModule(ShaderStage::Mesh),
 				shaderMainFuncName.c_str()));
 		}
 
