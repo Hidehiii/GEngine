@@ -274,8 +274,14 @@ namespace GEngine
 	{
 		std::static_pointer_cast<VulkanGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, instanceCount, indexCount);
 	}
+	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	{
+	}
 	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z)
 	{
 		std::static_pointer_cast<VulkanComputePipeline>(pipeline)->Compute(this, x, y, z);
+	}
+	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, std::string pass, uint32_t x, uint32_t y, uint32_t z)
+	{
 	}
 }

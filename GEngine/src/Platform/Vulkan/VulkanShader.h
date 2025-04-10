@@ -7,14 +7,7 @@ namespace GEngine
 {
 	struct VulkanShaderModule
 	{
-		VkShaderModule VertexModule						= nullptr;
-		VkShaderModule FragmentModule					= nullptr;
-		VkShaderModule ComputeModule					= nullptr;
-		VkShaderModule TessellationControlModule		= nullptr;
-		VkShaderModule TessellationEvaluationModule		= nullptr;
-		VkShaderModule GeometryModule					= nullptr;
-		VkShaderModule TaskModule						= nullptr;
-		VkShaderModule MeshModule						= nullptr;
+		std::unordered_map<std::string, VkShaderModule>	 Modules;
 	};
 
 	class GENGINE_API VulkanShader : public Shader
@@ -29,13 +22,17 @@ namespace GEngine
 		void			CreateShaderModule();
 		void			DestroyShaderModule();
 		VkShaderModule	GetShaderModule(std::string stage);
+
+		VkShaderModule		GetShaderModule(const std::string& stage, const std::string& pass) { return m_ShaderModules[pass].Modules[stage]; }
+		VulkanShaderModule	GetShaderModules(const std::string& pass) { return m_ShaderModules[pass]; }
 	protected:
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;
 
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 	private:
-		std::unordered_map<std::string, std::string> PreProcess(const std::string& source);
+		std::unordered_map<std::string, std::string> ProcessShaderSource(const std::string& source);
+		std::unordered_map<std::string, std::vector<uint32_t>> CompileVulkanBinaries(std::pair<std::string, ShaderPass> pass);
 		void CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources);
 		void Reflect(const std::string stage, const std::vector<uint32_t>& shaderData);
 	private:

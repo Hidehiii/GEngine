@@ -10,8 +10,8 @@ namespace GEngine
 
 	VulkanGraphicsPresent::VulkanGraphicsPresent()
 	{
-		m_Fences.resize(Graphics::GetFramesInFlight());
-		s_CommandBuffers.resize(Graphics::GetFramesInFlight());
+		m_Fences.resize(Graphics::GetFrameCount());
+		s_CommandBuffers.resize(Graphics::GetFrameCount());
 		for (int i = 0; i < m_Fences.size(); i++)
 		{
 			VkFenceCreateInfo       fenceInfo{};
@@ -21,13 +21,13 @@ namespace GEngine
 		}
 
 		std::vector<VkCommandBuffer>	cmds;
-		cmds.resize(Graphics::GetFramesInFlight());
+		cmds.resize(Graphics::GetFrameCount());
 
 		VkCommandBufferAllocateInfo		allocInfo{};
 		allocInfo.sType					= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool			= VulkanContext::Get()->GetGraphicsCommandPool();
 		allocInfo.level					= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount	= Graphics::GetFramesInFlight();
+		allocInfo.commandBufferCount	= Graphics::GetFrameCount();
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, cmds.data()));
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)

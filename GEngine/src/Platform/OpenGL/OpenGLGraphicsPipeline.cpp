@@ -67,6 +67,60 @@ namespace GEngine
 			}
 		}
     }
+	void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	{
+		m_Material->Update(cmdBuffer, pass);
+		m_VertexBuffer->Bind(cmdBuffer);
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
+		if (m_VertexBuffer->IsInstanceRendering())
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				glDrawElementsInstanced(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				glDrawElementsInstanced(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
+		else
+		{
+			switch (m_VertexBuffer->GetVertexTopologyType())
+			{
+			case VertexTopology::Triangle:
+			{
+				glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+				break;
+			}
+			case VertexTopology::Line:
+			{
+				glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
+				break;
+			}
+			case VertexTopology::Point:
+			{
+				glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknow type");
+				break;
+			}
+		}
+	}
     void OpenGLGraphicsPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)
     {
         m_VertexBuffer = std::dynamic_pointer_cast<OpenGLVertexBuffer>(buffer);

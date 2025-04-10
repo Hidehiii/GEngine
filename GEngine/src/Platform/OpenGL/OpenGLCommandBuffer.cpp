@@ -43,8 +43,14 @@ namespace GEngine
 	{
 		std::static_pointer_cast<OpenGLGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, instanceCount, indexCount);
 	}
+	void OpenGLCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	{
+	}
 	void OpenGLCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z)
 	{
 		std::static_pointer_cast<OpenGLComputePipeline>(pipeline)->Compute(this, x, y, z);
+	}
+	void OpenGLCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, std::string pass, uint32_t x, uint32_t y, uint32_t z)
+	{
 	}
 }

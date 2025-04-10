@@ -77,16 +77,53 @@ namespace GEngine
 		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
 
-		auto shaderSources	= PreProcess(src);
+		auto shaderSources	= ProcessShaderSource(src);
 		CompileOrGetVulkanBinaries(shaderSources);
 
 		return;
 		// multi pass
-		PreProcess(src);
+		ProcessShaderSource(src);
 		for (auto pass : m_ShaderPasses)
 		{
 			// 编译完直接创建module就释放掉
+			VulkanShaderModule shaderModule;
+			auto spirvData = CompileVulkanBinaries(pass);
+			if (spirvData.find(ShaderStage::Vertex) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Vertex] = CreateShaderModule(spirvData[ShaderStage::Vertex]);
+			}
+			if (spirvData.find(ShaderStage::Fragment) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Fragment] = CreateShaderModule(spirvData[ShaderStage::Fragment]);
+			}
+			if (spirvData.find(ShaderStage::Compute) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Compute] = CreateShaderModule(spirvData[ShaderStage::Compute]);
+			}
+			if (spirvData.find(ShaderStage::TessellationControl) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::TessellationControl] = CreateShaderModule(spirvData[ShaderStage::TessellationControl]);
+			}
+			if (spirvData.find(ShaderStage::TessellationEvaluation) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::TessellationEvaluation] = CreateShaderModule(spirvData[ShaderStage::TessellationEvaluation]);
+			}
+			if (spirvData.find(ShaderStage::Geometry) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Geometry] = CreateShaderModule(spirvData[ShaderStage::Geometry]);
+			}
+			if (spirvData.find(ShaderStage::Task) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Task] = CreateShaderModule(spirvData[ShaderStage::Task]);
+			}
+			if (spirvData.find(ShaderStage::Mesh) != spirvData.end())
+			{
+				shaderModule.Modules[ShaderStage::Mesh] = CreateShaderModule(spirvData[ShaderStage::Mesh]);
+			}
+			m_ShaderModules[pass.first] = shaderModule;
 		}
+		m_ShaderBlocks.clear();
+		m_ShaderPasses.clear();
 	}
 	VulkanShader::~VulkanShader()
 	{
@@ -170,7 +207,7 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::Get()->GetDevice(), &createInfo, nullptr, &shaderModule));
 		return shaderModule;
 	}
-	std::unordered_map<std::string, std::string> VulkanShader::PreProcess(const std::string& source)
+	std::unordered_map<std::string, std::string> VulkanShader::ProcessShaderSource(const std::string& source)
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
@@ -220,7 +257,7 @@ namespace GEngine
 		return shaderSources;
 		// multi pass
 		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
-		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses);
+		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses, m_RenderStates);
 		/*for (auto pass : m_ShaderPasses)
 		{
 			VulkanShaderModule module;
@@ -229,6 +266,57 @@ namespace GEngine
 				module.VertexModule = CreateShaderModule(pass.second.Stages[ShaderStage::Vertex]);
 			}
 		}*/
+	}
+	std::unordered_map<std::string, std::vector<uint32_t>> VulkanShader::CompileVulkanBinaries(std::pair<std::string, ShaderPass> pass)
+	{
+		shaderc::Compiler			compiler;
+		shaderc::CompileOptions		options;
+		options.SetIncluder(std::make_unique<ShaderIncluder>());
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+
+		std::unordered_map<std::string, std::vector<uint32_t>> shaderData;
+		for (auto&& [stage, source] : pass.second.Stages)
+		{
+			std::filesystem::path shaderFilePath	= m_FilePath;
+			std::filesystem::path cachedPath		= cacheDirectory / (shaderFilePath.filename().string() + "." + pass.first + Utils::GLShaderStageCachedVulkanFileExtension(stage));
+
+			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+			if (in.is_open())
+			{
+				in.seekg(0, std::ios::end);
+				auto size = in.tellg();
+				in.seekg(0, std::ios::beg);
+
+				auto& data = shaderData[stage];
+				data.resize(size / sizeof(uint32_t));
+				in.read((char*)data.data(), size);
+			}
+			else
+			{
+				Preprocess(source);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					GE_CORE_ERROR("Error shader context:\n{}", source);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
+				}
+
+				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+				if (out.is_open())
+				{
+					auto& data = shaderData[stage];
+					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					out.flush();
+					out.close();
+				}
+			}
+		}
+
+		return shaderData;
 	}
 	void VulkanShader::CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources)
 	{

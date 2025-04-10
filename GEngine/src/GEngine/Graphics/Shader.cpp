@@ -32,8 +32,8 @@ namespace GEngine
 	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(tessellationcontrol);
 	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(tessellationevaluation);
 	std::string		const	ShaderStage::Geometry							= VAR_NAME(geometry);
-	std::string		const	ShaderStage::Geometry							= VAR_NAME(task);
-	std::string		const	ShaderStage::Geometry							= VAR_NAME(mesh);
+	std::string		const	ShaderStage::Task								= VAR_NAME(task);
+	std::string		const	ShaderStage::Mesh								= VAR_NAME(mesh);
 
 	namespace Utils
 	{
@@ -294,7 +294,7 @@ namespace GEngine
 		void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha,
 			BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
 		{
-			const char* token = "#Blend";
+			const char* token = "Blend";
 			size_t tokenLength = strlen(token);
 			size_t pos = source.find(token, 0);
 			if (pos == std::string::npos)
@@ -338,7 +338,7 @@ namespace GEngine
 		}
 		void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite)
 		{
-			const char* token = "#DepthWrite";
+			const char* token = "DepthWrite";
 			size_t tokenLength = strlen(token);
 			size_t pos = source.find(token, 0);
 			if (pos == std::string::npos)
@@ -359,7 +359,7 @@ namespace GEngine
 		}
 		void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation)
 		{
-			const char* token = "#DepthTest";
+			const char* token = "DepthTest";
 			size_t tokenLength = strlen(token);
 			size_t pos = source.find(token, 0);
 			if (pos == std::string::npos)
@@ -380,7 +380,7 @@ namespace GEngine
 		}
 		void ProcessShaderCull(const std::string& source, CullMode& mode)
 		{
-			const char* token = "#Cull";
+			const char* token = "Cull";
 			size_t tokenLength = strlen(token);
 			size_t pos = source.find(token, 0);
 			if (pos == std::string::npos)
@@ -465,7 +465,7 @@ namespace GEngine
 			}
 			
 		}
-		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes)
+		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes, std::unordered_map<std::string, RenderState>& states)
 		{
 			const char* token			= "##Pass";
 			const char* endToken		= "##EndPass";
@@ -482,12 +482,17 @@ namespace GEngine
 				pos						= source.find(endToken, begin);
 				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
 				std::string content		= source.substr(begin, pos - begin);
+				
+				RenderState state{};
+				ProcessShaderBlend(content, state.BlendColor, state.BlendAlpha,
+					state.BlendColorSrc, state.BlendColorDst, state.BlendAlphaSrc, state.BlendAlphaDst);
+				ProcessShaderDepthWrite(content, state.ColorWrite);
+				ProcessShaderDepthTest(content, state.DepthTestOp);
+				ProcessShaderCull(content, state.Cull);
+				GE_CORE_ASSERT(states.find(passName) == states.end(), "pass name {} is uesd", passName);
+				states[passName] = state;
+
 				ShaderPass pass{};
-				ProcessShaderBlend(content, pass.State.BlendColor, pass.State.BlendAlpha, 
-					pass.State.BlendColorSrc, pass.State.BlendColorDst, pass.State.BlendAlphaSrc, pass.State.BlendAlphaDst);
-				ProcessShaderDepthWrite(content, pass.State.ColorWrite);
-				ProcessShaderDepthTest(content, pass.State.DepthTestOp);
-				ProcessShaderCull(content, pass.State.Cull);
 				std::string blockName;
 				if (ProcessShaderStage(content, ShaderStage::Vertex, blockName))
 				{

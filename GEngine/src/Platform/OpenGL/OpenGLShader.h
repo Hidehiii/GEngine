@@ -15,6 +15,7 @@ namespace GEngine
 		virtual ~OpenGLShader();
 
 		void Bind() const;
+		void Use(const std::string& pass);
 
 		virtual std::vector<uint32_t> GetVertexShaderSource() { return m_OpenGLSPIRV[ShaderStage::Vertex]; }
 		virtual std::vector<uint32_t> GetFragmentShaderSource() { return m_OpenGLSPIRV[ShaderStage::Fragment]; }
@@ -53,7 +54,9 @@ namespace GEngine
 		virtual void SetMacroBool(std::string& source) override;
 		virtual void SetMacroExp(std::string& source) override;
 	private:
-		std::unordered_map<std::string, std::string> PreProcess(const std::string& source);
+		std::unordered_map<std::string, std::string> ProcessShaderSource(const std::string& source);
+		std::unordered_map<std::string, std::vector<uint32_t>> CompileOpenGLBinaries(std::pair<std::string, ShaderPass> pass);
+		uint32_t CreateProgram(std::unordered_map<std::string, std::vector<uint32_t>> shader);
 
 		void CompileOrGetOpenGLBinaries(std::unordered_map<std::string, std::string>& shaderSources);
 		void CreateProgram();

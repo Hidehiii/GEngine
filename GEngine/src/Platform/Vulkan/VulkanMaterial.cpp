@@ -42,6 +42,11 @@ namespace GEngine
 			// Read depth test and depth mask
 			m_EnableDepthWrite			= m_Shader->IsEnableDepthWrite();
 			m_DepthTestOperation		= m_Shader->GetDepthTestOp();
+
+
+
+			m_RenderStates				= m_Shader->GetRenderStates();
+
 			// Texture2D
 			m_Texture2D					= m_Shader->GetTexture2D();
 			// StorageImage2D
@@ -68,6 +73,39 @@ namespace GEngine
 	void VulkanMaterial::Update(CommandBuffer* cmdBuffer)
 	{
 		if(m_UniformsBuffer.Size > 0)
+			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
+
+		for (auto& texture2D : m_Texture2D)
+		{
+			texture2D.Texture->Bind(cmdBuffer, texture2D.Slot);
+		}
+
+		for (auto& image2D : m_StorageImage2D)
+		{
+			image2D.Image->Bind(cmdBuffer, image2D.Slot);
+		}
+
+		for (auto& storageBuffer : m_StorageBuffer)
+		{
+			storageBuffer.Buffer->Bind(storageBuffer.Slot);
+		}
+
+		for (auto& cubeMap : m_CubeMap)
+		{
+			cubeMap.Cubemap->Bind(cmdBuffer, cubeMap.Slot);
+		}
+
+		if (m_NeedUpdateDescripotrSetFrames & (uint8_t)(std::pow(2, Graphics::GetFrame())))
+		{
+			UpdateDescriptorSet(Graphics::GetFrame());
+			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Graphics::GetFrame());
+		}
+		UpdateDescriptorSet(Graphics::GetFrame());
+	}
+
+	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const std::string& pass)
+	{
+		if (m_UniformsBuffer.Size > 0)
 			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
 
 		for (auto& texture2D : m_Texture2D)

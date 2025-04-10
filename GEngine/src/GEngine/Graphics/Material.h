@@ -22,25 +22,43 @@ namespace GEngine
 		virtual ~Material() {}
 
 		virtual void Update(CommandBuffer* cmdBuffer) = 0;
+		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) = 0;
 
-		virtual CullMode	GetCull()						{ return m_CullMode; }
-		virtual BlendMode	GetBlendColor()					{ return m_BlendModeColor; }
-		virtual BlendMode	GetBlendAlpha()					{ return m_BlendModeAlpha; }
+		virtual CullMode	GetCull()					{ return m_CullMode; }
+		virtual BlendMode	GetBlendColor()				{ return m_BlendModeColor; }
+		virtual BlendMode	GetBlendAlpha()				{ return m_BlendModeAlpha; }
 		virtual BlendFactor GetBlendColorSrc()			{ return m_BlendColorSourceFactor; }
 		virtual BlendFactor GetBlendAlphaSrc()			{ return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor GetBlendColorDst()	{ return m_BlendColorDestinationFactor; }
-		virtual BlendFactor GetBlendAlphaDst()	{ return m_BlendAlphaDestinationFactor; }
-		virtual bool		IsOpaque()							{ return m_BlendModeColor == BlendMode::None || m_BlendModeAlpha == BlendMode::None; }
+		virtual BlendFactor GetBlendColorDst()			{ return m_BlendColorDestinationFactor; }
+		virtual BlendFactor GetBlendAlphaDst()			{ return m_BlendAlphaDestinationFactor; }
 
 		virtual void EnableDepthWrite(bool enabled)		{ m_EnableDepthWrite = enabled; }
 		virtual bool IsEnableDepthWrite()				{ return m_EnableDepthWrite; }
 
-		virtual void				SetDepthTestOp(CompareOperation op)  { m_DepthTestOperation = op; }
+		virtual void				SetDepthTestOp(CompareOperation op)		{ m_DepthTestOperation = op; }
 		virtual CompareOperation	GetDepthTestOp()						{ return m_DepthTestOperation; }
 
 		virtual void SetCullMode(CullMode mode);
 		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest);
 		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
+
+		virtual CullMode	GetCull(const std::string& pass)					{ return m_RenderStates[pass].Cull; }
+		virtual BlendMode	GetBlendColor(const std::string& pass)				{ return m_RenderStates[pass].BlendColor; }
+		virtual BlendMode	GetBlendAlpha(const std::string& pass)				{ return m_RenderStates[pass].BlendAlpha; }
+		virtual BlendFactor GetBlendColorSrc(const std::string& pass)			{ return m_RenderStates[pass].BlendColorSrc; }
+		virtual BlendFactor GetBlendAlphaSrc(const std::string& pass)			{ return m_RenderStates[pass].BlendAlphaSrc; }
+		virtual BlendFactor GetBlendColorDst(const std::string& pass)			{ return m_RenderStates[pass].BlendColorDst; }
+		virtual BlendFactor GetBlendAlphaDst(const std::string& pass)			{ return m_RenderStates[pass].BlendAlphaDst; }
+
+		virtual void EnableDepthWrite(bool enabled, const std::string& pass)	{ m_RenderStates[pass].DepthWrite = enabled; }
+		virtual bool IsEnableDepthWrite(const std::string& pass)				{ return m_RenderStates[pass].DepthWrite; }
+
+		virtual void				SetDepthTestOp(CompareOperation op, const std::string& pass)	{ m_RenderStates[pass].DepthTestOp = op; }
+		virtual CompareOperation	GetDepthTestOp(const std::string& pass)							{ return m_RenderStates[pass].DepthTestOp; }
+
+		virtual void SetCullMode(CullMode mode, const std::string& pass)		{ m_RenderStates[pass].Cull = mode; }
+		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const std::string& pass);
+		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const std::string& pass);
 
 		virtual void SetFloat(const std::string& name, float value);
 		virtual void SetInt(const std::string& name, int value);
@@ -61,7 +79,6 @@ namespace GEngine
 
 		virtual void SetShader(const Ref<Shader>& shader) = 0;
 		virtual void SetName(const std::string& name) { m_Name = name; }
-
 		
 
 		virtual void					SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
@@ -119,6 +136,8 @@ namespace GEngine
 		BlendFactor											m_BlendColorDestinationFactor = BlendFactor::ZERO;
 		BlendFactor											m_BlendAlphaSourceFactor = BlendFactor::ONE;
 		BlendFactor											m_BlendAlphaDestinationFactor = BlendFactor::ZERO;
+
+		std::unordered_map<std::string, RenderState>		m_RenderStates;
 	};
 }
 

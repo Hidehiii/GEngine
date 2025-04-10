@@ -160,6 +160,24 @@ namespace GEngine
 		m_BlendColorDestinationFactor = dest;
 		m_BlendAlphaDestinationFactor = dest;
 	}
+	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const std::string& pass)
+	{
+		m_RenderStates[pass].BlendColor		= mode;
+		m_RenderStates[pass].BlendAlpha		= mode;
+		m_RenderStates[pass].BlendColorSrc	= source;
+		m_RenderStates[pass].BlendAlphaSrc	= source;
+		m_RenderStates[pass].BlendColorDst	= dest;
+		m_RenderStates[pass].BlendAlphaDst	= dest;
+	}
+	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const std::string& pass)
+	{
+		m_RenderStates[pass].BlendColor		= modeColor;
+		m_RenderStates[pass].BlendAlpha		= modeAlpha;
+		m_RenderStates[pass].BlendColorSrc	= srcColor;
+		m_RenderStates[pass].BlendColorDst	= dstColor;
+		m_RenderStates[pass].BlendAlphaSrc	= srcAlpha;
+		m_RenderStates[pass].BlendAlphaDst	= dstAlpha;
+	}
 	void Material::SetFloat(const std::string& name, float value)
 	{
 		ShaderUniform uniform = GetUniformByName(name);

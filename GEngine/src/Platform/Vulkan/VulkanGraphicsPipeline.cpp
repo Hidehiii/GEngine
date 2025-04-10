@@ -38,11 +38,12 @@ namespace GEngine
         
     }
 
-	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer)
+	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const std::string& pass)
 	{
 		m_Material->Update(cmdBuffer);
 
 		auto cmd = static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer();
+		auto vkFrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer);
 
 		if (m_RecreatePipeline)
 		{
@@ -54,26 +55,26 @@ namespace GEngine
 			m_RecreatePipeline = false;
 			m_GraphicsPipelines.clear();
 		}
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, FindOrCreatePipeline(frameBuffer));
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline(frameBuffer, pass));
 
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
-		Viewport.y			= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight();
-		Viewport.width		= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetWidth();
-		Viewport.height		= -(std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight());
+		Viewport.y			= vkFrameBuffer->GetHeight();
+		Viewport.width		= vkFrameBuffer->GetWidth();
+		Viewport.height		= -(vkFrameBuffer->GetHeight());
 		Viewport.minDepth	= 0.0f;
 		Viewport.maxDepth	= 1.0f;
 		vkCmdSetViewport(cmd, 0, 1, &Viewport);
 
 		VkRect2D		Scissor{};
 		Scissor.offset	= { 0, 0 };
-		Scissor.extent	= { (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetWidth(), (unsigned int)std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetHeight() };
+		Scissor.extent	= { (unsigned int)vkFrameBuffer->GetWidth(), (unsigned int)vkFrameBuffer->GetHeight() };
 		vkCmdSetScissor(cmd, 0, 1, &Scissor);
 
 		vkCmdSetLineWidth(cmd, 1.0f);
-		vkCmdSetDepthCompareOp(cmd, Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp()));
-		vkCmdSetDepthWriteEnable(cmd, m_Material->IsEnableDepthWrite());
-		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull()));
+		vkCmdSetDepthCompareOp(cmd, Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp(pass)));
+		vkCmdSetDepthWriteEnable(cmd, m_Material->IsEnableDepthWrite(pass));
+		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull(pass)));
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
@@ -82,6 +83,21 @@ namespace GEngine
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
 	{
 		PrepareRender(cmdBuffer, frameBuffer);
+		m_VertexBuffer->Bind(cmdBuffer);
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
+		if (m_VertexBuffer->IsInstanceRendering())
+		{
+			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
+		}
+		else
+		{
+			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+		}
+	}
+
+	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	{
+		PrepareRender(cmdBuffer, frameBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
 		if (m_VertexBuffer->IsInstanceRendering())
@@ -116,19 +132,17 @@ namespace GEngine
 		m_RecreatePipeline = true;
 	}
     
-	VkPipeline VulkanGraphicsPipeline::FindOrCreatePipeline(const Ref<FrameBuffer>& frameBuffer)
+	VkPipeline VulkanGraphicsPipeline::GetPipeline(const Ref<FrameBuffer>& frameBuffer, const std::string& pass)
 	{
 		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
 		{
-			if (m_GraphicsPipelines.at(i).RenderPass == std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass())
+			if (m_GraphicsPipelines.at(i).RenderPass == std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass() &&
+				m_GraphicsPipelines.at(i).Pass == pass)
 			{
 				return m_GraphicsPipelines.at(i).GraphicsPipeline;
 			}
 		}
-
-		// TODO 
 		auto shader = std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader());
-		shader->CreateShaderModule();
 
 		std::string shaderMainFuncName						= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
@@ -136,43 +150,43 @@ namespace GEngine
 		if (shader->GetShaderModule(ShaderStage::Vertex))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT,
-				shader->GetShaderModule(ShaderStage::Vertex),
+				shader->GetShaderModule(ShaderStage::Vertex, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::Fragment))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT,
-				shader->GetShaderModule(ShaderStage::Fragment),
+				shader->GetShaderModule(ShaderStage::Fragment, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::TessellationControl))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-				shader->GetShaderModule(ShaderStage::TessellationControl),
+				shader->GetShaderModule(ShaderStage::TessellationControl, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::TessellationEvaluation))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-				shader->GetShaderModule(ShaderStage::TessellationEvaluation),
+				shader->GetShaderModule(ShaderStage::TessellationEvaluation, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::Geometry))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT,
-				shader->GetShaderModule(ShaderStage::Geometry),
+				shader->GetShaderModule(ShaderStage::Geometry, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::Task))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TASK_BIT_EXT,
-				shader->GetShaderModule(ShaderStage::Task),
+				shader->GetShaderModule(ShaderStage::Task, pass),
 				shaderMainFuncName.c_str()));
 		}
 		if (shader->GetShaderModule(ShaderStage::Mesh))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_MESH_BIT_EXT,
-				shader->GetShaderModule(ShaderStage::Mesh),
+				shader->GetShaderModule(ShaderStage::Mesh, pass),
 				shaderMainFuncName.c_str()));
 		}
 
@@ -352,12 +366,11 @@ namespace GEngine
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &pipeline));
 
-		// TODO 
-		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
-
 		VulkanGraphicsPipelineInfo	info{};
-		info.GraphicsPipeline = pipeline;
+		info.GraphicsPipeline		= pipeline;
 		info.RenderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
+		info.Pass					= pass;
+
 		m_GraphicsPipelines.push_back(info);
 
 		return pipeline;

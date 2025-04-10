@@ -114,17 +114,32 @@ namespace GEngine
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		std::string src = Utils::ReadFile(path);
-		auto shaderSources = PreProcess(src);
+		auto shaderSources = ProcessShaderSource(src);
 		CompileOrGetOpenGLBinaries(shaderSources);
 		CreateProgram();
+
+		return;
+		ProcessShaderSource(src);
+		for (auto pass : m_ShaderPasses)
+		{
+			auto spirvData = CompileOpenGLBinaries(pass);
+			uint32_t id = CreateProgram(spirvData);
+			m_Shaders[pass.first] = id;
+		}
+		m_ShaderBlocks.clear();
+		m_ShaderPasses.clear();
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-			glDeleteProgram(m_Shader);
+		glDeleteProgram(m_Shader);
 	}
 	void OpenGLShader::Bind() const
 	{
 		glUseProgram(m_Shader);
+	}
+	void OpenGLShader::Use(const std::string& pass)
+	{
+		glUseProgram(m_Shaders[pass]);
 	}
 	void OpenGLShader::SetInt1(const std::string& name, int value)
 	{
@@ -257,7 +272,7 @@ namespace GEngine
 			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
 		}
 	}
-	std::unordered_map<std::string, std::string> OpenGLShader::PreProcess(const std::string& source)
+	std::unordered_map<std::string, std::string> OpenGLShader::ProcessShaderSource(const std::string& source)
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
@@ -306,6 +321,102 @@ namespace GEngine
 			shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
 		return shaderSources;
+
+		// multi pass
+		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
+		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses, m_RenderStates);
+	}
+
+	std::unordered_map<std::string, std::vector<uint32_t>> OpenGLShader::CompileOpenGLBinaries(std::pair<std::string, ShaderPass> pass)
+	{
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetIncluder(std::make_unique<ShaderIncluder>());
+		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+
+		std::unordered_map<std::string, std::vector<uint32_t>> shaderData;
+		for (auto&& [stage, source] : pass.second.Stages)
+		{
+			std::filesystem::path shaderFilePath = m_FilePath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + "." + pass.first + Utils::GLShaderStageCachedOpenGLFileExtension(Utils::ShaderStageToGL(stage)));
+
+			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+			if (in.is_open())
+			{
+				in.seekg(0, std::ios::end);
+				auto size = in.tellg();
+				in.seekg(0, std::ios::beg);
+
+				auto& data = shaderData[stage];
+				data.resize(size / sizeof(uint32_t));
+				in.read((char*)data.data(), size);
+			}
+			else
+			{
+				Preprocess(source);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(Utils::ShaderStageToGL(stage)), m_FilePath.c_str(), options);
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					GE_CORE_ERROR("Error shader context:\n{}", source);
+					GE_CORE_ASSERT(false, module.GetErrorMessage());
+				}
+
+				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+				if (out.is_open())
+				{
+					auto& data = shaderData[stage];
+					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					out.flush();
+					out.close();
+				}
+			}
+		}
+
+
+		return shaderData;
+	}
+
+	uint32_t OpenGLShader::CreateProgram(std::unordered_map<std::string, std::vector<uint32_t>> shader)
+	{
+		GLuint program = glCreateProgram();
+
+		std::vector<GLuint> shaderIDs;
+		for (auto&& [stage, spirv] : shader)
+		{
+			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
+			glSpecializeShader(shaderID, m_ShaderMainFuncName.c_str(), 0, nullptr, nullptr);
+			glAttachShader(program, shaderID);
+		}
+		glLinkProgram(program);
+
+		GLint isLinked;
+		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+		if (isLinked == GL_FALSE)
+		{
+			GLint maxLength;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+			GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
+
+			glDeleteProgram(program);
+
+			for (auto id : shaderIDs)
+				glDeleteShader(id);
+		}
+
+		for (auto id : shaderIDs)
+		{
+			glDetachShader(program, id);
+			glDeleteShader(id);
+		}
+		return program;
 	}
 
 	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<std::string, std::string>& shaderSources)

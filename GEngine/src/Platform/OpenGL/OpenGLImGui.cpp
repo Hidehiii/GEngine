@@ -22,7 +22,7 @@ namespace GEngine
 
 	void OpenGLImGui::OnAttach(GLFWwindow* window)
 	{
-		s_Spec.ColorAttachments	= { FrameBufferTextureFormat::RGBA8 };
+		s_Spec.ColorRTs			= { FrameBufferTextureFormat::RGBA8 };
 		s_RenderPass			= RenderPass::Create(s_Spec);
 		s_FrameBuffer			= FrameBuffer::Create(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 

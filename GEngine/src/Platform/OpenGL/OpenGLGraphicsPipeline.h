@@ -23,6 +23,7 @@ namespace GEngine
 
 	protected:
 		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 	private:
 		Ref<OpenGLMaterial>			m_Material;
 		Ref<OpenGLVertexBuffer>		m_VertexBuffer;

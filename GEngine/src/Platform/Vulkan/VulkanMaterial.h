@@ -13,6 +13,7 @@ namespace GEngine
 		virtual ~VulkanMaterial() override;
 
 		virtual void Update(CommandBuffer* cmdBuffer) override;
+		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) override;
 
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
 
@@ -33,7 +34,7 @@ namespace GEngine
 		Ref<VulkanUniformBuffer>							m_UniformBuffer;
 		VkDescriptorSetLayout								m_DescriptorSetLayout;
 		std::vector<VkDescriptorSet>						m_DescriptorSets;
-		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFramesInFlight()) - 1;
+		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFrameCount()) - 1;
 	};
 
 }
