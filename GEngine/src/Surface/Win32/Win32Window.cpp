@@ -19,9 +19,115 @@ namespace GEngine
 	{
 		switch (msg)
 		{
+		case WM_CREATE:
+			if (lParam)
+			{
+				auto params = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+				SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(params->lpCreateParams));
+			}
+			break;
+		case WM_ACTIVATEAPP:
+
+		case WM_ACTIVATE:
+
+		case WM_MOUSEMOVE:
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+		case WM_MOUSEWHEEL:
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP:
+
+		case WM_PAINT:
+
+		case WM_MOVE:
+
+		case WM_SIZE:
+			if (wParam == SIZE_MINIMIZED)
+			{
+
+			}
+			break;
+		case WM_ENTERSIZEMOVE:
+
+		case WM_EXITSIZEMOVE:
+
+		case WM_GETMINMAXINFO:
+			if (lParam)
+			{
+				auto info = reinterpret_cast<MINMAXINFO*>(lParam);
+				info->ptMinTrackSize.x = 320;
+				info->ptMinTrackSize.y = 200;
+			}
+			break;
+
+		case WM_POWERBROADCAST:
+			switch (wParam)
+			{
+			case PBT_APMQUERYSUSPEND:
+				
+				return TRUE;
+
+			case PBT_APMRESUMESUSPEND:
+				
+				return TRUE;
+			}
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
+
+		case WM_INPUT:
+		case WM_MOUSEHOVER:
+
+		case WM_KEYDOWN:
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+
+		case WM_SYSKEYDOWN:
+			if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
+			{
+				// Implements the classic ALT+ENTER fullscreen toggle
+				if (s_fullscreen)
+				{
+					SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+					SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
+
+					int width = 800;
+					int height = 600;
+					if (sample)
+						sample->GetDefaultSize(width, height);
+
+					ShowWindow(hWnd, SW_SHOWNORMAL);
+
+					SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				}
+				else
+				{
+					SetWindowLongPtr(hwnd, GWL_STYLE, WS_POPUP);
+					SetWindowLongPtr(hwnd, GWL_EXSTYLE, WS_EX_TOPMOST);
+
+					SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+					ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+				}
+
+				s_fullscreen = !s_fullscreen;
+			}
+			Keyboard::ProcessMessage(message, wParam, lParam);
+			break;
+
+		case WM_MOUSEACTIVATE :
+			// When you click activate the window, we want Mouse to ignore that event.
+			return MA_ACTIVATEANDEAT;
+
+		case WM_MENUCHAR:
+			// A menu is active and the user presses a key that does not correspond
+			// to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
+			return MAKELRESULT(0, MNC_CLOSE);
 		default:
 			break;
 		}
