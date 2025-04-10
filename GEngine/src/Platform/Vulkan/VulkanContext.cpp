@@ -392,6 +392,9 @@ namespace GEngine
         rayQueryFeature.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
         rayTracingPositionFetchFeature.pNext    = &rayQueryFeature;
 
+        VkPhysicalDeviceMeshShaderFeaturesEXT   meshShader = {};
+        meshShader.sType                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+        rayQueryFeature.pNext                   = &meshShader;
         
 
         vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
