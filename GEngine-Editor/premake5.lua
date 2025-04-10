@@ -17,20 +17,8 @@ project "GEngine-Editor"
 	{
 		"src",
 		"%{wks.location}/GEngine/src",
-		"%{wks.location}/GEngine/vendor/spdlog/include",
-		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.GLAD}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb}",
-		"%{IncludeDir.entt}",
-		"%{IncludeDir.vender}",
-		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.FBX}",
-		"%{IncludeDir.mono}",
-		"%{IncludeDir.PhysX}",
-		"%{IncludeDir.DirectXHeaders}"
 	}
 
 	links

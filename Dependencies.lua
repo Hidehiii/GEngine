@@ -25,6 +25,7 @@ IncludeDir["FBX"] = "%{FBX_SDK}/include"
 IncludeDir["mono"] = "%{wks.location}/GEngine/vendor/mono/include"
 IncludeDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/include"
 IncludeDir["DirectXHeaders"] = "%{wks.location}/GEngine/vendor/DirectX-Headers/include"
+IncludeDir["HLSLcc"] = "%{wks.location}/GEngine/vendor/HLSLcc/include"
 
 LibraryDir = {}
 
