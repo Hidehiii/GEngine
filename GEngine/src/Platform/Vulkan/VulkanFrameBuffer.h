@@ -18,7 +18,7 @@ namespace GEngine
 	public:
 		VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
 		VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
-		VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
+		VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec);
 		virtual ~VulkanFrameBuffer() override;
 
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
@@ -37,7 +37,7 @@ namespace GEngine
 		VkRenderPass	GetVulkanRenderPass() { return m_RenderPass->GetRenderPass(); }
 	public:
 		//用于给交换链创建使用
-		static Ref<VulkanFrameBuffer> Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec);
+		static Ref<VulkanFrameBuffer> Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec);
 	private:
 		void CreateBuffer();
 	private:
@@ -46,7 +46,6 @@ namespace GEngine
 		std::vector<VkImage>		m_Images;
 		std::vector<VkImageView>	m_Attachments;
 		std::vector<VkDeviceMemory> m_ImagesMemory;
-		FrameBufferSpecificationForVulkan m_SpecificationForVulkan;
 		std::vector<VkImage>		m_ColorImages;
 		std::vector<VkImageView>	m_ColorImageViews;
 		std::vector<VkDeviceMemory> m_ColorImagesMemory;

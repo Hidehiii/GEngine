@@ -147,6 +147,7 @@ namespace GEngine
 		VkFormat							m_SwapChainImageFormat;
 		VkExtent2D							m_SwapChainExtent;
 		std::vector<VkImageView>			m_SwapChainImageViews;
+		RenderPassSpecificationForVulkan	m_RenderPassSpec;
 		Ref<VulkanRenderPass>				m_SwapChainRenderPass;
 		std::vector<Ref<VulkanFrameBuffer>>	m_SwapChainFrameBuffers;
 		VulkanCommandBufferPool				m_CommandBufferPool;

@@ -622,17 +622,16 @@ namespace GEngine
     }
     void VulkanContext::CreateRenderPass()
     {
-        RenderPassSpecificationForVulkan    spec;
-        spec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
-		spec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
-		spec.EnableDepthStencilAttachment   = true;
-		spec.Samples                        = 1;
-		spec.ColorBegin         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		spec.ColorEnd           = VK_ATTACHMENT_STORE_OP_STORE;
-		spec.DepthStencilrBegin = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		spec.DepthStencilEnd    = VK_ATTACHMENT_STORE_OP_STORE;
+        m_RenderPassSpec.ColorAttachmentsFormat         = { m_SwapChainImageFormat };
+		m_RenderPassSpec.ColorAttachmentsFinalLayout    = { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
+		m_RenderPassSpec.EnableDepthStencilAttachment   = true;
+		m_RenderPassSpec.Samples                        = 1;
+		m_RenderPassSpec.ColorBegin                     = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		m_RenderPassSpec.ColorEnd                       = VK_ATTACHMENT_STORE_OP_STORE;
+		m_RenderPassSpec.DepthStencilrBegin             = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		m_RenderPassSpec.DepthStencilEnd                = VK_ATTACHMENT_STORE_OP_STORE;
 
-        m_SwapChainRenderPass               = VulkanRenderPass::Create(spec);
+        m_SwapChainRenderPass               = VulkanRenderPass::Create(m_RenderPassSpec);
     }
 	void VulkanContext::CreateFrameBuffer()
 	{
@@ -647,7 +646,7 @@ namespace GEngine
 			spec.Width                          = m_SwapChainExtent.width;
 			spec.Height                         = m_SwapChainExtent.height;
 
-			Ref<VulkanFrameBuffer> frameBuffer = CreateRef<VulkanFrameBuffer>(m_SwapChainRenderPass, spec);
+			Ref<VulkanFrameBuffer> frameBuffer = CreateRef<VulkanFrameBuffer>(m_SwapChainRenderPass, spec, m_RenderPassSpec);
 			m_SwapChainFrameBuffers[i] = frameBuffer;
 		}
 	}

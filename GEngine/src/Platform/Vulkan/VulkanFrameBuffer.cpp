@@ -30,19 +30,18 @@ namespace GEngine
 
 		CreateBuffer();
 	}
-	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec)
+	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
-		m_SpecificationForVulkan				= spec;
 
 		m_Specification.Width					= spec.Width;
 		m_Specification.Height					= spec.Height;
-		m_Specification.Samples					= renderPass->GetSpecificationForVulkan().Samples;
+		m_Specification.Samples					= renderpassSpec.Samples;
 
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
 		for (int i = 0; i < spec.ColorAttachments.size(); i++)
 		{
-			VkFormat						colorFormat = renderPass->GetSpecificationForVulkan().ColorAttachmentsFormat.at(i);
+			VkFormat						colorFormat = renderpassSpec.ColorAttachmentsFormat.at(i);
 			m_Images.push_back(spec.ColorImages.at(i));
 			m_Attachments.push_back(spec.ColorAttachments.at(i));
 			m_ColorImageViews.push_back(spec.ColorAttachments.at(i));
@@ -72,7 +71,7 @@ namespace GEngine
 				m_ImagesMemory.push_back(tempImageMemory);
 			}
 		}
-		if (renderPass->GetSpecificationForVulkan().EnableDepthStencilAttachment)
+		if (renderpassSpec.EnableDepthStencilAttachment)
 		{
 			VkDeviceMemory					imageMemory;
 			VkImage							image;
@@ -126,7 +125,7 @@ namespace GEngine
 				m_Attachments.push_back(tempImageView);
 				m_ImagesMemory.push_back(tempImageMemory);
 			}
-			m_DepthStencilRT = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
+			//m_DepthStencilRT = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
 		}
 
 		VkFramebufferCreateInfo         framebufferInfo{};
@@ -229,7 +228,7 @@ namespace GEngine
 		Ref<VulkanTexture2D> texture = m_DepthStencilRT;
 		return texture;
 	}
-	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec)
+	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
 		return CreateRef<VulkanFrameBuffer>(renderPass, spec);
 	}

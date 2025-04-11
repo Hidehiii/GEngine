@@ -44,7 +44,8 @@ namespace GEngine
 
 		HANDLE& CreateFenceEvent(LPSECURITY_ATTRIBUTES IpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR IpName);
 
-		DXGI_FORMAT	FrameBufferTextureFormatToDXGIFormat(FrameBufferTextureFormat format);
+		DXGI_FORMAT					FrameBufferTextureFormatToDXGIFormat(FrameBufferTextureFormat format);
+		FrameBufferTextureFormat	DXGIFormatToFrameBufferTextureFormat(DXGI_FORMAT format);
 	}
 }
 

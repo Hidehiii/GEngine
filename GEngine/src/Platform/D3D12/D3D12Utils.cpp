@@ -119,5 +119,24 @@ namespace GEngine
 			}
 			return DXGI_FORMAT();
 		}
+		FrameBufferTextureFormat DXGIFormatToFrameBufferTextureFormat(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+			case DXGI_FORMAT_UNKNOWN:			return FrameBufferTextureFormat::None;
+			case DXGI_FORMAT_R8G8B8A8_UNORM:	return FrameBufferTextureFormat::RGBA8;
+			case DXGI_FORMAT_R32_FLOAT:			return FrameBufferTextureFormat::R32F;
+			case DXGI_FORMAT_R16G16_FLOAT:		return FrameBufferTextureFormat::RG16F;
+			case DXGI_FORMAT_R32_SINT:			return FrameBufferTextureFormat::R32I;
+			case DXGI_FORMAT_R16G16_SINT:		return FrameBufferTextureFormat::RG16I;
+			case DXGI_FORMAT_R32_UINT:			return FrameBufferTextureFormat::R32UI
+			case DXGI_FORMAT_R16G16_UINT:		return FrameBufferTextureFormat::RG16UI;
+			case DXGI_FORMAT_D24_UNORM_S8_UINT:	return FrameBufferTextureFormat::DEPTH24STENCIL8;
+			case DXGI_FORMAT_D32_FLOAT:			return FrameBufferTextureFormat::DEPTH;
+			default:
+				break;
+			}
+			return FrameBufferTextureFormat();
+		}
 	}
 }

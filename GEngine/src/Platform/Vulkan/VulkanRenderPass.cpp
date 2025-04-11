@@ -15,7 +15,7 @@ namespace GEngine
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecificationForVulkan& spec)
 	{
-		m_SpecificationForVulkan = spec;
+		m_Specification.Samples		= spec.Samples;
 
 		std::vector<VkAttachmentDescription2>  attachments;
 		for (int i = 0; i < spec.ColorAttachmentsFormat.size(); i++)

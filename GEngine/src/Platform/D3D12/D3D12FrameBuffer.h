@@ -6,11 +6,20 @@
 
 namespace GEngine
 {
+	struct FrameBufferSpecificationForD3D12
+	{
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		ColorRTs;
+		uint32_t												Width;
+		uint32_t												Height;
+	};
+
+
 	class GENGINE_API D3D12FrameBuffer : public FrameBuffer
 	{
 	public:
 		D3D12FrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height);
 		D3D12FrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
+		D3D12FrameBuffer(const Ref<D3D12RenderPass>& renderpass, const FrameBufferSpecificationForD3D12& spec, const RenderPassSpecificationForD3D12& renderpassSpec);
 		virtual ~D3D12FrameBuffer() override;
 
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
@@ -24,6 +33,10 @@ namespace GEngine
 		virtual Ref<Texture2D>					GetColorRT(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencilRT() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
+
+		// for present
+		void BeginPresentRender(CommandBuffer* cmdBuffer);
+		void EndPresentRender(CommandBuffer* cmdBuffer);
 
 	private:
 		void CreateResources();

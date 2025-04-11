@@ -23,6 +23,7 @@ namespace GEngine
 		CreateSwapChain(width, height);
 		GetDescriptorSize();
 		CreateCommandAllocator();
+		CreateRenderPass();
 	}
 	void D3D12Context::Uninit()
 	{
@@ -43,6 +44,10 @@ namespace GEngine
 	void D3D12Context::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
 	{
 		m_CommandPool.EndSingleTimeGraphicsCommand(commandList);
+	}
+	UINT D3D12Context::GetBackBufferIndex()
+	{
+		return m_SwapChain->GetCurrentBackBufferIndex();
 	}
 	Ref<D3D12CommandBuffer> D3D12Context::GetCommandBuffer(CommandBufferType type)
 	{
@@ -199,5 +204,18 @@ namespace GEngine
 		m_RtvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		m_DsvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		m_CbvSrvUavDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+	void D3D12Context::CreateRenderPass()
+	{
+		RenderPassSpecificationForD3D12			renderPass{};
+		renderPass.ColorRTFormat				= DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		renderPass.EnableDepthStencil			= true;
+		renderPass.Samples						= 1;
+		renderPass.Operation.ColorBegin			= RenderPassBeginOperation::Clear;
+		renderPass.Operation.ColorEnd			= RenderPassEndOperation::Store;
+		renderPass.Operation.DepthStencilBegin	= RenderPassBeginOperation::Clear;
+		renderPass.Operation.DepthStencilEnd	= RenderPassEndOperation::Store;
+
+		m_SwapChainRenderPass					= CreateRef<D3D12RenderPass>(renderPass);
 	}
 }

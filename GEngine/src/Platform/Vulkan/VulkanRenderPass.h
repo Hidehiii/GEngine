@@ -25,7 +25,6 @@ namespace GEngine
 		virtual ~VulkanRenderPass() override;
 
 		VkRenderPass						GetRenderPass() { return m_RenderPass; }
-		RenderPassSpecificationForVulkan	GetSpecificationForVulkan() { return m_SpecificationForVulkan; }
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);
 	private:
@@ -33,7 +32,6 @@ namespace GEngine
 		
 	private:
 		VkRenderPass						m_RenderPass;
-		RenderPassSpecificationForVulkan	m_SpecificationForVulkan;
 	};
 }
 
