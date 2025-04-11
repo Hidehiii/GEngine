@@ -14,9 +14,9 @@ namespace GEngine
 
         for (int i = 0; i < Graphics::GetCommandBufferCount(); i++)
         {
-            m_GraphicsList[i] = CreateRef<D3D12CommandBuffer>(CommandBufferType::Graphics);
-            m_ComputeList[i] = CreateRef<D3D12CommandBuffer>(CommandBufferType::Compute);
-            m_TransferList[i] = CreateRef<D3D12CommandBuffer>(CommandBufferType::Transfer);
+            m_GraphicsList[i]   = CreateRef<D3D12CommandBuffer>(CommandBufferType::Graphics);
+            m_ComputeList[i]    = CreateRef<D3D12CommandBuffer>(CommandBufferType::Compute);
+            m_TransferList[i]   = CreateRef<D3D12CommandBuffer>(CommandBufferType::Transfer);
         }
     }
     D3D12CommandPool::~D3D12CommandPool()
@@ -117,5 +117,27 @@ namespace GEngine
 
         D3D12_THROW_IF_FAILED(m_CommandList->Close());
         // TODO: 如何多list 之间同步？最好不用在cpu wait
+
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
+        if (m_Type == CommandBufferType::Graphics)
+            queue = D3D12Context::Get()->GetGraphicsQueue();
+        if (m_Type == CommandBufferType::Compute)
+            queue = D3D12Context::Get()->GetComputeQueue();
+        if (m_Type == CommandBufferType::Transfer)
+            queue = D3D12Context::Get()->GetTransferQueue();
+
+        for (auto wait : m_WaitFences)
+        {
+           queue->Wait(wait.first.Get(), wait.second);
+        }
+           queue->ExecuteCommandLists(1, CommandListCast(m_CommandList.GetAddressOf()));
+
+        for (auto signal : m_SignalFences)
+        {
+            queue->Signal(signal.first.Get(), signal.second);
+        }
+
+        ClearWaitFence();
+        ClearSignalFence();
     }
 }

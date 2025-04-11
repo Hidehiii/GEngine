@@ -119,9 +119,4 @@ namespace GEngine
         std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
     }
 
-    void VulkanGraphicsAPI::Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z)
-    {
-        vkCmdDispatch(((VulkanCommandBuffer*)buffer)->GetCommandBuffer(), x, y, z);
-    }
-
 }

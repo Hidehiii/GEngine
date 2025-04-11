@@ -35,7 +35,9 @@ namespace GEngine
 		UINT												GetCbvSrvUavDescriptorSize() { return m_CbvSrvUavDescriptorSize; }
 		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
 		Vector4&											GetClearColor() { return m_ClearColor; }
-		UINT												GetBackBufferIndex();
+		UINT												GetBackBufferIndex() { return m_SwapChain->GetCurrentBackBufferIndex(); }
+
+		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>  GetFence();
 	protected:
 		Ref<D3D12CommandBuffer>		GetCommandBuffer(CommandBufferType type);
 	private:
@@ -45,10 +47,11 @@ namespace GEngine
 		void						CreateQueues();
 		void						CreateSwapChain(const unsigned int width, const unsigned int height);
 		void						CreateCommandAllocator();
-		void						CreateDescriptorHeap();
 		void						CreateFrameResources();
 		void						GetDescriptorSize();
 		void						CreateRenderPass();
+		void						CreateRenderTargets();
+		void						CreateFences();
 	private:
 		HWND											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
@@ -65,8 +68,17 @@ namespace GEngine
 		Ref<D3D12RenderPass>							m_SwapChainRenderPass;
 		uint32_t										m_SwapChainWidth, m_SwapChainHeight;
 		bool											m_UseWarpDevice;
+		DXGI_FORMAT										m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		RenderPassSpecificationForD3D12					m_RenderPassSpec;
+		std::vector<Ref<D3D12FrameBuffer>>				m_RenderTargets;
+		int												m_Samples = 1;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_Fences;
+		size_t												m_FenceIndex = 0;
+		uint64_t											m_FenceValue;
 
 		Vector4											m_ClearColor = { 0, 0, 0, 0 };
+
+		friend class D3D12GraphicsAPI;
 	};
 }
 

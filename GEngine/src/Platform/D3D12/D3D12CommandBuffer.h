@@ -17,10 +17,18 @@ namespace GEngine
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	GetCommandList() { return m_CommandList; }
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>		GetCommandAllocator() { return m_Allocator; }
+
+		void AddSignalFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_SignalFences.push_back(f); }
+		void AddWaitFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_WaitFences.push_back(f); }
+
+		void ClearSignalFence() { m_SignalFences.clear(); }
+		void ClearWaitFence() { m_WaitFences.clear(); }
 	private:
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	m_CommandList;
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>		m_Allocator;
-		Ref<D3D12FrameBuffer>								m_FrameBuffer;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;
+		Ref<D3D12FrameBuffer>													m_FrameBuffer;
+		std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>	m_SignalFences;
+		std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>	m_WaitFences;
 	};
 
 	class GENGINE_API D3D12CommandPool

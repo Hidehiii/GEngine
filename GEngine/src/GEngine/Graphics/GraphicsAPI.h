@@ -45,9 +45,6 @@ namespace GEngine
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) = 0;
 
 
-		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) = 0;
-
-
 		inline static API GetAPI() { return s_API; }
 	protected:
 		inline static API s_API		= API::None;

@@ -24,6 +24,8 @@ namespace GEngine
 		GetDescriptorSize();
 		CreateCommandAllocator();
 		CreateRenderPass();
+		CreateRenderTargets();
+		CreateFences();
 	}
 	void D3D12Context::Uninit()
 	{
@@ -45,9 +47,26 @@ namespace GEngine
 	{
 		m_CommandPool.EndSingleTimeGraphicsCommand(commandList);
 	}
-	UINT D3D12Context::GetBackBufferIndex()
+	std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> D3D12Context::GetFence()
 	{
-		return m_SwapChain->GetCurrentBackBufferIndex();
+		// 应该不会在uint64 max 值到达时候下一个fence 还在用吧
+		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> res;
+
+		if (m_FenceValue >= UINT64_MAX - 1024)
+		{
+			m_FenceIndex = (m_FenceIndex + 1) % m_Fences.size();
+
+			m_FenceValue = 0;
+
+			m_Fences.at(m_FenceIndex)->Signal(0);
+		}
+
+		m_FenceValue++;
+
+		res.first	= m_Fences.at(m_FenceIndex);
+		res.second	= m_FenceValue;
+
+		return res;
 	}
 	Ref<D3D12CommandBuffer> D3D12Context::GetCommandBuffer(CommandBufferType type)
 	{
@@ -156,17 +175,17 @@ namespace GEngine
 	}
 	void D3D12Context::CreateSwapChain(const unsigned int width, const unsigned int height)
 	{
-		m_SwapChainWidth = width;
-		m_SwapChainHeight = height;
+		m_SwapChainWidth				= width;
+		m_SwapChainHeight				= height;
 
 		DXGI_SWAP_CHAIN_DESC1			swapChainDesc = {};
 		swapChainDesc.BufferCount		= Graphics::GetFrameCount();
 		swapChainDesc.Width				= width;
 		swapChainDesc.Height			= height;
-		swapChainDesc.Format			= DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.Format			= m_BackBufferFormat;
 		swapChainDesc.BufferUsage		= DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.SwapEffect		= DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.SampleDesc.Count	= 1;
+		swapChainDesc.SampleDesc.Count	= m_Samples;
 
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC		fullscreenDesc{};
 		fullscreenDesc.RefreshRate			= { 0, 0 };
@@ -182,20 +201,6 @@ namespace GEngine
 	{
 		m_CommandPool = D3D12CommandPool();
 	}
-	void D3D12Context::CreateDescriptorHeap()
-	{
-		D3D12_DESCRIPTOR_HEAP_DESC		rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors		= Graphics::GetFrameCount();
-		rtvHeapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-
-		D3D12_THROW_IF_FAILED(m_Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RtvHeap)));
-
-		D3D12_DESCRIPTOR_HEAP_DESC		rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors		= Graphics::GetFrameCount();
-		rtvHeapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	}
 	void D3D12Context::CreateFrameResources()
 	{
 	}
@@ -207,15 +212,38 @@ namespace GEngine
 	}
 	void D3D12Context::CreateRenderPass()
 	{
-		RenderPassSpecificationForD3D12			renderPass{};
-		renderPass.ColorRTFormat				= DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		renderPass.EnableDepthStencil			= true;
-		renderPass.Samples						= 1;
-		renderPass.Operation.ColorBegin			= RenderPassBeginOperation::Clear;
-		renderPass.Operation.ColorEnd			= RenderPassEndOperation::Store;
-		renderPass.Operation.DepthStencilBegin	= RenderPassBeginOperation::Clear;
-		renderPass.Operation.DepthStencilEnd	= RenderPassEndOperation::Store;
+		m_RenderPassSpec.BackBufferFormat				= {m_BackBufferFormat};
+		m_RenderPassSpec.EnableDepthStencil				= true;
+		m_RenderPassSpec.Samples						= m_Samples;
+		m_RenderPassSpec.Operation.ColorBegin			= RenderPassBeginOperation::Clear;
+		m_RenderPassSpec.Operation.ColorEnd				= RenderPassEndOperation::Store;
+		m_RenderPassSpec.Operation.DepthStencilBegin	= RenderPassBeginOperation::Clear;
+		m_RenderPassSpec.Operation.DepthStencilEnd		= RenderPassEndOperation::Store;
 
-		m_SwapChainRenderPass					= CreateRef<D3D12RenderPass>(renderPass);
+		m_SwapChainRenderPass					= CreateRef<D3D12RenderPass>(m_RenderPassSpec);
+	}
+	void D3D12Context::CreateRenderTargets()
+	{
+		m_RenderTargets.resize(Graphics::GetFrameCount());
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
+		{
+			Microsoft::WRL::ComPtr<ID3D12Resource> rt;
+			D3D12_THROW_IF_FAILED(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(rt.GetAddressOf())));
+
+			FrameBufferSpecificationForD3D12	spec{};
+			spec.ColorRTs						= { rt };
+			spec.Width							= m_SwapChainWidth;
+			spec.Height							= m_SwapChainHeight;
+
+			m_RenderTargets[i] = CreateRef<D3D12FrameBuffer>(m_SwapChainRenderPass, spec, m_RenderPassSpec);	
+		}
+	}
+	void D3D12Context::CreateFences()
+	{
+		m_Fences.resize(Graphics::GetFrameCount());
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
+		{
+			m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fences[i]));
+		}
 	}
 }

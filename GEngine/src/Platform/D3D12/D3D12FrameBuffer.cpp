@@ -64,8 +64,6 @@ namespace GEngine
 
 		for (int i = 0; i < spec.ColorRTs.size(); i++)
 		{
-			m_Specification.ColorRTs.push_back(Utils::DXGIFormatToFrameBufferTextureFormat(renderpassSpec.BackBufferFormat[i]));
-
 			D3D12_RENDER_TARGET_VIEW_DESC	rtvDesc = {};
 			rtvDesc.Format					= renderpassSpec.BackBufferFormat[i];
 			rtvDesc.ViewDimension			= D3D12_RTV_DIMENSION_TEXTURE2D;

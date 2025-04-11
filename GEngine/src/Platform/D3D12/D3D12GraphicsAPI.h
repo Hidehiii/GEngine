@@ -1,19 +1,14 @@
 #pragma once
-#include "GEngine/Core/Core.h"
-#include "GEngine/Graphics/GraphicsAPI.h"
 
-#include <optional>
-#include <vulkan/vulkan.h>
+#include "GEngine/Graphics/GraphicsAPI.h"
 
 namespace GEngine
 {
-	
-
-	class GENGINE_API VulkanGraphicsAPI : public GraphicsAPI
+	class GENGINE_API D3D12GraphicsAPI : public GraphicsAPI
 	{
 	public:
-		VulkanGraphicsAPI();
-		virtual ~VulkanGraphicsAPI();
+		D3D12GraphicsAPI();
+		virtual ~D3D12GraphicsAPI();
 
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() override;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;

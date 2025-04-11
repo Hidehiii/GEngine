@@ -31,9 +31,6 @@ namespace GEngine
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) override {}
-
-
-		virtual void Compute(CommandBuffer* buffer, const uint32_t x, const uint32_t y, const uint32_t z) override;
 	};
 }
 
