@@ -3,7 +3,7 @@
 #include "GEngine/Application.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Core/CoreThread.h"
+#include "GEngine/Core/Thread.h"
 #include <set>
 
 namespace GEngine

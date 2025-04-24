@@ -113,7 +113,7 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
-		std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
+		MAIN_THREAD_MUTEX_LOCK;
 		if (m_PhysicsTimerWheel != nullptr)
 		{
 			m_PhysicsTimerWheel->Stop();
@@ -357,34 +357,6 @@ namespace GEngine
 		}
 	}
 
-
-	bool ObjSort(GameObject& a, GameObject& b)
-	{
-		/*return Math::Distance(Graphics::GetRenderTargetCameraPosition(), a.GetComponent<Transform>().m_Position) >
-			Math::Distance(Graphics::GetRenderTargetCameraPosition(), b.GetComponent<Transform>().m_Position);*/
-		GE_CORE_ASSERT(false, "");
-		return false;
-	}
-	// 渲染场景中的所有对象
-	void Scene::OnRender()
-	{
-		std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
-
-		//CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnRender);
-		// 距离排序可能要
-		// TODO
-		auto e = m_Registry.view<Attribute>();
-		std::vector<GameObject> entities;
-		for (auto it = e.begin(); it != e.end(); it++)
-		{
-			entities.push_back({ *it, this });
-		}
-		std::sort(entities.begin(), entities.end(), ObjSort);
-		for (auto it = entities.begin(); it != entities.end(); it++)
-		{
-			CallComponentFunction(AllComponents{}, *it, ComponentFunction::OnRender);
-		}
-	}
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;

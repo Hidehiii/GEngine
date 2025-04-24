@@ -17,9 +17,9 @@ namespace GEngine
 		virtual void Render() = 0;
 
 		// 自定义最终输出
-		virtual void RenderOutput() = 0;
+		virtual void Present() = 0;
 
-	private:
+	protected:
 		// 按顺序执行所有pass
 		std::vector<Ref<RenderPass>>	m_RenderPasses;
 		// frame buffer 会根据每个屏幕大小确定

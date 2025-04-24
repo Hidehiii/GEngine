@@ -94,6 +94,39 @@ namespace GEngine
 		static float Distance(const Vector4& v1, const Vector4& v2);
 
 		template<typename T>
+		T Max(T t)
+		{
+			return t;
+		}
+		template<typename T, typename... types>
+		T Max(T first, types... rest)
+		{
+			return std::max(first, Max<T>(rest...));
+		}
+
+		template<typename T>
+		T Min(T t)
+		{
+			return t;
+		}
+		template<typename T, typename... types>
+		T Min(T first, types... rest)
+		{
+			return std::min(first, Min<T>(rest...));
+		}
+
+		template<typename T>
+		T Sum(T t)
+		{
+			return t;
+		}
+		template<typename T, typename... types>
+		T Sum(T first, types... rest)
+		{
+			return first + Sum<T>(rest...);
+		}
+
+		template<typename T>
 		static T Max(std::initializer_list<T> list)
 		{
 			T max = *list.begin();
@@ -104,6 +137,7 @@ namespace GEngine
 			}
 			return max;
 		}
+
 		template<typename T>
 		static T Min(std::initializer_list<T> list)
 		{
@@ -114,6 +148,17 @@ namespace GEngine
 					min = value;
 			}
 			return min;
+		}
+
+		template<typename T>
+		static T Sum(std::initializer_list<T> list)
+		{
+			T ans = *list.begin();
+			for (auto& value : list)
+			{
+				ans += value;
+			}
+			return ans;
 		}
 
 	public:

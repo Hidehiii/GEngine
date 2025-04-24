@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Core/CoreThread.h"
+#include "GEngine/Core/Thread.h"
 
 #include <chrono>
 #include <functional>
@@ -149,7 +149,7 @@ namespace GEngine
         }
 
         void AddTask(int timeout_ms, Task task) {
-            std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
+            MAIN_THREAD_MUTEX_LOCK;
             GE_CORE_ASSERT(m_WheelSize * m_Interval_ms >= timeout_ms, "Out of range");
             size_t ticks = timeout_ms / m_Interval_ms;
             size_t index = (m_CurrentIndex + ticks) % m_WheelSize;
@@ -166,7 +166,7 @@ namespace GEngine
 
     private:
         void Tick() {
-            std::lock_guard<std::mutex> lock(CORE_THREAD_MUTEX);
+            MAIN_THREAD_MUTEX_LOCK;
             if(s_Running == false || s_Pausing == true)
 			{
 				return;

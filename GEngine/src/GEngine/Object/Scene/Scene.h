@@ -38,10 +38,20 @@ namespace GEngine
 		void OnPause();
 		void OnResume();
 
-		// Render
-		void OnRender();
-
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+	public:
+		template<typename... types>
+		std::vector<GameObject> GetGameObjects()
+		{
+			auto view = m_Registry.view<types...>();
+			std::vector<GameObject> entities;
+			for (auto it : view)
+			{
+				entities.push_back({ *it, this });
+			}
+			return entities;
+		}
 	public:
 		std::string name = "Untitled";
 	private:
