@@ -14,19 +14,14 @@ namespace GEngine
 		return s_CommandBuffers.at(Graphics::GetFrame());
 	}
 
-	void GraphicsPresent::Render(Ref<Scene>& scene)
+	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, const std::string& pass, uint32_t instanceCount, uint32_t indexCount)
 	{
-		GetCommandBuffer()->Render(scene);
+		GetCommandBuffer()->Render(pipeline, pass, instanceCount, indexCount);
 	}
 
-	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount, uint32_t indexCount)
+	void GraphicsPresent::Compute(Ref<ComputePipeline>& pipeline, const std::string& pass, uint32_t x, uint32_t y, uint32_t z)
 	{
-		GetCommandBuffer()->Render(pipeline, instanceCount, indexCount);
-	}
-
-	void GraphicsPresent::Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z)
-	{
-		GetCommandBuffer()->Compute(pipeline, x, y, z);
+		GetCommandBuffer()->Compute(pipeline, pass, x, y, z);
 	}
 
 	Scope<GraphicsPresent> GraphicsPresent::Create()

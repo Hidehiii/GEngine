@@ -113,7 +113,7 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer>(cmdBuffer)->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
 		for (int i = 0; i < m_ColorRTs.size(); i++)
 		{
@@ -161,7 +161,7 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::End(CommandBuffer* cmdBuffer)
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer>(cmdBuffer)->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
 		// Resolve the MSAA render target.
 		if (m_Specification.Samples > 1)
@@ -218,7 +218,7 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::BeginPresentRender(CommandBuffer* cmdBuffer)
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer>(cmdBuffer)->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
 		std::vector< D3D12_RESOURCE_BARRIER>	barriers;
 		for (int i = 0; i < m_ColorRTs.size(); i++)
@@ -258,7 +258,7 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::EndPresentRender(CommandBuffer* cmdBuffer)
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer>(cmdBuffer)->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
 		std::vector< D3D12_RESOURCE_BARRIER>	barriers;
 		for (int i = 0; i < m_ColorRTs.size(); i++)

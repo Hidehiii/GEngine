@@ -29,7 +29,6 @@ namespace GEngine
 		virtual void			SetMaterial(Ref<Material>& material) override;
 
 	protected:
-		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
 	private:
@@ -57,8 +56,8 @@ namespace GEngine
 		
 		VkPipelineLayout									m_PipelineLayout;
 		std::vector<VulkanGraphicsPipelineInfo>				m_GraphicsPipelines;
-		bool												m_RecreatePipeline = false;
 		VkPipelineCache										m_PipelineCache;
+		bool												m_RecreatePipeline = false;
 
 		friend class VulkanCommandBuffer;
 	};

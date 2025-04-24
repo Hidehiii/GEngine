@@ -26,7 +26,10 @@ namespace GEngine
 		if (VulkanContext::Get()->GetDevice())
 		{
 			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_ComputePipeline, nullptr);
+			for (auto pipeline : m_ComputePipelines)
+			{
+				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
+			}
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
 	}
@@ -39,22 +42,27 @@ namespace GEngine
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
+	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, const std::string& pass, uint32_t x, uint32_t y, uint32_t z)
 	{
-		PrepareCompute(cmdBuffer);
+		PrepareCompute(cmdBuffer, pass);
 		vkCmdDispatch(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), x, y, z);
 	}
-	void VulkanComputePipeline::CreatePipeline()
+	VkPipeline VulkanComputePipeline::GetPipeline(const std::string& pass)
 	{
-		// TODO 
-		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->CreateShaderModule();
+		for (int i = m_ComputePipelines.size() - 1; i >= 0; i--)
+		{
+			if (m_ComputePipelines.at(i).Pass == pass)
+			{
+				return m_ComputePipelines.at(i).ComputePipeline;
+			}
+		}
 
 		std::string shaderMainFuncName = m_Material->GetShader()->GetShaderMainFuncName().c_str();
 		VkPipelineShaderStageCreateInfo		shaderStage;
-		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute))
+		if (std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute, pass))
 		{
 			shaderStage = (Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_COMPUTE_BIT,
-				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute),
+				std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute, pass),
 				shaderMainFuncName.c_str()));
 		}
 
@@ -70,30 +78,34 @@ namespace GEngine
 		pipelineInfo.layout				= m_PipelineLayout;
 		pipelineInfo.stage				= shaderStage;
 
-		VK_CHECK_RESULT(vkCreateComputePipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &m_ComputePipeline));
+		VkPipeline pipeline;
 
-		
+		VK_CHECK_RESULT(vkCreateComputePipelines(VulkanContext::Get()->GetDevice(), m_PipelineCache, 1, &pipelineInfo, nullptr, &pipeline));
 
-		// TODO 
-		std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->DestroyShaderModule();
+		VulkanComputePipelineInfo	info{};
+		info.ComputePipeline		= pipeline;
+		info.Pass					= pass;
+
+		m_ComputePipelines.push_back(info);
+
+		return pipeline;
 	}
-	void VulkanComputePipeline::PrepareCompute(CommandBuffer* cmdBuffer)
+	void VulkanComputePipeline::PrepareCompute(CommandBuffer* cmdBuffer, const std::string& pass)
 	{
-		m_Material->Update(cmdBuffer);
+		m_Material->Update(cmdBuffer, pass);
 
-		if (m_ComputePipeline == nullptr)
-		{
-			CreatePipeline();
-		}
 		if (m_RecreatePipeline)
 		{
-			vkDestroyPipeline(VulkanContext::Get()->GetDevice(), m_ComputePipeline, nullptr);
+			for (auto pipeline : m_ComputePipelines)
+			{
+				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
+			}
+			
 			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
-			CreatePipeline();
 		}
 
 
-		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
+		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, GetPipeline(pass));
 
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
 		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());

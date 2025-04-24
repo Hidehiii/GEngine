@@ -33,27 +33,14 @@ namespace GEngine
         return Ref<D3D12CommandBuffer>();
     }
 
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeGraphicsCommand()
-    {
-        HANDLE fenceEvent = Utils::CreateFenceEvent(nullptr, FALSE, FALSE, nullptr);
-        Utils::SetFenceValue(D3D12Context::Get()->GetGraphicsQueue(), m_SingleTimeCommandFence, 0, fenceEvent);
-        CloseHandle(fenceEvent);
-
-        m_SingleTimeGraphicsCommandList->Reset(m_CommandAllocator.Get(), nullptr);
-        return m_SingleTimeGraphicsCommandList;
-    }
-    void D3D12CommandPool::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
-    {
-        D3D12_THROW_IF_FAILED(commandList->Close());
-		ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-		D3D12Context::Get()->GetGraphicsQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists); 
-
-        const UINT64 fenceValue = 1;
-        D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Signal(m_SingleTimeCommandFence.Get(), fenceValue));
-        HANDLE fenceEvent = Utils::CreateFenceEvent(nullptr, FALSE, FALSE, nullptr);
-        Utils::WaitForFence(D3D12Context::Get()->GetGraphicsQueue(), m_SingleTimeCommandFence, fenceValue, fenceEvent);
-        CloseHandle(fenceEvent);
-    }
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeGraphicsCommand()
+	{
+        return Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>();
+	}
+	void D3D12CommandPool::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+	{
+		
+	}
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeComputeCommand()
     {
         return Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>();
@@ -101,7 +88,7 @@ namespace GEngine
 		if (m_Type == CommandBufferType::Graphics)
 		{
 			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
-			m_FrameBuffer = std::static_pointer_cast<D3D12CommandBuffer>(buffer);
+			m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
 			m_FrameBuffer->Begin(this);
 		}
 
@@ -139,5 +126,11 @@ namespace GEngine
 
         ClearWaitFence();
         ClearSignalFence();
+    }
+    void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+    {
+    }
+    void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, std::string pass, uint32_t x, uint32_t y, uint32_t z)
+    {
     }
 }

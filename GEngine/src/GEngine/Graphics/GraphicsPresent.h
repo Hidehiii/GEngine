@@ -20,9 +20,8 @@ namespace GEngine
 		virtual void End() {}
 
 		static Ref<CommandBuffer> GetCommandBuffer();
-		static void Render(Ref<Scene>& scene);
-		static void Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0);
-		static void Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z);
+		static void Render(Ref<GraphicsPipeline>& pipeline, const std::string& pass, uint32_t instanceCount = 1, uint32_t indexCount = 0);
+		static void Compute(Ref<ComputePipeline>& pipeline, const std::string& pass, uint32_t x, uint32_t y, uint32_t z);
 	protected:
 		friend class Application;
 

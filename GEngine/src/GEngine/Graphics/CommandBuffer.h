@@ -1,6 +1,5 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Object/Scene/Scene.h"
 #include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Compute/ComputePipeline.h"
 #include "GEngine/Graphics/FrameBuffer.h"
@@ -23,11 +22,8 @@ namespace GEngine
 	public:
 		virtual ~CommandBuffer() = default;
 
-		virtual void Render(Ref<Scene>& scene) = 0;
-		virtual void Render(Ref<GraphicsPipeline>& pipeline, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 		virtual void Render(Ref<GraphicsPipeline>& pipeline, std::string pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 
-		virtual void Compute(Ref<ComputePipeline>& pipeline, uint32_t x, uint32_t y, uint32_t z) = 0;
 		virtual void Compute(Ref<ComputePipeline>& pipeline, std::string pass, uint32_t x, uint32_t y, uint32_t z) = 0;
 
 		virtual CommandBufferType				GetType() { return m_Type; }

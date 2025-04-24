@@ -17,7 +17,7 @@ namespace GEngine
 		static Ref<ComputePipeline> Create(const Ref<Material>& material);
 
 	protected:
-		virtual void Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z) = 0;
+		virtual void Compute(CommandBuffer* cmdBuffer, const std::string& pass, uint32_t x, uint32_t y, uint32_t z) = 0;
 
 		friend class CommandBuffer;
 	};

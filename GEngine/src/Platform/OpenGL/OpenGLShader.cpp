@@ -114,11 +114,6 @@ namespace GEngine
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		std::string src = Utils::ReadFile(path);
-		auto shaderSources = ProcessShaderSource(src);
-		CompileOrGetOpenGLBinaries(shaderSources);
-		CreateProgram();
-
-		return;
 		ProcessShaderSource(src);
 		for (auto pass : m_ShaderPasses)
 		{
@@ -131,67 +126,14 @@ namespace GEngine
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-		glDeleteProgram(m_Shader);
+		
+		for(auto shader : m_Shaders)
+			glDeleteProgram(shader.second);
 	}
-	void OpenGLShader::Bind() const
-	{
-		glUseProgram(m_Shader);
-	}
+	
 	void OpenGLShader::Use(const std::string& pass)
 	{
 		glUseProgram(m_Shaders[pass]);
-	}
-	void OpenGLShader::SetInt1(const std::string& name, int value)
-	{
-		glUniform1i(glGetUniformLocation(m_Shader, name.c_str()), value);
-	}
-	void OpenGLShader::SetIntArray(const std::string& name, int* value, uint32_t count)
-	{
-		glUniform1iv(glGetUniformLocation(m_Shader, name.c_str()), count, value);
-	}
-	void OpenGLShader::SetFloat1(const std::string& name, float value)
-	{
-		glUniform1f(glGetUniformLocation(m_Shader, name.c_str()), value);
-	}
-	void OpenGLShader::SetFloat2(const std::string& name, const Vector2& value)
-	{
-		glUniform2f(glGetUniformLocation(m_Shader, name.c_str()), value.x, value.y);
-	}
-	void OpenGLShader::SetFloat3(const std::string& name, const Vector3& value)
-	{
-		glUniform3f(glGetUniformLocation(m_Shader, name.c_str()), value.x, value.y, value.z);
-	}
-	void OpenGLShader::SetFloat4(const std::string& name, const Vector4& value)
-	{
-		glUniform4f(glGetUniformLocation(m_Shader, name.c_str()), value.x, value.y, value.z, value.w);
-	}
-	void OpenGLShader::SetMat4x4(const std::string& name, const Matrix4x4& value)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(m_Shader, name.c_str()), 1, GL_FALSE, Math::ValuePtr(value));
-	}
-	void OpenGLShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(m_Shader, name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
-	}
-	void OpenGLShader::SetUniformMat4(const std::string& name, const Matrix4x4& matrix)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(m_Shader, name.c_str()), 1, GL_FALSE, Math::ValuePtr(matrix));
-	}
-	void OpenGLShader::SetUniformInt(const std::string& name, int value)
-	{
-		glUniform1i(glGetUniformLocation(m_Shader, name.c_str()), value);
-	}
-	void OpenGLShader::SetUniformFloat(const std::string& name, float value)
-	{
-		glUniform1f(glGetUniformLocation(m_Shader, name.c_str()), value);
-	}
-	void OpenGLShader::SetUniformFloat4(const std::string& name, const Vector4& vector)
-	{
-		glUniform4f(glGetUniformLocation(m_Shader, name.c_str()), vector.x, vector.y, vector.z, vector.w);
-	}
-	void OpenGLShader::SetUniformTexture2D(const std::string& name, int slot)
-	{
-		glUniform1i(glGetUniformLocation(m_Shader, name.c_str()), slot);
 	}
 	void OpenGLShader::SetInt1(const std::string& name, int value, const std::string& pass)
 	{
@@ -419,102 +361,6 @@ namespace GEngine
 		return program;
 	}
 
-	void OpenGLShader::CompileOrGetOpenGLBinaries(std::unordered_map<std::string, std::string>& shaderSources)
-	{
-		auto& shaderData = m_OpenGLSPIRV;
-
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		options.SetIncluder(std::make_unique<ShaderIncluder>());
-		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		// TODO : 这样真的没问题？
-		//options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-		//options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-
-		shaderData.clear();
-		for (auto&& [stage, source] : shaderSources)
-		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(Utils::ShaderStageToGL(stage)));
-
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
-			{
-				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data = shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
-			}
-			else
-			{
-				Preprocess(source);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(Utils::ShaderStageToGL(stage)), m_FilePath.c_str(), options);
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ERROR("Error shader context:\n{}", source);
-					GE_CORE_ASSERT(false, module.GetErrorMessage());
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}
-
-		/*for (auto&& [stage, data] : shaderData)
-			Reflect(Utils::ShaderStageToGL(stage), data);*/
-	}
-
-	void OpenGLShader::CreateProgram()
-	{
-		GLuint program = glCreateProgram();
-
-		std::vector<GLuint> shaderIDs;
-		for (auto&& [stage, spirv] : m_OpenGLSPIRV)
-		{
-			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
-			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
-			glSpecializeShader(shaderID, m_ShaderMainFuncName.c_str(), 0, nullptr, nullptr);
-			glAttachShader(program, shaderID);
-		}
-		glLinkProgram(program);
-
-		GLint isLinked;
-		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-			GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
-
-			glDeleteProgram(program);
-
-			for (auto id : shaderIDs)
-				glDeleteShader(id);
-		}
-
-		for (auto id : shaderIDs)
-		{
-			glDetachShader(program, id);
-			glDeleteShader(id);
-		}
-		m_Shader = program;
-	}
 
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
 	{

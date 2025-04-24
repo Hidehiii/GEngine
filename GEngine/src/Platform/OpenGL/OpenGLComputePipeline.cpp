@@ -19,9 +19,9 @@ namespace GEngine
 	{
 		m_Material = std::dynamic_pointer_cast<OpenGLMaterial>(material);
 	}
-	void OpenGLComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t x, uint32_t y, uint32_t z)
+	void OpenGLComputePipeline::Compute(CommandBuffer* cmdBuffer, const std::string& pass, uint32_t x, uint32_t y, uint32_t z)
 	{
-		m_Material->Update(cmdBuffer);
+		m_Material->Update(cmdBuffer, pass);
 		glDispatchCompute(x, y, z);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}

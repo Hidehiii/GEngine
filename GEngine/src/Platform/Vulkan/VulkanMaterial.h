@@ -12,7 +12,6 @@ namespace GEngine
 		VulkanMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial() override;
 
-		virtual void Update(CommandBuffer* cmdBuffer) override;
 		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) override;
 
 		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;

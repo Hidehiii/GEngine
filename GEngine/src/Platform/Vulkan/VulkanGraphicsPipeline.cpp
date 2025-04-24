@@ -40,7 +40,7 @@ namespace GEngine
 
 	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const std::string& pass)
 	{
-		m_Material->Update(cmdBuffer);
+		m_Material->Update(cmdBuffer, pass);
 
 		auto cmd = static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer();
 		auto vkFrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer);
@@ -78,21 +78,6 @@ namespace GEngine
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
-	}
-
-	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount, uint32_t indexCount)
-	{
-		PrepareRender(cmdBuffer, frameBuffer);
-		m_VertexBuffer->Bind(cmdBuffer);
-		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
-		if (m_VertexBuffer->IsInstanceRendering())
-		{
-			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
-		}
-		else
-		{
-			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
-		}
 	}
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount, uint32_t indexCount)
@@ -147,43 +132,43 @@ namespace GEngine
 		std::string shaderMainFuncName						= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 
-		if (shader->GetShaderModule(ShaderStage::Vertex))
+		if (shader->GetShaderModule(ShaderStage::Vertex, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT,
 				shader->GetShaderModule(ShaderStage::Vertex, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::Fragment))
+		if (shader->GetShaderModule(ShaderStage::Fragment, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT,
 				shader->GetShaderModule(ShaderStage::Fragment, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::TessellationControl))
+		if (shader->GetShaderModule(ShaderStage::TessellationControl, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
 				shader->GetShaderModule(ShaderStage::TessellationControl, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::TessellationEvaluation))
+		if (shader->GetShaderModule(ShaderStage::TessellationEvaluation, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 				shader->GetShaderModule(ShaderStage::TessellationEvaluation, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::Geometry))
+		if (shader->GetShaderModule(ShaderStage::Geometry, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT,
 				shader->GetShaderModule(ShaderStage::Geometry, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::Task))
+		if (shader->GetShaderModule(ShaderStage::Task, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TASK_BIT_EXT,
 				shader->GetShaderModule(ShaderStage::Task, pass),
 				shaderMainFuncName.c_str()));
 		}
-		if (shader->GetShaderModule(ShaderStage::Mesh))
+		if (shader->GetShaderModule(ShaderStage::Mesh, pass))
 		{
 			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_MESH_BIT_EXT,
 				shader->GetShaderModule(ShaderStage::Mesh, pass),

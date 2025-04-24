@@ -22,7 +22,6 @@ namespace GEngine
 
 		static Ref<GraphicsPipeline> Create(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer);
 	protected:
-		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 
 		friend class CommandBuffer;

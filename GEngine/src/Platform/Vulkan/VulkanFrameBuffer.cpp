@@ -230,7 +230,7 @@ namespace GEngine
 	}
 	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
-		return CreateRef<VulkanFrameBuffer>(renderPass, spec);
+		return CreateRef<VulkanFrameBuffer>(renderPass, spec, renderpassSpec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()
 	{

@@ -21,7 +21,6 @@ namespace GEngine
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
 		virtual ~Material() {}
 
-		virtual void Update(CommandBuffer* cmdBuffer) = 0;
 		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) = 0;
 
 		virtual CullMode	GetCull()					{ return m_CullMode; }

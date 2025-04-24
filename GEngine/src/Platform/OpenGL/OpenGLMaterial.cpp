@@ -57,40 +57,6 @@ namespace GEngine
 	OpenGLMaterial::~OpenGLMaterial()
 	{
 	}
-	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer)
-	{
-		m_Shader->Bind();
-		if(m_UniformsBuffer.Size > 0)
-			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
-
-		for (auto& texture2D : m_Texture2D)
-		{
-			m_Shader->SetInt1(texture2D.Name, texture2D.Slot);
-			texture2D.Texture->Bind(cmdBuffer, texture2D.Slot);
-		}
-
-		for (auto& image2D : m_StorageImage2D)
-		{
-			m_Shader->SetInt1(image2D.Name, image2D.Slot);
-			image2D.Image->Bind(cmdBuffer, image2D.Slot);
-		}
-
-		for (auto& cubeMap : m_CubeMap)
-		{
-			m_Shader->SetInt1(cubeMap.Name, cubeMap.Slot);
-			cubeMap.Cubemap->Bind(cmdBuffer, cubeMap.Slot);
-		}
-
-		for (auto& storageBuffer : m_StorageBuffer)
-		{
-			storageBuffer.Buffer->Bind(storageBuffer.Slot);
-		}
-
-		Utils::SetCull(m_CullMode);
-		Utils::SetBlend(m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
-		Utils::SetDepthTest(m_DepthTestOperation);
-		Utils::EnableDepthWrite(m_EnableDepthWrite);
-	}
 	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer, const std::string& pass)
 	{
 		m_Shader->Use(pass);
@@ -130,8 +96,7 @@ namespace GEngine
 	}
 	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
 	{
-		m_Shader->Bind();
-		m_Shader->SetIntArray(name, value, count);
+		
 	}
 	void OpenGLMaterial::SetShader(const Ref<Shader>& shader)
 	{

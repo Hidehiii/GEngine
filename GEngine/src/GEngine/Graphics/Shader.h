@@ -264,9 +264,6 @@ namespace GEngine
 
 		virtual std::string									GetShaderMainFuncName() { return m_ShaderMainFuncName; }
 
-		virtual std::vector<uint32_t>						GetVertexShaderSource() = 0;
-		virtual std::vector<uint32_t>						GetFragmentShaderSource() = 0;
-
 		
 	protected:
 		virtual void										Preprocess(std::string& source);

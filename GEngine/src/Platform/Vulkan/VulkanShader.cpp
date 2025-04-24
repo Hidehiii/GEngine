@@ -77,10 +77,6 @@ namespace GEngine
 		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
 
-		auto shaderSources	= ProcessShaderSource(src);
-		CompileOrGetVulkanBinaries(shaderSources);
-
-		return;
 		// multi pass
 		ProcessShaderSource(src);
 		for (auto pass : m_ShaderPasses)
@@ -128,61 +124,6 @@ namespace GEngine
 	VulkanShader::~VulkanShader()
 	{
 	}
-	void VulkanShader::CreateShaderModule()
-	{
-		if (m_VulkanSPIRV.find(ShaderStage::Vertex) != m_VulkanSPIRV.end())
-			m_VertexShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Vertex]);
-		if (m_VulkanSPIRV.find(ShaderStage::Fragment) != m_VulkanSPIRV.end())
-			m_FragmentShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Fragment]);
-		if (m_VulkanSPIRV.find(ShaderStage::Compute) != m_VulkanSPIRV.end())
-			m_ComputeShaderModule	= CreateShaderModule(m_VulkanSPIRV[ShaderStage::Compute]);
-		if (m_VulkanSPIRV.find(ShaderStage::TessellationControl) != m_VulkanSPIRV.end())
-			m_TessellationControlShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::TessellationControl]);
-		if (m_VulkanSPIRV.find(ShaderStage::TessellationEvaluation) != m_VulkanSPIRV.end())
-			m_TessellationEvaluationShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::TessellationEvaluation]);
-		if (m_VulkanSPIRV.find(ShaderStage::Geometry) != m_VulkanSPIRV.end())
-			m_GeometryShaderModule = CreateShaderModule(m_VulkanSPIRV[ShaderStage::Geometry]);
-	}
-	void VulkanShader::DestroyShaderModule()
-	{
-		if (m_VulkanSPIRV.find(ShaderStage::Vertex) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_VertexShaderModule, nullptr);
-		if (m_VulkanSPIRV.find(ShaderStage::Fragment) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_FragmentShaderModule, nullptr);
-		if (m_VulkanSPIRV.find(ShaderStage::Compute) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_ComputeShaderModule, nullptr);
-		if (m_VulkanSPIRV.find(ShaderStage::TessellationControl) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_TessellationControlShaderModule, nullptr);
-		if (m_VulkanSPIRV.find(ShaderStage::TessellationEvaluation) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_TessellationEvaluationShaderModule, nullptr);
-		if (m_VulkanSPIRV.find(ShaderStage::Geometry) != m_VulkanSPIRV.end())
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), m_GeometryShaderModule, nullptr);
-
-		m_VertexShaderModule					= nullptr;
-		m_FragmentShaderModule					= nullptr;
-		m_ComputeShaderModule					= nullptr;
-		m_TessellationControlShaderModule		= nullptr;
-		m_TessellationEvaluationShaderModule	= nullptr;
-		m_GeometryShaderModule					= nullptr;
-	}
-	VkShaderModule VulkanShader::GetShaderModule(std::string stage)
-	{
-		if (stage == ShaderStage::Pixel || stage == ShaderStage::Fragment)
-			return m_FragmentShaderModule;
-		else if (stage == ShaderStage::Vertex)
-			return m_VertexShaderModule;
-		else if (stage == ShaderStage::Compute)
-			return m_ComputeShaderModule;
-		else if (stage == ShaderStage::TessellationControl)
-			return m_TessellationControlShaderModule;
-		else if (stage == ShaderStage::TessellationEvaluation)
-			return m_TessellationEvaluationShaderModule;
-		else if (stage == ShaderStage::Geometry)
-			return m_GeometryShaderModule;
-
-		//GE_CORE_ASSERT(false, "Unknown shader stage");
-		return nullptr;
-	}
 	void VulkanShader::SetMacroBool(std::string& source)
 	{
 		for (int i = 0; i < m_MacroBools.size(); i++)
@@ -207,65 +148,12 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateShaderModule(VulkanContext::Get()->GetDevice(), &createInfo, nullptr, &shaderModule));
 		return shaderModule;
 	}
-	std::unordered_map<std::string, std::string> VulkanShader::ProcessShaderSource(const std::string& source)
+	void VulkanShader::ProcessShaderSource(const std::string& source)
 	{
-		std::unordered_map<std::string, std::string> shaderSources;
-
-		const char* typeToken			= "#Type";
-		size_t typeTokenLength			= strlen(typeToken);
-
-		// find Name 
-		m_Name = Utils::ProcessShaderName(source);
-
-		// find Blend
-		Utils::ProcessShaderBlend(source, m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
-
-
-		// find DepthWrite
-		Utils::ProcessShaderDepthWrite(source, m_EnableDepthWrite);
-
-		// find DepthTest
-		Utils::ProcessShaderDepthTest(source, m_DepthTestOperation);
-
-		// find Cull
-		Utils::ProcessShaderCull(source, m_CullMode);
-
-		// find Properties
-		Utils::ProcessShaderProperties(source, m_UniformCache, m_Texture2DCache, m_CubeMapCache, m_StorageImage2DCache, m_StorageBufferCache, 0, Shader::s_SlotOffset, 0);
-
-		// find Type
-
-		size_t pos = source.find(typeToken, 0);
-
-		while (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = type.find(' ', index)) != std::string::npos)
-			{
-				type.erase(index, 1);
-			}
-			GE_CORE_ASSERT(Utils::ShaderTypeFromString(type).empty() == false, "Invalid shader type specified");
-
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(typeToken, nextLinePos);
-			shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
-		}
-		return shaderSources;
 		// multi pass
 		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
 		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses, m_RenderStates);
-		/*for (auto pass : m_ShaderPasses)
-		{
-			VulkanShaderModule module;
-			if (pass.second.Stages.find(ShaderStage::Vertex) != pass.second.Stages.end())
-			{
-				module.VertexModule = CreateShaderModule(pass.second.Stages[ShaderStage::Vertex]);
-			}
-		}*/
+		
 	}
 	std::unordered_map<std::string, std::vector<uint32_t>> VulkanShader::CompileVulkanBinaries(std::pair<std::string, ShaderPass> pass)
 	{
@@ -317,60 +205,6 @@ namespace GEngine
 		}
 
 		return shaderData;
-	}
-	void VulkanShader::CompileOrGetVulkanBinaries(std::unordered_map<std::string, std::string>& shaderSources)
-	{
-		shaderc::Compiler			compiler;
-		shaderc::CompileOptions		options;
-		options.SetIncluder(std::make_unique<ShaderIncluder>());
-		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-		//options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-		std::filesystem::path cacheDirectory		= Utils::GetCacheDirectory();
-
-		auto& shaderData			= m_VulkanSPIRV;
-		shaderData.clear();
-		for (auto&& [stage, source] : shaderSources)
-		{
-			std::filesystem::path shaderFilePath	= m_FilePath;
-			std::filesystem::path cachedPath		= cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
-
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
-			{
-				in.seekg(0, std::ios::end);
-				auto size		= in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data		= shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
-			}
-			else
-			{
-				Preprocess(source);
-				shaderc::SpvCompilationResult module		= compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_FilePath.c_str(), options);
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ERROR("Error shader context:\n{}", source);
-					GE_CORE_ASSERT(false, module.GetErrorMessage());
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}
-
-		/*for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);*/
 	}
 	void VulkanShader::Reflect(const std::string stage, const std::vector<uint32_t>& shaderData)
 	{
