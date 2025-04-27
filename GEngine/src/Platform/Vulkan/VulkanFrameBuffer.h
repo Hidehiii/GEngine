@@ -29,7 +29,7 @@ namespace GEngine
 		virtual int								GetColorRTCount() override { return m_ColorImageViews.size(); }
 		virtual int								GetRTCount() override { return m_Attachments.size(); }
 		virtual Ref<Texture2D>					GetColorRT(int index) override;
-		virtual Ref<Texture2D>					GetDepthStencilRT() override;
+		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual	Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
@@ -54,7 +54,7 @@ namespace GEngine
 		VkDeviceMemory				m_DepthStencilImageMemory = nullptr;
 
 		std::vector<Ref<VulkanTexture2D>> m_ColorRTs;
-		Ref<VulkanTexture2D>				m_DepthStencilRT = nullptr;
+		Ref<VulkanTexture2D>				m_DepthStencil = nullptr;
 	};
 }
 

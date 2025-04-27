@@ -11,7 +11,7 @@ namespace GEngine
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
 		m_Specification.ColorRTs				= renderPass->GetSpecification().ColorRTs;
-		m_Specification.DepthStencilRT			= renderPass->GetSpecification().DepthStencilRT;
+		m_Specification.DepthStencil			= renderPass->GetSpecification().DepthStencil;
 		m_Specification.Samples					= renderPass->GetSpecification().Samples;
 		m_Specification.Width					= width;
 		m_Specification.Height					= height;
@@ -176,9 +176,9 @@ namespace GEngine
 		{
 			m_ColorRTs.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
-		if (m_DepthStencilRT)
+		if (m_DepthStencil)
 		{
-			m_DepthStencilRT->SetImageLayout(cmd, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		}
 
 		VkRenderPassBeginInfo					renderPassInfo{};
@@ -211,9 +211,9 @@ namespace GEngine
 		{
 			m_ColorRTs.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		if (m_DepthStencilRT)
+		if (m_DepthStencil)
 		{
-			m_DepthStencilRT->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetColorRT(int index)
@@ -222,10 +222,10 @@ namespace GEngine
 		Ref<VulkanTexture2D> texture = m_ColorRTs.at(index);
 		return texture;
 	}
-	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencilRT()
+	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencil()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
-		Ref<VulkanTexture2D> texture = m_DepthStencilRT;
+		Ref<VulkanTexture2D> texture = m_DepthStencil;
 		return texture;
 	}
 	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
@@ -296,7 +296,7 @@ namespace GEngine
 		VkImageView						imageView;
 		VkFormat						depthFormat;
 		VkFlags							depthAspectFlag;
-		switch (m_Specification.DepthStencilRT.TextureFormat)
+		switch (m_Specification.DepthStencil.TextureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 		{
@@ -361,7 +361,7 @@ namespace GEngine
 		m_DepthStencilImageView = imageView;
 		m_DepthStencilImageMemory = imageMemory;
 
-		m_DepthStencilRT = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory , VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
+		m_DepthStencil = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory , VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

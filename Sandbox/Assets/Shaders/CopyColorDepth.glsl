@@ -2,37 +2,56 @@
 #Name CopyColorDepth
 
 #Properties
-sampler2D GE_PREVIOUS_COLOR;
-sampler2D GE_PREVIOUS_DEPTH;
+sampler2D _SceneColor;
+sampler2D _SceneDepth;
 #EndProperties
-#Type vertex
-layout(location = 0) in vec4 i_Position;
-layout(location = 1) in vec2 i_UV;
-struct VertexOutput
+
+#BeginBlock CopyColorDepthVS
+#version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
+
+layout(location = 0) in vec4 in_Position;
+layout(location = 1) in vec2 in_UV;
+
+struct v2f
 {
-	vec2 UV;
+	vec2 UV;	
 };
-layout (location = 0) out VertexOutput OUT;
+
+layout(location = 0) out v2f OUT;
+
 void main()
 {
-	OUT.UV = i_UV;
-	gl_Position =  i_Position;
+	OUT.UV = in_UV;
+	gl_Position = in_Position;
 }
+#EndBlock
 
-#Type fragment
-#include "Assets/Shaders/Core/Core.glsl"
-layout(location = 0) out vec4 o_Color;
-struct VertexOutput
+#BeginBlock CopyColorDepthFS
+#version 450 core
+#include"Assets/Shaders/Core/Core.glsl"
+
+layout(location = 0) out vec4 out_Color;
+
+struct v2f
 {
-	vec2 UV;
+	vec2 UV;	
 };
-layout (location = 0) in VertexOutput IN;
-layout (binding = GE_BINDING_START + 0) uniform sampler2D GE_PREVIOUS_COLOR;
-layout (binding = GE_BINDING_START + 1) uniform sampler2D GE_PREVIOUS_DEPTH;
+
+layout(location = 0) in v2f IN;
+
+layout(binding = GE_BINDING_START + 0) uniform sampler2D _SceneColor;
+layout(binding = GE_BINDING_START + 1) uniform sampler2D _SceneDepth;
 
 void main()
 {
 	vec2 newUV = TransformUV(IN.UV);
-	o_Color = texture(GE_PREVIOUS_COLOR, newUV);
-	gl_FragDepth = texture(GE_PREVIOUS_DEPTH, newUV).r;
+	out_Color = texture(_SceneColor, newUV);
+	gl_FragDepth = texture(_SceneDepth, newUV).r;
 }
+#EndBlock
+
+##Pass 1
+Vertex CopyColorDepthVS
+Fragment CopyColorDepthFS
+##EndPass

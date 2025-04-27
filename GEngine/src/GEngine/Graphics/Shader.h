@@ -80,17 +80,6 @@ namespace GEngine
 		NotEqual = 5,
 		Always = 6,
 	};
-	class GENGINE_API ShaderDataFlag
-	{
-	public:
-		static const	std::string			None;
-		static const	std::string			Name;
-		static const	std::string			Blend;
-		static const	std::string			DepthMask;
-		static const	std::string			DepthTest;
-		static const	std::string			Properties;
-		static const	std::string			Type;
-	};
 	class GENGINE_API ShaderStage
 	{
 	public:

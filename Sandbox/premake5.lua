@@ -17,8 +17,26 @@ project "Sandbox"
 	includedirs
 	{
 		"%{wks.location}/GEngine/src",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.GLAD}",
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.vender}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.SPIRVCross}",
+		"%{IncludeDir.shaderc}",
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.vulkan}",
+		"%{IncludeDir.Box2D}",
+		"%{IncludeDir.FBX}",
+		"%{IncludeDir.mono}",
+		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.DirectXHeaders}",
+		"%{IncludeDir.HLSLcc}"
 	}
 
 	links

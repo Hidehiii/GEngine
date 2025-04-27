@@ -31,7 +31,7 @@ namespace GEngine
 		virtual int								GetRTCount() override { return m_DepthStencilRenderTarget == nullptr ? m_ColorRenderTargets.size() : m_ColorRenderTargets.size() + 1; };
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual Ref<Texture2D>					GetColorRT(int index) override;
-		virtual Ref<Texture2D>					GetDepthStencilRT() override;
+		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
 		// for present
@@ -51,7 +51,7 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource>					m_MultiSampleDepthStencilRenderTarget = nullptr;
 		Ref<D3D12RenderPass>									m_RenderPass;
 		std::vector<Ref<D3D12Texture2D>>						m_ColorRTs;
-		Ref<D3D12Texture2D>										m_DepthStencilRT = nullptr;
+		Ref<D3D12Texture2D>										m_DepthStencil = nullptr;
 	};
 
 }

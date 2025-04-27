@@ -1,18 +1,25 @@
 
 #Name CubeMap
-#DepthWrite Off
-#Blend None
+
 #Properties
-SamplerCube TexCube;
+
+SamplerCube CubeMap;
+
 #EndProperties
-#Type vertex
+
+#BeginBlock CubeMapVS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
-layout(location = 0) in vec4 i_position;
-struct VertexOutput
+
+layout(location = 0) in vec4 in_Position;
+
+struct v2f
 {
-	vec4 position;
+	vec4 Position;	
 };
-layout (location = 0) out VertexOutput OUT;
+
+layout(location = 0) out v2f OUT;
+
 void main()
 {
 	mat4 view = mat4(
@@ -21,23 +28,36 @@ void main()
 		GE_MATRIX_V[2][0], GE_MATRIX_V[2][1], GE_MATRIX_V[2][2], 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
-	vec4 pos = GE_MATRIX_P * view * GE_MATRIX_M * vec4(i_position.xyz, 1.0f);
+	vec4 pos = GE_MATRIX_P * view * GE_MATRIX_M * vec4(in_Position.xyz, 1.0f);
 	gl_Position =  pos;
-	OUT.position = i_position;
+	OUT.Position = in_Position;
 }
 
-#Type fragment
+#EndBlock
+
+#BeginBlock CubeMapFS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
-layout(location = 0) out vec4 o_color;
-layout (binding = GE_BINDING_START + 0) uniform samplerCube TexCube;
-struct VertexOutput
+
+layout(location = 0) out vec4 out_Color;
+layout(binding = GE_BINDING_START + 0) uniform samplerCube CubeMap;
+
+struct v2f
 {
-	vec4 position;
+	vec4 Position;	
 };
-layout (location = 0) in VertexOutput IN;
+
+layout(location = 0) in v2f IN;
+
 void main()
 {
-
-    vec3 uv = vec3(IN.position.x, IN.position.y, IN.position.z);
-    o_color = texture(TexCube, uv);
+	vec3 uv = vec3(IN.Position.x, IN.Position.y, IN.Position.z);
+	out_Color = texture(CubeMap, uv);
 }
+#EndBlock
+
+##Pass 1
+DepthWrite Off
+Vertex CubeMapVS
+Fragment CubeMapFS
+##EndPass

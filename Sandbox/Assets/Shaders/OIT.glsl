@@ -11,6 +11,7 @@ sampler2D _SceneColor;
 #EndProperties
 
 #BeginBlock WriteVS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 in_Position;
 layout(location = 1) in vec4 in_Color;
@@ -32,6 +33,7 @@ void main()
 #EndBlock
 
 #BeginBlock WriteFS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 
 layout (binding = GE_BINDING_START + 0, r32ui) uniform uimage2D HeadIndexImage;
@@ -76,6 +78,7 @@ void main()
 #EndBlock
 
 #BeginBlock RenderVS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 
 layout(location = 0) in vec4 in_Position;
@@ -98,6 +101,7 @@ void main()
 #EndBlock
 
 #BeginBlock RenderFS
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 out_Color;
 
@@ -162,6 +166,7 @@ void main()
 #EndBlock
 
 #BeginBlock ResetCs
+#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 

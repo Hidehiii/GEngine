@@ -19,11 +19,11 @@ namespace GEngine
 
 	std::string		const	ShaderDataFlag::None							= VAR_NAME(#None);
 	std::string		const	ShaderDataFlag::Name							= VAR_NAME(#Name);
-	std::string		const	ShaderDataFlag::Blend							= VAR_NAME(#Blend);
-	std::string		const	ShaderDataFlag::DepthMask						= VAR_NAME(#DepthMask);
-	std::string		const	ShaderDataFlag::DepthTest						= VAR_NAME(#DepthTest);
+	std::string		const	ShaderDataFlag::Blend							= VAR_NAME(Blend);
+	std::string		const	ShaderDataFlag::DepthWrite						= VAR_NAME(DepthWrite);
+	std::string		const	ShaderDataFlag::DepthTest						= VAR_NAME(DepthTest);
 	std::string		const	ShaderDataFlag::Properties						= VAR_NAME(#Properties);
-	std::string		const	ShaderDataFlag::Type							= VAR_NAME(#Type);
+	std::string		const	ShaderDataFlag::EndProperties					= VAR_NAME(#EndProperties);
 					
 	std::string     const	ShaderStage::Vertex								= VAR_NAME(vertex);
 	std::string     const	ShaderStage::Fragment							= VAR_NAME(fragment);

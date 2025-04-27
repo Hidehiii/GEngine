@@ -34,7 +34,7 @@ project "GEngine"
 	includedirs
 	{
 		"src",
-		"vendor/spdlog/include",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",
 		"%{IncludeDir.glm}",
@@ -67,6 +67,7 @@ project "GEngine"
 		"d3dcompiler.lib",
 		"D3D12.lib",
 		"dxgi.lib",
+		"dxguid.lib",
 		"%{Library.mono}",
 		"%{Library.Vulkan}",
 	}

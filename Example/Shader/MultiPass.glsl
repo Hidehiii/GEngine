@@ -8,6 +8,7 @@ color prop1;
 #EndProperties
 
 #BeginBlock A
+#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in X XXX;
 layout(location = 1) in X XXX;
@@ -21,6 +22,7 @@ void main()
 #EndBlock
 
 #BeginBlock B
+#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out X XXX;
 
@@ -34,6 +36,7 @@ void main()
 #EndBlock
 
 #BeginBlock C
+#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out X XXX;
 

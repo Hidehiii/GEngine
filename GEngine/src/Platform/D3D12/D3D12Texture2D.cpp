@@ -82,6 +82,7 @@ namespace GEngine
 	}
 	void D3D12Texture2D::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{
+		GE_CORE_ASSERT(false, "");
 	}
 	void D3D12Texture2D::SetData(const void* data, uint32_t size)
 	{

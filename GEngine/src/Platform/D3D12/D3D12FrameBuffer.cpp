@@ -10,7 +10,7 @@ namespace GEngine
 	D3D12FrameBuffer::D3D12FrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
 		m_Specification.ColorRTs			= renderPass->GetSpecification().ColorRTs;
-		m_Specification.DepthStencilRT		= renderPass->GetSpecification().DepthStencilRT;
+		m_Specification.DepthStencil		= renderPass->GetSpecification().DepthStencil;
 		m_Specification.Samples				= renderPass->GetSpecification().Samples;
 		m_Specification.Width				= width;
 		m_Specification.Height				= height;
@@ -29,7 +29,7 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_MultiSampleRtvHeap)));
 		}
 
-		if (m_Specification.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
+		if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -76,20 +76,20 @@ namespace GEngine
 
 		if (renderpassSpec.EnableDepthStencil)
 		{
-			m_Specification.DepthStencilRT.TextureFormat = FrameBufferTextureFormat::DEPTH24STENCIL8;
+			m_Specification.DepthStencil.TextureFormat = FrameBufferTextureFormat::DEPTH24STENCIL8;
 
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_DsvHeap)));
 
-			const CD3DX12_CLEAR_VALUE		clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat), 1, 0);
+			const CD3DX12_CLEAR_VALUE		clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat), 1, 0);
 			D3D12_DEPTH_STENCIL_VIEW_DESC	dsvDesc = {};
-			dsvDesc.Format					= Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat);
+			dsvDesc.Format					= Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat);
 			dsvDesc.ViewDimension			= D3D12_DSV_DIMENSION_TEXTURE2D;
 
 			D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(
-				Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat),
+				Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat),
 				m_Specification.Width,
 				m_Specification.Height,
 				1, // This resource has only one texture.
@@ -111,6 +111,10 @@ namespace GEngine
 			D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilRenderTarget.Get(), &dsvDesc, m_DsvHeap->GetCPUDescriptorHandleForHeapStart());
 		}
 	}
+	D3D12FrameBuffer::~D3D12FrameBuffer()
+	{
+		GE_CORE_ASSERT(false, "");
+	}
 	void D3D12FrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
@@ -119,9 +123,9 @@ namespace GEngine
 		{
 			m_ColorRTs.at(i)->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
-		if (m_DepthStencilRT)
+		if (m_DepthStencil)
 		{
-			m_DepthStencilRT->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			m_DepthStencil->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		}
 
 		auto rtvDescriptor = m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
@@ -172,19 +176,19 @@ namespace GEngine
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleColorRenderTargets[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_RESOLVE_SOURCE));
 				m_ColorRTs.at(i)->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_RESOLVE_DEST);
 			}
-			if (m_DepthStencilRT)
+			if (m_DepthStencil)
 			{
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleDepthStencilRenderTarget.Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_RESOLVE_SOURCE));
-				m_DepthStencilRT->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+				m_DepthStencil->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_RESOLVE_DEST);
 			}
 			cmd->ResourceBarrier(barriers.size(), barriers.data());
 			for (int i = 0; i < m_ColorRTs.size(); i++)
 			{
 				cmd->ResolveSubresource(m_ColorRenderTargets[i].Get(), 0, m_MultiSampleColorRenderTargets[i].Get(), 0, Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.ColorRTs[i].TextureFormat));
 			}
-			if (m_DepthStencilRT)
+			if (m_DepthStencil)
 			{
-				cmd->ResolveSubresource(m_DepthStencilRenderTarget.Get(), 0, m_MultiSampleDepthStencilRenderTarget.Get(), 0, Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat));
+				cmd->ResolveSubresource(m_DepthStencilRenderTarget.Get(), 0, m_MultiSampleDepthStencilRenderTarget.Get(), 0, Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat));
 			}
 			barriers.clear();
 			for (int i = 0; i < m_ColorRTs.size(); i++)
@@ -192,7 +196,7 @@ namespace GEngine
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleColorRenderTargets[i].Get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET));
 				
 			}
-			if (m_DepthStencilRT)
+			if (m_DepthStencil)
 			{
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleDepthStencilRenderTarget.Get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 			}
@@ -203,18 +207,24 @@ namespace GEngine
 		{
 			m_ColorRTs.at(i)->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		}
-		if (m_DepthStencilRT)
+		if (m_DepthStencil)
 		{
-			m_DepthStencilRT->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_DepthStencil->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		}
+	}
+	void D3D12FrameBuffer::SetRenderPassOperation(const RenderPassOperation& op)
+	{
+		auto spec		= m_RenderPass->GetSpecification();
+		spec.Operation	= op;
+		m_RenderPass	= std::dynamic_pointer_cast<D3D12RenderPass>(RenderPass::Create(spec));
 	}
 	Ref<Texture2D> D3D12FrameBuffer::GetColorRT(int index)
 	{
 		return m_ColorRTs.at(index);
 	}
-	Ref<Texture2D> D3D12FrameBuffer::GetDepthStencilRT()
+	Ref<Texture2D> D3D12FrameBuffer::GetDepthStencil()
 	{
-		return m_DepthStencilRT;
+		return m_DepthStencil;
 	}
 	void D3D12FrameBuffer::BeginPresentRender(CommandBuffer* cmdBuffer)
 	{
@@ -330,17 +340,17 @@ namespace GEngine
 			m_ColorRTs.at(i) = CreateRef<D3D12Texture2D>(m_ColorRenderTargets[i], D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
 
-		if (m_Specification.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
+		if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			const CD3DX12_CLEAR_VALUE clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat), 1, 0);
+			const CD3DX12_CLEAR_VALUE clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat), 1, 0);
 			D3D12_DEPTH_STENCIL_VIEW_DESC	dsvDesc = {};
-			dsvDesc.Format					= Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat);
+			dsvDesc.Format					= Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat);
 			dsvDesc.ViewDimension			= D3D12_DSV_DIMENSION_TEXTURE2D;
 
 			if (m_Specification.Samples > 1)
 			{
 				D3D12_RESOURCE_DESC multiDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-					Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat),
+					Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat),
 					m_Specification.Width,
 					m_Specification.Height,
 					1, // This resource has only one texture.
@@ -363,7 +373,7 @@ namespace GEngine
 			}
 
 			D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(
-				Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencilRT.TextureFormat),
+				Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat),
 				m_Specification.Width,
 				m_Specification.Height,
 				1, // This resource has only one texture.
@@ -383,7 +393,7 @@ namespace GEngine
 
 			D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilRenderTarget.Get(), &dsvDesc, m_DsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-			m_DepthStencilRT = CreateRef<D3D12Texture2D>(m_DepthStencilRenderTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			m_DepthStencil = CreateRef<D3D12Texture2D>(m_DepthStencilRenderTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		}
 	}
 }

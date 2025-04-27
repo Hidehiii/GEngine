@@ -9,6 +9,7 @@ FBX_SDK = "%{wks.location}/GEngine/vendor/FBXSDK"
 IncludeDir = {}
 
 IncludeDir["vender"] = "%{wks.location}/GEngine/vendor"
+IncludeDir["spdlog"] = "%{wks.location}/GEngine/vendor/spdlog/include"
 IncludeDir["GLFW"] = "%{wks.location}/GEngine/vendor/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/GEngine/vendor/GLAD/include"
 IncludeDir["glm"] = "%{wks.location}/GEngine/vendor/glm"

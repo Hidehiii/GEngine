@@ -12,7 +12,7 @@ namespace GEngine
 	{
 		uint32_t Width = 0, Height = 0;
 		std::vector<FrameBufferTextureSpecification>	ColorRTs;
-		FrameBufferTextureSpecification					DepthStencilRT;
+		FrameBufferTextureSpecification					DepthStencil;
 		uint32_t Samples = 1;
 	};
 
@@ -36,7 +36,7 @@ namespace GEngine
 		virtual int								GetRTCount() = 0;
 		virtual int								GetColorRTCount() = 0;
 		virtual Ref<Texture2D>					GetColorRT(int index) = 0;
-		virtual Ref<Texture2D>					GetDepthStencilRT() = 0;
+		virtual Ref<Texture2D>					GetDepthStencil() = 0;
 		virtual Ref<RenderPass>					GetRenderPass() = 0;
 
 		static Ref<FrameBuffer> Create(const Ref<RenderPass>& renderPass, const Vector2& size);

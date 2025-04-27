@@ -189,15 +189,15 @@ namespace GEngine
 				attachments.push_back(des);
 			}
 		}
-		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
 		{
-			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthStencilRT.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
+			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthStencil.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
 				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
 				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 			attachments.push_back(des);
 			if (spec.Samples > 1)
 			{
-				des = Utils::CreateAttachmentDescription2(spec.DepthStencilRT.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
+				des = Utils::CreateAttachmentDescription2(spec.DepthStencil.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
 					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
 					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
 				attachments.push_back(des);
@@ -239,16 +239,16 @@ namespace GEngine
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
 		subpass.pResolveAttachments		= resolveAttachmentRefs.data();
 		subpass.pDepthStencilAttachment = nullptr;
-		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			if (spec.Samples > 1)
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size() * 2 + 1);
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size() * 2 + 1);
 
 				VkSubpassDescriptionDepthStencilResolve	subpassDepthStencilResolve{};
 
 				VkAttachmentReference2	ref{};
-				ref = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size() * 2);
+				ref = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size() * 2);
 
 				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
 				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &ref;
@@ -258,7 +258,7 @@ namespace GEngine
 			}
 			else
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencilRT.TextureFormat, spec.ColorRTs.size());
+				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size());
 			}
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
@@ -276,7 +276,7 @@ namespace GEngine
 			dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
-		if (spec.DepthStencilRT.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;

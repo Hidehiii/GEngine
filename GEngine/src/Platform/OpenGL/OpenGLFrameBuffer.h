@@ -24,7 +24,7 @@ namespace GEngine
 		virtual int								GetRTCount() override { return m_DepthStencilAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual Ref<Texture2D>					GetColorRT(int index) override;
-		virtual Ref<Texture2D>					GetDepthStencilRT() override;
+		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
 	private:
@@ -38,7 +38,7 @@ namespace GEngine
 		uint32_t										m_MultiSampleDepthStencilAttachment = 0;
 		std::vector<uint32_t>							m_MultiSampleColorAttachments;
 		std::vector <Ref<OpenGLTexture2D>>				m_ColorRTs;
-		Ref<OpenGLTexture2D>							m_DepthStencilRT;
+		Ref<OpenGLTexture2D>							m_DepthStencil;
 	};
 }
 

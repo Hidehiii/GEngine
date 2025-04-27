@@ -25,12 +25,12 @@ void Sandbox2D::OnAttach()
 	Ref<RenderPass> OpaquePass, DepthOnlyPass;
 
 	RenderPassSpecification spec;
-	spec.ColorAttachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8 };
-	spec.DepthAttachment = FrameBufferTextureFormat::DEPTH;
+	spec.ColorRTs = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8 };
+	spec.DepthStencil = FrameBufferTextureFormat::DEPTH;
 	spec.Samples = 4;
 	OpaquePass = RenderPass::Create(spec);
 
-	spec.ColorAttachments = {};
+	spec.ColorRTs = {};
 	spec.Samples = 1;
 	DepthOnlyPass = RenderPass::Create(spec);
 
@@ -267,7 +267,7 @@ void Sandbox2D::OnRender()
 
 	cmd1->Begin(m_SkyBoxFB);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	cmd1->Render(m_Scene);
+	//cmd1->Render(m_Scene);
 	cmd1->End();
 
 	cmd2->Begin(m_DepthOnly);
@@ -276,7 +276,7 @@ void Sandbox2D::OnRender()
 	cmd2->End();
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorRT(0));
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencilRT());
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencil());
 	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorRT(0));
 
 	cmd3->Begin(m_OIT_Present);
@@ -338,7 +338,7 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::Begin("Profile");
 	ImGui::Text("Frames : %llf", 1 / GEngine::Time::GetDeltaTime());
-	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthStencilRT()), {100, 100});
+	ImGui::Image(GUIUtils::GetTextureID(m_DepthOnly->GetDepthStencil()), {100, 100});
 	//ImGui::Image(GUIUtils::GetTextureID(m_FrameBuffer_0->GetColorAttachment(0)), {100, 100});
 	ImGui::End();
 }

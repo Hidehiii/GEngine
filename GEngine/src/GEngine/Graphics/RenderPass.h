@@ -86,14 +86,14 @@ namespace GEngine
 	struct RenderPassSpecification
 	{
 		std::vector<FrameBufferTextureSpecification>	ColorRTs;
-		FrameBufferTextureSpecification					DepthStencilRT;
+		FrameBufferTextureSpecification					DepthStencil;
 		int												Samples = 1;
 		RenderPassOperation								Operation;
 
 		bool operator==(const RenderPassSpecification& other) const
 		{
 			return ColorRTs == other.ColorRTs &&
-				DepthStencilRT == other.DepthStencilRT &&
+				DepthStencil == other.DepthStencil &&
 				Samples == other.Samples &&
 				Operation == other.Operation;
 		}
