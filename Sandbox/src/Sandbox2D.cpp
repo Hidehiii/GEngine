@@ -80,11 +80,11 @@ void Sandbox2D::OnAttach()
 	
 
 	m_PresentVertex.resize(4);
-	m_OIT = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/OIT.glsl")),
+	m_OITRender = GraphicsPipeline::Create(
+		Material::Create(Shader::Create("Assets/Shaders/OITRender.glsl")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
-	m_OIT->GetVertexBuffer()->SetLayout({
+	m_OITRender->GetVertexBuffer()->SetLayout({
 		{ShaderDataType::float4,	"PositionOS"},
 		{ShaderDataType::float2,	"UV"}
 		});
@@ -115,7 +115,7 @@ void Sandbox2D::OnAttach()
 	presentIndices[4] = 3;
 	presentIndices[5] = 0;
 	m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
-	m_OIT->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
+	m_OITRender->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	m_CopyColorDepth->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
 	delete[] presentIndices;
 
@@ -126,11 +126,11 @@ void Sandbox2D::OnAttach()
 
 	int count = 12;
 	m_vertex.resize(count);
-	m_OITPrepare = GraphicsPipeline::Create(
+	m_OITWrite = GraphicsPipeline::Create(
 		Material::Create(Shader::Create("Assets/Shaders/OITPrepare.glsl")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
-	m_OITPrepare->GetVertexBuffer()->SetLayout({
+	m_OITWrite->GetVertexBuffer()->SetLayout({
 		{ShaderDataType::float4,	"PositionOS"},
 		{ShaderDataType::float4,	"Color"}
 		});
@@ -148,7 +148,7 @@ void Sandbox2D::OnAttach()
 
 		offset += 4;
 	}
-	m_OITPrepare->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
+	m_OITWrite->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, 6 * count / 4));
 	delete[] quadIndices;
 
 	
@@ -181,10 +181,10 @@ void Sandbox2D::OnAttach()
 
 	m_Texture = Texture2D::Create("Assets/Textures/02.png");
 
-	m_OITPrepare->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
+	m_OITWrite->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
 	m_CopyColorDepth->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
 	m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
-	m_OIT->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
+	m_OITRender->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex)* m_PresentVertex.size());
 
 
 	
@@ -194,14 +194,14 @@ void Sandbox2D::OnAttach()
 	m_SBO = StorageBuffer::Create(sizeof(SBOData));
 
 
-	m_OITPrepare->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
+	m_OITWrite->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
-	m_OITPrepare->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
-	m_OIT->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
+	m_OITWrite->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
+	m_OITRender->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
 
 
-	m_OITPrepare->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
-	m_OIT->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
+	m_OITWrite->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
+	m_OITRender->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 
 	m_CubeMap = CubeMap::Create("Assets/Textures/right.png",
 		"Assets/Textures/left.png",
@@ -215,9 +215,9 @@ void Sandbox2D::OnAttach()
 	mat->SetCubeMap("TexCube", m_CubeMap);
 
 
-	m_ComputeTest = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/ComputeTest.glsl")));
-	m_ComputeTest->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
-	m_ComputeTest->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
+	m_OITReset = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/ComputeTest.glsl")));
+	m_OITReset->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
+	m_OITReset->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
 	/*auto exts = RenderCommand::GetExtensions();
 	for (auto e : exts)
@@ -243,7 +243,7 @@ void Sandbox2D::OnPresent()
 	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	GraphicsPresent::Render(m_PresentPipeline);
+	GraphicsPresent::Render(m_PresentPipeline, "1");
 }
 
 void Sandbox2D::OnRender()
@@ -262,7 +262,7 @@ void Sandbox2D::OnRender()
 
 	cmd0->Begin(m_DepthOnly);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	cmd0->Compute(m_ComputeTest, 1, 1, 1);
+	cmd0->Compute(m_OITReset,"1", 1, 1, 1);
 	cmd0->End();
 
 	cmd1->Begin(m_SkyBoxFB);
@@ -272,17 +272,17 @@ void Sandbox2D::OnRender()
 
 	cmd2->Begin(m_DepthOnly);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	cmd2->Render(m_OITPrepare);
+	cmd2->Render(m_OITWrite, "Write");
 	cmd2->End();
 
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorRT(0));
 	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencil());
-	m_OIT->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorRT(0));
+	m_OITRender->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorRT(0));
 
 	cmd3->Begin(m_OIT_Present);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	cmd3->Render(m_CopyColorDepth);
-	cmd3->Render(m_OIT);
+	cmd3->Render(m_CopyColorDepth, "1");
+	cmd3->Render(m_OITRender, "Render");
 	cmd3->End();
 }
 
