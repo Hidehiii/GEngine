@@ -7,7 +7,6 @@ sampler2D _SceneDepth;
 #EndProperties
 
 #BeginBlock CopyColorDepthVS
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 
 layout(location = 0) in vec4 in_Position;
@@ -28,7 +27,6 @@ void main()
 #EndBlock
 
 #BeginBlock CopyColorDepthFS
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 
 layout(location = 0) out vec4 out_Color;

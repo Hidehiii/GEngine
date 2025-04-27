@@ -8,7 +8,6 @@ SamplerCube CubeMap;
 #EndProperties
 
 #BeginBlock CubeMapVS
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 
 layout(location = 0) in vec4 in_Position;
@@ -36,7 +35,6 @@ void main()
 #EndBlock
 
 #BeginBlock CubeMapFS
-#version 450 core
 #include "Assets/Shaders/Core/Core.glsl"
 
 layout(location = 0) out vec4 out_Color;

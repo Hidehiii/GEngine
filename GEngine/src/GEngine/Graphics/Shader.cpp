@@ -16,14 +16,6 @@ namespace GEngine
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API_D3D12			= VAR_NAME(GE_GRAPHICS_API_D3D12);
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API				= VAR_NAME(GE_GRAPHICS_API);
 	
-
-	std::string		const	ShaderDataFlag::None							= VAR_NAME(#None);
-	std::string		const	ShaderDataFlag::Name							= VAR_NAME(#Name);
-	std::string		const	ShaderDataFlag::Blend							= VAR_NAME(Blend);
-	std::string		const	ShaderDataFlag::DepthWrite						= VAR_NAME(DepthWrite);
-	std::string		const	ShaderDataFlag::DepthTest						= VAR_NAME(DepthTest);
-	std::string		const	ShaderDataFlag::Properties						= VAR_NAME(#Properties);
-	std::string		const	ShaderDataFlag::EndProperties					= VAR_NAME(#EndProperties);
 					
 	std::string     const	ShaderStage::Vertex								= VAR_NAME(vertex);
 	std::string     const	ShaderStage::Fragment							= VAR_NAME(fragment);

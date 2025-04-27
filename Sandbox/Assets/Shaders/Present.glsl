@@ -8,7 +8,6 @@ sampler2D _ImguiColor;
 #EndProperties
 
 #BeginBlock VS
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) in vec4 in_Position;
 layout(location = 1) in vec2 in_UV;
@@ -28,7 +27,6 @@ void main()
 #EndBlock
 
 #BeginBlock FS
-#version 450 core
 #include"Assets/Shaders/Core/Core.glsl"
 layout(location = 0) out vec4 out_Color;
 
