@@ -16,6 +16,8 @@ namespace GEngine
 
 		bool LoadMesh(const std::string filaName);
 
+		void ClearMeshes() { m_Meshes.clear(); }
+
 		Mesh GetMesh(int index) const { return m_Meshes.at(index); }
 	private:
         void ProcessNode(FbxNode* node);

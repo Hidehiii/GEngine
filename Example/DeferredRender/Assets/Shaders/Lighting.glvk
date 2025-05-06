@@ -1,0 +1,137 @@
+#Name Lighting
+
+#Properties
+
+sampler2D _GBuffer_0;    // Albedo(x y z), Roughness(w)
+sampler2D _GBuffer_1;    // Normal(x y z), Metallic(w)
+sampler2D _GBuffer_2;    // SpecularColor(x, y, z), Specular(w)
+sampler2D _GBuffer_3;    // Position(x, y, z)
+
+#EndProperties
+
+#BeginBlock VS
+#include"Assets/Shaders/Core/Core.glsl"
+
+layout(location = 0) in vec4 in_Position;
+layout(location = 1) in vec4 in_Color;
+layout(location = 2) in vec4 in_Normal;
+layout(location = 3) in vec4 in_Tangent;
+layout(location = 4) in vec2 in_UV0;
+layout(location = 5) in vec2 in_UV1;
+layout(location = 6) in vec2 in_UV2;
+layout(location = 7) in vec2 in_UV3;
+
+struct v2f
+{
+	vec4 Position;
+	vec4 Color;
+	vec4 Normal;
+	vec4 Tangent;
+	vec2 UV0;
+	vec2 UV1;
+	vec2 UV2;
+	vec2 UV3;	
+};
+
+void main()
+{
+	gl_Position =  in_Position;
+
+	OUT.Position = gl_Position;
+	OUT.Color = in_Color;
+	OUT.Normal = in_Normal;
+	OUT.Tangent = in_Tangent;
+	OUT.UV0 = in_UV0;
+	OUT.UV1 = in_UV1;
+	OUT.UV2 = in_UV2;
+	OUT.UV3 = in_UV3;
+}
+#EndBlock
+
+#BeginBlock FS
+#include"Assets/Shaders/Core/Core.glsl"
+
+layout(location = 0) out vec4 out_Color;
+
+struct v2f
+{
+	vec4 Position;
+	vec4 Color;
+	vec4 Normal;
+	vec4 Tangent;
+	vec2 UV0;
+	vec2 UV1;
+	vec2 UV2;
+	vec2 UV3;	
+};
+
+layout(location = 0) in v2f IN;
+
+layout(binding = GE_BINDING_START + 0) uniform sampler2D _GBuffer_0;
+layout(binding = GE_BINDING_START + 1) uniform sampler2D _GBuffer_1;
+layout(binding = GE_BINDING_START + 2) uniform sampler2D _GBuffer_2;
+layout(binding = GE_BINDING_START + 3) uniform sampler2D _GBuffer_3;
+
+void main()
+{
+	vec2 uv = TransformUV(IN.UV0);
+
+	vec3 color = texture(_GBuffer_0, uv).xyz;
+	vec3 normal = texture(_GBuffer_1, uv).xyz;
+	vec3 specularColor = texture(_GBuffer_2, uv).xyz;
+	vec3 position = texture(_GBuffer_3, uv).xyz;
+
+	float roughness = texture(_GBuffer_0, uv).w;
+	float metallic = texture(_GBuffer_1, uv).w;
+	float specular = texture(_GBuffer_2, uv).w;
+
+	vec3 normalDirection = normalize(normal);
+
+	vec3 lightDirection = normalize(lerp(GE_MAIN_LIGHT_POSITION.xyz, GE_MAIN_LIGHT_POSITION.xyz - position, GE_MAIN_LIGHT_POSITION.w));
+
+	float3 lightReflectDirection = reflect( -GE_MAIN_LIGHT_DIRECTION.xyz, normalDirection);
+
+	float3 viewDirection = normalize(GE_CAMERA_POSITION.xyz - position);
+
+	float3 viewReflectDirection = normalize(reflect( -viewDirection, normalDirection ));
+
+	float3 halfDirection = normalize(viewDirection + lightDirection); 
+
+	float NdotL = max(0.0, dot( normalDirection, lightDirection ));
+
+    float NdotH =  max(0.0,dot( normalDirection, halfDirection));
+
+    float NdotV =  max(0.0,dot( normalDirection, viewDirection));
+
+    float VdotH = max(0.0,dot( viewDirection, halfDirection));
+
+    float LdotH =  max(0.0,dot(lightDirection, halfDirection));
+ 
+    float LdotV = max(0.0,dot(lightDirection, viewDirection)); 
+
+    float RdotV = max(0.0, dot( lightReflectDirection, viewDirection ));
+
+    roughness = 1 - (roughness * roughness);
+
+    roughness = roughness * roughness;
+
+    vec3 diffuseColor = color.rgb * (1 - metallic);
+
+    // Diffuse fresnel
+
+    float FresnelLight = SchlickFresnel(NdotL);
+
+    float FresnelView = SchlickFresnel(NdotV);
+
+    float FresnelDiffuse90 = 0.5 + 2.0 * LdotH * LdotH * roughness;
+
+   	diffuseColor *= Mix(1, FresnelDiffuse90, FresnelLight) * Mix(1, FresnelDiffuse90, FresnelView);
+   	
+
+    vec3 specColor = lerp(specularColor.rgb, color.rgb, metallic * 0.5);
+
+    vec3 SpecularDistribution = specColor;
+
+    out_Color = vec4(vec3(1, 1, 1) * SpecularDistribution.xyz, 1);
+}
+#EndBlock

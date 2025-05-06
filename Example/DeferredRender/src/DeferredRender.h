@@ -1,6 +1,5 @@
 #pragma once
 #include <GEngine.h>
-#include "DeferredRenderPipeline.h"
 
 namespace GEngine
 {
@@ -18,9 +17,14 @@ namespace GEngine
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event & e) override;
 	private:
-		Ref<DeferredRenderPipeline>	m_DeferredPipeline;
-
 		Editor::EditorCamera m_EditorCamera;
+
+		Ref<FrameBuffer> m_GBuffer;
+		Ref<RenderPass>	 m_BuildGBufferPass;
+
+		Ref<RenderPass> m_LightingPass;
+
+		ModelImporter m_ModelImporter;
 	};
 }
 
