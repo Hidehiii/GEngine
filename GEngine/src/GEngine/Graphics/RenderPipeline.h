@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/FrameBuffer.h"
+#include "GEngine/Components/Camera/Camera.h"
 
 namespace GEngine
 {
@@ -11,14 +12,10 @@ namespace GEngine
 		virtual ~RenderPipeline() = default;
 
 		// 自定义渲染流程
-		virtual void Render() = 0;
+		virtual void Render(std::vector<Camera>& cameras) = 0;
 
 		// 自定义最终输出
-		virtual void Present() = 0;
-
-	protected:
-		// frame buffer 会根据每个屏幕大小确定
-		std::vector<Ref<FrameBuffer>>	m_FrameBuffers;
+		virtual void Present(std::vector<Camera>& cameras) = 0;
 	};
 }
 
