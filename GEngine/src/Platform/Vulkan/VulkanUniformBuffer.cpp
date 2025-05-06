@@ -14,7 +14,6 @@ namespace GEngine
 	{
 		m_Binding = binding;
 
-
 		m_DescriptorSetLayoutBinding.binding			= binding;
 		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
@@ -47,7 +46,6 @@ namespace GEngine
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		memcpy(((std::byte*)m_MapData) + offset, data, size);
-		//memcpy(m_MapData, data, size);
 
 		m_BufferInfo.range = size;
 	}

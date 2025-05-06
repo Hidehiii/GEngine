@@ -23,7 +23,7 @@ namespace GEngine
 		
 	private:
 		Ref<OpenGLShader>									m_Shader;
-		Ref<OpenGLUniformBuffer>							m_UniformBuffer;
+		Ref<OpenGLUniformBuffer>							m_UniformBuffer = nullptr;
 	};
 }
 

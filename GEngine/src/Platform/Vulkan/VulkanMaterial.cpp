@@ -25,10 +25,9 @@ namespace GEngine
 			m_UniformsBuffer.ZeroInitialize();
 			// Create uniform buffer
 			// 0 is reserved for custom uniform buffer
-			m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
-			if (!m_UniformBuffer)
+			if (size > 0)
 			{
-				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
+				m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
 			}
 			// Read blend type and factor
 			m_BlendModeColor				= m_Shader->GetBlendColor();
@@ -122,7 +121,11 @@ namespace GEngine
 			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer)->GetDescriptorSetLayoutBinding());
 		}
 		// 材质ubo
-		layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
+		if (m_UniformBuffer)
+		{
+			layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
+		}
+		
 		// 贴图绑定
 		for (auto& texture2D : m_Texture2D)
 		{

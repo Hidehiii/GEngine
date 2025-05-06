@@ -17,7 +17,7 @@ namespace GEngine
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
 	private:
-		VkBuffer					m_UniformBuffer;
+		VkBuffer					m_UniformBuffer = nullptr;
 		VkDeviceMemory				m_UniformBufferMemory;
 		void*						m_MapData;
 		VkDescriptorBufferInfo		m_BufferInfo{};
@@ -36,7 +36,7 @@ namespace GEngine
 		VkDescriptorSetLayoutBinding GetDescriptorSetLayoutBinding() { return m_DescriptorSetLayoutBinding; }
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
 	private:
-		VkBuffer					m_UniformBuffer;
+		VkBuffer					m_UniformBuffer = nullptr;
 		VkDeviceMemory				m_UniformBufferMemory;
 		void* m_MapData;
 		VkDescriptorBufferInfo		m_BufferInfo{};

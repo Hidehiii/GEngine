@@ -66,7 +66,7 @@ namespace GEngine
 				shaderMainFuncName.c_str()));
 		}
 		
-		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute, pass), "there are no shader stage in compute pipeline pass{}", pass);
+		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetShaderModule(ShaderStage::Compute, pass), "there are no shader stage in compute pipeline pass {}", pass);
 
 		VkPipelineLayoutCreateInfo			pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

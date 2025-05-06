@@ -45,8 +45,8 @@ void main()
 	vec2 newUV = TransformUV(IN.UV);
 	vec4 imgui = texture(_ImguiColor, newUV);
 	float rate = step(imgui.r, 0.0001f);
-	o_color = texture(_SceneColor, newUV) * (rate) + imgui * (1 - rate);
-	o_color.rgb = Vec3ToSrgb(o_color.rgb);
+	out_Color = texture(_SceneColor, newUV) * (rate) + imgui * (1 - rate);
+	out_Color.rgb = Vec3ToSrgb(out_Color.rgb);
 }
 #EndBlock
 

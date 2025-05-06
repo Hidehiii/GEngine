@@ -20,10 +20,9 @@ namespace GEngine
 			m_UniformsBuffer.ZeroInitialize();
 			// Create uniform buffer
 			// 0 is reserved for custom uniform buffer
-			m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
-			if(!m_UniformBuffer)
+			if (size > 0)
 			{
-				GE_CORE_CRITICAL("Failed to create uniform buffer for material {0}!", name);
+				m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
 			}
 			// Read blend type and factor
 			m_BlendModeColor				= m_Shader->GetBlendColor();
@@ -61,7 +60,7 @@ namespace GEngine
 	{
 		m_Shader->Use(pass);
 
-		if (m_UniformsBuffer.Size > 0)
+		if (m_UniformBuffer)
 			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
 
 		for (auto& texture2D : m_Texture2D)

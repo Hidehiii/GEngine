@@ -42,29 +42,29 @@ void Sandbox2D::OnAttach()
 
 	m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
-	// Read all shader files
-	{
-		for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
-		{
-			const auto& path = shaderFile.path();
-			std::string filenameString = path.filename().string();
-			if (path.extension() == ".glsl" || path.extension() == ".GLSL")
-			{
-				GE_TRACE("Shader: {0} loading", path);
-				Shader::Create(path.string());
-			}
-		}
-		for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
-		{
-			const auto& path = shaderFile.path();
-			std::string filenameString = path.filename().string();
-			if (path.extension() == ".glsl" || path.extension() == ".GLSL")
-			{
-				GE_TRACE("Shader: {0} loading", path);
-				Shader::Create(path.string());
-			}
-		}
-	}
+	//// Read all shader files
+	//{
+	//	for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
+	//	{
+	//		const auto& path = shaderFile.path();
+	//		std::string filenameString = path.filename().string();
+	//		if (path.extension() == ".glsl" || path.extension() == ".GLSL")
+	//		{
+	//			GE_TRACE("Shader: {0} loading", path);
+	//			Shader::Create(path.string());
+	//		}
+	//	}
+	//	for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
+	//	{
+	//		const auto& path = shaderFile.path();
+	//		std::string filenameString = path.filename().string();
+	//		if (path.extension() == ".glsl" || path.extension() == ".GLSL")
+	//		{
+	//			GE_TRACE("Shader: {0} loading", path);
+	//			Shader::Create(path.string());
+	//		}
+	//	}
+	//}
 
 	m_Scene = CreateRef<Scene>();
 	m_SkyBox = m_Scene->CreateGameObject("SkyBox");
@@ -127,7 +127,7 @@ void Sandbox2D::OnAttach()
 	int count = 12;
 	m_vertex.resize(count);
 	m_OITWrite = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/OITPrepare.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/OITWrite.glsl")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
 	m_OITWrite->GetVertexBuffer()->SetLayout({
@@ -196,8 +196,8 @@ void Sandbox2D::OnAttach()
 
 	m_OITWrite->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 
-	m_OITWrite->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
-	m_OITRender->GetMaterial()->SetStorageImage2D("headIndexImage", m_StorageImage);
+	m_OITWrite->GetMaterial()->SetStorageImage2D("HeadIndexImage", m_StorageImage);
+	m_OITRender->GetMaterial()->SetStorageImage2D("HeadIndexImage", m_StorageImage);
 
 
 	m_OITWrite->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
@@ -212,12 +212,13 @@ void Sandbox2D::OnAttach()
 
 	m_CubeMap->SetData(m_Texture, m_CubeMap->GetWidth(), m_CubeMap->GetHeight(), CubeMap::CubeMapFace::Front);
 	
-	mat->SetCubeMap("TexCube", m_CubeMap);
+	mat->SetCubeMap("CubeMap", m_CubeMap);
 
 
-	m_OITReset = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/ComputeTest.glsl")));
-	m_OITReset->GetMaterial()->SetStorageImage2D("computeTestImage", m_ComputeImage2D);
+	m_OITReset = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/OITWrite.glsl")));
 	m_OITReset->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
+	m_OITReset->GetMaterial()->SetStorageImage2D("HeadIndexImage", m_StorageImage);
+	m_OITReset->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 
 	/*auto exts = RenderCommand::GetExtensions();
 	for (auto e : exts)
@@ -239,8 +240,8 @@ void Sandbox2D::OnAttach()
 void Sandbox2D::OnPresent()
 {
 	// 直接呈现
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_FRAME_BUFFER", m_OIT_Present->GetColorRT(0));
-	m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
+	m_PresentPipeline->GetMaterial()->SetTexture2D("_SceneColor", m_OIT_Present->GetColorRT(0));
+	m_PresentPipeline->GetMaterial()->SetTexture2D("_ImguiColor", Application::Get().GetImGuiLayer()->GetImGuiImage());
 
 	Graphics::UpdateCameraUniform(m_EditorCamera);
 	GraphicsPresent::Render(m_PresentPipeline, "1");
@@ -262,7 +263,7 @@ void Sandbox2D::OnRender()
 
 	cmd0->Begin(m_DepthOnly);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
-	cmd0->Compute(m_OITReset,"1", 1, 1, 1);
+	cmd0->Compute(m_OITReset,"Reset", 1, 1, 1);
 	cmd0->End();
 
 	cmd1->Begin(m_SkyBoxFB);
@@ -275,14 +276,14 @@ void Sandbox2D::OnRender()
 	cmd2->Render(m_OITWrite, "Write");
 	cmd2->End();
 
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_COLOR", m_SkyBoxFB->GetColorRT(0));
-	m_CopyColorDepth->GetMaterial()->SetTexture2D("GE_PREVIOUS_DEPTH", m_SkyBoxFB->GetDepthStencil());
-	m_OITRender->GetMaterial()->SetTexture2D("OpaqueColor", m_SkyBoxFB->GetColorRT(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("_SceneColor", m_SkyBoxFB->GetColorRT(0));
+	m_CopyColorDepth->GetMaterial()->SetTexture2D("_SceneDepth", m_SkyBoxFB->GetDepthStencil());
+	m_OITRender->GetMaterial()->SetTexture2D("_SceneColor", m_SkyBoxFB->GetColorRT(0));
 
 	cmd3->Begin(m_OIT_Present);
 	Graphics::UpdateCameraUniform(m_EditorCamera);
 	cmd3->Render(m_CopyColorDepth, "1");
-	cmd3->Render(m_OITRender, "Render");
+	cmd3->Render(m_OITRender, "1");
 	cmd3->End();
 }
 
@@ -320,12 +321,6 @@ void Sandbox2D::OnUpdate()
 	{
 		m_SkyBoxFB = FrameBuffer::Create(m_SkyBoxFB, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
-
-	m_PresentPipeline->GetMaterial()->SetFloat("f", 1.0f);
-	m_PresentPipeline->GetMaterial()->SetVector("v", Vector4(1.0f, 2.0f, 3.0f, 0.0f));
-
-	GE_INFO(m_PresentPipeline->GetMaterial()->GetFloat("f"));
-	GE_INFO(m_PresentPipeline->GetMaterial()->GetVector("v"));
 }
 
 void Sandbox2D::OnImGuiRender()

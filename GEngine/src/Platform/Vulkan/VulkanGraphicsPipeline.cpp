@@ -175,7 +175,7 @@ namespace GEngine
 				shaderMainFuncName.c_str()));
 		}
 
-		GE_CORE_ASSERT(ShaderStages.size() > 0, " there are no shader stage in graphics pipeline pass{}", pass);
+		GE_CORE_ASSERT(ShaderStages.size() > 0, " there are no shader stage in graphics pipeline pass {}", pass);
 		
 
 		VkPipelineDynamicStateCreateInfo			dynamicStateCreateInfo{};

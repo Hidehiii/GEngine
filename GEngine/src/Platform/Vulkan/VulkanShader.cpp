@@ -150,6 +150,8 @@ namespace GEngine
 	}
 	void VulkanShader::ProcessShaderSource(const std::string& source)
 	{
+		m_Name = Utils::ProcessShaderName(source);
+		Utils::ProcessShaderProperties(source, m_UniformCache, m_Texture2DCache, m_CubeMapCache, m_StorageImage2DCache, m_StorageBufferCache, 0, s_SlotOffset, 0);
 		// multi pass
 		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
 		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses, m_RenderStates);

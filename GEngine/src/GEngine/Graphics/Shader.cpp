@@ -17,15 +17,15 @@ namespace GEngine
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API				= VAR_NAME(GE_GRAPHICS_API);
 	
 					
-	std::string     const	ShaderStage::Vertex								= VAR_NAME(vertex);
-	std::string     const	ShaderStage::Fragment							= VAR_NAME(fragment);
-	std::string     const	ShaderStage::Pixel								= VAR_NAME(pixel);
-	std::string		const	ShaderStage::Compute							= VAR_NAME(compute);
-	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(tessellationcontrol);
-	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(tessellationevaluation);
-	std::string		const	ShaderStage::Geometry							= VAR_NAME(geometry);
-	std::string		const	ShaderStage::Task								= VAR_NAME(task);
-	std::string		const	ShaderStage::Mesh								= VAR_NAME(mesh);
+	std::string     const	ShaderStage::Vertex								= VAR_NAME(Vertex);
+	std::string     const	ShaderStage::Fragment							= VAR_NAME(Fragment);
+	std::string     const	ShaderStage::Pixel								= VAR_NAME(Pixel);
+	std::string		const	ShaderStage::Compute							= VAR_NAME(Compute);
+	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(TessellationControl);
+	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(TessellationEvaluation);
+	std::string		const	ShaderStage::Geometry							= VAR_NAME(Geometry);
+	std::string		const	ShaderStage::Task								= VAR_NAME(Task);
+	std::string		const	ShaderStage::Mesh								= VAR_NAME(Mesh);
 
 	namespace Utils
 	{
@@ -470,6 +470,7 @@ namespace GEngine
 				size_t begin			= pos + strlen(token) + 1;
 				std::string passName	= source.substr(begin, elo - begin);
 				passName				= RemoveCharFromString(passName, ' ');
+				GE_CORE_ASSERT(passName.find(' ', 0) == std::string::npos, "pass name should have no space");
 				begin					= source.find_first_not_of("\r\n", elo);
 				pos						= source.find(endToken, begin);
 				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
@@ -540,7 +541,7 @@ namespace GEngine
 			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 			size_t begin				= pos + tokenLength + 1;
 			blockName					= source.substr(begin, eol - begin);
-			RemoveCharFromString(blockName, ' ');
+			blockName					= RemoveCharFromString(blockName, ' ');
 			return true;
 		}
 		std::string ReadFile(const std::string& path)
