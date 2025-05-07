@@ -108,11 +108,16 @@ project "GEngine"
 		postbuildcommands
 		{
 			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
-			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
-			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
+
+			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
+			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
+
+			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
+			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
+			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
 		}
 
 	filter "configurations:Debug"

@@ -41,6 +41,13 @@ namespace GEngine
 		Vector4	GE_SCREEN_SIZE;
 	};
 
+	struct MainLightUniformData
+	{
+		Vector4 GE_MAIN_LIGHT_POSITION;
+		Vector4 GE_MAIN_LIGHT_DIRECTION;
+		Vector4 GE_MAIN_LIGHT_COLOR;
+	};
+
 	struct UniformData
 	{
 		CameraUniformData			CameraData;
@@ -51,6 +58,9 @@ namespace GEngine
 
 		ScreenUniformData			ScreenData;
 		Ref<UniformBufferDynamic>	ScreenBuffer;
+
+		MainLightUniformData		MainLightData;
+		Ref<UniformBufferDynamic>	MainLightBuffer;
 	};
 
 	static UniformData	s_UniformData;
@@ -83,7 +93,7 @@ namespace GEngine
     {
 		s_UniformData.CameraBuffer	= UniformBufferDynamic::Create(sizeof(CameraUniformData), s_DynamicUniformCount, 1, true);
 		s_UniformData.TimeBuffer	= UniformBufferDynamic::Create(sizeof(TimeUniformData), s_DynamicUniformCount, 2, true);
-
+		s_UniformData.MainLightBuffer = UniformBufferDynamic::Create(sizeof(MainLightUniformData), s_DynamicUniformCount, 3, true);
 		s_UniformData.ScreenBuffer	= UniformBufferDynamic::Create(sizeof(ScreenUniformData), s_DynamicUniformCount, 4, true);
     }
 	void Graphics::FrameMove()
@@ -199,6 +209,14 @@ namespace GEngine
 		s_UniformData.TimeData.GE_TIME = time;
 
 		s_UniformData.TimeBuffer->SetData(&s_UniformData.TimeData, sizeof(TimeUniformData));
+	}
+	void Graphics::UpdateMainLightUniform(Vector4& pos, Vector4& dir, Vector4& color)
+	{
+		s_UniformData.MainLightData.GE_MAIN_LIGHT_POSITION = pos;
+		s_UniformData.MainLightData.GE_MAIN_LIGHT_DIRECTION = dir;
+		s_UniformData.MainLightData.GE_MAIN_LIGHT_COLOR = color;
+
+		s_UniformData.MainLightBuffer->SetData(&s_UniformData.MainLightData, sizeof(MainLightUniformData));
 	}
 	void Graphics::UpdateScreenUniform(Vector4& size)
 	{

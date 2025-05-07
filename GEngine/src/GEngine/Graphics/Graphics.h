@@ -51,6 +51,7 @@ namespace GEngine
 		static void UpdateCameraUniform(Camera& camera);
 		static void UpdateCameraUniform(const Editor::EditorCamera& camera);
 		static void UpdateTimeUniform(Vector4& time);
+		static void UpdateMainLightUniform(Vector4& pos, Vector4& dir, Vector4& color);
 		static void UpdateScreenUniform(Vector4& size);
 	private:
 		static void Setup(const GraphicsSpecification& spec);

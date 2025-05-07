@@ -97,7 +97,7 @@ namespace GEngine
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount	= 1;
 		submitInfo.pCommandBuffers		= &commandBuffer;
-		submitInfo.waitSemaphoreCount	= 1;
+		submitInfo.waitSemaphoreCount	= submitWaitSemaphores.size();
 		submitInfo.pWaitSemaphores		= submitWaitSemaphores.data();
 		submitInfo.pWaitDstStageMask	= waitStages.data();
 		submitInfo.signalSemaphoreCount = 1;

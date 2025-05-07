@@ -2,13 +2,10 @@
 
 #Properties
 
-float UseNormalMap;
-
 float Specular;
-vec3 SpecularColor;
+vector SpecularColor;
 
 sampler2D _Color;
-sampler2D _Normal;
 sampler2D _Roughness;
 sampler2D _Metallic;
 
@@ -79,19 +76,18 @@ struct v2f
 layout(location = 0) in v2f IN;
 
 layout(binding = GE_BINDING_START + 0) uniform sampler2D _Color;
-layout(binding = GE_BINDING_START + 1) uniform sampler2D _Normal;
-layout(binding = GE_BINDING_START + 2) uniform sampler2D _Roughness;
-layout(binding = GE_BINDING_START + 3) uniform sampler2D _Metallic;
+layout(binding = GE_BINDING_START + 1) uniform sampler2D _Roughness;
+layout(binding = GE_BINDING_START + 2) uniform sampler2D _Metallic;
 
 void main()
 {
 	vec4 albedo = texture(_Color, IN.UV0);
-	vec4 normal = UseNormalMap == 1 ? texture(_Normal, IN.UV0) : IN.Normal;
+	vec4 normal = IN.Normal;
 
-	float roughness = texture(_Roughness, IN.UV0);
-	float metallic = texture(_Metallic, IN.UV0);
+	float roughness = texture(_Roughness, IN.UV0).x;
+	float metallic = texture(_Metallic, IN.UV0).x;
 
-	vec3 specularColor = SpecularColor;
+	vec3 specularColor = SpecularColor.xyz;
 	float specular = Specular;
 
 	out_GBuffer_0.xyz = albedo.xyz;

@@ -53,25 +53,29 @@ float Det(mat2 matrix) {
     return matrix[0].x * matrix[1].y - matrix[0].y * matrix[1].x;
 }
 
+float sqr(float x){
+	return x*x; 
+}
+
 mat3 Inverse(mat3 matrix) {
     vec3 row0 = matrix[0];
     vec3 row1 = matrix[1];
     vec3 row2 = matrix[2];
 
     vec3 minors0 = vec3(
-        det(mat2(row1.y, row1.z, row2.y, row2.z)),
-        det(mat2(row1.z, row1.x, row2.z, row2.x)),
-        det(mat2(row1.x, row1.y, row2.x, row2.y))
+        Det(mat2(row1.y, row1.z, row2.y, row2.z)),
+        Det(mat2(row1.z, row1.x, row2.z, row2.x)),
+        Det(mat2(row1.x, row1.y, row2.x, row2.y))
     );
     vec3 minors1 = vec3(
-        det(mat2(row2.y, row2.z, row0.y, row0.z)),
-        det(mat2(row2.z, row2.x, row0.z, row0.x)),
-        det(mat2(row2.x, row2.y, row0.x, row0.y))
+        Det(mat2(row2.y, row2.z, row0.y, row0.z)),
+        Det(mat2(row2.z, row2.x, row0.z, row0.x)),
+        Det(mat2(row2.x, row2.y, row0.x, row0.y))
     );
     vec3 minors2 = vec3(
-        det(mat2(row0.y, row0.z, row1.y, row1.z)),
-        det(mat2(row0.z, row0.x, row1.z, row1.x)),
-        det(mat2(row0.x, row0.y, row1.x, row1.y))
+        Det(mat2(row0.y, row0.z, row1.y, row1.z)),
+        Det(mat2(row0.z, row0.x, row1.z, row1.x)),
+        Det(mat2(row0.x, row0.y, row1.x, row1.y))
     );
 
     mat3 adj = transpose(mat3(minors0, minors1, minors2));
@@ -119,19 +123,19 @@ float TrowbridgeReitzNormalDistribution(float NdotH, float roughness){
     return roughnessSqr / (3.1415926535 * Distribution*Distribution);
 }
 
-float TrowbridgeReitzAnisotropicNormalDistribution(float anisotropic, float NdotH, float HdotX, float HdotY){
+float TrowbridgeReitzAnisotropicNormalDistribution(float anisotropic, float NdotH, float HdotX, float HdotY, float glossiness){
 
-    float aspect = sqrt(1.0h-anisotropic * 0.9h);
-    float X = max(.001, sqr(1.0-_Glossiness)/aspect) * 5;
-    float Y = max(.001, sqr(1.0-_Glossiness)*aspect) * 5;
+    float aspect = sqrt(1.0 -anisotropic * 0.9);
+    float X = max(.001, sqr(1.0-glossiness)/aspect) * 5;
+    float Y = max(.001, sqr(1.0-glossiness)*aspect) * 5;
     
-    return 1.0 / (3.1415926535 * X*Y * sqr(sqr(HdotX/X) + sqr(HdotY/Y) + NdotH*NdotH));
+    return 1.0 / (3.1415926535 * X*Y * sqr(sqrt(HdotX/X) + sqr(HdotY/Y) + NdotH*NdotH));
 }
 
-float WardAnisotropicNormalDistribution(float anisotropic, float NdotL, float NdotV, float NdotH, float HdotX, float HdotY){
-    float aspect = sqrt(1.0h-anisotropic * 0.9h);
-    float X = max(.001, sqr(1.0-_Glossiness)/aspect) * 5;
- 	float Y = max(.001, sqr(1.0-_Glossiness)*aspect) * 5;
+float WardAnisotropicNormalDistribution(float anisotropic, float NdotL, float NdotV, float NdotH, float HdotX, float HdotY, float glossiness){
+    float aspect = sqrt(1.0 -anisotropic * 0.9);
+    float X = max(.001, sqr(1.0-glossiness)/aspect) * 5;
+ 	float Y = max(.001, sqr(1.0-glossiness)*aspect) * 5;
     float exponent = -(sqr(HdotX/X) + sqr(HdotY/Y)) / sqr(NdotH);
     float Distribution = 1.0 / (4.0 * 3.14159265 * X * Y * sqrt(NdotL * NdotV));
     Distribution *= exp(exponent);
@@ -153,8 +157,8 @@ float AshikhminPremozeGeometricShadowing (float NdotL, float NdotV){
 	return  (Gs);
 }
 
-float DuerGeometricShadowing (float3 lightDirection,float3 viewDirection, float3 normalDirection,float NdotL, float NdotV){
-    float3 LpV = lightDirection + viewDirection;
+float DuerGeometricShadowing (vec3 lightDirection,vec3 viewDirection, vec3 normalDirection,float NdotL, float NdotV){
+    vec3 LpV = lightDirection + viewDirection;
     float Gs = dot(LpV,LpV) * pow(dot(LpV,normalDirection),-4);
     return  (Gs);
 }
@@ -228,7 +232,7 @@ float SchlickFresnel(float i){
     return x2*x2*x;
 }
 
-float3 SchlickFresnel(float3 SpecularColor,float LdotH){
+vec3 SchlickFresnel(vec3 SpecularColor,float LdotH){
     return SpecularColor + (1 - SpecularColor)* SchlickFresnel(LdotH);
 }
 
@@ -240,12 +244,17 @@ float SchlickIORFresnel(float ior ,float LdotH){
 float Mix(float i, float j, float x) {
 	 return  j * x + i * (1.0 - x);
 } 
-float2 Mix(float2 i, float2 j, float x){
-	 return  j * x + i * (1.0h - x);
+vec2 Mix(vec2 i, vec2 j, float x){
+	 return  j * x + i * (1.0 - x);
 }   
-float3 Mix(float3 i, float3 j, float x){
-	 return  j * x + i * (1.0h - x);
+vec3 Mix(vec3 i, vec3 j, float x){
+	 return  j * x + i * (1.0 - x);
 }   
-float Mix(float4 i, float4 j, float x){
-	 return  j * x + i * (1.0h - x);
+vec4 Mix(vec4 i, vec4 j, float x){
+	 return  j * x + i * (1.0 - x);
 } 
+
+float saturate(float i)
+{
+	return clamp(i, 0.0, 1.0);
+}
