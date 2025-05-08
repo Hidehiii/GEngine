@@ -73,7 +73,7 @@ namespace GEngine
 	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const std::string& pass)
 	{
 		if (m_UniformsBuffer.Size > 0)
-			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
+			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(), m_UniformsBuffer.GetSize());
 
 		for (auto& texture2D : m_Texture2D)
 		{

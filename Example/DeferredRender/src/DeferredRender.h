@@ -44,6 +44,9 @@ namespace GEngine
 		Ref<Texture2D> m_RoughnessTexture;
 		Ref<Texture2D> m_MetallicTexture;
 
+		Vector4	m_LightPosition = Vector4(3, 2, 4, 0);
+		Vector4 m_LightColor = Vector4(0, 0, -1, 0);
+		Vector4 m_LightDirection= Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		ModelImporter m_ModelImporter;
 	};

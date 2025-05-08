@@ -46,6 +46,7 @@ void main()
 	vec4 imgui = texture(_ImguiColor, newUV);
 	float rate = step(imgui.r, 0.0001f);
 	out_Color = texture(_SceneColor, newUV) * (rate) + imgui * (1 - rate);
+
 	out_Color.rgb = Vec3ToSrgb(out_Color.rgb);
 }
 #EndBlock

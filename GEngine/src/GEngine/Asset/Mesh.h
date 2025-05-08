@@ -16,7 +16,7 @@ namespace GEngine
 		Vector4 m_Position	= { 0.0f, 0.0f, 0.0f, 1.0f };
 		Vector4 m_Color		= { 1.0f, 1.0f, 1.0f, 1.0f };
 		Vector4 m_Normal	= { 0.0f, 0.0f, -1.0f, 0.0f };
-		Vector3 m_Tangent	= { 1.0f, 0.0f, 0.0f };
+		Vector4 m_Tangent	= { 1.0f, 0.0f, 0.0f, 0.0f };
 		Vector2 m_UV0		= { 0.0f, 0.0f };
 		Vector2 m_UV1		= { 0.0f, 0.0f };
 		Vector2 m_UV2		= { 0.0f, 0.0f };

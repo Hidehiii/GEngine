@@ -1,8 +1,6 @@
 #Name BuildGBuffer
 
 #Properties
-
-float Specular;
 vector SpecularColor;
 
 sampler2D _Color;
@@ -43,7 +41,7 @@ void main()
 
 	OUT.Position = gl_Position;
 	OUT.Color = in_Color;
-	OUT.Normal = GE_MATRIX_P * GE_MATRIX_V * vec4(Transpose(Inverse(mat3(GE_MATRIX_M))) * in_Normal.xyz, 0.0f);
+	OUT.Normal = vec4(Transpose(Inverse(mat3(GE_MATRIX_M))) * in_Normal.xyz, 0.0f);
 	OUT.Tangent = in_Tangent;
 	OUT.UV0 = in_UV0;
 	OUT.UV1 = in_UV1;
@@ -84,11 +82,11 @@ void main()
 	vec4 albedo = texture(_Color, IN.UV0);
 	vec4 normal = IN.Normal;
 
-	float roughness = texture(_Roughness, IN.UV0).x;
+	float roughness = texture(_Roughness, IN.UV0).y;
 	float metallic = texture(_Metallic, IN.UV0).x;
 
 	vec3 specularColor = SpecularColor.xyz;
-	float specular = Specular;
+	float specular = SpecularColor.w;
 
 	out_GBuffer_0.xyz = albedo.xyz;
 	out_GBuffer_0.w = roughness;
@@ -100,7 +98,7 @@ void main()
 	out_GBuffer_2.w = specular;
 
 	out_GBuffer_3.xyz = IN.Position.xyz;
-	out_GBuffer_3.w = 0.0f;
+	out_GBuffer_3.w = 1.0f;
 }
 #EndBlock
 

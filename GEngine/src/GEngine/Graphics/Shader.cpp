@@ -604,15 +604,14 @@ namespace GEngine
 					else
 						++it;
 				}
-
-
-				// split properties by :
-				for (auto& prop : props)
+				for(int i = 0;i < props.size();i++)
 				{
+					auto& prop = props.at(i);
+
 					std::vector<std::string> propData = Utils::SplitString(prop, ' ');
-					for (auto& prop : propData)
+					for (auto& propp : propData)
 					{
-						prop = Utils::RemoveCharFromString(prop, ' ');
+						propp = Utils::RemoveCharFromString(propp, ' ');
 					}
 					for (auto it = propData.begin(); it != propData.end();)
 					{

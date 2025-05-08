@@ -61,7 +61,7 @@ namespace GEngine
 		m_Shader->Use(pass);
 
 		if (m_UniformBuffer)
-			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(m_UniformsBuffer.GetSize()), m_UniformsBuffer.GetSize());
+			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(), m_UniformsBuffer.GetSize());
 
 		for (auto& texture2D : m_Texture2D)
 		{

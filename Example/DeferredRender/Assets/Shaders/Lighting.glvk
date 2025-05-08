@@ -53,6 +53,7 @@ void main()
 	vec2 uv = TransformUV(IN.UV);
 
 	vec3 color = texture(_GBuffer_0, uv).xyz;
+
 	vec3 normal = texture(_GBuffer_1, uv).xyz;
 	vec3 specularColor = texture(_GBuffer_2, uv).xyz;
 	vec3 position = texture(_GBuffer_3, uv).xyz;
@@ -60,6 +61,8 @@ void main()
 	float roughness = texture(_GBuffer_0, uv).w;
 	float metallic = texture(_GBuffer_1, uv).w;
 	float specular = texture(_GBuffer_2, uv).w;
+
+	metallic = 1 - metallic;
 
 	vec3 normalDirection = normalize(normal);
 
@@ -89,8 +92,6 @@ void main()
 
     roughness = 1 - (roughness * roughness);
 
-    roughness = roughness * roughness;
-
     vec3 diffuseColor = color.rgb * (1 - metallic);
 
     // Diffuse fresnel
@@ -102,7 +103,7 @@ void main()
     float FresnelDiffuse90 = 0.5 + 2.0 * LdotH * LdotH * roughness;
 
    	diffuseColor *= Mix(1, FresnelDiffuse90, FresnelLight) * Mix(1, FresnelDiffuse90, FresnelView);
-   	
+   
 
     vec3 specColor = mix(specularColor.rgb, color.rgb, metallic * 0.5);
 
@@ -124,6 +125,8 @@ void main()
     vec3 lightingModel = ((diffuseColor) + specularity);
 
     lightingModel *= NdotL;
+
+    lightingModel = saturate(lightingModel);
 
     vec4 finalDiffuse = vec4(lightingModel,1);
 

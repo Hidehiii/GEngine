@@ -258,3 +258,8 @@ float saturate(float i)
 {
 	return clamp(i, 0.0, 1.0);
 }
+
+vec3 saturate(vec3 i)
+{
+	return clamp(i, vec3(0.0), vec3(1.0));
+}

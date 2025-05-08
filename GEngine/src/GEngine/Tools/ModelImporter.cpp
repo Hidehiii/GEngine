@@ -65,10 +65,10 @@ namespace GEngine
             ProcessNode(node->GetChild(i));
         }
 
-        for (int i = 0; i < m_Meshes.size(); i++)
+        /*for (int i = 0; i < m_Meshes.size(); i++)
         {
             MeshLibrary::AddMesh_Force(m_Meshes[i]);
-        }
+        }*/
     }
     void ModelImporter::ProcessMesh(FbxNode* node)
     {

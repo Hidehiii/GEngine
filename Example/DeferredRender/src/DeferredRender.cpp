@@ -203,7 +203,7 @@ namespace GEngine
 
 		lightingCommandBuffer->Begin(m_LightingBuffer);
 		Graphics::UpdateCameraUniform(m_EditorCamera);
-		Graphics::UpdateMainLightUniform(Vector4(0, 0, 0, 0), Vector4(0, 0, -1, 0), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+		Graphics::UpdateMainLightUniform(m_LightPosition, m_LightDirection,  m_LightColor);
 		lightingCommandBuffer->Render(m_LightingPipeline, "Lighting");
 		lightingCommandBuffer->End();
     }
@@ -216,40 +216,28 @@ namespace GEngine
 		ImGui::Begin("Deferred Render");
 		ImGui::Text("Deferred Render Example");
 
-		ImGui::Text("Cube Specular");
-		float cubeSpecular = m_CubePipeline->GetMaterial()->GetFloat("Specular");
-		ImGui::SliderFloat("Specular", &cubeSpecular, 0.0f, 1.0f);
-		m_CubePipeline->GetMaterial()->SetFloat("Specular", cubeSpecular);
-
-		ImGui::Text("Cube Specular Color");
 		Vector4 cubeSpecularColor = m_CubePipeline->GetMaterial()->GetVector("SpecularColor");
 		ImGui::ColorEdit4("SpecularColor", Math::ValuePtr(cubeSpecularColor));
 		m_CubePipeline->GetMaterial()->SetVector("SpecularColor", cubeSpecularColor);
 
-		ImGui::Text("Cylinder Specular");
-		float cylinderSpecular = m_CylinderPipeline->GetMaterial()->GetFloat("Specular");
-		ImGui::SliderFloat("Specular", &cylinderSpecular, 0.0f, 1.0f);
-		m_CylinderPipeline->GetMaterial()->SetFloat("Specular", cylinderSpecular);
 
-		ImGui::Text("Cylinder Specular Color");
-		Vector4 cylinderSpecularColor = m_CylinderPipeline->GetMaterial()->GetVector("SpecularColor");
-		ImGui::ColorEdit4("SpecularColor", Math::ValuePtr(cylinderSpecularColor));
-		m_CylinderPipeline->GetMaterial()->SetVector("SpecularColor", cylinderSpecularColor);
+		m_CylinderPipeline->GetMaterial()->SetVector("SpecularColor", cubeSpecularColor);
+		m_SpherePipeline->GetMaterial()->SetVector("SpecularColor", cubeSpecularColor);
+		m_MonkeyPipeline->GetMaterial()->SetVector("SpecularColor", cubeSpecularColor);
 
-		ImGui::Text("Sphere Specular");
-		float sphereSpecular = m_SpherePipeline->GetMaterial()->GetFloat("Specular");
-		ImGui::SliderFloat("Specular", &sphereSpecular, 0.0f, 1.0f);
-		m_SpherePipeline->GetMaterial()->SetFloat("Specular", sphereSpecular);
+		ImGui::DragFloat4("LightPosition", Math::ValuePtr(m_LightPosition), 0.1f);
+		ImGui::DragFloat4("LightDirection", Math::ValuePtr(m_LightDirection), 0.1f);
+		ImGui::DragFloat4("LightColor", Math::ValuePtr(m_LightColor), 0.1f);
 
-		ImGui::Text("Sphere Specular Color");
-		Vector4 sphereSpecularColor = m_SpherePipeline->GetMaterial()->GetVector("SpecularColor");
-		ImGui::ColorEdit4("SpecularColor", Math::ValuePtr(sphereSpecularColor));
-		m_SpherePipeline->GetMaterial()->SetVector("SpecularColor", sphereSpecularColor);
 
-		ImGui::Text("Monkey Specular");
-		float monkeySpecular = m_MonkeyPipeline->GetMaterial()->GetFloat("Specular");
-		ImGui::SliderFloat("Specular", &monkeySpecular, 0.0f, 1.0f);
-		m_MonkeyPipeline->GetMaterial()->SetFloat("Specular", monkeySpecular);
+		ImGui::Image( GUIUtils::GetTextureID( m_GBuffer->GetColorRT(0)), ImVec2(200, 200),
+			ImVec2(GUIUtils::GetUV0().x, GUIUtils::GetUV0().y), ImVec2(GUIUtils::GetUV1().x, GUIUtils::GetUV1().y));
+		ImGui::Image(GUIUtils::GetTextureID(m_GBuffer->GetColorRT(1)), ImVec2(200, 200),
+			ImVec2(GUIUtils::GetUV0().x, GUIUtils::GetUV0().y), ImVec2(GUIUtils::GetUV1().x, GUIUtils::GetUV1().y));
+		ImGui::Image(GUIUtils::GetTextureID(m_GBuffer->GetColorRT(2)), ImVec2(200, 200),
+			ImVec2(GUIUtils::GetUV0().x, GUIUtils::GetUV0().y), ImVec2(GUIUtils::GetUV1().x, GUIUtils::GetUV1().y));
+		ImGui::Image(GUIUtils::GetTextureID(m_GBuffer->GetColorRT(3)), ImVec2(200, 200),
+			ImVec2(GUIUtils::GetUV0().x, GUIUtils::GetUV0().y), ImVec2(GUIUtils::GetUV1().x, GUIUtils::GetUV1().y));
 		ImGui::End();
     }
     void DeferredRender::OnEvent(Event& e)

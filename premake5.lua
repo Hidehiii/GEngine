@@ -8,7 +8,7 @@ workspace "GEngine"
 		"Dist"
 	}
 
-	startproject "GEngine-Editor"
+	startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
