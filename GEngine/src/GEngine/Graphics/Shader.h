@@ -156,9 +156,24 @@ namespace GEngine
 		CullMode			Cull						= CullMode::Back;
 	};
 
+	struct ConstShaderProperty
+	{
+		uint32_t			Size;
+		uint32_t			Location;
+	};
+
+	struct ReferenceShaderProperty
+	{
+		uint32_t			Location;
+		void*				Ptr;
+	};
+
 	struct ShaderPass
 	{
-		std::unordered_map<std::string, std::string>	Stages;
+		RenderState													State;
+		std::unordered_map<std::string, ConstShaderProperty>		ConstPropertiesDesc;
+		Buffer														ConstProperties;
+		std::unordered_map<std::string, ReferenceShaderProperty>	ReferenceProperties;
 	};
 
 	namespace Utils
@@ -251,11 +266,8 @@ namespace GEngine
 		virtual std::vector<ShaderUniformCubeMap>				GetCubeMap() { return m_CubeMapCache; }
 		virtual std::vector<ShaderUniformTexture2DArray>		GetTexture2DArray() { return m_Texture2DArrayCache; }
 
-		virtual std::string									GetShaderMainFuncName() { return m_ShaderMainFuncName; }
-
-		
 	protected:
-		virtual void										Preprocess(std::string& source);
+		virtual void										Preprocess(const std::string& source, std::string& name, std::unordered_map<std::string, void*>& properties, std::vector<ShaderPass>& pass);
 
 		virtual void										SetMacroBool(std::string& source) = 0;
 		virtual void										SetMacroExp(std::string& source) = 0;
@@ -287,7 +299,6 @@ namespace GEngine
 		std::unordered_map<std::string, std::string>		m_ShaderBlocks;
 		std::unordered_map<std::string, ShaderPass>			m_ShaderPasses;
 		std::unordered_map<std::string, RenderState>		m_RenderStates;
-		const std::string									m_ShaderMainFuncName			= "main";
 		
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);
