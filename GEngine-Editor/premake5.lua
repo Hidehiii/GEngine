@@ -36,7 +36,8 @@ project "GEngine-Editor"
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.DirectXHeaders}",
-		"%{IncludeDir.HLSLcc}"
+		"%{IncludeDir.HLSLcc}",
+		"%{IncludeDir.dxc}"
 	}
 
 	links

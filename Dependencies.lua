@@ -27,6 +27,7 @@ IncludeDir["mono"] = "%{wks.location}/GEngine/vendor/mono/include"
 IncludeDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/include"
 IncludeDir["DirectXHeaders"] = "%{wks.location}/GEngine/vendor/DirectX-Headers/include"
 IncludeDir["HLSLcc"] = "%{wks.location}/GEngine/vendor/HLSLcc/include"
+IncludeDir["dxc"] = "%{wks.location}/GEngine/vendor/dxc/inc"
 
 LibraryDir = {}
 
@@ -35,6 +36,8 @@ LibraryDir["VulkanSDK_Bin"] = "%{VULKAN_SDK}/Bin/"
 LibraryDir["FBX_SDK"] = "%{FBX_SDK}/lib"
 LibraryDir["mono"] = "%{wks.location}/GEngine/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/lib/%{cfg.buildcfg}/"
+LibraryDir["dxc"] = "%{wks.location}/GEngine/vendor/dxc/lib/%{cfg.architecture}"
+LibraryDir["dxc_dll"] = "%{wks.location}/GEngine/vendor/dxc/bin/%{cfg.architecture}/"
 
 Library = {}
 
@@ -63,9 +66,10 @@ Library["PhysX_64"] = "%{LibraryDir.PhysX}PhysX_64.lib"
 Library["PhysXCommon_64"] = "%{LibraryDir.PhysX}PhysXCommon_64.lib"
 Library["PhysXFoundation_64"] = "%{LibraryDir.PhysX}PhysXFoundation_64.lib"
 Library["PhysXCooking_64"] = "%{LibraryDir.PhysX}PhysXCooking_64.lib"
-Library["PhysXGPU_64"] = "%{LibraryDir.PhysX}PhysXGpu_64.dll"
+Library["PhysXGPU_64"] = "%{LibraryDir.PhysX}PhysXGpu_64.lib"
 
-
+Library["dxc_dxcompiler"] = "%{LibraryDir.dxc}/dxcompiler.lib"
+Library["dxc_dxil"] = "%{LibraryDir.dxc}/dxil.lib"
 
 -- Windows
 Library["WinSock"] = "Ws2_32.lib"

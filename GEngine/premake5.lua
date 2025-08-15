@@ -53,7 +53,8 @@ project "GEngine"
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.DirectXHeaders}",
-		"%{IncludeDir.HLSLcc}"
+		"%{IncludeDir.HLSLcc}",
+		"%{IncludeDir.dxc}"
 	}
 
 	links
@@ -102,7 +103,8 @@ project "GEngine"
 			"%{Library.PhysXCooking_64}",
 			"%{Library.PhysXGPU_64}",
 
-			
+			"%{Library.dxc_dxcompiler}",
+			"%{Library.dxc_dxil}"
 		}
 
 		postbuildcommands
@@ -110,14 +112,22 @@ project "GEngine"
 			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
+			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/Sandbox/\""),
 
 			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
+			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GEngine-Editor/\""),
 
 			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
+			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/DeferredRender/\""),
+
+			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
+			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
+			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
+			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
 		}
 
 	filter "configurations:Debug"
