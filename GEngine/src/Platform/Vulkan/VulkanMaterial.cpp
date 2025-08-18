@@ -13,54 +13,48 @@ namespace GEngine
 	{
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
-		if (m_Shader)
+		GE_CORE_ASSERT(m_Shader, "Shader is null!");
+		uint32_t size = 0;
+		for (auto uniform : m_Shader->GetUniforms())
 		{
-			uint32_t size = 0;
-			for (auto uniform : m_Shader->GetUniforms())
-			{
-				size += uniform.Size;
-				m_Uniforms.push_back(uniform);
-			}
-			m_UniformsBuffer.Allocate(size);
-			m_UniformsBuffer.ZeroInitialize();
-			// Create uniform buffer
-			// 0 is reserved for custom uniform buffer
-			if (size > 0)
-			{
-				m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
-			}
-			// Read blend type and factor
-			m_BlendModeColor				= m_Shader->GetBlendColor();
-			m_BlendModeAlpha				= m_Shader->GetBlendAlpha();
-			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSrc();
-			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSrc();
-			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDst();
-			m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDst();
-			// cull mode
-			m_CullMode					= m_Shader->GetCull();
-			// Read depth test and depth mask
-			m_EnableDepthWrite			= m_Shader->IsEnableDepthWrite();
-			m_DepthTestOperation		= m_Shader->GetDepthTestOp();
-
-
-
-			m_RenderStates				= m_Shader->GetRenderStates();
-
-			// Texture2D
-			m_Texture2D					= m_Shader->GetTexture2D();
-			// StorageImage2D
-			m_StorageImage2D			= m_Shader->GetStorageImage2D();
-			// StorageBuffer
-			m_StorageBuffer				= m_Shader->GetStorageBuffer();
-			// cube map
-			m_CubeMap					= m_Shader->GetCubeMap();
-
-			CreateDescriptorSetAndLayout();
+			size += uniform.Size;
+			m_Uniforms.push_back(uniform);
 		}
-		else
+		m_UniformsBuffer.Allocate(size);
+		m_UniformsBuffer.ZeroInitialize();
+		// Create uniform buffer
+		// 0 is reserved for custom uniform buffer
+		if (size > 0)
 		{
-			GE_CORE_WARN("Shader of material {0} is not of type vulaknShader!", name);
+			m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
 		}
+		// Read blend type and factor
+		m_BlendModeColor				= m_Shader->GetBlendColor();
+		m_BlendModeAlpha				= m_Shader->GetBlendAlpha();
+		m_BlendColorSourceFactor		= m_Shader->GetBlendColorSrc();
+		m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSrc();
+		m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDst();
+		m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDst();
+		// cull mode
+		m_CullMode					= m_Shader->GetCull();
+		// Read depth test and depth mask
+		m_EnableDepthWrite			= m_Shader->IsEnableDepthWrite();
+		m_DepthTestOperation		= m_Shader->GetDepthTestOp();
+
+
+
+		m_RenderStates				= m_Shader->GetRenderStates();
+
+		// Texture2D
+		m_Texture2D					= m_Shader->GetTexture2D();
+		// StorageImage2D
+		m_StorageImage2D			= m_Shader->GetStorageImage2D();
+		// StorageBuffer
+		m_StorageBuffer				= m_Shader->GetStorageBuffer();
+		// cube map
+		m_CubeMap					= m_Shader->GetCubeMap();
+
+		CreateDescriptorSetAndLayout();
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{

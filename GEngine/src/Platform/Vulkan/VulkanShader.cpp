@@ -73,70 +73,30 @@ namespace GEngine
 
 	VulkanShader::VulkanShader(const std::string& path)
 	{
-		m_FilePath = path;
+		m_FilePath			= path;
 		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
-
-		// multi pass
-		ProcessShaderSource(src);
-		for (auto pass : m_ShaderPasses)
-		{
-			// 编译完直接创建module就释放掉
-			VulkanShaderModule shaderModule;
-			auto spirvData = CompileVulkanBinaries(pass);
-			if (spirvData.find(ShaderStage::Vertex) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Vertex] = CreateShaderModule(spirvData[ShaderStage::Vertex]);
-			}
-			if (spirvData.find(ShaderStage::Fragment) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Fragment] = CreateShaderModule(spirvData[ShaderStage::Fragment]);
-			}
-			if (spirvData.find(ShaderStage::Compute) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Compute] = CreateShaderModule(spirvData[ShaderStage::Compute]);
-			}
-			if (spirvData.find(ShaderStage::TessellationControl) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::TessellationControl] = CreateShaderModule(spirvData[ShaderStage::TessellationControl]);
-			}
-			if (spirvData.find(ShaderStage::TessellationEvaluation) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::TessellationEvaluation] = CreateShaderModule(spirvData[ShaderStage::TessellationEvaluation]);
-			}
-			if (spirvData.find(ShaderStage::Geometry) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Geometry] = CreateShaderModule(spirvData[ShaderStage::Geometry]);
-			}
-			if (spirvData.find(ShaderStage::Task) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Task] = CreateShaderModule(spirvData[ShaderStage::Task]);
-			}
-			if (spirvData.find(ShaderStage::Mesh) != spirvData.end())
-			{
-				shaderModule.Modules[ShaderStage::Mesh] = CreateShaderModule(spirvData[ShaderStage::Mesh]);
-			}
-			m_ShaderModules[pass.first] = shaderModule;
-		}
-		m_ShaderBlocks.clear();
-		m_ShaderPasses.clear();
+		std::vector<std::vector<std::string>> shaderStages;
+		std::vector<std::string> shaderSrcCode;
+		Preprocess(src, shaderStages, shaderSrcCode);
 	}
 	VulkanShader::~VulkanShader()
 	{
 	}
-	void VulkanShader::SetMacroBool(std::string& source)
+	bool VulkanShader::Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes)
 	{
-		for (int i = 0; i < m_MacroBools.size(); i++)
+		GE_CORE_ASSERT(passStages.size() == shaderSrcCodes.size(), "pass stages and shader src codes size not equal");
+		for (int i = 0; i < passStages.size(); ++i)
 		{
-			Utils::SetShaderMacroBool(source, m_MacroBools[i].first, m_MacroBools[i].second);
+			for (int j = 0; j < passStages[i].size(); ++j)
+			{
+				std::vector<LPWSTR> args;
+				std::vector<uint8_t> output;
+				std::vector<uint8_t> reflection;
+				ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), args, output, reflection);
+			}
 		}
-	}
-	void VulkanShader::SetMacroExp(std::string& source)
-	{
-		for (int i = 0; i < m_MacroExps.size(); i++)
-		{
-			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
-		}
+		return false;
 	}
 	VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code)
 	{

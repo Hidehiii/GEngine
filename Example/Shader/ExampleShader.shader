@@ -12,7 +12,9 @@ Shader "Shader Name"
         Blend
         BlendOp
         ColorMask
-        AlphaTest
+
+        #pragma vertex
+        #pragma fragment
 
         Program
         {

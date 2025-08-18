@@ -15,62 +15,32 @@ namespace GEngine
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API_VULKAN			= VAR_NAME(GE_GRAPHICS_API_VULKAN);
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API_D3D12			= VAR_NAME(GE_GRAPHICS_API_D3D12);
 	std::string		const	ShaderMacroName::GE_GRAPHICS_API				= VAR_NAME(GE_GRAPHICS_API);
-	
-					
-	std::string     const	ShaderStage::Vertex								= VAR_NAME(Vertex);
-	std::string     const	ShaderStage::Fragment							= VAR_NAME(Fragment);
-	std::string     const	ShaderStage::Pixel								= VAR_NAME(Pixel);
-	std::string		const	ShaderStage::Compute							= VAR_NAME(Compute);
-	std::string		const	ShaderStage::TessellationControl				= VAR_NAME(TessellationControl);
-	std::string		const	ShaderStage::TessellationEvaluation				= VAR_NAME(TessellationEvaluation);
-	std::string		const	ShaderStage::Geometry							= VAR_NAME(Geometry);
-	std::string		const	ShaderStage::Task								= VAR_NAME(Task);
-	std::string		const	ShaderStage::Mesh								= VAR_NAME(Mesh);
 
 	namespace Utils
 	{
-		uint32_t ShaderUniformTypeSize(ShaderUniformType type)
+		uint32_t GetShaderPropertyTypeSize(ShaderPropertyType type)
 		{
 			switch (type)
 			{
-			case ShaderUniformType::Int:	return 4;
-			case ShaderUniformType::Float:	return 4;
-			case ShaderUniformType::Vector: return 4 * 4;
-			case ShaderUniformType::Color:	return 4 * 4;
-			case ShaderUniformType::Mat3:	return 4 * 4 * 3;
-			case ShaderUniformType::Mat4:	return 4 * 4 * 4;
+			// scalar size
+			case ShaderPropertyType::Int:		return 4;
+			case ShaderPropertyType::Float:		return 4;
+			case ShaderPropertyType::Vector:	return 4 * 4;
+			case ShaderPropertyType::Color:		return 4 * 4;
+
+			// ptr size
+			case ShaderPropertyType::Sampler2D:
+			case ShaderPropertyType::SamplerCube:
+			case ShaderPropertyType::Sampler2DArray:
+			case ShaderPropertyType::Sampler:
+			case ShaderPropertyType::Texture2D:
+			case ShaderPropertyType::TextureCube:
+			case ShaderPropertyType::Texture2DArray:
+			case ShaderPropertyType::StorageImage2D:
+			case ShaderPropertyType::StorageBuffer:
+				return 4;
 			}
 			return 0;
-		}
-		std::string ShaderUniformTypeToGlslType(ShaderUniformType type)
-		{
-			switch (type)
-			{
-			case ShaderUniformType::None:
-				break;
-			case ShaderUniformType::Int:
-				return VAR_NAME(int);
-			case ShaderUniformType::Float:
-				return VAR_NAME(float);
-			case ShaderUniformType::Vector:
-				return VAR_NAME(vec4);
-			case ShaderUniformType::Color:
-				return VAR_NAME(vec4);
-			case ShaderUniformType::Mat3:
-				return VAR_NAME(mat3);
-			case ShaderUniformType::Mat4:
-				return VAR_NAME(mat4);
-			case ShaderUniformType::Sampler2D:
-				break;
-			case ShaderUniformType::SamplerCube:
-				break;
-			case ShaderUniformType::StorageImage2D:
-				break;
-			case ShaderUniformType::StorageBuffer:
-				break;
-			default:
-				break;
-			}
 		}
 		
 		std::string ToLower(std::string string)
@@ -185,23 +155,23 @@ namespace GEngine
 			}
 			return result;
 		}
-		ShaderUniformType ShaderUniformTypeFromString(const std::string& type)
+		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type)
 		{
-			if (ToLower(type) == VAR_NAME(int))					return ShaderUniformType::Int;
-			if (ToLower(type) == VAR_NAME(float))				return ShaderUniformType::Float;
-			if (ToLower(type) == VAR_NAME(vector))				return ShaderUniformType::Vector;
-			if (ToLower(type) == VAR_NAME(color))				return ShaderUniformType::Color;
-			if (ToLower(type) == VAR_NAME(mat3))				return ShaderUniformType::Mat3;
-			if (ToLower(type) == VAR_NAME(mat4))				return ShaderUniformType::Mat4;
-			if (ToLower(type) == VAR_NAME(sampler2d))			return ShaderUniformType::Sampler2D;
-			if (ToLower(type) == VAR_NAME(samplercube))			return ShaderUniformType::SamplerCube;
-			if (ToLower(type) == VAR_NAME(storageimage2d))		return ShaderUniformType::StorageImage2D;
-			if (ToLower(type) == VAR_NAME(storagebuffer))		return ShaderUniformType::StorageBuffer;
-			if (ToLower(type) == VAR_NAME(texture2d))			return ShaderUniformType::Texture2D;
-			if (ToLower(type) == VAR_NAME(sampler))				return ShaderUniformType::Sampler;
-			if (ToLower(type) == VAR_NAME(sampler2darray))		return ShaderUniformType::Sampler2DArray;
+			if (ToLower(type) == VAR_NAME(int))					return ShaderPropertyType::Int;
+			if (ToLower(type) == VAR_NAME(float))				return ShaderPropertyType::Float;
+			if (ToLower(type) == VAR_NAME(vector))				return ShaderPropertyType::Vector;
+			if (ToLower(type) == VAR_NAME(color))				return ShaderPropertyType::Color;
+			if (ToLower(type) == VAR_NAME(mat3))				return ShaderPropertyType::Mat3;
+			if (ToLower(type) == VAR_NAME(mat4))				return ShaderPropertyType::Mat4;
+			if (ToLower(type) == VAR_NAME(sampler2d))			return ShaderPropertyType::Sampler2D;
+			if (ToLower(type) == VAR_NAME(samplercube))			return ShaderPropertyType::SamplerCube;
+			if (ToLower(type) == VAR_NAME(storageimage2d))		return ShaderPropertyType::StorageImage2D;
+			if (ToLower(type) == VAR_NAME(storagebuffer))		return ShaderPropertyType::StorageBuffer;
+			if (ToLower(type) == VAR_NAME(texture2d))			return ShaderPropertyType::Texture2D;
+			if (ToLower(type) == VAR_NAME(sampler))				return ShaderPropertyType::Sampler;
+			if (ToLower(type) == VAR_NAME(sampler2darray))		return ShaderPropertyType::Sampler2DArray;
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
-			return ShaderUniformType::None;
+			return ShaderPropertyType::None;
 		}
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor)
 		{
@@ -253,297 +223,8 @@ namespace GEngine
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
 		}
-		void InsertShaderVertexInput(std::string& source, const std::string& vertexInput)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, vertexInput);
-		}
-		std::string ProcessShaderName(const std::string& source)
-		{
-			std::string output;
 
-			const char* token = "#Name";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return output;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string name = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = name.find(' ', index)) != std::string::npos)
-			{
-				name.erase(index, 1);
-			}
-			output = name;
-			GE_CORE_INFO("Shader name: {0}", name);
-			return output;
-		}
-		void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha,
-			BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha)
-		{
-			const char* token = "Blend";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string blendString = source.substr(begin, eol - begin);
-			blendString = Utils::RemoveCharFromString(blendString, ';');
-			blendString = Utils::RemoveCharFromString(blendString, '\r');
-			blendString = Utils::RemoveCharFromString(blendString, '\n');
-			std::vector<std::string> blends = Utils::SplitString(blendString, ' ');
-			GE_CORE_ASSERT(blends.size() == 3 || blends.size() == 1 || blends.size() == 6, "Syntax error");
-			modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-			modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
-			if (blends.size() == 3)
-			{
-				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(0));
-				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(1));
-				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(2));
-				GE_CORE_TRACE("Blend type: {0}, Src factor: {1}, Dst factor: {2}", blends.at(0), blends.at(1), blends.at(2));
-			}
-			else if (blends.size() == 6)
-			{
-				modeColor = Utils::ShaderBlendModeFromString(blends.at(0));
-				srcColor = Utils::ShaderBlendFactorFromString(blends.at(1));
-				dstColor = Utils::ShaderBlendFactorFromString(blends.at(2));
-				modeAlpha = Utils::ShaderBlendModeFromString(blends.at(3));
-				srcAlpha = Utils::ShaderBlendFactorFromString(blends.at(4));
-				dstAlpha = Utils::ShaderBlendFactorFromString(blends.at(5));
-			}
-			else
-			{
-				GE_CORE_TRACE("Blend type: {0}", blends.at(0));
-			}
-		}
-		void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite)
-		{
-			const char* token = "DepthWrite";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string depthMaskProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthMaskProp.find(' ', index)) != std::string::npos)
-			{
-				depthMaskProp.erase(index, 1);
-			}
-			enableDepthWrite = Utils::ShaderBoolFromString(depthMaskProp);
-			GE_CORE_TRACE("DepthWrite: {0}", enableDepthWrite);
-		}
-		void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation)
-		{
-			const char* token = "DepthTest";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string depthTestProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = depthTestProp.find(' ', index)) != std::string::npos)
-			{
-				depthTestProp.erase(index, 1);
-			}
-			depthTestOperation = Utils::ShaderCompareOperationFromString(depthTestProp);
-			GE_CORE_TRACE("DepthTest: {0}", depthTestProp);
-		}
-		void ProcessShaderCull(const std::string& source, CullMode& mode)
-		{
-			const char* token = "Cull";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + tokenLength + 1;
-			std::string cullProp = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = cullProp.find(' ', index)) != std::string::npos)
-			{
-				cullProp.erase(index, 1);
-			}
-			mode = Utils::ShaderCullModeFromString(cullProp);
-			GE_CORE_TRACE("Cull: {0}", cullProp);
-		}
-		std::string ProcessShaderVertexInput(const std::string& source)
-		{
-			std::string output;
-
-			const char* token = "#VertexInput";
-			const char* endToken = "#EndVertexInput";
-			size_t tokenLength = strlen(token);
-			size_t pos = source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return output;
-			}
-			size_t eol = source.find_first_of("\r\n", pos);
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			size_t end = source.find(endToken, pos);
-			std::string properties = source.substr(nextLinePos, end - nextLinePos);
-
-			std::vector<std::string> props = Utils::SplitString(properties, '\n');
-			for (auto& prop : props)
-			{
-				//prop = Utils::RemoveCharFromString(prop, ' ');
-				prop = Utils::RemoveCharFromString(prop, '\r');
-				prop = Utils::RemoveCharFromString(prop, '\n');
-				prop = Utils::RemoveCharFromString(prop, '\t');
-				prop = Utils::RemoveCharFromString(prop, ';');
-			}
-			for (auto it = props.begin(); it != props.end();)
-			{
-				if (it->empty())
-					it = props.erase(it);
-				else
-					++it;
-			}
-			for (auto prop : props)
-			{
-				std::string flag = Utils::SplitString(prop, ':').at(1);
-				std::string pro = Utils::SplitString(prop, ':').at(0);
-				output += "layout(location=" + std::to_string(Utils::ShaderVertexInputFlagToLocation(flag)) + ") in " + pro + ";\n";
-			}
-			GE_CORE_INFO(output);
-			return output;
-		}
-		void ProcessShaderBlocks(const std::string& source, std::unordered_map<std::string, std::string>& blocks)
-		{
-			const char* token			= "#BeginBlock";
-			const char* endToken		= "#EndBlock";
-
-			size_t pos					= 0;
-			pos							= source.find(token, pos);
-			while (pos != source.npos)
-			{
-				size_t elo				= source.find_first_of("\r\n", pos);
-				GE_CORE_ASSERT(elo != std::string::npos, "Syntax error");
-				size_t begin			= pos + strlen(token) + 1;
-				std::string blockName	= source.substr(begin, elo - begin);
-				blockName				= RemoveCharFromString(blockName, ' ');
-				begin					= source.find_first_not_of("\r\n", elo);
-				pos						= source.find(endToken, begin);
-				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
-				std::string content		= source.substr(begin, pos - begin);
-				GE_CORE_ASSERT(blocks.find(blockName) == blocks.end(), "block name {} is used", blockName);
-				blocks[blockName]		= content;
-				pos						= source.find(token, pos);
-			}
-			
-		}
-		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes, std::unordered_map<std::string, RenderState>& states)
-		{
-			const char* token			= "##Pass";
-			const char* endToken		= "##EndPass";
-			size_t pos					= 0;
-			pos							= source.find(token, pos);
-			while (pos != source.npos)
-			{
-				size_t elo				= source.find_first_of("\r\n", pos);
-				GE_CORE_ASSERT(elo != std::string::npos, "Syntax error");
-				size_t begin			= pos + strlen(token) + 1;
-				std::string passName	= source.substr(begin, elo - begin);
-				passName				= RemoveCharFromString(passName, ' ');
-				GE_CORE_ASSERT(passName.find(' ', 0) == std::string::npos, "pass name should have no space");
-				begin					= source.find_first_not_of("\r\n", elo);
-				pos						= source.find(endToken, begin);
-				GE_CORE_ASSERT(pos != std::string::npos, "Syntax error");
-				std::string content		= source.substr(begin, pos - begin);
-				
-				RenderState state{};
-				ProcessShaderBlend(content, state.BlendColor, state.BlendAlpha,
-					state.BlendColorSrc, state.BlendColorDst, state.BlendAlphaSrc, state.BlendAlphaDst);
-				ProcessShaderDepthWrite(content, state.ColorWrite);
-				ProcessShaderDepthTest(content, state.DepthTestOp);
-				ProcessShaderCull(content, state.Cull);
-				GE_CORE_ASSERT(states.find(passName) == states.end(), "pass name {} is uesd", passName);
-				states[passName] = state;
-
-				ShaderPass pass{};
-				std::string blockName;
-				if (ProcessShaderStage(content, ShaderStage::Vertex, blockName))
-				{
-					pass.Stages[ShaderStage::Vertex] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Fragment, blockName))
-				{
-					pass.Stages[ShaderStage::Fragment] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Pixel, blockName))
-				{
-					pass.Stages[ShaderStage::Fragment] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Compute, blockName))
-				{
-					pass.Stages[ShaderStage::Compute] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Geometry, blockName))
-				{
-					pass.Stages[ShaderStage::Geometry] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::TessellationControl, blockName))
-				{
-					pass.Stages[ShaderStage::TessellationControl] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::TessellationEvaluation, blockName))
-				{
-					pass.Stages[ShaderStage::TessellationEvaluation] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Task, blockName))
-				{
-					pass.Stages[ShaderStage::Task] = blocks[blockName];
-				}
-				if (ProcessShaderStage(content, ShaderStage::Mesh, blockName))
-				{
-					pass.Stages[ShaderStage::Mesh] = blocks[blockName];
-				}
-				GE_CORE_ASSERT(passes.find(passName) == passes.end(), "pass name {} is uesd", passName);
-				passes[passName]		= pass;
-				pos						= source.find(token, pos);
-			}
-		}
-		bool ProcessShaderStage(const std::string& source, const std::string& stage, std::string& blockName)
-		{
-			const char* token			= stage.c_str();
-			size_t tokenLength			= strlen(token);
-			size_t pos					= source.find(token, 0);
-			if (pos == std::string::npos)
-			{
-				return false;
-			}
-			size_t eol					= source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin				= pos + tokenLength + 1;
-			blockName					= source.substr(begin, eol - begin);
-			blockName					= RemoveCharFromString(blockName, ' ');
-			return true;
-		}
+		
 		std::string ReadFile(const std::string& path)
 		{
 			std::string src;
@@ -558,142 +239,68 @@ namespace GEngine
 			file.close();
 			return src;
 		}
-		void ProcessShaderProperties(const std::string& source, std::vector<ShaderUniform>& uniformCache, std::vector<ShaderUniformTexture2D>& texture2DCache,
-			std::vector<ShaderUniformCubeMap>& cubeMapCache, std::vector<ShaderUniformStorageImage2D>& storageImage2DCache,
-			std::vector<ShaderUniformStorageBuffer>& storageBufferCache, uint32_t locationStart, uint32_t slotStart, uint32_t storageBufferSlotOffset)
-		{
-			const char* propertyToken = "#Properties";
-			const char* propertyEndToken = "#EndProperties";
-			size_t propertyTokenLength = strlen(propertyToken);
-
-			uint32_t location = locationStart;
-			uint32_t slot = slotStart;
-
-			// 插入模型矩阵
-			ShaderUniform modelUbo;
-			modelUbo.Name = "GE_MATRIX_M";
-			modelUbo.Type = ShaderUniformType::Mat4;
-			modelUbo.Size = ShaderUniformTypeSize(ShaderUniformType::Mat4);
-			modelUbo.Location = location;
-			location += modelUbo.Size;
-			uniformCache.push_back(modelUbo);
-			GE_CORE_TRACE("Property Name: {0}, Property Size: {1}, Property Location: {2}", modelUbo.Name, modelUbo.Size, modelUbo.Location);
-
-			size_t pos = source.find(propertyToken, 0);
-			if (pos != std::string::npos)
-			{
-				// split properties by \n
-				size_t eol = source.find_first_of("\r\n", pos);
-				GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-				size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-				size_t end = source.find(propertyEndToken, pos);
-				std::string properties = source.substr(nextLinePos, end - nextLinePos);
-				std::vector<std::string> props = Utils::SplitString(properties, '\n');
-				for (auto& prop : props)
-				{
-					//prop = Utils::RemoveCharFromString(prop, ' ');
-					prop = Utils::RemoveCharFromString(prop, '\r');
-					prop = Utils::RemoveCharFromString(prop, '\n');
-					prop = Utils::RemoveCharFromString(prop, '\t');
-					prop = Utils::RemoveCharFromString(prop, ';');
-				}
-				for (auto it = props.begin(); it != props.end();)
-				{
-					if (it->empty())
-						it = props.erase(it);
-					else
-						++it;
-				}
-				for(int i = 0;i < props.size();i++)
-				{
-					auto& prop = props.at(i);
-
-					std::vector<std::string> propData = Utils::SplitString(prop, ' ');
-					for (auto& propp : propData)
-					{
-						propp = Utils::RemoveCharFromString(propp, ' ');
-					}
-					for (auto it = propData.begin(); it != propData.end();)
-					{
-						if (it->empty())
-							it = propData.erase(it);
-						else
-							++it;
-					}
-					GE_CORE_ASSERT(propData.size() == 2, "Invalid property syntax");
-					std::string propName = propData[1];
-					std::string propType = propData[0];
-					if (Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::None &&
-						Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::Sampler2D &&
-						Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::SamplerCube &&
-						Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageImage2D &&
-						Utils::ShaderUniformTypeFromString(propType) != ShaderUniformType::StorageBuffer)
-					{
-						ShaderUniform			uniform;
-						uniform.Name = propName;
-						uniform.Type = Utils::ShaderUniformTypeFromString(propType);
-						uniform.Size = ShaderUniformTypeSize(uniform.Type);
-						uniform.Location = location;
-						location += uniform.Size;
-						uniformCache.push_back(uniform);
-						GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property Size: {2}, Property Location: {3}", uniform.Name, propType, uniform.Size, uniform.Location);
-					}
-					if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::Sampler2D)
-					{
-						ShaderUniformTexture2D	uniform;
-						uniform.Name = propName;
-						uniform.Slot = slot;
-						uniform.Texture = Texture2D::White();
-
-						GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property slot: {2}", uniform.Name, propType, slot);
-
-						slot++;
-						texture2DCache.push_back(uniform);
-					}
-					if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::SamplerCube)
-					{
-						ShaderUniformCubeMap	uniform;
-						uniform.Name = propName;
-						uniform.Slot = slot;
-						uniform.Cubemap = CubeMap::White();
-
-						GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property slot: {2}", uniform.Name, propType, slot);
-
-						slot++;
-						cubeMapCache.push_back(uniform);
-					}
-					if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageImage2D)
-					{
-						ShaderUniformStorageImage2D	uniform;
-						uniform.Name = propName;
-						uniform.Slot = slot;
-						uniform.Image = nullptr;
-
-						GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property slot: {2}", uniform.Name, propType, slot);
-
-						slot++;
-						storageImage2DCache.push_back(uniform);
-					}
-					if (Utils::ShaderUniformTypeFromString(propType) == ShaderUniformType::StorageBuffer)
-					{
-						ShaderUniformStorageBuffer	uniform;
-						uniform.Name = propName;
-						uniform.Slot = slot + storageBufferSlotOffset;
-						uniform.Buffer = nullptr;
-
-						GE_CORE_TRACE("Property Name: {0}, Property Type: {1}, Property binding: {2}", uniform.Name, propType, uniform.Slot);
-
-						slot++;
-						storageBufferCache.push_back(uniform);
-					}
-				}
-			}
-		}
 	}
 
-	void Shader::SetGlslVersionString(std::string& source)
+	void Shader::Preprocess(const std::string& source, std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCode)
 	{
-		source = "#version 450 core\n" + source;
+		std::stack<int> stack;
+		size_t pos = source.find("Shader", 0);
+		pos = source.find("\"", pos);
+
+		m_Name = source.substr(pos + 1, source.find("\"", pos + 1) - pos - 1);
+
+		pos = source.find("{", pos);
+		stack.push(1);
+
+		pos = source.find("Properties", pos);
+		pos = source.find("{", pos);
+		stack.push(1);
+
+		std::string block;
+		block = source.substr(pos + 1, source.find("}", pos + 1) - pos - 1);
+
+		//todo
+
+		pos = source.find("}", pos);
+		stack.pop();
+
+		while (source.find("Pass", pos) != std::string::npos)
+		{
+			pos = source.find("Pass", pos);
+			pos = source.find("{", pos);
+			stack.push(1);
+
+			block = source.substr(pos + 1, source.find("Program", pos + 1) - pos - 1);
+
+			//todo
+
+			pos = source.find("{", pos);
+			stack.push(1);
+			size_t begin = pos + 1;
+			while (pos < source.size())
+			{
+				if (source.at(pos) == '{')
+				{
+					stack.push(1);
+				}
+				if (source.at(pos) == '}')
+				{
+					stack.pop();
+				}
+				if (stack.size() == 2)
+				{
+					pos;
+					break;
+				}
+			}
+			block = source.substr(begin, pos - 1);
+
+			// todo
+
+			pos = source.find("}", pos + 1);
+			stack.pop();
+		}
+		
 	}
 
 	Ref<Shader> Shader::Create(const std::string& path)

@@ -9,27 +9,42 @@
 #include "GEngine/Compute/StorageBuffer.h"
 #include <algorithm>
 #include <filesystem>
+#include "Material.h"
+#include "ShaderCompiler.h"
 
+#define SHADER_STAGE_VERTEX "vertex"
+#define SHADER_STAGE_HULL "hull"
+#define SHADER_STAGE_DOMAIN "domain"
+#define SHADER_STAGE_GEOMETRY "geometry"
+#define SHADER_STAGE_FRAGMENT "fragment"
+
+#define SHADER_STAGE_AMPLIFICATION "amplification"
+#define SHADER_STAGE_MESH "mesh"
+
+#define SHADER_STAGE_COMPUTE "compute"
 
 
 namespace GEngine
 {
-	enum class ShaderUniformType
+	enum ShaderPropertyType
 	{
-		None			= 0, 
-		Int				= 1,
-		Float			= 2,
-		Vector			= 3,
-		Color			= 4,
-		Mat3			= 5,
-		Mat4			= 6,
-		Sampler2D		= 7,
-		SamplerCube		= 8,
-		StorageImage2D	= 9,
-		StorageBuffer	= 10,
-		Texture2D		= 11,
-		Sampler			= 12,
-		Sampler2DArray	= 13,
+		None, 
+		Int,
+		Float,
+		Vector,
+		Color,
+
+		Sampler2D,
+		SamplerCub,
+		Sampler2DArray,
+
+		Sampler,
+		Texture2D,
+		TextureCube,
+		Texture2DArray,
+
+		StorageImage2D,
+		StorageBuffer,
 	};
 	class GENGINE_API ShaderMacroName
 	{
@@ -42,111 +57,57 @@ namespace GEngine
 		static const	std::string			GE_GRAPHICS_API_D3D12;
 		static const	std::string			GE_GRAPHICS_API;
 	};
-	enum class GENGINE_API BlendFactor
+	enum BlendFactor
 	{
-		SRC_ALPHA		= 1,
-		DST_ALPHA		= 2,
-		SRC_COLOR		= 3,
-		DST_COLOR		= 4,
+		SRC_ALPHA			= 1,
+		DST_ALPHA			= 2,
+		SRC_COLOR			= 3,
+		DST_COLOR			= 4,
 		ONE_MINUS_SRC_ALPHA = 5,
 		ONE_MINUS_DST_ALPHA = 6,
 		ONE_MINUS_SRC_COLOR = 7,
 		ONE_MINUS_DST_COLOR = 8,
-		ONE = 9,
-		ZERO = 10
+		ONE					= 9,
+		ZERO				= 10
 	};
-	enum class CullMode
+	enum CullMode
 	{
-		None = 0,
-		Front = 1,
-		Back = 2
+		None	= 0,
+		Front	= 1,
+		Back	= 2
 	};
-	enum class BlendMode
+	enum BlendMode
 	{
-		None = 0,
-		Add = 1,
-		Substract = 2,
-		ReverseSubstract = 3,
-		Min = 4,
-		Max = 5,
+		None				= 0,
+		Add					= 1,
+		Substract			= 2,
+		ReverseSubstract	= 3,
+		Min					= 4,
+		Max					= 5,
 	};
-	enum class CompareOperation
+	enum CompareOperation
 	{
-		Less = 0,
-		Greater = 1,
-		LessEqual = 2,
-		GreaterEqual = 3,
-		Equal = 4,
-		NotEqual = 5,
-		Always = 6,
+		Less			= 0,
+		Greater			= 1,
+		LessEqual		= 2,
+		GreaterEqual	= 3,
+		Equal			= 4,
+		NotEqual		= 5,
+		Always			= 6,
 	};
-	class GENGINE_API ShaderStage
+	enum ColorMaskChannel
 	{
-	public:
-		static	const	std::string         Vertex;
-		static	const	std::string         Fragment;
-		static	const	std::string         Pixel;
-		static	const	std::string			Compute;
-		static	const	std::string			TessellationControl;
-		static	const	std::string			TessellationEvaluation;
-		static	const	std::string			Geometry;
-		static	const	std::string			Task;
-		static	const	std::string			Mesh;
-	};
-	
-	struct ShaderUniform
-	{
-		ShaderUniform() = default;
-		ShaderUniform(const ShaderUniform&) = default;
-
-		std::string			Name = "";
-		ShaderUniformType	Type = ShaderUniformType::None;
-		uint32_t			Size = 0;
-		uint32_t			Location = 0;
-	};
-
-	struct ShaderUniformTexture2D
-	{
-		std::string		Name;
-		uint32_t		Slot;
-		Ref<Texture2D>	Texture;
-	};
-
-
-	struct ShaderUniformStorageImage2D
-	{
-		std::string			Name;
-		uint32_t			Slot;
-		Ref<StorageImage2D> Image;
-	};
-
-	struct ShaderUniformStorageBuffer
-	{
-		std::string			Name;
-		uint32_t			Slot;
-		Ref<StorageBuffer>	Buffer;
-	};
-
-
-	struct ShaderUniformCubeMap
-	{
-		std::string		Name;
-		uint32_t		Slot;
-		Ref<CubeMap>	Cubemap;
-	};
-
-	struct ShaderUniformTexture2DArray
-	{
-		std::string				Name;
-		uint32_t				Slot;
-		Ref<Texture2DArray>		TextureArray;
+		R = 1 < 0,
+		G = 1 < 1,
+		B = 1 < 2,
+		A = 1 < 3,
 	};
 
 	struct RenderState
 	{
 		bool				DepthWrite					= true;
 		CompareOperation	DepthTestOp					= CompareOperation::LessEqual;
-		bool				ColorWrite					= true;
+		int					ColorMask					= ColorMaskChannel::R | ColorMaskChannel::G | ColorMaskChannel::B | ColorMaskChannel::A;
 		BlendFactor			BlendColorSrc				= BlendFactor::ONE;
 		BlendFactor			BlendColorDst				= BlendFactor::ZERO;
 		BlendFactor			BlendAlphaSrc				= BlendFactor::ONE;
@@ -158,14 +119,14 @@ namespace GEngine
 
 	struct ConstShaderProperty
 	{
-		uint32_t			Size;
-		uint32_t			Location;
+		uint32_t			Size = 0;
+		uint32_t			Location = 0;
 	};
 
 	struct ReferenceShaderProperty
 	{
-		uint32_t			Location;
-		void*				Ptr;
+		uint32_t			Location = 0;
+		void*				Ptr = nullptr;
 	};
 
 	struct ShaderPass
@@ -178,8 +139,7 @@ namespace GEngine
 
 	namespace Utils
 	{
-		uint32_t ShaderUniformTypeSize(ShaderUniformType type);
-		std::string ShaderUniformTypeToGlslType(ShaderUniformType type);
+		uint32_t GetShaderPropertyTypeSize(ShaderPropertyType type);
 		std::string ToLower(std::string string);
 		std::string ToUpper(std::string string);
 		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag);
@@ -198,7 +158,7 @@ namespace GEngine
 		std::string RemoveCharFromStringInTail(const std::string& string, char character);
 
 
-		ShaderUniformType ShaderUniformTypeFromString(const std::string& type);
+		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type);
 
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor);
 
@@ -207,26 +167,7 @@ namespace GEngine
 
 		void CreateCacheDirectoryIfNeeded();
 
-		void SetShaderMacroBool(std::string& source, const std::string& macro, bool value);
-
-		void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp);
-		void InsertShaderVertexInput(std::string& source, const std::string& vertexInput);
-		std::string ProcessShaderName(const std::string& source);
-		void ProcessShaderBlend(const std::string& source, BlendMode& modeColor, BlendMode modeAlpha,
-			BlendFactor& srcColor, BlendFactor& dstColor, BlendFactor& srcAlpha, BlendFactor& dstAlpha);
-		void ProcessShaderDepthWrite(const std::string& source, bool& enableDepthWrite);
-		void ProcessShaderDepthTest(const std::string& source, CompareOperation& depthTestOperation);
-		void ProcessShaderCull(const std::string& source, CullMode& mode);
-		std::string ProcessShaderVertexInput(const std::string& source);
-
 		std::string ReadFile(const std::string& path);
-
-		void ProcessShaderProperties(const std::string& source, std::vector<ShaderUniform>& uniformCache, std::vector<ShaderUniformTexture2D>& texture2DCache,
-			std::vector<ShaderUniformCubeMap>& cubeMapCache, std::vector<ShaderUniformStorageImage2D>& storageImage2DCache,
-			std::vector<ShaderUniformStorageBuffer>& storageBufferCache, uint32_t locationStart, uint32_t slotStart, uint32_t storageBufferSlotOffset);
-		void ProcessShaderBlocks(const std::string& source, std::unordered_map<std::string, std::string>& blocks);
-		void ProcessShaderPasses(const std::string& source, std::unordered_map<std::string, std::string>& blocks, std::unordered_map<std::string, ShaderPass>& passes, std::unordered_map<std::string, RenderState>& states);
-		bool ProcessShaderStage(const std::string& source, const std::string& stage, std::string& blockName);
 	}
 
 	class GENGINE_API Shader
@@ -234,72 +175,32 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual BlendMode									GetBlendColor() { return m_BlendModeColor; }
-		virtual BlendMode									GetBlendAlpha() { return m_BlendModeAlpha; }
-		virtual CullMode									GetCull() { return m_CullMode; }
-		virtual BlendFactor									GetBlendColorSrc() { return m_BlendColorSourceFactor; }
-		virtual BlendFactor									GetBlendColorDst() { return m_BlendColorDestinationFactor; }
-		virtual BlendFactor									GetBlendAlphaSrc() { return m_BlendAlphaSourceFactor; }
-		virtual BlendFactor									GetBlendAlphaDst() { return m_BlendAlphaDestinationFactor; }
-		virtual bool										IsEnableDepthWrite()  { return m_EnableDepthWrite; }
-		virtual CompareOperation							GetDepthTestOp()  { return m_DepthTestOperation; }
+		virtual BlendMode									GetBlendColor(const int& pass) { return m_Passes.at(pass).State.BlendColor; }
+		virtual BlendMode									GetBlendAlpha(const int& pass) { return m_Passes.at(pass).State.BlendAlpha; }
+		virtual CullMode									GetCull(const int& pass) { return m_Passes.at(pass).State.Cull; }
+		virtual BlendFactor									GetBlendColorSrc(const int& pass) { return m_Passes.at(pass).State.BlendColorSrc; }
+		virtual BlendFactor									GetBlendColorDst(const int& pass) { return m_Passes.at(pass).State.BlendColorDst; }
+		virtual BlendFactor									GetBlendAlphaSrc(const int& pass) { return m_Passes.at(pass).State.BlendAlphaSrc; }
+		virtual BlendFactor									GetBlendAlphaDst(const int& pass) { return m_Passes.at(pass).State.BlendAlphaDst; }
+		virtual bool										GetEnableDepthWrite(const int& pass) { return m_Passes.at(pass).State.DepthWrite; }
+		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_Passes.at(pass).State.DepthTestOp; }
+		virtual int											GetColorMask(const int& pass) { return m_Passes.at(pass).State.ColorMask; }
 
-		virtual BlendMode									GetBlendColor(const std::string& pass) { return m_RenderStates[pass].BlendColor; }
-		virtual BlendMode									GetBlendAlpha(const std::string& pass) { return m_RenderStates[pass].BlendAlpha; }
-		virtual CullMode									GetCull(const std::string& pass) { return m_RenderStates[pass].Cull; }
-		virtual BlendFactor									GetBlendColorSrc(const std::string& pass) { return m_RenderStates[pass].BlendColorSrc; }
-		virtual BlendFactor									GetBlendColorDst(const std::string& pass) { return m_RenderStates[pass].BlendColorDst; }
-		virtual BlendFactor									GetBlendAlphaSrc(const std::string& pass) { return m_RenderStates[pass].BlendAlphaSrc; }
-		virtual BlendFactor									GetBlendAlphaDst(const std::string& pass) { return m_RenderStates[pass].BlendAlphaDst; }
-		virtual bool										IsEnableDepthWrite(const std::string& pass) { return m_RenderStates[pass].DepthWrite; }
-		virtual CompareOperation							GetDepthTestOp(const std::string& pass) { return m_RenderStates[pass].DepthTestOp; }
-
-
-		virtual std::unordered_map<std::string, RenderState>	GetRenderStates() { return m_RenderStates; }
-		virtual std::vector<ShaderUniform>						GetUniforms() { return m_UniformCache; }
-		virtual const std::string&								GetShaderName() const { return m_Name; }
-		virtual std::string										GetShaderPath() { return m_FilePath; }
-		virtual std::vector<ShaderUniformTexture2D>				GetTexture2D() { return m_Texture2DCache; }
-		virtual uint32_t										GetTexture2DCount() { return m_Texture2DCache.size(); }
-		virtual std::vector<ShaderUniformStorageImage2D>		GetStorageImage2D() { return m_StorageImage2DCache; }
-		virtual std::vector<ShaderUniformStorageBuffer>			GetStorageBuffer() { return m_StorageBufferCache; }
-		virtual std::vector<ShaderUniformCubeMap>				GetCubeMap() { return m_CubeMapCache; }
-		virtual std::vector<ShaderUniformTexture2DArray>		GetTexture2DArray() { return m_Texture2DArrayCache; }
+		virtual const std::string&											GetShaderName() const { return m_Name; }
+		virtual const std::string&											GetShaderPath() { return m_FilePath; }
+		virtual const std::unordered_map<std::string, ShaderPropertyType>&	GetProperties() { return m_Properties; }
+		virtual const std::vector<ShaderPass>&								GetPasses() { return m_Passes; }
 
 	protected:
-		virtual void										Preprocess(const std::string& source, std::string& name, std::unordered_map<std::string, void*>& properties, std::vector<ShaderPass>& pass);
-
-		virtual void										SetMacroBool(std::string& source) = 0;
-		virtual void										SetMacroExp(std::string& source) = 0;
-
-		virtual void										SetGlslVersionString(std::string& source);
-		virtual void										SetMacroMaterialDefine(std::string& source);
-	protected:
-		// slot 从40开始
-		static const uint32_t s_SlotOffset = 40;
+		virtual void										Preprocess(const std::string& source, std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes);
+		virtual bool										Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) = 0;
 	protected:
 		std::string											m_FilePath;
 		std::string											m_Name;
-		std::vector<ShaderUniform>							m_UniformCache;
-		std::vector<ShaderUniformTexture2D>					m_Texture2DCache;
-		std::vector<ShaderUniformStorageImage2D>			m_StorageImage2DCache;
-		std::vector<ShaderUniformStorageBuffer>				m_StorageBufferCache;
-		std::vector<ShaderUniformCubeMap>					m_CubeMapCache;
-		std::vector<ShaderUniformTexture2DArray>			m_Texture2DArrayCache;
-		bool												m_EnableDepthWrite				= true;
-		CompareOperation									m_DepthTestOperation			= CompareOperation::LessEqual;
-		bool												m_EnableColorWrite				= true;
-		BlendFactor											m_BlendColorSourceFactor		= BlendFactor::ONE;
-		BlendFactor											m_BlendColorDestinationFactor	= BlendFactor::ZERO;
-		BlendFactor											m_BlendAlphaSourceFactor		= BlendFactor::ONE;
-		BlendFactor											m_BlendAlphaDestinationFactor	= BlendFactor::ZERO;
-		BlendMode											m_BlendModeColor				= BlendMode::None;
-		BlendMode											m_BlendModeAlpha				= BlendMode::None;
-		CullMode											m_CullMode						= CullMode::Back;
-		std::unordered_map<std::string, std::string>		m_ShaderBlocks;
-		std::unordered_map<std::string, ShaderPass>			m_ShaderPasses;
-		std::unordered_map<std::string, RenderState>		m_RenderStates;
-		
+
+		std::unordered_map<std::string, ShaderPropertyType>	m_Properties;
+		std::vector<ShaderPass>								m_Passes;
+
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);
 		static Ref<Shader>									Create(const std::string& path);

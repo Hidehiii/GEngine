@@ -68,139 +68,53 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
     }
-	ShaderUniform Material::GetUniformByName(const std::string& name) const
+	void Material::SetEnableDepthWrite(bool enabled, const int& pass)
 	{
-		for (auto uniform : m_Uniforms)
-		{
-			if (uniform.Name == name)
-				return uniform;
-		}
-		GE_CORE_ASSERT(false, "There is no uniform with name {0} in the shader!", name);
-		return ShaderUniform();
+		m_Passes.at(pass).State.DepthWrite = enabled;
 	}
-	ShaderUniformTexture2D& Material::GetUniformTexture2DByName(const std::string& name)
+	void Material::SetDepthTestOp(CompareOperation op, const int& pass)
 	{
-		for (int i = 0; i < m_Texture2D.size(); i++)
-		{
-			if (m_Texture2D.at(i).Name == name)
-			{
-				return (m_Texture2D.at(i));
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform texture2D with name {0} in the shader!", name);
-		return ShaderUniformTexture2D();
+		m_Passes.at(pass).State.DepthTestOp = op;
 	}
-	ShaderUniformStorageImage2D& Material::GetUniformStorageImage2DByName(const std::string& name)
+	void Material::SetCullMode(CullMode mode, const int& pass)
 	{
-		for (int i = 0; i < m_StorageImage2D.size(); i++)
-		{
-			if (m_StorageImage2D.at(i).Name == name)
-			{
-				return m_StorageImage2D.at(i);
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform storage image2d with name {0} in the shader!", name);
-		return ShaderUniformStorageImage2D();
+		m_Passes.at(pass).State.Cull = mode;
 	}
-	ShaderUniformStorageBuffer& Material::GetUniformStorageBufferByName(const std::string& name)
+	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const int& pass)
 	{
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			if (m_StorageBuffer.at(i).Name == name)
-			{
-				return (m_StorageBuffer.at(i));
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform storage buffer with name {0} in the shader!", name);
-		return ShaderUniformStorageBuffer();
+		m_Passes.at(pass).State.BlendColor = modeColor;
+		m_Passes.at(pass).State.BlendAlpha = modeAlpha;
+		m_Passes.at(pass).State.BlendColorSrc = srcColor;
+		m_Passes.at(pass).State.BlendAlphaSrc = srcAlpha;
+		m_Passes.at(pass).State.BlendColorDst = dstColor;
+		m_Passes.at(pass).State.BlendAlphaDst = dstAlpha;
 	}
-	ShaderUniformCubeMap& Material::GetUniformCubeMapByName(const std::string& name)
+	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const int& pass)
 	{
-		for (int i = 0; i < m_CubeMap.size(); i++)
-		{
-			if (m_CubeMap.at(i).Name == name)
-			{
-				return (m_CubeMap.at(i));
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform cube map with name {0} in the shader!", name);
-		return ShaderUniformCubeMap();
-	}
-	ShaderUniformTexture2DArray& Material::GetUniformTexture2DArrayByName(const std::string& name)
-	{
-		for (int i = 0; i < m_Texture2DArray.size(); i++)
-		{
-			if (m_Texture2DArray.at(i).Name == name)
-			{
-				return m_Texture2DArray.at(i);
-			}
-		}
-		GE_CORE_ASSERT(false, "There is no uniform texture2D array with name {} in shader ", name);
-		return ShaderUniformTexture2DArray();
-	}
-	void Material::SetCullMode(CullMode mode)
-	{
-		m_CullMode = mode;
-	}
-	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha)
-	{
-		m_BlendModeColor = modeColor;
-		m_BlendModeAlpha = modeAlpha;
-		m_BlendColorSourceFactor = srcColor;
-		m_BlendColorDestinationFactor = dstColor;
-		m_BlendAlphaSourceFactor = srcAlpha;
-		m_BlendAlphaDestinationFactor = dstAlpha;
-	}
-	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest)
-	{
-		m_BlendModeColor = mode;
-		m_BlendModeAlpha = mode;
-		m_BlendColorSourceFactor = source;
-		m_BlendAlphaSourceFactor = source;
-		m_BlendColorDestinationFactor = dest;
-		m_BlendAlphaDestinationFactor = dest;
-	}
-	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const std::string& pass)
-	{
-		m_RenderStates[pass].BlendColor		= mode;
-		m_RenderStates[pass].BlendAlpha		= mode;
-		m_RenderStates[pass].BlendColorSrc	= source;
-		m_RenderStates[pass].BlendAlphaSrc	= source;
-		m_RenderStates[pass].BlendColorDst	= dest;
-		m_RenderStates[pass].BlendAlphaDst	= dest;
-	}
-	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const std::string& pass)
-	{
-		m_RenderStates[pass].BlendColor		= modeColor;
-		m_RenderStates[pass].BlendAlpha		= modeAlpha;
-		m_RenderStates[pass].BlendColorSrc	= srcColor;
-		m_RenderStates[pass].BlendColorDst	= dstColor;
-		m_RenderStates[pass].BlendAlphaSrc	= srcAlpha;
-		m_RenderStates[pass].BlendAlphaDst	= dstAlpha;
+		m_Passes.at(pass).State.BlendColor = mode;
+		m_Passes.at(pass).State.BlendAlpha = mode;
+		m_Passes.at(pass).State.BlendColorSrc = source;
+		m_Passes.at(pass).State.BlendAlphaSrc = source;
+		m_Passes.at(pass).State.BlendColorDst = dest;
+		m_Passes.at(pass).State.BlendAlphaDst = dest;
 	}
 	void Material::SetFloat(const std::string& name, float value)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformsBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
-		}
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((float*)m_Properties.at(name)) = value;
+		WriteConstProperty(name, (const void*)&value);
 	}
 	void Material::SetInt(const std::string& name, int value)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformsBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
-		}
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((int*)m_Properties.at(name)) = value;
+		WriteConstProperty(name, (const void*)&value);
 	}
 	void Material::SetUInt(const std::string& name, uint32_t value)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformsBuffer.Write((const void*)&value, uniform.Size, uniform.Location);
-		}
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((uint32_t*)m_Properties.at(name)) = value;
+		WriteConstProperty(name, (const void*)&value);
 	}
 	void Material::SetVector(const std::string& name, const Vector2& value)
 	{
@@ -212,145 +126,127 @@ namespace GEngine
 	}
 	void Material::SetVector(const std::string& name, const Vector4& value)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformsBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
-		}
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Vector4*)m_Properties.at(name)) = value;
+		WriteConstProperty(name, (const void*)&value);
 	}
 	void Material::SetMatrix4x4(const std::string& name, const Matrix4x4& value)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			m_UniformsBuffer.Write((const void*)Math::ValuePtr(value), uniform.Size, uniform.Location);
-		}
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Matrix4x4*)m_Properties.at(name)) = value;
+		WriteConstProperty(name, (const void*)&value);
 	}
 	float Material::GetFloat(const std::string& name)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			float value;
-			value = m_UniformsBuffer.Read<float>(uniform.Location);
-			return value;
-		}
-		return 0.0f;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((float*)m_Properties.at(name));
 	}
 	int Material::GetInt(const std::string& name)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			int value;
-			value = m_UniformsBuffer.Read<int>(uniform.Location);
-			return value;
-		}
-		return 0;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((int*)m_Properties.at(name));
 	}
 	uint32_t Material::GetUInt(const std::string& name)
 	{
-		ShaderUniform uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			int value;
-			value = m_UniformsBuffer.Read<uint32_t>(uniform.Location);
-			return value;
-		}
-		return uint32_t();
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((uint32_t*)m_Properties.at(name));
 	}
 	Vector4 Material::GetVector(const std::string& name)
 	{
-		ShaderUniform& uniform = GetUniformByName(name);
-		if (uniform.Size)
-		{
-			Vector4 value;
-			value = m_UniformsBuffer.Read<Vector4>(uniform.Location);
-			return value;
-		}
-		return Vector4();
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Vector4*)m_Properties.at(name));
 	}
 	void Material::SetTexture2D(const std::string& name, const Ref<Texture2D>& texture)
 	{
-		ShaderUniformTexture2D& uniform = GetUniformTexture2DByName(name);
-		uniform.Texture = texture;
-	}
-	void Material::SetTexture2D(const int index, const Ref<Texture2D>& texture)
-	{
-		m_Texture2D.at(index).Texture = texture;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Ref<Texture2D>*)m_Properties.at(name)) = texture;
+		WriteReferenceProperty(name, (void*)&texture);
 	}
 	const Ref<Texture2D> Material::GetTexture2D(const std::string& name)
 	{
-		return GetUniformTexture2DByName(name).Texture;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Ref<Texture2D>*)m_Properties.at(name));
 	}
 	void Material::SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage)
 	{
-		ShaderUniformStorageImage2D& uniform = GetUniformStorageImage2DByName(name);
-		uniform.Image = storageImage;
-	}
-	void Material::SetStorageImage2D(const int index, const Ref<StorageImage2D>& storageImage)
-	{
-		m_StorageImage2D.at(index).Image = storageImage;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Ref<StorageImage2D>*)m_Properties.at(name)) = storageImage;
+		WriteReferenceProperty(name, (void*)&storageImage);
 	}
 	const Ref<StorageImage2D> Material::GetStorageImage2D(const std::string& name)
 	{
-		return GetUniformStorageImage2DByName(name).Image;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Ref<StorageImage2D>*)m_Properties.at(name));
 	}
 	void Material::SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer)
 	{
-		ShaderUniformStorageBuffer& uniform = GetUniformStorageBufferByName(name);
-		uniform.Buffer = storageBuffer;
-	}
-	void Material::SetStorageBuffer(const int index, const Ref<StorageBuffer>& storageBuffer)
-	{
-		m_StorageBuffer.at(index).Buffer = storageBuffer;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Ref<StorageBuffer>*)m_Properties.at(name)) = storageBuffer;
+		WriteReferenceProperty(name, (void*)&storageBuffer);
 	}
 	const Ref<StorageBuffer> Material::GetStorageBuffer(const std::string& name)
 	{
-		return GetUniformStorageBufferByName(name).Buffer;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Ref<StorageBuffer>*)m_Properties.at(name));
 	}
 	void Material::SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap)
 	{
-		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
-		uniform.Cubemap = cubeMap;
-	}
-	void Material::SetCubeMap(const int index, const Ref<CubeMap>& cubeMap)
-	{
-		m_CubeMap.at(index).Cubemap = cubeMap;
-	}
-	void Material::SetCubeMap(const std::string& name, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture)
-	{
-		ShaderUniformCubeMap& uniform = GetUniformCubeMapByName(name);
-		uniform.Cubemap->SetData(texture, width, height, face);
-	}
-	void Material::SetCubeMap(const int index, uint32_t width, uint32_t height, CubeMap::CubeMapFace face, const Ref<Texture2D>& texture)
-	{
-		m_CubeMap.at(index).Cubemap->SetData(texture, width, height, face);
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Ref<CubeMap>*)m_Properties.at(name)) = cubeMap;
+		WriteReferenceProperty(name, (void*)&cubeMap);
 	}
 	const Ref<CubeMap> Material::GetCubeMap(const std::string& name)
 	{
-		return GetUniformCubeMapByName(name).Cubemap;
-	}
-	void Material::SetTexture2DArray(const std::string& name, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture)
-	{
-		ShaderUniformTexture2DArray& uniform = GetUniformTexture2DArrayByName(name);
-		uniform.TextureArray->SetData(texture, width, height, layer);
-	}
-	void Material::SetTexture2DArray(const int index, uint32_t width, uint32_t height, const int layer, const Ref<Texture2D>& texture)
-	{
-		m_Texture2DArray.at(index).TextureArray->SetData(texture, width, height, layer);
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Ref<CubeMap>*)m_Properties.at(name));
 	}
 	void Material::SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array)
 	{
-		ShaderUniformTexture2DArray& uniform = GetUniformTexture2DArrayByName(name);
-		uniform.TextureArray = array;
-	}
-	void Material::SetTexture2DArray(const int index, const Ref<Texture2DArray>& array)
-	{
-		m_Texture2DArray.at(index).TextureArray = array;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		*((Ref<Texture2DArray>*)m_Properties.at(name)) = array;
+		WriteReferenceProperty(name, (void*)&array);
 	}
 	const Ref<Texture2DArray> Material::GetTexture2DArray(const std::string& name)
 	{
-		return GetUniformTexture2DArrayByName(name).TextureArray;
+		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
+		return *((Ref<Texture2DArray>*)m_Properties.at(name));
+	}
+	void Material::InitializePropertiesMemory()
+	{
+		GE_CORE_ASSERT(m_Shader, "Shader ref is NULL!");
+		uint32_t size = 0;
+		auto& peroperties = m_Shader->GetProperties();
+		for (auto& [name, type] : peroperties)
+		{
+			size += Utils::GetShaderPropertyTypeSize(type);
+		}
+		m_PropertiesMemory.Allocate(size);
+		m_PropertiesMemory.ZeroInitialize();
+		uint32_t offset = 0;
+		for (auto& [name, type] : peroperties)
+		{
+			m_Properties[name] = (void*)((uint64_t)m_PropertiesMemory.Data + offset);
+			offset += Utils::GetShaderPropertyTypeSize(type);
+		}
+	}
+	void Material::WriteConstProperty(const std::string& name, const void* value)
+	{
+		for (auto& pass : m_Passes)
+		{
+			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
+			{
+				pass.ConstProperties.Write(value, pass.ConstPropertiesDesc.at(name).Size, pass.ConstPropertiesDesc.at(name).Location);
+			}
+		}
+	}
+	void Material::WriteReferenceProperty(const std::string& name, void* ptr)
+	{
+		for (auto& pass : m_Passes)
+		{
+			if (pass.ReferenceProperties.find(name) != pass.ReferenceProperties.end())
+			{
+				pass.ReferenceProperties.at(name).Ptr = ptr;
+			}
+		}
 	}
 }

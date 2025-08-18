@@ -19,12 +19,10 @@ namespace GEngine
 		VkShaderModule		GetShaderModule(const std::string& stage, const std::string& pass) { return m_ShaderModules[pass].Modules[stage]; }
 		VulkanShaderModule	GetShaderModules(const std::string& pass) { return m_ShaderModules[pass]; }
 	protected:
-		virtual void SetMacroBool(std::string& source) override;
-		virtual void SetMacroExp(std::string& source) override;
+		virtual bool Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) override;
 
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 	private:
-		void ProcessShaderSource(const std::string& source);
 		std::unordered_map<std::string, std::vector<uint32_t>> CompileVulkanBinaries(std::pair<std::string, ShaderPass> pass);
 		void Reflect(const std::string stage, const std::vector<uint32_t>& shaderData);
 	private:
