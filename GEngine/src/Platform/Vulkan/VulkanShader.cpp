@@ -92,6 +92,9 @@ namespace GEngine
 			for (int j = 0; j < passStages[i].size(); ++j)
 			{
 				std::vector<LPWSTR> args;
+				args.push_back(L"-E");
+				args.push_back(passStages.at(i).at(j).c_str());
+
 				std::vector<uint8_t> output;
 				std::vector<uint8_t> reflection;
 				ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), args, output, reflection);
