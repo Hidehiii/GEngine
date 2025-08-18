@@ -42,49 +42,7 @@ namespace GEngine
 			}
 			return 0;
 		}
-		
-		std::string ToLower(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::tolower);
-			return string;
-		}
-		std::string ToUpper(std::string string)
-		{
-			std::transform(string.begin(), string.end(), string.begin(), ::toupper);
-			return string;
-		}
-		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag)
-		{
-			if (ToLower(flag) == VAR_NAME(position))	return 0;
-			if (ToLower(flag) == VAR_NAME(color))		return 1;
-			if (ToLower(flag) == VAR_NAME(normal))		return 2;
-			if (ToLower(flag) == VAR_NAME(tangent))		return 3;
-			if (ToLower(flag) == VAR_NAME(uv0))			return 4;
-			if (ToLower(flag) == VAR_NAME(uv1))			return 5;
-			if (ToLower(flag) == VAR_NAME(uv2))			return 6;
-			if (ToLower(flag) == VAR_NAME(uv3))			return 7;
-			GE_CORE_ASSERT(false, "invalid vertex input");
-		}
-		bool ShaderBoolFromString(const std::string& value)
-		{
-			if (ToLower(value) == VAR_NAME(on))				return true;
-			if (ToLower(value) == VAR_NAME(1))				return true;
-			if (ToLower(value) == VAR_NAME(true))			return true;
-			return false;
-		}
-		std::string ShaderTypeFromString(const std::string& type)
-		{
-			if (ToLower(type) == ShaderStage::Vertex)					return ShaderStage::Vertex;
-			if (ToLower(type) == ShaderStage::Fragment || 
-				ToLower(type) == ShaderStage::Pixel)					return ShaderStage::Fragment;
-			if (ToLower(type) == ShaderStage::Compute)					return ShaderStage::Compute;
-			if (ToLower(type) == ShaderStage::TessellationControl)		return ShaderStage::TessellationControl;
-			if (ToLower(type) == ShaderStage::TessellationEvaluation)	return ShaderStage::TessellationEvaluation;
-			if (ToLower(type) == ShaderStage::Geometry)					return ShaderStage::Geometry;
 
-			GE_CORE_ASSERT(false, "Unknown shader type!");
-			return "";
-		}
 		CompareOperation ShaderCompareOperationFromString(const std::string& value)
 		{
 			if (ToLower(value) == VAR_NAME(less))				return CompareOperation::Less;
@@ -106,63 +64,13 @@ namespace GEngine
 			if (ToLower(value) == VAR_NAME(front)) return CullMode::Front;
 			return CullMode::Back;
 		}
-		std::vector<std::string> SplitString(const std::string& string, char delimiter)
-		{
-			std::vector<std::string> result;
-			std::stringstream ss(string);
-			std::string item;
-			while (std::getline(ss, item, delimiter))
-			{
-				item = item.substr(0, item.size());
-				if (item.empty() == false)
-					result.push_back(item);
-			}
-			return result;
-		}
-		std::string RemoveCharFromString(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					++it;
-			}
-			return result;
-		}
-		std::string RemoveCharFromStringInHead(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (auto it = result.begin(); it != result.end();)
-			{
-				if (*it == character)
-					it = result.erase(it);
-				else
-					return result;
-			}
-			return result;
-		}
-		std::string RemoveCharFromStringInTail(const std::string& string, char character)
-		{
-			std::string result = string;
-			for (int i = result.size() - 1; i >= 0; i--)
-			{
-				if (result.at(i) == character)
-					result.erase(i);
-				else
-					return result;
-			}
-			return result;
-		}
+		
 		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type)
 		{
 			if (ToLower(type) == VAR_NAME(int))					return ShaderPropertyType::Int;
 			if (ToLower(type) == VAR_NAME(float))				return ShaderPropertyType::Float;
 			if (ToLower(type) == VAR_NAME(vector))				return ShaderPropertyType::Vector;
 			if (ToLower(type) == VAR_NAME(color))				return ShaderPropertyType::Color;
-			if (ToLower(type) == VAR_NAME(mat3))				return ShaderPropertyType::Mat3;
-			if (ToLower(type) == VAR_NAME(mat4))				return ShaderPropertyType::Mat4;
 			if (ToLower(type) == VAR_NAME(sampler2d))			return ShaderPropertyType::Sampler2D;
 			if (ToLower(type) == VAR_NAME(samplercube))			return ShaderPropertyType::SamplerCube;
 			if (ToLower(type) == VAR_NAME(storageimage2d))		return ShaderPropertyType::StorageImage2D;
@@ -205,12 +113,6 @@ namespace GEngine
 			// TODO: make sure the assets directory is valid
 			return "Assets/Cache/Shaders";
 		}
-		void CreateCacheDirectoryIfNeeded()
-		{
-			std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
-		}
 		void SetShaderMacroBool(std::string& source, const std::string& macro, bool value)
 		{
 			//第二行插入
@@ -222,22 +124,6 @@ namespace GEngine
 			//第二行插入
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
-		}
-
-		
-		std::string ReadFile(const std::string& path)
-		{
-			std::string src;
-			std::ifstream file(path, std::ios::in | std::ios::binary);
-
-			GE_CORE_ASSERT(file, " file " + path + " not found");
-
-			file.seekg(0, std::ios::end);
-			src.resize(file.tellg());
-			file.seekg(0, std::ios::beg);
-			file.read(&src[0], src.size());
-			file.close();
-			return src;
 		}
 	}
 

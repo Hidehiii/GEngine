@@ -35,7 +35,7 @@ namespace GEngine
 		Color,
 
 		Sampler2D,
-		SamplerCub,
+		SamplerCube,
 		Sampler2DArray,
 
 		Sampler,
@@ -140,22 +140,11 @@ namespace GEngine
 	namespace Utils
 	{
 		uint32_t GetShaderPropertyTypeSize(ShaderPropertyType type);
-		std::string ToLower(std::string string);
-		std::string ToUpper(std::string string);
-		uint8_t ShaderVertexInputFlagToLocation(const std::string& flag);
+		
 
-		bool ShaderBoolFromString(const std::string& value);
-		std::string ShaderTypeFromString(const std::string& type);
 		CompareOperation ShaderCompareOperationFromString(const std::string& value);
 
 		CullMode ShaderCullModeFromString(const std::string& value);
-
-		std::vector<std::string> SplitString(const std::string& string, char delimiter);
-
-		std::string RemoveCharFromString(const std::string& string, char character);
-
-		std::string RemoveCharFromStringInHead(const std::string& string, char character);
-		std::string RemoveCharFromStringInTail(const std::string& string, char character);
 
 
 		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type);
@@ -164,10 +153,6 @@ namespace GEngine
 
 		BlendMode ShaderBlendModeFromString(const std::string& type);
 		const char* GetCacheDirectory();
-
-		void CreateCacheDirectoryIfNeeded();
-
-		std::string ReadFile(const std::string& path);
 	}
 
 	class GENGINE_API Shader
