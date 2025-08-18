@@ -79,6 +79,7 @@ namespace GEngine
 		std::vector<std::vector<std::string>> shaderStages;
 		std::vector<std::string> shaderSrcCode;
 		Preprocess(src, shaderStages, shaderSrcCode);
+		Compile(shaderStages, shaderSrcCode);
 	}
 	VulkanShader::~VulkanShader()
 	{
@@ -96,7 +97,7 @@ namespace GEngine
 				ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), args, output, reflection);
 			}
 		}
-		return false;
+		return true;
 	}
 	VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code)
 	{
