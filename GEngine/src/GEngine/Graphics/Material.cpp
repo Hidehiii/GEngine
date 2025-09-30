@@ -2,7 +2,6 @@
 #include "Material.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
-
 #include "Platform/OpenGL/OpenGLMaterial.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
 
@@ -211,7 +210,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Properties.find(name) != m_Properties.end(), "Property does not exist!");
 		return *((Ref<Texture2DArray>*)m_Properties.at(name));
 	}
-	void Material::InitializePropertiesMemory()
+	uint32_t Material::InitializePropertiesMemory()
 	{
 		GE_CORE_ASSERT(m_Shader, "Shader ref is NULL!");
 		uint32_t size = 0;
@@ -225,9 +224,10 @@ namespace GEngine
 		uint32_t offset = 0;
 		for (auto& [name, type] : peroperties)
 		{
-			m_Properties[name] = (void*)((uint64_t)m_PropertiesMemory.Data + offset);
+			m_Properties[name] = (void*)((uint32_t)m_PropertiesMemory.ReadBytes() + offset);
 			offset += Utils::GetShaderPropertyTypeSize(type);
 		}
+		return size;
 	}
 	void Material::WriteConstProperty(const std::string& name, const void* value)
 	{

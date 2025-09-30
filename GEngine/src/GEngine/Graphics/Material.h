@@ -7,7 +7,6 @@
 #include "GEngine/Graphics/Texture.h"
 
 
-
 namespace GEngine
 {
 	
@@ -21,7 +20,7 @@ namespace GEngine
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name);
 		virtual ~Material() {}
 
-		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) = 0;
+		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) = 0;
 
 		virtual void SetEnableDepthWrite(bool enabled, const int& pass);
 		virtual bool GetEnableDepthWrite(const int& pass) { return m_Passes.at(pass).State.DepthWrite; }
@@ -77,13 +76,14 @@ namespace GEngine
 		virtual const Ref<Texture2DArray>			GetTexture2DArray(const std::string& name);
 
 	protected:
-		virtual void InitializePropertiesMemory();
+		virtual uint32_t InitializePropertiesMemory();
 
 		virtual void WriteConstProperty(const std::string& name, const void* value);
 		virtual void WriteReferenceProperty(const std::string& name, void* ptr);
 
 	protected:
 		std::string																m_Name;
+		Ref<Shader>																m_Shader;
 
 		Buffer																	m_PropertiesMemory;
 		std::unordered_map<std::string, void*>									m_Properties;

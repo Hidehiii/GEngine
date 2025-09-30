@@ -10,43 +10,15 @@ namespace GEngine
 		m_Name = name.empty() ? "New Material" : name;
 		if (m_Shader)
 		{
-			uint32_t size = 0;
-			for(auto uniform : m_Shader->GetUniforms())
-			{
-				size += uniform.Size;
-				m_Uniforms.push_back(uniform);
-			}
-			m_UniformsBuffer.Allocate(size);
-			m_UniformsBuffer.ZeroInitialize();
+			uint32_t size = InitializePropertiesMemory();
 			// Create uniform buffer
 			// 0 is reserved for custom uniform buffer
 			if (size > 0)
 			{
 				m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
 			}
-			// Read blend type and factor
-			m_BlendModeColor				= m_Shader->GetBlendColor();
-			m_BlendModeAlpha				= m_Shader->GetBlendAlpha();
-			m_BlendColorSourceFactor		= m_Shader->GetBlendColorSrc();
-			m_BlendAlphaSourceFactor		= m_Shader->GetBlendAlphaSrc();
-			m_BlendColorDestinationFactor	= m_Shader->GetBlendColorDst();
-			m_BlendAlphaDestinationFactor	= m_Shader->GetBlendAlphaDst();
-			// cull mode
-			m_CullMode					= m_Shader->GetCull();
-			// Read depth test and depth mask
-			m_EnableDepthWrite			= m_Shader->IsEnableDepthWrite();
-			m_DepthTestOperation		= m_Shader->GetDepthTestOp();
 
-			m_RenderStates				= m_Shader->GetRenderStates();
-
-			// Texture2D
-			m_Texture2D					= m_Shader->GetTexture2D();
-			// StorageImage2D
-			m_StorageImage2D			= m_Shader->GetStorageImage2D();
-			// StorageBuffer
-			m_StorageBuffer				= m_Shader->GetStorageBuffer();
-			// cube map
-			m_CubeMap					= m_Shader->GetCubeMap();
+			m_Passes = std::vector<ShaderPass>(m_Shader->GetPasses());
 		}
 		else
 		{
@@ -56,12 +28,70 @@ namespace GEngine
 	OpenGLMaterial::~OpenGLMaterial()
 	{
 	}
-	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer, const std::string& pass)
+	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer, const int& pass)
 	{
 		m_Shader->Use(pass);
 
 		if (m_UniformBuffer)
-			m_UniformBuffer->SetData(m_UniformsBuffer.ReadBytes(), m_UniformsBuffer.GetSize());
+			m_UniformBuffer->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
+
+		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
+		{
+			auto propertyTypes = GetShader()->GetProperties();
+			GE_CORE_ASSERT(propertyTypes.find(name) != propertyTypes.end(), "Could not find type of property {}!", name);
+			switch (propertyTypes[name])
+			{
+			case ShaderPropertyType::Sampler2D:
+			{
+				m_Shader->SetInt1(name, prop.Location, pass);
+				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+				break;
+			}
+			case ShaderPropertyType::SamplerCube:
+			{
+				m_Shader->SetInt1(name, prop.Location, pass);
+				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+				break;
+			}
+			case ShaderPropertyType::Sampler2DArray:
+			{
+				GE_CORE_ASSERT(false, "");
+				break;
+			}
+			case ShaderPropertyType::Sampler:
+			{
+				GE_CORE_ASSERT(false, "");
+				break;
+			}
+			case ShaderPropertyType::Texture2D:
+			{
+				GE_CORE_ASSERT(false, "");
+				break;
+			}
+			case ShaderPropertyType::TextureCube:
+			{
+				GE_CORE_ASSERT(false, "");
+				break;
+			}
+			case ShaderPropertyType::Texture2DArray:
+			{
+				GE_CORE_ASSERT(false, "");
+				break;
+			}
+			case ShaderPropertyType::StorageImage2D:
+			{
+				m_Shader->SetInt1(name, prop.Location, pass);
+				(*((Ref<StorageImage2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+			}
+			case ShaderPropertyType::StorageBuffer:
+			{
+				m_Shader->SetInt1(name, prop.Location, pass);
+				(*((Ref<StorageBuffer>*)prop.Ptr))->Bind(prop.Location);
+			}
+			default:
+				break;
+			}
+		}
 
 		for (auto& texture2D : m_Texture2D)
 		{
@@ -86,17 +116,14 @@ namespace GEngine
 			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
 
-		Utils::SetCull(m_RenderStates[pass].Cull);
-		Utils::SetBlend(m_RenderStates[pass].BlendColor, m_RenderStates[pass].BlendAlpha, 
-			m_RenderStates[pass].BlendColorSrc, m_RenderStates[pass].BlendColorDst, 
-			m_RenderStates[pass].BlendAlphaSrc, m_RenderStates[pass].BlendAlphaDst);
-		Utils::SetDepthTest(m_RenderStates[pass].DepthTestOp);
-		Utils::EnableDepthWrite(m_RenderStates[pass].DepthWrite);
+		Utils::SetCull(m_Passes.at(pass).State.Cull);
+		Utils::SetBlend(m_Passes.at(pass).State.BlendColor, m_Passes.at(pass).State.BlendAlpha,
+			m_Passes.at(pass).State.BlendColorSrc, m_Passes.at(pass).State.BlendColorDst, 
+			m_Passes.at(pass).State.BlendAlphaSrc, m_Passes.at(pass).State.BlendAlphaDst);
+		Utils::SetDepthTest(m_Passes.at(pass).State.DepthTestOp);
+		Utils::EnableDepthWrite(m_Passes.at(pass).State.DepthWrite);
 	}
-	void OpenGLMaterial::SetIntArray(const std::string& name, int* value, uint32_t count)
-	{
-		
-	}
+
 	void OpenGLMaterial::SetShader(const Ref<Shader>& shader)
 	{
 		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");

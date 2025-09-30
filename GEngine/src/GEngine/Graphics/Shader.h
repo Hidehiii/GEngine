@@ -26,7 +26,7 @@
 
 namespace GEngine
 {
-	enum ShaderPropertyType
+	enum class ShaderPropertyType
 	{
 		None, 
 		Int,

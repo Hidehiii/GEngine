@@ -49,7 +49,7 @@ namespace GEngine
 
 		GLenum ShaderStageToGL(const std::string& stage)
 		{
-			if (stage == ShaderStage::Vertex)					return GL_VERTEX_SHADER;
+			if (stage == SHADER_STAGE_VERTEX)					return GL_VERTEX_SHADER;
 			if (stage == ShaderStage::Fragment)					return GL_FRAGMENT_SHADER;
 			if (stage == ShaderStage::Compute)					return GL_COMPUTE_SHADER;
 			if (stage == ShaderStage::TessellationControl)		return GL_TESS_CONTROL_SHADER;
@@ -127,92 +127,53 @@ namespace GEngine
 	OpenGLShader::~OpenGLShader()
 	{
 		
-		for(auto shader : m_Shaders)
-			glDeleteProgram(shader.second);
+		for(auto shader : m_Programs)
+			glDeleteProgram(shader);
 	}
 	
-	void OpenGLShader::Use(const std::string& pass)
+	void OpenGLShader::Use(const int& pass)
 	{
-		glUseProgram(m_Shaders[pass]);
+		glUseProgram(m_Programs[pass]);
 	}
-	void OpenGLShader::SetInt1(const std::string& name, int value, const std::string& pass)
+	void OpenGLShader::SetInt1(const std::string& name, int value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1i(glGetUniformLocation(m_Shaders[pass], name.c_str()), value);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform1i(glGetUniformLocation(m_Programs[pass], name.c_str()), value);
 	}
-	void OpenGLShader::SetIntArray(const std::string& name, int* value, uint32_t count, const std::string& pass)
+	void OpenGLShader::SetIntArray(const std::string& name, int* value, uint32_t count, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1iv(glGetUniformLocation(m_Shaders[pass], name.c_str()), count, value);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform1iv(glGetUniformLocation(m_Programs[pass], name.c_str()), count, value);
 	}
-	void OpenGLShader::SetFloat1(const std::string& name, float value, const std::string& pass)
+	void OpenGLShader::SetFloat1(const std::string& name, float value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1f(glGetUniformLocation(m_Shaders[pass], name.c_str()), value);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform1f(glGetUniformLocation(m_Programs[pass], name.c_str()), value);
 	}
-	void OpenGLShader::SetFloat2(const std::string& name, const Vector2& value, const std::string& pass)
+	void OpenGLShader::SetFloat2(const std::string& name, const Vector2& value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform2f(glGetUniformLocation(m_Shaders[pass], name.c_str()), value.x, value.y);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform2f(glGetUniformLocation(m_Programs[pass], name.c_str()), value.x, value.y);
 	}
-	void OpenGLShader::SetFloat3(const std::string& name, const Vector3& value, const std::string& pass)
+	void OpenGLShader::SetFloat3(const std::string& name, const Vector3& value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform3f(glGetUniformLocation(m_Shaders[pass], name.c_str()), value.x, value.y, value.z);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform3f(glGetUniformLocation(m_Programs[pass], name.c_str()), value.x, value.y, value.z);
 	}
-	void OpenGLShader::SetFloat4(const std::string& name, const Vector4& value, const std::string& pass)
+	void OpenGLShader::SetFloat4(const std::string& name, const Vector4& value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform4f(glGetUniformLocation(m_Shaders[pass], name.c_str()), value.x, value.y, value.z, value.w);
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniform4f(glGetUniformLocation(m_Programs[pass], name.c_str()), value.x, value.y, value.z, value.w);
 	}
-	void OpenGLShader::SetMat4x4(const std::string& name, const Matrix4x4& value, const std::string& pass)
+	void OpenGLShader::SetMat4x4(const std::string& name, const Matrix4x4& value, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniformMatrix4fv(glGetUniformLocation(m_Shaders[pass], name.c_str()), 1, GL_FALSE, Math::ValuePtr(value));
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniformMatrix4fv(glGetUniformLocation(m_Programs[pass], name.c_str()), 1, GL_FALSE, Math::ValuePtr(value));
 	}
-	void OpenGLShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const std::string& pass)
+	void OpenGLShader::SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const int& pass)
 	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniformMatrix4fv(glGetUniformLocation(m_Shaders[pass], name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
-	}
-	void OpenGLShader::SetUniformMat4(const std::string& name, const Matrix4x4& matrix, const std::string& pass)
-	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniformMatrix4fv(glGetUniformLocation(m_Shaders[pass], name.c_str()), 1, GL_FALSE, Math::ValuePtr(matrix));
-	}
-	void OpenGLShader::SetUniformInt(const std::string& name, int value, const std::string& pass)
-	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1i(glGetUniformLocation(m_Shaders[pass], name.c_str()), value);
-	}
-	void OpenGLShader::SetUniformFloat(const std::string& name, float value, const std::string& pass)
-	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1f(glGetUniformLocation(m_Shaders[pass], name.c_str()), value);
-	}
-	void OpenGLShader::SetUniformFloat4(const std::string& name, const Vector4& vector, const std::string& pass)
-	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform4f(glGetUniformLocation(m_Shaders[pass], name.c_str()), vector.x, vector.y, vector.z, vector.w);
-	}
-	void OpenGLShader::SetUniformTexture2D(const std::string& name, int slot, const std::string& pass)
-	{
-		GE_CORE_ASSERT(m_Shaders.find(pass) != m_Shaders.end(), "pass {} not found", pass);
-		glUniform1i(glGetUniformLocation(m_Shaders[pass], name.c_str()), slot);
-	}
-	void OpenGLShader::SetMacroBool(std::string& source)
-	{
-		for (int i = 0; i < m_MacroBools.size(); i++)
-		{
-			Utils::SetShaderMacroBool(source, m_MacroBools[i].first, m_MacroBools[i].second);
-		}
-	}
-	void OpenGLShader::SetMacroExp(std::string& source)
-	{
-		for (int i = 0; i < m_MacroExps.size(); i++)
-		{
-			Utils::SetShaderMacroExpression(source, m_MacroExps[i].first, m_MacroExps[i].second);
-		}
+		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
+		glUniformMatrix4fv(glGetUniformLocation(m_Programs[pass], name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
 	}
 	std::unordered_map<std::string, std::string> OpenGLShader::ProcessShaderSource(const std::string& source)
 	{

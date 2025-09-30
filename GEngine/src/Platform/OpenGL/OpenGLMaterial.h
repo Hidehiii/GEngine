@@ -13,9 +13,7 @@ namespace GEngine
 		OpenGLMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~OpenGLMaterial() override;
 
-		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) override;
-
-		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
+		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
 
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
