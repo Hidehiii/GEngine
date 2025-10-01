@@ -12,26 +12,23 @@ namespace GEngine
 		VulkanMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial() override;
 
-		virtual void Update(CommandBuffer* cmdBuffer, const std::string& pass) override;
-
-		virtual void SetIntArray(const std::string& name, int* value, uint32_t count) override;
-
+		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
 
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
 		virtual void SetShader(const Ref<Shader>& shader) override;
 
-		Ref<VulkanUniformBuffer>	GetUniformBuffer()			{ return m_UniformBuffer; }
-		VkDescriptorSetLayout*		GetDescriptorSetLayout()	{ return &m_DescriptorSetLayout; }
-		VkDescriptorSet*			GetDescriptorSet(int index) { return &m_DescriptorSets.at(index); }
+		Ref<VulkanUniformBuffer>	GetUniformBuffer()									{ return m_UniformBuffer; }
+		VkDescriptorSetLayout*		GetDescriptorSetLayout(const int& pass)				{ return &m_DescriptorSetLayouts.at(pass); }
+		VkDescriptorSet*			GetDescriptorSet(const int& pass, const int& index) { return &m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index); }
 	private:
-		// ÀíÂÛÉÏÖ»ÒªºóÃæ²»¸Ä¶¯uboºÍÌùÍ¼Ö»ĞèÒª´´½¨ºÍ¸üĞÂÒ»´Î
+		// ç†è®ºä¸Šåªè¦åé¢ä¸æ”¹åŠ¨uboå’Œè´´å›¾åªéœ€è¦åˆ›å»ºå’Œæ›´æ–°ä¸€æ¬¡
 		void CreateDescriptorSetAndLayout();
-		void UpdateDescriptorSet(int index);
+		void UpdateDescriptorSet(const int& pass, const int& index);
 	private:
 		Ref<VulkanShader>									m_Shader;
 		Ref<VulkanUniformBuffer>							m_UniformBuffer = nullptr;
-		VkDescriptorSetLayout								m_DescriptorSetLayout;
+		std::vector<VkDescriptorSetLayout>					m_DescriptorSetLayouts;
 		std::vector<VkDescriptorSet>						m_DescriptorSets;
 		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFrameCount()) - 1;
 	};

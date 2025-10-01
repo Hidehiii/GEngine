@@ -38,7 +38,7 @@ namespace GEngine
         
     }
 
-	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const std::string& pass)
+	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const int& pass)
 	{
 		m_Material->Update(cmdBuffer, pass);
 
@@ -73,14 +73,14 @@ namespace GEngine
 
 		vkCmdSetLineWidth(cmd, 1.0f);
 		vkCmdSetDepthCompareOp(cmd, Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp(pass)));
-		vkCmdSetDepthWriteEnable(cmd, m_Material->IsEnableDepthWrite(pass));
+		vkCmdSetDepthWriteEnable(cmd, m_Material->GetEnableDepthWrite(pass));
 		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull(pass)));
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
 	}
 
-	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		PrepareRender(cmdBuffer, frameBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);
@@ -117,7 +117,7 @@ namespace GEngine
 		m_RecreatePipeline = true;
 	}
     
-	VkPipeline VulkanGraphicsPipeline::GetPipeline(const Ref<FrameBuffer>& frameBuffer, const std::string& pass)
+	VkPipeline VulkanGraphicsPipeline::GetPipeline(const Ref<FrameBuffer>& frameBuffer, const int& pass)
 	{
 		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
 		{
@@ -193,8 +193,8 @@ namespace GEngine
 		VertexInputInfo.pVertexAttributeDescriptions		= attributeDescription.data();
 
 		VkPipelineInputAssemblyStateCreateInfo				InputAssembly{};
-		InputAssembly.sType					= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		InputAssembly.topology				= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		InputAssembly.sType									= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		InputAssembly.topology								= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		switch (m_VertexBuffer->GetVertexTopologyType())
 		{
 		case VertexTopology::Point:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
@@ -202,7 +202,7 @@ namespace GEngine
 		case VertexTopology::Triangle:	InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
 		default: GE_CORE_ASSERT(false, "unkown topolopgy");
 		}
-		InputAssembly.primitiveRestartEnable	= VK_FALSE;
+		InputAssembly.primitiveRestartEnable				= VK_FALSE;
 
 		VkViewport			Viewport{};
 		Viewport.x			= 0.0f;
@@ -212,9 +212,9 @@ namespace GEngine
 		Viewport.minDepth	= 0.0f;
 		Viewport.maxDepth	= 1.0f;
 
-		VkRect2D											Scissor{};
-		Scissor.offset = { 0, 0 };
-		Scissor.extent = VulkanContext::Get()->GetSwapChainExtent();
+		VkRect2D		Scissor{};
+		Scissor.offset	= { 0, 0 };
+		Scissor.extent	= VulkanContext::Get()->GetSwapChainExtent();
 
 		VkPipelineViewportStateCreateInfo					ViewportState{};
 		ViewportState.sType									= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -229,7 +229,7 @@ namespace GEngine
 		Rasterizer.rasterizerDiscardEnable					= VK_FALSE;
 		Rasterizer.polygonMode								= VK_POLYGON_MODE_FILL;
 		Rasterizer.lineWidth								= 1.0f;
-		Rasterizer.cullMode									= Utils::CullModeToVkCullMode(m_Material->GetCull());
+		Rasterizer.cullMode									= Utils::CullModeToVkCullMode(m_Material->GetCull(pass));
 		Rasterizer.frontFace								= VK_FRONT_FACE_CLOCKWISE;
 
 		VkPipelineMultisampleStateCreateInfo				Multisampling{};
@@ -244,10 +244,10 @@ namespace GEngine
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
 		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		ColorBlendAttachment.blendEnable					= VK_TRUE;
-		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSrc());
-		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDst());
+		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSrc(pass));
+		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDst(pass));
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendColor())
+		switch (m_Material->GetBlendColor(pass))
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
@@ -270,10 +270,10 @@ namespace GEngine
 		default:
 			break;
 		}
-		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSrc());
-		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDst());
+		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSrc(pass));
+		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDst(pass));
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendAlpha())
+		switch (m_Material->GetBlendAlpha(pass))
 		{
 		case BlendMode::None:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
@@ -312,7 +312,7 @@ namespace GEngine
 		VkPipelineLayoutCreateInfo					pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount			= 1;
-		pipelineLayoutInfo.pSetLayouts				= m_Material->GetDescriptorSetLayout();
+		pipelineLayoutInfo.pSetLayouts				= m_Material->GetDescriptorSetLayout(pass);
 		pipelineLayoutInfo.pushConstantRangeCount	= 0;
 		pipelineLayoutInfo.pPushConstantRanges		= nullptr;
 
@@ -321,8 +321,8 @@ namespace GEngine
 		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
 		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable			= VK_TRUE;
-		depthStencil.depthWriteEnable			= m_Material->IsEnableDepthWrite() ? VK_TRUE : VK_FALSE;
-		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp());
+		depthStencil.depthWriteEnable			= m_Material->GetEnableDepthWrite(pass) ? VK_TRUE : VK_FALSE;
+		depthStencil.depthCompareOp				= Utils::CompareOPToVkCompareOP(m_Material->GetDepthTestOp(pass));
 		depthStencil.depthBoundsTestEnable		= VK_FALSE;
 		depthStencil.minDepthBounds				= Graphics::IsReverseDepth() ? 1.0f : 0.0f;
 		depthStencil.maxDepthBounds				= Graphics::IsReverseDepth() ? 0.0f : 1.0f;

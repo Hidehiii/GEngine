@@ -49,23 +49,25 @@ namespace GEngine
 	{
 		const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)					return ".cached_vulkan.vert";
-			if (stage == ShaderStage::Fragment)					return ".cached_vulkan.frag";
-			if (stage == ShaderStage::Compute)					return ".cached_vulkan.comp";
-			if (stage == ShaderStage::TessellationControl)		return ".cached_vulkan.tesc";
-			if (stage == ShaderStage::TessellationEvaluation)	return ".cached_vulkan.tese";
-			if (stage == ShaderStage::Geometry)					return ".cached_vulkan.geom";
+			if (stage == SHADER_STAGE_VERTEX)					return ".cached_vulkan.vert";
+			if (stage == SHADER_STAGE_FRAGMENT)					return ".cached_vulkan.frag";
+			if (stage == SHADER_STAGE_COMPUTE)					return ".cached_vulkan.comp";
+			if (stage == SHADER_STAGE_HULL)						return ".cached_vulkan.hull";
+			if (stage == SHADER_STAGE_DOMAIN)					return ".cached_vulkan.doma";
+			if (stage == SHADER_STAGE_GEOMETRY)					return ".cached_vulkan.geom";
+			if (stage == SHADER_STAGE_AMPLIFICATION)			return ".cached_vulkan.ampl";
+			if (stage == SHADER_STAGE_MESH)						return ".cached_vulkan.mesh";
 			GE_CORE_ASSERT(false, "");
 			return "";
 		}
 		shaderc_shader_kind ShaderStageToShaderC(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)					return shaderc_glsl_vertex_shader;
-			if (stage == ShaderStage::Fragment)					return shaderc_glsl_fragment_shader;
-			if (stage == ShaderStage::Compute)					return shaderc_glsl_compute_shader;
-			if (stage == ShaderStage::TessellationControl)		return shaderc_glsl_tess_control_shader;
-			if (stage == ShaderStage::TessellationEvaluation)	return shaderc_glsl_tess_evaluation_shader;
-			if (stage == ShaderStage::Geometry)					return shaderc_glsl_geometry_shader;
+			if (stage == ShaderStage::Vertex)					return shaderc_vertex_shader;
+			if (stage == ShaderStage::Fragment)					return shaderc_fragment_shader;
+			if (stage == ShaderStage::Compute)					return shaderc_compute_shader;
+			if (stage == ShaderStage::TessellationControl)		return shaderc_tess_control_shader;
+			if (stage == ShaderStage::TessellationEvaluation)	return shaderc_tess_evaluation_shader;
+			if (stage == ShaderStage::Geometry)					return shaderc_geometry_shader;
 			GE_CORE_ASSERT(false, "");
 			return (shaderc_shader_kind)0;
 		}

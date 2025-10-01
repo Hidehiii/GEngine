@@ -13,7 +13,7 @@ namespace GEngine
     OpenGLGraphicsPipeline::~OpenGLGraphicsPipeline()
     {
     }
-	void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+	void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		m_Material->Update(cmdBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);

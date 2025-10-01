@@ -82,38 +82,17 @@ namespace GEngine
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<StorageImage2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+				break;
 			}
 			case ShaderPropertyType::StorageBuffer:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<StorageBuffer>*)prop.Ptr))->Bind(prop.Location);
+				break;
 			}
 			default:
 				break;
 			}
-		}
-
-		for (auto& texture2D : m_Texture2D)
-		{
-			m_Shader->SetInt1(texture2D.Name, texture2D.Slot, pass);
-			texture2D.Texture->Bind(cmdBuffer, texture2D.Slot);
-		}
-
-		for (auto& image2D : m_StorageImage2D)
-		{
-			m_Shader->SetInt1(image2D.Name, image2D.Slot, pass);
-			image2D.Image->Bind(cmdBuffer, image2D.Slot);
-		}
-
-		for (auto& cubeMap : m_CubeMap)
-		{
-			m_Shader->SetInt1(cubeMap.Name, cubeMap.Slot, pass);
-			cubeMap.Cubemap->Bind(cmdBuffer, cubeMap.Slot);
-		}
-
-		for (auto& storageBuffer : m_StorageBuffer)
-		{
-			storageBuffer.Buffer->Bind(storageBuffer.Slot);
 		}
 
 		Utils::SetCull(m_Passes.at(pass).State.Cull);
