@@ -5,10 +5,6 @@
 #include <vulkan/vulkan.h>
 namespace GEngine
 {
-	struct VulkanShaderModule
-	{
-		std::unordered_map<std::string, VkShaderModule>	 Modules;
-	};
 
 	class GENGINE_API VulkanShader : public Shader
 	{
@@ -16,8 +12,8 @@ namespace GEngine
 		VulkanShader(const std::string& path);
 		virtual ~VulkanShader();
 
-		VkShaderModule		GetShaderModule(const std::string& stage, const std::string& pass) { return m_ShaderModules[pass].Modules[stage]; }
-		VulkanShaderModule	GetShaderModules(const std::string& pass) { return m_ShaderModules[pass]; }
+		const VkShaderModule&									GetShaderModule(const std::string& stage, const int& pass) { return m_ShaderModules.at(pass)[stage]; }
+		const std::unordered_map<std::string, VkShaderModule>&	GetShaderModules(const int& pass) { return m_ShaderModules.at(pass); }
 	protected:
 		virtual bool Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) override;
 
@@ -37,7 +33,7 @@ namespace GEngine
 			{ ShaderMacroName::GE_GRAPHICS_API, std::to_string((int)GraphicsAPI::API::Vulkan)},
 		};
 
-		std::unordered_map<std::string, VulkanShaderModule>		m_ShaderModules;
+		std::vector<std::unordered_map<std::string, VkShaderModule>>	m_ShaderModules; // stage : module 
 	};
 }
 

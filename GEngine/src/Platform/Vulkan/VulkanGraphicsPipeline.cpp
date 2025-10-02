@@ -77,7 +77,10 @@ namespace GEngine
 		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull(pass)));
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, m_Material->GetDescriptorSet(Graphics::GetFrame()), offsets.size(), offsets.data());
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+			m_PipelineLayout, 0, 1, 
+			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),
+			offsets.size(), offsets.data());
 	}
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
@@ -129,50 +132,28 @@ namespace GEngine
 		}
 		auto shader = std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader());
 
-		std::string shaderMainFuncName						= m_Material->GetShader()->GetShaderMainFuncName().c_str();
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 
-		if (shader->GetShaderModule(ShaderStage::Vertex, pass))
+		auto modules = shader->GetShaderModules(pass);
+		auto funcNames = shader->GetStageFuncNames(pass);
+		for (auto&& [stage, module] : modules)
 		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT,
-				shader->GetShaderModule(ShaderStage::Vertex, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::Fragment, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT,
-				shader->GetShaderModule(ShaderStage::Fragment, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::TessellationControl, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-				shader->GetShaderModule(ShaderStage::TessellationControl, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::TessellationEvaluation, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-				shader->GetShaderModule(ShaderStage::TessellationEvaluation, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::Geometry, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT,
-				shader->GetShaderModule(ShaderStage::Geometry, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::Task, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TASK_BIT_EXT,
-				shader->GetShaderModule(ShaderStage::Task, pass),
-				shaderMainFuncName.c_str()));
-		}
-		if (shader->GetShaderModule(ShaderStage::Mesh, pass))
-		{
-			ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_MESH_BIT_EXT,
-				shader->GetShaderModule(ShaderStage::Mesh, pass),
-				shaderMainFuncName.c_str()));
+			if (stage == SHADER_STAGE_VERTEX)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_VERTEX_BIT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_FRAGMENT)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_HULL)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_DOMAIN)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_GEOMETRY)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_AMPLIFICATION)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_TASK_BIT_EXT, module, funcNames[stage].c_str()));
+			else if (stage == SHADER_STAGE_MESH)
+				ShaderStages.push_back(Utils::CreatePipelineShaderStage(VK_SHADER_STAGE_MESH_BIT_EXT, module, funcNames[stage].c_str()));
+			else
+				GE_CORE_ASSERT(false, "Unsupport shader stage {}!", stage);
 		}
 
 		GE_CORE_ASSERT(ShaderStages.size() > 0, " there are no shader stage in graphics pipeline pass {}", pass);

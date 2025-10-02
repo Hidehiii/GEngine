@@ -132,9 +132,9 @@ namespace GEngine
 	struct ShaderPass
 	{
 		RenderState													State;
-		std::unordered_map<std::string, ConstShaderProperty>		ConstPropertiesDesc;
+		std::unordered_map<std::string, ConstShaderProperty>		ConstPropertiesDesc; // name : property
 		Buffer														ConstProperties;
-		std::unordered_map<std::string, ReferenceShaderProperty>	ReferenceProperties;
+		std::unordered_map<std::string, ReferenceShaderProperty>	ReferenceProperties; // name : property
 	};
 
 	namespace Utils
@@ -171,20 +171,23 @@ namespace GEngine
 		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_Passes.at(pass).State.DepthTestOp; }
 		virtual int											GetColorMask(const int& pass) { return m_Passes.at(pass).State.ColorMask; }
 
-		virtual const std::string&											GetShaderName() const { return m_Name; }
-		virtual const std::string&											GetShaderPath() { return m_FilePath; }
-		virtual const std::unordered_map<std::string, ShaderPropertyType>&	GetProperties() { return m_Properties; }
-		virtual const std::vector<ShaderPass>&								GetPasses() { return m_Passes; }
+		virtual const std::string&												GetShaderName() const { return m_Name; }
+		virtual const std::string&												GetShaderPath() { return m_FilePath; }
+		virtual const std::unordered_map<std::string, ShaderPropertyType>&		GetProperties() { return m_Properties; }
+		virtual const std::vector<ShaderPass>&									GetPasses() { return m_Passes; }
+		virtual const std::vector<std::unordered_map<std::string, std::string>>	GetStageFuncNames() { return m_StageFuncNames; }
+		virtual const std::unordered_map<std::string, std::string>				GetStageFuncNames(const int& pass) { return m_StageFuncNames.at(pass); }
 
 	protected:
 		virtual void										Preprocess(const std::string& source, std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) = 0;
 	protected:
-		std::string											m_FilePath;
-		std::string											m_Name;
+		std::string													m_FilePath;
+		std::string													m_Name;
 
-		std::unordered_map<std::string, ShaderPropertyType>	m_Properties;
-		std::vector<ShaderPass>								m_Passes;
+		std::unordered_map<std::string, ShaderPropertyType>			m_Properties; // name : type
+		std::vector<std::unordered_map<std::string, std::string>>	m_StageFuncNames; // stage : name
+		std::vector<ShaderPass>										m_Passes;
 
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);

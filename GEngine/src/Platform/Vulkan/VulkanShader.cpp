@@ -62,12 +62,14 @@ namespace GEngine
 		}
 		shaderc_shader_kind ShaderStageToShaderC(std::string stage)
 		{
-			if (stage == ShaderStage::Vertex)					return shaderc_vertex_shader;
-			if (stage == ShaderStage::Fragment)					return shaderc_fragment_shader;
-			if (stage == ShaderStage::Compute)					return shaderc_compute_shader;
-			if (stage == ShaderStage::TessellationControl)		return shaderc_tess_control_shader;
-			if (stage == ShaderStage::TessellationEvaluation)	return shaderc_tess_evaluation_shader;
-			if (stage == ShaderStage::Geometry)					return shaderc_geometry_shader;
+			if (stage == SHADER_STAGE_VERTEX)					return shaderc_vertex_shader;
+			if (stage == SHADER_STAGE_FRAGMENT)					return shaderc_fragment_shader;
+			if (stage == SHADER_STAGE_COMPUTE)					return shaderc_compute_shader;
+			if (stage == SHADER_STAGE_HULL)						return shaderc_tess_control_shader;
+			if (stage == SHADER_STAGE_DOMAIN)					return shaderc_tess_evaluation_shader;
+			if (stage == SHADER_STAGE_GEOMETRY)					return shaderc_geometry_shader;
+			if (stage == SHADER_STAGE_AMPLIFICATION)			return shaderc_task_shader;
+			if (stage == SHADER_STAGE_MESH)						return shaderc_mesh_shader;
 			GE_CORE_ASSERT(false, "");
 			return (shaderc_shader_kind)0;
 		}
