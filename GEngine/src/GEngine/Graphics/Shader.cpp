@@ -161,6 +161,21 @@ namespace GEngine
 
 			//todo
 
+			// cull
+
+			//depth test
+
+			//depth write
+
+			//blend
+
+			// blend op
+
+			//color mask
+
+			//#pragma
+
+			pos = source.find("Program", pos);
 			pos = source.find("{", pos);
 			stack.push(1);
 			size_t begin = pos + 1;
@@ -183,6 +198,8 @@ namespace GEngine
 			block = source.substr(begin, pos - 1);
 
 			// todo
+
+			// src code
 
 			pos = source.find("}", pos + 1);
 			stack.pop();
