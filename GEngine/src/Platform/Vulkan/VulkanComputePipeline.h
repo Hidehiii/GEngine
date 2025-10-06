@@ -7,7 +7,7 @@ namespace GEngine
 	struct VulkanComputePipelineInfo
 	{
 		VkPipeline	ComputePipeline;
-		std::string Pass;
+		int			Pass;
 	};
 
 	class GENGINE_API VulkanComputePipeline : public ComputePipeline
@@ -18,12 +18,12 @@ namespace GEngine
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 	protected:
-		virtual void Compute(CommandBuffer* cmdBuffer, const std::string& pass, uint32_t x, uint32_t y, uint32_t z) override;
+		virtual void Compute(CommandBuffer* cmdBuffer, int pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		friend class VulkanCommandBuffer;
 	private:
-		VkPipeline GetPipeline(const std::string& pass);
-		void PrepareCompute(CommandBuffer* cmdBuffer, const std::string& pass);
+		VkPipeline GetPipeline(const int& pass);
+		void PrepareCompute(CommandBuffer* cmdBuffer, const int& pass);
 	private:
 		Ref<VulkanMaterial>									m_Material;
 

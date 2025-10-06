@@ -14,7 +14,7 @@ namespace GEngine
 		virtual void			SetMaterial(Ref<Material>& material) override;
 
 	protected:
-		virtual void Compute(CommandBuffer* cmdBuffer, const std::string& pass, uint32_t x, uint32_t y, uint32_t z) override;
+		virtual void Compute(CommandBuffer* cmdBuffer, int pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		friend class OpenGLCommandBuffer;
 

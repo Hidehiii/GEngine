@@ -127,10 +127,10 @@ namespace GEngine
         ClearWaitFence();
         ClearSignalFence();
     }
-    void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, std::string pass, uint32_t instanceCount, uint32_t indexCount)
+    void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount, uint32_t indexCount)
     {
     }
-    void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, std::string pass, uint32_t x, uint32_t y, uint32_t z)
+    void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
     {
     }
 }
