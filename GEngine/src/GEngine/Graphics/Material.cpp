@@ -229,6 +229,22 @@ namespace GEngine
 		}
 		return size;
 	}
+	void Material::InitializePassPropertiesMemory()
+	{
+		GE_CORE_ASSERT(m_Shader, "Shader ref is NULL!");
+		auto& passes = m_Shader->GetPasses();
+		for (size_t i = 0; i < passes.size(); i++)
+		{
+			m_Passes.push_back(passes[i]);
+			uint32_t size = 0;
+			for (auto& [name, prop] : m_Passes[i].ConstPropertiesDesc)
+			{
+				size += prop.Size;
+			}
+			m_Passes[i].ConstProperties.Allocate(size);
+			m_Passes[i].ConstProperties.ZeroInitialize();
+		}
+	}
 	void Material::WriteConstProperty(const std::string& name, const void* value)
 	{
 		for (auto& pass : m_Passes)

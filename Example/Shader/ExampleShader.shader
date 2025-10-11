@@ -12,6 +12,7 @@ Shader "Shader Name"
         Blend
         BlendOp
         ColorMask
+        RenderPipeline
 
         #pragma vertex
         #pragma fragment

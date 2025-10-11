@@ -135,6 +135,7 @@ namespace GEngine
 		pos = source.find("\"", pos);
 
 		m_Name = source.substr(pos + 1, source.find("\"", pos + 1) - pos - 1);
+		GE_INFO("Shader name: {}", m_Name);
 
 		pos = source.find("{", pos);
 		stack.push(1);
@@ -147,12 +148,28 @@ namespace GEngine
 		block = source.substr(pos + 1, source.find("}", pos + 1) - pos - 1);
 
 		//todo
+		GE_INFO("Properties block {}", block);
+		//properties
+		//type name (float _color)...
+		//split by \n or ;
+		std::vector<std::string> properties = StringHelper::Split(block, {'\n', ';'});
+		for (auto& property : properties)
+		{
+			auto words = StringHelper::Split(property, { ' ', '\t' });
+			words = StringHelper::ClearEmptyStrings(words);
+			GE_CORE_ASSERT(words.size() == 2, "Invalid property declaration! " + property);
+			ShaderPropertyType type = Utils::ShaderPropertyTypeFromString(words[0]);
+			std::string name = words[1];
+			m_Properties[name] = type;
+			GE_INFO("Shader property: {} {}", words[0], words[1]);
+		}
+
 
 		pos = source.find("}", pos);
 		stack.pop();
-
 		while (source.find("Pass", pos) != std::string::npos)
 		{
+			m_Passes.push_back(ShaderPass());
 			pos = source.find("Pass", pos);
 			pos = source.find("{", pos);
 			stack.push(1);
@@ -160,9 +177,20 @@ namespace GEngine
 			block = source.substr(pos + 1, source.find("Program", pos + 1) - pos - 1);
 
 			//todo
-
+			GE_INFO("Command block {}", block);
+			std::string commandLine;
+			size_t commandPos;
 			// cull
-
+			commandPos = block.find("Cull", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
+				m_Passes.at(m_Passes.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
+				GE_INFO("Cull mode: {}", words[1]);
+			}
 			//depth test
 
 			//depth write
@@ -172,6 +200,8 @@ namespace GEngine
 			// blend op
 
 			//color mask
+
+			//render pipeline
 
 			//#pragma
 
@@ -198,9 +228,14 @@ namespace GEngine
 			block = source.substr(begin, pos - 1);
 
 			// todo
-
+			GE_INFO("Program block {}", block);
 			// src code
 
+			//reflection
+
+			// ConstPropertiesDesc
+
+			//  ReferenceProperties
 			pos = source.find("}", pos + 1);
 			stack.pop();
 		}

@@ -15,14 +15,13 @@ namespace GEngine
 		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		uint32_t size = InitializePropertiesMemory();
+		InitializePassPropertiesMemory();
 		// Create uniform buffer
 		// 0 is reserved for custom uniform buffer
 		if (size > 0)
 		{
 			m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
 		}
-		
-		m_Passes = std::vector<ShaderPass>(m_Shader->GetPasses());
 
 		CreateDescriptorSetAndLayout();
 	}

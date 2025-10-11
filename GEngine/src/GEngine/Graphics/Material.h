@@ -77,6 +77,7 @@ namespace GEngine
 
 	protected:
 		virtual uint32_t InitializePropertiesMemory();
+		virtual void InitializePassPropertiesMemory();
 
 		virtual void WriteConstProperty(const std::string& name, const void* value);
 		virtual void WriteReferenceProperty(const std::string& name, void* ptr);

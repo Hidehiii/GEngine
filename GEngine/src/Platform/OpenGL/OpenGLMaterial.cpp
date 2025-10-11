@@ -11,14 +11,13 @@ namespace GEngine
 		if (m_Shader)
 		{
 			uint32_t size = InitializePropertiesMemory();
+			InitializePassPropertiesMemory();
 			// Create uniform buffer
 			// 0 is reserved for custom uniform buffer
 			if (size > 0)
 			{
 				m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
 			}
-
-			m_Passes = std::vector<ShaderPass>(m_Shader->GetPasses());
 		}
 		else
 		{
