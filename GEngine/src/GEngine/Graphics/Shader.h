@@ -115,6 +115,7 @@ namespace GEngine
 		BlendMode			BlendColor					= BlendMode::None;
 		BlendMode			BlendAlpha					= BlendMode::None;
 		CullMode			Cull						= CullMode::Back;
+		std::string			Tag							= "Default";
 	};
 
 	struct ConstShaderProperty
@@ -171,15 +172,15 @@ namespace GEngine
 		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_Passes.at(pass).State.DepthTestOp; }
 		virtual int											GetColorMask(const int& pass) { return m_Passes.at(pass).State.ColorMask; }
 
-		virtual const std::string&												GetShaderName() const { return m_Name; }
-		virtual const std::string&												GetShaderPath() { return m_FilePath; }
-		virtual const std::unordered_map<std::string, ShaderPropertyType>&		GetProperties() { return m_Properties; }
-		virtual const std::vector<ShaderPass>&									GetPasses() { return m_Passes; }
-		virtual const std::vector<std::unordered_map<std::string, std::string>>	GetStageFuncNames() { return m_StageFuncNames; }
-		virtual const std::unordered_map<std::string, std::string>				GetStageFuncNames(const int& pass) { return m_StageFuncNames.at(pass); }
+		virtual const std::string&													GetShaderName() const { return m_Name; }
+		virtual const std::string&													GetShaderPath() { return m_FilePath; }
+		virtual const std::unordered_map<std::string, ShaderPropertyType>&			GetProperties() { return m_Properties; }
+		virtual const std::vector<ShaderPass>&										GetPasses() { return m_Passes; }
+		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageFuncNames() { return m_StageFuncNames; }
+		virtual const std::unordered_map<std::string, std::string>&					GetStageFuncNames(const int& pass) { return m_StageFuncNames.at(pass); }
 
 	protected:
-		virtual void										Preprocess(const std::string& source, std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes);
+		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) = 0;
 	protected:
 		std::string													m_FilePath;

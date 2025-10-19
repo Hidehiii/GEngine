@@ -128,7 +128,7 @@ namespace GEngine
 		}
 	}
 
-	void Shader::Preprocess(const std::string& source, std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCode)
+	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
 	{
 		std::stack<int> stack;
 		size_t pos = source.find("Shader", 0);
@@ -192,18 +192,134 @@ namespace GEngine
 				GE_INFO("Cull mode: {}", words[1]);
 			}
 			//depth test
-
+			commandPos = block.find("DepthTest", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
+				m_Passes.at(m_Passes.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
+				GE_INFO("Depth test: {}", words[1]);
+			}
 			//depth write
-
-			//blend
-
+			commandPos = block.find("DepthWrite", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
+				m_Passes.at(m_Passes.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
+				GE_INFO("Depth write: {}", words[1]);
+			}
+			//blend,用空格避免找到BlendOp等类似命令
+			commandPos = block.find("Blend ", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 3 || words.size() == 5, "Invalid Blend command! " + commandLine);
+				if (words.size() == 3)
+				{
+					m_Passes.at(m_Passes.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
+					GE_INFO("Blend mode: {} {}", words[1], words[2]);
+				}
+				if (words.size() == 5)
+				{
+					m_Passes.at(m_Passes.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
+					GE_INFO("Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
+				}
+			}
 			// blend op
-
+			commandPos = block.find("BlendOp", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 2 || words.size() == 3, "Invalid BlendOp command! " + commandLine);
+				if (words.size() == 2)
+				{
+					m_Passes.at(m_Passes.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
+					GE_INFO("Blend op: {}", words[1]);
+				}
+				if (words.size() == 3)
+				{
+					m_Passes.at(m_Passes.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_Passes.at(m_Passes.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
+					GE_INFO("Blend op: {} {}", words[1], words[2]);
+				}
+			}
 			//color mask
-
-			//render pipeline
-
+			commandPos = block.find("ColorMask", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',' });
+				words = StringHelper::ClearEmptyStrings(words);
+				int mask = 0;
+				for (size_t i = 1; i < words.size(); i++)
+				{
+					if (StringHelper::ToUpper(words[i]) == "R") mask |= ColorMaskChannel::R;
+					if (StringHelper::ToUpper(words[i]) == "G") mask |= ColorMaskChannel::G;
+					if (StringHelper::ToUpper(words[i]) == "B") mask |= ColorMaskChannel::B;
+					if (StringHelper::ToUpper(words[i]) == "A") mask |= ColorMaskChannel::A;
+				}
+				m_Passes.at(m_Passes.size() - 1).State.ColorMask = mask;
+				GE_INFO("Color mask: {}", mask);
+			}
+			//tag
+			commandPos = block.find("Tag", 0);
+			if (commandPos != std::string::npos)
+			{
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
+				m_Passes.at(m_Passes.size() - 1).State.Tag = words[1];
+				GE_INFO("Tag: {}", words[1]);
+			}
 			//#pragma
+			commandPos = 0;
+			m_StageFuncNames.push_back(std::unordered_map<std::string, std::string>());
+			while (block.find("#pragma", commandPos) != std::string::npos)
+			{
+				commandPos = block.find("#pragma", commandPos);
+				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',' });
+				words = StringHelper::ClearEmptyStrings(words);
+				GE_CORE_ASSERT(words.size() == 3, "Invalid pragma command! " + commandLine);
+				if (StringHelper::ToUpper(words[1]) == "VERTEX")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_VERTEX] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "FRAGMENT")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_FRAGMENT] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "HULL")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_HULL] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "DOMAIN")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_DOMAIN] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "GEOMETRY")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_GEOMETRY] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "COMPUTE")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_COMPUTE] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "AMPLIFICATION")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_AMPLIFICATION] = words[2];
+				else if (StringHelper::ToUpper(words[1]) == "MESH")
+					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_MESH] = words[2];
+				else
+					GE_CORE_ASSERT(false, "Unknown shader stage in pragma command! " + commandLine);
+				commandPos++;
+			}
+			
+
 
 			pos = source.find("Program", pos);
 			pos = source.find("{", pos);
