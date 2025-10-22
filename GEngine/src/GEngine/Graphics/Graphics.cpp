@@ -5,6 +5,7 @@
 #include "GEngine/Components/Components.h"
 #include "Platform/OpenGL/OpenGLGraphicsAPI.h"
 #include "Platform/Vulkan/VulkanGraphicsAPI.h"
+#include "GEngine/Tools/ShaderCompiler.h"
 
 namespace GEngine
 {
@@ -91,6 +92,8 @@ namespace GEngine
 
 	void Graphics::Init()
     {
+		ShaderCompiler::Create();
+
 		s_UniformData.CameraBuffer	= UniformBufferDynamic::Create(sizeof(CameraUniformData), s_DynamicUniformCount, 1, true);
 		s_UniformData.TimeBuffer	= UniformBufferDynamic::Create(sizeof(TimeUniformData), s_DynamicUniformCount, 2, true);
 		s_UniformData.MainLightBuffer = UniformBufferDynamic::Create(sizeof(MainLightUniformData), s_DynamicUniformCount, 3, true);

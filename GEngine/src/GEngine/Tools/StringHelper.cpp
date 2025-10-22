@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "StringHelper.h"
 
+
 namespace GEngine
 {
 	std::string StringHelper::FromCharVector(const std::vector<char>& vector)
@@ -11,6 +12,18 @@ namespace GEngine
 			str += c;
 		}
 		return str;
+	}
+
+	std::string StringHelper::WideStringToString(const std::wstring& wideString)
+	{
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+		return converter.to_bytes(wideString);
+	}
+
+	std::wstring StringHelper::StringToWideString(const std::string& string)
+	{
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+		return converter.from_bytes(string);
 	}
 
 	std::string StringHelper::ToLower(std::string string)

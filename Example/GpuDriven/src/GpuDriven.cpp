@@ -7,7 +7,6 @@ namespace GEngine
 	}
 	void GpuDriven::OnAttach()
 	{
-		ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
 		m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 	}

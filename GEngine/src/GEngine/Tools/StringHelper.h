@@ -9,7 +9,8 @@ namespace GEngine
 	public:
 		static std::string FromCharVector(const std::vector<char>& vector);
 		
-
+		static std::string WideStringToString(const std::wstring& wideString);
+		static std::wstring StringToWideString(const std::string& string);
 		static std::string ToLower(std::string string);
 		static std::string ToUpper(std::string string);
 

@@ -40,9 +40,9 @@ public:
 	virtual void OnPresent() override;
 	virtual void OnRender() override;
 
-	void OnUpdate() override;
+	virtual void OnUpdate() override;
 	virtual void OnImGuiRender() override;
-	void OnEvent(GEngine::Event& e) override;
+	virtual void OnEvent(GEngine::Event& e) override;
 private:
 	bool OnKeyPressed(GEngine::KeyPressedEvent& e);
 private:

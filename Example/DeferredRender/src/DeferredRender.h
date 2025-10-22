@@ -19,9 +19,9 @@ namespace GEngine
 		virtual void OnPresent() override;
 		virtual void OnRender() override;
 
-		void OnUpdate() override;
+		virtual void OnUpdate() override;
 		virtual void OnImGuiRender() override;
-		void OnEvent(Event & e) override;
+		virtual void OnEvent(Event & e) override;
 	private:
 		Editor::EditorCamera m_EditorCamera;
 

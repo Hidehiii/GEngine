@@ -7,8 +7,6 @@ namespace GEngine
     }
     void DeferredRender::OnAttach()
     {
-        ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
-
         m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
 		m_AlbedoTexture = Texture2D::Create("Resources/Textures/Albedo.png");

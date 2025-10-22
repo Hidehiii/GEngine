@@ -3,43 +3,6 @@
 #include "GEngine/Graphics/Material.h"
 #include <glad/glad.h>
 
-
-
-class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
-{
-	shaderc_include_result* GetInclude(
-		const char* requested_source,
-		shaderc_include_type type,
-		const char* requesting_source,
-		size_t include_depth) override
-	{
-		const std::string name = std::string(requested_source);
-		const std::string contents = GEngine::Utils::ReadFile(name);
-
-		auto container = new std::array<std::string, 2>;
-		(*container)[0] = name;
-		(*container)[1] = contents;
-
-		auto data = new shaderc_include_result;
-
-		data->user_data = container;
-
-		data->source_name = (*container)[0].data();
-		data->source_name_length = (*container)[0].size();
-
-		data->content = (*container)[1].data();
-		data->content_length = (*container)[1].size();
-
-		return data;
-	};
-
-	void ReleaseInclude(shaderc_include_result* data) override
-	{
-		delete static_cast<std::array<std::string, 2>*>(data->user_data);
-		delete data;
-	};
-};
-
 namespace GEngine
 {
 	namespace Utils {
@@ -76,31 +39,14 @@ namespace GEngine
 			return 0;
 		}
 
-		shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
-		{
-			switch (stage)
-			{
-			case GL_VERTEX_SHADER:			return shaderc_vertex_shader;
-			case GL_FRAGMENT_SHADER:		return shaderc_fragment_shader;
-			case GL_COMPUTE_SHADER:			return shaderc_compute_shader;
-			case GL_TESS_CONTROL_SHADER:	return shaderc_tess_control_shader;
-			case GL_TESS_EVALUATION_SHADER:	return shaderc_tess_evaluation_shader;
-			case GL_GEOMETRY_SHADER:		return shaderc_geometry_shader;
-			case GL_TASK_SHADER_NV:			return shaderc_task_shader;
-			case GL_MESH_SHADER_NV:			return shaderc_mesh_shader;
-			}
-			GE_CORE_ASSERT(false,"");
-			return (shaderc_shader_kind)0;
-		}
-
 		const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
 		{
 			switch (stage)
 			{
-			case GL_VERTEX_SHADER:			return ".cached_opengl.vert";
-			case GL_FRAGMENT_SHADER:		return ".cached_opengl.frag";
-			case GL_COMPUTE_SHADER:			return ".cached_opengl.comp";
-			case GL_TESS_CONTROL_SHADER:	return ".cached_opengl.hull";
+			case GL_VERTEX_SHADER:			return ".cached_opengl_vert";
+			case GL_FRAGMENT_SHADER:		return ".cached_opengl_frag";
+			case GL_COMPUTE_SHADER:			return ".cached_opengl_comp";
+			case GL_TESS_CONTROL_SHADER:	return ".cached_opengl_hull";
 			case GL_TESS_EVALUATION_SHADER:	return ".cached_opengl_doma";
 			case GL_GEOMETRY_SHADER:		return ".cached_opengl_geom";
 			case GL_TASK_SHADER_NV:			return ".cached_opengl_ampl";
@@ -114,11 +60,9 @@ namespace GEngine
 	
 
 	OpenGLShader::OpenGLShader(const std::string& path)
+		: Shader(path)
 	{
 		
-		m_FilePath = path;
-		Utils::CreateCacheDirectoryIfNeeded();
-
 		std::string src = Utils::ReadFile(path);
 		ProcessShaderSource(src);
 		for (auto pass : m_ShaderPasses)
@@ -185,55 +129,6 @@ namespace GEngine
 	{
 		std::unordered_map<std::string, std::string> shaderSources;
 
-		const char* typeToken			= "#Type";
-		size_t typeTokenLength			= strlen(typeToken);
-
-		// find Name 
-		m_Name = Utils::ProcessShaderName(source);
-
-
-		// find Blend
-		Utils::ProcessShaderBlend(source, m_BlendModeColor, m_BlendModeAlpha, m_BlendColorSourceFactor, m_BlendColorDestinationFactor, m_BlendAlphaSourceFactor, m_BlendAlphaDestinationFactor);
-
-
-		// find DepthWrite
-		Utils::ProcessShaderDepthWrite(source, m_EnableDepthWrite);
-
-		// find DepthTest
-		Utils::ProcessShaderDepthTest(source, m_DepthTestOperation);
-
-		// find Cull
-		Utils::ProcessShaderCull(source, m_CullMode);
-		
-		// find Properties
-		Utils::ProcessShaderProperties(source, m_UniformCache, m_Texture2DCache, m_CubeMapCache, m_StorageImage2DCache, m_StorageBufferCache, 0, 0, Shader::s_SlotOffset);
-
-		// find Type
-		
-		size_t pos = source.find(typeToken, 0);
-
-		while (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			GE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
-			int index = 0;
-			while ((index = type.find(' ', index)) != std::string::npos)
-			{
-				type.erase(index, 1);
-			}
-			GE_CORE_ASSERT(Utils::ShaderTypeFromString(type).empty() == false, "Invalid shader type specified");
-
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(typeToken, nextLinePos);
-			shaderSources[Utils::ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
-		}
-		return shaderSources;
-
-		// multi pass
-		Utils::ProcessShaderBlocks(source, m_ShaderBlocks);
-		Utils::ProcessShaderPasses(source, m_ShaderBlocks, m_ShaderPasses, m_RenderStates);
 	}
 
 	std::unordered_map<std::string, std::vector<uint32_t>> OpenGLShader::CompileOpenGLBinaries(std::pair<std::string, ShaderPass> pass)

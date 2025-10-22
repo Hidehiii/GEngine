@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <filesystem>
 #include "Material.h"
-#include "ShaderCompiler.h"
 
 #define SHADER_STAGE_VERTEX "vertex"
 #define SHADER_STAGE_HULL "hull"
@@ -159,6 +158,7 @@ namespace GEngine
 	class GENGINE_API Shader
 	{
 	public:
+		Shader(const std::string& path);
 		virtual ~Shader() = default;
 
 		virtual BlendMode									GetBlendColor(const int& pass) { return m_Passes.at(pass).State.BlendColor; }

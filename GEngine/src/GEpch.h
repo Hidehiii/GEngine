@@ -8,6 +8,8 @@
 #include <utility>
 #include <algorithm>
 #include <functional>
+#include <locale>
+#include <codecvt>
 
 #include <string>
 #include <sstream>

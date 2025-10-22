@@ -2,6 +2,8 @@
 #include "Shader.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Tools/StringHelper.h"
+#include "GEngine/Tools/FileSystemHelper.h"
+#include "GEngine/Application.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 
@@ -116,16 +118,22 @@ namespace GEngine
 		}
 		void SetShaderMacroBool(std::string& source, const std::string& macro, bool value)
 		{
-			//µÚ¶şĞĞ²åÈë
+			//ç¬¬äºŒè¡Œæ’å…¥
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + (value ? "1" : "0") + "\n");
 		}
 		void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp)
 		{
-			//µÚ¶şĞĞ²åÈë
+			//ç¬¬äºŒè¡Œæ’å…¥
 			size_t eol = source.find_first_of("\n", 0);
 			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
 		}
+	}
+
+	Shader::Shader(const std::string& path)
+	{
+		m_FilePath = path;
+		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
@@ -213,7 +221,7 @@ namespace GEngine
 				m_Passes.at(m_Passes.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
 				GE_INFO("Depth write: {}", words[1]);
 			}
-			//blend,ÓÃ¿Õ¸ñ±ÜÃâÕÒµ½BlendOpµÈÀàËÆÃüÁî
+			//blend,ç”¨ç©ºæ ¼é¿å…æ‰¾åˆ°BlendOpç­‰ç±»ä¼¼å‘½ä»¤
 			commandPos = block.find("Blend ", 0);
 			if (commandPos != std::string::npos)
 			{

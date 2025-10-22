@@ -4,44 +4,7 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
-#include <shaderc/shaderc.hpp>
-#include <SPIRVCross/spirv_cross.hpp>
-#include <SPIRVCross/spirv_glsl.hpp>
 
-class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
-{
-	shaderc_include_result* GetInclude(
-		const char* requested_source,
-		shaderc_include_type type,
-		const char* requesting_source,
-		size_t include_depth) override
-	{
-		const std::string name = std::string(requested_source);
-		const std::string contents = GEngine::Utils::ReadFile(name);
-
-		auto container = new std::array<std::string, 2>;
-		(*container)[0] = name;
-		(*container)[1] = contents;
-
-		auto data = new shaderc_include_result;
-
-		data->user_data = container;
-
-		data->source_name = (*container)[0].data();
-		data->source_name_length = (*container)[0].size();
-
-		data->content = (*container)[1].data();
-		data->content_length = (*container)[1].size();
-
-		return data;
-	};
-
-	void ReleaseInclude(shaderc_include_result* data) override
-	{
-		delete static_cast<std::array<std::string, 2>*>(data->user_data);
-		delete data;
-	};
-};
 
 namespace GEngine
 {
@@ -49,36 +12,22 @@ namespace GEngine
 	{
 		const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
 		{
-			if (stage == SHADER_STAGE_VERTEX)					return ".cached_vulkan.vert";
-			if (stage == SHADER_STAGE_FRAGMENT)					return ".cached_vulkan.frag";
-			if (stage == SHADER_STAGE_COMPUTE)					return ".cached_vulkan.comp";
-			if (stage == SHADER_STAGE_HULL)						return ".cached_vulkan.hull";
-			if (stage == SHADER_STAGE_DOMAIN)					return ".cached_vulkan.doma";
-			if (stage == SHADER_STAGE_GEOMETRY)					return ".cached_vulkan.geom";
-			if (stage == SHADER_STAGE_AMPLIFICATION)			return ".cached_vulkan.ampl";
-			if (stage == SHADER_STAGE_MESH)						return ".cached_vulkan.mesh";
+			if (stage == SHADER_STAGE_VERTEX)					return ".cached_vulkan_vert";
+			if (stage == SHADER_STAGE_FRAGMENT)					return ".cached_vulkan_frag";
+			if (stage == SHADER_STAGE_COMPUTE)					return ".cached_vulkan_comp";
+			if (stage == SHADER_STAGE_HULL)						return ".cached_vulkan_hull";
+			if (stage == SHADER_STAGE_DOMAIN)					return ".cached_vulkan_doma";
+			if (stage == SHADER_STAGE_GEOMETRY)					return ".cached_vulkan_geom";
+			if (stage == SHADER_STAGE_AMPLIFICATION)			return ".cached_vulkan_ampl";
+			if (stage == SHADER_STAGE_MESH)						return ".cached_vulkan_mesh";
 			GE_CORE_ASSERT(false, "");
 			return "";
-		}
-		shaderc_shader_kind ShaderStageToShaderC(std::string stage)
-		{
-			if (stage == SHADER_STAGE_VERTEX)					return shaderc_vertex_shader;
-			if (stage == SHADER_STAGE_FRAGMENT)					return shaderc_fragment_shader;
-			if (stage == SHADER_STAGE_COMPUTE)					return shaderc_compute_shader;
-			if (stage == SHADER_STAGE_HULL)						return shaderc_tess_control_shader;
-			if (stage == SHADER_STAGE_DOMAIN)					return shaderc_tess_evaluation_shader;
-			if (stage == SHADER_STAGE_GEOMETRY)					return shaderc_geometry_shader;
-			if (stage == SHADER_STAGE_AMPLIFICATION)			return shaderc_task_shader;
-			if (stage == SHADER_STAGE_MESH)						return shaderc_mesh_shader;
-			GE_CORE_ASSERT(false, "");
-			return (shaderc_shader_kind)0;
 		}
 	}
 
 	VulkanShader::VulkanShader(const std::string& path)
+		: Shader(path)
 	{
-		m_FilePath			= path;
-		Utils::CreateCacheDirectoryIfNeeded();
 		std::string src		= Utils::ReadFile(path);
 		std::vector<std::vector<std::string>> shaderStages;
 		std::vector<std::string> shaderSrcCode;

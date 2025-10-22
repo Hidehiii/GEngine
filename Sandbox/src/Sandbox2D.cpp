@@ -20,7 +20,6 @@ void Sandbox2D::OnAttach()
 	/*m_EditorCamera = GEngine::Editor::EditorCamera(30.0f, 1.0f, 0.1f, 1000.0f);
 	m_Camera = GEngine::Editor::EditorCamera(30.0f, 1.0f, 0.1f, 1000.0f);*/
 	//m_RayTracing.Init();
-	ImGui::SetCurrentContext(GEngine::Application::Get().GetImGuiLayer()->GetContext());
 
 	Ref<RenderPass> OpaquePass, DepthOnlyPass;
 

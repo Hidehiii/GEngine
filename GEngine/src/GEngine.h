@@ -51,6 +51,9 @@
 // Tools
 #include "GEngine/Tools/Serialization/Serializer.h"
 #include "GEngine/Tools/ModelImporter.h"
+#include "GEngine/Tools/StringHelper.h"
+#include "GEngine/Tools/FileSystemHelper.h"
+#include "GEngine/Tools/ShaderCompiler.h"
 
 // Utils
 #include "GEngine/Utils/PlatformUtils.h"

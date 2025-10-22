@@ -41,6 +41,7 @@ namespace GEngine
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		m_Context = ImGui::CreateContext();
+		ImGui::SetCurrentContext(m_Context);
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls

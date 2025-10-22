@@ -128,6 +128,11 @@ project "GEngine"
 			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
 			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
 			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/GpuDriven/\""),
+
+			("{COPY} %{cfg.buildtarget.relpath} \"%{wks.location}/bin/" .. outputdir .. "/ShaderCompile/\""),
+			("{COPY} %{LibraryDir.PhysX}*.dll \"%{wks.location}/bin/" .. outputdir .. "/ShaderCompile/\""),
+			("{COPY} %{LibraryDir.VulkanSDK_Bin}*.dll \"%{wks.location}/bin/" .. outputdir .. "/ShaderCompile/\""),
+			("{COPY} %{LibraryDir.dxc_dll}*.dll \"%{wks.location}/bin/" .. outputdir .. "/ShaderCompile/\""),
 		}
 
 	filter "configurations:Debug"
