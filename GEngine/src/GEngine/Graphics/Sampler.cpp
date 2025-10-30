@@ -12,11 +12,11 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			Ref<Sampler> sampler = GetSampler(spec);
 			if (sampler == nullptr)
 			{
@@ -25,7 +25,7 @@ namespace GEngine
 			}
 			return sampler;
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			Ref<Sampler> sampler = GetSampler(spec);
 			if (sampler == nullptr)
 			{

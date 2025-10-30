@@ -10,7 +10,7 @@ namespace GEngine
 {
 	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
-		s_API = GraphicsAPI::API::OpenGL;
+		s_API = GraphicsAPI::GRAPHICS_API_OpenGL;
 
 #ifdef GE_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
@@ -50,11 +50,11 @@ namespace GEngine
 
 	Ref<CommandBuffer> OpenGLGraphicsAPI::GetGraphicsCommandBuffer()
 	{
-		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
+		return OpenGLContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
 	}
 	Ref<CommandBuffer> OpenGLGraphicsAPI::GetComputeCommandBuffer()
 	{
-		return OpenGLContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
+		return OpenGLContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
 	}
 	std::vector<std::string> OpenGLGraphicsAPI::GetExtensions()
 	{

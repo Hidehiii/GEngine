@@ -14,12 +14,12 @@ namespace GEngine
 		return s_CommandBuffers.at(Graphics::GetFrame());
 	}
 
-	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, const std::string& pass, uint32_t instanceCount, uint32_t indexCount)
+	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, const int& pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		GetCommandBuffer()->Render(pipeline, pass, instanceCount, indexCount);
 	}
 
-	void GraphicsPresent::Compute(Ref<ComputePipeline>& pipeline, const std::string& pass, uint32_t x, uint32_t y, uint32_t z)
+	void GraphicsPresent::Compute(Ref<ComputePipeline>& pipeline, const int& pass, uint32_t x, uint32_t y, uint32_t z)
 	{
 		GetCommandBuffer()->Compute(pipeline, pass, x, y, z);
 	}
@@ -28,9 +28,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case GraphicsAPI::API::OpenGL:  return CreateScope<OpenGLGraphicsPresent>();
-		case GraphicsAPI::API::Vulkan:  return CreateScope<VulkanGraphicsPresent>();
+		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case GraphicsAPI::GRAPHICS_API_OpenGL:  return CreateScope<OpenGLGraphicsPresent>();
+		case GraphicsAPI::GRAPHICS_API_Vulkan:  return CreateScope<VulkanGraphicsPresent>();
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

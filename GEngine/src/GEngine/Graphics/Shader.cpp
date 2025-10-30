@@ -3,6 +3,7 @@
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
+#include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Application.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
@@ -26,21 +27,21 @@ namespace GEngine
 			switch (type)
 			{
 			// scalar size
-			case ShaderPropertyType::Int:		return 4;
-			case ShaderPropertyType::Float:		return 4;
-			case ShaderPropertyType::Vector:	return 4 * 4;
-			case ShaderPropertyType::Color:		return 4 * 4;
+			case SHADER_PROPERTY_TYPE_INT:		return 4;
+			case SHADER_PROPERTY_TYPE_FLOAT:	return 4;
+			case SHADER_PROPERTY_TYPE_VECTOR:	return 4 * 4;
+			case SHADER_PROPERTY_TYPE_COLOR:	return 4 * 4;
 
 			// ptr size
-			case ShaderPropertyType::Sampler2D:
-			case ShaderPropertyType::SamplerCube:
-			case ShaderPropertyType::Sampler2DArray:
-			case ShaderPropertyType::Sampler:
-			case ShaderPropertyType::Texture2D:
-			case ShaderPropertyType::TextureCube:
-			case ShaderPropertyType::Texture2DArray:
-			case ShaderPropertyType::StorageImage2D:
-			case ShaderPropertyType::StorageBuffer:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
+			case SHADER_PROPERTY_TYPE_SAMPLER:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
+			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
+			case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
+			case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 				return 4;
 			}
 			return 0;
@@ -48,85 +49,71 @@ namespace GEngine
 
 		CompareOperation ShaderCompareOperationFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(less))				return CompareOperation::Less;
-			if (StringHelper::ToLower(value) == VAR_NAME(greater))			return CompareOperation::Greater;
-			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))			return CompareOperation::LessEqual;
-			if (StringHelper::ToLower(value) == VAR_NAME(lequal))				return CompareOperation::LessEqual;
-			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))		return CompareOperation::GreaterEqual;
-			if (StringHelper::ToLower(value) == VAR_NAME(gequal))				return CompareOperation::GreaterEqual;
-			if (StringHelper::ToLower(value) == VAR_NAME(equal))				return CompareOperation::Equal;
-			if (StringHelper::ToLower(value) == VAR_NAME(notequal))			return CompareOperation::NotEqual;
-			if (StringHelper::ToLower(value) == VAR_NAME(always))				return CompareOperation::Always;
+			if (StringHelper::ToLower(value) == VAR_NAME(less))				return COMPARE_OP_LESS;
+			if (StringHelper::ToLower(value) == VAR_NAME(greater))			return COMPARE_OP_GREATER;
+			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))			return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(lequal))				return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))		return COMPARE_OP_GREATER_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(gequal))				return COMPARE_OP_GREATER_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(equal))				return COMPARE_OP_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(notequal))			return COMPARE_OP_NOT_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(always))				return COMPARE_OP_ALWAYS;
 
-			return CompareOperation::LessEqual;
+			return COMPARE_OP_LESS_EQUAL;
 		}
 		CullMode ShaderCullModeFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CullMode::None;
-			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CullMode::Back;
-			if (StringHelper::ToLower(value) == VAR_NAME(front))		return CullMode::Front;
-			return CullMode::Back;
+			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CULL_MODE_NONE;
+			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CULL_MODE_BACK;
+			if (StringHelper::ToLower(value) == VAR_NAME(front))		return CULL_MODE_FRONT;
+			return CULL_MODE_BACK;
 		}
 		
 		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type)
 		{
-			if (StringHelper::ToLower(type) == VAR_NAME(int))					return ShaderPropertyType::Int;
-			if (StringHelper::ToLower(type) == VAR_NAME(float))				return ShaderPropertyType::Float;
-			if (StringHelper::ToLower(type) == VAR_NAME(vector))				return ShaderPropertyType::Vector;
-			if (StringHelper::ToLower(type) == VAR_NAME(color))				return ShaderPropertyType::Color;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler2d))			return ShaderPropertyType::Sampler2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(samplercube))			return ShaderPropertyType::SamplerCube;
-			if (StringHelper::ToLower(type) == VAR_NAME(storageimage2d))		return ShaderPropertyType::StorageImage2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(storagebuffer))		return ShaderPropertyType::StorageBuffer;
-			if (StringHelper::ToLower(type) == VAR_NAME(texture2d))			return ShaderPropertyType::Texture2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler))				return ShaderPropertyType::Sampler;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler2darray))		return ShaderPropertyType::Sampler2DArray;
+			if (StringHelper::ToLower(type) == VAR_NAME(int))					return SHADER_PROPERTY_TYPE_INT;
+			if (StringHelper::ToLower(type) == VAR_NAME(float))				return SHADER_PROPERTY_TYPE_FLOAT;
+			if (StringHelper::ToLower(type) == VAR_NAME(vector))				return SHADER_PROPERTY_TYPE_VECTOR;
+			if (StringHelper::ToLower(type) == VAR_NAME(color))				return SHADER_PROPERTY_TYPE_COLOR;
+			if (StringHelper::ToLower(type) == VAR_NAME(sampler2d))			return SHADER_PROPERTY_TYPE_SAMPLER_2D;
+			if (StringHelper::ToLower(type) == VAR_NAME(samplercube))			return SHADER_PROPERTY_TYPE_SAMPLER_CUBE;
+			if (StringHelper::ToLower(type) == VAR_NAME(sampler2darray))		return SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY;
+			if (StringHelper::ToLower(type) == VAR_NAME(sampler))				return SHADER_PROPERTY_TYPE_SAMPLER;
+			if (StringHelper::ToLower(type) == VAR_NAME(texture2d))			return SHADER_PROPERTY_TYPE_TEXTURE_2D;
+			if (StringHelper::ToLower(type) == VAR_NAME(texturecube))			return SHADER_PROPERTY_TYPE_TEXTURE_CUBE;
+			if (StringHelper::ToLower(type) == VAR_NAME(texture2darray))		return SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY;
+			if (StringHelper::ToLower(type) == VAR_NAME(storageimage2d))		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D;
+			if (StringHelper::ToLower(type) == VAR_NAME(storagebuffer))		return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
+			
 			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
-			return ShaderPropertyType::None;
+			return SHADER_PROPERTY_TYPE_NONE;
 		}
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor)
 		{
-			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCALPHA))			return BlendFactor::SRC_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTALPHA))			return BlendFactor::DST_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCCOLOR))			return BlendFactor::SRC_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTCOLOR))			return BlendFactor::DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCALPHA))	return BlendFactor::ONE_MINUS_SRC_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BlendFactor::ONE_MINUS_DST_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BlendFactor::ONE_MINUS_SRC_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BlendFactor::ONE_MINUS_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))				return BlendFactor::ONE;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BlendFactor::ZERO;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCALPHA))			return BLEND_FACTOR_SRC_ALPHA;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTALPHA))			return BLEND_FACTOR_DST_ALPHA;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCCOLOR))			return BLEND_FACTOR_SRC_COLOR;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTCOLOR))			return BLEND_FACTOR_DST_COLOR;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCALPHA))	return BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))				return BLEND_FACTOR_ONE;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BLEND_FACTOR_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
 		}
 		BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
-			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BlendMode::None;
-			if (StringHelper::ToLower(type) == VAR_NAME(add))					return BlendMode::Add;
-			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BlendMode::Substract;
-			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BlendMode::ReverseSubstract;
-			if (StringHelper::ToLower(type) == VAR_NAME(min))					return BlendMode::Min;
-			if (StringHelper::ToLower(type) == VAR_NAME(max))					return BlendMode::Max;
+			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BLEND_MODE_NONE;
+			if (StringHelper::ToLower(type) == VAR_NAME(add))					return BLEND_MODE_ADD;
+			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BLEND_MODE_SUBSTRACT;
+			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BLEND_MODE_REVERSE_SUBSTRACT;
+			if (StringHelper::ToLower(type) == VAR_NAME(min))					return BLEND_MODE_MIN;
+			if (StringHelper::ToLower(type) == VAR_NAME(max))					return BLEND_MODE_MAX;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return BlendMode::None;
-		}
-		const char* GetCacheDirectory()
-		{
-			// TODO: make sure the assets directory is valid
-			return "Assets/Cache/Shaders";
-		}
-		void SetShaderMacroBool(std::string& source, const std::string& macro, bool value)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, "#define " + macro + " " + (value ? "1" : "0") + "\n");
-		}
-		void SetShaderMacroExpression(std::string& source, const std::string& macro, std::string& exp)
-		{
-			//第二行插入
-			size_t eol = source.find_first_of("\n", 0);
-			source.insert(eol + 1, "#define " + macro + " " + exp + "\n");
+			return BLEND_MODE_NONE;
 		}
 	}
 
@@ -134,6 +121,12 @@ namespace GEngine
 	{
 		m_FilePath = path;
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
+		std::vector<std::string> srcCodes;
+		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders;
+		std::string source = FileSystemHelper::ReadFileAsString(path);
+		Preprocess(source, srcCodes);
+		Compile(srcCodes, shaders);
+		ProcessMachineCode(shaders);
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
@@ -277,10 +270,10 @@ namespace GEngine
 				int mask = 0;
 				for (size_t i = 1; i < words.size(); i++)
 				{
-					if (StringHelper::ToUpper(words[i]) == "R") mask |= ColorMaskChannel::R;
-					if (StringHelper::ToUpper(words[i]) == "G") mask |= ColorMaskChannel::G;
-					if (StringHelper::ToUpper(words[i]) == "B") mask |= ColorMaskChannel::B;
-					if (StringHelper::ToUpper(words[i]) == "A") mask |= ColorMaskChannel::A;
+					if (StringHelper::ToUpper(words[i]) == "R") mask |= COLOR_MASK_CHANNLE_R;
+					if (StringHelper::ToUpper(words[i]) == "G") mask |= COLOR_MASK_CHANNLE_G;
+					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNLE_B;
+					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNLE_A;
 				}
 				m_Passes.at(m_Passes.size() - 1).State.ColorMask = mask;
 				GE_INFO("Color mask: {}", mask);
@@ -298,7 +291,7 @@ namespace GEngine
 			}
 			//#pragma
 			commandPos = 0;
-			m_StageFuncNames.push_back(std::unordered_map<std::string, std::string>());
+			m_StageEntryPoints.push_back(std::unordered_map<std::string, std::string>());
 			while (block.find("#pragma", commandPos) != std::string::npos)
 			{
 				commandPos = block.find("#pragma", commandPos);
@@ -307,21 +300,21 @@ namespace GEngine
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 3, "Invalid pragma command! " + commandLine);
 				if (StringHelper::ToUpper(words[1]) == "VERTEX")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_VERTEX] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_VERTEX] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "FRAGMENT")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_FRAGMENT] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_FRAGMENT] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "HULL")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_HULL] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_HULL] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "DOMAIN")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_DOMAIN] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_DOMAIN] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "GEOMETRY")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_GEOMETRY] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_GEOMETRY] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "COMPUTE")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_COMPUTE] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_COMPUTE] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "AMPLIFICATION")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_AMPLIFICATION] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_AMPLIFICATION] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "MESH")
-					m_StageFuncNames.at(m_StageFuncNames.size() - 1)[SHADER_STAGE_MESH] = words[2];
+					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_MESH] = words[2];
 				else
 					GE_CORE_ASSERT(false, "Unknown shader stage in pragma command! " + commandLine);
 				commandPos++;
@@ -354,27 +347,46 @@ namespace GEngine
 			// todo
 			GE_INFO("Program block {}", block);
 			// src code
+			shaderSrcCode.push_back(block);
 
-			//reflection
-
-			// ConstPropertiesDesc
-
-			//  ReferenceProperties
 			pos = source.find("}", pos + 1);
 			stack.pop();
 		}
 		
 	}
 
+	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	{
+		for (int i = 0; i < m_StageEntryPoints.size(); i++)
+		{
+			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
+			GE_CORE_ASSERT(m_StageEntryPoints.at(i).size() > 0, "No entry points found for shader pass " + std::to_string(i));
+
+			std::vector<uint32_t> machineCode;
+			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
+			{
+				bool result = ShaderCompiler::Get()->Compile(stage, shaderSrcCodes.at(i), entryPoint, machineCode);
+				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
+			}
+		}
+		
+		//reflection
+
+		// ConstPropertiesDesc
+
+		//  ReferenceProperties
+		return true;
+	}
+
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{
@@ -383,7 +395,7 @@ namespace GEngine
 			s_Shaders[shader->GetShaderName()] = shader;
 			return shader;
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			Ref<Shader> shader = CreateRef<VulkanShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{

@@ -101,7 +101,6 @@ project "GEngine"
 			"%{Library.PhysXCommon_64}",
 			"%{Library.PhysXFoundation_64}",
 			"%{Library.PhysXCooking_64}",
-			"%{Library.PhysXGPU_64}",
 
 			"%{Library.dxc_dxcompiler}",
 			"%{Library.dxc_dxil}"

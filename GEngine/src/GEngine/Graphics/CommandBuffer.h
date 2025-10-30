@@ -9,12 +9,12 @@
 
 namespace GEngine
 {
-	enum class CommandBufferType
+	enum CommandBufferType
 	{
-		None,
-		Graphics,
-		Compute,
-		Transfer,
+		COMMAND_BUFFER_TYPE_NONE,
+		COMMAND_BUFFER_TYPE_GRAPHICS,
+		COMMAND_BUFFER_TYPE_COMPUTE,
+		COMMAND_BUFFER_TYPE_TRANSFER,
 	};
 
 	class GENGINE_API CommandBuffer
@@ -31,7 +31,7 @@ namespace GEngine
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
 		virtual void End() = 0;
 	protected:
-		CommandBufferType				m_Type = CommandBufferType::None;
+		CommandBufferType				m_Type = COMMAND_BUFFER_TYPE_NONE;
 	};
 }
 

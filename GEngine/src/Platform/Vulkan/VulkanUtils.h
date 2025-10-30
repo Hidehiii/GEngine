@@ -5,14 +5,13 @@
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Sampler.h"
 
-#ifdef GE_PLATFORM_WINDOWS
+
 #define VK_CHECK_RESULT(f)																								\
 	{																													\
 		VkResult res = f;																								\
 		GE_CORE_ASSERT(res == VK_SUCCESS, "Fatal : VkResult is {}\nIn File : {}\nAt Line :  {}\nStatement : {}",		\
 				res, __FILE__, __LINE__, VAR_NAME(f));																	\
 	}
-#endif
 
 namespace GEngine
 {

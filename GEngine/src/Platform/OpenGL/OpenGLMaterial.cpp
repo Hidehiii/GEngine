@@ -40,50 +40,50 @@ namespace GEngine
 			GE_CORE_ASSERT(propertyTypes.find(name) != propertyTypes.end(), "Could not find type of property {}!", name);
 			switch (propertyTypes[name])
 			{
-			case ShaderPropertyType::Sampler2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::SamplerCube:
+			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::Sampler2DArray:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Sampler:
+			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2D:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::TextureCube:
+			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2DArray:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::StorageImage2D:
+			case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<StorageImage2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::StorageBuffer:
+			case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<StorageBuffer>*)prop.Ptr))->Bind(prop.Location);

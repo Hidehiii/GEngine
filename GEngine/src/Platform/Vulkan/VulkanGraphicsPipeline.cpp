@@ -135,7 +135,7 @@ namespace GEngine
 		std::vector<VkPipelineShaderStageCreateInfo>		ShaderStages;
 
 		auto modules = shader->GetShaderModules(pass);
-		auto funcNames = shader->GetStageFuncNames(pass);
+		auto funcNames = shader->GetStageEntryPoints(pass);
 		for (auto&& [stage, module] : modules)
 		{
 			if (stage == SHADER_STAGE_VERTEX)
@@ -230,22 +230,22 @@ namespace GEngine
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
 		switch (m_Material->GetBlendColor(pass))
 		{
-		case BlendMode::None:
+		case BLEND_MODE_NONE:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
 			break;
-		case BlendMode::Add:
+		case BLEND_MODE_ADD:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
 			break;
-		case BlendMode::Substract:
+		case BLEND_MODE_SUBSTRACT:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_SUBTRACT;
 			break;
-		case BlendMode::ReverseSubstract:
+		case BLEND_MODE_REVERSE_SUBSTRACT:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
 			break;
-		case BlendMode::Min:
+		case BLEND_MODE_MIN:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MIN;
 			break;
-		case BlendMode::Max:
+		case BLEND_MODE_MAX:
 			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MAX;
 			break;
 		default:
@@ -256,22 +256,22 @@ namespace GEngine
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
 		switch (m_Material->GetBlendAlpha(pass))
 		{
-		case BlendMode::None:
+		case BLEND_MODE_NONE:
 			ColorBlendAttachment.blendEnable = VK_FALSE;
 			break;
-		case BlendMode::Add:
+		case BLEND_MODE_ADD:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 			break;
-		case BlendMode::Substract:
+		case BLEND_MODE_SUBSTRACT:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
 			break;
-		case BlendMode::ReverseSubstract:
+		case BLEND_MODE_REVERSE_SUBSTRACT:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
 			break;
-		case BlendMode::Min:
+		case BLEND_MODE_MIN:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MIN;
 			break;
-		case BlendMode::Max:
+		case BLEND_MODE_MAX:
 			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MAX;
 			break;
 		default:

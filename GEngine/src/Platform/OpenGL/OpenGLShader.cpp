@@ -63,16 +63,6 @@ namespace GEngine
 		: Shader(path)
 	{
 		
-		std::string src = Utils::ReadFile(path);
-		ProcessShaderSource(src);
-		for (auto pass : m_ShaderPasses)
-		{
-			auto spirvData = CompileOpenGLBinaries(pass);
-			uint32_t id = CreateProgram(spirvData);
-			m_Shaders[pass.first] = id;
-		}
-		m_ShaderBlocks.clear();
-		m_ShaderPasses.clear();
 	}
 	OpenGLShader::~OpenGLShader()
 	{
@@ -125,128 +115,46 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Programs.size() > pass, "pass {} not found", pass);
 		glUniformMatrix4fv(glGetUniformLocation(m_Programs[pass], name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
 	}
-	std::unordered_map<std::string, std::string> OpenGLShader::ProcessShaderSource(const std::string& source)
+
+	void OpenGLShader::ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
 	{
-		std::unordered_map<std::string, std::string> shaderSources;
-
-	}
-
-	std::unordered_map<std::string, std::vector<uint32_t>> OpenGLShader::CompileOpenGLBinaries(std::pair<std::string, ShaderPass> pass)
-	{
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		options.SetIncluder(std::make_unique<ShaderIncluder>());
-		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-
-		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-
-		std::unordered_map<std::string, std::vector<uint32_t>> shaderData;
-		for (auto&& [stage, source] : pass.second.Stages)
+		m_Programs.clear();
+		m_Programs.resize(shaders.size());
+		for (int i = 0; i < shaders.size(); i++)
 		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + "." + pass.first + Utils::GLShaderStageCachedOpenGLFileExtension(Utils::ShaderStageToGL(stage)));
+			GLuint program = glCreateProgram();
+			std::vector<GLuint> shaderIDs;
 
-			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
+			for (auto&& [stage, spirv] : shaders[i])
 			{
-				in.seekg(0, std::ios::end);
-				auto size = in.tellg();
-				in.seekg(0, std::ios::beg);
-
-				auto& data = shaderData[stage];
-				data.resize(size / sizeof(uint32_t));
-				in.read((char*)data.data(), size);
+				GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
+				glSpecializeShader(shaderID, m_StageEntryPoints[i][stage].c_str(), 0, nullptr, nullptr);
+				glAttachShader(program, shaderID);
 			}
-			else
+			glLinkProgram(program);
+
+			GLint isLinked;
+			glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+			if (isLinked == GL_FALSE)
 			{
-				Preprocess(source);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(Utils::ShaderStageToGL(stage)), m_FilePath.c_str(), options);
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					GE_CORE_ERROR("Error shader context:\n{}", source);
-					GE_CORE_ASSERT(false, module.GetErrorMessage());
-				}
-
-				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = shaderData[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
+				GLint maxLength;
+				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+				std::vector<GLchar> infoLog(maxLength);
+				glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+				GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
+				glDeleteProgram(program);
+				for (auto id : shaderIDs)
+					glDeleteShader(id);
 			}
-		}
-
-
-		return shaderData;
-	}
-
-	uint32_t OpenGLShader::CreateProgram(std::unordered_map<std::string, std::vector<uint32_t>> shader)
-	{
-		GLuint program = glCreateProgram();
-
-		std::vector<GLuint> shaderIDs;
-		for (auto&& [stage, spirv] : shader)
-		{
-			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
-			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
-			glSpecializeShader(shaderID, m_ShaderMainFuncName.c_str(), 0, nullptr, nullptr);
-			glAttachShader(program, shaderID);
-		}
-		glLinkProgram(program);
-
-		GLint isLinked;
-		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-			GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
-
-			glDeleteProgram(program);
-
 			for (auto id : shaderIDs)
+			{
+				glDetachShader(program, id);
 				glDeleteShader(id);
-		}
+			}
 
-		for (auto id : shaderIDs)
-		{
-			glDetachShader(program, id);
-			glDeleteShader(id);
-		}
-		return program;
-	}
-
-
-	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
-	{
-		spirv_cross::Compiler compiler(shaderData);
-		spirv_cross::ShaderResources resources				= compiler.get_shader_resources();
-
-		GE_CORE_INFO("OpenGLShader::Reflect - {0} {1}", Utils::GLToShaderStage(stage), m_FilePath);
-		GE_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
-		GE_CORE_TRACE("    {0} sampled images", resources.sampled_images.size());
-		GE_CORE_TRACE("    {0} separate images", resources.separate_images.size());
-		GE_CORE_TRACE("    {0} separate samplers", resources.separate_samplers.size());
-
-		GE_CORE_TRACE("Uniform buffers:");
-		for (const auto& resource : resources.uniform_buffers)
-		{
-			const auto& bufferType	= compiler.get_type(resource.base_type_id);
-			uint32_t bufferSize								= compiler.get_declared_struct_size(bufferType);
-			uint32_t binding								= compiler.get_decoration(resource.id, spv::DecorationBinding);
-			int memberCount									= bufferType.member_types.size();
-
-			GE_CORE_TRACE("  {0}", resource.name);
-			GE_CORE_TRACE("    Size = {0}", bufferSize);
-			GE_CORE_TRACE("    Binding = {0}", binding);
-			GE_CORE_TRACE("    Members = {0}", memberCount);
+			m_Programs[i] = program;
 		}
 	}
+
 }

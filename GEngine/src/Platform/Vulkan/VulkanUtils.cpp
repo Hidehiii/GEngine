@@ -297,44 +297,44 @@ namespace GEngine
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
 			switch (format)
 			{
-			case GEngine::FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
 				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				Attachment.format		= VK_FORMAT_R32_SFLOAT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				Attachment.format		= VK_FORMAT_R16G16_SFLOAT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				Attachment.format		= VK_FORMAT_R32_SINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				Attachment.format		= VK_FORMAT_R16G16_SINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				Attachment.format		= VK_FORMAT_R32_UINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				Attachment.format		= VK_FORMAT_R16G16_UINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.stencilLoadOp	= loadOp;
 				Attachment.stencilStoreOp	= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				Attachment.format		= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
@@ -352,24 +352,24 @@ namespace GEngine
 			Ref.sType					= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
 			switch (format)
 			{
-			case GEngine::FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
 				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
-			case GEngine::FrameBufferTextureFormat::R32F:
-			case GEngine::FrameBufferTextureFormat::RG16F:
-			case GEngine::FrameBufferTextureFormat::R32I:
-			case GEngine::FrameBufferTextureFormat::RG16I:
-			case GEngine::FrameBufferTextureFormat::R32UI:
-			case GEngine::FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				Ref.layout		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				Ref.aspectMask	= VK_IMAGE_ASPECT_COLOR_BIT;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				Ref.layout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				Ref.aspectMask	= VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				Ref.layout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				Ref.aspectMask	= VK_IMAGE_ASPECT_DEPTH_BIT;
 				break;
@@ -390,44 +390,44 @@ namespace GEngine
 			Attachment.initialLayout		= VK_IMAGE_LAYOUT_UNDEFINED;
 			switch (format)
 			{
-			case GEngine::FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				GE_CORE_ASSERT(false, "None is not a valid FrameBufferTextureFormat!");
 				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				Attachment.format		= VK_FORMAT_R8G8B8A8_UNORM;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				Attachment.format		= VK_FORMAT_R8_SINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				Attachment.format		= VK_FORMAT_R16G16_SFLOAT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				Attachment.format		= VK_FORMAT_R32_SINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				Attachment.format		= VK_FORMAT_R16G16_SINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				Attachment.format		= VK_FORMAT_R32_UINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				Attachment.format		= VK_FORMAT_R16G16_UINT;
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.stencilLoadOp	= loadOp;
 				Attachment.stencilStoreOp	= storeOp;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				Attachment.format		= FindSupportedFormat({ VK_FORMAT_D32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
@@ -443,22 +443,22 @@ namespace GEngine
 			Ref.attachment = index;
 			switch (format)
 			{
-			case GEngine::FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				GE_CORE_ASSERT(false, "Unknown framebuffer texture format");
 				break;
-			case GEngine::FrameBufferTextureFormat::RGBA8:
-			case GEngine::FrameBufferTextureFormat::R32F:
-			case GEngine::FrameBufferTextureFormat::RG16F:
-			case GEngine::FrameBufferTextureFormat::R32I:
-			case GEngine::FrameBufferTextureFormat::RG16I:
-			case GEngine::FrameBufferTextureFormat::R32UI:
-			case GEngine::FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				Ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
-			case GEngine::FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				Ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			default:
@@ -567,16 +567,16 @@ namespace GEngine
 		{
 			switch (factor)
 			{
-			case BlendFactor::SRC_ALPHA: return VK_BLEND_FACTOR_SRC_ALPHA;
-			case BlendFactor::DST_ALPHA: return VK_BLEND_FACTOR_DST_ALPHA;
-			case BlendFactor::SRC_COLOR: return VK_BLEND_FACTOR_SRC_COLOR;
-			case BlendFactor::DST_COLOR: return VK_BLEND_FACTOR_DST_COLOR;
-			case BlendFactor::ONE_MINUS_SRC_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			case BlendFactor::ONE_MINUS_DST_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-			case BlendFactor::ONE_MINUS_SRC_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-			case BlendFactor::ONE_MINUS_DST_COLOR: return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			case BlendFactor::ONE:	return VK_BLEND_FACTOR_ONE;
-			case BlendFactor::ZERO: return VK_BLEND_FACTOR_ZERO;
+			case BLEND_FACTOR_SRC_ALPHA:			return VK_BLEND_FACTOR_SRC_ALPHA;
+			case BLEND_FACTOR_DST_ALPHA:			return VK_BLEND_FACTOR_DST_ALPHA;
+			case BLEND_FACTOR_SRC_COLOR:			return VK_BLEND_FACTOR_SRC_COLOR;
+			case BLEND_FACTOR_DST_COLOR:			return VK_BLEND_FACTOR_DST_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:	return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_DST_ALPHA:	return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_SRC_COLOR:	return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_DST_COLOR:	return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+			case BLEND_FACTOR_ONE:					return VK_BLEND_FACTOR_ONE;
+			case BLEND_FACTOR_ZERO:					return VK_BLEND_FACTOR_ZERO;
 			default:
 				break;
 			}
@@ -587,8 +587,8 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case RenderImage2DFormat::RGBA8F:	return VK_FORMAT_R8G8B8A8_UNORM;
-			case RenderImage2DFormat::RGB8F:	return VK_FORMAT_R8G8B8_UNORM;
+			case RENDER_IMAGE_2D_FORMAT_RGBA8F:	return VK_FORMAT_R8G8B8A8_UNORM;
+			case RENDER_IMAGE_2D_FORMAT_RGB8F:	return VK_FORMAT_R8G8B8_UNORM;
 				break;
 			default:
 				break;
@@ -598,19 +598,19 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case ComputeImage2DFormat::RGBA32F:		return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ComputeImage2DFormat::RGBA16F:		return VK_FORMAT_R16G16B16A16_SFLOAT;
-			case ComputeImage2DFormat::RG32F:		return VK_FORMAT_R32G32_SFLOAT;
-			case ComputeImage2DFormat::RG16F:		return VK_FORMAT_R16G16_SFLOAT;
-			case ComputeImage2DFormat::R32F:		return VK_FORMAT_R32_SFLOAT;
-			case ComputeImage2DFormat::R16F:		return VK_FORMAT_R16_SFLOAT;
-			case ComputeImage2DFormat::RGBA32I:		return VK_FORMAT_R32G32B32A32_SINT;
-			case ComputeImage2DFormat::RGBA16I:		return VK_FORMAT_R16G16B16A16_SINT;
-			case ComputeImage2DFormat::RGBA8I:		return VK_FORMAT_R8G8B8A8_SINT;
-			case ComputeImage2DFormat::RGBA32UI:	return VK_FORMAT_R32G32B32A32_UINT;
-			case ComputeImage2DFormat::RGBA16UI:	return VK_FORMAT_R16G16B16A16_UINT;
-			case ComputeImage2DFormat::RGBA8UI:		return VK_FORMAT_R8G8B8A8_UINT;
-			case ComputeImage2DFormat::R32UI:		return VK_FORMAT_R32_UINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32F:		return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16F:		return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_RG32F:			return VK_FORMAT_R32G32_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_RG16F:			return VK_FORMAT_R16G16_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_R32F:			return VK_FORMAT_R32_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_R16F:			return VK_FORMAT_R16_SFLOAT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32I:		return VK_FORMAT_R32G32B32A32_SINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16I:		return VK_FORMAT_R16G16B16A16_SINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8I:		return VK_FORMAT_R8G8B8A8_SINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32UI:		return VK_FORMAT_R32G32B32A32_UINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16UI:		return VK_FORMAT_R16G16B16A16_UINT;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8UI:		return VK_FORMAT_R8G8B8A8_UINT;
+			case COMPUTE_IMAGE_2D_FORMAT_R32UI:			return VK_FORMAT_R32_UINT;
 			default:
 				break;
 			}
@@ -620,25 +620,25 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				return VkFormat();
-			case FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				return VK_FORMAT_R8G8B8A8_UNORM;
-			case FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return VK_FORMAT_R32_SFLOAT;
-			case FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				return VK_FORMAT_R16G16_SFLOAT;
-			case FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				return VK_FORMAT_R32_SINT;
-			case FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				return VK_FORMAT_R16G16_SINT;
-			case FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				return VK_FORMAT_R32_UINT;
-			case FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				return VK_FORMAT_R16G16_UINT;
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				return VK_FORMAT_D24_UNORM_S8_UINT;
-			case FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				return VK_FORMAT_D32_SFLOAT;
 			default:
 				break;
@@ -649,8 +649,8 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case VK_FORMAT_R8G8B8A8_UNORM:			return RenderImage2DFormat::RGBA8F;
-			case VK_FORMAT_R8G8B8_UNORM:			return RenderImage2DFormat::RGB8F;
+			case VK_FORMAT_R8G8B8A8_UNORM:			return RENDER_IMAGE_2D_FORMAT_RGBA8F;
+			case VK_FORMAT_R8G8B8_UNORM:			return RENDER_IMAGE_2D_FORMAT_RGB8F;
 				break;
 			default:
 				break;
@@ -661,9 +661,9 @@ namespace GEngine
 		{
 			switch (mode)
 			{
-			case CullMode::None:	return VK_CULL_MODE_NONE;
-			case CullMode::Front:	return VK_CULL_MODE_BACK_BIT;
-			case CullMode::Back:	return VK_CULL_MODE_FRONT_BIT;
+			case CULL_MODE_NONE:	return VK_CULL_MODE_NONE;
+			case CULL_MODE_FRONT:	return VK_CULL_MODE_BACK_BIT;
+			case CULL_MODE_BACK:	return VK_CULL_MODE_FRONT_BIT;
 			default:
 				break;
 			}
@@ -772,13 +772,13 @@ namespace GEngine
 		{
 			switch (op)
 			{
-			case CompareOperation::Less:		return VK_COMPARE_OP_LESS;
-			case CompareOperation::Greater:		return VK_COMPARE_OP_GREATER;
-			case CompareOperation::LessEqual:	return VK_COMPARE_OP_LESS_OR_EQUAL;
-			case CompareOperation::GreaterEqual:return VK_COMPARE_OP_GREATER_OR_EQUAL;
-			case CompareOperation::Equal:		return VK_COMPARE_OP_EQUAL;
-			case CompareOperation::NotEqual:	return VK_COMPARE_OP_NOT_EQUAL;
-			case CompareOperation::Always:		return VK_COMPARE_OP_ALWAYS;
+			case COMPARE_OP_LESS:			return VK_COMPARE_OP_LESS;
+			case COMPARE_OP_GREATER:		return VK_COMPARE_OP_GREATER;
+			case COMPARE_OP_LESS_EQUAL:		return VK_COMPARE_OP_LESS_OR_EQUAL;
+			case COMPARE_OP_GREATER_EQUAL:	return VK_COMPARE_OP_GREATER_OR_EQUAL;
+			case COMPARE_OP_EQUAL:			return VK_COMPARE_OP_EQUAL;
+			case COMPARE_OP_NOT_EQUAL:		return VK_COMPARE_OP_NOT_EQUAL;
+			case COMPARE_OP_ALWAYS:			return VK_COMPARE_OP_ALWAYS;
 			default:
 				break;
 			}
@@ -788,9 +788,9 @@ namespace GEngine
 		{
 			switch (op)
 			{
-			case RenderPassBeginOperation::None:	return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			case RenderPassBeginOperation::Load:	return VK_ATTACHMENT_LOAD_OP_LOAD;
-			case RenderPassBeginOperation::Clear:	return VK_ATTACHMENT_LOAD_OP_CLEAR;
+			case RENDER_PASS_BEGINE_OP_NONE:	return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			case RENDER_PASS_BEGINE_OP_LOAD:	return VK_ATTACHMENT_LOAD_OP_LOAD;
+			case RENDER_PASS_BEGINE_OP_CLEAR:	return VK_ATTACHMENT_LOAD_OP_CLEAR;
 			default:
 				break;
 			}
@@ -800,8 +800,8 @@ namespace GEngine
 		{
 			switch (op)
 			{
-			case RenderPassEndOperation::None:	return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			case RenderPassEndOperation::Store:	return VK_ATTACHMENT_STORE_OP_STORE;
+			case RENDER_PASS_END_OP_NONE:	return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			case RENDER_PASS_END_OP_STORE:	return VK_ATTACHMENT_STORE_OP_STORE;
 			default:
 				break;
 			}
@@ -811,9 +811,9 @@ namespace GEngine
 		{
 			switch (filter)
 			{
-			case SamplerFilter::Liner:
+			case SAMPLER_FILTER_LINEAR:
 				return VK_FILTER_LINEAR;
-			case SamplerFilter::Nearest:
+			case SAMPLER_FILTER_NEAREST:
 				return VK_FILTER_NEAREST;
 			default:
 				break;
@@ -824,15 +824,15 @@ namespace GEngine
 		{
 			switch (mode)
 			{
-			case SamplerAddressMode::Repeat:
+			case SAMPLER_ADDRESS_REPEAT:
 				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			case SamplerAddressMode::MirroredRepeat:
+			case SAMPLER_ADDRESS_MIRRORED_REPEAT:
 				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-			case SamplerAddressMode::ClampToEdge:
-				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
-			case SamplerAddressMode::ClampToBorder:
+			case SAMPLER_ADDRESS_CLAMP_TO_EDGE:
+				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			case SAMPLER_ADDRESS_CLAMP_TO_BORDER:
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-			case SamplerAddressMode::MirrorClampToEdge:
+			case SAMPLER_ADDRESS_MIRROR_CLAMP_TO_EDGE:
 				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
 			default:
 				break;
@@ -843,9 +843,9 @@ namespace GEngine
 		{
 			switch (filter)
 			{
-			case SamplerFilter::Liner:
+			case SAMPLER_FILTER_LINEAR:
 				return VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			case SamplerFilter::Nearest:
+			case SAMPLER_FILTER_NEAREST:
 				return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 			default:
 				break;

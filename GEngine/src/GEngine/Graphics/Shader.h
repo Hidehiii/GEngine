@@ -1,6 +1,5 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include <string>
 #include <unordered_map>
 #include "GEngine/Math/Math.h"
 #include "GEngine/Core/Buffer.h"
@@ -8,8 +7,6 @@
 #include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Compute/StorageBuffer.h"
 #include <algorithm>
-#include <filesystem>
-#include "Material.h"
 
 #define SHADER_STAGE_VERTEX "vertex"
 #define SHADER_STAGE_HULL "hull"
@@ -25,25 +22,25 @@
 
 namespace GEngine
 {
-	enum class ShaderPropertyType
+	enum ShaderPropertyType
 	{
-		None, 
-		Int,
-		Float,
-		Vector,
-		Color,
+		SHADER_PROPERTY_TYPE_NONE,
+		SHADER_PROPERTY_TYPE_INT,
+		SHADER_PROPERTY_TYPE_FLOAT,
+		SHADER_PROPERTY_TYPE_VECTOR,
+		SHADER_PROPERTY_TYPE_COLOR,
 
-		Sampler2D,
-		SamplerCube,
-		Sampler2DArray,
+		SHADER_PROPERTY_TYPE_SAMPLER_2D,
+		SHADER_PROPERTY_TYPE_SAMPLER_CUBE,
+		SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY,
 
-		Sampler,
-		Texture2D,
-		TextureCube,
-		Texture2DArray,
+		SHADER_PROPERTY_TYPE_SAMPLER,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D,
+		SHADER_PROPERTY_TYPE_TEXTURE_CUBE,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY,
 
-		StorageImage2D,
-		StorageBuffer,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
 	};
 	class GENGINE_API ShaderMacroName
 	{
@@ -58,62 +55,62 @@ namespace GEngine
 	};
 	enum BlendFactor
 	{
-		SRC_ALPHA			= 1,
-		DST_ALPHA			= 2,
-		SRC_COLOR			= 3,
-		DST_COLOR			= 4,
-		ONE_MINUS_SRC_ALPHA = 5,
-		ONE_MINUS_DST_ALPHA = 6,
-		ONE_MINUS_SRC_COLOR = 7,
-		ONE_MINUS_DST_COLOR = 8,
-		ONE					= 9,
-		ZERO				= 10
+		BLEND_FACTOR_SRC_ALPHA				= 1,
+		BLEND_FACTOR_DST_ALPHA				= 2,
+		BLEND_FACTOR_SRC_COLOR				= 3,
+		BLEND_FACTOR_DST_COLOR				= 4,
+		BLEND_FACTOR_ONE_MINUS_SRC_ALPHA	= 5,
+		BLEND_FACTOR_ONE_MINUS_DST_ALPHA	= 6,
+		BLEND_FACTOR_ONE_MINUS_SRC_COLOR	= 7,
+		BLEND_FACTOR_ONE_MINUS_DST_COLOR	= 8,
+		BLEND_FACTOR_ONE					= 9,
+		BLEND_FACTOR_ZERO					= 10
 	};
 	enum CullMode
 	{
-		None	= 0,
-		Front	= 1,
-		Back	= 2
+		CULL_MODE_NONE	= 0,
+		CULL_MODE_FRONT	= 1,
+		CULL_MODE_BACK	= 2
 	};
 	enum BlendMode
 	{
-		None				= 0,
-		Add					= 1,
-		Substract			= 2,
-		ReverseSubstract	= 3,
-		Min					= 4,
-		Max					= 5,
+		BLEND_MODE_NONE					= 0,
+		BLEND_MODE_ADD					= 1,
+		BLEND_MODE_SUBSTRACT			= 2,
+		BLEND_MODE_REVERSE_SUBSTRACT	= 3,
+		BLEND_MODE_MIN					= 4,
+		BLEND_MODE_MAX					= 5,
 	};
 	enum CompareOperation
 	{
-		Less			= 0,
-		Greater			= 1,
-		LessEqual		= 2,
-		GreaterEqual	= 3,
-		Equal			= 4,
-		NotEqual		= 5,
-		Always			= 6,
+		COMPARE_OP_LESS				= 0,
+		COMPARE_OP_GREATER			= 1,
+		COMPARE_OP_LESS_EQUAL		= 2,
+		COMPARE_OP_GREATER_EQUAL	= 3,
+		COMPARE_OP_EQUAL			= 4,
+		COMPARE_OP_NOT_EQUAL		= 5,
+		COMPARE_OP_ALWAYS			= 6,
 	};
 	enum ColorMaskChannel
 	{
-		R = 1 < 0,
-		G = 1 < 1,
-		B = 1 < 2,
-		A = 1 < 3,
+		COLOR_MASK_CHANNLE_R = BIT(0),
+		COLOR_MASK_CHANNLE_G = BIT(1),
+		COLOR_MASK_CHANNLE_B = BIT(2),
+		COLOR_MASK_CHANNLE_A = BIT(3),
 	};
 
 	struct RenderState
 	{
 		bool				DepthWrite					= true;
-		CompareOperation	DepthTestOp					= CompareOperation::LessEqual;
-		int					ColorMask					= ColorMaskChannel::R | ColorMaskChannel::G | ColorMaskChannel::B | ColorMaskChannel::A;
-		BlendFactor			BlendColorSrc				= BlendFactor::ONE;
-		BlendFactor			BlendColorDst				= BlendFactor::ZERO;
-		BlendFactor			BlendAlphaSrc				= BlendFactor::ONE;
-		BlendFactor			BlendAlphaDst				= BlendFactor::ZERO;
-		BlendMode			BlendColor					= BlendMode::None;
-		BlendMode			BlendAlpha					= BlendMode::None;
-		CullMode			Cull						= CullMode::Back;
+		CompareOperation	DepthTestOp					= COMPARE_OP_LESS_EQUAL;
+		int					ColorMask					= COLOR_MASK_CHANNLE_R | COLOR_MASK_CHANNLE_G | COLOR_MASK_CHANNLE_B | COLOR_MASK_CHANNLE_A;
+		BlendFactor			BlendColorSrc				= BLEND_FACTOR_ONE;
+		BlendFactor			BlendColorDst				= BLEND_FACTOR_ZERO;
+		BlendFactor			BlendAlphaSrc				= BLEND_FACTOR_ONE;
+		BlendFactor			BlendAlphaDst				= BLEND_FACTOR_ZERO;
+		BlendMode			BlendColor					= BLEND_MODE_NONE;
+		BlendMode			BlendAlpha					= BLEND_MODE_NONE;
+		CullMode			Cull						= CULL_MODE_BACK;
 		std::string			Tag							= "Default";
 	};
 
@@ -152,7 +149,6 @@ namespace GEngine
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor);
 
 		BlendMode ShaderBlendModeFromString(const std::string& type);
-		const char* GetCacheDirectory();
 	}
 
 	class GENGINE_API Shader
@@ -176,18 +172,19 @@ namespace GEngine
 		virtual const std::string&													GetShaderPath() { return m_FilePath; }
 		virtual const std::unordered_map<std::string, ShaderPropertyType>&			GetProperties() { return m_Properties; }
 		virtual const std::vector<ShaderPass>&										GetPasses() { return m_Passes; }
-		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageFuncNames() { return m_StageFuncNames; }
-		virtual const std::unordered_map<std::string, std::string>&					GetStageFuncNames(const int& pass) { return m_StageFuncNames.at(pass); }
+		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageEntryPoints() { return m_StageEntryPoints; }
+		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
 
 	protected:
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
-		virtual bool										Compile(std::vector<std::vector<std::string>>& passStages, std::vector<std::string>& shaderSrcCodes) = 0;
+		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
+		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) = 0;
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;
 
 		std::unordered_map<std::string, ShaderPropertyType>			m_Properties; // name : type
-		std::vector<std::unordered_map<std::string, std::string>>	m_StageFuncNames; // stage : name
+		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // stage : name
 		std::vector<ShaderPass>										m_Passes;
 
 	public:

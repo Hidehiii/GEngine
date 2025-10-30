@@ -49,7 +49,7 @@ namespace GEngine
 	}
 	std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> D3D12Context::GetFence()
 	{
-		// 应该不会在uint64 max 值到达时候下一个fence 还在用吧
+		// 搴旇涓嶄細鍦╱int64 max 鍊煎埌杈炬椂鍊欎笅涓�涓猣ence 杩樺湪鐢ㄥ惂
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> res;
 
 		if (m_FenceValue >= UINT64_MAX - 1024)
@@ -215,10 +215,10 @@ namespace GEngine
 		m_RenderPassSpec.BackBufferFormat				= {m_BackBufferFormat};
 		m_RenderPassSpec.EnableDepthStencil				= true;
 		m_RenderPassSpec.Samples						= m_Samples;
-		m_RenderPassSpec.Operation.ColorBegin			= RenderPassBeginOperation::Clear;
-		m_RenderPassSpec.Operation.ColorEnd				= RenderPassEndOperation::Store;
-		m_RenderPassSpec.Operation.DepthStencilBegin	= RenderPassBeginOperation::Clear;
-		m_RenderPassSpec.Operation.DepthStencilEnd		= RenderPassEndOperation::Store;
+		m_RenderPassSpec.Operation.ColorBegin			= RENDER_PASS_BEGINE_OP_CLEAR;
+		m_RenderPassSpec.Operation.ColorEnd				= RENDER_PASS_END_OP_STORE;
+		m_RenderPassSpec.Operation.DepthStencilBegin	= RENDER_PASS_BEGINE_OP_CLEAR;
+		m_RenderPassSpec.Operation.DepthStencilEnd		= RENDER_PASS_END_OP_STORE;
 
 		m_SwapChainRenderPass					= CreateRef<D3D12RenderPass>(m_RenderPassSpec);
 	}

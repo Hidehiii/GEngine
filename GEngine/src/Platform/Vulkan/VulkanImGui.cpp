@@ -31,12 +31,12 @@ namespace GEngine {
 		s_Spec.y				= Application::Get().GetWindow().GetHeight();
 
 		std::vector<VkAttachmentDescription>	attachments;
-		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FrameBufferTextureFormat::RGBA8, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FRAME_BUFFER_TEXTURE_FORMAT_RGBA8, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 		des.format								= VK_FORMAT_R8G8B8A8_UNORM;
 		attachments.push_back(des);
 
 		std::vector<VkAttachmentReference>	colorAttachmentRefs;
-		VkAttachmentReference				ref = Utils::CreateAttachmentReference(FrameBufferTextureFormat::RGBA8, 0);
+		VkAttachmentReference				ref = Utils::CreateAttachmentReference(FRAME_BUFFER_TEXTURE_FORMAT_RGBA8, 0);
 		colorAttachmentRefs.push_back(ref);
 
 		VkSubpassDescription			 subpass{};
@@ -268,7 +268,7 @@ namespace GEngine {
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)
 		{
-			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), CommandBufferType::Graphics);
+			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
 		}
 	}
 

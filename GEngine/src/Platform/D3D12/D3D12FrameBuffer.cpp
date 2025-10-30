@@ -29,7 +29,7 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_MultiSampleRtvHeap)));
 		}
 
-		if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -76,7 +76,7 @@ namespace GEngine
 
 		if (renderpassSpec.EnableDepthStencil)
 		{
-			m_Specification.DepthStencil.TextureFormat = FrameBufferTextureFormat::DEPTH24STENCIL8;
+			m_Specification.DepthStencil.TextureFormat = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -138,11 +138,11 @@ namespace GEngine
 		}
 
 		cmd->OMSetRenderTargets(1, &rtvDescriptor, TRUE, &dsvDescriptor);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			cmd->ClearRenderTargetView(rtvDescriptor, Math::ValuePtr(D3D12Context::Get()->GetClearColor()), 0, nullptr);
 		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			cmd->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Graphics::IsReverseDepth() ? 0 : 1.0f, 0, 0, nullptr);
 		}
@@ -241,11 +241,11 @@ namespace GEngine
 		auto dsvDescriptor = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
 		cmd->OMSetRenderTargets(1, &rtvDescriptor, TRUE, &dsvDescriptor);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			cmd->ClearRenderTargetView(rtvDescriptor, Math::ValuePtr(D3D12Context::Get()->GetClearColor()), 0, nullptr);
 		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			cmd->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Graphics::IsReverseDepth() ? 0 : 1.0f, 0, 0, nullptr);
 		}
@@ -340,7 +340,7 @@ namespace GEngine
 			m_ColorRTs.at(i) = CreateRef<D3D12Texture2D>(m_ColorRenderTargets[i], D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
 
-		if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
 			const CD3DX12_CLEAR_VALUE clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil.TextureFormat), 1, 0);
 			D3D12_DEPTH_STENCIL_VIEW_DESC	dsvDesc = {};

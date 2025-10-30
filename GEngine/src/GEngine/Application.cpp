@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "Graphics/Graphics.h"
 #include "GEngine/Scripting/ScriptEngine.h"
-#include "tools/Serialization/Serializer.h"
+#include "tools/Serializer.h"
 #include "Utils/GUIUtils.h"
 #include "GEngine/Physics/3D/Physics3D.h"
 

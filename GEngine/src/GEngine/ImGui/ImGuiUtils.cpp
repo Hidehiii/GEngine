@@ -16,9 +16,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::OpenGL:
+		case GraphicsAPI::GRAPHICS_API_OpenGL:
 			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
-		case GraphicsAPI::API::Vulkan:
+		case GraphicsAPI::GRAPHICS_API_Vulkan:
 		{
 			for (int i = s_VulkanTexture2DUsed.size() - 1; i >= 0; i--)
 			{
@@ -56,9 +56,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::OpenGL:
+		case GraphicsAPI::GRAPHICS_API_OpenGL:
 			return { 0.0f, 1.0f };
-		case GraphicsAPI::API::Vulkan:
+		case GraphicsAPI::GRAPHICS_API_Vulkan:
 			return { 0.0f, 0.0f };
 
 		default:
@@ -73,9 +73,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::OpenGL:
+		case GraphicsAPI::GRAPHICS_API_OpenGL:
 			return { 1.0f, 0.0f };
-		case GraphicsAPI::API::Vulkan:
+		case GraphicsAPI::GRAPHICS_API_Vulkan:
 			return { 1.0f, 1.0f };
 
 		default:

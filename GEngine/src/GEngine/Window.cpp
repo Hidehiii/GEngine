@@ -11,9 +11,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::OpenGL:		return new GLFWWindow(props);
-		case GraphicsAPI::API::Vulkan:		return new GLFWWindow(props);
-		case GraphicsAPI::API::Direct3DX12: return new Win32Window(props);
+		case GraphicsAPI::GRAPHICS_API_OpenGL:		return new GLFWWindow(props);
+		case GraphicsAPI::GRAPHICS_API_Vulkan:		return new GLFWWindow(props);
+		case GraphicsAPI::GRAPHICS_API_Direct3DX12: return new Win32Window(props);
 		default:
 			break;
 		}

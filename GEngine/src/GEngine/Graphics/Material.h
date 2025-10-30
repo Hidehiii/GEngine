@@ -2,14 +2,12 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Core/Buffer.h"
-#include "GEngine/Graphics/Shader.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Graphics/Texture.h"
+#include "GEngine/Graphics/Shader.h"
 
 
 namespace GEngine
 {
-	
 	class CommandBuffer;
 
 	class GENGINE_API Material
@@ -23,22 +21,22 @@ namespace GEngine
 		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) = 0;
 
 		virtual void SetEnableDepthWrite(bool enabled, const int& pass);
-		virtual bool GetEnableDepthWrite(const int& pass) { return m_Passes.at(pass).State.DepthWrite; }
+		virtual bool GetEnableDepthWrite(int pass) { return m_Passes.at(pass).State.DepthWrite; }
 
 		virtual void				SetDepthTestOp(CompareOperation op, const int& pass);
-		virtual CompareOperation	GetDepthTestOp(const int& pass)	{ return m_Passes.at(pass).State.DepthTestOp; }
+		virtual CompareOperation	GetDepthTestOp(int pass)	{ return m_Passes.at(pass).State.DepthTestOp; }
 
-		virtual void SetCullMode(CullMode mode, const int& pass);
-		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const int& pass);
-		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const int& pass);
+		virtual void SetCullMode(CullMode mode, int pass);
+		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, int pass);
+		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, int pass);
 
-		virtual CullMode	GetCull(const int& pass)					{ return m_Passes.at(pass).State.Cull; }
-		virtual BlendMode	GetBlendColor(const int& pass)				{ return m_Passes.at(pass).State.BlendColor; }
-		virtual BlendMode	GetBlendAlpha(const int& pass)				{ return m_Passes.at(pass).State.BlendAlpha; }
-		virtual BlendFactor GetBlendColorSrc(const int& pass)			{ return m_Passes.at(pass).State.BlendColorSrc; }
-		virtual BlendFactor GetBlendAlphaSrc(const int& pass)			{ return m_Passes.at(pass).State.BlendAlphaSrc; }
-		virtual BlendFactor GetBlendColorDst(const int& pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
-		virtual BlendFactor GetBlendAlphaDst(const int& pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
+		virtual CullMode	GetCull(int pass)					{ return m_Passes.at(pass).State.Cull; }
+		virtual BlendMode	GetBlendColor(int pass)				{ return m_Passes.at(pass).State.BlendColor; }
+		virtual BlendMode	GetBlendAlpha(int pass)				{ return m_Passes.at(pass).State.BlendAlpha; }
+		virtual BlendFactor GetBlendColorSrc(int pass)			{ return m_Passes.at(pass).State.BlendColorSrc; }
+		virtual BlendFactor GetBlendAlphaSrc(int pass)			{ return m_Passes.at(pass).State.BlendAlphaSrc; }
+		virtual BlendFactor GetBlendColorDst(int pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
+		virtual BlendFactor GetBlendAlphaDst(int pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
 
 		virtual void SetFloat(const std::string& name, float value);
 		virtual void SetInt(const std::string& name, int value);
@@ -92,4 +90,4 @@ namespace GEngine
 	};
 }
 
-
+ 

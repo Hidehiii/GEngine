@@ -34,9 +34,9 @@ namespace GEngine
 	class GENGINE_API Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
 		static Ref<Texture2D> Create(const std::string& path);
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
 
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height) = 0;
 
@@ -63,7 +63,7 @@ namespace GEngine
 
 		virtual bool operator==(const Texture2DArray& other) const = 0;
 
-		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
 	protected:
 		uint32_t m_Layers;
 	};
@@ -83,7 +83,7 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) = 0;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) = 0;
 
-		static Ref<CubeMap> Create(uint32_t width, uint32_t height, bool generateMipmap = false, RenderImage2DFormat format = RenderImage2DFormat::RGBA8F);
+		static Ref<CubeMap> Create(uint32_t width, uint32_t height, bool generateMipmap = false, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,
 			const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap = false);
 

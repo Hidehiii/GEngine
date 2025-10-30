@@ -26,24 +26,9 @@ namespace GEngine
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const int& pass);
 
 	protected:
-	private:
-		std::unordered_map<std::string, std::string> ProcessShaderSource(const std::string& source);
-		std::unordered_map<std::string, std::vector<uint32_t>> CompileOpenGLBinaries(std::pair<std::string, ShaderPass> pass);
-		uint32_t CreateProgram(std::unordered_map<std::string, std::vector<uint32_t>> shader);
-		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
+		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) override; // stage : spirv
 	private:
 		std::vector<uint32_t>								m_Programs;
-
-
-		std::vector<std::pair<std::string, bool>>			m_MacroBools = {
-			{ ShaderMacroName::GE_ATTACHMENT_UV_STARTS_AT_TOP, false}
-		};
-		std::vector<std::pair<std::string, std::string>>	m_MacroExps = {
-			{ ShaderMacroName::GE_BINDING_START, std::to_string(s_SlotOffset)},
-			{ ShaderMacroName::GE_GRAPHICS_API_OPENGL, std::to_string((int)GraphicsAPI::API::OpenGL)},
-			{ ShaderMacroName::GE_GRAPHICS_API_VULKAN, std::to_string((int)GraphicsAPI::API::Vulkan)},
-			{ ShaderMacroName::GE_GRAPHICS_API, std::to_string((int)GraphicsAPI::API::OpenGL)},
-		};
 	};
 }
 

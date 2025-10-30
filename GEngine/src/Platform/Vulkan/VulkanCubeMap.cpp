@@ -55,11 +55,11 @@ namespace GEngine
 		m_Height = height;
 		if (channels == 4)
 		{
-			m_Format = RenderImage2DFormat::RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RenderImage2DFormat::RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
 		}
 		stbi_image_free(data);
 		if (m_GenerateMipmap)
@@ -234,14 +234,14 @@ namespace GEngine
 			GE_CORE_ASSERT(data, "Failed to load image!");
 			GE_CORE_ASSERT(m_Width == width, " The cube map image is not the same size!");
 			GE_CORE_ASSERT(m_Height = height, " The cube map image is not the same size!");
-			RenderImage2DFormat format = RenderImage2DFormat::None;
+			RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_NONE;
 			if (channels == 4)
 			{
-				format = RenderImage2DFormat::RGBA8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
 			}
 			else if (channels == 3)
 			{
-				format = RenderImage2DFormat::RGB8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGB8F;
 			}
 			GE_CORE_ASSERT(m_Format == format, " The cube map image is not the same format!");
 			SetData(data, m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format), (CubeMapFace)i);

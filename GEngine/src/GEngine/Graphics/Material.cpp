@@ -11,16 +11,15 @@ namespace GEngine
     {
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLMaterial>(shader, name);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanMaterial>(shader, name);
-			return nullptr;
 		}
 		}
 
@@ -31,16 +30,15 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(shaderPath), name);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
-			return nullptr;
 		}
 		}
 
@@ -51,16 +49,15 @@ namespace GEngine
     {
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
-			return nullptr;
 		}
 		}
 
@@ -75,11 +72,11 @@ namespace GEngine
 	{
 		m_Passes.at(pass).State.DepthTestOp = op;
 	}
-	void Material::SetCullMode(CullMode mode, const int& pass)
+	void Material::SetCullMode(CullMode mode, int pass)
 	{
 		m_Passes.at(pass).State.Cull = mode;
 	}
-	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, const int& pass)
+	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, int pass)
 	{
 		m_Passes.at(pass).State.BlendColor = modeColor;
 		m_Passes.at(pass).State.BlendAlpha = modeAlpha;
@@ -88,7 +85,7 @@ namespace GEngine
 		m_Passes.at(pass).State.BlendColorDst = dstColor;
 		m_Passes.at(pass).State.BlendAlphaDst = dstAlpha;
 	}
-	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, const int& pass)
+	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, int pass)
 	{
 		m_Passes.at(pass).State.BlendColor = mode;
 		m_Passes.at(pass).State.BlendAlpha = mode;

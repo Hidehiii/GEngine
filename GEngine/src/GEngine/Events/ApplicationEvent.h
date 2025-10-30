@@ -25,7 +25,7 @@ namespace GEngine
 		}
 
 		EVENT_CLASS_TYPE(WindowResize)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	private:
 		unsigned int m_Width, m_Height;
 	};
@@ -36,7 +36,7 @@ namespace GEngine
 		WindowCloseEvent() {}
 
 		EVENT_CLASS_TYPE(WindowClose)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 
 	class GENGINE_API AppTickEvent : public Event
@@ -45,7 +45,7 @@ namespace GEngine
 		AppTickEvent() {}
 
 		EVENT_CLASS_TYPE(AppTick)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 
 	class GENGINE_API AppUpdateEvent : public Event
@@ -54,7 +54,7 @@ namespace GEngine
 		AppUpdateEvent() {}
 
 		EVENT_CLASS_TYPE(AppUpdate)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 
 	class GENGINE_API AppRenderEvent : public Event
@@ -63,6 +63,6 @@ namespace GEngine
 		AppRenderEvent() {}
 
 		EVENT_CLASS_TYPE(AppRender)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_APPLICATION)
 	};
 }

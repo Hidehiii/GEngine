@@ -4,30 +4,30 @@
 
 namespace GEngine
 {
-	enum class SamplerFilter
+	enum SamplerFilter
 	{
-		Liner,
-		Nearest,
+		SAMPLER_FILTER_LINEAR,
+		SAMPLER_FILTER_NEAREST,
 	};
 
-	enum class SamplerAddressMode
+	enum SamplerAddressMode
 	{
-		Repeat,
-		MirroredRepeat,
-		ClampToEdge,
-		ClampToBorder,
-		MirrorClampToEdge,
+		SAMPLER_ADDRESS_REPEAT,
+		SAMPLER_ADDRESS_MIRRORED_REPEAT,
+		SAMPLER_ADDRESS_CLAMP_TO_EDGE,
+		SAMPLER_ADDRESS_CLAMP_TO_BORDER,
+		SAMPLER_ADDRESS_MIRROR_CLAMP_TO_EDGE,
 	};
 
 	struct SamplerSpecification
 	{
-		SamplerFilter MagFilter = SamplerFilter::Liner;
-		SamplerFilter MinFilter = SamplerFilter::Liner;
-		SamplerFilter MipmapFilter = SamplerFilter::Liner;
+		SamplerFilter MagFilter		= SAMPLER_FILTER_LINEAR;
+		SamplerFilter MinFilter		= SAMPLER_FILTER_LINEAR;
+		SamplerFilter MipmapFilter	= SAMPLER_FILTER_LINEAR;
 
-		SamplerAddressMode WrapU = SamplerAddressMode::Repeat;
-		SamplerAddressMode WrapV = SamplerAddressMode::Repeat;
-		SamplerAddressMode WrapW = SamplerAddressMode::Repeat;
+		SamplerAddressMode WrapU = SAMPLER_ADDRESS_REPEAT;
+		SamplerAddressMode WrapV = SAMPLER_ADDRESS_REPEAT;
+		SamplerAddressMode WrapW = SAMPLER_ADDRESS_REPEAT;
 
 		bool operator==(const SamplerSpecification& other) const
 		{

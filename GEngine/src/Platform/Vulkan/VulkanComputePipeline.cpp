@@ -59,7 +59,7 @@ namespace GEngine
 
 		auto shader = std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader());
 
-		auto funcNames = shader->GetStageFuncNames(pass);
+		auto funcNames = shader->GetStageEntryPoints(pass);
 		VkPipelineShaderStageCreateInfo		shaderStage;
 		if(funcNames.find(SHADER_STAGE_COMPUTE) != funcNames.end())
 		{

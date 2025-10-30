@@ -32,7 +32,7 @@ namespace GEngine
 
 		for (int i = 0; i < s_CommandBuffers.size(); i++)
 		{
-			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), CommandBufferType::Graphics);
+			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
 		}
 	}
 	bool VulkanGraphicsPresent::AquireImage()

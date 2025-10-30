@@ -7,18 +7,18 @@ namespace GEngine
 {
     D3D12GraphicsAPI::D3D12GraphicsAPI()
     {
-        s_API = GraphicsAPI::API::Direct3DX12;
+        s_API = GraphicsAPI::GRAPHICS_API_Direct3DX12;
     }
     D3D12GraphicsAPI::~D3D12GraphicsAPI()
     {
     }
     Ref<CommandBuffer> D3D12GraphicsAPI::GetGraphicsCommandBuffer()
     {
-        return D3D12Context::Get()->GetCommandBuffer(CommandBufferType::Graphics);
+        return D3D12Context::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
     }
     Ref<CommandBuffer> D3D12GraphicsAPI::GetComputeCommandBuffer()
     {
-        return D3D12Context::Get()->GetCommandBuffer(CommandBufferType::Compute);
+        return D3D12Context::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
     }
     std::vector<std::string> D3D12GraphicsAPI::GetExtensions()
     {

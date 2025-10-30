@@ -16,9 +16,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!"); return nullptr;
-		case GraphicsAPI::API::OpenGL:  return CreateRef<OpenGLFrameBuffer>(renderPass, width, height);
-		case GraphicsAPI::API::Vulkan:  return CreateRef<VulkanFrameBuffer>(renderPass, width, height);
+		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!"); return nullptr;
+		case GraphicsAPI::GRAPHICS_API_OpenGL:  return CreateRef<OpenGLFrameBuffer>(renderPass, width, height);
+		case GraphicsAPI::GRAPHICS_API_Vulkan:  return CreateRef<VulkanFrameBuffer>(renderPass, width, height);
 		}
 
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
@@ -29,9 +29,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!"); return nullptr;
-		case GraphicsAPI::API::OpenGL:  return CreateRef<OpenGLFrameBuffer>(buffer, width, height);
-		case GraphicsAPI::API::Vulkan:  return CreateRef<VulkanFrameBuffer>(buffer, width, height);
+		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!"); return nullptr;
+		case GraphicsAPI::GRAPHICS_API_OpenGL:  return CreateRef<OpenGLFrameBuffer>(buffer, width, height);
+		case GraphicsAPI::GRAPHICS_API_Vulkan:  return CreateRef<VulkanFrameBuffer>(buffer, width, height);
 		}
 
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");

@@ -57,9 +57,9 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				return true;
-			case FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				return true;
 			default:
 				return false;

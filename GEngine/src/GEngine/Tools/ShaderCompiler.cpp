@@ -33,7 +33,7 @@ namespace GEngine
 		m_Utils->CreateDefaultIncludeHandler(&m_IncludeHandler);
 	}
 
-	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<uint8_t>& output)
+	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<uint32_t>& machineCode)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
@@ -41,7 +41,7 @@ namespace GEngine
 		sourceBuffer.Encoding	= DXC_CP_ACP;
 
 		std::vector<LPCWSTR> args;
-		if (Graphics::GetGraphicsAPI() == GraphicsAPI::API::Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::API::OpenGL)
+		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
 			args.push_back(L"-spirv");
 		}
@@ -77,8 +77,8 @@ namespace GEngine
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
 		}
-		output.resize(compiledShaderBlob->GetBufferSize());
-		memcpy(output.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
+		machineCode.resize(compiledShaderBlob->GetBufferSize());
+		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
 		ID3D12ShaderReflection* reflection;
 		IDxcBlob* reflectionBlob;

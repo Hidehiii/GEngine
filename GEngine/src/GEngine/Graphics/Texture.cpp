@@ -17,14 +17,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLTexture2D>(width, height, format);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanTexture2D>(width, height, format);
 		}
 		}
@@ -36,14 +36,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLTexture2D>(path);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanTexture2D>(path);
 		}
 		}
@@ -55,14 +55,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLTexture2D>(width, height, data, size, format);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanTexture2D>(width, height, data, size, format);
 		}
 		}
@@ -84,14 +84,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLCubeMap>(width, height, generateMipmap, format);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
 		}
 		}
@@ -103,14 +103,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
 		}
@@ -137,14 +137,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None: {
+		case GraphicsAPI::GRAPHICS_API_None: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::API::OpenGL: {
+		case GraphicsAPI::GRAPHICS_API_OpenGL: {
 			return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
 		}
-		case GraphicsAPI::API::Vulkan: {
+		case GraphicsAPI::GRAPHICS_API_Vulkan: {
 			return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
 		}
 		}

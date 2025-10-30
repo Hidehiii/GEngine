@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 
 #define BIT(x) (1 << x)
 #define GE_BIND_CLASS_FUNCTION_LAMBDA(x) [this](auto&&... args) -> decltype(auto) { return this->x(std::forward<decltype(args)>(args)...); }
@@ -77,6 +78,8 @@
 	#define GE_ASSERT(x, ...)
 	#define GE_CORE_ASSERT(x, ...)
 #endif
+
+
 
 
 

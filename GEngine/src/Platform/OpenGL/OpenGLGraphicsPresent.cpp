@@ -10,7 +10,7 @@ namespace GEngine
 	{
 		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
-			s_CommandBuffers.push_back(OpenGLCommandBuffer::Create(CommandBufferType::Graphics));
+			s_CommandBuffers.push_back(OpenGLCommandBuffer::Create(COMMAND_BUFFER_TYPE_GRAPHICS));
 		}
 	}
 	void OpenGLGraphicsPresent::Begin()

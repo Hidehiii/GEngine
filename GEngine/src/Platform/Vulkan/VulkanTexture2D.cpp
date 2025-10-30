@@ -22,11 +22,11 @@ namespace GEngine
         m_Height        = height;
         if (channels == 4)
         {
-            m_Format = RenderImage2DFormat::RGBA8F;
+            m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
         }
         else
         {
-            m_Format = RenderImage2DFormat::RGB8F; // ´ó¶àÊıÏÔ¿¨vulkan ²»Ö§³ÖÕâ¸ö¸ñÊ½
+            m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F; // å¤§å¤šæ•°æ˜¾å¡vulkan ä¸æ”¯æŒè¿™ä¸ªæ ¼å¼
         }
         if (m_GenerateMipmap)
         {

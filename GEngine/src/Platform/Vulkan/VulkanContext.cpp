@@ -129,11 +129,11 @@ namespace GEngine
     }
     Ref<VulkanCommandBuffer> VulkanContext::GetCommandBuffer(CommandBufferType type)
     {
-        if (type == CommandBufferType::Compute)
+        if (type == COMMAND_BUFFER_TYPE_COMPUTE)
             return m_ComputeCommandBuffers.at(m_ComputeCommandBufferIndex++ % m_ComputeCommandBuffers.size());
-        if (type == CommandBufferType::Graphics)
+        if (type == COMMAND_BUFFER_TYPE_GRAPHICS)
             return m_GraphicsCommandBuffers.at(m_GraphicsCommandBufferIndex++ % m_GraphicsCommandBuffers.size());
-        if (type == CommandBufferType::Transfer)
+        if (type == COMMAND_BUFFER_TYPE_TRANSFER)
             return m_TransferCommandBuffers.at(m_TransferCommandBufferIndex++ % m_TransferCommandBuffers.size());
         return nullptr;
     }
@@ -657,9 +657,9 @@ namespace GEngine
         for (int i = 0; i < Graphics::GetCommandBufferCount() * Graphics::GetFrameCount(); i++)
         {
             m_GraphicsCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetGraphicsCommandBuffer(i),
-                CommandBufferType::Graphics));
+                COMMAND_BUFFER_TYPE_GRAPHICS));
             m_ComputeCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetComputeCommandBuffer(i),
-                CommandBufferType::Compute));
+                COMMAND_BUFFER_TYPE_COMPUTE));
         }
     }
 	void VulkanContext::CreateDescriptor()

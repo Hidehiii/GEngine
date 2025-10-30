@@ -117,7 +117,7 @@ namespace GEngine
 				VkSubpassDescriptionDepthStencilResolve	subpassDepthStencilResolve{};
 
 				VkAttachmentReference2					ref{};
-				ref										= Utils::CreateAttachmentReference2(FrameBufferTextureFormat::DEPTH24STENCIL8, spec.ColorAttachmentsFormat.size() * 2);
+				ref										= Utils::CreateAttachmentReference2(FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8, spec.ColorAttachmentsFormat.size() * 2);
 
 				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
 				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &ref;
@@ -127,7 +127,7 @@ namespace GEngine
 			}
 			else
 			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(FrameBufferTextureFormat::DEPTH24STENCIL8, spec.ColorAttachmentsFormat.size());
+				depthAttachmentRef = Utils::CreateAttachmentReference2(FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8, spec.ColorAttachmentsFormat.size());
 			}
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		}
@@ -189,7 +189,7 @@ namespace GEngine
 				attachments.push_back(des);
 			}
 		}
-		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
 			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthStencil.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
 				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
@@ -239,7 +239,7 @@ namespace GEngine
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
 		subpass.pResolveAttachments		= resolveAttachmentRefs.data();
 		subpass.pDepthStencilAttachment = nullptr;
-		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
 			if (spec.Samples > 1)
 			{
@@ -276,7 +276,7 @@ namespace GEngine
 			dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
-		if (spec.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
 			dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;

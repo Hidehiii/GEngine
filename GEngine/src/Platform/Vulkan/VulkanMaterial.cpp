@@ -44,47 +44,47 @@ namespace GEngine
 			GE_CORE_ASSERT(propertyTypes.find(name) != propertyTypes.end(), "Could not find type of property {}!", name);
 			switch (propertyTypes[name])
 			{
-			case ShaderPropertyType::Sampler2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 			{
 				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::SamplerCube:
+			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
 			{
 				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::Sampler2DArray:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Sampler:
+			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2D:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::TextureCube:
+			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2DArray:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::StorageImage2D:
+			case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
 			{
 				(*((Ref<StorageImage2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case ShaderPropertyType::StorageBuffer:
+			case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 			{
 				(*((Ref<StorageBuffer>*)prop.Ptr))->Bind(prop.Location);
 				break;
@@ -140,52 +140,52 @@ namespace GEngine
 				layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
 				switch (propertyTypes[name])
 				{
-				case ShaderPropertyType::Sampler2D:
+				case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					
 					layoutBindings.push_back(layoutBinding);
 					break;
 				}
-				case ShaderPropertyType::SamplerCube:
+				case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 					layoutBindings.push_back(layoutBinding);
 					break;
 				}
-				case ShaderPropertyType::Sampler2DArray:
+				case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
 				}
-				case ShaderPropertyType::Sampler:
+				case SHADER_PROPERTY_TYPE_SAMPLER:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
 				}
-				case ShaderPropertyType::Texture2D:
+				case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
 				}
-				case ShaderPropertyType::TextureCube:
+				case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
 				}
-				case ShaderPropertyType::Texture2DArray:
+				case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
 				}
-				case ShaderPropertyType::StorageImage2D:
+				case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
 					layoutBindings.push_back(layoutBinding);
 				}
-				case ShaderPropertyType::StorageBuffer:
+				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
@@ -267,7 +267,7 @@ namespace GEngine
 
 			switch (propertyTypes[name])
 			{
-			case ShaderPropertyType::Sampler2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -278,7 +278,7 @@ namespace GEngine
 				writeInfos.push_back(descriptorWrite);
 				break;
 			}
-			case ShaderPropertyType::SamplerCube:
+			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -289,32 +289,32 @@ namespace GEngine
 				writeInfos.push_back(descriptorWrite);
 				break;
 			}
-			case ShaderPropertyType::Sampler2DArray:
+			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Sampler:
+			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2D:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::TextureCube:
+			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::Texture2DArray:
+			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
 			}
-			case ShaderPropertyType::StorageImage2D:
+			case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -325,7 +325,7 @@ namespace GEngine
 				writeInfos.push_back(descriptorWrite);
 				break;
 			}
-			case ShaderPropertyType::StorageBuffer:
+			case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;

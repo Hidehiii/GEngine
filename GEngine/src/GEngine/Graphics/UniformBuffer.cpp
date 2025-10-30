@@ -15,9 +15,9 @@ namespace GEngine
 
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "Unknown GraphicsAPI!"); break;
-		case GraphicsAPI::API::OpenGL:  buf = CreateRef<OpenGLUniformBuffer>(size, binding); break;
-		case GraphicsAPI::API::Vulkan:  buf = CreateRef<VulkanUniformBuffer>(size, binding); break;
+		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "Unknown GraphicsAPI!"); break;
+		case GraphicsAPI::GRAPHICS_API_OpenGL:  buf = CreateRef<OpenGLUniformBuffer>(size, binding); break;
+		case GraphicsAPI::GRAPHICS_API_Vulkan:  buf = CreateRef<VulkanUniformBuffer>(size, binding); break;
 		}
 		
 		return buf;
@@ -30,9 +30,9 @@ namespace GEngine
 
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::None:    GE_CORE_ASSERT(false, "Unknown GraphicsAPI!"); break;
-		case GraphicsAPI::API::OpenGL:  buf = CreateRef<OpenGLUniformBufferDynamic>(size, count, binding, global ? s_GlobalUniforms.size() : -1); break;
-		case GraphicsAPI::API::Vulkan:  buf = CreateRef<VulkanUniformBufferDynamic>(size, count, binding, global ? s_GlobalUniforms.size() : -1); break;
+		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "Unknown GraphicsAPI!"); break;
+		case GraphicsAPI::GRAPHICS_API_OpenGL:  buf = CreateRef<OpenGLUniformBufferDynamic>(size, count, binding, global ? s_GlobalUniforms.size() : -1); break;
+		case GraphicsAPI::GRAPHICS_API_Vulkan:  buf = CreateRef<VulkanUniformBufferDynamic>(size, count, binding, global ? s_GlobalUniforms.size() : -1); break;
 		}
 
 		if (global)

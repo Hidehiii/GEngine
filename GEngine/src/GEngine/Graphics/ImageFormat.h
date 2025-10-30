@@ -3,39 +3,40 @@
 
 namespace GEngine
 {
-	enum class RenderImage2DFormat
+	enum RenderImage2DFormat
 	{
-		None,
-		RGBA8F,
-		RGB8F,
+		RENDER_IMAGE_2D_FORMAT_NONE,
+		RENDER_IMAGE_2D_FORMAT_RGBA8F,
+		RENDER_IMAGE_2D_FORMAT_RGB8F,
 	};
 
 	static uint32_t RenderImage2DFormatChannelSize(RenderImage2DFormat format)
 	{
 		switch (format)
 		{
-		case RenderImage2DFormat::None:		return 0;
-		case RenderImage2DFormat::RGBA8F:	return 4;
-		case RenderImage2DFormat::RGB8F:	return 3;
+		case RENDER_IMAGE_2D_FORMAT_NONE:		return 0;
+		case RENDER_IMAGE_2D_FORMAT_RGBA8F:		return 4;
+		case RENDER_IMAGE_2D_FORMAT_RGB8F:		return 3;
 		default:
 			break;
 		}
 	}
 
-	enum class ComputeImage2DFormat
+	enum ComputeImage2DFormat
 	{
-		RGBA32F,
-		RGBA16F,
-		RG32F,
-		RG16F,
-		R32F,
-		R16F,
-		RGBA32I,
-		RGBA16I,
-		RGBA8I,
-		RGBA32UI,
-		RGBA16UI,
-		RGBA8UI,
-		R32UI
+		COMPUTE_IMAGE_2D_FORMAT_NONE,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32F,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16F,
+		COMPUTE_IMAGE_2D_FORMAT_RG32F,
+		COMPUTE_IMAGE_2D_FORMAT_RG16F,
+		COMPUTE_IMAGE_2D_FORMAT_R32F,
+		COMPUTE_IMAGE_2D_FORMAT_R16F,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32I,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16I,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA8I,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32UI,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16UI,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA8UI,
+		COMPUTE_IMAGE_2D_FORMAT_R32UI
 	};
 }

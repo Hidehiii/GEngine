@@ -18,7 +18,7 @@ namespace GEngine
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
 		
-		if (m_Type == CommandBufferType::Graphics)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 		{
 			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
 			m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
@@ -30,7 +30,7 @@ namespace GEngine
 	}
 	void OpenGLCommandBuffer::End()
 	{
-		if (m_Type == CommandBufferType::Graphics)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 		{
 			m_FrameBuffer->End(this);
 		}

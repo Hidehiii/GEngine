@@ -18,11 +18,11 @@ namespace GEngine
 		m_Height = height;
 		if (channels == 4)
 		{
-			m_Format = RenderImage2DFormat::RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RenderImage2DFormat::RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
 		}
 		if (m_GenerateMipmap)
 		{

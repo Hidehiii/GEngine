@@ -216,7 +216,7 @@ namespace GEngine
 		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
 
 		
-		if (m_Type == CommandBufferType::Graphics)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 		{
 			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
 			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
@@ -232,7 +232,7 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::End()
 	{
-		if (m_Type == CommandBufferType::Graphics)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 		{
 			m_FrameBuffer->End(this);
 		}
@@ -240,11 +240,11 @@ namespace GEngine
 
 		std::vector<VkPipelineStageFlags> waitStages;
 		
-		if (m_Type == CommandBufferType::Graphics)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		if(m_Type == CommandBufferType::Compute)
+		if(m_Type == COMMAND_BUFFER_TYPE_COMPUTE)
 			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-		if(m_Type == CommandBufferType::Transfer)
+		if(m_Type == COMMAND_BUFFER_TYPE_TRANSFER)
 			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		VkSubmitInfo                    submitInfo{};
@@ -257,11 +257,11 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = m_SignalSemaphores.size();
 		submitInfo.pSignalSemaphores	= m_SignalSemaphores.data();
 
-		if(m_Type == CommandBufferType::Graphics)
+		if(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
 			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		if(m_Type == CommandBufferType::Compute)
+		if(m_Type == COMMAND_BUFFER_TYPE_COMPUTE)
 			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		if (m_Type == CommandBufferType::Transfer)
+		if (m_Type == COMMAND_BUFFER_TYPE_TRANSFER)
 			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetTransferQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 		
 		ClearSignalSemaphores();

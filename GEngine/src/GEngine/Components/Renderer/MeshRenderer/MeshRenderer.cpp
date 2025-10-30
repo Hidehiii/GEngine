@@ -41,7 +41,7 @@ namespace GEngine
 			{
 				if (m_Material == nullptr)
 				{
-					m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"));
+					m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"), "Default");
 				}
 				m_Pipeline = GraphicsPipeline::Create(
 					m_Material,

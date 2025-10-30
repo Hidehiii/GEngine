@@ -42,21 +42,21 @@ namespace GEngine
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized	= true;
 		}	
-		if (GraphicsAPI::GetAPI() == GraphicsAPI::API::OpenGL)
+		if (GraphicsAPI::GetAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
 			
 		}
-		else if (GraphicsAPI::GetAPI() == GraphicsAPI::API::Vulkan)
+		else if (GraphicsAPI::GetAPI() == GraphicsAPI::GRAPHICS_API_Vulkan)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
-		if (GraphicsAPI::GetAPI() == GraphicsAPI::API::OpenGL)
+		if (GraphicsAPI::GetAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
 			m_Context = new OpenGLContext(m_Window);
 		}
-		else if (GraphicsAPI::GetAPI() == GraphicsAPI::API::Vulkan)
+		else if (GraphicsAPI::GetAPI() == GraphicsAPI::GRAPHICS_API_Vulkan)
 		{
 			m_Context = new VulkanContext(m_Window);
 			m_Context->SetRequiredExtensions(GetRequiredExtensions());
@@ -190,7 +190,7 @@ namespace GEngine
 
 	void GLFWWindow::SetVSync(bool enabled)
 	{
-		if (GraphicsAPI::GetAPI() == GraphicsAPI::API::OpenGL)
+		if (GraphicsAPI::GetAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
 			if (enabled)
 				glfwSwapInterval(1);

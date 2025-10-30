@@ -70,13 +70,13 @@ namespace GEngine
 	{
 		switch (spec.API)
 		{
-		case GraphicsAPI::API::None:
+		case GraphicsAPI::GRAPHICS_API_None:
 			GE_CORE_ASSERT(false, "Renderer api is not supported");
 			break;
-		case GraphicsAPI::API::OpenGL:
+		case GraphicsAPI::GRAPHICS_API_OpenGL:
 			s_GraphicsAPI = new OpenGLGraphicsAPI();
 			break;
-		case GraphicsAPI::API::Vulkan:
+		case GraphicsAPI::GRAPHICS_API_Vulkan:
 			s_GraphicsAPI = new VulkanGraphicsAPI();
 		default:
 			break;

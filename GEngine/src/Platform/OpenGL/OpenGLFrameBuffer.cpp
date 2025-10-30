@@ -114,18 +114,18 @@ namespace GEngine
                 }
             }
 
-            if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+            if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
             {
                 Utils::CreateTextures(m_Specification.Samples > 1, &m_MultiSampleDepthStencilAttachment, 1);
                 Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleDepthStencilAttachment);
                 switch (m_Specification.DepthStencil.TextureFormat)
                 {
-                case FrameBufferTextureFormat::DEPTH24STENCIL8:
+                case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
                 {
                     Utils::AttachDepthTexture(m_MultiSampleDepthStencilAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
                 }
-                case FrameBufferTextureFormat::DEPTH:
+                case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
                 {
                     Utils::AttachDepthTexture(m_MultiSampleDepthStencilAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
@@ -171,18 +171,18 @@ namespace GEngine
             }
         }
 
-        if (m_Specification.DepthStencil.TextureFormat != FrameBufferTextureFormat::None)
+        if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
         {
             Utils::CreateTextures(false, &m_DepthStencilAttachment, 1);
             Utils::BindTexture(false, m_DepthStencilAttachment);
             switch (m_Specification.DepthStencil.TextureFormat)
             {
-                case FrameBufferTextureFormat::DEPTH24STENCIL8:
+                case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
                 {
                     Utils::AttachDepthTexture(m_DepthStencilAttachment, 1, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 				    break;
 				}
-                case FrameBufferTextureFormat::DEPTH:
+                case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
                 {
                     Utils::AttachDepthTexture(m_DepthStencilAttachment, 1, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
                     break;
@@ -224,11 +224,11 @@ namespace GEngine
 		glDepthMask(GL_TRUE);
         glDepthRange(Graphics::IsReverseDepth() ? 1 : 0, Graphics::IsReverseDepth() ? 0 : 1);
         glClearDepth(Graphics::IsReverseDepth() ? 0 : 1);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RenderPassBeginOperation::Clear)
+		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}

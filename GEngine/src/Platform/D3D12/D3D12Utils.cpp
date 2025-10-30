@@ -94,25 +94,25 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				return DXGI_FORMAT_UNKNOWN;
-			case FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				return DXGI_FORMAT_R8G8B8A8_UNORM;
-			case FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return DXGI_FORMAT_R32_FLOAT;
-			case FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				return DXGI_FORMAT_R16G16_FLOAT;
-			case FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				return DXGI_FORMAT_R32_SINT;
-			case FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				return DXGI_FORMAT_R16G16_SINT;
-			case FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				return DXGI_FORMAT_R32_UINT;
-			case FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				return DXGI_FORMAT_R16G16_UINT;
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				return DXGI_FORMAT_D24_UNORM_S8_UINT;
-			case FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				return DXGI_FORMAT_D32_FLOAT;
 			default:
 				break;
@@ -123,16 +123,16 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case DXGI_FORMAT_UNKNOWN:			return FrameBufferTextureFormat::None;
-			case DXGI_FORMAT_R8G8B8A8_UNORM:	return FrameBufferTextureFormat::RGBA8;
-			case DXGI_FORMAT_R32_FLOAT:			return FrameBufferTextureFormat::R32F;
-			case DXGI_FORMAT_R16G16_FLOAT:		return FrameBufferTextureFormat::RG16F;
-			case DXGI_FORMAT_R32_SINT:			return FrameBufferTextureFormat::R32I;
-			case DXGI_FORMAT_R16G16_SINT:		return FrameBufferTextureFormat::RG16I;
-			case DXGI_FORMAT_R32_UINT:			return FrameBufferTextureFormat::R32UI;
-			case DXGI_FORMAT_R16G16_UINT:		return FrameBufferTextureFormat::RG16UI;
-			case DXGI_FORMAT_D24_UNORM_S8_UINT:	return FrameBufferTextureFormat::DEPTH24STENCIL8;
-			case DXGI_FORMAT_D32_FLOAT:			return FrameBufferTextureFormat::DEPTH;
+			case DXGI_FORMAT_UNKNOWN:			return FRAME_BUFFER_TEXTURE_FORMAT_NONE;
+			case DXGI_FORMAT_R8G8B8A8_UNORM:	return FRAME_BUFFER_TEXTURE_FORMAT_RGBA8;
+			case DXGI_FORMAT_R32_FLOAT:			return FRAME_BUFFER_TEXTURE_FORMAT_R32F;
+			case DXGI_FORMAT_R16G16_FLOAT:		return FRAME_BUFFER_TEXTURE_FORMAT_RG16F;
+			case DXGI_FORMAT_R32_SINT:			return FRAME_BUFFER_TEXTURE_FORMAT_R32I;
+			case DXGI_FORMAT_R16G16_SINT:		return FRAME_BUFFER_TEXTURE_FORMAT_RG16I;
+			case DXGI_FORMAT_R32_UINT:			return FRAME_BUFFER_TEXTURE_FORMAT_R32UI;
+			case DXGI_FORMAT_R16G16_UINT:		return FRAME_BUFFER_TEXTURE_FORMAT_RG16UI;
+			case DXGI_FORMAT_D24_UNORM_S8_UINT:	return FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+			case DXGI_FORMAT_D32_FLOAT:			return FRAME_BUFFER_TEXTURE_FORMAT_DEPTH;
 			default:
 				break;
 			}

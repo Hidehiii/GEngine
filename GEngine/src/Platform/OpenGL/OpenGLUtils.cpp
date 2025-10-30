@@ -9,8 +9,8 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case RenderImage2DFormat::RGBA8F:	return GL_RGBA8;
-			case RenderImage2DFormat::RGB8F:	return GL_RGB8;
+			case RENDER_IMAGE_2D_FORMAT_RGBA8F:	return GL_RGBA8;
+			case RENDER_IMAGE_2D_FORMAT_RGB8F:	return GL_RGB8;
 			default:
 				break;
 			}
@@ -20,8 +20,8 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case RenderImage2DFormat::RGBA8F:	return GL_RGBA;
-			case RenderImage2DFormat::RGB8F:	return GL_RGB;
+			case RENDER_IMAGE_2D_FORMAT_RGBA8F:	return GL_RGBA;
+			case RENDER_IMAGE_2D_FORMAT_RGB8F:	return GL_RGB;
 			default:
 				break;
 			}
@@ -30,19 +30,19 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case ComputeImage2DFormat::RGBA32F:		return GL_RGBA32F;
-			case ComputeImage2DFormat::RGBA16F:		return GL_RGBA16F;
-			case ComputeImage2DFormat::RG32F:		return GL_RG32F;
-			case ComputeImage2DFormat::RG16F:		return GL_RG16F;
-			case ComputeImage2DFormat::R32F:		return GL_R32F;
-			case ComputeImage2DFormat::R16F:		return GL_R16F;
-			case ComputeImage2DFormat::RGBA32I:		return GL_RGBA32I;
-			case ComputeImage2DFormat::RGBA16I:		return GL_RGBA16I;
-			case ComputeImage2DFormat::RGBA8I:		return GL_RGBA8I;
-			case ComputeImage2DFormat::RGBA32UI:	return GL_RGBA32UI;
-			case ComputeImage2DFormat::RGBA16UI:	return GL_RGBA16UI;
-			case ComputeImage2DFormat::RGBA8UI:		return GL_RGBA8UI;
-			case ComputeImage2DFormat::R32UI:		return GL_R32UI;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32F:		return GL_RGBA32F;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16F:		return GL_RGBA16F;
+			case COMPUTE_IMAGE_2D_FORMAT_RG32F:			return GL_RG32F;
+			case COMPUTE_IMAGE_2D_FORMAT_RG16F:			return GL_RG16F;
+			case COMPUTE_IMAGE_2D_FORMAT_R32F:			return GL_R32F;
+			case COMPUTE_IMAGE_2D_FORMAT_R16F:			return GL_R16F;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32I:		return GL_RGBA32I;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16I:		return GL_RGBA16I;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8I:		return GL_RGBA8I;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32UI:		return GL_RGBA32UI;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16UI:		return GL_RGBA16UI;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8UI:		return GL_RGBA8UI;
+			case COMPUTE_IMAGE_2D_FORMAT_R32UI:			return GL_R32UI;
 			default:
 				break;
 			}
@@ -52,19 +52,19 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case ComputeImage2DFormat::RGBA32F:		return GL_RGBA;
-			case ComputeImage2DFormat::RGBA16F:		return GL_RGBA;
-			case ComputeImage2DFormat::RG32F:		return GL_RG;
-			case ComputeImage2DFormat::RG16F:		return GL_RG;
-			case ComputeImage2DFormat::R32F:		return GL_R;
-			case ComputeImage2DFormat::R16F:		return GL_R;
-			case ComputeImage2DFormat::RGBA32I:		return GL_RGBA;
-			case ComputeImage2DFormat::RGBA16I:		return GL_RGBA;
-			case ComputeImage2DFormat::RGBA8I:		return GL_RGBA;
-			case ComputeImage2DFormat::RGBA32UI:	return GL_RGBA;
-			case ComputeImage2DFormat::RGBA16UI:	return GL_RGBA;
-			case ComputeImage2DFormat::RGBA8UI:		return GL_RGBA;
-			case ComputeImage2DFormat::R32UI:		return GL_R;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32F:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16F:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RG32F:			return GL_RG;
+			case COMPUTE_IMAGE_2D_FORMAT_RG16F:			return GL_RG;
+			case COMPUTE_IMAGE_2D_FORMAT_R32F:			return GL_R;
+			case COMPUTE_IMAGE_2D_FORMAT_R16F:			return GL_R;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32I:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16I:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8I:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA32UI:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA16UI:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_RGBA8UI:		return GL_RGBA;
+			case COMPUTE_IMAGE_2D_FORMAT_R32UI:			return GL_R;
 				break;
 			default:
 				break;
@@ -75,25 +75,25 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				break;
-			case FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				return GL_RGBA8;
-			case FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return GL_R32F;
-			case FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				return GL_RG16F;
-			case FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				return GL_R32I;
-			case FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				return GL_RG16I;
-			case FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				return GL_R32UI;
-			case FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				return GL_RG16UI;
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				return GL_DEPTH24_STENCIL8;
-			case FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				return GL_DEPTH_COMPONENT32F;
 			default:
 				break;
@@ -104,25 +104,25 @@ namespace GEngine
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::None:
+			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				break;
-			case FrameBufferTextureFormat::RGBA8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				return GL_RGBA;
-			case FrameBufferTextureFormat::R32F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return GL_R;
-			case FrameBufferTextureFormat::RG16F:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
 				return GL_RG;
-			case FrameBufferTextureFormat::R32I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32I:
 				return GL_R;
-			case FrameBufferTextureFormat::RG16I:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16I:
 				return GL_RG;
-			case FrameBufferTextureFormat::R32UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_R32UI:
 				return GL_R;
-			case FrameBufferTextureFormat::RG16UI:
+			case FRAME_BUFFER_TEXTURE_FORMAT_RG16UI:
 				return GL_RG;
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				return GL_DEPTH_STENCIL_ATTACHMENT;
-			case FrameBufferTextureFormat::DEPTH:
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 				return GL_DEPTH_ATTACHMENT;
 			default:
 				break;
@@ -133,16 +133,16 @@ namespace GEngine
 		{
 			switch (factor)
 			{
-			case BlendFactor::SRC_ALPHA: return GL_SRC_ALPHA;
-			case BlendFactor::DST_ALPHA: return GL_DST_ALPHA;
-			case BlendFactor::SRC_COLOR: return GL_SRC_COLOR;
-			case BlendFactor::DST_COLOR: return GL_DST_COLOR;
-			case BlendFactor::ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-			case BlendFactor::ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-			case BlendFactor::ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-			case BlendFactor::ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
-			case BlendFactor::ONE: return GL_ONE;
-			case BlendFactor::ZERO: return GL_ZERO;
+			case BLEND_FACTOR_SRC_ALPHA:			return GL_SRC_ALPHA;
+			case BLEND_FACTOR_DST_ALPHA:			return GL_DST_ALPHA;
+			case BLEND_FACTOR_SRC_COLOR:			return GL_SRC_COLOR;
+			case BLEND_FACTOR_DST_COLOR:			return GL_DST_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:	return GL_ONE_MINUS_SRC_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_DST_ALPHA:	return GL_ONE_MINUS_DST_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_SRC_COLOR:	return GL_ONE_MINUS_SRC_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_DST_COLOR:	return GL_ONE_MINUS_DST_COLOR;
+			case BLEND_FACTOR_ONE:					return GL_ONE;
+			case BLEND_FACTOR_ZERO:					return GL_ZERO;
 			default:
 				break;
 			}
@@ -150,19 +150,19 @@ namespace GEngine
 		}
 		GLenum SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode)
 		{
-			if (filter == SamplerFilter::Liner && mipmapMode == SamplerFilter::Liner)
+			if (filter == SAMPLER_FILTER_LINEAR && mipmapMode == SAMPLER_FILTER_LINEAR)
 			{
 				return GL_LINEAR_MIPMAP_LINEAR;
 			}
-			else if (filter == SamplerFilter::Liner && mipmapMode == SamplerFilter::Nearest)
+			else if (filter == SAMPLER_FILTER_LINEAR && mipmapMode == SAMPLER_FILTER_NEAREST)
 			{
 				return GL_LINEAR_MIPMAP_NEAREST;
 			}
-			else if (filter == SamplerFilter::Nearest && mipmapMode == SamplerFilter::Liner)
+			else if (filter == SAMPLER_FILTER_NEAREST && mipmapMode == SAMPLER_FILTER_LINEAR)
 			{
 				return GL_NEAREST_MIPMAP_LINEAR;
 			}
-			else if (filter == SamplerFilter::Nearest && mipmapMode == SamplerFilter::Nearest)
+			else if (filter == SAMPLER_FILTER_NEAREST && mipmapMode == SAMPLER_FILTER_NEAREST)
 			{
 				return GL_NEAREST_MIPMAP_NEAREST;
 			}
@@ -172,15 +172,15 @@ namespace GEngine
 		{
 			switch (mode)
 			{
-			case SamplerAddressMode::Repeat:
+			case SAMPLER_ADDRESS_REPEAT:
 				return GL_REPEAT;
-			case SamplerAddressMode::MirroredRepeat:
+			case SAMPLER_ADDRESS_MIRRORED_REPEAT:
 				return GL_MIRRORED_REPEAT;
-			case SamplerAddressMode::ClampToEdge:
+			case SAMPLER_ADDRESS_CLAMP_TO_EDGE:
 				return GL_CLAMP_TO_EDGE;
-			case SamplerAddressMode::ClampToBorder:
+			case SAMPLER_ADDRESS_CLAMP_TO_BORDER:
 				return GL_CLAMP_TO_BORDER;
-			case SamplerAddressMode::MirrorClampToEdge:
+			case SAMPLER_ADDRESS_MIRROR_CLAMP_TO_EDGE:
 				return GL_MIRROR_CLAMP_TO_EDGE;
 			default:
 				break;
@@ -198,13 +198,13 @@ namespace GEngine
 		{
 			switch (op)
 			{
-			case CompareOperation::Less:		glDepthFunc(GL_LESS); break;
-			case CompareOperation::Greater:		glDepthFunc(GL_GREATER); break;
-			case CompareOperation::LessEqual:	glDepthFunc(GL_LEQUAL); break;
-			case CompareOperation::GreaterEqual:glDepthFunc(GL_GEQUAL); break;
-			case CompareOperation::Equal:		glDepthFunc(GL_EQUAL); break;
-			case CompareOperation::NotEqual:	glDepthFunc(GL_NOTEQUAL); break;
-			case CompareOperation::Always:		glDepthFunc(GL_ALWAYS); break;
+			case COMPARE_OP_LESS:			glDepthFunc(GL_LESS); break;
+			case COMPARE_OP_GREATER:		glDepthFunc(GL_GREATER); break;
+			case COMPARE_OP_LESS_EQUAL:		glDepthFunc(GL_LEQUAL); break;
+			case COMPARE_OP_GREATER_EQUAL:	glDepthFunc(GL_GEQUAL); break;
+			case COMPARE_OP_EQUAL:			glDepthFunc(GL_EQUAL); break;
+			case COMPARE_OP_NOT_EQUAL:		glDepthFunc(GL_NOTEQUAL); break;
+			case COMPARE_OP_ALWAYS:			glDepthFunc(GL_ALWAYS); break;
 			default:
 				break;
 			}
@@ -213,9 +213,9 @@ namespace GEngine
 		{
 			switch (mode)
 			{
-			case CullMode::None:	glDisable(GL_CULL_FACE); break;
-			case CullMode::Back:	glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
-			case CullMode::Front:	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
+			case CULL_MODE_NONE:		glDisable(GL_CULL_FACE); break;
+			case CULL_MODE_BACK:		glEnable(GL_CULL_FACE); glCullFace(GL_BACK); break;
+			case CULL_MODE_FRONT:		glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); break;
 			default:				GE_CORE_CRITICAL("Unknown cull mode!"); break;
 			}
 		}
@@ -224,22 +224,22 @@ namespace GEngine
 			GLenum colorMode = GL_FUNC_ADD, alphaMode = GL_FUNC_ADD;
 			switch (modeColor)
 			{
-			case BlendMode::None:
+			case BLEND_MODE_NONE:
 				glDisable(GL_BLEND);
 				return;
-			case BlendMode::Add:
+			case BLEND_MODE_ADD:
 				colorMode = GL_FUNC_ADD;
 				break;
-			case BlendMode::Substract:
+			case BLEND_MODE_SUBSTRACT:
 				colorMode = (GL_FUNC_SUBTRACT);
 				break;
-			case BlendMode::ReverseSubstract:
+			case BLEND_MODE_REVERSE_SUBSTRACT:
 				colorMode = (GL_FUNC_REVERSE_SUBTRACT);
 				break;
-			case BlendMode::Min:
+			case BLEND_MODE_MIN:
 				colorMode = (GL_MIN);
 				break;
-			case BlendMode::Max:
+			case BLEND_MODE_MAX:
 				colorMode = (GL_MAX);
 				break;
 			default:
@@ -247,22 +247,22 @@ namespace GEngine
 			}
 			switch (modeAlpha)
 			{
-			case BlendMode::None:
+			case BLEND_MODE_NONE:
 				glDisable(GL_BLEND);
 				return;
-			case BlendMode::Add:
+			case BLEND_MODE_ADD:
 				alphaMode = GL_FUNC_ADD;
 				break;
-			case BlendMode::Substract:
+			case BLEND_MODE_SUBSTRACT:
 				alphaMode = GL_FUNC_SUBTRACT;
 				break;
-			case BlendMode::ReverseSubstract:
+			case BLEND_MODE_REVERSE_SUBSTRACT:
 				alphaMode = GL_FUNC_REVERSE_SUBTRACT;
 				break;
-			case BlendMode::Min:
+			case BLEND_MODE_MIN:
 				alphaMode = GL_MIN;
 				break;
-			case BlendMode::Max:
+			case BLEND_MODE_MAX:
 				alphaMode = GL_MAX;
 				break;
 			default:

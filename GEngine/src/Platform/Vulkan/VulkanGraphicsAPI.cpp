@@ -10,7 +10,7 @@ namespace GEngine
 {
     VulkanGraphicsAPI::VulkanGraphicsAPI()
     {
-        s_API = GraphicsAPI::API::Vulkan;
+        s_API = GraphicsAPI::GRAPHICS_API_Vulkan;
     }
     VulkanGraphicsAPI::~VulkanGraphicsAPI()
     {
@@ -19,12 +19,12 @@ namespace GEngine
 
     Ref<CommandBuffer> VulkanGraphicsAPI::GetGraphicsCommandBuffer()
     {
-        return VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Graphics);
+        return VulkanContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
     }
 
     Ref<CommandBuffer> VulkanGraphicsAPI::GetComputeCommandBuffer()
     {
-        return VulkanContext::Get()->GetCommandBuffer(CommandBufferType::Compute);
+        return VulkanContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
     }
 
     std::vector<std::string> VulkanGraphicsAPI::GetExtensions()

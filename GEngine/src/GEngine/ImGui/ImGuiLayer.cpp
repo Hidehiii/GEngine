@@ -33,8 +33,8 @@ namespace GEngine
 		
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::API::OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
-		case GraphicsAPI::API::Vulkan: m_PlatformImGui = new VulkanImGui(); break;
+		case GraphicsAPI::GRAPHICS_API_OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
+		case GraphicsAPI::GRAPHICS_API_Vulkan: m_PlatformImGui = new VulkanImGui(); break;
 		default: GE_CORE_ASSERT(false, "Unknown renderer api");
 		}
 
@@ -85,8 +85,8 @@ namespace GEngine
 		if (m_BlockEvents)
 		{
 			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+			e.Handled |= e.IsInCategory(EVENT_CATEGORY_MOUSE) & io.WantCaptureMouse;
+			e.Handled |= e.IsInCategory(EVENT_CATEGORY_KEYBOARD) & io.WantCaptureKeyboard;
 		}
 	}
 

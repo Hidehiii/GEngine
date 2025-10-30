@@ -46,11 +46,11 @@ namespace GEngine
 		}
 		if (channels == 4)
 		{
-			m_Format = RenderImage2DFormat::RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RenderImage2DFormat::RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
 		}
 		stbi_image_free(data);
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_CubeMap);
@@ -131,14 +131,14 @@ namespace GEngine
 			GE_CORE_ASSERT(data, "Failed to load image!");
 			GE_CORE_ASSERT(m_Width == width, " The cube map image is not the same size!");
 			GE_CORE_ASSERT(m_Height = height, " The cube map image is not the same size!");
-			RenderImage2DFormat format = RenderImage2DFormat::None;
+			RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_NONE;
 			if (channels == 4)
 			{
-				format = RenderImage2DFormat::RGBA8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
 			}
 			else if (channels == 3)
 			{
-				format = RenderImage2DFormat::RGB8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGB8F;
 			}
 			GE_CORE_ASSERT(m_Format == format, " The cube map image is not the same format!");
 

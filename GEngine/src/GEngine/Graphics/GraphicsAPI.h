@@ -14,12 +14,12 @@ namespace GEngine
 	class GENGINE_API GraphicsAPI
 	{
 	public:
-		enum class API
+		enum API
 		{
-			None = 0, 
-			OpenGL = 1,
-			Vulkan = 2,
-			Direct3DX12 = 3
+			GRAPHICS_API_None = 0, 
+			GRAPHICS_API_OpenGL = 1,
+			GRAPHICS_API_Vulkan = 2,
+			GRAPHICS_API_Direct3DX12 = 3
 		};
 
 	public:
@@ -47,7 +47,7 @@ namespace GEngine
 
 		inline static API GetAPI() { return s_API; }
 	protected:
-		inline static API s_API		= API::None;
+		inline static API s_API		= GRAPHICS_API_None;
 	};
 
 }

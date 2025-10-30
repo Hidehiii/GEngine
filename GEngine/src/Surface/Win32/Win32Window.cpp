@@ -176,7 +176,7 @@ namespace GEngine
 		ShowWindow(m_Window, SW_SHOW);
 		UpdateWindow(m_Window);
 
-		if (Graphics::GetGraphicsAPI() == GraphicsAPI::API::Direct3DX12)
+		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Direct3DX12)
 		{
 			m_Context = new D3D12Context(m_Window);
 		}

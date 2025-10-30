@@ -298,13 +298,13 @@ namespace GEngine
 		VkFlags							depthAspectFlag;
 		switch (m_Specification.DepthStencil.TextureFormat)
 		{
-		case FrameBufferTextureFormat::DEPTH24STENCIL8:
+		case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 		{
 			depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
 			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 			break;
 		}
-		case FrameBufferTextureFormat::DEPTH:
+		case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
 		{
 			depthFormat = VK_FORMAT_D32_SFLOAT;
 			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;

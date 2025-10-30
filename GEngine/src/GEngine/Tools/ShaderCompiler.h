@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
+#include <Unknwn.h>
 #include "dxcapi.h"
 
 namespace GEngine
@@ -9,7 +10,7 @@ namespace GEngine
 	public:
 		ShaderCompiler();
 
-		bool Compile(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<uint8_t>& output);
+		bool Compile(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<uint32_t>& machineCode);
 
 		static Ref<ShaderCompiler> Create();
 		static Ref<ShaderCompiler> Get();
