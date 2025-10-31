@@ -117,7 +117,7 @@ namespace GEngine
 		}
 	}
 
-	Shader::Shader(const std::string& path)
+	Shader::Shader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc)
 	{
 		m_FilePath = path;
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
@@ -126,7 +126,7 @@ namespace GEngine
 		std::string source = FileSystemHelper::ReadFileAsString(path);
 		Preprocess(source, srcCodes);
 		Compile(srcCodes, shaders);
-		ProcessMachineCode(shaders);
+		processMachingCodeFunc(shaders);
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)

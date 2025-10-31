@@ -153,8 +153,9 @@ namespace GEngine
 
 	class GENGINE_API Shader
 	{
+	protected:
+		Shader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc);
 	public:
-		Shader(const std::string& path);
 		virtual ~Shader() = default;
 
 		virtual BlendMode									GetBlendColor(const int& pass) { return m_Passes.at(pass).State.BlendColor; }

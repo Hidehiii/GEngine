@@ -60,7 +60,7 @@ namespace GEngine
 	
 
 	OpenGLShader::OpenGLShader(const std::string& path)
-		: Shader(path)
+		: Shader(path, GE_BIND_CLASS_FUNCTION_LAMBDA(ProcessMachineCode))
 	{
 		
 	}
