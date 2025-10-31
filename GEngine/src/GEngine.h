@@ -49,7 +49,7 @@
 
 
 // Tools
-#include "GEngine/Tools/Serialization/Serializer.h"
+#include "GEngine/Tools/Serializer.h"
 #include "GEngine/Tools/ModelImporter.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"

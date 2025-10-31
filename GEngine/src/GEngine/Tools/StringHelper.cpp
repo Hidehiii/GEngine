@@ -71,6 +71,10 @@ namespace GEngine
 				current += c;
 			}
 		}
+		if (current.empty() == false)
+		{
+			result.push_back(current);
+		}
 		return result;
 	}
 

@@ -147,22 +147,23 @@ namespace GEngine
 
 		std::string block;
 		block = source.substr(pos + 1, source.find("}", pos + 1) - pos - 1);
-
 		//todo
 		GE_INFO("Properties block {}", block);
 		//properties
 		//type name (float _color)...
 		//split by \n or ;
-		std::vector<std::string> properties = StringHelper::Split(block, {'\n', ';'});
+		std::vector<std::string> properties = StringHelper::Split(block, ';');
 		for (auto& property : properties)
 		{
-			auto words = StringHelper::Split(property, { ' ', '\t' });
+			auto words = StringHelper::Split(property, { ' ', '\t', '\n', '\r'});
 			words = StringHelper::ClearEmptyStrings(words);
-			GE_CORE_ASSERT(words.size() == 2, "Invalid property declaration! " + property);
-			ShaderPropertyType type = Utils::ShaderPropertyTypeFromString(words[0]);
-			std::string name = words[1];
-			m_Properties[name] = type;
-			GE_INFO("Shader property: {} {}", words[0], words[1]);
+			if (words.size() == 2)
+			{
+				ShaderPropertyType type = Utils::ShaderPropertyTypeFromString(words[0]);
+				std::string name = words[1];
+				m_Properties[name] = type;
+				GE_INFO("Shader property: {} {}", words[0], words[1]);
+			}
 		}
 
 
@@ -186,7 +187,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
 				m_Passes.at(m_Passes.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
@@ -197,7 +198,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
 				m_Passes.at(m_Passes.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
@@ -208,7 +209,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
 				m_Passes.at(m_Passes.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
@@ -219,7 +220,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 3 || words.size() == 5, "Invalid Blend command! " + commandLine);
 				if (words.size() == 3)
@@ -244,7 +245,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2 || words.size() == 3, "Invalid BlendOp command! " + commandLine);
 				if (words.size() == 2)
@@ -265,7 +266,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				int mask = 0;
 				for (size_t i = 1; i < words.size(); i++)
@@ -283,7 +284,7 @@ namespace GEngine
 			if (commandPos != std::string::npos)
 			{
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
 				m_Passes.at(m_Passes.size() - 1).State.Tag = words[1];
@@ -296,7 +297,7 @@ namespace GEngine
 			{
 				commandPos = block.find("#pragma", commandPos);
 				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',' });
+				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 3, "Invalid pragma command! " + commandLine);
 				if (StringHelper::ToUpper(words[1]) == "VERTEX")
@@ -326,6 +327,7 @@ namespace GEngine
 			pos = source.find("{", pos);
 			stack.push(1);
 			size_t begin = pos + 1;
+			pos++;
 			while (pos < source.size())
 			{
 				if (source.at(pos) == '{')
@@ -341,8 +343,9 @@ namespace GEngine
 					pos;
 					break;
 				}
+				pos++;
 			}
-			block = source.substr(begin, pos - 1);
+			block = source.substr(begin, pos - begin - 1);
 
 			// todo
 			GE_INFO("Program block {}", block);
@@ -365,11 +368,11 @@ namespace GEngine
 			std::vector<uint32_t> machineCode;
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
-				bool result = ShaderCompiler::Get()->Compile(stage, shaderSrcCodes.at(i), entryPoint, machineCode);
+				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode);
 				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
 			}
 		}
-		
+		GE_CORE_ASSERT(false, "");
 		//reflection
 
 		// ConstPropertiesDesc

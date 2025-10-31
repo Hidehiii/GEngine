@@ -257,10 +257,16 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Config>& config)
 	{
+		if (!std::filesystem::exists(filepath))
+		{
+			GE_CORE_INFO("Creating config file...");
+			std::filesystem::path	path = std::filesystem::current_path() / filepath;
+			std::fstream			file(path, std::ios::out | std::ios::trunc);
+		}
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "RendererAPI" << YAML::Value << (int)config->m_GraphicsAPI;
+		out << YAML::Key << "GraphicsAPI" << YAML::Value << (int)config->m_GraphicsAPI;
 		out << YAML::Key << "FramesInFlight" << YAML::Value << (int)config->m_FramesInFlight;
 		out << YAML::Key << "VSync" << YAML::Value << (int)config->m_VSync;
 		out << YAML::Key << "DynamicUniformBufferSizeScaleFactor" << YAML::Value << (int)config->m_DynamicUniformCount;
@@ -348,9 +354,7 @@ namespace GEngine
 		YAML::Node data;
 		if (!std::filesystem::exists(filepath))
 		{
-			GE_CORE_INFO("Creating config file...");
-			std::filesystem::path	path = std::filesystem::current_path() / filepath;
-			std::fstream			file(path, std::ios::out | std::ios::trunc);
+			GE_CORE_INFO("Missins config file...");
 			return;
 		}
 		try
@@ -363,7 +367,7 @@ namespace GEngine
 			return;
 		}
 
-		config->m_GraphicsAPI							= data["RendererAPI"].as<uint8_t>();
+		config->m_GraphicsAPI							= data["GraphicsAPI"].as<uint8_t>();
 		config->m_FramesInFlight						= data["FramesInFlight"].as<uint8_t>();
 		config->m_VSync									= data["VSync"].as<int>();
 		config->m_DynamicUniformCount					= data["DynamicUniformBufferSizeScaleFactor"].as<uint32_t>();

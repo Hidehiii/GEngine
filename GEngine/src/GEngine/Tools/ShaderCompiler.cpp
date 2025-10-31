@@ -4,7 +4,7 @@
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <d3d12shader.h>
-
+#include <SPIRVCross/spirv_cross.hpp>
 namespace GEngine
 {
 	Ref<ShaderCompiler> ShaderCompiler::s_Instance = nullptr;
@@ -44,16 +44,18 @@ namespace GEngine
 		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
 			args.push_back(L"-spirv");
+			args.push_back(L"-fspv-reflect");
+			args.push_back(L"-fspv-target-env=vulkan1.3");
 		}
 		args.push_back(L"-E");
-		args.push_back(StringHelper::StringToWideString(entryPoint).c_str());
+		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
+		args.push_back(entryPointW.c_str());
 		args.push_back(L"-T");
-		args.push_back(StringHelper::StringToWideString(Utils::DXShaderTargetFromString(target)).c_str());
+		std::wstring targetW = StringHelper::StringToWideString(Utils::DXShaderTargetFromString(target));
+		args.push_back(targetW.c_str());
 #if GE_DEBUG
 		args.push_back(L"Zi");
 #endif
-		// ?? what to do 
-		args.push_back(L"-Qstrip_reflect");
 
 		IDxcResult* result;
 		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(&result));
@@ -77,49 +79,20 @@ namespace GEngine
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
 		}
-		machineCode.resize(compiledShaderBlob->GetBufferSize());
+		GE_CORE_ASSERT(compiledShaderBlob->GetBufferSize() % 4 == 0, "Shader compiled code size is not aligned to 4 bytes!");
+		machineCode.resize(compiledShaderBlob->GetBufferSize() / 4);
 		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
-		ID3D12ShaderReflection* reflection;
-		IDxcBlob* reflectionBlob;
-		hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
-		if (FAILED(hr))
-		{
-			GE_CORE_ERROR("Get shader reflection failed");
-		}
-		DxcBuffer reflectionData;
-		reflectionData.Encoding = DXC_CP_ACP;
-		reflectionData.Ptr		= reflectionBlob->GetBufferPointer();
-		reflectionData.Size		= reflectionBlob->GetBufferSize();
-		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
-
 		// use reflection
-		D3D12_SHADER_DESC desc;
-		reflection->GetDesc(&desc);
-		GE_CORE_TRACE("Input parameters:");
-		for (int i = 0; i < desc.InputParameters; i++)
+		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
-			D3D12_SIGNATURE_PARAMETER_DESC inputDesc;
-			reflection->GetInputParameterDesc(i, &inputDesc);
-
-			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
+			ReflectSpirv(machineCode, target);
 		}
-		GE_CORE_TRACE("Resource binding:");
-		for (int i = 0; i < desc.BoundResources; i++)
+		else
 		{
-			D3D12_SHADER_INPUT_BIND_DESC resDesc;
-			reflection->GetResourceBindingDesc(i, &resDesc);
-
-			GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", resDesc.Name, resDesc.Type, resDesc.BindPoint, resDesc.BindCount, resDesc.Space);
+			ReflectHlsl(result, target);
 		}
-		GE_CORE_TRACE("Output parameters:");
-		for(int i = 0; i < desc.OutputParameters;i++)
-		{
-			D3D12_SIGNATURE_PARAMETER_DESC outputDesc;
-			reflection->GetOutputParameterDesc(i, &outputDesc);
-
-			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
-		}
+		
 
 		return true;
 	}
@@ -131,5 +104,147 @@ namespace GEngine
 	Ref<ShaderCompiler> ShaderCompiler::Get()
 	{
 		return s_Instance;
+	}
+	void ShaderCompiler::ReflectHlsl(IDxcResult* result, const std::string& target)
+	{
+		ID3D12ShaderReflection* reflection;
+		IDxcBlob* reflectionBlob;
+		HRESULT hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
+		if (FAILED(hr) || reflectionBlob == nullptr)
+		{
+			GE_CORE_ERROR("Get shader reflection failed");
+			return;
+		}
+		DxcBuffer reflectionData;
+		reflectionData.Encoding = DXC_CP_ACP;
+		reflectionData.Ptr = reflectionBlob->GetBufferPointer();
+		reflectionData.Size = reflectionBlob->GetBufferSize();
+		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+
+		D3D12_SHADER_DESC desc;
+		reflection->GetDesc(&desc);
+		GE_CORE_INFO("Shader stage {}", target);
+		GE_CORE_INFO("Input parameters:");
+		for (int i = 0; i < desc.InputParameters; i++)
+		{
+			D3D12_SIGNATURE_PARAMETER_DESC inputDesc;
+			reflection->GetInputParameterDesc(i, &inputDesc);
+
+			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
+		}
+		GE_CORE_INFO("Constant buffers:");
+		for (int i = 0; i < desc.ConstantBuffers; i++)
+		{
+			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
+			D3D12_SHADER_BUFFER_DESC bufferDesc;
+			constantBuffer->GetDesc(&bufferDesc);
+			GE_CORE_TRACE("Constant buffer name {}, variables {}, size {}!", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
+			for (int j = 0; j < bufferDesc.Variables; j++)
+			{
+				ID3D12ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
+				D3D12_SHADER_VARIABLE_DESC varDesc;
+				variable->GetDesc(&varDesc);
+				GE_CORE_TRACE("  var name {}, start offset {}, size {}!", varDesc.Name, varDesc.StartOffset, varDesc.Size);
+			}
+		}
+		GE_CORE_INFO("Resource binding:");
+		for (int i = 0; i < desc.BoundResources; i++)
+		{
+			D3D12_SHADER_INPUT_BIND_DESC resDesc;
+			reflection->GetResourceBindingDesc(i, &resDesc);
+
+			GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", resDesc.Name, resDesc.Type, resDesc.BindPoint, resDesc.BindCount, resDesc.Space);
+		}
+		GE_CORE_INFO("Output parameters:");
+		for (int i = 0; i < desc.OutputParameters; i++)
+		{
+			D3D12_SIGNATURE_PARAMETER_DESC outputDesc;
+			reflection->GetOutputParameterDesc(i, &outputDesc);
+
+			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
+		}
+	}
+	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target)
+	{
+		spirv_cross::Compiler			compiler(spirvCode);
+		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();
+
+		GE_CORE_INFO("Shader stage {}", target);
+		GE_CORE_INFO("Input parameters:");
+		for (const auto& input : resources.stage_inputs)
+		{
+			auto& type = compiler.get_type(input.type_id);
+			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", input.name, compiler.get_decoration(input.id, spv::DecorationLocation), type.basetype);
+		}
+		GE_CORE_INFO("Uniform buffers:");
+		for (const auto& uniformBuffer : resources.uniform_buffers)
+		{
+			auto& type = compiler.get_type(uniformBuffer.type_id);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", uniformBuffer.name,
+				compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding),
+				compiler.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet),
+				compiler.get_declared_struct_size(type));
+			for (int i = 0; i < type.member_types.size(); i++)
+			{
+				auto& memberType = compiler.get_type(type.member_types[i]);
+				std::string memberName = compiler.get_member_name(uniformBuffer.base_type_id, i);
+				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", memberName,
+					compiler.get_member_decoration(uniformBuffer.base_type_id, i, spv::DecorationOffset),
+					memberType.basetype,
+					compiler.get_declared_struct_member_size(type, i));
+			}
+		}
+		GE_CORE_INFO("Separate images:");
+		for (const auto& separateImage : resources.separate_images)
+		{
+			auto& type = compiler.get_type(separateImage.type_id);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", separateImage.name,
+				compiler.get_decoration(separateImage.id, spv::DecorationBinding),
+				compiler.get_decoration(separateImage.id, spv::DecorationDescriptorSet),
+				type.basetype);
+		}
+		GE_CORE_INFO("Separate samplers:");
+		for (const auto& separateSampler : resources.separate_samplers)
+		{
+			auto& type = compiler.get_type(separateSampler.type_id);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", separateSampler.name,
+				compiler.get_decoration(separateSampler.id, spv::DecorationBinding),
+				compiler.get_decoration(separateSampler.id, spv::DecorationDescriptorSet),
+				type.basetype);
+		}
+		GE_CORE_INFO("Storage images:");
+		for (const auto& storageImage : resources.storage_images)
+		{
+			auto& type = compiler.get_type(storageImage.type_id);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", storageImage.name,
+				compiler.get_decoration(storageImage.id, spv::DecorationBinding),
+				compiler.get_decoration(storageImage.id, spv::DecorationDescriptorSet),
+				type.basetype);
+		}
+		GE_CORE_INFO("Storage buffers:");
+		for (const auto& storageBuffer : resources.storage_buffers)
+		{
+			auto& type = compiler.get_type(storageBuffer.type_id);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", storageBuffer.name,
+				compiler.get_decoration(storageBuffer.id, spv::DecorationBinding),
+				compiler.get_decoration(storageBuffer.id, spv::DecorationDescriptorSet),
+				compiler.get_declared_struct_size(type));
+			for (int i = 0; i < type.member_types.size(); i++)
+			{
+				auto& memberType = compiler.get_type(type.member_types[i]);
+				std::string memberName = compiler.get_member_name(storageBuffer.base_type_id, i);
+				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", memberName,
+					compiler.get_member_decoration(storageBuffer.base_type_id, i, spv::DecorationOffset),
+					memberType.basetype,
+					compiler.get_declared_struct_member_size(type, i));
+			}
+		}
+		GE_CORE_INFO("Output parameters:");
+		for (const auto& output : resources.stage_outputs)
+		{
+			auto& type = compiler.get_type(output.type_id);
+			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", output.name, compiler.get_decoration(output.id, spv::DecorationLocation), type.basetype);
+		}
+
 	}
 }

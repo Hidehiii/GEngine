@@ -14,6 +14,9 @@ namespace GEngine
 
 		static Ref<ShaderCompiler> Create();
 		static Ref<ShaderCompiler> Get();
+	protected:
+		void ReflectHlsl(IDxcResult* result, const std::string& target);
+		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target);
 	private:
 		IDxcUtils*					m_Utils;
 		IDxcCompiler3*				m_Compiler;
