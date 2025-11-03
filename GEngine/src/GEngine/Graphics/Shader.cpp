@@ -364,15 +364,17 @@ namespace GEngine
 		{
 			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
 			GE_CORE_ASSERT(m_StageEntryPoints.at(i).size() > 0, "No entry points found for shader pass " + std::to_string(i));
-
-			std::vector<uint32_t> machineCode;
+			shaders.push_back(std::unordered_map<std::string, std::vector<uint32_t>>());
+			
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
+				std::vector<uint32_t> machineCode;
 				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode);
 				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
+				shaders.at(i)[stage] = machineCode;
 			}
 		}
-		GE_CORE_ASSERT(false, "");
+		
 		//reflection
 
 		// ConstPropertiesDesc

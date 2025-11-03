@@ -33,7 +33,8 @@ namespace GEngine
 		m_Utils->CreateDefaultIncludeHandler(&m_IncludeHandler);
 	}
 
-	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<uint32_t>& machineCode)
+	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
+								std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionData>& reflectionData)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
@@ -86,11 +87,11 @@ namespace GEngine
 		// use reflection
 		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
 		{
-			ReflectSpirv(machineCode, target);
+			ReflectSpirv(machineCode, target, reflectionData);
 		}
 		else
 		{
-			ReflectHlsl(result, target);
+			ReflectHlsl(result, target, reflectionData);
 		}
 		
 
@@ -105,7 +106,7 @@ namespace GEngine
 	{
 		return s_Instance;
 	}
-	void ShaderCompiler::ReflectHlsl(IDxcResult* result, const std::string& target)
+	void ShaderCompiler::ReflectHlsl(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
 	{
 		ID3D12ShaderReflection* reflection;
 		IDxcBlob* reflectionBlob;
@@ -120,6 +121,8 @@ namespace GEngine
 		reflectionData.Ptr = reflectionBlob->GetBufferPointer();
 		reflectionData.Size = reflectionBlob->GetBufferSize();
 		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+
+		reflectionOutput
 
 		D3D12_SHADER_DESC desc;
 		reflection->GetDesc(&desc);
@@ -164,10 +167,12 @@ namespace GEngine
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
 		}
 	}
-	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target)
+	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
 	{
 		spirv_cross::Compiler			compiler(spirvCode);
 		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();
+
+		reflectionOutput
 
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
