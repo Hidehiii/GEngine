@@ -6,15 +6,7 @@ namespace GEngine
 {
 	class CommandBuffer;
 
-	struct GraphicsSpecification
-	{
-		GraphicsAPI::API	API;
-		uint8_t				FramesInFlight;
-		uint32_t			CommandBufferCount;
-		uint32_t			DynamicUniformCount;
-		uint32_t			ViewportWidth;
-		uint32_t			ViewportHeight;
-	};
+	
 
 
 	class GENGINE_API Graphics
@@ -23,7 +15,7 @@ namespace GEngine
 		static void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
 		static void SetReverseDepth(bool reverse);
 
-		static GraphicsAPI::API		GetGraphicsAPI();
+		static Graphics_API			GetGraphicsAPI();
 		static uint8_t				GetFrameCount();
 		static uint8_t				GetFrame();
 		static uint32_t				GetCommandBufferCount();

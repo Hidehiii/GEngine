@@ -18,7 +18,7 @@ namespace GEngine
 
 		virtual void SetShader(const Ref<Shader>& shader) override;
 
-		Ref<VulkanUniformBuffer>	GetUniformBuffer()									{ return m_UniformBuffer; }
+		Ref<VulkanUniformBuffer>	GetUniformBuffer(const int& pass)					{ return m_UniformBuffers.at(pass); }
 		VkDescriptorSetLayout*		GetDescriptorSetLayout(const int& pass)				{ return &m_DescriptorSetLayouts.at(pass); }
 		VkDescriptorSet*			GetDescriptorSet(const int& pass, const int& index) { return &m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index); }
 	private:

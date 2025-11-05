@@ -69,7 +69,7 @@ namespace GEngine
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 	protected:
-		virtual void InitializePassPropertiesMemory();
+		virtual std::vector<uint32_t> InitializePassPropertiesMemory();
 
 		virtual void WriteConstProperty(const std::string& name, const void* value);
 		virtual const void* ReadConstProperty(const std::string& name);

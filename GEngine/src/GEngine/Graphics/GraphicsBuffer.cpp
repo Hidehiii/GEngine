@@ -10,34 +10,42 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLVertexBuffer>(size, sizeInstance, type);
 		}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanVertexBuffer>(size, sizeInstance, type);
 		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::Direct3DX12 is currently not supported!");
+			return nullptr;
 		}
-
+		}
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
+
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 			}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLVertexBuffer>(vertices, size, sizeInstance, type);
 			}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanVertexBuffer>(vertices, size, sizeInstance, type);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::Direct3DX12 is currently not supported!");
+			return nullptr;
 		}
 		}
 		
@@ -49,15 +57,19 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 			}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLIndexBuffer>(indices, count);
 			}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanIndexBuffer>(indices, count);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			GE_CORE_ASSERT(false, "GraphicsAPI::Direct3DX12 is currently not supported!");
+			return nullptr;
 		}
 		}
 
@@ -65,12 +77,12 @@ namespace GEngine
 		return nullptr;
 	}
 
-	void BufferLayout::CalculateOffsetsAndStride()
+	void ShaderInputBufferLayout::CalculateOffsetsAndStride()
 	{
 		uint32_t offset = 0;
 		m_Stride = 0;
 		m_StrideInstance = 0;
-		for (auto& element : m_Elements)
+		for (auto& element : m_Datas)
 		{
 			if (element.IsInstance == false)
 			{
@@ -80,7 +92,7 @@ namespace GEngine
 			}
 		}
 		offset = 0;
-		for (auto& element : m_Elements)
+		for (auto& element : m_Datas)
 		{
 			if (element.IsInstance)
 			{

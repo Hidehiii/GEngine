@@ -14,13 +14,19 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
-		uint32_t size = InitializePropertiesMemory();
-		InitializePassPropertiesMemory();
+		std::vector<uint32_t> sizes = InitializePassPropertiesMemory();
 		// Create uniform buffer
 		// 0 is reserved for custom uniform buffer
-		if (size > 0)
+		for(int i = 0; i < sizes.size(); i++)
 		{
-			m_UniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(size, 0));
+			if (sizes[i] > 0)
+			{
+				m_UniformBuffers.push_back(std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(sizes[i], 0)));
+			}
+			else
+			{
+				m_UniformBuffers.push_back(nullptr);
+			}
 		}
 
 		CreateDescriptorSetAndLayout();
@@ -35,8 +41,8 @@ namespace GEngine
 
 	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const int& pass)
 	{
-		if (m_UniformBuffer)
-			m_UniformBuffer->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
+		if (m_UniformBuffers.at(pass))
+			m_UniformBuffers.at(pass)->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
 		{
@@ -112,23 +118,25 @@ namespace GEngine
 
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
-		std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
-		// 公共ubo
-		std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
-		for (auto buffer : globalUniformBuffer)
-		{
-			layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer)->GetDescriptorSetLayoutBinding());
-		}
-		// 材质ubo
-		if (m_UniformBuffer)
-		{
-			layoutBindings.push_back(m_UniformBuffer->GetDescriptorSetLayoutBinding());
-		}
+		
 
 		m_DescriptorSetLayouts.resize(m_Passes.size());
 		m_DescriptorSets.resize(m_Passes.size() * Graphics::GetFrameCount());
 		for (int pass = 0; pass < m_Passes.size(); pass++)
 		{
+			std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
+			// 公共ubo
+			std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
+			for (auto buffer : globalUniformBuffer)
+			{
+				layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer)->GetDescriptorSetLayoutBinding());
+			}
+			// 材质ubo
+			if (m_UniformBuffers.at(pass))
+			{
+				layoutBindings.push_back(m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding());
+			}
+
 			for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
 			{
 				auto propertyTypes = GetShader()->GetProperties();
@@ -245,11 +253,11 @@ namespace GEngine
 		// 材质的uniform buffer
 		descriptorWrite.sType					= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrite.dstSet					= m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index);
-		descriptorWrite.dstBinding				= m_UniformBuffer->GetDescriptorSetLayoutBinding().binding;
+		descriptorWrite.dstBinding				= m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding().binding;
 		descriptorWrite.dstArrayElement			= 0;
-		descriptorWrite.descriptorType			= m_UniformBuffer->GetDescriptorSetLayoutBinding().descriptorType;
+		descriptorWrite.descriptorType			= m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding().descriptorType;
 		descriptorWrite.descriptorCount			= 1;
-		descriptorWrite.pBufferInfo				= m_UniformBuffer->GetDescriptorBufferInfo();
+		descriptorWrite.pBufferInfo				= m_UniformBuffers.at(pass)->GetDescriptorBufferInfo();
 		descriptorWrite.pImageInfo				= nullptr; // Optional
 		descriptorWrite.pTexelBufferView		= nullptr; // Optional
 

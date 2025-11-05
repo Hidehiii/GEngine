@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/GraphicsBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
@@ -13,15 +14,6 @@ namespace GEngine
 
 	class GENGINE_API GraphicsAPI
 	{
-	public:
-		enum API
-		{
-			GRAPHICS_API_None = 0, 
-			GRAPHICS_API_OpenGL = 1,
-			GRAPHICS_API_Vulkan = 2,
-			GRAPHICS_API_Direct3DX12 = 3
-		};
-
 	public:
 
 		virtual std::vector<std::string> GetExtensions() = 0;
@@ -45,9 +37,9 @@ namespace GEngine
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) = 0;
 
 
-		inline static API GetAPI() { return s_API; }
+		inline static Graphics_API GetAPI() { return s_API; }
 	protected:
-		inline static API s_API		= GRAPHICS_API_None;
+		inline static Graphics_API s_API = GRAPHICS_API_None;
 	};
 
 }

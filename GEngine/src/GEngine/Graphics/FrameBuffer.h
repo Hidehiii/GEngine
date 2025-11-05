@@ -2,19 +2,14 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
+#include "GEngine/Graphics/GraphicsCommon.h"
 #include "RenderPass.h"
 #include "GEngine/Graphics/Texture.h"
 
 namespace GEngine
 {
 
-	struct FrameBufferSpecification
-	{
-		uint32_t Width = 0, Height = 0;
-		std::vector<FrameBufferTextureSpecification>	ColorRTs;
-		FrameBufferTextureSpecification					DepthStencil;
-		uint32_t Samples = 1;
-	};
+	
 
 	class CommandBuffer;
 

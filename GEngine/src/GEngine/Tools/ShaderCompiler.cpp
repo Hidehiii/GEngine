@@ -34,7 +34,7 @@ namespace GEngine
 	}
 
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-								std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionData>& reflectionData)
+								std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionInfo>& reflectionData)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
@@ -106,7 +106,7 @@ namespace GEngine
 	{
 		return s_Instance;
 	}
-	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
+	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput)
 	{
 		ID3D12ShaderReflection* reflection;
 		IDxcBlob* reflectionBlob;
@@ -170,7 +170,7 @@ namespace GEngine
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
 		}
 	}
-	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
+	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput)
 	{
 		spirv_cross::Compiler			compiler(spirvCode);
 		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();

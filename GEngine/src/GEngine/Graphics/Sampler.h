@@ -4,41 +4,7 @@
 
 namespace GEngine
 {
-	enum SamplerFilter
-	{
-		SAMPLER_FILTER_LINEAR,
-		SAMPLER_FILTER_NEAREST,
-	};
-
-	enum SamplerAddressMode
-	{
-		SAMPLER_ADDRESS_REPEAT,
-		SAMPLER_ADDRESS_MIRRORED_REPEAT,
-		SAMPLER_ADDRESS_CLAMP_TO_EDGE,
-		SAMPLER_ADDRESS_CLAMP_TO_BORDER,
-		SAMPLER_ADDRESS_MIRROR_CLAMP_TO_EDGE,
-	};
-
-	struct SamplerSpecification
-	{
-		SamplerFilter MagFilter		= SAMPLER_FILTER_LINEAR;
-		SamplerFilter MinFilter		= SAMPLER_FILTER_LINEAR;
-		SamplerFilter MipmapFilter	= SAMPLER_FILTER_LINEAR;
-
-		SamplerAddressMode WrapU = SAMPLER_ADDRESS_REPEAT;
-		SamplerAddressMode WrapV = SAMPLER_ADDRESS_REPEAT;
-		SamplerAddressMode WrapW = SAMPLER_ADDRESS_REPEAT;
-
-		bool operator==(const SamplerSpecification& other) const
-		{
-			return MagFilter == other.MagFilter &&
-				MinFilter == other.MinFilter &&
-				MipmapFilter == other.MipmapFilter &&
-				WrapU == other.WrapU &&
-				WrapV == other.WrapV &&
-				WrapW == other.WrapW;
-		}
-	};
+	
 
 	class GENGINE_API Sampler
 	{

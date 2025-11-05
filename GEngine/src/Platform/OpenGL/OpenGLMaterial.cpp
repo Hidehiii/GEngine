@@ -8,21 +8,22 @@ namespace GEngine
 	{
 		m_Shader = std::dynamic_pointer_cast<OpenGLShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
-		if (m_Shader)
+		GE_CORE_ASSERT(m_Shader, "Shader is null!");
+		std::vector<uint32_t> sizes = InitializePassPropertiesMemory();
+		// Create uniform buffer
+		// 0 is reserved for custom uniform buffer
+		for(int i = 0; i < sizes.size(); i++)
 		{
-			uint32_t size = InitializePropertiesMemory();
-			InitializePassPropertiesMemory();
-			// Create uniform buffer
-			// 0 is reserved for custom uniform buffer
-			if (size > 0)
+			if (sizes[i] > 0)
 			{
-				m_UniformBuffer = std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(size, 0));
+				m_UniformBuffers.push_back(std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(sizes[i], 0)));
+			}
+			else
+			{
+				m_UniformBuffers.push_back(nullptr);
 			}
 		}
-		else
-		{
-			GE_CORE_WARN("Shader of material {0} is not of type OpenGLShader!", name);
-		}
+		
 	}
 	OpenGLMaterial::~OpenGLMaterial()
 	{
@@ -31,8 +32,8 @@ namespace GEngine
 	{
 		m_Shader->Use(pass);
 
-		if (m_UniformBuffer)
-			m_UniformBuffer->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
+		if (m_UniformBuffers.at(pass))
+			m_UniformBuffers.at(pass)->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
 		{

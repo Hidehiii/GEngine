@@ -94,10 +94,11 @@ namespace GEngine
 		m_Passes.at(pass).State.BlendColorDst = dest;
 		m_Passes.at(pass).State.BlendAlphaDst = dest;
 	}
-	void Material::InitializePassPropertiesMemory()
+	std::vector<uint32_t> Material::InitializePassPropertiesMemory()
 	{
 		GE_CORE_ASSERT(m_Shader, "Shader ref is NULL!");
 		auto& passes = m_Shader->GetPasses();
+		std::vector<uint32_t> sizes;
 		for (size_t i = 0; i < passes.size(); i++)
 		{
 			m_Passes.push_back(passes[i]);
@@ -108,7 +109,9 @@ namespace GEngine
 			}
 			m_Passes[i].ConstProperties.Allocate(size);
 			m_Passes[i].ConstProperties.ZeroInitialize();
+			sizes.push_back(size);
 		}
+		return sizes;
 	}
 	void Material::WriteConstProperty(const std::string& name, const void* value)
 	{

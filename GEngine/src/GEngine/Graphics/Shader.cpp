@@ -132,6 +132,8 @@ namespace GEngine
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
 	{
 		std::stack<int> stack;
+		std::string block;
+
 		size_t pos = source.find("Shader", 0);
 		pos = source.find("\"", pos);
 
@@ -141,34 +143,7 @@ namespace GEngine
 		pos = source.find("{", pos);
 		stack.push(1);
 
-		pos = source.find("Properties", pos);
-		pos = source.find("{", pos);
-		stack.push(1);
 
-		std::string block;
-		block = source.substr(pos + 1, source.find("}", pos + 1) - pos - 1);
-		//todo
-		GE_INFO("Properties block {}", block);
-		//properties
-		//type name (float _color)...
-		//split by \n or ;
-		std::vector<std::string> properties = StringHelper::Split(block, ';');
-		for (auto& property : properties)
-		{
-			auto words = StringHelper::Split(property, { ' ', '\t', '\n', '\r'});
-			words = StringHelper::ClearEmptyStrings(words);
-			if (words.size() == 2)
-			{
-				ShaderPropertyType type = Utils::ShaderPropertyTypeFromString(words[0]);
-				std::string name = words[1];
-				m_Properties[name] = type;
-				GE_INFO("Shader property: {} {}", words[0], words[1]);
-			}
-		}
-
-
-		pos = source.find("}", pos);
-		stack.pop();
 		while (source.find("Pass", pos) != std::string::npos)
 		{
 			m_Passes.push_back(ShaderPass());
@@ -369,9 +344,11 @@ namespace GEngine
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
 				std::vector<uint32_t> machineCode;
-				//bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode);
-				//GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
+				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode);
+				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
 				shaders.at(i)[stage] = machineCode;
+				
+				// 反射所有阶段资源的并集
 			}
 		}
 		

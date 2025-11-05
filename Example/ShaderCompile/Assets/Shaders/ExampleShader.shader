@@ -1,9 +1,5 @@
 Shader "ExampleShader"
 {
-    Properties
-    {
-        Sampler2D _MainTex;
-    }
     Pass
     {
         Cull Back

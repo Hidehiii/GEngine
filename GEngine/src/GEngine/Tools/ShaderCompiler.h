@@ -1,17 +1,12 @@
 #pragma once
 #include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsCommon.h"
 #include <Unknwn.h>
 #include "dxcapi.h"
 
 namespace GEngine
 {
-	struct ShaderReflectionData
-	{
-		std::string		Name;
-		uint32_t		Size;
-		uint32_t 		Location;
-		uint32_t        Count;
-	};
+	
 
 	class GENGINE_API ShaderCompiler
 	{
@@ -19,13 +14,13 @@ namespace GEngine
 		ShaderCompiler();
 
 		bool Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-					std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionData>& reflectionData);
+					std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionConstantInfo>& reflectionData);
 
 		static Ref<ShaderCompiler> Create();
 		static Ref<ShaderCompiler> Get();
 	protected:
-		void ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput);
-		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput);
+		void ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionConstantInfo>& reflectionOutput);
+		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionConstantInfo>& reflectionOutput);
 	private:
 		IDxcUtils*					m_Utils;
 		IDxcCompiler3*				m_Compiler;

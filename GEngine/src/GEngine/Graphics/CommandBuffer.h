@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Compute/ComputePipeline.h"
 #include "GEngine/Graphics/FrameBuffer.h"
@@ -9,13 +10,7 @@
 
 namespace GEngine
 {
-	enum CommandBufferType
-	{
-		COMMAND_BUFFER_TYPE_NONE,
-		COMMAND_BUFFER_TYPE_GRAPHICS,
-		COMMAND_BUFFER_TYPE_COMPUTE,
-		COMMAND_BUFFER_TYPE_TRANSFER,
-	};
+	
 
 	class GENGINE_API CommandBuffer
 	{
