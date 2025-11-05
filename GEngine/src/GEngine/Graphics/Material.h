@@ -38,54 +38,48 @@ namespace GEngine
 		virtual BlendFactor GetBlendColorDst(int pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
 		virtual BlendFactor GetBlendAlphaDst(int pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
 
-		virtual void SetFloat(const std::string& name, float value);
-		virtual void SetInt(const std::string& name, int value);
-		virtual void SetUInt(const std::string& name, uint32_t value);
-		virtual void SetVector(const std::string& name, const Vector2& value);
-		virtual void SetVector(const std::string& name, const Vector3& value);
-		virtual void SetVector(const std::string& name, const Vector4& value);
-		virtual void SetMatrix4x4(const std::string& name, const Matrix4x4& value);
+		template<typename T>
+		void SetConstBufferData(const std::string& name, const T& value)
+		{
+			WriteConstProperty(name, (const void*)&value);
+		}
 
-		virtual float		GetFloat(const std::string& name);
-		virtual int			GetInt(const std::string& name);
-		virtual uint32_t	GetUInt(const std::string& name);
-		virtual Vector4		GetVector(const std::string& name);
+		template<typename T>
+		T GetConstBufferData(const std::string& name)
+		{
+			return *(T*)ReadConstProperty(name);
+		}
+
+		template<typename T>
+		void SetReferenceData(const std::string& name, const Ref<T>& value)
+		{
+			WriteReferenceProperty(name, (void*)&value);
+		}
+
+		template<typename T>
+		Ref<T> GetReferenceData(const std::string& name)
+		{
+			return *(Ref<T>*)ReadReferenceProperty(name);
+		}
 
 		virtual Ref<Shader>&	GetShader() = 0;
 		virtual std::string		GetName() { return m_Name; };
 
 		virtual void SetShader(const Ref<Shader>& shader) = 0;
 		virtual void SetName(const std::string& name) { m_Name = name; }
-		
-
-		virtual void					SetTexture2D(const std::string& name, const Ref<Texture2D>& texture);
-		virtual const Ref<Texture2D>	GetTexture2D(const std::string& name);
-
-		virtual void						SetStorageImage2D(const std::string& name, const Ref<StorageImage2D>& storageImage);
-		virtual const Ref<StorageImage2D>	GetStorageImage2D(const std::string& name);
-
-		virtual void						SetStorageBuffer(const std::string& name, const Ref<StorageBuffer>& storageBuffer);
-		virtual const Ref<StorageBuffer>	GetStorageBuffer(const std::string& name);
-
-		virtual void				SetCubeMap(const std::string& name, const Ref<CubeMap>& cubeMap);
-		virtual const Ref<CubeMap>	GetCubeMap(const std::string& name);
-
-		virtual void								SetTexture2DArray(const std::string& name, const Ref<Texture2DArray>& array);
-		virtual const Ref<Texture2DArray>			GetTexture2DArray(const std::string& name);
 
 	protected:
-		virtual uint32_t InitializePropertiesMemory();
 		virtual void InitializePassPropertiesMemory();
 
 		virtual void WriteConstProperty(const std::string& name, const void* value);
+		virtual const void* ReadConstProperty(const std::string& name);
 		virtual void WriteReferenceProperty(const std::string& name, void* ptr);
+		virtual void* ReadReferenceProperty(const std::string& name);
 
 	protected:
 		std::string																m_Name;
 		Ref<Shader>																m_Shader;
 
-		Buffer																	m_PropertiesMemory;
-		std::unordered_map<std::string, void*>									m_Properties;
 		std::vector<ShaderPass>													m_Passes;
 	};
 }

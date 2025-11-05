@@ -1,6 +1,5 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Graphics/Shader.h"
 #include <Unknwn.h>
 #include "dxcapi.h"
 
@@ -9,7 +8,6 @@ namespace GEngine
 	struct ShaderReflectionData
 	{
 		std::string		Name;
-		ShaderDataType	Type;
 		uint32_t		Size;
 		uint32_t 		Location;
 		uint32_t        Count;
@@ -26,7 +24,7 @@ namespace GEngine
 		static Ref<ShaderCompiler> Create();
 		static Ref<ShaderCompiler> Get();
 	protected:
-		void ReflectHlsl(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput);
+		void ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput);
 		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput);
 	private:
 		IDxcUtils*					m_Utils;

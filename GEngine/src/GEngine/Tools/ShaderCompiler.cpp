@@ -91,7 +91,7 @@ namespace GEngine
 		}
 		else
 		{
-			ReflectHlsl(result, target, reflectionData);
+			ReflectDxil(result, target, reflectionData);
 		}
 		
 
@@ -106,7 +106,7 @@ namespace GEngine
 	{
 		return s_Instance;
 	}
-	void ShaderCompiler::ReflectHlsl(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
+	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionData>& reflectionOutput)
 	{
 		ID3D12ShaderReflection* reflection;
 		IDxcBlob* reflectionBlob;
@@ -122,7 +122,7 @@ namespace GEngine
 		reflectionData.Size = reflectionBlob->GetBufferSize();
 		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
 
-		reflectionOutput
+		//reflectionOutput
 
 		D3D12_SHADER_DESC desc;
 		reflection->GetDesc(&desc);
@@ -135,21 +135,6 @@ namespace GEngine
 
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
 		}
-		GE_CORE_INFO("Constant buffers:");
-		for (int i = 0; i < desc.ConstantBuffers; i++)
-		{
-			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
-			D3D12_SHADER_BUFFER_DESC bufferDesc;
-			constantBuffer->GetDesc(&bufferDesc);
-			GE_CORE_TRACE("Constant buffer name {}, variables {}, size {}!", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
-			for (int j = 0; j < bufferDesc.Variables; j++)
-			{
-				ID3D12ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
-				D3D12_SHADER_VARIABLE_DESC varDesc;
-				variable->GetDesc(&varDesc);
-				GE_CORE_TRACE("  var name {}, start offset {}, size {}!", varDesc.Name, varDesc.StartOffset, varDesc.Size);
-			}
-		}
 		GE_CORE_INFO("Resource binding:");
 		for (int i = 0; i < desc.BoundResources; i++)
 		{
@@ -157,6 +142,24 @@ namespace GEngine
 			reflection->GetResourceBindingDesc(i, &resDesc);
 
 			GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", resDesc.Name, resDesc.Type, resDesc.BindPoint, resDesc.BindCount, resDesc.Space);
+			if(resDesc.Type == D3D_SIT_CBUFFER)
+			{
+				ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByName(resDesc.Name);
+				D3D12_SHADER_BUFFER_DESC bufferDesc;
+				constantBuffer->GetDesc(&bufferDesc);
+				GE_CORE_TRACE("  Constant buffer name {}, variables {}, size {}!", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
+				for (int j = 0; j < bufferDesc.Variables; j++)
+				{
+					ID3D12ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
+					ID3D12ShaderReflectionType* type = variable->GetType();
+					D3D12_SHADER_VARIABLE_DESC varDesc;
+					D3D12_SHADER_TYPE_DESC typeDesc;
+					variable->GetDesc(&varDesc);
+					type->GetDesc(&typeDesc);
+					GE_CORE_TRACE("    var name {}, start offset {}, size {}!", varDesc.Name, varDesc.StartOffset, varDesc.Size);
+					GE_CORE_TRACE("      type name {}, class {}, type {}, rows {}, columns {}, elements {}, members {}!", typeDesc.Name, typeDesc.Class, typeDesc.Type, typeDesc.Rows, typeDesc.Columns, typeDesc.Elements, typeDesc.Members);
+				}
+			}
 		}
 		GE_CORE_INFO("Output parameters:");
 		for (int i = 0; i < desc.OutputParameters; i++)
@@ -172,7 +175,7 @@ namespace GEngine
 		spirv_cross::Compiler			compiler(spirvCode);
 		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();
 
-		reflectionOutput
+		//reflectionOutput
 
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");

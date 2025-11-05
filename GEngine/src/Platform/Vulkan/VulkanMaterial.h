@@ -27,7 +27,7 @@ namespace GEngine
 		void UpdateDescriptorSet(const int& pass, const int& index);
 	private:
 		Ref<VulkanShader>									m_Shader;
-		Ref<VulkanUniformBuffer>							m_UniformBuffer = nullptr;
+		std::vector<Ref<VulkanUniformBuffer>>				m_UniformBuffers;
 		std::vector<VkDescriptorSetLayout>					m_DescriptorSetLayouts;
 		std::vector<VkDescriptorSet>						m_DescriptorSets;
 		uint8_t												m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFrameCount()) - 1;

@@ -7,6 +7,8 @@ namespace GEngine
 	}
 	void ShaderCompile::OnAttach()
 	{
+		GE_TRACE("{}", sizeof(void*));
+		GE_ASSERT(false, "");
 		Ref<Material> mat = Material::Create("Assets/Shaders/ExampleShader.shader", "ExampleShader");
 	}
 	void ShaderCompile::OnPresent()

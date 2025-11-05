@@ -21,7 +21,7 @@ namespace GEngine
 		
 	private:
 		Ref<OpenGLShader>									m_Shader;
-		Ref<OpenGLUniformBuffer>							m_UniformBuffer = nullptr;
+		std::vector<Ref<OpenGLUniformBuffer>>				m_UniformBuffers;
 	};
 }
 
