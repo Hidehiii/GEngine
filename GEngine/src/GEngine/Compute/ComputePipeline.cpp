@@ -10,9 +10,10 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_OpenGL:	return CreateRef<OpenGLComputePipeline>(material); break;
-		case GraphicsAPI::GRAPHICS_API_Vulkan:	return CreateRef<VulkanComputePipeline>(material); break;
-		case GraphicsAPI::GRAPHICS_API_None:
+		case GRAPHICS_API_OPENGL:	return CreateRef<OpenGLComputePipeline>(material); break;
+		case GRAPHICS_API_VULKAN:	return CreateRef<VulkanComputePipeline>(material); break;
+		case GRAPHICS_API_DIRECT3DX12:
+		case GRAPHICS_API_NONE:
 		default:
 			GE_CORE_ASSERT(false, "Unknow render api");
 			break;

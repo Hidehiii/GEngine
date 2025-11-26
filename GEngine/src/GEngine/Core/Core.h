@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #define BIT(x) (1 << x)
 #define GE_BIND_CLASS_FUNCTION_LAMBDA(x) [this](auto&&... args) -> decltype(auto) { return this->x(std::forward<decltype(args)>(args)...); }

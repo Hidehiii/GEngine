@@ -10,9 +10,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case GraphicsAPI::GRAPHICS_API_OpenGL:  return CreateRef<OpenGLStorageBuffer>(size);
-		case GraphicsAPI::GRAPHICS_API_Vulkan:  return CreateRef<VulkanStorageBuffer>(size);
+		case GRAPHICS_API_NONE:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case GRAPHICS_API_OPENGL:  return CreateRef<OpenGLStorageBuffer>(size);
+		case GRAPHICS_API_VULKAN:  return CreateRef<VulkanStorageBuffer>(size);
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

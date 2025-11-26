@@ -39,7 +39,7 @@ namespace GEngine
 
 		inline static Graphics_API GetAPI() { return s_API; }
 	protected:
-		inline static Graphics_API s_API = GRAPHICS_API_None;
+		inline static Graphics_API s_API = GRAPHICS_API_NONE;
 	};
 
 }

@@ -61,7 +61,7 @@ namespace GEngine
 	}
 
 
-	void OpenGLVertexBuffer::SetLayout(const BufferLayout& layout)
+	void OpenGLVertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
 	{
 		m_Layout = layout;
 		glBindVertexArray(m_VertexArray);
@@ -72,16 +72,16 @@ namespace GEngine
 		{
 			switch (element.Type)
 			{
-			case ShaderDataType::float1:
-			case ShaderDataType::float2:
-			case ShaderDataType::float3:
-			case ShaderDataType::float4:
+			case SHADER_INPUT_DATA_TYPE_FLOAT1:
+			case SHADER_INPUT_DATA_TYPE_FLOAT2:
+			case SHADER_INPUT_DATA_TYPE_FLOAT3:
+			case SHADER_INPUT_DATA_TYPE_FLOAT4:
 			{
 				if (element.IsInstance)
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribPointer(index, element.Size, ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideInstance(), (const void*)element.Offset);
 					glVertexAttribDivisor(index, 1);
 				}
@@ -89,16 +89,16 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribPointer(index, element.Size, ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
 				}
 				index++;
 				break;
 			}
-			case ShaderDataType::int1:
-			case ShaderDataType::int2:
-			case ShaderDataType::int3:
-			case ShaderDataType::int4:
+			case SHADER_INPUT_DATA_TYPE_INT1:
+			case SHADER_INPUT_DATA_TYPE_INT2:
+			case SHADER_INPUT_DATA_TYPE_INT3:
+			case SHADER_INPUT_DATA_TYPE_INT4:
 			{
 				if (element.IsInstance)
 				{

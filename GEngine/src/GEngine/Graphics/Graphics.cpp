@@ -70,13 +70,14 @@ namespace GEngine
 	{
 		switch (spec.API)
 		{
-		case GraphicsAPI::GRAPHICS_API_None:
+		case GRAPHICS_API_NONE:
+		case GRAPHICS_API_DIRECT3DX12:
 			GE_CORE_ASSERT(false, "Renderer api is not supported");
 			break;
-		case GraphicsAPI::GRAPHICS_API_OpenGL:
+		case GRAPHICS_API_OPENGL:
 			s_GraphicsAPI = new OpenGLGraphicsAPI();
 			break;
-		case GraphicsAPI::GRAPHICS_API_Vulkan:
+		case GRAPHICS_API_VULKAN:
 			s_GraphicsAPI = new VulkanGraphicsAPI();
 		default:
 			break;
@@ -116,7 +117,7 @@ namespace GEngine
 	{
 		s_ReverseDepth = reverse;
 	}
-	GraphicsAPI::API Graphics::GetGraphicsAPI()
+	Graphics_API Graphics::GetGraphicsAPI()
 	{
 		return s_GraphicsAPI->GetAPI();
 	}

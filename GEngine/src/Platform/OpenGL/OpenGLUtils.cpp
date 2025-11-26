@@ -187,6 +187,24 @@ namespace GEngine
 			}
 			return GL_REPEAT;
 		}
+		GLenum ShaderInputDataTypeToGlDataType(ShaderInputDataType type)
+		{
+			switch (type)
+			{
+			case ShaderDataType::float1: return GL_FLOAT;
+			case ShaderDataType::float2: return GL_FLOAT;
+			case ShaderDataType::float3: return GL_FLOAT;
+			case ShaderDataType::float4: return GL_FLOAT;
+			case ShaderDataType::int1:   return GL_INT;
+			case ShaderDataType::int2:   return GL_INT;
+			case ShaderDataType::int3:   return GL_INT;
+			case ShaderDataType::int4:   return GL_INT;
+			case ShaderDataType::mat3:   return GL_FLOAT;
+			case ShaderDataType::mat4:   return GL_FLOAT;
+			}
+			GE_CORE_ASSERT(false, "Unknown ShaderDataType!");
+			return 0;
+		}
 		void EnableDepthWrite(bool enable)
 		{
 			if (enable)

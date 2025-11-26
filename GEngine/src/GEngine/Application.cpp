@@ -29,7 +29,7 @@ namespace GEngine
 		Serializer::Deserialize(m_ConfigPath, m_Config);
 
 		GraphicsSpecification					graphicsSpec{};
-		graphicsSpec.API						= (GraphicsAPI::API)m_Config->m_GraphicsAPI;
+		graphicsSpec.API						= (Graphics_API)m_Config->m_GraphicsAPI;
 		graphicsSpec.CommandBufferCount			= m_Config->m_CommandBufferCount;
 		graphicsSpec.DynamicUniformCount		= m_Config->m_DynamicUniformCount;
 		graphicsSpec.FramesInFlight				= m_Config->m_FramesInFlight;

@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
+#include "GEngine/Core/Buffer.h"
 
 #define SHADER_STAGE_VERTEX "vertex"
 #define SHADER_STAGE_HULL "hull"
