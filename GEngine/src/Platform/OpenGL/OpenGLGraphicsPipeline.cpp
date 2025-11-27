@@ -22,17 +22,17 @@ namespace GEngine
 		{
 			switch (m_VertexBuffer->GetVertexTopologyType())
 			{
-			case VertexTopology::Triangle:
+			case VERTEX_TOPOLOGY_TRIANGLE:
 			{
 				glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
 			}
-			case VertexTopology::Line:
+			case VERTEX_TOPOLOGY_LINE:
 			{
 				glDrawElementsInstanced(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
 			}
-			case VertexTopology::Point:
+			case VERTEX_TOPOLOGY_POINT:
 			{
 				glDrawElementsInstanced(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 				break;
@@ -46,17 +46,17 @@ namespace GEngine
 		{
 			switch (m_VertexBuffer->GetVertexTopologyType())
 			{
-			case VertexTopology::Triangle:
+			case VERTEX_TOPOLOGY_TRIANGLE:
 			{
 				glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;
 			}
-			case VertexTopology::Line:
+			case VERTEX_TOPOLOGY_LINE:
 			{
 				glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;
 			}
-			case VertexTopology::Point:
+			case VERTEX_TOPOLOGY_POINT:
 			{
 				glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
 				break;

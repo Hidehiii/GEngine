@@ -187,20 +187,18 @@ namespace GEngine
 			}
 			return GL_REPEAT;
 		}
-		GLenum ShaderInputDataTypeToGlDataType(ShaderInputDataType type)
+		GLenum ShaderInputDataTypeToGLDataType(ShaderInputDataType type)
 		{
 			switch (type)
 			{
-			case ShaderDataType::float1: return GL_FLOAT;
-			case ShaderDataType::float2: return GL_FLOAT;
-			case ShaderDataType::float3: return GL_FLOAT;
-			case ShaderDataType::float4: return GL_FLOAT;
-			case ShaderDataType::int1:   return GL_INT;
-			case ShaderDataType::int2:   return GL_INT;
-			case ShaderDataType::int3:   return GL_INT;
-			case ShaderDataType::int4:   return GL_INT;
-			case ShaderDataType::mat3:   return GL_FLOAT;
-			case ShaderDataType::mat4:   return GL_FLOAT;
+			case SHADER_INPUT_DATA_TYPE_FLOAT1:
+			case SHADER_INPUT_DATA_TYPE_FLOAT2:
+			case SHADER_INPUT_DATA_TYPE_FLOAT3:
+			case SHADER_INPUT_DATA_TYPE_FLOAT4: return GL_FLOAT;
+			case SHADER_INPUT_DATA_TYPE_INT1:
+			case SHADER_INPUT_DATA_TYPE_INT2:
+			case SHADER_INPUT_DATA_TYPE_INT3:
+			case SHADER_INPUT_DATA_TYPE_INT4:   return GL_INT;
 			}
 			GE_CORE_ASSERT(false, "Unknown ShaderDataType!");
 			return 0;

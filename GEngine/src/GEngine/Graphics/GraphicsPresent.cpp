@@ -28,9 +28,9 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case GraphicsAPI::GRAPHICS_API_OpenGL:  return CreateScope<OpenGLGraphicsPresent>();
-		case GraphicsAPI::GRAPHICS_API_Vulkan:  return CreateScope<VulkanGraphicsPresent>();
+		case GRAPHICS_API_NONE:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case GRAPHICS_API_OPENGL:  return CreateScope<OpenGLGraphicsPresent>();
+		case GRAPHICS_API_VULKAN:  return CreateScope<VulkanGraphicsPresent>();
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");

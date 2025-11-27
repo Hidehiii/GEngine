@@ -11,14 +11,14 @@ namespace GEngine
     {
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLMaterial>(shader, name);
 		}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(shader, name);
 		}
 		}
@@ -30,14 +30,14 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(shaderPath), name);
 		}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
 		}
 		}
@@ -49,14 +49,14 @@ namespace GEngine
     {
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			return CreateRef<OpenGLMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 		}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 		}
 		}

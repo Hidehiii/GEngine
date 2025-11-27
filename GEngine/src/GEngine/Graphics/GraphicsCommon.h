@@ -335,7 +335,7 @@ namespace GEngine
 	struct ReferenceShaderProperty
 	{
 		uint32_t			Location = 0;
-		void* Ptr = nullptr;
+		void* Ptr			= nullptr;
 	};
 
 	struct ShaderPass

@@ -24,7 +24,7 @@ namespace GEngine
 		uint32_t	SamplerFilterToGLSamplerFilter(SamplerFilter filter, SamplerFilter mipmapMode);
 		uint32_t	SamplerAddressModeToGLWrapMode(SamplerAddressMode mode);
 
-		GLenum		ShaderInputDataTypeToGlDataType(ShaderInputDataType type);
+		GLenum		ShaderInputDataTypeToGLDataType(ShaderInputDataType type);
 
 		void	EnableDepthWrite(bool enable);
 		void	SetDepthTest(CompareOperation op);

@@ -10,7 +10,7 @@ namespace GEngine
 {
 	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
-		s_API = GraphicsAPI::GRAPHICS_API_OpenGL;
+		s_API = GRAPHICS_API_OPENGL;
 
 #ifdef GE_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);

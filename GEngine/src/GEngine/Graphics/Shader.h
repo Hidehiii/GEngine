@@ -69,6 +69,7 @@ namespace GEngine
 		virtual const std::vector<ShaderPass>&										GetPasses() { return m_Passes; }
 		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageEntryPoints() { return m_StageEntryPoints; }
 		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
+		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
 
 	protected:
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
@@ -80,6 +81,7 @@ namespace GEngine
 
 		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // stage : name
 		std::vector<ShaderPass>										m_Passes;
+		std::unordered_map<std::string, ShaderPropertyType>			m_PropertyTypes; // name : type
 
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);

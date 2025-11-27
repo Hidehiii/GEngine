@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 #include <glad/glad.h>
 namespace GEngine
 {
@@ -81,7 +82,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.Size, ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideInstance(), (const void*)element.Offset);
 					glVertexAttribDivisor(index, 1);
 				}
@@ -89,7 +90,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.Size, ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
 				}
 				index++;
@@ -104,7 +105,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribIPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
 						m_Layout.GetStrideInstance(), (const void*)element.Offset);
 					glVertexAttribDivisor(index, 1);
 				}
@@ -112,26 +113,10 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
-					glVertexAttribIPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
+					glVertexAttribIPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
 						m_Layout.GetStride(), (const void*)element.Offset);
 				}
 				index++;
-				break;
-			}
-			// temporary has some issues
-			// 之后需要看看怎么把mat3和mat4的数据传进顶点属性
-			case ShaderDataType::mat3:
-			case ShaderDataType::mat4:
-			{
-				GE_CORE_ASSERT(false, "mat3 and mat4 is not supported yet!");
-				for (uint8_t i = 0; i < element.GetElementDataSize(); i++)
-				{
-					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.GetElementDataSize(), ShaderDataTypeToOpenGLBaseType(element.Type),
-						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)(element.Offset + sizeof(float) * i * element.GetElementDataSize()));
-					glVertexAttribDivisor(index, 1);
-					index++;
-				}
 				break;
 			}
 			default: GE_CORE_ASSERT(false, "Unknown ShaderDataType!");

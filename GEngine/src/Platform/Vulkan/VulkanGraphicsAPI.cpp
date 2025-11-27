@@ -10,7 +10,7 @@ namespace GEngine
 {
     VulkanGraphicsAPI::VulkanGraphicsAPI()
     {
-        s_API = GraphicsAPI::GRAPHICS_API_Vulkan;
+        s_API = GRAPHICS_API_VULKAN;
     }
     VulkanGraphicsAPI::~VulkanGraphicsAPI()
     {

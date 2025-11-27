@@ -129,6 +129,14 @@ namespace GEngine
 		processMachingCodeFunc(shaders);
 	}
 
+	const ShaderPropertyType Shader::GetPropertyType(const std::string& name)
+	{
+		auto it = m_PropertyTypes.find(name);
+		if (it != m_PropertyTypes.end())
+			return it->second;
+		return ShaderPropertyType();
+	}
+
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
 	{
 		std::stack<int> stack;
@@ -354,6 +362,8 @@ namespace GEngine
 		
 		//reflection
 
+		// record properties type
+
 		// ConstPropertiesDesc
 
 		//  ReferenceProperties
@@ -364,11 +374,11 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_None: {
+		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
-		case GraphicsAPI::GRAPHICS_API_OpenGL: {
+		case GRAPHICS_API_OPENGL: {
 			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{
@@ -377,7 +387,7 @@ namespace GEngine
 			s_Shaders[shader->GetShaderName()] = shader;
 			return shader;
 		}
-		case GraphicsAPI::GRAPHICS_API_Vulkan: {
+		case GRAPHICS_API_VULKAN: {
 			Ref<Shader> shader = CreateRef<VulkanShader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{

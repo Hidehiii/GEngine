@@ -37,9 +37,8 @@ namespace GEngine
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
 		{
-			auto propertyTypes = GetShader()->GetProperties();
-			GE_CORE_ASSERT(propertyTypes.find(name) != propertyTypes.end(), "Could not find type of property {}!", name);
-			switch (propertyTypes[name])
+			auto type = m_Shader->GetPropertyType(name);
+			switch (type)
 			{
 			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 			{

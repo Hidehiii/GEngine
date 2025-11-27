@@ -33,8 +33,8 @@ namespace GEngine
 		
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GraphicsAPI::GRAPHICS_API_OpenGL: m_PlatformImGui = new OpenGLImGui(); break;
-		case GraphicsAPI::GRAPHICS_API_Vulkan: m_PlatformImGui = new VulkanImGui(); break;
+		case GRAPHICS_API_OPENGL: m_PlatformImGui = new OpenGLImGui(); break;
+		case GRAPHICS_API_VULKAN: m_PlatformImGui = new VulkanImGui(); break;
 		default: GE_CORE_ASSERT(false, "Unknown renderer api");
 		}
 

@@ -178,9 +178,9 @@ namespace GEngine
 		InputAssembly.topology								= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		switch (m_VertexBuffer->GetVertexTopologyType())
 		{
-		case VertexTopology::Point:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
-		case VertexTopology::Line:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST; break;
-		case VertexTopology::Triangle:	InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
+		case VERTEX_TOPOLOGY_POINT:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
+		case VERTEX_TOPOLOGY_LINE:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST; break;
+		case VERTEX_TOPOLOGY_TRIANGLE:	InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
 		default: GE_CORE_ASSERT(false, "unkown topolopgy");
 		}
 		InputAssembly.primitiveRestartEnable				= VK_FALSE;

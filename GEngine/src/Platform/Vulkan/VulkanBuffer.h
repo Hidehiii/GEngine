@@ -13,19 +13,19 @@ namespace GEngine
 	class GENGINE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
-		VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VertexTopology::Triangle);
+		VulkanVertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~VulkanVertexBuffer();
 
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetDataInstance(const void* data, uint32_t size) override;
-		virtual void SetLayout(const BufferLayout& layout) override;
+		virtual void SetLayout(const ShaderInputBufferLayout& layout) override;
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
-		virtual const BufferLayout&		GetLayout() const override { return m_Layout; }
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
-		virtual VertexTopology			GetVertexTopologyType() override { return m_TopologyType; }
-		virtual bool					IsInstanceRendering() override { return m_InstanceRendering; }
+		virtual const ShaderInputBufferLayout&		GetLayout() const override { return m_Layout; }
+		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
+		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
+		virtual bool								IsInstanceRendering() override { return m_InstanceRendering; }
 
 		const std::vector<VkVertexInputBindingDescription>&		GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
 		const std::vector<VkVertexInputAttributeDescription>&	GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }

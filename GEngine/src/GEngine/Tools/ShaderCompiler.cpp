@@ -42,7 +42,7 @@ namespace GEngine
 		sourceBuffer.Encoding	= DXC_CP_ACP;
 
 		std::vector<LPCWSTR> args;
-		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
 			args.push_back(L"-spirv");
 			args.push_back(L"-fspv-reflect");
@@ -85,7 +85,7 @@ namespace GEngine
 		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
 		// use reflection
-		if (Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_Vulkan || Graphics::GetGraphicsAPI() == GraphicsAPI::GRAPHICS_API_OpenGL)
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
 			ReflectSpirv(machineCode, target, reflectionData);
 		}

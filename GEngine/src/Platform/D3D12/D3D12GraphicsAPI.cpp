@@ -7,7 +7,7 @@ namespace GEngine
 {
     D3D12GraphicsAPI::D3D12GraphicsAPI()
     {
-        s_API = GraphicsAPI::GRAPHICS_API_Direct3DX12;
+        s_API = GRAPHICS_API_DIRECT3DX12;
     }
     D3D12GraphicsAPI::~D3D12GraphicsAPI()
     {

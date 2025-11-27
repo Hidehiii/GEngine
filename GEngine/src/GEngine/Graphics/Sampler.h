@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-
+#include "GEngine/Graphics/GraphicsCommon.h"
 namespace GEngine
 {
 	

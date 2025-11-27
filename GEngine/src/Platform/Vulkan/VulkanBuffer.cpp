@@ -57,6 +57,11 @@ namespace GEngine
         {
 			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_VertexBuffer, nullptr);
 			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, nullptr);
+            if (m_InstanceRendering)
+            {
+				vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_InstanceBuffer, nullptr);
+				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory, nullptr);
+            }
         }
         
     }
@@ -76,7 +81,7 @@ namespace GEngine
     }
 
 
-    void VulkanVertexBuffer::SetLayout(const BufferLayout& layout)
+    void VulkanVertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
     {
         m_Layout                            = layout;
         m_VertexInputBindingDescription.clear();
@@ -113,28 +118,28 @@ namespace GEngine
 
             switch (element.Type)
             {
-            case ShaderDataType::float1:
+            case SHADER_INPUT_DATA_TYPE_FLOAT1:
                 attributeDescription.format = VK_FORMAT_R32_SFLOAT;
                 break;
-            case ShaderDataType::float2:
+            case SHADER_INPUT_DATA_TYPE_FLOAT2:
                 attributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
                 break;
-            case ShaderDataType::float3:
+            case SHADER_INPUT_DATA_TYPE_FLOAT3:
                 attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
                 break;
-            case ShaderDataType::float4:
+            case SHADER_INPUT_DATA_TYPE_FLOAT4:
                 attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 break;
-            case ShaderDataType::int1:
+            case SHADER_INPUT_DATA_TYPE_INT1:
                 attributeDescription.format = VK_FORMAT_R32_SINT;
                 break;
-            case ShaderDataType::int2:
+            case SHADER_INPUT_DATA_TYPE_INT2:
                 attributeDescription.format = VK_FORMAT_R32G32_SINT;
                 break;
-            case ShaderDataType::int3:
+            case SHADER_INPUT_DATA_TYPE_INT3:
                 attributeDescription.format = VK_FORMAT_R32G32B32_SINT;
                 break;
-            case ShaderDataType::int4:
+            case SHADER_INPUT_DATA_TYPE_INT4:
                 attributeDescription.format = VK_FORMAT_R32G32B32A32_SINT;
                 break;
             default:
