@@ -46,5 +46,6 @@ namespace GEngine
 		}
 		return std::string();
 	}
+
 }
 #endif

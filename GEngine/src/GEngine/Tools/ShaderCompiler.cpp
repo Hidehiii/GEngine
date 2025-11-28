@@ -25,7 +25,7 @@ namespace GEngine
 			return "";
 		}
 
-		ShaderPropertyType ShaderPropertyTypeFromDxDesc(const D3D12_SHADER_VARIABLE_DESC& varDesc, const D3D12_SHADER_TYPE_DESC& typeDesc)
+		ShaderPropertyType ShaderPropertyTypeFromDxCBufferDesc(const D3D12_SHADER_VARIABLE_DESC& varDesc, const D3D12_SHADER_TYPE_DESC& typeDesc)
 		{
 			switch (typeDesc.Class)
 			{
@@ -68,6 +68,21 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "Unknown shader variable matrix type!");
 				break;
 			}
+			}
+		}
+
+		ShaderPropertyType ShaderPropertyTypeFromDxResourceDesc(const D3D12_SHADER_INPUT_BIND_DESC& inputDesc)
+		{
+			switch (inputDesc.Type)
+			{
+			case D3D_SIT_CBUFFER:
+				return SHADER_PROPERTY_TYPE_STRUCTURE;
+			case D3D_SIT_TEXTURE:
+				return SHADER_PROPERTY_TYPE_TEXTURE_2D;
+			case D3D_SIT_SAMPLER:
+				return SHADER_PROPERTY_TYPE_SAMPLER;
+			default:
+				GE_CORE_ASSERT(false, "Unknown shader resource type!");
 			}
 		}
 	}

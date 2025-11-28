@@ -27,10 +27,21 @@ namespace GEngine
 			switch (type)
 			{
 			// scalar size
-			case SHADER_PROPERTY_TYPE_INT:		return 4;
-			case SHADER_PROPERTY_TYPE_FLOAT:	return 4;
-			case SHADER_PROPERTY_TYPE_VECTOR:	return 4 * 4;
-			case SHADER_PROPERTY_TYPE_COLOR:	return 4 * 4;
+			case SHADER_PROPERTY_TYPE_INT:			return 4;
+			case SHADER_PROPERTY_TYPE_FLOAT:		return 4;
+			case SHADER_PROPERTY_TYPE_VECTOR_2:		return 4 * 2;
+			case SHADER_PROPERTY_TYPE_VECTOR_3:		return 4 * 3;
+			case SHADER_PROPERTY_TYPE_VECTOR_4:		return 4 * 4;
+			case SHADER_PROPERTY_TYPE_MATRIX_2X2:	return 4 * 2 * 2;
+			case SHADER_PROPERTY_TYPE_MATRIX_2X3:	return 4 * 2 * 3;
+			case SHADER_PROPERTY_TYPE_MATRIX_2X4:	return 4 * 2 * 4;
+			case SHADER_PROPERTY_TYPE_MATRIX_3X2:	return 4 * 3 * 2;
+			case SHADER_PROPERTY_TYPE_MATRIX_3X3:	return 4 * 3 * 3;
+			case SHADER_PROPERTY_TYPE_MATRIX_3X4:	return 4 * 3 * 4;
+			case SHADER_PROPERTY_TYPE_MATRIX_4X2:	return 4 * 4 * 2;
+			case SHADER_PROPERTY_TYPE_MATRIX_4X3:	return 4 * 4 * 3;
+			case SHADER_PROPERTY_TYPE_MATRIX_4X4:	return 4 * 4 * 4;
+
 
 			// ptr size
 			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
@@ -42,7 +53,11 @@ namespace GEngine
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
 			case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
 			case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
-				return 4;
+#ifdef GE_ARCH_X64
+				return 8;
+#else
+#error "Shader uniform pointer size is not defined for this architecture!"
+#endif
 			}
 			return 0;
 		}
@@ -51,13 +66,13 @@ namespace GEngine
 		{
 			if (StringHelper::ToLower(value) == VAR_NAME(less))				return COMPARE_OP_LESS;
 			if (StringHelper::ToLower(value) == VAR_NAME(greater))			return COMPARE_OP_GREATER;
-			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))			return COMPARE_OP_LESS_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(lequal))				return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))		return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(lequal))			return COMPARE_OP_LESS_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))		return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(gequal))				return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(equal))				return COMPARE_OP_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(gequal))			return COMPARE_OP_GREATER_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(equal))			return COMPARE_OP_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(notequal))			return COMPARE_OP_NOT_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(always))				return COMPARE_OP_ALWAYS;
+			if (StringHelper::ToLower(value) == VAR_NAME(always))			return COMPARE_OP_ALWAYS;
 
 			return COMPARE_OP_LESS_EQUAL;
 		}
@@ -65,29 +80,10 @@ namespace GEngine
 		{
 			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CULL_MODE_NONE;
 			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CULL_MODE_BACK;
-			if (StringHelper::ToLower(value) == VAR_NAME(front))		return CULL_MODE_FRONT;
+			if (StringHelper::ToLower(value) == VAR_NAME(front))	return CULL_MODE_FRONT;
 			return CULL_MODE_BACK;
 		}
 		
-		ShaderPropertyType ShaderPropertyTypeFromString(const std::string& type)
-		{
-			if (StringHelper::ToLower(type) == VAR_NAME(int))					return SHADER_PROPERTY_TYPE_INT;
-			if (StringHelper::ToLower(type) == VAR_NAME(float))				return SHADER_PROPERTY_TYPE_FLOAT;
-			if (StringHelper::ToLower(type) == VAR_NAME(vector))				return SHADER_PROPERTY_TYPE_VECTOR;
-			if (StringHelper::ToLower(type) == VAR_NAME(color))				return SHADER_PROPERTY_TYPE_COLOR;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler2d))			return SHADER_PROPERTY_TYPE_SAMPLER_2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(samplercube))			return SHADER_PROPERTY_TYPE_SAMPLER_CUBE;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler2darray))		return SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY;
-			if (StringHelper::ToLower(type) == VAR_NAME(sampler))				return SHADER_PROPERTY_TYPE_SAMPLER;
-			if (StringHelper::ToLower(type) == VAR_NAME(texture2d))			return SHADER_PROPERTY_TYPE_TEXTURE_2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(texturecube))			return SHADER_PROPERTY_TYPE_TEXTURE_CUBE;
-			if (StringHelper::ToLower(type) == VAR_NAME(texture2darray))		return SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY;
-			if (StringHelper::ToLower(type) == VAR_NAME(storageimage2d))		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D;
-			if (StringHelper::ToLower(type) == VAR_NAME(storagebuffer))		return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
-			
-			GE_CORE_ASSERT(false, "Unknown shader uniform type! " + type);
-			return SHADER_PROPERTY_TYPE_NONE;
-		}
 		BlendFactor ShaderBlendFactorFromString(const std::string& factor)
 		{
 			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCALPHA))			return BLEND_FACTOR_SRC_ALPHA;
@@ -98,7 +94,7 @@ namespace GEngine
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))				return BLEND_FACTOR_ONE;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))					return BLEND_FACTOR_ONE;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BLEND_FACTOR_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
@@ -106,11 +102,11 @@ namespace GEngine
 		BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
 			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BLEND_MODE_NONE;
-			if (StringHelper::ToLower(type) == VAR_NAME(add))					return BLEND_MODE_ADD;
+			if (StringHelper::ToLower(type) == VAR_NAME(add))				return BLEND_MODE_ADD;
 			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BLEND_MODE_SUBSTRACT;
 			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BLEND_MODE_REVERSE_SUBSTRACT;
-			if (StringHelper::ToLower(type) == VAR_NAME(min))					return BLEND_MODE_MIN;
-			if (StringHelper::ToLower(type) == VAR_NAME(max))					return BLEND_MODE_MAX;
+			if (StringHelper::ToLower(type) == VAR_NAME(min))				return BLEND_MODE_MIN;
+			if (StringHelper::ToLower(type) == VAR_NAME(max))				return BLEND_MODE_MAX;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return BLEND_MODE_NONE;

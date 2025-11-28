@@ -11,6 +11,7 @@
 #ifdef _WIN32
 	#ifdef _WIN64
 		#define GE_PLATFORM_WINDOWS
+		#define GE_ARCH_X64
 	#else
 		#error "x86 Builds are not supported!"
 	#endif
