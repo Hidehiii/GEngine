@@ -134,23 +134,23 @@ namespace GEngine
 		}
 		return nullptr;
 	}
-	void Material::WriteReferenceProperty(const std::string& name, void* ptr)
+	void Material::WriteResourceProperty(const std::string& name, void* ptr)
 	{
 		for (auto& pass : m_Passes)
 		{
-			if (pass.ReferenceProperties.find(name) != pass.ReferenceProperties.end())
+			if (pass.ResourceProperties.find(name) != pass.ResourceProperties.end())
 			{
-				pass.ReferenceProperties.at(name).Ptr = ptr;
+				pass.ResourceProperties.at(name).Ptr = ptr;
 			}
 		}
 	}
-	void* Material::ReadReferenceProperty(const std::string& name)
+	void* Material::ReadResourceProperty(const std::string& name)
 	{
 		for (auto& pass : m_Passes)
 		{
-			if (pass.ReferenceProperties.find(name) != pass.ReferenceProperties.end())
+			if (pass.ResourceProperties.find(name) != pass.ResourceProperties.end())
 			{
-				return pass.ReferenceProperties.at(name).Ptr;
+				return pass.ResourceProperties.at(name).Ptr;
 			}
 		}
 		return nullptr;

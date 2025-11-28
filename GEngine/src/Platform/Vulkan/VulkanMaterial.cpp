@@ -44,7 +44,7 @@ namespace GEngine
 		if (m_UniformBuffers.at(pass))
 			m_UniformBuffers.at(pass)->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
 
-		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
+		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 		{
 			auto type = m_Shader->GetPropertyType(name);
 			switch (type)
@@ -136,7 +136,7 @@ namespace GEngine
 				layoutBindings.push_back(m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding());
 			}
 
-			for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
+			for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 			{
 				auto type = m_Shader->GetPropertyType(name);
 				VkDescriptorSetLayoutBinding		layoutBinding{};
@@ -261,7 +261,7 @@ namespace GEngine
 
 		writeInfos.push_back(descriptorWrite);
 
-		for (auto&& [name, prop] : m_Passes.at(pass).ReferenceProperties)
+		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 		{
 			auto type = m_Shader->GetPropertyType(name);
 

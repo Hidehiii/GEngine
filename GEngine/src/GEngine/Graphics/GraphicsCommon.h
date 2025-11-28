@@ -252,8 +252,25 @@ namespace GEngine
 		SHADER_PROPERTY_TYPE_NONE,
 		SHADER_PROPERTY_TYPE_INT,
 		SHADER_PROPERTY_TYPE_FLOAT,
-		SHADER_PROPERTY_TYPE_VECTOR,
-		SHADER_PROPERTY_TYPE_COLOR,
+
+		SHADER_PROPERTY_TYPE_VECTOR_2,
+		SHADER_PROPERTY_TYPE_VECTOR_3,
+		SHADER_PROPERTY_TYPE_VECTOR_4,
+
+		SHADER_PROPERTY_TYPE_COLOR_3 = SHADER_PROPERTY_TYPE_VECTOR_3,
+		SHADER_PROPERTY_TYPE_COLOR_4 = SHADER_PROPERTY_TYPE_VECTOR_4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_2X2,
+		SHADER_PROPERTY_TYPE_MATRIX_2X3,
+		SHADER_PROPERTY_TYPE_MATRIX_2X4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_3X2,
+		SHADER_PROPERTY_TYPE_MATRIX_3X3,
+		SHADER_PROPERTY_TYPE_MATRIX_3X4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_4X2,
+		SHADER_PROPERTY_TYPE_MATRIX_4X3,
+		SHADER_PROPERTY_TYPE_MATRIX_4X4,
 
 		SHADER_PROPERTY_TYPE_SAMPLER_2D,
 		SHADER_PROPERTY_TYPE_SAMPLER_CUBE,
@@ -266,6 +283,9 @@ namespace GEngine
 
 		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
 		SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
+
+		// this can not be reflected yet
+		SHADER_PROPERTY_TYPE_STRUCTURE,
 	};
 
 	enum VertexTopology
@@ -326,13 +346,13 @@ namespace GEngine
 		std::string			Tag = "Default";
 	};
 
-	struct ConstShaderProperty
+	struct ShaderConstantProperty
 	{
 		uint32_t			Size = 0;
 		uint32_t			Location = 0;
 	};
 
-	struct ReferenceShaderProperty
+	struct ShaderResourceProperty
 	{
 		uint32_t			Location = 0;
 		void* Ptr			= nullptr;
@@ -341,17 +361,27 @@ namespace GEngine
 	struct ShaderPass
 	{
 		RenderState													State;
-		std::unordered_map<std::string, ConstShaderProperty>		ConstPropertiesDesc; // name : property
+		std::unordered_map<std::string, ShaderConstantProperty>		ConstPropertiesDesc; // name : property
 		Buffer														ConstProperties;
-		std::unordered_map<std::string, ReferenceShaderProperty>	ReferenceProperties; // name : property
+		std::unordered_map<std::string, ShaderResourceProperty>		ResourceProperties; // name : property
 	};
 
 	struct ShaderReflectionConstantInfo
 	{
-		std::string		Name;
-		uint32_t		Size;
-		uint32_t 		Location;
-		uint32_t        Count;
+		std::string			Name;
+		ShaderPropertyType	Type;
+		uint32_t			Size;
+		uint32_t 			Location;
+		uint32_t			Count;
+	};
+
+	struct ShaderReflectionResourceInfo
+	{
+		std::string			Name;
+		ShaderPropertyType	Type;
+		uint32_t			BindPoint;
+		uint32_t			BindCount;
+		uint32_t			RegisterSpace;
 	};
 
 	struct ShaderReflectionInfo

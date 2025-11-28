@@ -17,8 +17,13 @@ Shader "ExampleShader"
         {
             cbuffer material
             {
+                int _SomeInt;
+                float _SomeFloat;
+                float2 _SomeVector;
+                float2 _SomeVector2;
                 float3 _Color;
                 float4 _Color1;
+                float4x4 _mat4;
             };
 
             Texture2D _MainTex;
@@ -32,12 +37,18 @@ Shader "ExampleShader"
             struct VsOutput
             {
                 float4 pos : SV_POSITION;
+                float4x4 mat4 : TEXCOORD0;
             };
 
             VsOutput vert(VsInput IN)
             {
                 VsOutput OUT;
                 OUT.pos.xyz = IN.vertex.xyz * _Color;
+                OUT.pos.w = 1.0;
+                OUT.mat4 = _mat4;
+                OUT.mat4[0][0] = _SomeFloat;
+                int i = _SomeInt;
+                float2 v2 = _SomeVector + _SomeVector2;
                 return OUT;
             }
 

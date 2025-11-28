@@ -24,6 +24,52 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown shader target!");
 			return "";
 		}
+
+		ShaderPropertyType ShaderPropertyTypeFromDxDesc(const D3D12_SHADER_VARIABLE_DESC& varDesc, const D3D12_SHADER_TYPE_DESC& typeDesc)
+		{
+			switch (typeDesc.Class)
+			{
+			case D3D_SVC_SCALAR:
+			{
+				switch (typeDesc.Type)
+				{
+				case D3D_SVT_INT:		return SHADER_PROPERTY_TYPE_INT;
+				case D3D_SVT_FLOAT:		return SHADER_PROPERTY_TYPE_FLOAT;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable scalar type!");
+				}
+				break;
+			}
+			case D3D_SVC_VECTOR:
+			{
+				if (typeDesc.Type == D3D_SVT_FLOAT)
+				{
+					if (typeDesc.Columns == 2)		return SHADER_PROPERTY_TYPE_VECTOR_2;
+					if (typeDesc.Columns == 3)		return SHADER_PROPERTY_TYPE_VECTOR_3;
+					if (typeDesc.Columns == 4)		return SHADER_PROPERTY_TYPE_VECTOR_4;
+				}
+				GE_CORE_ASSERT(false, "Unknown shader variable vector type!");
+				break;
+			}
+			case D3D_SVC_MATRIX_COLUMNS:
+			{
+				if (typeDesc.Type == D3D_SVT_FLOAT)
+				{
+					if (typeDesc.Rows == 2 && typeDesc.Columns == 2)		return SHADER_PROPERTY_TYPE_MATRIX_2X2;
+					if (typeDesc.Rows == 2 && typeDesc.Columns == 3)		return SHADER_PROPERTY_TYPE_MATRIX_2X3;
+					if (typeDesc.Rows == 2 && typeDesc.Columns == 4)		return SHADER_PROPERTY_TYPE_MATRIX_2X4;
+					if (typeDesc.Rows == 3 && typeDesc.Columns == 2)		return SHADER_PROPERTY_TYPE_MATRIX_3X2;
+					if (typeDesc.Rows == 3 && typeDesc.Columns == 3)		return SHADER_PROPERTY_TYPE_MATRIX_3X3;
+					if (typeDesc.Rows == 3 && typeDesc.Columns == 4)		return SHADER_PROPERTY_TYPE_MATRIX_3X4;
+					if (typeDesc.Rows == 4 && typeDesc.Columns == 2)		return SHADER_PROPERTY_TYPE_MATRIX_4X2;
+					if (typeDesc.Rows == 4 && typeDesc.Columns == 3)		return SHADER_PROPERTY_TYPE_MATRIX_4X3;
+					if (typeDesc.Rows == 4 && typeDesc.Columns == 4)		return SHADER_PROPERTY_TYPE_MATRIX_4X4;
+				}
+				GE_CORE_ASSERT(false, "Unknown shader variable matrix type!");
+				break;
+			}
+			}
+		}
 	}
 
 	ShaderCompiler::ShaderCompiler()
@@ -44,9 +90,9 @@ namespace GEngine
 		std::vector<LPCWSTR> args;
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			args.push_back(L"-spirv");
-			args.push_back(L"-fspv-reflect");
-			args.push_back(L"-fspv-target-env=vulkan1.3");
+			//args.push_back(L"-spirv");
+			//args.push_back(L"-fspv-reflect");
+			//args.push_back(L"-fspv-target-env=vulkan1.3");
 		}
 		args.push_back(L"-E");
 		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
@@ -87,9 +133,9 @@ namespace GEngine
 		// use reflection
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			ReflectSpirv(machineCode, target, reflectionData);
+			//ReflectSpirv(machineCode, target, reflectionData);
 		}
-		else
+		//else
 		{
 			ReflectDxil(result, target, reflectionData);
 		}

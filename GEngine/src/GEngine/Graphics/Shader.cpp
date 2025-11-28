@@ -352,10 +352,11 @@ namespace GEngine
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
 				std::vector<uint32_t> machineCode;
-				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode);
+				std::vector<ShaderReflectionInfo> reflectionData;
+				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionData);
 				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
 				shaders.at(i)[stage] = machineCode;
-				
+				GE_DEBUGBREAK();
 				// 反射所有阶段资源的并集
 			}
 		}

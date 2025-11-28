@@ -39,27 +39,27 @@ namespace GEngine
 		virtual BlendFactor GetBlendAlphaDst(int pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
 
 		template<typename T>
-		void SetConstBufferData(const std::string& name, const T& value)
+		void SetConstant(const std::string& name, const T& value)
 		{
 			WriteConstProperty(name, (const void*)&value);
 		}
 
 		template<typename T>
-		T GetConstBufferData(const std::string& name)
+		T GetConstant(const std::string& name)
 		{
 			return *(T*)ReadConstProperty(name);
 		}
 
 		template<typename T>
-		void SetReferenceData(const std::string& name, const Ref<T>& value)
+		void SetResource(const std::string& name, const Ref<T>& value)
 		{
-			WriteReferenceProperty(name, (void*)&value);
+			WriteResourceProperty(name, (void*)&value);
 		}
 
 		template<typename T>
-		Ref<T> GetReferenceData(const std::string& name)
+		Ref<T> GetResource(const std::string& name)
 		{
-			return *(Ref<T>*)ReadReferenceProperty(name);
+			return *(Ref<T>*)ReadResourceProperty(name);
 		}
 
 		virtual Ref<Shader>&	GetShader() = 0;
@@ -73,8 +73,8 @@ namespace GEngine
 
 		virtual void WriteConstProperty(const std::string& name, const void* value);
 		virtual const void* ReadConstProperty(const std::string& name);
-		virtual void WriteReferenceProperty(const std::string& name, void* ptr);
-		virtual void* ReadReferenceProperty(const std::string& name);
+		virtual void WriteResourceProperty(const std::string& name, void* ptr);
+		virtual void* ReadResourceProperty(const std::string& name);
 
 	protected:
 		std::string																m_Name;
