@@ -113,13 +113,13 @@ namespace GEngine
 		}
 		return sizes;
 	}
-	void Material::WriteConstProperty(const std::string& name, const void* value)
+	void Material::WriteConstProperty(const std::string& name, const void* value, const uint32_t size)
 	{
 		for (auto& pass : m_Passes)
 		{
 			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
 			{
-				pass.ConstProperties.Write(value, pass.ConstPropertiesDesc.at(name).Size, pass.ConstPropertiesDesc.at(name).Location);
+				pass.ConstProperties.Write(value, size, pass.ConstPropertiesDesc.at(name).Location);
 			}
 		}
 	}

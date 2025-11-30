@@ -15,6 +15,15 @@ Shader "ExampleShader"
 
         Program
         {
+            struct MyStruct 
+            {
+                float a;
+                float b;
+            };
+
+
+            StructuredBuffer<MyStruct> _MyStructBuffer;
+
             cbuffer material
             {
                 int _SomeInt;
@@ -24,7 +33,10 @@ Shader "ExampleShader"
                 float3 _Color;
                 float4 _Color1;
                 float4x4 _mat4;
+                MyStruct _MyStruct;
             };
+
+            RWBuffer<float4> _SomeRWBuffer;
 
             Texture2D _MainTex;
             sampler _MainTex_sampler;
@@ -49,6 +61,13 @@ Shader "ExampleShader"
                 OUT.mat4[0][0] = _SomeFloat;
                 int i = _SomeInt;
                 float2 v2 = _SomeVector + _SomeVector2;
+                float a = _MyStruct.a;
+                float b = _MyStruct.b;
+                float4 rwValue = float4(1.0, 2.0, 3.0, 4.0);
+                _SomeRWBuffer[0] = rwValue;
+                float myStructA = _MyStructBuffer[0].a;
+                float myStructB = _MyStructBuffer[0].b;
+                OUT.mat4[1][1] = myStructA + myStructB;
                 return OUT;
             }
 

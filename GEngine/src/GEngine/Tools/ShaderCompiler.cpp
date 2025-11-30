@@ -68,6 +68,10 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "Unknown shader variable matrix type!");
 				break;
 			}
+			case D3D_SVC_STRUCT:
+			{
+				return SHADER_PROPERTY_TYPE_STRUCTURE;
+			}
 			}
 		}
 
@@ -76,11 +80,13 @@ namespace GEngine
 			switch (inputDesc.Type)
 			{
 			case D3D_SIT_CBUFFER:
-				return SHADER_PROPERTY_TYPE_STRUCTURE;
+				return SHADER_PROPERTY_TYPE_CBUFFER;
 			case D3D_SIT_TEXTURE:
 				return SHADER_PROPERTY_TYPE_TEXTURE_2D;
 			case D3D_SIT_SAMPLER:
 				return SHADER_PROPERTY_TYPE_SAMPLER;
+			case D3D_SIT_UAV_RWTYPED:
+				return SHADER_PROPERTY_TYPE_RWBUFFER;
 			default:
 				GE_CORE_ASSERT(false, "Unknown shader resource type!");
 			}

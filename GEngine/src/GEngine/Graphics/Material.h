@@ -41,7 +41,13 @@ namespace GEngine
 		template<typename T>
 		void SetConstant(const std::string& name, const T& value)
 		{
-			WriteConstProperty(name, (const void*)&value);
+			WriteConstProperty(name, (const void*)&value, (uint32_t)sizeof(T));
+		}
+
+		template<typename T>
+		void SetConstant(const std::string& name, const T& value, const uint32_t size)
+		{
+			WriteConstProperty(name, (const void*)&value, size);
 		}
 
 		template<typename T>
@@ -71,7 +77,7 @@ namespace GEngine
 	protected:
 		virtual std::vector<uint32_t> InitializePassPropertiesMemory();
 
-		virtual void WriteConstProperty(const std::string& name, const void* value);
+		virtual void WriteConstProperty(const std::string& name, const void* value, const uint32_t size);
 		virtual const void* ReadConstProperty(const std::string& name);
 		virtual void WriteResourceProperty(const std::string& name, void* ptr);
 		virtual void* ReadResourceProperty(const std::string& name);

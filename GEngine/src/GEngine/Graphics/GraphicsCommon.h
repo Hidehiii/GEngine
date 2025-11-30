@@ -250,14 +250,17 @@ namespace GEngine
 	enum ShaderPropertyType
 	{
 		SHADER_PROPERTY_TYPE_NONE,
+
+		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
+		SHADER_PROPERTY_TYPE_CBUFFER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
+
 		SHADER_PROPERTY_TYPE_INT,
 		SHADER_PROPERTY_TYPE_FLOAT,
 
 		SHADER_PROPERTY_TYPE_VECTOR_2,
 		SHADER_PROPERTY_TYPE_VECTOR_3,
-		SHADER_PROPERTY_TYPE_VECTOR_4,
-
 		SHADER_PROPERTY_TYPE_COLOR_3 = SHADER_PROPERTY_TYPE_VECTOR_3,
+		SHADER_PROPERTY_TYPE_VECTOR_4,
 		SHADER_PROPERTY_TYPE_COLOR_4 = SHADER_PROPERTY_TYPE_VECTOR_4,
 
 		SHADER_PROPERTY_TYPE_MATRIX_2X2,
@@ -282,7 +285,9 @@ namespace GEngine
 		SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY,
 
 		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_2D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
 		SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
+		SHADER_PROPERTY_TYPE_RWBUFFER = SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
 
 		// this can not be reflected yet
 		SHADER_PROPERTY_TYPE_STRUCTURE,
@@ -348,8 +353,14 @@ namespace GEngine
 
 	struct ShaderConstantProperty
 	{
-		uint32_t			Size = 0;
-		uint32_t			Location = 0;
+		uint32_t			CBufferBindPoint = 0;
+		uint32_t			PropertyLocation = 0;
+	};
+
+	struct ShaderCBufferProperty
+	{
+		uint32_t			BindPoint = 0;
+
 	};
 
 	struct ShaderResourceProperty
@@ -362,7 +373,7 @@ namespace GEngine
 	{
 		RenderState													State;
 		std::unordered_map<std::string, ShaderConstantProperty>		ConstPropertiesDesc; // name : property
-		Buffer														ConstProperties;
+		std::unordered_map<uint32_t, Buffer>						CBuffers;  // bind point : buffer
 		std::unordered_map<std::string, ShaderResourceProperty>		ResourceProperties; // name : property
 	};
 
@@ -373,6 +384,14 @@ namespace GEngine
 		uint32_t			Size;
 		uint32_t 			Location;
 		uint32_t			Count;
+	};
+
+	struct ShaderReflectionCBufferInfo
+	{
+		std::string									Name;
+		uint32_t									BindPoint;
+		uint32_t									RegisterSpace;
+		std::vector<ShaderReflectionConstantInfo>	Constants;
 	};
 
 	struct ShaderReflectionResourceInfo
@@ -386,6 +405,8 @@ namespace GEngine
 
 	struct ShaderReflectionInfo
 	{
-		std::vector<ShaderReflectionConstantInfo>		Constants;
+		RenderState										State;
+		std::vector<ShaderReflectionCBufferInfo>		CBuffers;
+		std::vector<ShaderReflectionResourceInfo>		Resources;
 	};
 }
