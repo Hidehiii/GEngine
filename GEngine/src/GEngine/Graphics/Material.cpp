@@ -94,22 +94,53 @@ namespace GEngine
 		m_Passes.at(pass).State.BlendColorDst = dest;
 		m_Passes.at(pass).State.BlendAlphaDst = dest;
 	}
-	std::vector<uint32_t> Material::InitializePassPropertiesMemory()
+	std::vector<std::unordered_map<uint32_t, uint32_t>> Material::InitializePassPropertiesMemory()
 	{
 		GE_CORE_ASSERT(m_Shader, "Shader ref is NULL!");
-		auto& passes = m_Shader->GetPasses();
-		std::vector<uint32_t> sizes;
+		auto& passes = m_Shader->GetPasseReflections();
+		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes;
+		m_Passes.clear();
 		for (size_t i = 0; i < passes.size(); i++)
 		{
-			m_Passes.push_back(passes[i]);
-			uint32_t size = 0;
-			for (auto& [name, prop] : m_Passes[i].ConstPropertiesDesc)
+			m_Passes.push_back(ShaderPass());
+			m_Passes.at(m_Passes.size() - 1).State = passes[i].State;
+			sizes.push_back(std::unordered_map<uint32_t, uint32_t>());
+
+			for (auto& info : passes.at(i).CBuffers)
 			{
-				size += prop.Size;
+				uint32_t size = 0;
+				for (auto& prop : info.Constants)
+				{
+					ShaderConstantProperty		property;
+					property.CBufferBindPoint	= info.BindPoint;
+					property.PropertyLocation	= prop.Location;
+
+#ifdef GE_DEBUG
+					if(m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.find(prop.Name) != m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.end())
+					{
+						GE_CORE_WARN("Already exists constant property name '{}' in cbuffer bind point {}!", prop.Name, m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name].CBufferBindPoint);
+						GE_CORE_WARN("Material::InitializePassPropertiesMemory: Duplicate constant property name '{}' in cbuffer '{}', bind point {}!", prop.Name, info.Name, info.BindPoint);
+					}
+#endif
+					m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name] = property;
+					
+					size += prop.Size;
+				}
+				GE_CORE_ASSERT(size == info.Size, "CBuffer size mismatch!");
+
+#ifdef GE_DEBUG
+				if(m_Passes.at(m_Passes.size() - 1).CBuffers.find(info.BindPoint) != m_Passes.at(m_Passes.size() - 1).CBuffers.end())
+				{
+					GE_CORE_WARN("Already exists cbuffer bind point {}!", info.BindPoint);
+					GE_CORE_WARN("Material::InitializePassPropertiesMemory: Duplicate cbuffer '{}' bind point {}!", info.Name, info.BindPoint);
+				}
+#endif
+				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint] = Buffer();
+				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].Allocate(info.Size);
+				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].ZeroInitialize();
+
+				sizes.at(sizes.size() - 1)[info.BindPoint] = info.Size;
 			}
-			m_Passes[i].ConstProperties.Allocate(size);
-			m_Passes[i].ConstProperties.ZeroInitialize();
-			sizes.push_back(size);
 		}
 		return sizes;
 	}
@@ -119,7 +150,7 @@ namespace GEngine
 		{
 			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
 			{
-				pass.ConstProperties.Write(value, size, pass.ConstPropertiesDesc.at(name).Location);
+				pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).Write(value, size, pass.ConstPropertiesDesc.at(name).PropertyLocation);
 			}
 		}
 	}
@@ -129,7 +160,7 @@ namespace GEngine
 		{
 			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
 			{
-				return pass.ConstProperties.ReadBytes(pass.ConstPropertiesDesc.at(name).Location);
+				return pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).ReadBytes(pass.ConstPropertiesDesc.at(name).PropertyLocation);
 			}
 		}
 		return nullptr;

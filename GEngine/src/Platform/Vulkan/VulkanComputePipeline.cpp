@@ -111,7 +111,7 @@ namespace GEngine
 
 		vkCmdBindPipeline(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, GetPipeline(pass));
 
-		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
+		auto offsets = m_Material->GetDynamicOffsets(pass);
 		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, 
 			m_PipelineLayout, 0, 1, 
 			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),

@@ -8,36 +8,24 @@ namespace GEngine
 	{
 	public:
 		virtual ~UniformBuffer() {}
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void SetData(const void* data, uint32_t size) = 0;
 
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
+		virtual bool IsDynamic() const { return m_TotalSize > 0; }
+		// only for dynamic UBO
+		virtual uint32_t GetAlignment() const { return m_Aligment; }
+		virtual uint32_t GetOffset() const { return m_Offset; }
+		virtual uint32_t GetTotalSize() const { return m_TotalSize; }
+
+		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding, uint32_t count = 1); // count only for dynamic UBO
 
 		
 	protected:
-		uint32_t m_Binding = 0;
-	};
-class GENGINE_API UniformBufferDynamic
-	{
-	public:
-		virtual ~UniformBufferDynamic() {}
-		virtual void SetData(const void* data, uint32_t size) = 0;
-
-		static Ref<UniformBufferDynamic> Create(uint32_t size, uint32_t count, uint32_t binding, bool global);
-
-		static const std::vector<Ref<UniformBufferDynamic>>&	GetGlobalUniforms()			{ return s_GlobalUniforms; }
-		static const std::vector<uint32_t>&						GetGlobalUniformOffsets()	{ return s_GlobalUniformOffsets; }
-	protected:
-		void UpdateGlobalUniformOffset();
-	protected:
 		uint32_t	m_Aligment = 0;
 		uint32_t	m_Offset = 0;
-		uint32_t	m_TotalSize = 0;
+		uint32_t	m_TotalSize = 0; // only for dynamic UBO
 		uint32_t	m_Binding = 0;
-		uint32_t	m_GlobalIndex = -1;
-	private:
-		static std::vector<Ref<UniformBufferDynamic>>		s_GlobalUniforms;
-		static std::vector<uint32_t>						s_GlobalUniformOffsets;
-	};}
+	};
+}
 
 
 

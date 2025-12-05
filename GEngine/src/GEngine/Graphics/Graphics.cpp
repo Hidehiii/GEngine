@@ -13,58 +13,9 @@ namespace GEngine
 	uint8_t						Graphics::s_FrameCount				= 0;
 	uint8_t						Graphics::s_Frame					= 0;
 	uint32_t					Graphics::s_CommandBufferCount		= 1000;
-	uint32_t					Graphics::s_DynamicUniformCount		= 128;
 	uint32_t					Graphics::s_ViewportWidth			= 0;
 	uint32_t					Graphics::s_ViewportHeight			= 0;
 	bool						Graphics::s_ReverseDepth			= false;
-
-	struct CameraUniformData
-	{
-		Matrix4x4 GE_MATRIX_V;
-		Matrix4x4 GE_MATRIX_P;
-		Matrix4x4 GE_MATRIX_VP;
-		Vector4 GE_CAMERA_POSITION;
-	};
-
-	struct TimeUniformData
-	{
-		// x: delta time
-		// y: run time
-		// z: fixed time
-		// w: physical delta time
-		Vector4 GE_TIME;
-	};
-
-	struct ScreenUniformData
-	{
-		// x: width
-		// y: height
-		Vector4	GE_SCREEN_SIZE;
-	};
-
-	struct MainLightUniformData
-	{
-		Vector4 GE_MAIN_LIGHT_POSITION;
-		Vector4 GE_MAIN_LIGHT_DIRECTION;
-		Vector4 GE_MAIN_LIGHT_COLOR;
-	};
-
-	struct UniformData
-	{
-		CameraUniformData			CameraData;
-		Ref<UniformBufferDynamic>	CameraBuffer;
-
-		TimeUniformData				TimeData;
-		Ref<UniformBufferDynamic>	TimeBuffer;
-
-		ScreenUniformData			ScreenData;
-		Ref<UniformBufferDynamic>	ScreenBuffer;
-
-		MainLightUniformData		MainLightData;
-		Ref<UniformBufferDynamic>	MainLightBuffer;
-	};
-
-	static UniformData	s_UniformData;
 
 	void Graphics::Setup(const GraphicsSpecification& spec)
 	{
@@ -86,7 +37,6 @@ namespace GEngine
 		s_Frame					= 0;
 		s_FrameCount			= spec.FramesInFlight;
 		s_CommandBufferCount	= spec.CommandBufferCount;
-		s_DynamicUniformCount	= spec.DynamicUniformCount;
 		s_ViewportWidth			= spec.ViewportWidth;
 		s_ViewportHeight		= spec.ViewportHeight;
 	}
@@ -94,11 +44,6 @@ namespace GEngine
 	void Graphics::Init()
     {
 		ShaderCompiler::Create();
-
-		s_UniformData.CameraBuffer	= UniformBufferDynamic::Create(sizeof(CameraUniformData), s_DynamicUniformCount, 1, true);
-		s_UniformData.TimeBuffer	= UniformBufferDynamic::Create(sizeof(TimeUniformData), s_DynamicUniformCount, 2, true);
-		s_UniformData.MainLightBuffer = UniformBufferDynamic::Create(sizeof(MainLightUniformData), s_DynamicUniformCount, 3, true);
-		s_UniformData.ScreenBuffer	= UniformBufferDynamic::Create(sizeof(ScreenUniformData), s_DynamicUniformCount, 4, true);
     }
 	void Graphics::FrameMove()
 	{
@@ -189,43 +134,5 @@ namespace GEngine
 	{
 		return s_ViewportHeight;
 	}
-	void Graphics::UpdateCameraUniform(Camera& camera)
-	{
-		Transform& transform = camera.m_GameObject.GetComponent<Transform>();
-		s_UniformData.CameraData.GE_MATRIX_V	= Math::Inverse(transform.GetModelMatrix());
-		s_UniformData.CameraData.GE_MATRIX_P	= camera.GetProjectionMatrix();
-		s_UniformData.CameraData.GE_MATRIX_VP	= s_UniformData.CameraData.GE_MATRIX_P * s_UniformData.CameraData.GE_MATRIX_V;
-		s_UniformData.CameraData.GE_CAMERA_POSITION = { transform.GetPosition(), 1.0f };
 
-		s_UniformData.CameraBuffer->SetData(&s_UniformData.CameraData, sizeof(CameraUniformData));
-	}
-	void Graphics::UpdateCameraUniform(const Editor::EditorCamera& camera)
-	{
-		s_UniformData.CameraData.GE_MATRIX_V = camera.GetViewMatrix();
-		s_UniformData.CameraData.GE_MATRIX_P = camera.GetProjectionMatrix();
-		s_UniformData.CameraData.GE_MATRIX_VP = s_UniformData.CameraData.GE_MATRIX_P * s_UniformData.CameraData.GE_MATRIX_V;
-		s_UniformData.CameraData.GE_CAMERA_POSITION = { camera.GetPosition(), 1.0f };
-
-		s_UniformData.CameraBuffer->SetData(&s_UniformData.CameraData, sizeof(CameraUniformData));
-	}
-	void Graphics::UpdateTimeUniform(Vector4& time)
-	{
-		s_UniformData.TimeData.GE_TIME = time;
-
-		s_UniformData.TimeBuffer->SetData(&s_UniformData.TimeData, sizeof(TimeUniformData));
-	}
-	void Graphics::UpdateMainLightUniform(Vector4& pos, Vector4& dir, Vector4& color)
-	{
-		s_UniformData.MainLightData.GE_MAIN_LIGHT_POSITION = pos;
-		s_UniformData.MainLightData.GE_MAIN_LIGHT_DIRECTION = dir;
-		s_UniformData.MainLightData.GE_MAIN_LIGHT_COLOR = color;
-
-		s_UniformData.MainLightBuffer->SetData(&s_UniformData.MainLightData, sizeof(MainLightUniformData));
-	}
-	void Graphics::UpdateScreenUniform(Vector4& size)
-	{
-		s_UniformData.ScreenData.GE_SCREEN_SIZE = size;
-
-		s_UniformData.ScreenBuffer->SetData(&s_UniformData.ScreenData, sizeof(ScreenUniformData));
-	}
 }

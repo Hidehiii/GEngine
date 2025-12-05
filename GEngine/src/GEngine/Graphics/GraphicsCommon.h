@@ -2,6 +2,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Core/Buffer.h"
 
+// shader stage strings
 #define SHADER_STAGE_VERTEX "vertex"
 #define SHADER_STAGE_HULL "hull"
 #define SHADER_STAGE_DOMAIN "domain"
@@ -12,6 +13,15 @@
 #define SHADER_STAGE_MESH "mesh"
 
 #define SHADER_STAGE_COMPUTE "compute"
+
+// graphics api extension names
+#define GRAPHICS_API_EXT_OPENGL ".opengl"
+#define GRAPHICS_API_EXT_VULKAN ".vulkan"
+#define GRAPHICS_API_EXT_D3DX12 ".d3dx12"
+
+// shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
+
+
 
 namespace GEngine
 {
@@ -28,7 +38,6 @@ namespace GEngine
 		Graphics_API		API;
 		uint8_t				FramesInFlight;
 		uint32_t			CommandBufferCount;
-		uint32_t			DynamicUniformCount;
 		uint32_t			ViewportWidth;
 		uint32_t			ViewportHeight;
 	};
@@ -390,6 +399,7 @@ namespace GEngine
 	{
 		std::string									Name;
 		uint32_t									BindPoint;
+		uint32_t									Size;
 		uint32_t									RegisterSpace;
 		std::vector<ShaderReflectionConstantInfo>	Constants;
 	};

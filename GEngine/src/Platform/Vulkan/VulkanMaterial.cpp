@@ -14,19 +14,20 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
-		std::vector<uint32_t> sizes = InitializePassPropertiesMemory();
+		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory();
 		// Create uniform buffer
-		// 0 is reserved for custom uniform buffer
-		for(int i = 0; i < sizes.size(); i++)
+		for(auto& pass : sizes)
 		{
-			if (sizes[i] > 0)
+			std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>> ubuffers;
+			for (auto& [bindPoint, size] : pass)
 			{
-				m_UniformBuffers.push_back(std::dynamic_pointer_cast<VulkanUniformBuffer>(UniformBuffer::Create(sizes[i], 0)));
+				if (size > 0)
+				{
+					Ref<VulkanUniformBuffer> ubo = CreateRef<VulkanUniformBuffer>(size, bindPoint);
+					ubuffers[bindPoint] = ubo;
+				}
 			}
-			else
-			{
-				m_UniformBuffers.push_back(nullptr);
-			}
+			m_UniformBuffers.push_back(ubuffers);
 		}
 
 		CreateDescriptorSetAndLayout();
@@ -41,8 +42,16 @@ namespace GEngine
 
 	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const int& pass)
 	{
-		if (m_UniformBuffers.at(pass))
-			m_UniformBuffers.at(pass)->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
+		for (auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
+		{
+			GE_CORE_ASSERT(ubo, "Uniform buffer is null!");
+			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "Uniform buffer bind point not found in pass!");
+			if (ubo->IsDynamic() == false)
+			{
+				GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+				ubo->SetData(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
+			}
+		}
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 		{
@@ -115,6 +124,20 @@ namespace GEngine
 		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
 	}
 
+	Buffer VulkanMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
+	{
+		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
+		auto& ubuffers = m_UniformBuffers.at(pass);
+		GE_CORE_ASSERT(ubuffers.find(bindPoint) != ubuffers.end(), "Uniform buffer bind point not found!");
+		Buffer oldBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
+		m_Passes.at(pass).CBuffers[bindPoint] = buffer;
+		if (buf->IsDynamic())
+		{
+			UpdateDynamicOffsets(pass);
+		}
+		return oldBuffer;
+	}
+
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
 		
@@ -124,16 +147,11 @@ namespace GEngine
 		for (int pass = 0; pass < m_Passes.size(); pass++)
 		{
 			std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
-			// 公共ubo
-			std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
-			for (auto buffer : globalUniformBuffer)
-			{
-				layoutBindings.push_back(std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer)->GetDescriptorSetLayoutBinding());
-			}
+
 			// 材质ubo
-			if (m_UniformBuffers.at(pass))
+			for(auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
 			{
-				layoutBindings.push_back(m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding());
+				layoutBindings.push_back(ubo->GetDescriptorSetLayoutBinding());
 			}
 
 			for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
@@ -230,36 +248,19 @@ namespace GEngine
 	{
 		std::vector<VkWriteDescriptorSet>		writeInfos;
 		VkWriteDescriptorSet					descriptorWrite{};
-		// 公共uniform buffer
-		std::vector<Ref<UniformBufferDynamic>> globalUniformBuffer = UniformBufferDynamic::GetGlobalUniforms();
-		for (auto buffer : globalUniformBuffer)
+		for(auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
 		{
-			Ref<VulkanUniformBufferDynamic> buf		= std::dynamic_pointer_cast<VulkanUniformBufferDynamic>(buffer);
-
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet				= m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index);
-			descriptorWrite.dstBinding			= buf->GetDescriptorSetLayoutBinding().binding;
+			descriptorWrite.dstBinding			= ubo->GetDescriptorSetLayoutBinding().binding;
 			descriptorWrite.dstArrayElement		= 0;
-			descriptorWrite.descriptorType		= buf->GetDescriptorSetLayoutBinding().descriptorType;
+			descriptorWrite.descriptorType		= ubo->GetDescriptorSetLayoutBinding().descriptorType;
 			descriptorWrite.descriptorCount		= 1;
-			descriptorWrite.pBufferInfo			= buf->GetDescriptorBufferInfo();
+			descriptorWrite.pBufferInfo			= ubo->GetDescriptorBufferInfo();
 			descriptorWrite.pImageInfo			= nullptr; // Optional
 			descriptorWrite.pTexelBufferView	= nullptr; // Optional
-
 			writeInfos.push_back(descriptorWrite);
 		}
-		// 材质的uniform buffer
-		descriptorWrite.sType					= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet					= m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index);
-		descriptorWrite.dstBinding				= m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding().binding;
-		descriptorWrite.dstArrayElement			= 0;
-		descriptorWrite.descriptorType			= m_UniformBuffers.at(pass)->GetDescriptorSetLayoutBinding().descriptorType;
-		descriptorWrite.descriptorCount			= 1;
-		descriptorWrite.pBufferInfo				= m_UniformBuffers.at(pass)->GetDescriptorBufferInfo();
-		descriptorWrite.pImageInfo				= nullptr; // Optional
-		descriptorWrite.pTexelBufferView		= nullptr; // Optional
-
-		writeInfos.push_back(descriptorWrite);
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 		{
@@ -348,5 +349,22 @@ namespace GEngine
 		}
 
 		vkUpdateDescriptorSets(VulkanContext::Get()->GetDevice(), writeInfos.size(), writeInfos.data(), 0, nullptr);
+	}
+	void VulkanMaterial::UpdateDynamicOffsets(const int& pass)
+	{
+		m_DynamicUniformBufferOffsets.at(pass).clear();
+		// sort, from low to high
+		std::map<uint32_t, uint32_t> ofts;
+		for (auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
+		{
+			if (ubo->IsDynamic())
+			{
+				ofts[bindPoint] = ubo->GetOffset();
+			}
+		}
+		for (auto& [bindPoint, oft] : ofts)
+		{
+			m_DynamicUniformBufferOffsets.at(pass).push_back(oft);
+		}
 	}
 }

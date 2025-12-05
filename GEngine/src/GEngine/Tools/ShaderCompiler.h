@@ -14,13 +14,13 @@ namespace GEngine
 		ShaderCompiler();
 
 		bool Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-					std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionInfo>& reflectionData);
+					std::vector<uint32_t>& machineCode, ShaderReflectionInfo& reflectionData);
 
 		static Ref<ShaderCompiler> Create();
 		static Ref<ShaderCompiler> Get();
 	protected:
-		void ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput);
-		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput);
+		void ReflectDxil(IDxcResult* result, const std::string& target, ShaderReflectionInfo& reflectionOutput);
+		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, ShaderReflectionInfo& reflectionOutput);
 	private:
 		IDxcUtils*					m_Utils;
 		IDxcCompiler3*				m_Compiler;

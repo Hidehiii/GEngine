@@ -64,22 +64,22 @@ namespace GEngine
 
 		CompareOperation ShaderCompareOperationFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(less))				return COMPARE_OP_LESS;
-			if (StringHelper::ToLower(value) == VAR_NAME(greater))			return COMPARE_OP_GREATER;
+			if (StringHelper::ToLower(value) == VAR_NAME(less))			return COMPARE_OP_LESS;
+			if (StringHelper::ToLower(value) == VAR_NAME(greater))		return COMPARE_OP_GREATER;
 			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))		return COMPARE_OP_LESS_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(lequal))			return COMPARE_OP_LESS_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))		return COMPARE_OP_GREATER_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))	return COMPARE_OP_GREATER_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(gequal))			return COMPARE_OP_GREATER_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(equal))			return COMPARE_OP_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(notequal))			return COMPARE_OP_NOT_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(notequal))		return COMPARE_OP_NOT_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(always))			return COMPARE_OP_ALWAYS;
 
 			return COMPARE_OP_LESS_EQUAL;
 		}
 		CullMode ShaderCullModeFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CULL_MODE_NONE;
-			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CULL_MODE_BACK;
+			if (StringHelper::ToLower(value) == VAR_NAME(none))	return CULL_MODE_NONE;
+			if (StringHelper::ToLower(value) == VAR_NAME(back))	return CULL_MODE_BACK;
 			if (StringHelper::ToLower(value) == VAR_NAME(front))	return CULL_MODE_FRONT;
 			return CULL_MODE_BACK;
 		}
@@ -94,7 +94,7 @@ namespace GEngine
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))					return BLEND_FACTOR_ONE;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))				return BLEND_FACTOR_ONE;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BLEND_FACTOR_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
@@ -102,11 +102,11 @@ namespace GEngine
 		BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
 			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BLEND_MODE_NONE;
-			if (StringHelper::ToLower(type) == VAR_NAME(add))				return BLEND_MODE_ADD;
+			if (StringHelper::ToLower(type) == VAR_NAME(add))					return BLEND_MODE_ADD;
 			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BLEND_MODE_SUBSTRACT;
 			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BLEND_MODE_REVERSE_SUBSTRACT;
-			if (StringHelper::ToLower(type) == VAR_NAME(min))				return BLEND_MODE_MIN;
-			if (StringHelper::ToLower(type) == VAR_NAME(max))				return BLEND_MODE_MAX;
+			if (StringHelper::ToLower(type) == VAR_NAME(min))					return BLEND_MODE_MIN;
+			if (StringHelper::ToLower(type) == VAR_NAME(max))					return BLEND_MODE_MAX;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return BLEND_MODE_NONE;
@@ -117,11 +117,18 @@ namespace GEngine
 	{
 		m_FilePath = path;
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
-		std::vector<std::string> srcCodes;
-		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders;
+		std::vector<std::string> srcCodes; // each pass src code
+		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders; // pass { stage : code }
 		std::string source = FileSystemHelper::ReadFileAsString(path);
 		Preprocess(source, srcCodes);
+		if(LoadFromCache(shaders))
+		{
+			processMachingCodeFunc(shaders);
+			GE_INFO("Load shader {} from cache.", m_Name);
+			return;
+		}
 		Compile(srcCodes, shaders);
+		SaveToCache(shaders);
 		processMachingCodeFunc(shaders);
 	}
 
@@ -150,7 +157,7 @@ namespace GEngine
 
 		while (source.find("Pass", pos) != std::string::npos)
 		{
-			m_Passes.push_back(ShaderPass());
+			m_PasseReflections.emplace_back(ShaderReflectionInfo());
 			pos = source.find("Pass", pos);
 			pos = source.find("{", pos);
 			stack.push(1);
@@ -169,7 +176,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
-				m_Passes.at(m_Passes.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
+				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
 				GE_INFO("Cull mode: {}", words[1]);
 			}
 			//depth test
@@ -180,7 +187,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
-				m_Passes.at(m_Passes.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
+				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
 				GE_INFO("Depth test: {}", words[1]);
 			}
 			//depth write
@@ -191,7 +198,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
-				m_Passes.at(m_Passes.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
+				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
 				GE_INFO("Depth write: {}", words[1]);
 			}
 			//blend,用空格避免找到BlendOp等类似命令
@@ -204,18 +211,18 @@ namespace GEngine
 				GE_CORE_ASSERT(words.size() == 3 || words.size() == 5, "Invalid Blend command! " + commandLine);
 				if (words.size() == 3)
 				{
-					m_Passes.at(m_Passes.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
 					GE_INFO("Blend mode: {} {}", words[1], words[2]);
 				}
 				if (words.size() == 5)
 				{
-					m_Passes.at(m_Passes.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
 					GE_INFO("Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
 				}
 			}
@@ -229,14 +236,14 @@ namespace GEngine
 				GE_CORE_ASSERT(words.size() == 2 || words.size() == 3, "Invalid BlendOp command! " + commandLine);
 				if (words.size() == 2)
 				{
-					m_Passes.at(m_Passes.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
 					GE_INFO("Blend op: {}", words[1]);
 				}
 				if (words.size() == 3)
 				{
-					m_Passes.at(m_Passes.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_Passes.at(m_Passes.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
 					GE_INFO("Blend op: {} {}", words[1], words[2]);
 				}
 			}
@@ -255,7 +262,7 @@ namespace GEngine
 					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNLE_B;
 					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNLE_A;
 				}
-				m_Passes.at(m_Passes.size() - 1).State.ColorMask = mask;
+				m_PasseReflections.at(m_PasseReflections.size() - 1).State.ColorMask = mask;
 				GE_INFO("Color mask: {}", mask);
 			}
 			//tag
@@ -266,7 +273,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
-				m_Passes.at(m_Passes.size() - 1).State.Tag = words[1];
+				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Tag = words[1];
 				GE_INFO("Tag: {}", words[1]);
 			}
 			//#pragma
@@ -339,6 +346,7 @@ namespace GEngine
 
 	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
 	{
+		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PasseReflections.size(), "Size of pass and entryPoint not match!");
 		for (int i = 0; i < m_StageEntryPoints.size(); i++)
 		{
 			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
@@ -347,13 +355,12 @@ namespace GEngine
 			
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
+				// 反射所有阶段资源的并集
 				std::vector<uint32_t> machineCode;
-				std::vector<ShaderReflectionInfo> reflectionData;
-				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionData);
+				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, m_PasseReflections.at(i));
 				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
 				shaders.at(i)[stage] = machineCode;
 				GE_DEBUGBREAK();
-				// 反射所有阶段资源的并集
 			}
 		}
 		
@@ -364,6 +371,108 @@ namespace GEngine
 		// ConstPropertiesDesc
 
 		//  ReferenceProperties
+		return true;
+	}
+
+	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	{
+		bool res = false;
+		std::string graphicsAPIExt;
+		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentName(m_FilePath);
+		switch (Graphics::GetGraphicsAPI())
+		{
+		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
+		case GRAPHICS_API_VULKAN: graphicsAPIExt = GRAPHICS_API_EXT_VULKAN; break;
+		case GRAPHICS_API_DIRECT3DX12: graphicsAPIExt = GRAPHICS_API_EXT_D3DX12; break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+			break;
+		}
+		if (FileSystemHelper::IsFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory) == false)
+		{
+			res = FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
+			GE_CORE_ASSERT(res, "Failed to create shader cache directory!");
+		}
+		// folder nae is file name without ext
+		if(FileSystemHelper::IsFolder(cacheFolder) == false)
+		{
+			res = FileSystemHelper::CreateFolder(cacheFolder);
+			GE_CORE_ASSERT(res, "Failed to create shader cache sub directory!");
+		}
+		else
+		{
+			// clear old cache files
+			std::vector<std::string> oldCaches = FileSystemHelper::GetDocumentsInFolder(cacheFolder, "", "");
+			for (auto& oldCache : oldCaches)
+			{
+				res = FileSystemHelper::DeleteDocument(oldCache);
+				GE_CORE_ASSERT(res, "Failed to delete old shader cache file!");
+			}
+		}
+		// each pass and each stage write in sperate file
+		for (int i = 0; i < shaders.size(); i++)
+		{
+			std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
+			for (auto& [stage, code] : shaders.at(i))
+			{
+				// create document
+				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
+				res = FileSystemHelper::CreateDocument(cachePath);
+				res = FileSystemHelper::IsDocument(cachePath);
+				GE_CORE_ASSERT(res, "Failed to create shader cache file!");
+				// write machine code
+				std::vector<char> data;
+				data.resize(code.size() * sizeof(uint32_t));
+				memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
+				res = FileSystemHelper::WriteFile(cachePath, data);
+				GE_CORE_ASSERT(res, "Failed to write shader cache file!");
+			}
+		}
+		
+
+	}
+
+	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	{
+		bool res = false;
+		std::string graphicsAPIExt;
+		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentName(m_FilePath);
+		switch (Graphics::GetGraphicsAPI())
+		{
+		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
+		case GRAPHICS_API_VULKAN: graphicsAPIExt = GRAPHICS_API_EXT_VULKAN; break;
+		case GRAPHICS_API_DIRECT3DX12: graphicsAPIExt = GRAPHICS_API_EXT_D3DX12; break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+			break;
+		}
+		if (FileSystemHelper::IsFolder(cacheFolder) == false)
+		{
+			return false;
+		}
+		std::vector<std::string> cacheFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
+		if(cacheFiles.size() == 0)
+		{
+			return false;
+		}
+		// it should from 0 to n-1
+		sort(cacheFiles.begin(), cacheFiles.end());
+		shaders.resize(std::stoi(cacheFiles.back().substr(0, cacheFiles.back().find('.'))) + 1);
+		// each pass and each stage read from sperate file
+		for (auto& file : cacheFiles)
+		{
+			size_t pos = file.find('.');
+			std::string stage = file.substr(pos + 1, file.find('.', pos + 1) - pos - 1);
+			int passIndex = std::stoi(file.substr(0, pos));
+			// read machine code
+			std::vector<char> data;
+			data = FileSystemHelper::ReadFile(file);
+			std::vector<uint32_t> code;
+			code.resize(data.size() / sizeof(uint32_t));
+			memcpy(code.data(), data.data(), data.size());
+			shaders.at(passIndex)[stage] = code;
+			GE_CORE_INFO("Load shader cache file: {}, pass {}, stage {}!", file, passIndex, stage);
+		}
 		return true;
 	}
 

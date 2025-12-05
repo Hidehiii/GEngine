@@ -38,6 +38,9 @@ Shader "ExampleShader"
 
             RWBuffer<float4> _SomeRWBuffer;
 
+
+            Texture2D _VertTex;
+            sampler _VertTex_sampler;
             Texture2D _MainTex;
             sampler _MainTex_sampler;
 
@@ -68,6 +71,8 @@ Shader "ExampleShader"
                 float myStructA = _MyStructBuffer[0].a;
                 float myStructB = _MyStructBuffer[0].b;
                 OUT.mat4[1][1] = myStructA + myStructB;
+                float4 vertTexColor = _VertTex.Sample(_VertTex_sampler, IN.vertex.xy);
+                OUT.mat4[2][2] = vertTexColor.r;
                 return OUT;
             }
 

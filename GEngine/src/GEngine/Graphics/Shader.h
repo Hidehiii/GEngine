@@ -53,20 +53,20 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual BlendMode									GetBlendColor(const int& pass) { return m_Passes.at(pass).State.BlendColor; }
-		virtual BlendMode									GetBlendAlpha(const int& pass) { return m_Passes.at(pass).State.BlendAlpha; }
-		virtual CullMode									GetCull(const int& pass) { return m_Passes.at(pass).State.Cull; }
-		virtual BlendFactor									GetBlendColorSrc(const int& pass) { return m_Passes.at(pass).State.BlendColorSrc; }
-		virtual BlendFactor									GetBlendColorDst(const int& pass) { return m_Passes.at(pass).State.BlendColorDst; }
-		virtual BlendFactor									GetBlendAlphaSrc(const int& pass) { return m_Passes.at(pass).State.BlendAlphaSrc; }
-		virtual BlendFactor									GetBlendAlphaDst(const int& pass) { return m_Passes.at(pass).State.BlendAlphaDst; }
-		virtual bool										GetEnableDepthWrite(const int& pass) { return m_Passes.at(pass).State.DepthWrite; }
-		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_Passes.at(pass).State.DepthTestOp; }
-		virtual int											GetColorMask(const int& pass) { return m_Passes.at(pass).State.ColorMask; }
+		virtual BlendMode									GetBlendColor(const int& pass) { return m_PasseReflections.at(pass).State.BlendColor; }
+		virtual BlendMode									GetBlendAlpha(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlpha; }
+		virtual CullMode									GetCull(const int& pass) { return m_PasseReflections.at(pass).State.Cull; }
+		virtual BlendFactor									GetBlendColorSrc(const int& pass) { return m_PasseReflections.at(pass).State.BlendColorSrc; }
+		virtual BlendFactor									GetBlendColorDst(const int& pass) { return m_PasseReflections.at(pass).State.BlendColorDst; }
+		virtual BlendFactor									GetBlendAlphaSrc(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlphaSrc; }
+		virtual BlendFactor									GetBlendAlphaDst(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlphaDst; }
+		virtual bool										GetEnableDepthWrite(const int& pass) { return m_PasseReflections.at(pass).State.DepthWrite; }
+		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_PasseReflections.at(pass).State.DepthTestOp; }
+		virtual int											GetColorMask(const int& pass) { return m_PasseReflections.at(pass).State.ColorMask; }
 
 		virtual const std::string&													GetShaderName() const { return m_Name; }
 		virtual const std::string&													GetShaderPath() { return m_FilePath; }
-		virtual const std::vector<ShaderPass>&										GetPasses() { return m_Passes; }
+		virtual const std::vector<ShaderReflectionInfo>&							GetPasseReflections() { return m_PasseReflections; }
 		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageEntryPoints() { return m_StageEntryPoints; }
 		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
 		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
@@ -75,12 +75,14 @@ namespace GEngine
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
 		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) = 0;
+		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
+		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;
 
 		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // stage : name
-		std::vector<ShaderPass>										m_Passes;
+		std::vector<ShaderReflectionInfo>							m_PasseReflections;
 		std::unordered_map<std::string, ShaderPropertyType>			m_PropertyTypes; // name : type
 
 	public:

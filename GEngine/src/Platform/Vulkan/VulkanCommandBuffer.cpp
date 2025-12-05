@@ -223,8 +223,6 @@ namespace GEngine
 			m_FrameBuffer->Begin(this);
 		}
 
-		if(buffer != nullptr)
-			Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0, 0 });
 	}
 	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)
 	{

@@ -9,7 +9,6 @@ namespace GEngine
 		uint8_t			m_GraphicsAPI = 2;
 		uint8_t			m_FramesInFlight = 2;
 		bool			m_VSync = false;
-		uint32_t		m_DynamicUniformCount = 128;
 		uint32_t		m_CommandBufferCount = 1000;
 		std::string		m_ShaderCacheDirectory = "Assets/Cache/Shaders/";
 	};

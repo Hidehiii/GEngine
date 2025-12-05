@@ -10,7 +10,7 @@
 namespace GEngine
 {
 
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
+	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding, uint32_t count)
 	{
 		m_Binding = binding;
 
@@ -19,6 +19,16 @@ namespace GEngine
 		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
 		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
 		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+		if(count > 1)
+		{
+			uint32_t minUboAligment						= Graphics::GetMinUniformBufferOffsetAlignment();
+			m_Aligment									= (size + minUboAligment - 1) & ~(minUboAligment - 1);
+			size										= m_Aligment * count;
+			m_TotalSize									= size;
+			m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		}
+		
 		
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
 							VulkanContext::Get()->GetDevice(), 
@@ -43,60 +53,17 @@ namespace GEngine
 		}
 		
 	}
-	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+	void VulkanUniformBuffer::SetData(const void* data, uint32_t size)
 	{
-		memcpy(((std::byte*)m_MapData) + offset, data, size);
-
-		m_BufferInfo.range = size;
-	}
-
-
-	VulkanUniformBufferDynamic::VulkanUniformBufferDynamic(uint32_t size, uint32_t count, uint32_t binding, uint32_t globalIndex)
-	{
-		m_Binding				= binding;
-		uint32_t minUboAligment = Graphics::GetMinUniformBufferOffsetAlignment();
-		m_Aligment				= (size + minUboAligment - 1) & ~(minUboAligment - 1);
-		m_TotalSize				= m_Aligment * count;
-		m_GlobalIndex			= globalIndex;
-
-		m_DescriptorSetLayoutBinding.binding			= binding;
-		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
-		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
-		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			m_TotalSize,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			m_UniformBuffer,
-			m_UniformBufferMemory);
-		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, 0, m_TotalSize, 0, &m_MapData);
-
-		m_BufferInfo.buffer = m_UniformBuffer;
-		m_BufferInfo.offset = 0;
-		m_BufferInfo.range	= m_TotalSize;
-
-	}
-	VulkanUniformBufferDynamic::~VulkanUniformBufferDynamic()
-	{
-		if (VulkanContext::Get()->GetDevice())
+		if(m_TotalSize > 0)
 		{
-			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_UniformBuffer, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, nullptr);
+			GE_CORE_ASSERT(size <= m_Aligment, "");
+			m_Offset = m_Offset + m_Aligment < m_TotalSize ? m_Offset + m_Aligment : 0;
 		}
-	}
-	void VulkanUniformBufferDynamic::SetData(const void* data, uint32_t size)
-	{
-		GE_CORE_ASSERT(size <= m_Aligment, "");
-
-		m_Offset = m_Offset + m_Aligment < m_TotalSize ? m_Offset + m_Aligment : 0;
 
 		memcpy(((std::byte*)m_MapData) + m_Offset, data, size);
 
 		m_BufferInfo.range = size;
-
-		UpdateGlobalUniformOffset();
 	}
+
 }

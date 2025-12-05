@@ -91,9 +91,6 @@ namespace GEngine
 			m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
 			m_FrameBuffer->Begin(this);
 		}
-
-		if (buffer != nullptr)
-			Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0, 0 });
     }
     void D3D12CommandBuffer::End()
     {

@@ -25,8 +25,6 @@ namespace GEngine
 			m_FrameBuffer->Begin(this);
 		}
 
-		if(buffer != nullptr)
-			Graphics::UpdateScreenUniform(Vector4{ buffer->GetWidth(), buffer->GetHeight(), 0.0f, 0.0f });
 	}
 	void OpenGLCommandBuffer::End()
 	{

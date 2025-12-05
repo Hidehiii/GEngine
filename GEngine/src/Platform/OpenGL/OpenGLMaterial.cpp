@@ -9,21 +9,21 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<OpenGLShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
-		std::vector<uint32_t> sizes = InitializePassPropertiesMemory();
+		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory();
 		// Create uniform buffer
-		// 0 is reserved for custom uniform buffer
-		for(int i = 0; i < sizes.size(); i++)
+		for(auto& pass : sizes)
 		{
-			if (sizes[i] > 0)
+			std::unordered_map<uint32_t, Ref<OpenGLUniformBuffer>> ubuffers;
+			for (auto& [bindPoint, size] : pass)
 			{
-				m_UniformBuffers.push_back(std::dynamic_pointer_cast<OpenGLUniformBuffer>(UniformBuffer::Create(sizes[i], 0)));
+				if (size > 0)
+				{
+					Ref<OpenGLUniformBuffer> ubo = CreateRef<OpenGLUniformBuffer>(size, bindPoint);
+					ubuffers[bindPoint] = ubo;
+				}
 			}
-			else
-			{
-				m_UniformBuffers.push_back(nullptr);
-			}
+			m_UniformBuffers.push_back(ubuffers);
 		}
-		
 	}
 	OpenGLMaterial::~OpenGLMaterial()
 	{
@@ -32,8 +32,16 @@ namespace GEngine
 	{
 		m_Shader->Use(pass);
 
-		if (m_UniformBuffers.at(pass))
-			m_UniformBuffers.at(pass)->SetData(m_Passes.at(pass).ConstProperties.ReadBytes(), m_Passes.at(pass).ConstProperties.GetSize());
+		for (auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
+		{
+			GE_CORE_ASSERT(ubo, "Uniform buffer is null!");
+			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "Uniform buffer bind point not found in pass!");
+			if (ubo->IsDynamic() == false)
+			{
+				GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+				ubo->SetData(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
+			}
+		}
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
 		{
@@ -105,6 +113,16 @@ namespace GEngine
 	void OpenGLMaterial::SetShader(const Ref<Shader>& shader)
 	{
 		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
+	}
+
+	Buffer OpenGLMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
+	{
+		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
+		auto& ubuffers = m_UniformBuffers.at(pass);
+		GE_CORE_ASSERT(ubuffers.find(bindPoint) != ubuffers.end(), "Uniform buffer bind point not found!");
+		Buffer oldBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
+		m_Passes.at(pass).CBuffers[bindPoint] = buffer;
+		return oldBuffer;
 	}
 
 }

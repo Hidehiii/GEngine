@@ -76,7 +76,7 @@ namespace GEngine
 		vkCmdSetDepthWriteEnable(cmd, m_Material->GetEnableDepthWrite(pass));
 		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull(pass)));
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
-		auto offsets = UniformBufferDynamic::GetGlobalUniformOffsets();
+		auto offsets = m_Material->GetDynamicOffsets(pass);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
 			m_PipelineLayout, 0, 1, 
 			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),

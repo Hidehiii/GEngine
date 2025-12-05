@@ -40,11 +40,6 @@ namespace GEngine
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
 
-		static void UpdateCameraUniform(Camera& camera);
-		static void UpdateCameraUniform(const Editor::EditorCamera& camera);
-		static void UpdateTimeUniform(Vector4& time);
-		static void UpdateMainLightUniform(Vector4& pos, Vector4& dir, Vector4& color);
-		static void UpdateScreenUniform(Vector4& size);
 	private:
 		static void Setup(const GraphicsSpecification& spec);
 		static void Init();
@@ -57,7 +52,6 @@ namespace GEngine
 		static uint8_t		s_FrameCount;
 		static uint8_t		s_Frame;
 		static uint32_t		s_CommandBufferCount;
-		static uint32_t		s_DynamicUniformCount;
 		static uint32_t		s_ViewportWidth;
 		static uint32_t		s_ViewportHeight;
 		static bool			s_ReverseDepth;

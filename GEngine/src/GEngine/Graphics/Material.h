@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Core/Buffer.h"
+#include "GEngine/Graphics/UniformBuffer.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/Shader.h"
 
@@ -37,6 +38,8 @@ namespace GEngine
 		virtual BlendFactor GetBlendAlphaSrc(int pass)			{ return m_Passes.at(pass).State.BlendAlphaSrc; }
 		virtual BlendFactor GetBlendColorDst(int pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
 		virtual BlendFactor GetBlendAlphaDst(int pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
+
+		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) = 0; // replace ubo and buffer in pass, return old buffer to release
 
 		template<typename T>
 		void SetConstant(const std::string& name, const T& value)
@@ -75,7 +78,7 @@ namespace GEngine
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 	protected:
-		virtual std::vector<uint32_t> InitializePassPropertiesMemory();
+		virtual std::vector<std::unordered_map<uint32_t, uint32_t>> InitializePassPropertiesMemory(); // pass{ cbuffer bind point : properties size }
 
 		virtual void WriteConstProperty(const std::string& name, const void* value, const uint32_t size);
 		virtual const void* ReadConstProperty(const std::string& name);

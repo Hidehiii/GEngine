@@ -31,7 +31,6 @@ namespace GEngine
 		GraphicsSpecification					graphicsSpec{};
 		graphicsSpec.API						= (Graphics_API)m_Config->m_GraphicsAPI;
 		graphicsSpec.CommandBufferCount			= m_Config->m_CommandBufferCount;
-		graphicsSpec.DynamicUniformCount		= m_Config->m_DynamicUniformCount;
 		graphicsSpec.FramesInFlight				= m_Config->m_FramesInFlight;
 		graphicsSpec.ViewportWidth				= (uint32_t)spec.Size.x;
 		graphicsSpec.ViewportHeight				= (uint32_t)spec.Size.y;

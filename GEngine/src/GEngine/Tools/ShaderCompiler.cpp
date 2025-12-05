@@ -101,7 +101,7 @@ namespace GEngine
 	}
 
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-								std::vector<uint32_t>& machineCode, std::vector<ShaderReflectionInfo>& reflectionData)
+								std::vector<uint32_t>& machineCode, ShaderReflectionInfo& reflectionData)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
@@ -111,9 +111,9 @@ namespace GEngine
 		std::vector<LPCWSTR> args;
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			//args.push_back(L"-spirv");
-			//args.push_back(L"-fspv-reflect");
-			//args.push_back(L"-fspv-target-env=vulkan1.3");
+			args.push_back(L"-spirv");
+			args.push_back(L"-fspv-reflect");
+			args.push_back(L"-fspv-target-env=vulkan1.3");
 		}
 		args.push_back(L"-E");
 		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
@@ -154,9 +154,9 @@ namespace GEngine
 		// use reflection
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			//ReflectSpirv(machineCode, target, reflectionData);
+			ReflectSpirv(machineCode, target, reflectionData);
 		}
-		//else
+		else
 		{
 			ReflectDxil(result, target, reflectionData);
 		}
@@ -173,7 +173,7 @@ namespace GEngine
 	{
 		return s_Instance;
 	}
-	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput)
+	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
 		ID3D12ShaderReflection* reflection;
 		IDxcBlob* reflectionBlob;
@@ -237,7 +237,7 @@ namespace GEngine
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
 		}
 	}
-	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, std::vector<ShaderReflectionInfo>& reflectionOutput)
+	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
 		spirv_cross::Compiler			compiler(spirvCode);
 		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();

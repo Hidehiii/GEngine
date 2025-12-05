@@ -41,6 +41,35 @@ namespace GEngine
 		return true;
 	}
 
+	std::vector<std::string> FileSystemHelper::GetFoldersInFolder(const std::string& folderPath, const std::string& partOfFolderName)
+	{
+		std::vector<std::string> result;
+		if (IsFolder(folderPath))
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			{
+				if (IsFolder(entry.path().string()))
+				{
+					if (partOfFolderName.empty() || entry.path().stem().string().find(partOfFolderName) != std::string::npos)
+					{
+						result.push_back(entry.path().string());
+					}
+				}
+			}
+			return result;
+		}
+		return std::vector<std::string>();
+	}
+
+	std::string FileSystemHelper::GetFolderName(const std::string& path)
+	{
+		if (IsFolder(path))
+		{
+			return std::filesystem::path(path).stem().string();
+		}
+		return std::string();
+	}
+
 	bool FileSystemHelper::IsDocument(const std::string& path)
 	{
 		if (std::filesystem::exists(path))
@@ -78,6 +107,44 @@ namespace GEngine
 		}
 		std::filesystem::remove(path);
 		return true;
+	}
+
+	std::vector<std::string> FileSystemHelper::GetDocumentsInFolder(const std::string& folderPath, const std::string& extension, const std::string& partOfDocName)
+	{
+		std::vector<std::string> result;
+		if (IsFolder(folderPath))
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			{
+				if (IsDocument(entry.path().string()))
+				{
+					if ((extension.empty() || entry.path().extension() == extension) &&
+						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					{
+						result.push_back(entry.path().string());
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	std::string FileSystemHelper::GetDocumentName(const std::string& path)
+	{
+		if (IsDocument(path))
+		{
+			return std::filesystem::path(path).stem().string();
+		}
+		return std::string();
+	}
+
+	std::string FileSystemHelper::GetDocumentExtension(const std::string& path)
+	{
+		if (IsDocument(path))
+		{
+			return std::filesystem::path(path).extension().string();
+		}
+		return std::string();
 	}
 
 	std::vector<char> FileSystemHelper::ReadFile(const std::string& path)

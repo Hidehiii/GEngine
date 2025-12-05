@@ -269,7 +269,6 @@ namespace GEngine
 		out << YAML::Key << "GraphicsAPI" << YAML::Value << (int)config->m_GraphicsAPI;
 		out << YAML::Key << "FramesInFlight" << YAML::Value << (int)config->m_FramesInFlight;
 		out << YAML::Key << "VSync" << YAML::Value << (int)config->m_VSync;
-		out << YAML::Key << "DynamicUniformBufferSizeScaleFactor" << YAML::Value << (int)config->m_DynamicUniformCount;
 		out << YAML::Key << "CommandBufferCount" << YAML::Value << (int)config->m_CommandBufferCount;
 		out << YAML::Key << "ShaderCacheDirectory" << YAML::Value << config->m_ShaderCacheDirectory;
 
@@ -370,7 +369,6 @@ namespace GEngine
 		config->m_GraphicsAPI							= data["GraphicsAPI"].as<uint8_t>();
 		config->m_FramesInFlight						= data["FramesInFlight"].as<uint8_t>();
 		config->m_VSync									= data["VSync"].as<int>();
-		config->m_DynamicUniformCount					= data["DynamicUniformBufferSizeScaleFactor"].as<uint32_t>();
 		config->m_CommandBufferCount					= data["CommandBufferCount"].as<uint32_t>();
 		config->m_ShaderCacheDirectory					= data["ShaderCacheDirectory"].as<std::string>();
 	}
