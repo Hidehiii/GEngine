@@ -35,10 +35,7 @@ namespace GEngine
 
 		m_SamplerInfo.sampler = m_Sampler;
 
-		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_SAMPLER;
-		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
-		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
-		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+
     }
     VulkanSampler::~VulkanSampler()
     {
@@ -49,6 +46,5 @@ namespace GEngine
     }
     void VulkanSampler::Bind(uint32_t slot)
     {
-		m_DescriptorSetLayoutBinding.binding = slot;
     }
 }

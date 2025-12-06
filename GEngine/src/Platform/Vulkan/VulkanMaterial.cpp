@@ -60,7 +60,7 @@ namespace GEngine
 			{
 			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
 			{
-				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+				(*((Ref<Texture2DCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
@@ -80,7 +80,7 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
-				GE_CORE_ASSERT(false, "");
+				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:

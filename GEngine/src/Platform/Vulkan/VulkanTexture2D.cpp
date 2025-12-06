@@ -51,7 +51,6 @@ namespace GEngine
 
         stbi_image_free(data);
         
-        CreateSampler();
     }
     VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
     {
@@ -79,7 +78,6 @@ namespace GEngine
 			                m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
-        CreateSampler();
     }
     VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
     {
@@ -107,7 +105,6 @@ namespace GEngine
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
-		CreateSampler();
         SetData(data, size);
     }
     VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag)
@@ -118,7 +115,6 @@ namespace GEngine
         m_ImageLayout   = layout;
         m_ImageMemory   = imageMemory;
         m_AspectFlag    = aspectFlag;
-        CreateSampler();
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
@@ -128,7 +124,6 @@ namespace GEngine
 			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
 			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
 			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-			vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
 		}
       
     }
@@ -194,7 +189,6 @@ namespace GEngine
         SetImageLayout(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		m_ImageInfo.imageLayout       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView         = m_ImageView;
-		m_ImageInfo.sampler           = m_Sampler;
     }
 
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
@@ -207,30 +201,5 @@ namespace GEngine
 		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
 		m_ImageLayout = newLayout;
     }
-    void VulkanTexture2D::CreateSampler()
-    {
-		VkSamplerCreateInfo             samplerInfo{};
-		samplerInfo.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter           = VK_FILTER_LINEAR;
-		samplerInfo.minFilter           = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable    = VK_TRUE;
-
-		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &properties);
-
-        samplerInfo.maxAnisotropy               = properties.limits.maxSamplerAnisotropy;
-        samplerInfo.borderColor                 = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates     = VK_FALSE;
-		samplerInfo.compareEnable               = VK_FALSE;
-		samplerInfo.compareOp                   = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode                  = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias                  = 0.0f;
-		samplerInfo.minLod                      = 0.0f;
-		samplerInfo.maxLod                      = VK_LOD_CLAMP_NONE;
-
-        VK_CHECK_RESULT(vkCreateSampler(VulkanContext::Get()->GetDevice(), &samplerInfo, nullptr, &m_Sampler));
-    }
+    
 }
