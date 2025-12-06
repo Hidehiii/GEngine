@@ -15,7 +15,6 @@ namespace GEngine
 	}
 	void OpenGLStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
-		
 		glNamedBufferSubData(m_Buffer, offset, size, data);
 	}
 	void OpenGLStorageBuffer::Bind(uint32_t slot)

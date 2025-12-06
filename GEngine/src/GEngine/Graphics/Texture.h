@@ -29,7 +29,10 @@ namespace GEngine
 		uint32_t m_MipLevels = 1;
 	};
 
-	
+	class GENGINE_API Texture2DCombineSampler : public Texture
+	{
+
+	};
 
 	class GENGINE_API Texture2D : public Texture
 	{

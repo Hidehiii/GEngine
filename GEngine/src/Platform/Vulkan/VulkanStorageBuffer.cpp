@@ -7,11 +7,6 @@ namespace GEngine
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
 	{
-		m_DescriptorSetLayoutBinding.binding		= -1;
-		m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		m_DescriptorSetLayoutBinding.descriptorCount = 1;
-		m_DescriptorSetLayoutBinding.stageFlags		= VK_SHADER_STAGE_ALL_GRAPHICS;
-		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
@@ -57,7 +52,6 @@ namespace GEngine
 	}
 	void VulkanStorageBuffer::Bind(uint32_t slot)
 	{
-		m_DescriptorSetLayoutBinding.binding = slot;
 	}
 }
 

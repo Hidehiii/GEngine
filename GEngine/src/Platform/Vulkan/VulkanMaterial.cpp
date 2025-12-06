@@ -23,7 +23,7 @@ namespace GEngine
 			{
 				if (size > 0)
 				{
-					Ref<VulkanUniformBuffer> ubo = CreateRef<VulkanUniformBuffer>(size, bindPoint);
+					Ref<VulkanUniformBuffer> ubo = CreateRef<VulkanUniformBuffer>(size);
 					ubuffers[bindPoint] = ubo;
 				}
 			}
@@ -129,6 +129,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
 		auto& ubuffers = m_UniformBuffers.at(pass);
 		GE_CORE_ASSERT(ubuffers.find(bindPoint) != ubuffers.end(), "Uniform buffer bind point not found!");
+		ubuffers.at(bindPoint) = std::dynamic_pointer_cast<VulkanUniformBuffer>(buf);
 		Buffer oldBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
 		m_Passes.at(pass).CBuffers[bindPoint] = buffer;
 		if (buf->IsDynamic())
@@ -151,7 +152,14 @@ namespace GEngine
 			// 材质ubo
 			for(auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
 			{
-				layoutBindings.push_back(ubo->GetDescriptorSetLayoutBinding());
+				VkDescriptorSetLayoutBinding		layoutBinding{};
+				layoutBinding.binding				= bindPoint;
+				layoutBinding.descriptorType		= ubo->GetDescriptorType();
+				layoutBinding.descriptorCount		= 1;
+				layoutBinding.pImmutableSamplers	= nullptr;
+				layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
+
+				layoutBindings.push_back(layoutBinding);
 			}
 
 			for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
@@ -185,7 +193,9 @@ namespace GEngine
 				}
 				case SHADER_PROPERTY_TYPE_SAMPLER:
 				{
-					GE_CORE_ASSERT(false, "");
+					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+
+					layoutBindings.push_back(layoutBinding);
 					break;
 				}
 				case SHADER_PROPERTY_TYPE_TEXTURE_2D:
@@ -208,12 +218,14 @@ namespace GEngine
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
 					layoutBindings.push_back(layoutBinding);
+					break;
 				}
 				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
 					layoutBindings.push_back(layoutBinding);
+					break;
 				}
 				default:
 					break;
@@ -252,9 +264,9 @@ namespace GEngine
 		{
 			descriptorWrite.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet				= m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index);
-			descriptorWrite.dstBinding			= ubo->GetDescriptorSetLayoutBinding().binding;
+			descriptorWrite.dstBinding			= bindPoint;
 			descriptorWrite.dstArrayElement		= 0;
-			descriptorWrite.descriptorType		= ubo->GetDescriptorSetLayoutBinding().descriptorType;
+			descriptorWrite.descriptorType		= ubo->GetDescriptorType();
 			descriptorWrite.descriptorCount		= 1;
 			descriptorWrite.pBufferInfo			= ubo->GetDescriptorBufferInfo();
 			descriptorWrite.pImageInfo			= nullptr; // Optional

@@ -16,14 +16,13 @@ namespace GEngine
 		virtual uint32_t GetOffset() const { return m_Offset; }
 		virtual uint32_t GetTotalSize() const { return m_TotalSize; }
 
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding, uint32_t count = 1); // count only for dynamic UBO
+		static Ref<UniformBuffer> Create(uint32_t size, uint32_t count = 1); // count only for dynamic UBO
 
 		
 	protected:
 		uint32_t	m_Aligment = 0;
 		uint32_t	m_Offset = 0;
 		uint32_t	m_TotalSize = 0; // only for dynamic UBO
-		uint32_t	m_Binding = 0;
 	};
 }
 

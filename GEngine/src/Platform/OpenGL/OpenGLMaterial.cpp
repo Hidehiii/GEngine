@@ -18,7 +18,7 @@ namespace GEngine
 			{
 				if (size > 0)
 				{
-					Ref<OpenGLUniformBuffer> ubo = CreateRef<OpenGLUniformBuffer>(size, bindPoint);
+					Ref<OpenGLUniformBuffer> ubo = CreateRef<OpenGLUniformBuffer>(size);
 					ubuffers[bindPoint] = ubo;
 				}
 			}
@@ -36,6 +36,7 @@ namespace GEngine
 		{
 			GE_CORE_ASSERT(ubo, "Uniform buffer is null!");
 			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "Uniform buffer bind point not found in pass!");
+			ubo->SetBindPoint(bindPoint);
 			if (ubo->IsDynamic() == false)
 			{
 				GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
@@ -120,6 +121,8 @@ namespace GEngine
 		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
 		auto& ubuffers = m_UniformBuffers.at(pass);
 		GE_CORE_ASSERT(ubuffers.find(bindPoint) != ubuffers.end(), "Uniform buffer bind point not found!");
+		ubuffers.at(bindPoint) = std::dynamic_pointer_cast<OpenGLUniformBuffer>(buf);
+		ubuffers.at(bindPoint)->SetBindPoint(bindPoint);
 		Buffer oldBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
 		m_Passes.at(pass).CBuffers[bindPoint] = buffer;
 		return oldBuffer;

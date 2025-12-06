@@ -10,23 +10,17 @@
 namespace GEngine
 {
 
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding, uint32_t count)
+	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t count)
 	{
-		m_Binding = binding;
-
-		m_DescriptorSetLayoutBinding.binding			= binding;
-		m_DescriptorSetLayoutBinding.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		m_DescriptorSetLayoutBinding.descriptorCount	= 1;
-		m_DescriptorSetLayoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
-		m_DescriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
+		m_DescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
 		if(count > 1)
 		{
-			uint32_t minUboAligment						= Graphics::GetMinUniformBufferOffsetAlignment();
-			m_Aligment									= (size + minUboAligment - 1) & ~(minUboAligment - 1);
-			size										= m_Aligment * count;
-			m_TotalSize									= size;
-			m_DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			uint32_t minUboAligment		= Graphics::GetMinUniformBufferOffsetAlignment();
+			m_Aligment					= (size + minUboAligment - 1) & ~(minUboAligment - 1);
+			size						= m_Aligment * count;
+			m_TotalSize					= size;
+			m_DescriptorType			= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		}
 		
 		
