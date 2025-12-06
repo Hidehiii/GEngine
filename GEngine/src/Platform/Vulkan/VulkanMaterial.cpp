@@ -6,6 +6,8 @@
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
+#include "Platform/Vulkan/VulkanTexture2DCombineSampler.h"
+#include "Platform/Vulkan/VulkanCubeMapCombineSampler.h"
 
 namespace GEngine
 {
@@ -65,7 +67,7 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
 			{
-				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
+				(*((Ref<CubeMapCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
@@ -85,7 +87,7 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
-				GE_CORE_ASSERT(false, "");
+				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
@@ -290,7 +292,7 @@ namespace GEngine
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptorWrite.pBufferInfo			= nullptr;
-				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanTexture2D>((*((Ref<Texture2D>*)prop.Ptr)))->GetDescriptorImageInfo();
+				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanTexture2DCombineSampler>((*((Ref<Texture2DCombineSampler>*)prop.Ptr)))->GetDescriptorImageInfo();
 				descriptorWrite.pTexelBufferView	= nullptr; // Optional
 
 				writeInfos.push_back(descriptorWrite);
@@ -301,7 +303,7 @@ namespace GEngine
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptorWrite.pBufferInfo			= nullptr;
-				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanCubeMap>((*((Ref<CubeMap>*)prop.Ptr)))->GetDescriptorImageInfo();
+				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanCubeMapCombineSampler>((*((Ref<CubeMapCombineSampler>*)prop.Ptr)))->GetDescriptorImageInfo();
 				descriptorWrite.pTexelBufferView	= nullptr; // Optional
 
 				writeInfos.push_back(descriptorWrite);
@@ -314,17 +316,35 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
-				GE_CORE_ASSERT(false, "");
+				descriptorWrite.dstArrayElement		= 0;
+				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_SAMPLER;
+				descriptorWrite.pBufferInfo			= nullptr;
+				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanSampler>((*((Ref<Sampler>*)prop.Ptr)))->GetDescriptorImageInfo();
+				descriptorWrite.pTexelBufferView	= nullptr; // Optional
+
+				writeInfos.push_back(descriptorWrite);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
-				GE_CORE_ASSERT(false, "");
+				descriptorWrite.dstArrayElement		= 0;
+				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				descriptorWrite.pBufferInfo			= nullptr;
+				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanTexture2D>((*((Ref<Texture2D>*)prop.Ptr)))->GetDescriptorImageInfo();
+				descriptorWrite.pTexelBufferView	= nullptr; // Optional
+
+				writeInfos.push_back(descriptorWrite);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
-				GE_CORE_ASSERT(false, "");
+				descriptorWrite.dstArrayElement		= 0;
+				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				descriptorWrite.pBufferInfo			= nullptr;
+				descriptorWrite.pImageInfo			= std::dynamic_pointer_cast<VulkanCubeMap>((*((Ref<CubeMap>*)prop.Ptr)))->GetDescriptorImageInfo();
+				descriptorWrite.pTexelBufferView	= nullptr; // Optional
+
+				writeInfos.push_back(descriptorWrite);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
