@@ -19,7 +19,7 @@ namespace GEngine
 
 		static Ref<Sampler> Create(const SamplerSpecification& spec);
 	protected:
-		SamplerSpecification	m_Specification;
+		SamplerSpecification				m_Specification;
 	protected:
 		static std::vector<Ref<Sampler>>	s_Samplers;
 	};

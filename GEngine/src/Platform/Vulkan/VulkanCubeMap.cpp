@@ -33,7 +33,7 @@ namespace GEngine
 			m_Image,
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
-		CreateSampler();
+
 	}
 
 	VulkanCubeMap::VulkanCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
@@ -81,7 +81,7 @@ namespace GEngine
 			m_Image,
 			m_ImageMemory);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
-		CreateSampler();
+
 		LoadImageData();
 	}
 
@@ -93,7 +93,6 @@ namespace GEngine
 			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
 			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
 			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
-			vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
 		}
 		
 	}
@@ -171,7 +170,7 @@ namespace GEngine
 		SetImageLayout(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		m_ImageInfo.imageLayout		= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView		= m_ImageView;
-		m_ImageInfo.sampler			= m_Sampler;
+		m_ImageInfo.sampler			= nullptr;
 	}
 
 	std::string VulkanCubeMap::GetPath() const
@@ -196,32 +195,7 @@ namespace GEngine
 		m_ImageLayout = newLayout;
 	}
 
-	void VulkanCubeMap::CreateSampler()
-	{
-		VkSamplerCreateInfo             samplerInfo{};
-		samplerInfo.sType				= VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter			= VK_FILTER_LINEAR;
-		samplerInfo.minFilter			= VK_FILTER_LINEAR;
-		samplerInfo.addressModeU		= VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV		= VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW		= VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable	= VK_TRUE;
-
-		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &properties);
-
-		samplerInfo.maxAnisotropy			= properties.limits.maxSamplerAnisotropy;
-		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable			= VK_FALSE;
-		samplerInfo.compareOp				= VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode				= VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias				= 0.0f;
-		samplerInfo.minLod					= 0.0f;
-		samplerInfo.maxLod					= VK_LOD_CLAMP_NONE;
-
-		VK_CHECK_RESULT(vkCreateSampler(VulkanContext::Get()->GetDevice(), &samplerInfo, nullptr, &m_Sampler));
-	}
+	
 	void VulkanCubeMap::LoadImageData()
 	{
 		for (int i = 0; i < m_Path.size(); i++)

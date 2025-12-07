@@ -22,7 +22,6 @@ namespace GEngine
 		
 		virtual bool operator==(const CubeMap& other) const override { return m_Image == ((VulkanCubeMap&)other).m_Image; };
 
-		const VkSampler						GetSampler() { return m_Sampler; }
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
@@ -30,14 +29,12 @@ namespace GEngine
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout);
 	private:
-		void CreateSampler();
 		void LoadImageData();
 	private:
 		std::vector<std::string>		m_Path;
 		VkImage							m_Image = nullptr;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;
-		VkSampler						m_Sampler = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;

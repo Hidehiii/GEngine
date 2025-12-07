@@ -10,6 +10,12 @@ namespace GEngine
 	public:
 		OpenGLTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler);
 
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot) override;
+
+		virtual void			SetTexture(const Ref<Texture2D>& texture) override;
+		virtual Ref<Texture2D>	GetTexture() override { return m_Texture; }
+		virtual void			SetSampler(const Ref<Sampler>& sampler) override;
+		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
 	private:
 		Ref<OpenGLTexture2D> m_Texture;
 		Ref<OpenGLSampler>   m_Sampler;

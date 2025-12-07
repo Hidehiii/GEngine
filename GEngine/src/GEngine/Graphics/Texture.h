@@ -29,16 +29,6 @@ namespace GEngine
 		uint32_t m_MipLevels = 1;
 	};
 
-	class GENGINE_API Texture2DCombineSampler : public Texture
-	{
-		static Ref<Texture2DCombineSampler> Create(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler);
-
-		virtual void SetTexture(const Ref<Texture2D>& texture) = 0;
-		virtual void SetSampler(const Ref<Sampler>& sampler) = 0;
-
-		virtual bool operator==(const Texture2DCombineSampler& other) const = 0;
-	};
-
 	class GENGINE_API Texture2D : public Texture
 	{
 	public:
@@ -60,6 +50,19 @@ namespace GEngine
 		static std::unordered_map<std::string, Ref<Texture2D>>	s_Texture2Ds;
 	};
 
+	class GENGINE_API Texture2DCombineSampler : public Texture
+	{
+		static Ref<Texture2DCombineSampler> Create(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler);
+
+		virtual void			SetTexture(const Ref<Texture2D>& texture) = 0;
+		virtual Ref<Texture2D>	GetTexture() = 0;
+		virtual void			SetSampler(const Ref<Sampler>& sampler) = 0;
+		virtual Ref<Sampler>	GetSampler() = 0;
+		
+
+		virtual bool operator==(const Texture2DCombineSampler& other) const = 0;
+	};
+
 	class GENGINE_API Texture2DArray : public Texture
 	{
 	public:
@@ -74,14 +77,6 @@ namespace GEngine
 		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
 	protected:
 		uint32_t m_Layers;
-	};
-
-	class GENGINE_API CubeMapCombineSampler : public Texture
-	{
-		static Ref<CubeMapCombineSampler> Create(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler);
-		virtual void SetCubeMap(const Ref<CubeMap>& cubemap) = 0;
-		virtual void SetSampler(const Ref<Sampler>& sampler) = 0;
-		virtual bool operator==(const CubeMapCombineSampler& other) const = 0;
 	};
 
 	class GENGINE_API CubeMap : public Texture
@@ -103,6 +98,18 @@ namespace GEngine
 		static Ref<CubeMap> s_WhiteCubeMap;
 		// path, cubeMap
 		static std::unordered_map<std::string, Ref<CubeMap>>	s_CubeMaps;
+	};
+
+	class GENGINE_API CubeMapCombineSampler : public Texture
+	{
+		static Ref<CubeMapCombineSampler> Create(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler);
+
+		virtual void			SetCubeMap(const Ref<CubeMap>& cubemap) = 0;
+		virtual Ref<CubeMap>	GetCubeMap() = 0;
+		virtual void			SetSampler(const Ref<Sampler>& sampler) = 0;
+		virtual Ref<Sampler>	GetSampler() = 0;
+
+		virtual bool operator==(const CubeMapCombineSampler& other) const = 0;
 	};
 }
 
