@@ -36,4 +36,6 @@ namespace GEngine
 		m_Sampler			= std::dynamic_pointer_cast<VulkanSampler>(sampler);
 		m_ImageInfo.sampler = m_Sampler->GetVulkanSampler();
 	}
+
+
 }

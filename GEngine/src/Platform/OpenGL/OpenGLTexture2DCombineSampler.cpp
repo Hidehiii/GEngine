@@ -19,8 +19,11 @@ namespace GEngine
     {
 		m_Texture = std::dynamic_pointer_cast<OpenGLTexture2D>(texture);
     }
+
     void OpenGLTexture2DCombineSampler::SetSampler(const Ref<Sampler>& sampler)
     {
 		m_Sampler = std::dynamic_pointer_cast<OpenGLSampler>(sampler);
     }
+
+
 }

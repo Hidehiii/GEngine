@@ -11,7 +11,7 @@ namespace GEngine
 
 		virtual void Bind(uint32_t slot) override;
 
-		VkDescriptorImageInfo			GetDescriptorImageInfo() { return m_SamplerInfo; }
+		VkDescriptorImageInfo*			GetDescriptorImageInfo() { return &m_SamplerInfo; }
 		VkSampler						GetVulkanSampler() { return m_Sampler; }
 	private:
 		VkSampler						m_Sampler = nullptr;

@@ -17,7 +17,7 @@ namespace GEngine
 		virtual void			SetSampler(const Ref<Sampler>& sampler) override;
 		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
 
-		VkDescriptorImageInfo	GetDescriptorImageInfo() { return m_ImageInfo; }
+		VkDescriptorImageInfo*	GetDescriptorImageInfo() { return &m_ImageInfo; }
 
 	private:
 		Ref<VulkanTexture2D>	m_Texture;

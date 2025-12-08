@@ -14,9 +14,13 @@ namespace GEngine
 		virtual Ref<CubeMap>	GetCubeMap() override { return m_CubeMap; }
 		virtual void			SetSampler(const Ref<Sampler>& sampler) override;
 		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
+
+		VkDescriptorImageInfo*	GetDescriptorImageInfo() { return &m_ImageInfo; }
 	private:
-		Ref<VulkanCubeMap>	m_CubeMap;
-		Ref<VulkanSampler>	m_Sampler;
+		Ref<VulkanCubeMap>		m_CubeMap;
+		Ref<VulkanSampler>		m_Sampler;
+
+		VkDescriptorImageInfo	m_ImageInfo{};
     };
 }
 

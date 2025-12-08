@@ -29,6 +29,16 @@ namespace GEngine
 		uint32_t m_MipLevels = 1;
 	};
 
+	class GENGINE_API TextureCombineSampler
+	{
+	public:
+		virtual ~TextureCombineSampler() = default;
+		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) = 0;
+
+		virtual void			SetSampler(const Ref<Sampler>& sampler) = 0;
+		virtual Ref<Sampler>	GetSampler() = 0;
+	};
+
 	class GENGINE_API Texture2D : public Texture
 	{
 	public:
@@ -50,7 +60,7 @@ namespace GEngine
 		static std::unordered_map<std::string, Ref<Texture2D>>	s_Texture2Ds;
 	};
 
-	class GENGINE_API Texture2DCombineSampler : public Texture
+	class GENGINE_API Texture2DCombineSampler : public TextureCombineSampler
 	{
 		static Ref<Texture2DCombineSampler> Create(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler);
 
@@ -100,7 +110,7 @@ namespace GEngine
 		static std::unordered_map<std::string, Ref<CubeMap>>	s_CubeMaps;
 	};
 
-	class GENGINE_API CubeMapCombineSampler : public Texture
+	class GENGINE_API CubeMapCombineSampler : public TextureCombineSampler
 	{
 		static Ref<CubeMapCombineSampler> Create(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler);
 
