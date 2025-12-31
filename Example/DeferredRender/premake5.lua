@@ -42,7 +42,6 @@ project "DeferredRender"
 
 		defines
 		{
-			"GE_PLATFORM_WINDOWS",
 			"GE_PROFILE",
 			"FBX_SHARED"
 		}

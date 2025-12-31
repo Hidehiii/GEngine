@@ -2,18 +2,10 @@
 #include "Win32Window.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Context.h"
+#include "GEngine/Tools/StringHelper.h"
 
 namespace GEngine
 {
-	LPCWSTR StringToLPCWSTR(const std::string& str)
-	{
-		size_t	strSize = str.length() + 1;
-		size_t convertedChars = 0;
-		wchar_t* wcstring = (wchar_t*)malloc(sizeof(wchar_t) * (str.length() - 1));
-		mbstowcs_s(&convertedChars, wcstring, strSize, str.c_str(), _TRUNCATE);
-
-		return wcstring;
-	}
 
 	LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
@@ -166,7 +158,7 @@ namespace GEngine
 		AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 		int width = R.right - R.left;
 		int height = R.bottom - R.top;
-		m_Window = CreateWindow(L"MainWnd", StringToLPCWSTR(props.Title), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
+		m_Window = CreateWindow(L"MainWnd", StringHelper::StringToWideString(props.Title).c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
 		if (!(m_Window))
 		{
 			MessageBox(0, L"CreateWindow Failed", 0, 0);

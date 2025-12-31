@@ -51,6 +51,7 @@
 
 
 
+
 #ifdef GE_DEBUG
 	#ifdef GE_PLATFORM_WINDOWS
 		#define GE_DEBUGBREAK() __debugbreak()

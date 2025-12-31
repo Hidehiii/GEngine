@@ -1,6 +1,6 @@
 #pragma once
-
-#ifdef GE_PLATFORM_WINDOWS && GE_ENTRY_POINT
+#ifndef GE_ENTRY_POINT_H
+#define GE_ENTRY_POINT_H
 
 	extern GEngine::Application* GEngine::CreateApplication(ApplicationCommandLineArgs args);
 
@@ -14,4 +14,14 @@
 
 		return 0;
 	}
+#ifdef GE_PLATFORM_WINDOWS
+	int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+	{
+		auto app = GEngine::CreateApplication({ __argc, __argv });
+		app->Run();
+		delete(app);
+		return 0;
+	}
 #endif
+#endif
+
