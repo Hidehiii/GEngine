@@ -16,6 +16,12 @@ namespace GEngine
 		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
 
 		VkDescriptorImageInfo*	GetDescriptorImageInfo() { return &m_ImageInfo; }
+
+		virtual bool operator==(const CubeMapCombineSampler& other) const override
+		{
+			auto otherVulkan = static_cast<const VulkanCubeMapCombineSampler&>(other);
+			return (*m_CubeMap == *otherVulkan.m_CubeMap) && (*m_Sampler == *otherVulkan.m_Sampler);
+		}
 	private:
 		Ref<VulkanCubeMap>		m_CubeMap;
 		Ref<VulkanSampler>		m_Sampler;

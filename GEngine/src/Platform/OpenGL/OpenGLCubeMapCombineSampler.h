@@ -15,6 +15,12 @@ namespace GEngine
 		virtual void			SetSampler(const Ref<Sampler>& sampler) override;
 		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
 
+		virtual bool operator==(const CubeMapCombineSampler& other) const override
+		{
+			auto otherOpenGL = static_cast<const OpenGLCubeMapCombineSampler&>(other);
+			return (*m_CubeMap == *otherOpenGL.m_CubeMap) && (*m_Sampler == *otherOpenGL.m_Sampler);
+		}
+
 	private:
 		Ref<OpenGLCubeMap>	m_CubeMap;
 		Ref<OpenGLSampler>	m_Sampler;

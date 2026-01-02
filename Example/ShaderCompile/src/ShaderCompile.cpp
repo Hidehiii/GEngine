@@ -7,7 +7,7 @@ namespace GEngine
 	}
 	void ShaderCompile::OnAttach()
 	{
-		Ref<Material> mat = Material::Create("Assets/Shaders/ExampleShader.shader", "ExampleShader");
+		//Ref<Material> mat = Material::Create("Assets/Shaders/ExampleShader.shader", "ExampleShader");
 	}
 	void ShaderCompile::OnPresent()
 	{
@@ -17,11 +17,13 @@ namespace GEngine
 	}
 	void ShaderCompile::OnUpdate()
 	{
+		
 	}
 	void ShaderCompile::OnImGuiRender()
 	{
 	}
 	void ShaderCompile::OnEvent(Event& e)
 	{
+		//GE_INFO("Event: {0}", e.ToString());
 	}
 }

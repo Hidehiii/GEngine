@@ -87,7 +87,7 @@ namespace GEngine
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << KeyCodeString[m_KeyCode];
+			ss << "KeyUpEvent: " << KeyCodeString[m_KeyCode];
 			return ss.str();
 		}
 

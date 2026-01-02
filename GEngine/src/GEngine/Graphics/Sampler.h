@@ -13,15 +13,18 @@ namespace GEngine
 
 		virtual void Bind(uint32_t slot) = 0;
 
-		virtual SamplerSpecification GetSpecification() { return m_Specification; }
+		virtual SamplerSpecification GetSpecification() const { return m_Specification; }
 
 		static Ref<Sampler> GetSampler(const SamplerSpecification& spec);
+		static Ref<Sampler> GetDefaultSampler();
 
 		static Ref<Sampler> Create(const SamplerSpecification& spec);
+
+		virtual bool operator==(const Sampler& other) const = 0;
 	protected:
 		SamplerSpecification				m_Specification;
 	protected:
-		static std::vector<Ref<Sampler>>	s_Samplers;
+		static std::unordered_map<SamplerSpecification, Ref<Sampler>>	s_Samplers;
 	};
 }
 

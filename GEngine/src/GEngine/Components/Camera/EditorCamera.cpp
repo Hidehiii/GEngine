@@ -54,55 +54,55 @@ namespace GEngine::Editor
 
 	void EditorCamera::OnUpdate()
 	{
-		if (Input::IsKeyPressed(KeyCode::LeftAlt))
+		if (Input::GetKeyPressed(KEY_LEFT_ALT))
 		{
 			const Vector2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			Vector2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 
-			if (Input::IsMouseButtonPressed(MouseCode::ButtonMiddle))
+			if (Input::GetMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
 				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(MouseCode::ButtonLeft))
+			else if (Input::GetMouseButtonPressed(MOUSE_BUTTON_LEFT))
 				MouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(MouseCode::ButtonRight))
+			else if (Input::GetMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 				MouseZoom(delta.x);
 		}
-		else if (Input::IsMouseButtonPressed(MouseCode::ButtonMiddle))
+		else if (Input::GetMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
 		{
 			const Vector2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			Vector2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			MousePan(delta);
 		}
-		else if (Input::IsMouseButtonPressed(MouseCode::ButtonRight))
+		else if (Input::GetMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 		{
 				
 			const Vector2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			Vector2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			float speed = 1;
-			if (Input::IsKeyPressed(KeyCode::LeftShift))
+			if (Input::GetKeyPressed(KEY_LEFT_SHIFT))
 			{
 				speed *= 3;
 			}
-			if (Input::IsKeyPressed(KeyCode::W))
+			if (Input::GetKeyPressed(KEY_W))
 			{
 				MouseZoom(speed  * 0.003f);
 			}
-			if (Input::IsKeyPressed(KeyCode::S))
+			if (Input::GetKeyPressed(KEY_S))
 			{
 				MouseZoom(-speed * 0.003f);
 			}
-			if (Input::IsKeyPressed(KeyCode::A))
+			if (Input::GetKeyPressed(KEY_A))
 			{
 				MousePan({ speed * 0.003f, 0 });
 			}
-			if(Input::IsKeyPressed(KeyCode::D))
+			if(Input::GetKeyPressed(KEY_D))
 			{
 				MousePan({ -speed * 0.003f, 0 });
 			}
-			if (Input::IsKeyPressed(KeyCode::Q))
+			if (Input::GetKeyPressed(KEY_Q))
 			{
 				MousePan({ 0, speed * 0.003f });
 			}
-			if (Input::IsKeyPressed(KeyCode::E))
+			if (Input::GetKeyPressed(KEY_E))
 			{
 				MousePan({ 0, -speed * 0.003f });
 			}
@@ -114,8 +114,7 @@ namespace GEngine::Editor
 
 	void EditorCamera::OnEvent(Event& e)
 	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(EditorCamera::OnMouseScroll));
+		EventDispatcher::Dispatch<MouseScrolledEvent>(e, GE_BIND_CLASS_FUNCTION_LAMBDA(EditorCamera::OnMouseScroll));
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)

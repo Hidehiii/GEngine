@@ -113,7 +113,7 @@ namespace GEngine
 				KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
 
 				keyState.IsPressed = true;
-				keyState.PressStartTime = glfwGetTime();
+				keyState.PressStartTime = int(glfwGetTime() * 1000);
 				keyState.IsLongPressTriggered = false;
 				break;
 			}
@@ -163,7 +163,7 @@ namespace GEngine
 				
 				if(!keyState.IsLongPressTriggered)
 				{
-					if (Application::Get().GetConfig()->m_LongPressThresholdMs <= keyState.PressStartTime - glfwGetTime())
+					if (Application::Get().GetConfig()->m_LongPressThresholdMs <= int(glfwGetTime() * 1000) - keyState.PressStartTime)
 					{
 						KeyLongDownEvent longDownEvent(keycode);
 						data.EventCallback(longDownEvent);
@@ -213,7 +213,7 @@ namespace GEngine
 				data.EventCallback(event);
 
 				btnState.IsPressed = true;
-				btnState.PressStartTime = glfwGetTime();
+				btnState.PressStartTime = int(glfwGetTime() * 1000);
 				double x, y = 0;
 				glfwGetCursorPos(window, &x, &y);
 				btnState.PressX = (float)x;
@@ -297,7 +297,7 @@ namespace GEngine
 
 					if (!btnState.IsLongPressTriggered)
 					{
-						if (Application::Get().GetConfig()->m_LongPressThresholdMs <= glfwGetTime() - btnState.PressStartTime)
+						if (Application::Get().GetConfig()->m_LongPressThresholdMs <= int(glfwGetTime() * 1000) - btnState.PressStartTime)
 						{
 							MouseButtonLongDownEvent longDownEvent(button);
 							data.EventCallback(longDownEvent);
@@ -319,14 +319,71 @@ namespace GEngine
 
 	void GLFWWindow::UpdateKeyAndMouseStatesForQuery()
 	{
-		// copy state from PlatfoemInput to for query map
+		// record the current key and mouse button states for querying in the next frame
 		for (auto& [key, state] : PlatformInput::s_KeyStates)
 		{
-			PlatformInput::s_KeyStatesForQuery[key] = state;
+			if (PlatformInput::s_KeyStatesForQuery[key].IsDown == KeyStateInfoForQuery::STATE_UP && state.IsPressed)
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsDown = KeyStateInfoForQuery::STATE_UP_TO_DOWN;
+			}
+			else if (PlatformInput::s_KeyStatesForQuery[key].IsDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN && state.IsPressed)
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsDown = KeyStateInfoForQuery::STATE_DOWN;
+			}
+			else if (PlatformInput::s_KeyStatesForQuery[key].IsDown == KeyStateInfoForQuery::STATE_DOWN && state.IsPressed == false)
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsDown = KeyStateInfoForQuery::STATE_UP;
+			}
+			PlatformInput::s_KeyStatesForQuery[key].IsUp = PlatformInput::s_KeyStatesForQuery[key].IsPressed == true && state.IsPressed == false;
+			if (PlatformInput::s_KeyStatesForQuery[key].IsLongDown == KeyStateInfoForQuery::STATE_UP && state.IsPressed && state.IsLongPressTriggered)
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsLongDown = KeyStateInfoForQuery::STATE_UP_TO_DOWN;
+			}
+			else if (PlatformInput::s_KeyStatesForQuery[key].IsLongDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN && state.IsPressed && state.IsLongPressTriggered)
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsLongDown = KeyStateInfoForQuery::STATE_DOWN;
+			}
+			else if (PlatformInput::s_KeyStatesForQuery[key].IsLongDown == KeyStateInfoForQuery::STATE_DOWN && (state.IsPressed == false || !state.IsLongPressTriggered))
+			{
+				PlatformInput::s_KeyStatesForQuery[key].IsLongDown = KeyStateInfoForQuery::STATE_UP;
+			}
+			PlatformInput::s_KeyStatesForQuery[key].IsLongUp = PlatformInput::s_KeyStatesForQuery[key].IsLongPressed == true && (state.IsPressed == false || !state.IsLongPressTriggered);
+
+
+			PlatformInput::s_KeyStatesForQuery[key].IsPressed = state.IsPressed;
+			PlatformInput::s_KeyStatesForQuery[key].IsLongPressed = state.IsPressed && state.IsLongPressTriggered;
 		}
 		for (auto& [button, state] : PlatformInput::s_MouseBtnStates)
 		{
-			PlatformInput::s_MouseBtnStatesForQuery[button] = state;
+			if(PlatformInput::s_MouseBtnStatesForQuery[button].IsDown == MouseBtnStateInfoForQuery::STATE_UP && state.IsPressed)
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsDown = MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;
+			}
+			else if(PlatformInput::s_MouseBtnStatesForQuery[button].IsDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN && state.IsPressed)
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsDown = MouseBtnStateInfoForQuery::STATE_DOWN;
+			}
+			else if(PlatformInput::s_MouseBtnStatesForQuery[button].IsDown == MouseBtnStateInfoForQuery::STATE_DOWN && state.IsPressed == false)
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsDown = MouseBtnStateInfoForQuery::STATE_UP;
+			}
+			PlatformInput::s_MouseBtnStatesForQuery[button].IsUp = PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed == true && state.IsPressed == false;
+			if (PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown == MouseBtnStateInfoForQuery::STATE_UP && state.IsPressed && state.IsLongPressTriggered)
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown = MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;
+			}
+			else if (PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN && state.IsPressed && state.IsLongPressTriggered)
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown = MouseBtnStateInfoForQuery::STATE_DOWN;
+			}
+			else if (PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown == MouseBtnStateInfoForQuery::STATE_DOWN && (state.IsPressed == false || !state.IsLongPressTriggered))
+			{
+				PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown = MouseBtnStateInfoForQuery::STATE_UP;
+			}
+			PlatformInput::s_MouseBtnStatesForQuery[button].IsLongUp = PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressed == true && (state.IsPressed == false || !state.IsLongPressTriggered);
+
+			PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed = state.IsPressed;
+			PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressed = state.IsPressed && state.IsLongPressTriggered;
 		}
 	}
 
@@ -335,6 +392,11 @@ namespace GEngine
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 		MouseButtonPreessedCallback();
+		
+	}
+
+	void GLFWWindow::OnEndFrame()
+	{
 		UpdateKeyAndMouseStatesForQuery();
 	}
 
@@ -369,6 +431,6 @@ namespace GEngine
 	}
 	float GLFWWindow::GetTime() const
 	{
-		return (float)glfwGetTime();
+		return (float)glfwGetTime() * 1000;
 	}
 }

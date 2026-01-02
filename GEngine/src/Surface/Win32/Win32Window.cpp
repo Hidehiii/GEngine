@@ -195,6 +195,9 @@ namespace GEngine
 
 		}
 	}
+	void Win32Window::OnEndFrame()
+	{
+	}
 	float Win32Window::GetTime() const
 	{
 		return 0.0f;

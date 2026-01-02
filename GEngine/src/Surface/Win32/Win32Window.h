@@ -11,6 +11,7 @@ namespace GEngine
 		virtual ~Win32Window();
 
 		void OnUpdate() override;
+		void OnEndFrame() override;
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }

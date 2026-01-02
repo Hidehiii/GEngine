@@ -7,108 +7,58 @@ namespace GEngine
 {
 	bool GlfwInput::GetKeyPressed(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_PRESS;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsPressed;
 	}
 	bool GlfwInput::GetKeyUp(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_RELEASE && PlatformInput::s_KeyStatesForQuery[keycode].IsPressed;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsUp;
 	}
 	bool GlfwInput::GetKeyDown(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_PRESS && PlatformInput::s_KeyStatesForQuery[keycode].IsPressed == false;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 
 	inline bool GlfwInput::GetKeyLongPressed(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_PRESS &&
-			PlatformInput::s_KeyStatesForQuery[keycode].IsPressed &&
-			PlatformInput::s_KeyStatesForQuery[keycode].IsLongPressTriggered;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsLongPressed;
 	}
 
 	inline bool GlfwInput::GetKeyLongUp(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_RELEASE && 
-			PlatformInput::s_KeyStatesForQuery[keycode].IsPressed &&
-			PlatformInput::s_KeyStatesForQuery[keycode].IsLongPressTriggered;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsLongUp;
 	}
 
 	inline bool GlfwInput::GetKeyLongDown(KeyCode keycode)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int		key = KeyCodeToGLFW(keycode);
-		auto	state = glfwGetKey(window, key);
-		return state == GLFW_PRESS && 
-			PlatformInput::s_KeyStatesForQuery[keycode].IsLongPressTriggered == false && 
-			PlatformInput::s_KeyStatesForQuery[keycode].IsPressed &&
-			glfwGetTime() - PlatformInput::s_KeyStatesForQuery[keycode].PressStartTime >= Application::Get().GetConfig()->m_LongPressThresholdMs;
+		return PlatformInput::s_KeyStatesForQuery[keycode].IsLongDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 
 	bool GlfwInput::GetMouseButtonPressed(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_PRESS;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed;
 	}
 	bool GlfwInput::GetMouseButtonUp(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_RELEASE && PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsUp;
 	}
 	bool GlfwInput::GetMouseButtonDown(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_PRESS && PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed == false;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 
 	inline bool GlfwInput::GetMouseButtonLongPressed(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_PRESS &&
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed &&
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressTriggered;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressed;
 	}
 
 	inline bool GlfwInput::GetMouseButtonLongUp(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_RELEASE && 
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed &&
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressTriggered;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsLongUp;
 	}
 
 	inline bool GlfwInput::GetMouseButtonLongDown(MouseCode button)
 	{
-		auto	window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int     btn = MouseCodeToGLFW(button);
-		auto	state = glfwGetMouseButton(window, btn);
-		return state == GLFW_PRESS && 
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsLongPressTriggered == false && 
-			PlatformInput::s_MouseBtnStatesForQuery[button].IsPressed &&
-			glfwGetTime() - PlatformInput::s_MouseBtnStatesForQuery[button].PressStartTime >= Application::Get().GetConfig()->m_LongPressThresholdMs;
+		return PlatformInput::s_MouseBtnStatesForQuery[button].IsLongDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;;
 	}
 
 	Vector2 GlfwInput::GetMousePosition()

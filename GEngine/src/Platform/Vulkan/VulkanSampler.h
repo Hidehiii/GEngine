@@ -13,6 +13,13 @@ namespace GEngine
 
 		VkDescriptorImageInfo*			GetDescriptorImageInfo() { return &m_SamplerInfo; }
 		VkSampler						GetVulkanSampler() { return m_Sampler; }
+
+		virtual bool operator==(const Sampler& other) const override
+		{
+			auto otherVulkan = static_cast<const VulkanSampler&>(other);
+			return m_Specification == otherVulkan.m_Specification &&
+				m_Sampler == otherVulkan.m_Sampler;
+		}
 	private:
 		VkSampler						m_Sampler = nullptr;
 		VkDescriptorImageInfo			m_SamplerInfo = {};

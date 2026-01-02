@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-	std::vector<Ref<Sampler>> Sampler::s_Samplers;
+	std::unordered_map<SamplerSpecification, Ref<Sampler>> Sampler::s_Samplers;
 
 	Ref<Sampler> Sampler::GetSampler(const SamplerSpecification& spec)
 	{
@@ -21,7 +21,7 @@ namespace GEngine
 			if (sampler == nullptr)
 			{
 				sampler = CreateRef<OpenGLSampler>(spec);
-				s_Samplers.push_back(sampler);
+				s_Samplers[spec] = (sampler);
 			}
 			return sampler;
 		}
@@ -30,7 +30,7 @@ namespace GEngine
 			if (sampler == nullptr)
 			{
 				sampler = CreateRef<VulkanSampler>(spec);
-				s_Samplers.push_back(sampler);
+				s_Samplers[spec] = (sampler);
 			}
 			return sampler;
 		}
@@ -39,15 +39,15 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
+	Ref<Sampler> Sampler::GetDefaultSampler()
+	{
+		SamplerSpecification spec{};
+		return GetSampler(spec);
+	}
 	Ref<Sampler> Sampler::Create(const SamplerSpecification& spec)
 	{
-		for (auto sampler : s_Samplers)
-		{
-			if (sampler->GetSpecification() == spec)
-			{
-				return sampler;
-			}
-		}
+		if(s_Samplers.find(spec) != s_Samplers.end())
+			return s_Samplers[spec];
 		return nullptr;
 	}
 }

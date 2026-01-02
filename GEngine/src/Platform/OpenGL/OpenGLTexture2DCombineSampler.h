@@ -16,6 +16,12 @@ namespace GEngine
 		virtual Ref<Texture2D>	GetTexture() override { return m_Texture; }
 		virtual void			SetSampler(const Ref<Sampler>& sampler) override;
 		virtual Ref<Sampler>	GetSampler() override { return m_Sampler; }
+
+		virtual bool operator==(const Texture2DCombineSampler& other) const override
+		{
+			auto otherOpenGL = static_cast<const OpenGLTexture2DCombineSampler&>(other);
+			return (*m_Texture == *otherOpenGL.m_Texture) && (*m_Sampler == *otherOpenGL.m_Sampler);
+		}
 	private:
 		Ref<OpenGLTexture2D> m_Texture;
 		Ref<OpenGLSampler>   m_Sampler;

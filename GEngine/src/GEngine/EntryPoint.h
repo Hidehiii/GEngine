@@ -15,7 +15,7 @@
 		return 0;
 	}
 #ifdef GE_PLATFORM_WINDOWS
-	int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+	int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nShowCmd)
 	{
 		auto app = GEngine::CreateApplication({ __argc, __argv });
 		app->Run();

@@ -5,6 +5,7 @@
 #include "tools/Serializer.h"
 #include "Utils/GUIUtils.h"
 #include "GEngine/Physics/3D/Physics3D.h"
+#include "GEngine/Core/Input.h"
 
 
 namespace GEngine
@@ -43,7 +44,7 @@ namespace GEngine
 
 		m_GraphicsPresent = GraphicsPresent::Create();
 
-
+		Input::Init();
 		Graphics::Init();
 		ScriptEngine::Init();
 		Physics3D::Init();
@@ -105,6 +106,7 @@ namespace GEngine
 				}
 			}
 			m_Window->OnUpdate();
+			m_Window->OnEndFrame();
 			Graphics::FrameMove();
 		}
 	}
@@ -115,9 +117,8 @@ namespace GEngine
 	}
 	void Application::OnEvent(Event& e)
 	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowResize));
+		EventDispatcher::Dispatch<WindowCloseEvent>(e, GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowClose));
+		EventDispatcher::Dispatch<WindowResizeEvent>(e, GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnWindowResize));
 
 		for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{

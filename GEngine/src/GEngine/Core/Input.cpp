@@ -8,8 +8,8 @@ namespace GEngine
 	PlatformInput* Input::s_Instance = nullptr;
 	std::unordered_map<KeyCode, KeyStateInfo> PlatformInput::s_KeyStates;
 	std::unordered_map<MouseCode, MouseBtnStateInfo> PlatformInput::s_MouseBtnStates;
-	std::unordered_map<KeyCode, KeyStateInfo> PlatformInput::s_KeyStatesForQuery;
-	std::unordered_map<MouseCode, MouseBtnStateInfo> PlatformInput::s_MouseBtnStatesForQuery;
+	std::unordered_map<KeyCode, KeyStateInfoForQuery> PlatformInput::s_KeyStatesForQuery;
+	std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> PlatformInput::s_MouseBtnStatesForQuery;
 	void Input::Init()
 	{
 		switch (GraphicsAPI::GetAPI())

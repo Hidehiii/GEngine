@@ -7,6 +7,7 @@
 #include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLFrameBuffer.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
+#include "Platform/Vulkan/VulkanSampler.h"
 
 namespace GEngine
 {
@@ -36,7 +37,7 @@ namespace GEngine
 					return s_VulkanTextureID.at(i);
 				}
 			}
-			VkDescriptorSet dst = ImGui_ImplVulkan_AddTexture(std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetSampler(),
+			VkDescriptorSet dst = ImGui_ImplVulkan_AddTexture(std::dynamic_pointer_cast<VulkanSampler>(Sampler::GetDefaultSampler())->GetVulkanSampler(),
 				std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImageView(),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			s_VulkanTexture2DUsed.push_back(texture);

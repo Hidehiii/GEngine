@@ -16,22 +16,22 @@ namespace GEngine
 		MOUSE_BUTTON_5,
 		MOUSE_BUTTON_6,
 		MOUSE_BUTTON_7,
-		MOUSE_BUTTON_LAST,
-		MOUSE_BUTTON_LEFT,
-		MOUSE_BUTTON_RIGHT,
-		MOUSE_BUTTON_MIDDLE
+		MOUSE_BUTTON_LAST = MOUSE_BUTTON_7,
+		MOUSE_BUTTON_LEFT = MOUSE_BUTTON_0,
+		MOUSE_BUTTON_RIGHT = MOUSE_BUTTON_1,
+		MOUSE_BUTTON_MIDDLE = MOUSE_BUTTON_2
 	};
 
 	static std::unordered_map<uint32_t, std::string> MouseCodeString
 	{
-		{ MOUSE_BUTTON_0       ,         "MOUSE_BUTTON_1"	   },
-		{ MOUSE_BUTTON_1       ,         "MOUSE_BUTTON_2"	   },
-		{ MOUSE_BUTTON_2       ,         "MOUSE_BUTTON_3"	   },
-		{ MOUSE_BUTTON_3       ,         "MOUSE_BUTTON_4"	   },
-		{ MOUSE_BUTTON_4       ,         "MOUSE_BUTTON_5"	   },
-		{ MOUSE_BUTTON_5       ,         "MOUSE_BUTTON_6"	   },
-		{ MOUSE_BUTTON_6       ,         "MOUSE_BUTTON_7"	   },
-		{ MOUSE_BUTTON_7       ,         "MOUSE_BUTTON_8"	   },
+		{ MOUSE_BUTTON_0       ,         "MOUSE_BUTTON_0"	   },
+		{ MOUSE_BUTTON_1       ,         "MOUSE_BUTTON_1"	   },
+		{ MOUSE_BUTTON_2       ,         "MOUSE_BUTTON_2"	   },
+		{ MOUSE_BUTTON_3       ,         "MOUSE_BUTTON_3"	   },
+		{ MOUSE_BUTTON_4       ,         "MOUSE_BUTTON_4"	   },
+		{ MOUSE_BUTTON_5       ,         "MOUSE_BUTTON_5"	   },
+		{ MOUSE_BUTTON_6       ,         "MOUSE_BUTTON_6"	   },
+		{ MOUSE_BUTTON_7       ,         "MOUSE_BUTTON_7"	   },
 		{ MOUSE_BUTTON_LAST    ,         "MOUSE_BUTTON_LAST"	   },
 		{ MOUSE_BUTTON_LEFT    ,         "MOUSE_BUTTON_LEFT"	   },
 		{ MOUSE_BUTTON_RIGHT   ,         "MOUSE_BUTTON_RIGHT"   },
@@ -74,7 +74,7 @@ namespace GEngine
 		{ MOUSE_BUTTON_MIDDLE,  GLFW_MOUSE_BUTTON_MIDDLE }
 	};
 
-	uint32_t MouseCodeToGLFW(MouseCode mouseCode)
+	inline uint32_t MouseCodeToGLFW(MouseCode mouseCode)
 	{
 		return MouseCodeToGLFWValue[mouseCode];
 	}

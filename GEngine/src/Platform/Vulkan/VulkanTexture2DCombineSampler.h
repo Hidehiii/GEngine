@@ -19,6 +19,12 @@ namespace GEngine
 
 		VkDescriptorImageInfo*	GetDescriptorImageInfo() { return &m_ImageInfo; }
 
+		virtual bool operator==(const Texture2DCombineSampler& other) const override
+		{
+			auto otherVulkan = static_cast<const VulkanTexture2DCombineSampler&>(other);
+			return (*m_Texture == *otherVulkan.m_Texture) && (*m_Sampler == *otherVulkan.m_Sampler);
+		}
+
 	private:
 		Ref<VulkanTexture2D>	m_Texture;
 		Ref<VulkanSampler>		m_Sampler;

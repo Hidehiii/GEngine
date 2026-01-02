@@ -103,6 +103,7 @@ namespace GEngine
 		}
 	};
 
+
 	enum BlendFactor
 	{
 		BLEND_FACTOR_SRC_ALPHA				= 1,
@@ -418,5 +419,23 @@ namespace GEngine
 		RenderState										State;
 		std::vector<ShaderReflectionCBufferInfo>		CBuffers;
 		std::vector<ShaderReflectionResourceInfo>		Resources;
+	};
+}
+
+namespace std
+{
+	template<>
+	struct hash<GEngine::SamplerSpecification>
+	{
+		size_t operator()(const GEngine::SamplerSpecification& key) const
+		{
+			size_t h1 = hash<int>()((int)key.MagFilter);
+			size_t h2 = hash<int>()((int)key.MinFilter);
+			size_t h3 = hash<int>()((int)key.MipmapFilter);
+			size_t h4 = hash<int>()((int)key.WrapU);
+			size_t h5 = hash<int>()((int)key.WrapV);
+			size_t h6 = hash<int>()((int)key.WrapW);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1) ^ (h6 << 1));
+		}
 	};
 }
