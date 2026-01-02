@@ -9,40 +9,79 @@ namespace GEngine
 	class GENGINE_API KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+		inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
-		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_KEYBOARD | EVENT_CATEGORY_INPUT)
+		DECLARE_EVENT_CLASS_CATEGORY(EVENT_CATEGORY_KEYBOARD | EVENT_CATEGORY_INPUT)
 	protected:
-		KeyEvent(int keycode)
+		KeyEvent(KeyCode keycode)
 			: m_KeyCode(keycode) {}
 
-		int m_KeyCode;
+		KeyCode m_KeyCode;
 	};
 
 	class GENGINE_API KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int keycode, bool isRepeat = false)
-			: KeyEvent(keycode), m_IsRepeat(isRepeat) {}
+		KeyPressedEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
 
-		inline bool IsRepeat() const { return m_IsRepeat; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << KeyCodeString[m_KeyCode] << " ( repeats : " << m_IsRepeat << ")";
+			ss << "KeyPressedEvent: " << KeyCodeString[m_KeyCode];
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyPressed)
-	private:
-		bool m_IsRepeat;
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_PRESSED)
 	};
 
-	class GENGINE_API KeyReleasedEvent : public KeyEvent
+	class GENGINE_API KeyLongPressedEvent : public KeyEvent
+	{
+		public:
+		KeyLongPressedEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyLongPressedEvent: " << KeyCodeString[m_KeyCode];
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVNET_TYPE_KEY_LONG_PRESSED)
+	};
+
+	class GENGINE_API KeyLongUpEvent : public KeyEvent
+	{
+		public:
+		KeyLongUpEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyLongUpEvent: " << KeyCodeString[m_KeyCode];
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_LONG_UP)
+	};
+
+	class GENGINE_API KeyLongDownEvent : public KeyEvent
+	{
+		public:
+		KeyLongDownEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyLongDownEvent: " << KeyCodeString[m_KeyCode];
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_LONG_DOWN)
+	};
+
+	class GENGINE_API KeyUpEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyUpEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		std::string ToString() const override
@@ -52,13 +91,41 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyReleased)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_UP)
+	};
+
+	class GENGINE_API KeyDownEvent : public KeyEvent
+	{
+		public:
+		KeyDownEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyDownEvent: " << KeyCodeString[m_KeyCode];
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_DOWN)
+	};
+
+	class GENGINE_API KeyClickEvent : public KeyEvent
+	{
+		public:
+		KeyClickEvent(KeyCode keycode)
+			: KeyEvent(keycode) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyClickEvent: " << KeyCodeString[m_KeyCode];
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_CLICK)
 	};
 
 	class GENGINE_API KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent(int keycode)
+		KeyTypedEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -70,7 +137,7 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyTyped)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_KEY_TYPED)
 	private:
 		int m_RepeatCount;
 	};

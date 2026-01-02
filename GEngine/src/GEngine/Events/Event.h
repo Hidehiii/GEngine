@@ -9,13 +9,38 @@ namespace GEngine
 	// Events in GEngine are currently blocking, meaning when an event occurs it immediately gets dispatched and must be dealt with right then and there.
 	// For the future, a better strategy might be to buffer events in an event bus and process them during the "event" part of the update stage.
 
-	enum class EventType
+	enum EventType
 	{
-		None = 0,
-		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased, KeyTyped,
-		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+		EVENT_TYPE_NONE,
+
+		EVENT_TYPE_WINDOW_CLOSE,
+		EVENT_TYPE_WINDOW_RESIZE,
+		EVENT_TYPE_WINDOW_FOCUS,
+		EVENT_TYPE_WINDOW_LOST_FOCUS,
+		EVENT_TYPE_WINDOW_MOVED,
+
+		EVENT_TYPE_APP_TICK,
+		EVENT_TYPE_APP_UPDATE,
+		EVENT_TYPE_APP_RENDER,
+
+		EVENT_TYPE_KEY_PRESSED,
+		EVNET_TYPE_KEY_LONG_PRESSED,
+		EVENT_TYPE_KEY_LONG_DOWN,
+		EVENT_TYPE_KEY_LONG_UP,
+		EVENT_TYPE_KEY_UP,
+		EVENT_TYPE_KEY_DOWN,
+		EVENT_TYPE_KEY_CLICK,
+		EVENT_TYPE_KEY_TYPED,
+
+		EVENT_TYPE_MOUSE_BUTTON_PRESSED,
+		EVENT_TYPE_MOUSE_BUTTON_LONG_PRESSED,
+		EVENT_TYPE_MOUSE_BUTTON_LONG_DOWN,
+		EVENT_TYPE_MOUSE_BUTTON_LONG_UP,
+		EVENT_TYPE_MOUSE_BUTTON_UP,
+		EVENT_TYPE_MOUSE_BUTTON_DOWN,
+		EVENT_TYPE_MOUSE_BUTTON_CLICK,
+		EVENT_TYPE_MOUSE_MOVED,
+		EVENT_TYPE_MOUSE_SCROLLED
 	};
 
 	enum EventCategory
@@ -28,11 +53,11 @@ namespace GEngine
 		EVENT_CATEGORY_MOUSE_BUTTON = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
+#define DECLARE_EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
 							   virtual EventType GetEventType() const override { return GetStaticType(); }\
 							   virtual const char* GetName() const override { return #type; }
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+#define DECLARE_EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
 	class GENGINE_API Event
 	{
@@ -57,21 +82,17 @@ namespace GEngine
 	class EventDispatcher
 	{
 	public:
-		EventDispatcher(Event& event)
-			: m_Event(event) {}
 
 		template<typename T, typename F>
-		bool Dispatch(const F& func)
+		static bool Dispatch(Event& event, const F& func)
 		{
-			if (m_Event.GetEventType() == T::GetStaticType())
+			if (event.GetEventType() == T::GetStaticType())
 			{
-				m_Event.Handled = func(static_cast<T&>(m_Event));
+				event.Handled = func(static_cast<T&>(event));
 				return true;
 			}
 			return false;
 		}
-	private:
-		Event& m_Event;
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, const Event& e)

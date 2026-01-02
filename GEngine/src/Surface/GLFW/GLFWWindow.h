@@ -35,6 +35,10 @@ namespace GEngine
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
+
+		virtual void MouseButtonPreessedCallback();
+
+		virtual void UpdateKeyAndMouseStatesForQuery();
 	private:
 		GLFWwindow* m_Window;
 		GraphicsContext* m_Context;

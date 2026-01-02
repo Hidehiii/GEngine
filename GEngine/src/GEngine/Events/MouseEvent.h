@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.h"
-
+#include  "GEngine/Core/MouseButtonCodes.h"
 
 namespace GEngine
 {
@@ -21,8 +21,8 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseMoved)
-		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_MOVED)
+		DECLARE_EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
 	private:
 		float m_MouseX, m_MouseY;
 	};
@@ -43,8 +43,8 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseScrolled)
-		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_SCROLLED)
+		DECLARE_EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
 	private:
 		float m_XOffset, m_YOffset;
 	};
@@ -52,20 +52,20 @@ namespace GEngine
 	class GENGINE_API MouseButtonEvent : public Event
 	{
 	public:
-		inline int GetMouseButton() const { return m_Button; }
+		inline MouseCode GetMouseButton() const { return m_Button; }
 
-		EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
+		DECLARE_EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
 	protected:
-		MouseButtonEvent(int button)
+		MouseButtonEvent(MouseCode button)
 			: m_Button(button) {}
 
-		int m_Button;
+		MouseCode m_Button;
 	};
 
 	class GENGINE_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int button)
+		MouseButtonPressedEvent(MouseCode button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
@@ -75,13 +75,55 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseButtonPressed)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_PRESSED)
 	};
 
-	class GENGINE_API MouseButtonReleasedEvent : public MouseButtonEvent
+	class GENGINE_API MouseButtonLongPressedEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonLongPressedEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonLongPressedEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_PRESSED)
+	};
+
+	class GENGINE_API MouseButtonLongDownEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonLongDownEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonLongDownEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_DOWN)
+	};
+
+	class GENGINE_API MouseButtonLongUpEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonLongUpEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonLongUpEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_UP)
+	};
+
+	class GENGINE_API MouseButtonUpEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int button)
+		MouseButtonUpEvent(MouseCode button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
@@ -91,6 +133,34 @@ namespace GEngine
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseButtonReleased)
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_UP)
+	};
+
+	class GENGINE_API MouseButtonDownEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonDownEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonDownEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_DOWN)
+	};
+
+	class GENGINE_API MouseButtonClickEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonClickEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonClickEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_CLICK)
 	};
 }

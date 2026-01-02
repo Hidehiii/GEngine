@@ -2,380 +2,257 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
-// From GE3.h
-/* Printable keys */
-#define GE_KEY_SPACE              32
-#define GE_KEY_APOSTROPHE         39  /* ' */
-#define GE_KEY_COMMA              44  /* , */
-#define GE_KEY_MINUS              45  /* - */
-#define GE_KEY_PERIOD             46  /* . */
-#define GE_KEY_SLASH              47  /* / */
-#define GE_KEY_0                  48
-#define GE_KEY_1                  49
-#define GE_KEY_2                  50
-#define GE_KEY_3                  51
-#define GE_KEY_4                  52
-#define GE_KEY_5                  53
-#define GE_KEY_6                  54
-#define GE_KEY_7                  55
-#define GE_KEY_8                  56
-#define GE_KEY_9                  57
-#define GE_KEY_SEMICOLON          59  /* ; */
-#define GE_KEY_EQUAL              61  /* = */
-#define GE_KEY_A                  65
-#define GE_KEY_B                  66
-#define GE_KEY_C                  67
-#define GE_KEY_D                  68
-#define GE_KEY_E                  69
-#define GE_KEY_F                  70
-#define GE_KEY_G                  71
-#define GE_KEY_H                  72
-#define GE_KEY_I                  73
-#define GE_KEY_J                  74
-#define GE_KEY_K                  75
-#define GE_KEY_L                  76
-#define GE_KEY_M                  77
-#define GE_KEY_N                  78
-#define GE_KEY_O                  79
-#define GE_KEY_P                  80
-#define GE_KEY_Q                  81
-#define GE_KEY_R                  82
-#define GE_KEY_S                  83
-#define GE_KEY_T                  84
-#define GE_KEY_U                  85
-#define GE_KEY_V                  86
-#define GE_KEY_W                  87
-#define GE_KEY_X                  88
-#define GE_KEY_Y                  89
-#define GE_KEY_Z                  90
-#define GE_KEY_LEFT_BRACKET       91  /* [ */
-#define GE_KEY_BACKSLASH          92  /* \ */
-#define GE_KEY_RIGHT_BRACKET      93  /* ] */
-#define GE_KEY_GRAVE_ACCENT       96  /* ` */
-#define GE_KEY_WORLD_1            161 /* non-US #1 */
-#define GE_KEY_WORLD_2            162 /* non-US #2 */
 
-/* Function keys */
-#define GE_KEY_ESCAPE             256
-#define GE_KEY_ENTER              257
-#define GE_KEY_TAB                258
-#define GE_KEY_BACKSPACE          259
-#define GE_KEY_INSERT             260
-#define GE_KEY_DELETE             261
-#define GE_KEY_RIGHT              262
-#define GE_KEY_LEFT               263
-#define GE_KEY_DOWN               264
-#define GE_KEY_UP                 265
-#define GE_KEY_PAGE_UP            266
-#define GE_KEY_PAGE_DOWN          267
-#define GE_KEY_HOME               268
-#define GE_KEY_END                269
-#define GE_KEY_CAPS_LOCK          280
-#define GE_KEY_SCROLL_LOCK        281
-#define GE_KEY_NUM_LOCK           282
-#define GE_KEY_PRINT_SCREEN       283
-#define GE_KEY_PAUSE              284
-#define GE_KEY_F1                 290
-#define GE_KEY_F2                 291
-#define GE_KEY_F3                 292
-#define GE_KEY_F4                 293
-#define GE_KEY_F5                 294
-#define GE_KEY_F6                 295
-#define GE_KEY_F7                 296
-#define GE_KEY_F8                 297
-#define GE_KEY_F9                 298
-#define GE_KEY_F10                299
-#define GE_KEY_F11                300
-#define GE_KEY_F12                301
-#define GE_KEY_F13                302
-#define GE_KEY_F14                303
-#define GE_KEY_F15                304
-#define GE_KEY_F16                305
-#define GE_KEY_F17                306
-#define GE_KEY_F18                307
-#define GE_KEY_F19                308
-#define GE_KEY_F20                309
-#define GE_KEY_F21                310
-#define GE_KEY_F22                311
-#define GE_KEY_F23                312
-#define GE_KEY_F24                313
-#define GE_KEY_F25                314
-#define GE_KEY_KP_0               320
-#define GE_KEY_KP_1               321
-#define GE_KEY_KP_2               322
-#define GE_KEY_KP_3               323
-#define GE_KEY_KP_4               324
-#define GE_KEY_KP_5               325
-#define GE_KEY_KP_6               326
-#define GE_KEY_KP_7               327
-#define GE_KEY_KP_8               328
-#define GE_KEY_KP_9               329
-#define GE_KEY_KP_DECIMAL         330
-#define GE_KEY_KP_DIVIDE          331
-#define GE_KEY_KP_MULTIPLY        332
-#define GE_KEY_KP_SUBTRACT        333
-#define GE_KEY_KP_ADD             334
-#define GE_KEY_KP_ENTER           335
-#define GE_KEY_KP_EQUAL           336
-#define GE_KEY_LEFT_SHIFT         340
-#define GE_KEY_LEFT_CONTROL       341
-#define GE_KEY_LEFT_ALT           342
-#define GE_KEY_LEFT_SUPER         343
-#define GE_KEY_RIGHT_SHIFT        344
-#define GE_KEY_RIGHT_CONTROL      345
-#define GE_KEY_RIGHT_ALT          346
-#define GE_KEY_RIGHT_SUPER        347
-#define GE_KEY_MENU               348
 
 
 namespace GEngine
 {
 	typedef enum KeyCode : int32_t
 	{
-		Space                 =     GE_KEY_SPACE,
-		Apostrophe            =     GE_KEY_APOSTROPHE,
-		Comma                 =     GE_KEY_COMMA,
-		Minus                 =     GE_KEY_MINUS,
-		Period                =     GE_KEY_PERIOD,
-		Slash                 =     GE_KEY_SLASH,
-		D0                    =     GE_KEY_0,
-		D1                    =     GE_KEY_1,		
-		D2                    =     GE_KEY_2,
-		D3                    =     GE_KEY_3,
-		D4                    =     GE_KEY_4,
-		D5                    =     GE_KEY_5,
-		D6                    =     GE_KEY_6,
-		D7                    =     GE_KEY_7,
-		D8                    =     GE_KEY_8,
-		D9                    =     GE_KEY_9,
-		Semicolon             =     GE_KEY_SEMICOLON,
-		Equal                 =     GE_KEY_EQUAL,
-		A                     =     GE_KEY_A,
-		B                     =     GE_KEY_B,
-		C                     =     GE_KEY_C,
-		D                     =     GE_KEY_D,
-		E                     =     GE_KEY_E,
-		F                     =     GE_KEY_F,
-		G                     =     GE_KEY_G,
-		H                     =     GE_KEY_H,
-		I                     =     GE_KEY_I,
-		J                     =     GE_KEY_J,
-		K                     =     GE_KEY_K,
-		L                     =     GE_KEY_L,
-		M                     =     GE_KEY_M,
-		N                     =     GE_KEY_N,
-		O                     =     GE_KEY_O,
-		P                     =     GE_KEY_P,
-		Q                     =     GE_KEY_Q,
-		R                     =     GE_KEY_R,
-		S                     =     GE_KEY_S,
-		T                     =     GE_KEY_T,
-		U                     =     GE_KEY_U,
-		V                     =     GE_KEY_V,
-		W                     =     GE_KEY_W,
-		X                     =     GE_KEY_X,
-		Y                     =     GE_KEY_Y,
-		Z                     =     GE_KEY_Z,
-		LeftBracket           =     GE_KEY_LEFT_BRACKET,
-		Backslash             =     GE_KEY_BACKSLASH,
-		RightBracket          =     GE_KEY_RIGHT_BRACKET,
-		GraveAccent           =     GE_KEY_GRAVE_ACCENT,
-		World1                =     GE_KEY_WORLD_1,
-		World2                =     GE_KEY_WORLD_2,
-		Escape                =     GE_KEY_ESCAPE,
-		Enter                 =     GE_KEY_ENTER,
-		Tab                   =     GE_KEY_TAB,
-		Backspace             =     GE_KEY_BACKSPACE,
-		Insert                =     GE_KEY_INSERT,
-		Delete                =     GE_KEY_DELETE,
-		Right                 =     GE_KEY_RIGHT,
-		Left                  =     GE_KEY_LEFT,
-		Down                  =     GE_KEY_DOWN,
-		Up                    =     GE_KEY_UP,
-		PageUp                =     GE_KEY_PAGE_UP,
-		PageDown              =     GE_KEY_PAGE_DOWN,
-		Home                  =     GE_KEY_HOME,
-		End                   =     GE_KEY_END,
-		CapsLock              =     GE_KEY_CAPS_LOCK,
-		ScrollLock            =     GE_KEY_SCROLL_LOCK,
-		NumLock               =     GE_KEY_NUM_LOCK,
-		PrintScreen           =     GE_KEY_PRINT_SCREEN,
-		Pause                 =     GE_KEY_PAUSE,
-		F1                    =     GE_KEY_F1,
-		F2                    =     GE_KEY_F2,
-		F3                    =     GE_KEY_F3,
-		F4                    =     GE_KEY_F4,
-		F5                    =     GE_KEY_F5,	
-		F6                    =     GE_KEY_F6,
-		F7                    =     GE_KEY_F7,	
-		F8                    =     GE_KEY_F8,	
-		F9                    =     GE_KEY_F9,
-		F10                   =     GE_KEY_F10,
-		F11                   =     GE_KEY_F11,	
-		F12                   =     GE_KEY_F12,
-		F13                   =     GE_KEY_F13,
-		F14                   =     GE_KEY_F14,
-		F15                   =     GE_KEY_F15,
-		F16                   =     GE_KEY_F16,
-		F17                   =     GE_KEY_F17,
-		F18                   =     GE_KEY_F18,
-		F19                   =     GE_KEY_F19,
-		F20                   =     GE_KEY_F20,
-		F21                   =     GE_KEY_F21,
-		F22                   =     GE_KEY_F22,
-		F23                   =     GE_KEY_F23,
-		F24                   =     GE_KEY_F24,
-		F25                   =     GE_KEY_F25,
-		KP0                   =     GE_KEY_KP_0,
-		KP1                   =     GE_KEY_KP_1,
-		KP2                   =     GE_KEY_KP_2,
-		KP3                   =     GE_KEY_KP_3,
-		KP4                   =     GE_KEY_KP_4,
-		KP5                   =     GE_KEY_KP_5,
-		KP6                   =     GE_KEY_KP_6,
-		KP7                   =     GE_KEY_KP_7,
-		KP8                   =     GE_KEY_KP_8,
-		KP9                   =     GE_KEY_KP_9,
-		KPDecimal             =     GE_KEY_KP_DECIMAL,
-		KPDivide              =     GE_KEY_KP_DIVIDE,
-		KPMultiply            =     GE_KEY_KP_MULTIPLY,
-		KPSubtract            =     GE_KEY_KP_SUBTRACT,
-		KPAdd                 =     GE_KEY_KP_ADD,
-		KPEnter               =     GE_KEY_KP_ENTER,
-		KPEqual               =     GE_KEY_KP_EQUAL,
-		LeftShift             =     GE_KEY_LEFT_SHIFT,
-		LeftControl           =     GE_KEY_LEFT_CONTROL,
-		LeftAlt               =     GE_KEY_LEFT_ALT,	
-		LeftSuper             =     GE_KEY_LEFT_SUPER,
-		RightShift            =     GE_KEY_RIGHT_SHIFT,
-		RightControl          =     GE_KEY_RIGHT_CONTROL,
-		RightAlt              =     GE_KEY_RIGHT_ALT,
-		RightSuper            =     GE_KEY_RIGHT_SUPER,
-		Menu                  =     GE_KEY_MENU
+		KEY_SPACE,
+		KEY_APOSTROPHE,
+		KEY_COMMA,
+		KEY_MINUS,
+		KEY_PERIOD,
+		KEY_SLASH,
+		KEY_D0,
+		KEY_D1,
+		KEY_D2,
+		KEY_D3,
+		KEY_D4,
+		KEY_D5,
+		KEY_D6,
+		KEY_D7,
+		KEY_D8,
+		KEY_D9,
+		KEY_SEMICOLON,
+		KEY_EQUAL,
+		KEY_A,
+		KEY_B,
+		KEY_C,
+		KEY_D,
+		KEY_E,
+		KEY_F,
+		KEY_G,
+		KEY_H,
+		KEY_I,
+		KEY_J,
+		KEY_K,
+		KEY_L,
+		KEY_M,
+		KEY_N,
+		KEY_O,
+		KEY_P,
+		KEY_Q,
+		KEY_R,
+		KEY_S,
+		KEY_T,
+		KEY_U,
+		KEY_V,
+		KEY_W,
+		KEY_X,
+		KEY_Y,
+		KEY_Z,
+		KEY_LEFT_BRACKET,
+		KEY_BACKSLASH,
+		KEY_RIGHT_BRACKET,
+		KEY_GRAVE_ACCENT,
+		KEY_WORLD_1,
+		KEY_WORLD_2,
+		KEY_ESCAPE,
+		KEY_ENTER,
+		KEY_TAB,
+		KEY_BACKSPACE,
+		KEY_INSERT,
+		KEY_DELETE,
+		KEY_RIGHT,
+		KEY_LEFT,
+		KEY_DOWN,
+		KEY_UP,
+		KEY_PAGE_UP,
+		KEY_PAGE_DOWN,
+		KEY_HOME,
+		KEY_END,
+		KEY_CAPS_LOCK,
+		KEY_SCROLL_LOCK,
+		KEY_NUM_LOCK,
+		KEY_PRINT_SCREEN,
+		KEY_PAUSE,
+		KEY_F1,
+		KEY_F2,
+		KEY_F3,
+		KEY_F4,
+		KEY_F5,
+		KEY_F6,
+		KEY_F7,
+		KEY_F8,
+		KEY_F9,
+		KEY_F10,
+		KEY_F11,
+		KEY_F12,
+		KEY_F13,
+		KEY_F14,
+		KEY_F15,
+		KEY_F16,
+		KEY_F17,
+		KEY_F18,
+		KEY_F19,
+		KEY_F20,
+		KEY_F21,
+		KEY_F22,
+		KEY_F23,
+		KEY_F24,
+		KEY_F25,
+		KEY_KP_0,
+		KEY_KP_1,
+		KEY_KP_2,
+		KEY_KP_3,
+		KEY_KP_4,
+		KEY_KP_5,
+		KEY_KP_6,
+		KEY_KP_7,
+		KEY_KP_8,
+		KEY_KP_9,
+		KEY_KP_DECIMAL,
+		KEY_KP_DIVIDE,
+		KEY_KP_MULTIPLY,
+		KEY_KP_SUBTRACT,
+		KEY_KP_ADD,
+		KEY_KP_ENTER,
+		KEY_KP_EQUAL,
+		KEY_LEFT_SHIFT,
+		KEY_LEFT_CONTROL,
+		KEY_LEFT_ALT,
+		KEY_LEFT_SUPER,
+		KEY_RIGHT_SHIFT,
+		KEY_RIGHT_CONTROL,
+		KEY_RIGHT_ALT,
+		KEY_RIGHT_SUPER,
+		KEY_MENU
 	};
 	
 	static std::unordered_map<uint32_t, std::string> KeyCodeString
 	{
-		{ Space                 ,     "GE_KEY_SPACE"			},
-		{ Apostrophe            ,     "GE_KEY_APOSTROPHE"		},
-		{ Comma                 ,     "GE_KEY_COMMA"			},
-		{ Minus                 ,     "GE_KEY_MINUS"			},
-		{ Period                ,     "GE_KEY_PERIOD"			},
-		{ Slash                 ,     "GE_KEY_SLASH"			},
-		{ D0                    ,     "GE_KEY_0"				},
-		{ D1                    ,     "GE_KEY_1"				},
-		{ D2                    ,     "GE_KEY_2"				},
-		{ D3                    ,     "GE_KEY_3"				},
-		{ D4                    ,     "GE_KEY_4"				},
-		{ D5                    ,     "GE_KEY_5"				},
-		{ D6                    ,     "GE_KEY_6"				},
-		{ D7                    ,     "GE_KEY_7"				},
-		{ D8                    ,     "GE_KEY_8"				},
-		{ D9                    ,     "GE_KEY_9"				},
-		{ Semicolon             ,     "GE_KEY_SEMICOLON"		},
-		{ Equal                 ,     "GE_KEY_EQUAL"			},
-		{ A                     ,     "GE_KEY_A"				},
-		{ B                     ,     "GE_KEY_B"				},
-		{ C                     ,     "GE_KEY_C"				},
-		{ D                     ,     "GE_KEY_D"				},
-		{ E                     ,     "GE_KEY_E"				},
-		{ F                     ,     "GE_KEY_F"				},
-		{ G                     ,     "GE_KEY_G"				},
-		{ H                     ,     "GE_KEY_H"				},
-		{ I                     ,     "GE_KEY_I"				},
-		{ J                     ,     "GE_KEY_J"				},
-		{ K                     ,     "GE_KEY_K"				},
-		{ L                     ,     "GE_KEY_L"				},
-		{ M                     ,     "GE_KEY_M"				},
-		{ N                     ,     "GE_KEY_N"				},
-		{ O                     ,     "GE_KEY_O"				},
-		{ P                     ,     "GE_KEY_P"				},
-		{ Q                     ,     "GE_KEY_Q"				},
-		{ R                     ,     "GE_KEY_R"				},
-		{ S                     ,     "GE_KEY_S"				},
-		{ T                     ,     "GE_KEY_T"				},
-		{ U                     ,     "GE_KEY_U"				},
-		{ V                     ,     "GE_KEY_V"				},
-		{ W                     ,     "GE_KEY_W"				},
-		{ X                     ,     "GE_KEY_X"				},
-		{ Y                     ,     "GE_KEY_Y"				},
-		{ Z                     ,     "GE_KEY_Z"				},
-		{ LeftBracket           ,     "GE_KEY_LEFT_BRACKET"		},
-		{ Backslash             ,     "GE_KEY_BACKSLASH"		},
-		{ RightBracket          ,     "GE_KEY_RIGHT_BRACKET"	},
-		{ GraveAccent           ,     "GE_KEY_GRAVE_ACCENT"		},
-		{ World1                ,     "GE_KEY_WORLD_1"			},
-		{ World2                ,     "GE_KEY_WORLD_2"			},
-		{ Escape                ,     "GE_KEY_ESCAPE"			},
-		{ Enter                 ,     "GE_KEY_ENTER"			},
-		{ Tab                   ,     "GE_KEY_TAB"				},
-		{ Backspace             ,     "GE_KEY_BACKSPACE"		},
-		{ Insert                ,     "GE_KEY_INSERT"			},
-		{ Delete                ,     "GE_KEY_DELETE"			},
-		{ Right                 ,     "GE_KEY_RIGHT"			},
-		{ Left                  ,     "GE_KEY_LEFT"				},
-		{ Down                  ,     "GE_KEY_DOWN"				},
-		{ Up                    ,     "GE_KEY_UP"				},
-		{ PageUp                ,     "GE_KEY_PAGE_UP"			},
-		{ PageDown              ,     "GE_KEY_PAGE_DOWN"		},
-		{ Home                  ,     "GE_KEY_HOME"				},
-		{ End                   ,     "GE_KEY_END"				},
-		{ CapsLock              ,     "GE_KEY_CAPS_LOCK"		},
-		{ ScrollLock            ,     "GE_KEY_SCROLL_LOCK"		},
-		{ NumLock               ,     "GE_KEY_NUM_LOCK"			},
-		{ PrintScreen           ,     "GE_KEY_PRINT_SCREEN"		},
-		{ Pause                 ,     "GE_KEY_PAUSE"			},
-		{ F1                    ,     "GE_KEY_F1"				},
-		{ F2                    ,     "GE_KEY_F2"				},
-		{ F3                    ,     "GE_KEY_F3"				},
-		{ F4                    ,     "GE_KEY_F4"				},
-		{ F5                    ,     "GE_KEY_F5"				},
-		{ F6                    ,     "GE_KEY_F6"				},
-		{ F7                    ,     "GE_KEY_F7"				},
-		{ F8                    ,     "GE_KEY_F8"				},
-		{ F9                    ,     "GE_KEY_F9"				},
-		{ F10                   ,     "GE_KEY_F10"				},
-		{ F11                   ,     "GE_KEY_F11"				},
-		{ F12                   ,     "GE_KEY_F12"				},
-		{ F13                   ,     "GE_KEY_F13"				},
-		{ F14                   ,     "GE_KEY_F14"				},
-		{ F15                   ,     "GE_KEY_F15"				},
-		{ F16                   ,     "GE_KEY_F16"				},
-		{ F17                   ,     "GE_KEY_F17"				},
-		{ F18                   ,     "GE_KEY_F18"				},
-		{ F19                   ,     "GE_KEY_F19"				},
-		{ F20                   ,     "GE_KEY_F20"				},
-		{ F21                   ,     "GE_KEY_F21"				},
-		{ F22                   ,     "GE_KEY_F22"				},
-		{ F23                   ,     "GE_KEY_F23"				},
-		{ F24                   ,     "GE_KEY_F24"				},
-		{ F25                   ,     "GE_KEY_F25"				},
-		{ KP0                   ,     "GE_KEY_KP_0"				},
-		{ KP1                   ,     "GE_KEY_KP_1"				},
-		{ KP2                   ,     "GE_KEY_KP_2"				},
-		{ KP3                   ,     "GE_KEY_KP_3"				},
-		{ KP4                   ,     "GE_KEY_KP_4"				},
-		{ KP5                   ,     "GE_KEY_KP_5"				},
-		{ KP6                   ,     "GE_KEY_KP_6"				},
-		{ KP7                   ,     "GE_KEY_KP_7"				},
-		{ KP8                   ,     "GE_KEY_KP_8"				},
-		{ KP9                   ,     "GE_KEY_KP_9"				},
-		{ KPDecimal             ,     "GE_KEY_KP_DECIMAL"		},
-		{ KPDivide              ,     "GE_KEY_KP_DIVIDE"		},
-		{ KPMultiply            ,     "GE_KEY_KP_MULTIPLY"		},
-		{ KPSubtract            ,     "GE_KEY_KP_SUBTRACT"		},
-		{ KPAdd                 ,     "GE_KEY_KP_ADD"			},
-		{ KPEnter               ,     "GE_KEY_KP_ENTER"			},
-		{ KPEqual               ,     "GE_KEY_KP_EQUAL"			},
-		{ LeftShift             ,     "GE_KEY_LEFT_SHIFT"		},
-		{ LeftControl           ,     "GE_KEY_LEFT_CONTROL"		},
-		{ LeftAlt               ,     "GE_KEY_LEFT_ALT"			},
-		{ LeftSuper             ,     "GE_KEY_LEFT_SUPER"		},
-		{ RightShift            ,     "GE_KEY_RIGHT_SHIFT"		},
-		{ RightControl          ,     "GE_KEY_RIGHT_CONTROL"	},
-		{ RightAlt              ,     "GE_KEY_RIGHT_ALT"		},
-		{ RightSuper            ,     "GE_KEY_RIGHT_SUPER"		},
-		{ Menu                  ,     "GE_KEY_MENU"				}
+		{ KEY_SPACE             ,     "KEY_SPACE"			},
+		{ KEY_APOSTROPHE        ,     "KEY_APOSTROPHE"		},
+		{ KEY_COMMA             ,     "KEY_COMMA"			},
+		{ KEY_MINUS             ,     "KEY_MINUS"			},
+		{ KEY_PERIOD            ,     "KEY_PERIOD"			},
+		{ KEY_SLASH             ,     "KEY_SLASH"			},
+		{ KEY_D0                ,     "KEY_0"				},
+		{ KEY_D1                ,     "KEY_1"				},
+		{ KEY_D2                ,     "KEY_2"				},
+		{ KEY_D3                ,     "KEY_3"				},
+		{ KEY_D4                ,     "KEY_4"				},
+		{ KEY_D5                ,     "KEY_5"				},
+		{ KEY_D6                ,     "KEY_6"				},
+		{ KEY_D7                ,     "KEY_7"				},
+		{ KEY_D8                ,     "KEY_8"				},
+		{ KEY_D9                ,     "KEY_9"				},
+		{ KEY_SEMICOLON         ,     "KEY_SEMICOLON"		},
+		{ KEY_EQUAL             ,     "KEY_EQUAL"			},
+		{ KEY_A                 ,     "KEY_A"				},
+		{ KEY_B                 ,     "KEY_B"				},
+		{ KEY_C                 ,     "KEY_C"				},
+		{ KEY_D                 ,     "KEY_D"				},
+		{ KEY_E                 ,     "KEY_E"				},
+		{ KEY_F                 ,     "KEY_F"				},
+		{ KEY_G                 ,     "KEY_G"				},
+		{ KEY_H                 ,     "KEY_H"				},
+		{ KEY_I                 ,     "KEY_I"				},
+		{ KEY_J                 ,     "KEY_J"				},
+		{ KEY_K                 ,     "KEY_K"				},
+		{ KEY_L                 ,     "KEY_L"				},
+		{ KEY_M                 ,     "KEY_M"				},
+		{ KEY_N                 ,     "KEY_N"				},
+		{ KEY_O                 ,     "KEY_O"				},
+		{ KEY_P                 ,     "KEY_P"				},
+		{ KEY_Q                 ,     "KEY_Q"				},
+		{ KEY_R                 ,     "KEY_R"				},
+		{ KEY_S                 ,     "KEY_S"				},
+		{ KEY_T                 ,     "KEY_T"				},
+		{ KEY_U                 ,     "KEY_U"				},
+		{ KEY_V                 ,     "KEY_V"				},
+		{ KEY_W                 ,     "KEY_W"				},
+		{ KEY_X                 ,     "KEY_X"				},
+		{ KEY_Y                 ,     "KEY_Y"				},
+		{ KEY_Z                 ,     "KEY_Z"				},
+		{ KEY_LEFT_BRACKET      ,     "KEY_LEFT_BRACKET"		},
+		{ KEY_BACKSLASH         ,     "KEY_BACKSLASH"		},
+		{ KEY_RIGHT_BRACKET     ,     "KEY_RIGHT_BRACKET"	},
+		{ KEY_GRAVE_ACCENT      ,     "KEY_GRAVE_ACCENT"		},
+		{ KEY_WORLD_1           ,     "KEY_WORLD_1"			},
+		{ KEY_WORLD_2           ,     "KEY_WORLD_2"			},
+		{ KEY_ESCAPE            ,     "KEY_ESCAPE"			},
+		{ KEY_ENTER             ,     "KEY_ENTER"			},
+		{ KEY_TAB               ,     "KEY_TAB"				},
+		{ KEY_BACKSPACE         ,     "KEY_BACKSPACE"		},
+		{ KEY_INSERT            ,     "KEY_INSERT"			},
+		{ KEY_DELETE            ,     "KEY_DELETE"			},
+		{ KEY_RIGHT             ,     "KEY_RIGHT"			},
+		{ KEY_LEFT              ,     "KEY_LEFT"				},
+		{ KEY_DOWN              ,     "KEY_DOWN"				},
+		{ KEY_UP                ,     "KEY_UP"				},
+		{ KEY_PAGE_UP           ,     "KEY_PAGE_UP"			},
+		{ KEY_PAGE_DOWN         ,     "KEY_PAGE_DOWN"		},
+		{ KEY_HOME              ,     "KEY_HOME"				},
+		{ KEY_END               ,     "KEY_END"				},
+		{ KEY_CAPS_LOCK         ,     "KEY_CAPS_LOCK"		},
+		{ KEY_SCROLL_LOCK       ,     "KEY_SCROLL_LOCK"		},
+		{ KEY_NUM_LOCK          ,     "KEY_NUM_LOCK"			},
+		{ KEY_PRINT_SCREEN      ,     "KEY_PRINT_SCREEN"		},
+		{ KEY_PAUSE             ,     "KEY_PAUSE"			},
+		{ KEY_F1                ,     "KEY_F1"				},
+		{ KEY_F2                ,     "KEY_F2"				},
+		{ KEY_F3                ,     "KEY_F3"				},
+		{ KEY_F4                ,     "KEY_F4"				},
+		{ KEY_F5                ,     "KEY_F5"				},
+		{ KEY_F6                ,     "KEY_F6"				},
+		{ KEY_F7                ,     "KEY_F7"				},
+		{ KEY_F8                ,     "KEY_F8"				},
+		{ KEY_F9                ,     "KEY_F9"				},
+		{ KEY_F10               ,     "KEY_F10"				},
+		{ KEY_F11               ,     "KEY_F11"				},
+		{ KEY_F12               ,     "KEY_F12"				},
+		{ KEY_F13               ,     "KEY_F13"				},
+		{ KEY_F14               ,     "KEY_F14"				},
+		{ KEY_F15               ,     "KEY_F15"				},
+		{ KEY_F16               ,     "KEY_F16"				},
+		{ KEY_F17               ,     "KEY_F17"				},
+		{ KEY_F18               ,     "KEY_F18"				},
+		{ KEY_F19               ,     "KEY_F19"				},
+		{ KEY_F20               ,     "KEY_F20"				},
+		{ KEY_F21               ,     "KEY_F21"				},
+		{ KEY_F22               ,     "KEY_F22"				},
+		{ KEY_F23               ,     "KEY_F23"				},
+		{ KEY_F24               ,     "KEY_F24"				},
+		{ KEY_F25               ,     "KEY_F25"				},
+		{ KEY_KP_0              ,     "KEY_KP_0"				},
+		{ KEY_KP_1              ,     "KEY_KP_1"				},
+		{ KEY_KP_2              ,     "KEY_KP_2"				},
+		{ KEY_KP_3              ,     "KEY_KP_3"				},
+		{ KEY_KP_4              ,     "KEY_KP_4"				},
+		{ KEY_KP_5              ,     "KEY_KP_5"				},
+		{ KEY_KP_6              ,     "KEY_KP_6"				},
+		{ KEY_KP_7              ,     "KEY_KP_7"				},
+		{ KEY_KP_8              ,     "KEY_KP_8"				},
+		{ KEY_KP_9              ,     "KEY_KP_9"				},
+		{ KEY_KP_DECIMAL        ,     "KEY_KP_DECIMAL"		},
+		{ KEY_KP_DIVIDE         ,     "KEY_KP_DIVIDE"		},
+		{ KEY_KP_MULTIPLY       ,     "KEY_KP_MULTIPLY"		},
+		{ KEY_KP_SUBTRACT       ,     "KEY_KP_SUBTRACT"		},
+		{ KEY_KP_ADD            ,     "KEY_KP_ADD"			},
+		{ KEY_KP_ENTER          ,     "KEY_KP_ENTER"			},
+		{ KEY_KP_EQUAL          ,     "KEY_KP_EQUAL"			},
+		{ KEY_LEFT_SHIFT        ,     "KEY_LEFT_SHIFT"		},
+		{ KEY_LEFT_CONTROL      ,     "KEY_LEFT_CONTROL"		},
+		{ KEY_LEFT_ALT          ,     "KEY_LEFT_ALT"			},
+		{ KEY_LEFT_SUPER        ,     "KEY_LEFT_SUPER"		},
+		{ KEY_RIGHT_SHIFT       ,     "KEY_RIGHT_SHIFT"		},
+		{ KEY_RIGHT_CONTROL     ,     "KEY_RIGHT_CONTROL"	},
+		{ KEY_RIGHT_ALT         ,     "KEY_RIGHT_ALT"		},
+		{ KEY_RIGHT_SUPER       ,     "KEY_RIGHT_SUPER"		},
+		{ KEY_MENU              ,     "KEY_MENU"				}
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
@@ -383,5 +260,387 @@ namespace GEngine
 		os << KeyCodeString[static_cast<int32_t>(keyCode)];
 		return os;
 	}
+
+	// From GE3.h
+/* Printable keys */
+#define GLFW_KEY_SPACE              32
+#define GLFW_KEY_APOSTROPHE         39  /* ' */
+#define GLFW_KEY_COMMA              44  /* , */
+#define GLFW_KEY_MINUS              45  /* - */
+#define GLFW_KEY_PERIOD             46  /* . */
+#define GLFW_KEY_SLASH              47  /* / */
+#define GLFW_KEY_0                  48
+#define GLFW_KEY_1                  49
+#define GLFW_KEY_2                  50
+#define GLFW_KEY_3                  51
+#define GLFW_KEY_4                  52
+#define GLFW_KEY_5                  53
+#define GLFW_KEY_6                  54
+#define GLFW_KEY_7                  55
+#define GLFW_KEY_8                  56
+#define GLFW_KEY_9                  57
+#define GLFW_KEY_SEMICOLON          59  /* ; */
+#define GLFW_KEY_EQUAL              61  /* = */
+#define GLFW_KEY_A                  65
+#define GLFW_KEY_B                  66
+#define GLFW_KEY_C                  67
+#define GLFW_KEY_D                  68
+#define GLFW_KEY_E                  69
+#define GLFW_KEY_F                  70
+#define GLFW_KEY_G                  71
+#define GLFW_KEY_H                  72
+#define GLFW_KEY_I                  73
+#define GLFW_KEY_J                  74
+#define GLFW_KEY_K                  75
+#define GLFW_KEY_L                  76
+#define GLFW_KEY_M                  77
+#define GLFW_KEY_N                  78
+#define GLFW_KEY_O                  79
+#define GLFW_KEY_P                  80
+#define GLFW_KEY_Q                  81
+#define GLFW_KEY_R                  82
+#define GLFW_KEY_S                  83
+#define GLFW_KEY_T                  84
+#define GLFW_KEY_U                  85
+#define GLFW_KEY_V                  86
+#define GLFW_KEY_W                  87
+#define GLFW_KEY_X                  88
+#define GLFW_KEY_Y                  89
+#define GLFW_KEY_Z                  90
+#define GLFW_KEY_LEFT_BRACKET       91  /* [ */
+#define GLFW_KEY_BACKSLASH          92  /* \ */
+#define GLFW_KEY_RIGHT_BRACKET      93  /* ] */
+#define GLFW_KEY_GRAVE_ACCENT       96  /* ` */
+#define GLFW_KEY_WORLD_1            161 /* non-US #1 */
+#define GLFW_KEY_WORLD_2            162 /* non-US #2 */
+
+/* Function keys */
+#define GLFW_KEY_ESCAPE             256
+#define GLFW_KEY_ENTER              257
+#define GLFW_KEY_TAB                258
+#define GLFW_KEY_BACKSPACE          259
+#define GLFW_KEY_INSERT             260
+#define GLFW_KEY_DELETE             261
+#define GLFW_KEY_RIGHT              262
+#define GLFW_KEY_LEFT               263
+#define GLFW_KEY_DOWN               264
+#define GLFW_KEY_UP                 265
+#define GLFW_KEY_PAGE_UP            266
+#define GLFW_KEY_PAGE_DOWN          267
+#define GLFW_KEY_HOME               268
+#define GLFW_KEY_END                269
+#define GLFW_KEY_CAPS_LOCK          280
+#define GLFW_KEY_SCROLL_LOCK        281
+#define GLFW_KEY_NUM_LOCK           282
+#define GLFW_KEY_PRINT_SCREEN       283
+#define GLFW_KEY_PAUSE              284
+#define GLFW_KEY_F1                 290
+#define GLFW_KEY_F2                 291
+#define GLFW_KEY_F3                 292
+#define GLFW_KEY_F4                 293
+#define GLFW_KEY_F5                 294
+#define GLFW_KEY_F6                 295
+#define GLFW_KEY_F7                 296
+#define GLFW_KEY_F8                 297
+#define GLFW_KEY_F9                 298
+#define GLFW_KEY_F10                299
+#define GLFW_KEY_F11                300
+#define GLFW_KEY_F12                301
+#define GLFW_KEY_F13                302
+#define GLFW_KEY_F14                303
+#define GLFW_KEY_F15                304
+#define GLFW_KEY_F16                305
+#define GLFW_KEY_F17                306
+#define GLFW_KEY_F18                307
+#define GLFW_KEY_F19                308
+#define GLFW_KEY_F20                309
+#define GLFW_KEY_F21                310
+#define GLFW_KEY_F22                311
+#define GLFW_KEY_F23                312
+#define GLFW_KEY_F24                313
+#define GLFW_KEY_F25                314
+#define GLFW_KEY_KP_0               320
+#define GLFW_KEY_KP_1               321
+#define GLFW_KEY_KP_2               322
+#define GLFW_KEY_KP_3               323
+#define GLFW_KEY_KP_4               324
+#define GLFW_KEY_KP_5               325
+#define GLFW_KEY_KP_6               326
+#define GLFW_KEY_KP_7               327
+#define GLFW_KEY_KP_8               328
+#define GLFW_KEY_KP_9               329
+#define GLFW_KEY_KP_DECIMAL         330
+#define GLFW_KEY_KP_DIVIDE          331
+#define GLFW_KEY_KP_MULTIPLY        332
+#define GLFW_KEY_KP_SUBTRACT        333
+#define GLFW_KEY_KP_ADD             334
+#define GLFW_KEY_KP_ENTER           335
+#define GLFW_KEY_KP_EQUAL           336
+#define GLFW_KEY_LEFT_SHIFT         340
+#define GLFW_KEY_LEFT_CONTROL       341
+#define GLFW_KEY_LEFT_ALT           342
+#define GLFW_KEY_LEFT_SUPER         343
+#define GLFW_KEY_RIGHT_SHIFT        344
+#define GLFW_KEY_RIGHT_CONTROL      345
+#define GLFW_KEY_RIGHT_ALT          346
+#define GLFW_KEY_RIGHT_SUPER        347
+#define GLFW_KEY_MENU               348
+
+	static std::unordered_map<KeyCode, int32_t> KeyCodeToGLFWValue
+	{
+		{ KEY_SPACE             ,     GLFW_KEY_SPACE             },
+		{ KEY_APOSTROPHE        ,     GLFW_KEY_APOSTROPHE        },
+		{ KEY_COMMA             ,     GLFW_KEY_COMMA             },
+		{ KEY_MINUS             ,     GLFW_KEY_MINUS             },
+		{ KEY_PERIOD            ,     GLFW_KEY_PERIOD            },
+		{ KEY_SLASH             ,     GLFW_KEY_SLASH             },
+		{ KEY_D0                ,     GLFW_KEY_0                 },
+		{ KEY_D1                ,     GLFW_KEY_1                 },
+		{ KEY_D2                ,     GLFW_KEY_2                 },
+		{ KEY_D3                ,     GLFW_KEY_3                 },
+		{ KEY_D4                ,     GLFW_KEY_4                 },
+		{ KEY_D5                ,     GLFW_KEY_5                 },
+		{ KEY_D6                ,     GLFW_KEY_6                 },
+		{ KEY_D7                ,     GLFW_KEY_7                 },
+		{ KEY_D8                ,     GLFW_KEY_8                 },
+		{ KEY_D9                ,     GLFW_KEY_9                 },
+		{ KEY_SEMICOLON         ,     GLFW_KEY_SEMICOLON         },
+		{ KEY_EQUAL             ,     GLFW_KEY_EQUAL             },
+		{ KEY_A                 ,     GLFW_KEY_A                 },
+		{ KEY_B                 ,     GLFW_KEY_B                 },
+		{ KEY_C                 ,     GLFW_KEY_C                 },
+		{ KEY_D                 ,     GLFW_KEY_D                 },
+		{ KEY_E                 ,     GLFW_KEY_E                 },
+		{ KEY_F                 ,     GLFW_KEY_F                 },
+		{ KEY_G                 ,     GLFW_KEY_G                 },
+		{ KEY_H                 ,     GLFW_KEY_H                 },
+		{ KEY_I                 ,     GLFW_KEY_I                 },
+		{ KEY_J                 ,     GLFW_KEY_J                 },
+		{ KEY_K                 ,     GLFW_KEY_K                 },
+		{ KEY_L                 ,     GLFW_KEY_L                 },
+		{ KEY_M                 ,     GLFW_KEY_M                 },
+		{ KEY_N                 ,     GLFW_KEY_N                 },
+		{ KEY_O                 ,     GLFW_KEY_O                 },
+		{ KEY_P                 ,     GLFW_KEY_P                 },
+		{ KEY_Q                 ,     GLFW_KEY_Q                 },
+		{ KEY_R                 ,     GLFW_KEY_R                 },
+		{ KEY_S                 ,     GLFW_KEY_S                 },
+		{ KEY_T                 ,     GLFW_KEY_T                 },
+		{ KEY_U                 ,     GLFW_KEY_U                 },
+		{ KEY_V                 ,     GLFW_KEY_V                 },
+		{ KEY_W                 ,     GLFW_KEY_W                 },
+		{ KEY_X                 ,     GLFW_KEY_X                 },
+		{ KEY_Y                 ,     GLFW_KEY_Y                 },
+		{ KEY_Z                 ,     GLFW_KEY_Z                 },
+		{ KEY_LEFT_BRACKET      ,     GLFW_KEY_LEFT_BRACKET      },
+		{ KEY_BACKSLASH         ,     GLFW_KEY_BACKSLASH         },
+		{ KEY_RIGHT_BRACKET     ,     GLFW_KEY_RIGHT_BRACKET     },
+		{ KEY_GRAVE_ACCENT      ,     GLFW_KEY_GRAVE_ACCENT      },
+		{ KEY_WORLD_1           ,     GLFW_KEY_WORLD_1           },
+		{ KEY_WORLD_2           ,     GLFW_KEY_WORLD_2           },
+		{ KEY_ESCAPE            ,     GLFW_KEY_ESCAPE            },
+		{ KEY_ENTER             ,     GLFW_KEY_ENTER             },
+		{ KEY_TAB               ,     GLFW_KEY_TAB               },
+		{ KEY_BACKSPACE         ,     GLFW_KEY_BACKSPACE         },
+		{ KEY_INSERT            ,     GLFW_KEY_INSERT            },
+		{ KEY_DELETE            ,     GLFW_KEY_DELETE            },
+		{ KEY_RIGHT             ,     GLFW_KEY_RIGHT             },
+		{ KEY_LEFT              ,     GLFW_KEY_LEFT              },
+		{ KEY_DOWN              ,     GLFW_KEY_DOWN              },
+		{ KEY_UP                ,     GLFW_KEY_UP                },
+		{ KEY_PAGE_UP           ,     GLFW_KEY_PAGE_UP           },
+		{ KEY_PAGE_DOWN         ,     GLFW_KEY_PAGE_DOWN         },
+		{ KEY_HOME              ,     GLFW_KEY_HOME              },
+		{ KEY_END               ,     GLFW_KEY_END               },
+		{ KEY_CAPS_LOCK         ,     GLFW_KEY_CAPS_LOCK         },
+		{ KEY_SCROLL_LOCK       ,     GLFW_KEY_SCROLL_LOCK       },
+		{ KEY_NUM_LOCK          ,     GLFW_KEY_NUM_LOCK          },
+		{ KEY_PRINT_SCREEN      ,     GLFW_KEY_PRINT_SCREEN      },
+		{ KEY_PAUSE             ,     GLFW_KEY_PAUSE             },
+		{ KEY_F1                ,     GLFW_KEY_F1                },
+		{ KEY_F2                ,     GLFW_KEY_F2                },
+		{ KEY_F3                ,     GLFW_KEY_F3                },
+		{ KEY_F4                ,     GLFW_KEY_F4                },
+		{ KEY_F5                ,     GLFW_KEY_F5                },
+		{ KEY_F6                ,     GLFW_KEY_F6                },
+		{ KEY_F7                ,     GLFW_KEY_F7                },
+		{ KEY_F8                ,     GLFW_KEY_F8                },
+		{ KEY_F9                ,     GLFW_KEY_F9                },
+		{ KEY_F10               ,     GLFW_KEY_F10               },
+		{ KEY_F11               ,     GLFW_KEY_F11               },
+		{ KEY_F12               ,     GLFW_KEY_F12               },
+		{ KEY_F13               ,     GLFW_KEY_F13               },
+		{ KEY_F14               ,     GLFW_KEY_F14               },
+		{ KEY_F15               ,     GLFW_KEY_F15               },
+		{ KEY_F16               ,     GLFW_KEY_F16               },
+		{ KEY_F17               ,     GLFW_KEY_F17               },
+		{ KEY_F18               ,     GLFW_KEY_F18               },
+		{ KEY_F19               ,     GLFW_KEY_F19               },
+		{ KEY_F20               ,     GLFW_KEY_F20               },
+		{ KEY_F21               ,     GLFW_KEY_F21               },
+		{ KEY_F22               ,     GLFW_KEY_F22               },
+		{ KEY_F23               ,     GLFW_KEY_F23               },
+		{ KEY_F24               ,     GLFW_KEY_F24               },
+		{ KEY_F25               ,     GLFW_KEY_F25               },
+		{ KEY_KP_0              ,     GLFW_KEY_KP_0              },
+		{ KEY_KP_1              ,     GLFW_KEY_KP_1              },
+		{ KEY_KP_2              ,     GLFW_KEY_KP_2              },
+		{ KEY_KP_3              ,     GLFW_KEY_KP_3              },
+		{ KEY_KP_4              ,     GLFW_KEY_KP_4              },
+		{ KEY_KP_5              ,     GLFW_KEY_KP_5              },
+		{ KEY_KP_6              ,     GLFW_KEY_KP_6              },
+		{ KEY_KP_7              ,     GLFW_KEY_KP_7              },
+		{ KEY_KP_8              ,     GLFW_KEY_KP_8              },
+		{ KEY_KP_9              ,     GLFW_KEY_KP_9              },
+		{ KEY_KP_DECIMAL        ,     GLFW_KEY_KP_DECIMAL        },
+		{ KEY_KP_DIVIDE         ,     GLFW_KEY_KP_DIVIDE         },
+		{ KEY_KP_MULTIPLY       ,     GLFW_KEY_KP_MULTIPLY       },
+		{ KEY_KP_SUBTRACT       ,     GLFW_KEY_KP_SUBTRACT       },
+		{ KEY_KP_ADD            ,     GLFW_KEY_KP_ADD            },
+		{ KEY_KP_ENTER          ,     GLFW_KEY_KP_ENTER          },
+		{ KEY_KP_EQUAL          ,     GLFW_KEY_KP_EQUAL          },
+		{ KEY_LEFT_SHIFT        ,     GLFW_KEY_LEFT_SHIFT        },
+		{ KEY_LEFT_CONTROL      ,     GLFW_KEY_LEFT_CONTROL      },
+		{ KEY_LEFT_ALT          ,     GLFW_KEY_LEFT_ALT          },
+		{ KEY_LEFT_SUPER        ,     GLFW_KEY_LEFT_SUPER        },
+		{ KEY_RIGHT_SHIFT       ,     GLFW_KEY_RIGHT_SHIFT       },
+		{ KEY_RIGHT_CONTROL     ,     GLFW_KEY_RIGHT_CONTROL     },
+		{ KEY_RIGHT_ALT         ,     GLFW_KEY_RIGHT_ALT         },
+		{ KEY_RIGHT_SUPER       ,     GLFW_KEY_RIGHT_SUPER       },
+		{ KEY_MENU              ,     GLFW_KEY_MENU              }
+	};
 	
+	inline int32_t KeyCodeToGLFW(KeyCode keycode)
+	{
+		return KeyCodeToGLFWValue[keycode];
+	}
+
+	static std::unordered_map<int32_t, KeyCode> GLFWValueToKeyCode
+	{
+		{ GLFW_KEY_SPACE             ,     KEY_SPACE             },
+		{ GLFW_KEY_APOSTROPHE        ,     KEY_APOSTROPHE        },
+		{ GLFW_KEY_COMMA             ,     KEY_COMMA             },
+		{ GLFW_KEY_MINUS             ,     KEY_MINUS             },
+		{ GLFW_KEY_PERIOD            ,     KEY_PERIOD            },
+		{ GLFW_KEY_SLASH             ,     KEY_SLASH             },
+		{ GLFW_KEY_0                 ,     KEY_D0                },
+		{ GLFW_KEY_1                 ,     KEY_D1                },
+		{ GLFW_KEY_2                 ,     KEY_D2                },
+		{ GLFW_KEY_3                 ,     KEY_D3                },
+		{ GLFW_KEY_4                 ,     KEY_D4                },
+		{ GLFW_KEY_5                 ,     KEY_D5                },
+		{ GLFW_KEY_6                 ,     KEY_D6                },
+		{ GLFW_KEY_7                 ,     KEY_D7                },
+		{ GLFW_KEY_8                 ,     KEY_D8                },
+		{ GLFW_KEY_9                 ,     KEY_D9                },
+		{ GLFW_KEY_SEMICOLON         ,     KEY_SEMICOLON         },
+		{ GLFW_KEY_EQUAL             ,     KEY_EQUAL             },
+		{ GLFW_KEY_A                 ,     KEY_A                 },
+		{ GLFW_KEY_B                 ,     KEY_B                 },
+		{ GLFW_KEY_C                 ,     KEY_C                 },
+		{ GLFW_KEY_D                 ,     KEY_D                 },
+		{ GLFW_KEY_E                 ,     KEY_E                 },
+		{ GLFW_KEY_F                 ,     KEY_F                 },
+		{ GLFW_KEY_G                 ,     KEY_G                 },
+		{ GLFW_KEY_H                 ,     KEY_H                 },
+		{ GLFW_KEY_I                 ,     KEY_I                 },
+		{ GLFW_KEY_J                 ,     KEY_J                 },
+		{ GLFW_KEY_K                 ,     KEY_K                 },
+		{ GLFW_KEY_L                 ,     KEY_L                 },
+		{ GLFW_KEY_M                 ,     KEY_M                 },
+		{ GLFW_KEY_N                 ,     KEY_N                 },
+		{ GLFW_KEY_O                 ,     KEY_O                 },
+		{ GLFW_KEY_P                 ,     KEY_P                 },
+		{ GLFW_KEY_Q                 ,     KEY_Q                 },
+		{ GLFW_KEY_R                 ,     KEY_R                 },
+		{ GLFW_KEY_S                 ,     KEY_S                 },
+		{ GLFW_KEY_T                 ,     KEY_T                 },
+		{ GLFW_KEY_U                 ,     KEY_U                 },
+		{ GLFW_KEY_V                 ,     KEY_V                 },
+		{ GLFW_KEY_W                 ,     KEY_W                 },
+		{ GLFW_KEY_X                 ,     KEY_X                 },
+		{ GLFW_KEY_Y                 ,     KEY_Y                 },
+		{ GLFW_KEY_Z                 ,     KEY_Z                 },
+		{ GLFW_KEY_LEFT_BRACKET      ,     KEY_LEFT_BRACKET      },
+		{ GLFW_KEY_BACKSLASH         ,     KEY_BACKSLASH         },
+		{ GLFW_KEY_RIGHT_BRACKET     ,     KEY_RIGHT_BRACKET     },
+		{ GLFW_KEY_GRAVE_ACCENT      ,     KEY_GRAVE_ACCENT      },
+		{ GLFW_KEY_WORLD_1           ,     KEY_WORLD_1           },
+		{ GLFW_KEY_WORLD_2           ,     KEY_WORLD_2           },
+		{ GLFW_KEY_ESCAPE            ,     KEY_ESCAPE            },
+		{ GLFW_KEY_ENTER             ,     KEY_ENTER             },
+		{ GLFW_KEY_TAB               ,     KEY_TAB               },
+		{ GLFW_KEY_BACKSPACE         ,     KEY_BACKSPACE         },
+		{ GLFW_KEY_INSERT            ,     KEY_INSERT            },
+		{ GLFW_KEY_DELETE            ,     KEY_DELETE            },
+		{ GLFW_KEY_RIGHT             ,     KEY_RIGHT             },
+		{ GLFW_KEY_LEFT              ,     KEY_LEFT              },
+		{ GLFW_KEY_DOWN              ,     KEY_DOWN              },
+		{ GLFW_KEY_UP                ,     KEY_UP                },
+		{ GLFW_KEY_PAGE_UP           ,     KEY_PAGE_UP           },
+		{ GLFW_KEY_PAGE_DOWN         ,     KEY_PAGE_DOWN         },
+		{ GLFW_KEY_HOME              ,     KEY_HOME              },
+		{ GLFW_KEY_END               ,     KEY_END               },
+		{ GLFW_KEY_CAPS_LOCK         ,     KEY_CAPS_LOCK         },
+		{ GLFW_KEY_SCROLL_LOCK       ,     KEY_SCROLL_LOCK       },
+		{ GLFW_KEY_NUM_LOCK          ,     KEY_NUM_LOCK          },
+		{ GLFW_KEY_PRINT_SCREEN      ,     KEY_PRINT_SCREEN      },
+		{ GLFW_KEY_PAUSE             ,     KEY_PAUSE             },
+		{ GLFW_KEY_F1                ,     KEY_F1                },
+		{ GLFW_KEY_F2                ,     KEY_F2                },
+		{ GLFW_KEY_F3                ,     KEY_F3                },
+		{ GLFW_KEY_F4                ,     KEY_F4                },
+		{ GLFW_KEY_F5                ,     KEY_F5                },
+		{ GLFW_KEY_F6                ,     KEY_F6                },
+		{ GLFW_KEY_F7                ,     KEY_F7                },
+		{ GLFW_KEY_F8                ,     KEY_F8                },
+		{ GLFW_KEY_F9                ,     KEY_F9                },
+		{ GLFW_KEY_F10               ,     KEY_F10               },
+		{ GLFW_KEY_F11               ,     KEY_F11               },
+		{ GLFW_KEY_F12               ,     KEY_F12               },
+		{ GLFW_KEY_F13               ,     KEY_F13               },
+		{ GLFW_KEY_F14               ,     KEY_F14               },
+		{ GLFW_KEY_F15               ,     KEY_F15               },
+		{ GLFW_KEY_F16               ,     KEY_F16               },
+		{ GLFW_KEY_F17               ,     KEY_F17               },
+		{ GLFW_KEY_F18               ,     KEY_F18               },
+		{ GLFW_KEY_F19               ,     KEY_F19               },
+		{ GLFW_KEY_F20               ,     KEY_F20               },
+		{ GLFW_KEY_F21               ,     KEY_F21               },
+		{ GLFW_KEY_F22               ,     KEY_F22               },
+		{ GLFW_KEY_F23               ,     KEY_F23               },
+		{ GLFW_KEY_F24               ,     KEY_F24               },
+		{ GLFW_KEY_F25               ,     KEY_F25               },
+		{ GLFW_KEY_KP_0              ,     KEY_KP_0              },
+		{ GLFW_KEY_KP_1              ,     KEY_KP_1              },
+		{ GLFW_KEY_KP_2              ,     KEY_KP_2              },
+		{ GLFW_KEY_KP_3              ,     KEY_KP_3              },
+		{ GLFW_KEY_KP_4              ,     KEY_KP_4              },
+		{ GLFW_KEY_KP_5              ,     KEY_KP_5              },
+		{ GLFW_KEY_KP_6              ,     KEY_KP_6              },
+		{ GLFW_KEY_KP_7              ,     KEY_KP_7              },
+		{ GLFW_KEY_KP_8              ,     KEY_KP_8              },
+		{ GLFW_KEY_KP_9              ,     KEY_KP_9              },
+		{ GLFW_KEY_KP_DECIMAL        ,     KEY_KP_DECIMAL        },
+		{ GLFW_KEY_KP_DIVIDE         ,     KEY_KP_DIVIDE         },
+		{ GLFW_KEY_KP_MULTIPLY       ,     KEY_KP_MULTIPLY       },
+		{ GLFW_KEY_KP_SUBTRACT       ,     KEY_KP_SUBTRACT       },
+		{ GLFW_KEY_KP_ADD            ,     KEY_KP_ADD            },
+		{ GLFW_KEY_KP_ENTER          ,     KEY_KP_ENTER          },
+		{ GLFW_KEY_KP_EQUAL          ,     KEY_KP_EQUAL          },
+		{ GLFW_KEY_LEFT_SHIFT        ,     KEY_LEFT_SHIFT        },
+		{ GLFW_KEY_LEFT_CONTROL      ,     KEY_LEFT_CONTROL      },
+		{ GLFW_KEY_LEFT_ALT          ,     KEY_LEFT_ALT          },
+		{ GLFW_KEY_LEFT_SUPER        ,     KEY_LEFT_SUPER        },
+		{ GLFW_KEY_RIGHT_SHIFT       ,     KEY_RIGHT_SHIFT       },
+		{ GLFW_KEY_RIGHT_CONTROL     ,     KEY_RIGHT_CONTROL     },
+		{ GLFW_KEY_RIGHT_ALT         ,     KEY_RIGHT_ALT         },
+		{ GLFW_KEY_RIGHT_SUPER       ,     KEY_RIGHT_SUPER       },
+		{ GLFW_KEY_MENU              ,     KEY_MENU              }
+	};
+
+	inline KeyCode GLFWToKeyCode(int32_t glfwKeycode)
+	{
+		return GLFWValueToKeyCode[glfwKeycode];
+	}
 }

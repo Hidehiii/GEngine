@@ -3,6 +3,8 @@
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "GEngine/Core/Input.h"
+#include "GEngine/Application.h"
 
 
 namespace GEngine
@@ -100,20 +102,84 @@ namespace GEngine
 			{
 			case GLFW_PRESS:
 			{
-				KeyPressedEvent event(key, 0);
+				KeyCode keycode = GLFWToKeyCode(key);
+
+				KeyDownEvent downEvent(keycode);
+				data.EventCallback(downEvent);
+
+				KeyPressedEvent event(keycode);
 				data.EventCallback(event);
+				
+				KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
+
+				keyState.IsPressed = true;
+				keyState.PressStartTime = glfwGetTime();
+				keyState.IsLongPressTriggered = false;
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				KeyReleasedEvent event(key);
+				KeyCode keycode = GLFWToKeyCode(key);
+				KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
+
+				KeyUpEvent event(keycode);
 				data.EventCallback(event);
+
+				if(keyState.IsPressed)
+				{
+					if(keyState.IsLongPressTriggered)
+					{
+						// 长按已触发，执行长按释放逻辑（如果有的话）
+						KeyLongUpEvent longUpEvent(keycode);
+						data.EventCallback(longUpEvent);
+					}
+					else
+					{
+						// 普通按键释放逻辑
+						KeyClickEvent clickEvent(keycode);
+						data.EventCallback(clickEvent);
+					}
+
+					keyState.IsPressed = false;
+					keyState.IsLongPressTriggered = false;
+				}
+
+				
 				break;
 			}
 			case GLFW_REPEAT:
 			{
-				KeyPressedEvent event(key, true);
+				KeyCode keycode = GLFWToKeyCode(key);
+				KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
+
+				if(keyState.IsPressed == false)
+				{
+					// 如果按键状态为未按下，忽略重复事件
+					break;
+				}
+				KeyPressedEvent event(keycode);
 				data.EventCallback(event);
+
+				
+				if(!keyState.IsLongPressTriggered)
+				{
+					if (Application::Get().GetConfig()->m_LongPressThresholdMs <= keyState.PressStartTime - glfwGetTime())
+					{
+						KeyLongDownEvent longDownEvent(keycode);
+						data.EventCallback(longDownEvent);
+
+						// 触发长按事件
+						KeyLongPressedEvent longPressEvent(keycode);
+						data.EventCallback(longPressEvent);
+
+						keyState.IsLongPressTriggered = true;
+					}
+				}
+				else
+				{
+					KeyLongPressedEvent longPressEvent(keycode);
+					data.EventCallback(longPressEvent);
+				}
 				break;
 			}
 			}
@@ -123,7 +189,9 @@ namespace GEngine
 			{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(keycode);
+			KeyCode key = GLFWToKeyCode(keycode);
+
+			KeyTypedEvent event(key);
 			data.EventCallback(event);
 		});
 
@@ -135,14 +203,49 @@ namespace GEngine
 			{
 			case GLFW_PRESS:
 			{
-				MouseButtonPressedEvent event(button);
+				MouseCode buttonCode = (MouseCode)button;
+				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
+
+				MouseButtonDownEvent downEvent(buttonCode);
+				data.EventCallback(downEvent);
+
+				MouseButtonPressedEvent event(buttonCode);
 				data.EventCallback(event);
+
+				btnState.IsPressed = true;
+				btnState.PressStartTime = glfwGetTime();
+				double x, y = 0;
+				glfwGetCursorPos(window, &x, &y);
+				btnState.PressX = (float)x;
+				btnState.PressY = (float)y;
+				btnState.IsLongPressTriggered = false;
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				MouseButtonReleasedEvent event(button);
+				MouseCode buttonCode = (MouseCode)button;
+				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
+
+				MouseButtonUpEvent event(buttonCode);
 				data.EventCallback(event);
+
+				if(btnState.IsPressed)
+				{
+					if(btnState.IsLongPressTriggered)
+					{
+						// 长按已触发，执行长按释放逻辑（如果有的话）
+						MouseButtonLongUpEvent longUpEvent(buttonCode);
+						data.EventCallback(longUpEvent);
+					}
+					else
+					{
+						// 普通按键释放逻辑
+						MouseButtonClickEvent clickEvent(buttonCode);
+						data.EventCallback(clickEvent);
+					}
+					btnState.IsPressed = false;
+					btnState.IsLongPressTriggered = false;
+				}
 				break;
 			}
 			}
@@ -171,10 +274,68 @@ namespace GEngine
 		m_Context->Uninit();
 	}
 
+	void GLFWWindow::MouseButtonPreessedCallback()
+	{
+		for(auto& [button, btnState] : PlatformInput::s_MouseBtnStates)
+		{
+			int btnCode = MouseCodeToGLFW(button);
+			auto state = glfwGetMouseButton(m_Window, btnCode);
+			if(state == GLFW_RELEASE)
+				continue;
+			if(state == GLFW_PRESS)
+			{
+				if(btnState.IsPressed == false)
+				{
+					continue;
+				}
+				else
+				{
+					// 按钮仍然按下，继续处理长按逻辑
+					MouseButtonPressedEvent event(button);
+					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(m_Window);
+					data.EventCallback(event);
+
+					if (!btnState.IsLongPressTriggered)
+					{
+						if (Application::Get().GetConfig()->m_LongPressThresholdMs <= glfwGetTime() - btnState.PressStartTime)
+						{
+							MouseButtonLongDownEvent longDownEvent(button);
+							data.EventCallback(longDownEvent);
+							// 触发长按事件
+							MouseButtonLongPressedEvent longPressEvent(button);
+							data.EventCallback(longPressEvent);
+							btnState.IsLongPressTriggered = true;
+						}
+					}
+					else
+					{
+						MouseButtonLongPressedEvent longPressEvent(button);
+						data.EventCallback(longPressEvent);
+					}
+				}
+			}
+		}
+	}
+
+	void GLFWWindow::UpdateKeyAndMouseStatesForQuery()
+	{
+		// copy state from PlatfoemInput to for query map
+		for (auto& [key, state] : PlatformInput::s_KeyStates)
+		{
+			PlatformInput::s_KeyStatesForQuery[key] = state;
+		}
+		for (auto& [button, state] : PlatformInput::s_MouseBtnStates)
+		{
+			PlatformInput::s_MouseBtnStatesForQuery[button] = state;
+		}
+	}
+
 	void GLFWWindow::OnUpdate()
 	{
 		glfwPollEvents();
 		m_Context->SwapBuffers();
+		MouseButtonPreessedCallback();
+		UpdateKeyAndMouseStatesForQuery();
 	}
 
 	// only used for Vulkan
