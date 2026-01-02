@@ -108,7 +108,9 @@ project "GEngine"
 
 		postbuildcommands
 		{
-			("for /d /r \"%{wks.location}/bin/" .. outputdir .. "\" %%d in (*) do {COPY} \"%{cfg.buildtarget.relpath}\" \"%%d\\\""),
+			-- 这个要排除自己
+			("for /d /r \"%{wks.location}/bin/" .. outputdir .. "\" %%d in (*) do if not \"%%d\" == \"%{cfg.buildtarget.directory}\" ( {COPY} \"%{cfg.buildtarget.relpath}\" \"%%d\\\"" ..  ")"),
+
 			("for /d /r \"%{wks.location}/bin/" .. outputdir .. "\" %%d in (*) do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
 			("for /d /r \"%{wks.location}/bin/" .. outputdir .. "\" %%d in (*) do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
 			("for /d /r \"%{wks.location}/bin/" .. outputdir .. "\" %%d in (*) do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
