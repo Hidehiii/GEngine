@@ -50,6 +50,7 @@ namespace GEngine
 		Physics3D::Init();
 
 
+
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 	}
@@ -138,6 +139,7 @@ namespace GEngine
 	{
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
+			m_Minimized = true;
 			m_Minimized = true;
 			return false;
 		}
