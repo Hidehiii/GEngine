@@ -92,7 +92,7 @@ namespace GEngine
 			}
 		}
 
-		ShaderPropertyType ShaderPropertyFromSpirvType(const spirv_cross::SPIRType& type, ShaderPropertyType baseType = SHADER_PROPERTY_TYPE_NONE)
+		ShaderPropertyType ShaderPropertyFromSpirvType(const spirv_cross::SPIRType& type, ShaderPropertyType baseType)
 		{
 			switch (type.basetype)
 			{
@@ -261,8 +261,8 @@ namespace GEngine
 			{
 				switch (baseType)
 				{
-				case SHADER_PROPERTY_TYPE_NONE:				return SHADER_PROPERTY_TYPE_STRUCTURE;
-				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:	return SHADER_PROPERTY_TYPE_STORAGE_BUFFER; // treat struct with storage buffer type as storage buffer
+				case SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER:	return SHADER_PROPERTY_TYPE_STRUCTURE;
+				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:			return SHADER_PROPERTY_TYPE_STORAGE_BUFFER; // treat struct with storage buffer type as storage buffer
 				}
 				GE_CORE_ASSERT(false, "Unknown shader variable type!");
 			}
@@ -468,9 +468,9 @@ namespace GEngine
 			// members of the uniform buffer
 			for (int i = 0; i < type.member_types.size(); i++)
 			{
-				ShaderReflectionConstantInfo	constantInfo;
+				ShaderReflectionPropertyInfo	constantInfo;
 				constantInfo.Name				= compiler.get_member_name(uniformBuffer.base_type_id, i);
-				constantInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(type.member_types[i]));
+				constantInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(type.member_types[i]), SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER);
 				constantInfo.Size				= compiler.get_declared_struct_member_size(type, i);
 				constantInfo.Offset				= compiler.get_member_decoration(uniformBuffer.base_type_id, i, spv::DecorationOffset);
 				constantInfo.ArraySize			= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(type.member_types[i]));
@@ -485,7 +485,7 @@ namespace GEngine
 					compiler.get_declared_struct_member_size(type, i),
 					constantInfo.ArraySize);
 
-				cbufferInfo.Constants.push_back(constantInfo);
+				cbufferInfo.Properties.push_back(constantInfo);
 			}
 
 			reflectionOutput.CBuffers.insert(cbufferInfo);
@@ -495,7 +495,7 @@ namespace GEngine
 		{
 			ShaderReflectionResourceInfo	imageInfo;
 			imageInfo.Name					= separateImage.name;
-			imageInfo.Type					= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateImage.type_id));
+			imageInfo.Type					= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateImage.type_id), SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN);
 			imageInfo.BindPoint				= compiler.get_decoration(separateImage.id, spv::DecorationBinding);
 			imageInfo.ArraySize				= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(separateImage.type_id));
 			// ?? is that right?
@@ -518,7 +518,7 @@ namespace GEngine
 		{
 			ShaderReflectionResourceInfo	samplerInfo;
 			samplerInfo.Name				= separateSampler.name;
-			samplerInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateSampler.type_id));
+			samplerInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateSampler.type_id), SHADER_PROPERTY_TYPE_SAMPLER);
 			samplerInfo.BindPoint			= compiler.get_decoration(separateSampler.id, spv::DecorationBinding);
 			samplerInfo.ArraySize			= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(separateSampler.type_id));
 			// ?? is that right?

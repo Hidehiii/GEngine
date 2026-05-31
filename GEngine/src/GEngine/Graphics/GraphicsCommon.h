@@ -259,6 +259,9 @@ namespace GEngine
 	{
 		SHADER_PROPERTY_TYPE_NONE,
 
+		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER,
+		SHADER_PROPERTY_TYPE_CBUFFER_MEMBER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER,
+
 		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
 		SHADER_PROPERTY_TYPE_CBUFFER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
 
@@ -460,7 +463,7 @@ namespace GEngine
 		std::unordered_map<std::string, ShaderResourceProperty>		ResourceProperties; // name : property
 	};
 
-	struct ShaderReflectionConstantInfo
+	struct ShaderReflectionPropertyInfo
 	{
 		std::string			Name;
 		ShaderPropertyType	Type;
@@ -468,7 +471,7 @@ namespace GEngine
 		uint32_t 			Offset;
 		uint32_t			ArraySize;
 
-		bool operator==(const ShaderReflectionConstantInfo& other) const
+		bool operator==(const ShaderReflectionPropertyInfo& other) const
 		{
 			return Name == other.Name &&
 				Type == other.Type &&
@@ -484,7 +487,7 @@ namespace GEngine
 		uint32_t									BindPoint;
 		uint32_t									Size;
 		uint32_t									RegisterSpace;
-		std::vector<ShaderReflectionConstantInfo>	Constants;
+		std::vector<ShaderReflectionPropertyInfo>	Properties;
 
 		bool operator==(const ShaderReflectionCBufferInfo& other) const
 		{
@@ -492,7 +495,7 @@ namespace GEngine
 				BindPoint == other.BindPoint &&
 				Size == other.Size &&
 				RegisterSpace == other.RegisterSpace &&
-				Constants == other.Constants;
+				Properties == other.Properties;
 		}
 	};
 
@@ -501,7 +504,6 @@ namespace GEngine
 		std::string			Name;
 		ShaderPropertyType	Type;
 		uint32_t			BindPoint;
-		uint32_t			BufferSize; // for buffer
 		uint32_t			ArraySize;
 		uint32_t			RegisterSpace;
 
@@ -510,7 +512,6 @@ namespace GEngine
 			return Name == other.Name &&
 				Type == other.Type &&
 				BindPoint == other.BindPoint &&
-				BufferSize == other.BufferSize &&
 				ArraySize == other.ArraySize &&
 				RegisterSpace == other.RegisterSpace;
 		}
@@ -550,9 +551,9 @@ namespace std
 	};
 
 	template<>
-	struct hash<GEngine::ShaderReflectionConstantInfo>
+	struct hash<GEngine::ShaderReflectionPropertyInfo>
 	{
-		size_t operator()(const GEngine::ShaderReflectionConstantInfo& key) const
+		size_t operator()(const GEngine::ShaderReflectionPropertyInfo& key) const
 		{
 			size_t h1 = hash<std::string>()(key.Name);
 			size_t h2 = hash<int>()((int)key.Type);
@@ -573,9 +574,9 @@ namespace std
 			size_t h3 = hash<uint32_t>()(key.Size);
 			size_t h4 = hash<uint32_t>()(key.RegisterSpace);
 			size_t h5 = 0;
-			for (const auto& constant : key.Constants)
+			for (const auto& property : key.Properties)
 			{
-				h5 ^= hash<GEngine::ShaderReflectionConstantInfo>()(constant) + 0x9e3779b9 + (h5 << 6) + (h5 >> 2);
+				h5 ^= hash<GEngine::ShaderReflectionPropertyInfo>()(property) + 0x9e3779b9 + (h5 << 6) + (h5 >> 2);
 			}
 			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
 		}

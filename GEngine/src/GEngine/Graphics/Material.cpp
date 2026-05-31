@@ -109,7 +109,7 @@ namespace GEngine
 			for (auto& info : passes.at(i).CBuffers)
 			{
 				uint32_t size = 0;
-				for (auto& prop : info.Constants)
+				for (auto& prop : info.Properties)
 				{
 					ShaderConstantProperty		property;
 					property.CBufferBindPoint	= info.BindPoint;

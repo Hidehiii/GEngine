@@ -367,7 +367,20 @@ namespace GEngine
 		//reflection
 
 		// record properties type
-
+		for(int i = 0; i < m_PasseReflections.size(); i++)
+		{
+			for (auto& cbuffer : m_PasseReflections.at(i).CBuffers)
+			{
+				for (auto& property : cbuffer.Properties)
+				{
+					m_PropertyTypes[property.Name] = property.Type;
+				}
+			}
+			for (auto& resource : m_PasseReflections.at(i).Resources)
+			{
+				m_PropertyTypes[resource.Name] = resource.Type;
+			}
+		}
 		// ConstPropertiesDesc
 
 		//  ReferenceProperties
