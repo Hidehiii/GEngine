@@ -10,7 +10,7 @@ namespace GEngine
 {
 	namespace Utils
 	{
-		const char* GLShaderStageCachedVulkanFileExtension(std::string stage)
+		const char* ShaderStageCachedVulkanFileExtension(std::string stage)
 		{
 			if (stage == SHADER_STAGE_VERTEX)					return ".cached_vulkan_vert";
 			if (stage == SHADER_STAGE_FRAGMENT)					return ".cached_vulkan_frag";

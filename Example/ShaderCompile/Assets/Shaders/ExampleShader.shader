@@ -33,10 +33,11 @@ Shader "ExampleShader"
                 float3 _Color;
                 float4 _Color1;
                 float4x4 _mat4;
+                float _SomeFloatArray[3][2][6];
                 MyStruct _MyStruct;
             };
 
-            RWBuffer<float4> _SomeRWBuffer;
+            RWBuffer<float3> _SomeRWBuffer;
 
 
             Texture2D _VertTex;
@@ -66,18 +67,18 @@ Shader "ExampleShader"
                 float2 v2 = _SomeVector + _SomeVector2;
                 float a = _MyStruct.a;
                 float b = _MyStruct.b;
-                float4 rwValue = float4(1.0, 2.0, 3.0, 4.0);
+                float3 rwValue = float3(1.0, 2.0, 3.0);
                 _SomeRWBuffer[0] = rwValue;
                 float myStructA = _MyStructBuffer[0].a;
                 float myStructB = _MyStructBuffer[0].b;
                 OUT.mat4[1][1] = myStructA + myStructB;
-                float4 vertTexColor = _VertTex.Sample(_VertTex_sampler, IN.vertex.xy);
-                OUT.mat4[2][2] = vertTexColor.r;
+                OUT.mat4[2][2] = 0.0f;
                 return OUT;
             }
 
             float4 frag(VsOutput IN) : SV_Target
             {
+                float4 vertTexColor = _VertTex.Sample(_VertTex_sampler, IN.pos.xy);
                 return _MainTex.Sample(_MainTex_sampler, IN.pos.xy) * _Color1;
             }
         }

@@ -49,19 +49,19 @@ namespace GEngine
 			auto type = m_Shader->GetPropertyType(name);
 			switch (type)
 			{
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<Texture2DCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE:
 			{
 				m_Shader->SetInt1(name, prop.Location, pass);
 				(*((Ref<CubeMapCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;

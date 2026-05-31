@@ -91,6 +91,204 @@ namespace GEngine
 				GE_CORE_ASSERT(false, "Unknown shader resource type!");
 			}
 		}
+
+		ShaderPropertyType ShaderPropertyFromSpirvType(const spirv_cross::SPIRType& type, ShaderPropertyType baseType = SHADER_PROPERTY_TYPE_NONE)
+		{
+			switch (type.basetype)
+			{
+			// base type bool
+			case spirv_cross::SPIRType::BaseType::Boolean:
+				return SHADER_PROPERTY_TYPE_BOOLEAN;
+			// base type int
+			case spirv_cross::SPIRType::BaseType::Int:
+			{
+				switch (type.columns)
+				{
+				case 1:
+				{
+					switch (type.vecsize)
+					{
+					case 1:		return SHADER_PROPERTY_TYPE_INT; // col 1, vec 1
+					case 2:		return SHADER_PROPERTY_TYPE_INT_2; // col 1, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_INT_3; // col 1, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_INT_4; // col 1, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable int vector type!");
+							break;
+					}
+					break;
+				}
+				case 2:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_INT_2X2; // col 2, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_INT_2X3; // col 2, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_INT_2X4; // col 2, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable int matrix type!");
+							break;
+					}
+					break;
+				}
+				case 3:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_INT_3X2; // col 3, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_INT_3X3; // col 3, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_INT_3X4; // col 3, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable int matrix type!");
+							break;
+					}
+					break;
+				}
+				case 4:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_INT_4X2; // col 4, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_INT_4X3; // col 4, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_INT_4X4; // col 4, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable int matrix type!");
+							break;
+					}
+					break;
+				}
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable int matrix type!");
+					break;
+				}
+				break;
+			}
+			// base type float
+			case spirv_cross::SPIRType::BaseType::Float:
+			{
+				switch (type.columns)
+				{
+				case 1:
+				{
+					switch (type.vecsize)
+					{
+					case 1:		return SHADER_PROPERTY_TYPE_FLOAT; // col 1, vec 1
+					case 2:		return SHADER_PROPERTY_TYPE_VECTOR_2; // col 1, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_VECTOR_3; // col 1, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_VECTOR_4; // col 1, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable float vector type!");
+							break;
+					}
+					break;
+				}
+				case 2:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_MATRIX_2X2; // col 2, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_MATRIX_2X3; // col 2, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_MATRIX_2X4; // col 2, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable float matrix type!");
+							break;
+					}
+					break;
+				}
+				case 3:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_MATRIX_3X2; // col 3, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_MATRIX_3X3; // col 3, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_MATRIX_3X4; // col 3, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable float matrix type!");
+							break;
+					}
+					break;
+				}
+				case 4:
+				{
+					switch (type.vecsize)
+					{
+					case 2:		return SHADER_PROPERTY_TYPE_MATRIX_4X2; // col 4, vec 2
+					case 3:		return SHADER_PROPERTY_TYPE_MATRIX_4X3; // col 4, vec 3
+					case 4:		return SHADER_PROPERTY_TYPE_MATRIX_4X4; // col 4, vec 4
+						default:
+							GE_CORE_ASSERT(false, "Unknown shader variable float matrix type!");
+							break;
+					}
+					break;
+				}
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable float type!");
+					break;
+				}
+				break;
+			}
+			// base type image
+			case spirv_cross::SPIRType::BaseType::Image:
+			{
+				switch (type.image.dim)
+				{
+				case spv::Dim::Dim1D: 						return SHADER_PROPERTY_TYPE_TEXTURE_1D;
+				case spv::Dim::Dim2D: 						return SHADER_PROPERTY_TYPE_TEXTURE_2D;
+				case spv::Dim::Dim3D: 						return SHADER_PROPERTY_TYPE_TEXTURE_3D;
+				case spv::Dim::DimCube: 					return SHADER_PROPERTY_TYPE_TEXTURE_CUBE;
+				case spv::Dim::DimBuffer:
+				{
+					if (baseType == SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN)
+					{
+						return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
+					}
+				}
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable image type!");
+				}
+				GE_CORE_ASSERT(false, "Unknown shader variable image type!");
+				break;
+			}
+			// base type sampler
+			case spirv_cross::SPIRType::BaseType::Sampler:
+				return SHADER_PROPERTY_TYPE_SAMPLER;
+			// base type sampled image
+			case spirv_cross::SPIRType::BaseType::SampledImage:
+				return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D;
+			// base type storage buffer
+			// base type struct
+			case spirv_cross::SPIRType::BaseType::Struct:
+			{
+				switch (baseType)
+				{
+				case SHADER_PROPERTY_TYPE_NONE:				return SHADER_PROPERTY_TYPE_STRUCTURE;
+				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:	return SHADER_PROPERTY_TYPE_STORAGE_BUFFER; // treat struct with storage buffer type as storage buffer
+				}
+				GE_CORE_ASSERT(false, "Unknown shader variable type!");
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknown shader variable type!");
+				return SHADER_PROPERTY_TYPE_NONE;
+			}
+		}
+
+		uint32_t GetSpirvPropertyTypeArraySize(const spirv_cross::SPIRType& type)
+		{
+			uint32_t arraySize = 1;
+			for (int i = 0; i < type.array.size(); i++)
+			{
+				if (type.array_size_literal[i])
+				{
+					arraySize *= type.array[i];
+				}
+				else
+				{
+					GE_CORE_ASSERT(false, "Shader variable array size is not a literal, which is currently not supported!");
+				}
+				GE_CORE_TRACE("Array dimension {}, size {}, literal {}!", i, type.array[i], type.array_size_literal[i]);
+			}
+			return arraySize;
+		}
 	}
 
 	ShaderCompiler::ShaderCompiler()
@@ -255,50 +453,120 @@ namespace GEngine
 		for (const auto& uniformBuffer : resources.uniform_buffers)
 		{
 			auto& type = compiler.get_type(uniformBuffer.type_id);
+
+			ShaderReflectionCBufferInfo cbufferInfo;
+			cbufferInfo.Name			= uniformBuffer.name;
+			cbufferInfo.BindPoint		= compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding);
+			cbufferInfo.Size			= compiler.get_declared_struct_size(type);
+			// ??? is that right?
+			cbufferInfo.RegisterSpace	= compiler.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet);
+
 			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", uniformBuffer.name,
 				compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding),
 				compiler.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet),
 				compiler.get_declared_struct_size(type));
+			// members of the uniform buffer
 			for (int i = 0; i < type.member_types.size(); i++)
 			{
-				auto& memberType = compiler.get_type(type.member_types[i]);
-				std::string memberName = compiler.get_member_name(uniformBuffer.base_type_id, i);
-				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", memberName,
-					compiler.get_member_decoration(uniformBuffer.base_type_id, i, spv::DecorationOffset),
-					memberType.basetype,
-					compiler.get_declared_struct_member_size(type, i));
+				ShaderReflectionConstantInfo	constantInfo;
+				constantInfo.Name				= compiler.get_member_name(uniformBuffer.base_type_id, i);
+				constantInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(type.member_types[i]));
+				constantInfo.Size				= compiler.get_declared_struct_member_size(type, i);
+				constantInfo.Offset				= compiler.get_member_decoration(uniformBuffer.base_type_id, i, spv::DecorationOffset);
+				constantInfo.ArraySize			= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(type.member_types[i]));
+
+				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Width {}, Vec Size {}, Colums {}, Size {}, Array size {}", 
+					constantInfo.Name,
+					constantInfo.Offset,
+					compiler.get_type(type.member_types[i]).basetype,
+					compiler.get_type(type.member_types[i]).width,
+					compiler.get_type(type.member_types[i]).vecsize,
+					compiler.get_type(type.member_types[i]).columns,
+					compiler.get_declared_struct_member_size(type, i),
+					constantInfo.ArraySize);
+
+				cbufferInfo.Constants.push_back(constantInfo);
 			}
+
+			reflectionOutput.CBuffers.insert(cbufferInfo);
 		}
 		GE_CORE_INFO("Separate images:");
 		for (const auto& separateImage : resources.separate_images)
 		{
+			ShaderReflectionResourceInfo	imageInfo;
+			imageInfo.Name					= separateImage.name;
+			imageInfo.Type					= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateImage.type_id));
+			imageInfo.BindPoint				= compiler.get_decoration(separateImage.id, spv::DecorationBinding);
+			imageInfo.ArraySize				= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(separateImage.type_id));
+			// ?? is that right?
+			imageInfo.RegisterSpace			= compiler.get_decoration(separateImage.id, spv::DecorationDescriptorSet);
+
 			auto& type = compiler.get_type(separateImage.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", separateImage.name,
-				compiler.get_decoration(separateImage.id, spv::DecorationBinding),
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}, Dim {}, Depth {}, Format {}", 
+				imageInfo.Name,
+				imageInfo.BindPoint,
 				compiler.get_decoration(separateImage.id, spv::DecorationDescriptorSet),
-				type.basetype);
+				type.basetype,
+				type.image.dim,
+				type.image.depth,
+				type.image.format);
+
+			reflectionOutput.Resources.insert(imageInfo);
 		}
 		GE_CORE_INFO("Separate samplers:");
 		for (const auto& separateSampler : resources.separate_samplers)
 		{
+			ShaderReflectionResourceInfo	samplerInfo;
+			samplerInfo.Name				= separateSampler.name;
+			samplerInfo.Type				= Utils::ShaderPropertyFromSpirvType(compiler.get_type(separateSampler.type_id));
+			samplerInfo.BindPoint			= compiler.get_decoration(separateSampler.id, spv::DecorationBinding);
+			samplerInfo.ArraySize			= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(separateSampler.type_id));
+			// ?? is that right?
+			samplerInfo.RegisterSpace		= compiler.get_decoration(separateSampler.id, spv::DecorationDescriptorSet);
+
 			auto& type = compiler.get_type(separateSampler.type_id);
 			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", separateSampler.name,
 				compiler.get_decoration(separateSampler.id, spv::DecorationBinding),
 				compiler.get_decoration(separateSampler.id, spv::DecorationDescriptorSet),
 				type.basetype);
+
+			reflectionOutput.Resources.insert(samplerInfo);
 		}
 		GE_CORE_INFO("Storage images:");
 		for (const auto& storageImage : resources.storage_images)
 		{
+			ShaderReflectionResourceInfo	storageImageInfo;
+			storageImageInfo.Name			= storageImage.name;
+			storageImageInfo.Type			= Utils::ShaderPropertyFromSpirvType(compiler.get_type(storageImage.type_id), SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN);
+			storageImageInfo.BindPoint		= compiler.get_decoration(storageImage.id, spv::DecorationBinding);
+			storageImageInfo.ArraySize		= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(storageImage.type_id));
+			// ?? is that right?
+			storageImageInfo.RegisterSpace	= compiler.get_decoration(storageImage.id, spv::DecorationDescriptorSet);
+
 			auto& type = compiler.get_type(storageImage.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", storageImage.name,
+			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}, Dim {}, Depth {}, Format {}", 
+				storageImage.name,
 				compiler.get_decoration(storageImage.id, spv::DecorationBinding),
 				compiler.get_decoration(storageImage.id, spv::DecorationDescriptorSet),
-				type.basetype);
+				type.basetype,
+				type.image.dim,
+				type.image.depth,
+				type.image.format);
+
+			reflectionOutput.Resources.insert(storageImageInfo);
 		}
 		GE_CORE_INFO("Storage buffers:");
 		for (const auto& storageBuffer : resources.storage_buffers)
 		{
+			ShaderReflectionResourceInfo	bufferInfo;
+
+			bufferInfo.Name					= storageBuffer.name;
+			bufferInfo.Type					= Utils::ShaderPropertyFromSpirvType(compiler.get_type(storageBuffer.type_id), SHADER_PROPERTY_TYPE_STORAGE_BUFFER);
+			bufferInfo.BindPoint			= compiler.get_decoration(storageBuffer.id, spv::DecorationBinding);
+			bufferInfo.ArraySize			= Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(storageBuffer.type_id));
+			// ?? is that right?
+			bufferInfo.RegisterSpace		= compiler.get_decoration(storageBuffer.id, spv::DecorationDescriptorSet);
+
 			auto& type = compiler.get_type(storageBuffer.type_id);
 			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", storageBuffer.name,
 				compiler.get_decoration(storageBuffer.id, spv::DecorationBinding),
@@ -313,6 +581,8 @@ namespace GEngine
 					memberType.basetype,
 					compiler.get_declared_struct_member_size(type, i));
 			}
+
+			reflectionOutput.Resources.insert(bufferInfo);
 		}
 		GE_CORE_INFO("Output parameters:");
 		for (const auto& output : resources.stage_outputs)

@@ -60,17 +60,17 @@ namespace GEngine
 			auto type = m_Shader->GetPropertyType(name);
 			switch (type)
 			{
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D:
 			{
 				(*((Ref<Texture2DCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE:
 			{
 				(*((Ref<CubeMapCombineSampler>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;
@@ -174,21 +174,21 @@ namespace GEngine
 				layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
 				switch (type)
 				{
-				case SHADER_PROPERTY_TYPE_SAMPLER_2D:
+				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					
 					layoutBindings.push_back(layoutBinding);
 					break;
 				}
-				case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
+				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE:
 				{
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 					layoutBindings.push_back(layoutBinding);
 					break;
 				}
-				case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
+				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY:
 				{
 					GE_CORE_ASSERT(false, "");
 					break;
@@ -287,7 +287,7 @@ namespace GEngine
 
 			switch (type)
 			{
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -298,7 +298,7 @@ namespace GEngine
 				writeInfos.push_back(descriptorWrite);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_CUBE:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE:
 			{
 				descriptorWrite.dstArrayElement		= 0;
 				descriptorWrite.descriptorType		= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -309,7 +309,7 @@ namespace GEngine
 				writeInfos.push_back(descriptorWrite);
 				break;
 			}
-			case SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY:
+			case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY:
 			{
 				GE_CORE_ASSERT(false, "");
 				break;

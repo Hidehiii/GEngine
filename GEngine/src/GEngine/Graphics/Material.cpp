@@ -113,7 +113,7 @@ namespace GEngine
 				{
 					ShaderConstantProperty		property;
 					property.CBufferBindPoint	= info.BindPoint;
-					property.PropertyLocation	= prop.Location;
+					property.PropertyOffset		= prop.Offset;
 
 #ifdef GE_DEBUG
 					if(m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.find(prop.Name) != m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.end())
@@ -150,7 +150,7 @@ namespace GEngine
 		{
 			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
 			{
-				pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).Write(value, size, pass.ConstPropertiesDesc.at(name).PropertyLocation);
+				pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).Write(value, size, pass.ConstPropertiesDesc.at(name).PropertyOffset);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ namespace GEngine
 		{
 			if (pass.ConstPropertiesDesc.find(name) != pass.ConstPropertiesDesc.end())
 			{
-				return pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).ReadBytes(pass.ConstPropertiesDesc.at(name).PropertyLocation);
+				return pass.CBuffers.at(pass.ConstPropertiesDesc.at(name).CBufferBindPoint).ReadBytes(pass.ConstPropertiesDesc.at(name).PropertyOffset);
 			}
 		}
 		return nullptr;

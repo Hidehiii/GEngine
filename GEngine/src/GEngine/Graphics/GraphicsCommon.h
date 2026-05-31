@@ -21,8 +21,6 @@
 
 // shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
 
-
-
 namespace GEngine
 {
 	enum Graphics_API
@@ -264,38 +262,98 @@ namespace GEngine
 		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
 		SHADER_PROPERTY_TYPE_CBUFFER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
 
-		SHADER_PROPERTY_TYPE_INT,
-		SHADER_PROPERTY_TYPE_FLOAT,
+		SHADER_PROPERTY_TYPE_BOOLEAN,
 
-		SHADER_PROPERTY_TYPE_VECTOR_2,
-		SHADER_PROPERTY_TYPE_VECTOR_3,
+		SHADER_PROPERTY_TYPE_INT,
+		SHADER_PROPERTY_TYPE_INT_2,
+		SHADER_PROPERTY_TYPE_INT_3,
+		SHADER_PROPERTY_TYPE_INT_4,
+
+		SHADER_PROPERTY_TYPE_INT_2X2,
+		SHADER_PROPERTY_TYPE_INT_2X3,
+		SHADER_PROPERTY_TYPE_INT_2X4,
+
+		SHADER_PROPERTY_TYPE_INT_3X2,
+		SHADER_PROPERTY_TYPE_INT_3X3,
+		SHADER_PROPERTY_TYPE_INT_3X4,
+
+		SHADER_PROPERTY_TYPE_INT_4X2,
+		SHADER_PROPERTY_TYPE_INT_4X3,
+		SHADER_PROPERTY_TYPE_INT_4X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT,
+		SHADER_PROPERTY_TYPE_FLOAT_2,
+		SHADER_PROPERTY_TYPE_FLOAT_3,
+		SHADER_PROPERTY_TYPE_FLOAT_4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_2X2,
+		SHADER_PROPERTY_TYPE_FLOAT_2X3,
+		SHADER_PROPERTY_TYPE_FLOAT_2X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_3X2,
+		SHADER_PROPERTY_TYPE_FLOAT_3X3,
+		SHADER_PROPERTY_TYPE_FLOAT_3X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_4X2,
+		SHADER_PROPERTY_TYPE_FLOAT_4X3,
+		SHADER_PROPERTY_TYPE_FLOAT_4X4,
+
+		SHADER_PROPERTY_TYPE_VECTOR_2 = SHADER_PROPERTY_TYPE_FLOAT_2,
+		SHADER_PROPERTY_TYPE_VECTOR_3 = SHADER_PROPERTY_TYPE_FLOAT_3,
 		SHADER_PROPERTY_TYPE_COLOR_3 = SHADER_PROPERTY_TYPE_VECTOR_3,
-		SHADER_PROPERTY_TYPE_VECTOR_4,
+		SHADER_PROPERTY_TYPE_VECTOR_4 = SHADER_PROPERTY_TYPE_FLOAT_4,
 		SHADER_PROPERTY_TYPE_COLOR_4 = SHADER_PROPERTY_TYPE_VECTOR_4,
 
-		SHADER_PROPERTY_TYPE_MATRIX_2X2,
-		SHADER_PROPERTY_TYPE_MATRIX_2X3,
-		SHADER_PROPERTY_TYPE_MATRIX_2X4,
+		SHADER_PROPERTY_TYPE_MATRIX_2X2 = SHADER_PROPERTY_TYPE_FLOAT_2X2,
+		SHADER_PROPERTY_TYPE_MATRIX_2X3 = SHADER_PROPERTY_TYPE_FLOAT_2X3,
+		SHADER_PROPERTY_TYPE_MATRIX_2X4 = SHADER_PROPERTY_TYPE_FLOAT_2X4,
 
-		SHADER_PROPERTY_TYPE_MATRIX_3X2,
-		SHADER_PROPERTY_TYPE_MATRIX_3X3,
-		SHADER_PROPERTY_TYPE_MATRIX_3X4,
+		SHADER_PROPERTY_TYPE_MATRIX_3X2 = SHADER_PROPERTY_TYPE_FLOAT_3X2,
+		SHADER_PROPERTY_TYPE_MATRIX_3X3 = SHADER_PROPERTY_TYPE_FLOAT_3X3,
+		SHADER_PROPERTY_TYPE_MATRIX_3X4 = SHADER_PROPERTY_TYPE_FLOAT_3X4,
 
-		SHADER_PROPERTY_TYPE_MATRIX_4X2,
-		SHADER_PROPERTY_TYPE_MATRIX_4X3,
-		SHADER_PROPERTY_TYPE_MATRIX_4X4,
+		SHADER_PROPERTY_TYPE_MATRIX_4X2 = SHADER_PROPERTY_TYPE_FLOAT_4X2,
+		SHADER_PROPERTY_TYPE_MATRIX_4X3 = SHADER_PROPERTY_TYPE_FLOAT_4X3,
+		SHADER_PROPERTY_TYPE_MATRIX_4X4 = SHADER_PROPERTY_TYPE_FLOAT_4X4,
 
-		SHADER_PROPERTY_TYPE_SAMPLER_2D,
-		SHADER_PROPERTY_TYPE_SAMPLER_CUBE,
-		SHADER_PROPERTY_TYPE_SAMPLER_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_UNKNOWN_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D_ARRAY,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE_ARRAY,
 
 		SHADER_PROPERTY_TYPE_SAMPLER,
-		SHADER_PROPERTY_TYPE_TEXTURE_2D,
-		SHADER_PROPERTY_TYPE_TEXTURE_CUBE,
-		SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY,
 
+		SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_TEXTURE_1D,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D,
+		SHADER_PROPERTY_TYPE_TEXTURE_3D,
+
+		SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_3D_ARRAY,
+
+		SHADER_PROPERTY_TYPE_TEXTURE_CUBE,
+		SHADER_PROPERTY_TYPE_TEXTURE_CUBE_ARRAY,
+
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D,
 		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_UNKNOWN = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_1D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D,
 		SHADER_PROPERTY_TYPE_RWTEXTURE_2D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_3D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D,
+
 		SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
 		SHADER_PROPERTY_TYPE_RWBUFFER = SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
 
@@ -359,12 +417,27 @@ namespace GEngine
 		BlendMode			BlendAlpha = BLEND_MODE_NONE;
 		CullMode			Cull = CULL_MODE_BACK;
 		std::string			Tag = "Default";
+
+		bool operator==(const RenderState& other) const
+		{
+			return DepthWrite == other.DepthWrite &&
+				DepthTestOp == other.DepthTestOp &&
+				ColorMask == other.ColorMask &&
+				BlendColorSrc == other.BlendColorSrc &&
+				BlendColorDst == other.BlendColorDst &&
+				BlendAlphaSrc == other.BlendAlphaSrc &&
+				BlendAlphaDst == other.BlendAlphaDst &&
+				BlendColor == other.BlendColor &&
+				BlendAlpha == other.BlendAlpha &&
+				Cull == other.Cull &&
+				Tag == other.Tag;
+		}
 	};
 
 	struct ShaderConstantProperty
 	{
 		uint32_t			CBufferBindPoint = 0;
-		uint32_t			PropertyLocation = 0;
+		uint32_t			PropertyOffset = 0;
 	};
 
 	struct ShaderCBufferProperty
@@ -392,8 +465,17 @@ namespace GEngine
 		std::string			Name;
 		ShaderPropertyType	Type;
 		uint32_t			Size;
-		uint32_t 			Location;
-		uint32_t			Count;
+		uint32_t 			Offset;
+		uint32_t			ArraySize;
+
+		bool operator==(const ShaderReflectionConstantInfo& other) const
+		{
+			return Name == other.Name &&
+				Type == other.Type &&
+				Size == other.Size &&
+				Offset == other.Offset &&
+				ArraySize == other.ArraySize;
+		}
 	};
 
 	struct ShaderReflectionCBufferInfo
@@ -403,6 +485,15 @@ namespace GEngine
 		uint32_t									Size;
 		uint32_t									RegisterSpace;
 		std::vector<ShaderReflectionConstantInfo>	Constants;
+
+		bool operator==(const ShaderReflectionCBufferInfo& other) const
+		{
+			return Name == other.Name &&
+				BindPoint == other.BindPoint &&
+				Size == other.Size &&
+				RegisterSpace == other.RegisterSpace &&
+				Constants == other.Constants;
+		}
 	};
 
 	struct ShaderReflectionResourceInfo
@@ -410,16 +501,21 @@ namespace GEngine
 		std::string			Name;
 		ShaderPropertyType	Type;
 		uint32_t			BindPoint;
-		uint32_t			BindCount;
+		uint32_t			BufferSize; // for buffer
+		uint32_t			ArraySize;
 		uint32_t			RegisterSpace;
+
+		bool operator==(const ShaderReflectionResourceInfo& other) const
+		{
+			return Name == other.Name &&
+				Type == other.Type &&
+				BindPoint == other.BindPoint &&
+				BufferSize == other.BufferSize &&
+				ArraySize == other.ArraySize &&
+				RegisterSpace == other.RegisterSpace;
+		}
 	};
 
-	struct ShaderReflectionInfo
-	{
-		RenderState										State;
-		std::vector<ShaderReflectionCBufferInfo>		CBuffers;
-		std::vector<ShaderReflectionResourceInfo>		Resources;
-	};
 }
 
 namespace std
@@ -436,6 +532,69 @@ namespace std
 			size_t h5 = hash<int>()((int)key.WrapV);
 			size_t h6 = hash<int>()((int)key.WrapW);
 			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1) ^ (h6 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionResourceInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionResourceInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<int>()((int)key.Type);
+			size_t h3 = hash<uint32_t>()(key.BindPoint);
+			size_t h4 = hash<uint32_t>()(key.ArraySize);
+			size_t h5 = hash<uint32_t>()(key.RegisterSpace);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionConstantInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionConstantInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<int>()((int)key.Type);
+			size_t h3 = hash<uint32_t>()(key.Size);
+			size_t h4 = hash<uint32_t>()(key.Offset);
+			size_t h5 = hash<uint32_t>()(key.ArraySize);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionCBufferInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionCBufferInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<uint32_t>()(key.BindPoint);
+			size_t h3 = hash<uint32_t>()(key.Size);
+			size_t h4 = hash<uint32_t>()(key.RegisterSpace);
+			size_t h5 = 0;
+			for (const auto& constant : key.Constants)
+			{
+				h5 ^= hash<GEngine::ShaderReflectionConstantInfo>()(constant) + 0x9e3779b9 + (h5 << 6) + (h5 >> 2);
+			}
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+}
+
+namespace GEngine
+{
+	struct ShaderReflectionInfo
+	{
+		RenderState											State;
+		std::unordered_set<ShaderReflectionCBufferInfo>		CBuffers;
+		std::unordered_set<ShaderReflectionResourceInfo>	Resources;
+
+		bool operator==(const ShaderReflectionInfo& other) const
+		{
+			return State == other.State &&
+				CBuffers == other.CBuffers &&
+				Resources == other.Resources;
 		}
 	};
 }
