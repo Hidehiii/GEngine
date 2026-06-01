@@ -16,6 +16,7 @@ namespace GEngine
 	class GENGINE_API FrameBuffer
 	{
 	public:
+		FrameBuffer() = default;
 		virtual ~FrameBuffer() = default;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 

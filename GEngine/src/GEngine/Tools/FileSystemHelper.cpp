@@ -26,8 +26,8 @@ namespace GEngine
 			GE_CORE_INFO("{0} already exists", path);
 			return false;
 		}
-		std::filesystem::create_directories(path);
-		return true;
+		bool res = std::filesystem::create_directories(path);
+		return res;
 	}
 
 	bool FileSystemHelper::DeleteFolder(const std::string& path)

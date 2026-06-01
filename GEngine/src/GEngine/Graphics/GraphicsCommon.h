@@ -19,6 +19,9 @@
 #define GRAPHICS_API_EXT_VULKAN ".vulkan"
 #define GRAPHICS_API_EXT_D3DX12 ".d3dx12"
 
+// shader cache info file name example: cacheDir/fileName/info (it should include shader name, hash code, etc. to identify the shader and check if the cache is valid when loading cache)
+#define SHADER_CACHE_INFO_FILE_NAME "info"
+
 // shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
 
 namespace GEngine
@@ -517,6 +520,11 @@ namespace GEngine
 		}
 	};
 
+	struct ShaderCacheInfo
+	{
+		std::string Name;
+		uint32_t	HashCode;
+	};
 }
 
 namespace std

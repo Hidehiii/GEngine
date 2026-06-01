@@ -3,6 +3,7 @@
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
+#include "GEngine/Tools/Serializer.h"
 #include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Application.h"
 #include "Platform/OpenGL/OpenGLShader.h"
@@ -113,31 +114,33 @@ namespace GEngine
 		}
 	}
 
-	Shader::Shader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc)
-	{
-		m_FilePath = path;
-		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
-		std::vector<std::string> srcCodes; // each pass src code
-		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders; // pass { stage : code }
-		std::string source = FileSystemHelper::ReadFileAsString(path);
-		Preprocess(source, srcCodes);
-		if(LoadFromCache(shaders))
-		{
-			processMachingCodeFunc(shaders);
-			GE_INFO("Load shader {} from cache.", m_Name);
-			return;
-		}
-		Compile(srcCodes, shaders);
-		SaveToCache(shaders);
-		processMachingCodeFunc(shaders);
-	}
-
 	const ShaderPropertyType Shader::GetPropertyType(const std::string& name)
 	{
 		auto it = m_PropertyTypes.find(name);
 		if (it != m_PropertyTypes.end())
 			return it->second;
 		return ShaderPropertyType();
+	}
+
+	void Shader::InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc)
+	{
+		m_FilePath = path;
+		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
+		std::vector<std::string>											srcCodes; // each pass src code
+		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders; // pass { stage : code }
+		std::string															source = FileSystemHelper::ReadFileAsString(path);
+		ShaderCacheInfo														cache;
+		Preprocess(source, srcCodes);
+		if (LoadFromCache(shaders, source))
+		{
+			processMachingCodeFunc(shaders);
+			GE_INFO("Load shader {} from cache.", m_Name);
+			return;
+		}
+		Compile(srcCodes, shaders);
+		ComputeShaderCacheHash(source, cache);
+		SaveToCache(shaders, cache);
+		processMachingCodeFunc(shaders);
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
@@ -387,7 +390,7 @@ namespace GEngine
 		return true;
 	}
 
-	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache)
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
@@ -421,31 +424,39 @@ namespace GEngine
 				res = FileSystemHelper::DeleteDocument(oldCache);
 				GE_CORE_ASSERT(res, "Failed to delete old shader cache file!");
 			}
-		}
-		// each pass and each stage write in sperate file
-		for (int i = 0; i < shaders.size(); i++)
-		{
-			std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
-			for (auto& [stage, code] : shaders.at(i))
+
+			// create a info file to indentify the shader, it can be used to check if the cache is valid when loading cache, include shader name, hash code
+			if (FileSystemHelper::CreateDocument(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME) == false)
 			{
-				// create document
-				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
-				res = FileSystemHelper::CreateDocument(cachePath);
-				res = FileSystemHelper::IsDocument(cachePath);
-				GE_CORE_ASSERT(res, "Failed to create shader cache file!");
-				// write machine code
-				std::vector<char> data;
-				data.resize(code.size() * sizeof(uint32_t));
-				memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
-				res = FileSystemHelper::WriteFile(cachePath, data);
-				GE_CORE_ASSERT(res, "Failed to write shader cache file!");
+				GE_CORE_ASSERT(false, "Failed to create shader cache info file!");
+			}
+			else
+			{
+				Serializer::Serialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cache);
+			}
+			// each pass and each stage write in sperate file
+			for (int i = 0; i < shaders.size(); i++)
+			{
+				std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
+				for (auto& [stage, code] : shaders.at(i))
+				{
+					// create document
+					std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
+					res = FileSystemHelper::CreateDocument(cachePath);
+					res = FileSystemHelper::IsDocument(cachePath);
+					GE_CORE_ASSERT(res, "Failed to create shader cache file!");
+					// write machine code
+					std::vector<char> data;
+					data.resize(code.size() * sizeof(uint32_t));
+					memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
+					res = FileSystemHelper::WriteFile(cachePath, data);
+					GE_CORE_ASSERT(res, "Failed to write shader cache file!");
+				}
 			}
 		}
-		
-
 	}
 
-	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source)
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
@@ -463,6 +474,14 @@ namespace GEngine
 		{
 			return false;
 		}
+		//identify cache by info file, check if the shader name and hash code match, if not match, return false to recompile shader
+		ShaderCacheInfo cacheInfo;
+		Serializer::Deserialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cacheInfo);
+		if (IdentifyShaderCache(source, cacheInfo) == false)
+		{
+			return false;
+		}
+		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spv"
 		std::vector<std::string> cacheFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
 		if(cacheFiles.size() == 0)
 		{

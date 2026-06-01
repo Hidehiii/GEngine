@@ -253,6 +253,13 @@ namespace GEngine
 	{
 		static_assert(false);
 	}
+
+	template<typename T>
+	void Serializer::Serialize(const std::string& filepath, T& data)
+	{
+		static_assert(false);
+	}
+
 	// 编码config
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Config>& config)
@@ -276,6 +283,7 @@ namespace GEngine
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 	}
+
 	// 编码场景的YAML数据
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Scene>& scene)
@@ -302,6 +310,7 @@ namespace GEngine
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 	}
+
 	// 编码材质的YAML数据
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Material>& material)
@@ -341,11 +350,33 @@ namespace GEngine
 		fout << out.c_str();
 	}
 
+	// 编码shader cache数据
+	template <>
+	static void GENGINE_API Serializer::Serialize(const std::string& filepath, ShaderCacheInfo& cache)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Name" << YAML::Value << cache.Name;
+		out << YAML::Key << "HashCode" << YAML::Value << cache.HashCode;
+		out << YAML::EndMap;
+
+		std::ofstream fout(filepath);
+		fout << out.c_str();
+	}
+
+
 	template<typename T>
 	static void Serializer::Deserialize(const std::string& filepath, Ref<T>& data)
 	{
 		static_assert(false);
 	}
+
+	template<typename T>
+	void Serializer::Deserialize(const std::string& filepath, T& data)
+	{
+		static_assert(false);
+	}
+
 	// 解码config数据
 	template <>
 	static void  GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Config>& config)
@@ -504,6 +535,7 @@ namespace GEngine
 			}
 		}
 	}
+
 	// 解码材质的YAML数据
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Material>& material)
@@ -515,7 +547,7 @@ namespace GEngine
 		}
 		catch (YAML::ParserException e)
 		{
-			GE_CORE_ERROR("Failed to load scene file: {0}, \n{1}", filepath, e.what());
+			GE_CORE_ERROR("Failed to load material file: {0}, \n{1}", filepath, e.what());
 			return;
 		}
 		if (!data["Material"])
@@ -530,5 +562,24 @@ namespace GEngine
 			// TODO 
 			GE_CORE_CRITICAL("这里的材质解码还没写");
 		}
+	}
+
+	// 解码shader cache数据
+	template <>
+	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, ShaderCacheInfo& cache)
+	{
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (YAML::ParserException e)
+		{
+			GE_CORE_ERROR("Failed to load shader cache file: {0}, \n{1}", filepath, e.what());
+			return;
+		}
+
+		cache.Name		= data["Name"].as<std::string>();
+		cache.HashCode	= data["HashCode"].as<uint32_t>();
 	}
 }

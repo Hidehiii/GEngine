@@ -26,9 +26,8 @@ namespace GEngine
 	}
 
 	VulkanShader::VulkanShader(const std::string& path)
-		: Shader(path, GE_BIND_CLASS_FUNCTION_LAMBDA(ProcessMachineCode))
 	{
-		
+		InitializeShader(path, GE_BIND_CLASS_FUNCTION_LAMBDA(ProcessMachineCode));
 	}
 	VulkanShader::~VulkanShader()
 	{

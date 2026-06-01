@@ -9,9 +9,6 @@
 #include "GEngine/Compute/StorageBuffer.h"
 #include <algorithm>
 
-
-
-
 namespace GEngine
 {
 	
@@ -49,7 +46,7 @@ namespace GEngine
 	class GENGINE_API Shader
 	{
 	protected:
-		Shader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc);
+		Shader() = default;
 	public:
 		virtual ~Shader() = default;
 
@@ -71,12 +68,15 @@ namespace GEngine
 		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
 		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
 
-	protected:
+	private:
+		virtual void										InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc);
+		virtual bool										IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
 		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) = 0;
-		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
-		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
+		virtual void										ComputeShaderCacheHash(const std::string& source, ShaderCacheInfo& cache);
+		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache);
+		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source);
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;

@@ -17,7 +17,13 @@ namespace GEngine
 		static void Serialize(const std::string& filepath, Ref<T>& data);
 
 		template<typename T>
+		static void Serialize(const std::string& filepath, T& data);
+
+		template<typename T>
 		static void Deserialize(const std::string& filepath, Ref<T>& data);
+
+		template<typename T>
+		static void Deserialize(const std::string& filepath, T& data);
 	};
 }
 
