@@ -129,7 +129,56 @@ namespace GEngine
 		return result;
 	}
 
-	std::string FileSystemHelper::GetDocumentName(const std::string& path)
+	std::vector<std::string> FileSystemHelper::GetDocumentNamesInFolderWithExtension(const std::string& folderPath, const std::string& extension, const std::string& partOfDocName)
+	{
+		std::vector<std::string> result;
+		if (IsFolder(folderPath))
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			{
+				if (IsDocument(entry.path().string()))
+				{
+					if ((extension.empty() || entry.path().extension() == extension) &&
+						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					{
+						result.push_back(entry.path().filename().string());
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	std::vector<std::string> FileSystemHelper::GetDocumentNamesInFolderWithoutExtension(const std::string& folderPath, const std::string& extension, const std::string& partOfDocName)
+	{
+		std::vector<std::string> result;
+		if (IsFolder(folderPath))
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			{
+				if (IsDocument(entry.path().string()))
+				{
+					if ((extension.empty() || entry.path().extension() == extension) &&
+						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					{
+						result.push_back(entry.path().stem().string());
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	std::string FileSystemHelper::GetDocumentNameWithExtension(const std::string& path)
+	{
+		if (IsDocument(path))
+		{
+			return std::filesystem::path(path).filename().string();
+		}
+		return std::string();
+	}
+
+	std::string FileSystemHelper::GetDocumentNameWithoutExtension(const std::string& path)
 	{
 		if (IsDocument(path))
 		{

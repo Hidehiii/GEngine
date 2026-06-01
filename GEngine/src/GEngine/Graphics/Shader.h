@@ -68,13 +68,14 @@ namespace GEngine
 		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
 		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
 
-	private:
+	protected:
 		virtual void										InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc);
+	private:
 		virtual bool										IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
 		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) = 0;
-		virtual void										ComputeShaderCacheHash(const std::string& source, ShaderCacheInfo& cache);
+		virtual void										ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache);
 		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source);
 	protected:

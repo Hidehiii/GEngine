@@ -28,6 +28,7 @@ IncludeDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/include"
 IncludeDir["DirectXHeaders"] = "%{wks.location}/GEngine/vendor/DirectX-Headers/include"
 IncludeDir["HLSLcc"] = "%{wks.location}/GEngine/vendor/HLSLcc/include"
 IncludeDir["dxc"] = "%{wks.location}/GEngine/vendor/dxc/inc"
+IncludeDir["OpenSSL"] = "%{wks.location}/GEngine/vendor/OpenSSL/include"
 
 LibraryDir = {}
 
@@ -38,6 +39,8 @@ LibraryDir["mono"] = "%{wks.location}/GEngine/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["PhysX"] = "%{wks.location}/GEngine/vendor/PhysX/lib/%{cfg.buildcfg}/"
 LibraryDir["dxc"] = "%{wks.location}/GEngine/vendor/dxc/lib/x64"
 LibraryDir["dxc_dll"] = "%{wks.location}/GEngine/vendor/dxc/bin/x64/"
+LibraryDir["OpenSSL"] = "%{wks.location}/GEngine/vendor/OpenSSL/lib/VC/x64"
+LibraryDir["OpenSSL_dll"] = "%{wks.location}/GEngine/vendor/OpenSSL/bin/"
 
 Library = {}
 
@@ -69,6 +72,12 @@ Library["PhysXCooking_64"] = "%{LibraryDir.PhysX}PhysXCooking_64.lib"
 
 Library["dxc_dxcompiler"] = "%{LibraryDir.dxc}/dxcompiler.lib"
 Library["dxc_dxil"] = "%{LibraryDir.dxc}/dxil.lib"
+
+Library["OpenSSL_ssl_Debug"] = "%{LibraryDir.OpenSSL}/MDd/libssl.lib"
+Library["OpenSSL_crypto_Debug"] = "%{LibraryDir.OpenSSL}/MDd/libcrypto.lib"
+
+Library["OpenSSL_ssl_Release"] = "%{LibraryDir.OpenSSL}/MD/libssl.lib"
+Library["OpenSSL_crypto_Release"] = "%{LibraryDir.OpenSSL}/MD/libcrypto.lib"
 
 -- Windows
 Library["WinSock"] = "Ws2_32.lib"

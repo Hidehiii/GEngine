@@ -78,7 +78,7 @@ namespace GEngine
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 	protected:
-		virtual std::vector<std::unordered_map<uint32_t, uint32_t>> InitializePassPropertiesMemory(); // pass{ cbuffer bind point : properties size }
+		virtual std::vector<std::unordered_map<uint32_t, uint32_t>> InitializePassPropertiesMemory(const Ref<Shader>& shader); // pass{ cbuffer bind point : properties size }
 
 		virtual void WriteConstProperty(const std::string& name, const void* value, const uint32_t size);
 		virtual const void* ReadConstProperty(const std::string& name);
@@ -87,7 +87,6 @@ namespace GEngine
 
 	protected:
 		std::string																m_Name;
-		Ref<Shader>																m_Shader;
 
 		std::vector<ShaderPass>													m_Passes;
 	};

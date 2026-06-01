@@ -6,6 +6,7 @@
 #include "Utils/GUIUtils.h"
 #include "GEngine/Physics/3D/Physics3D.h"
 #include "GEngine/Core/Input.h"
+#include "GEngine/Tools/OpenSSLTool.h"
 
 
 namespace GEngine
@@ -48,7 +49,7 @@ namespace GEngine
 		Graphics::Init();
 		ScriptEngine::Init();
 		Physics3D::Init();
-
+		OpenSSLTool::Init();
 
 
 		m_ImGuiLayer = new ImGuiLayer();

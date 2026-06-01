@@ -4,6 +4,7 @@
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
 #include "GEngine/Tools/Serializer.h"
+#include "GEngine/Tools/OpenSSLTool.h"
 #include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Application.h"
 #include "Platform/OpenGL/OpenGLShader.h"
@@ -138,9 +139,15 @@ namespace GEngine
 			return;
 		}
 		Compile(srcCodes, shaders);
-		ComputeShaderCacheHash(source, cache);
+		ComputeShaderCacheInfo(source, cache);
 		SaveToCache(shaders, cache);
 		processMachingCodeFunc(shaders);
+	}
+
+	bool Shader::IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache)
+	{
+		std::string hashCode = OpenSSLTool::ComputeMD5(source);
+		return cache.Name == m_Name && cache.HashCode == hashCode;
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
@@ -390,11 +397,17 @@ namespace GEngine
 		return true;
 	}
 
+	void Shader::ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache)
+	{
+		cache.Name		= m_Name;
+		cache.HashCode	= OpenSSLTool::ComputeMD5(source);
+	}
+
 	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache)
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
-		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentName(m_FilePath);
+		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
@@ -460,7 +473,7 @@ namespace GEngine
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
-		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentName(m_FilePath);
+		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
@@ -483,19 +496,28 @@ namespace GEngine
 		}
 		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spv"
 		std::vector<std::string> cacheFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
+		std::vector<int> passIndices;
 		if(cacheFiles.size() == 0)
 		{
 			return false;
 		}
-		// it should from 0 to n-1
-		sort(cacheFiles.begin(), cacheFiles.end());
-		shaders.resize(std::stoi(cacheFiles.back().substr(0, cacheFiles.back().find('.'))) + 1);
+		// it should from 0 to n-1, resize vector to passIndices.back() + 1 to make sure the index is valid
+		for (auto& file : cacheFiles)
+		{
+			std::string name = FileSystemHelper::GetDocumentNameWithoutExtension(file);
+			size_t pos = name.find('.');
+			int passIndex = std::stoi(name.substr(0, pos));
+			passIndices.push_back(passIndex);
+		}
+		sort(passIndices.begin(), passIndices.end());
+		shaders.resize(passIndices.back());
 		// each pass and each stage read from sperate file
 		for (auto& file : cacheFiles)
 		{
-			size_t pos = file.find('.');
-			std::string stage = file.substr(pos + 1, file.find('.', pos + 1) - pos - 1);
-			int passIndex = std::stoi(file.substr(0, pos));
+			std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
+			size_t pos = fileName.find('.');
+			std::string stage = fileName.substr(pos + 1, fileName.size() - pos - 1);
+			int passIndex = std::stoi(fileName.substr(0, pos));
 			// read machine code
 			std::vector<char> data;
 			data = FileSystemHelper::ReadFile(file);

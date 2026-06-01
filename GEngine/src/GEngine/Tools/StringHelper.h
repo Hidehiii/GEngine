@@ -7,6 +7,8 @@ namespace GEngine
 	class GENGINE_API StringHelper
 	{
 	public:
+		StringHelper() = delete;
+
 		static std::string FromCharVector(const std::vector<char>& vector);
 		
 		static std::string WideStringToString(const std::wstring& wideString);

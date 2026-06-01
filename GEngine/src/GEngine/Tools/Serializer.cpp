@@ -8,6 +8,7 @@
 #include "GEngine/Graphics/Material.h"
 #include "GEngine/Core/Config.h"
 #include<filesystem>
+#include "GEngine/Tools/FileSystemHelper.h"
 
 namespace YAML
 {
@@ -381,6 +382,11 @@ namespace GEngine
 	template <>
 	static void  GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Config>& config)
 	{
+		if(FileSystemHelper::IsDocument(filepath) == false)
+		{
+			GE_CORE_INFO("Failed to load config file: {0}, because it is not a document.", filepath);
+			return;
+		}
 		YAML::Node data;
 		if (!std::filesystem::exists(filepath))
 		{
@@ -408,6 +414,11 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Scene>& scene)
 	{
+		if (FileSystemHelper::IsDocument(filepath) == false)
+		{
+			GE_CORE_INFO("Failed to load scene file: {0}, because it is not a document.", filepath);
+			return;
+		}
 		YAML::Node data;
 		try
 		{
@@ -540,6 +551,11 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Material>& material)
 	{
+		if(FileSystemHelper::IsDocument(filepath) == false)
+		{
+			GE_CORE_INFO("Material file is missing: {0}", filepath);
+			return;
+		}
 		YAML::Node data;
 		try
 		{
@@ -568,6 +584,11 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, ShaderCacheInfo& cache)
 	{
+		if(FileSystemHelper::IsDocument(filepath) == false)
+		{
+			GE_CORE_INFO("Shader cache file is missing: {0}", filepath);
+			return;
+		}
 		YAML::Node data;
 		try
 		{
@@ -580,6 +601,6 @@ namespace GEngine
 		}
 
 		cache.Name		= data["Name"].as<std::string>();
-		cache.HashCode	= data["HashCode"].as<uint32_t>();
+		cache.HashCode	= data["HashCode"].as<std::string>();
 	}
 }

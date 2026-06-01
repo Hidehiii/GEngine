@@ -341,60 +341,88 @@ namespace GEngine
 
         CheckInstanceExtensionSupport(m_PhysicalDevice);
 
+        void* deviceExtHead = nullptr;
+		void** pLastPNext     = nullptr;
+
+        // make sure device features 2 is the first one in the pNext chain.
         VkPhysicalDeviceFeatures2               deviceFeatures2 = {};
         deviceFeatures2.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &deviceFeatures2, &deviceFeatures2.pNext);
 
         VkPhysicalDevice16BitStorageFeatures    bitsStorage16 = {};
         bitsStorage16.sType                     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
-        deviceFeatures2.pNext                   = &bitsStorage16;
+        if(IsEnabledInstanceExtension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &bitsStorage16, &bitsStorage16.pNext);
 
         VkPhysicalDeviceExtendedDynamicState2FeaturesEXT    extendedDynamicState2Features = {};
         extendedDynamicState2Features.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT;
-        bitsStorage16.pNext                                 = &extendedDynamicState2Features;
+		if (IsEnabledInstanceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &extendedDynamicState2Features, &extendedDynamicState2Features.pNext);
         
 		VkPhysicalDeviceExtendedDynamicState3FeaturesEXT    extendedDynamicState3Features = {};
 		extendedDynamicState3Features.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
-        extendedDynamicState2Features.pNext                 = &extendedDynamicState3Features;
+		if (IsEnabledInstanceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &extendedDynamicState3Features, &extendedDynamicState3Features.pNext);
 
         VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR  separateDepthStencilLayoutFeaturesKHR = {};
         separateDepthStencilLayoutFeaturesKHR.sType             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES_KHR;
-        extendedDynamicState3Features.pNext                     = &separateDepthStencilLayoutFeaturesKHR;
+		if (IsEnabledInstanceExtension(VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &separateDepthStencilLayoutFeaturesKHR, &separateDepthStencilLayoutFeaturesKHR.pNext);
 
         VkPhysicalDeviceImageCompressionControlFeaturesEXT  imageCompressionControlFeatrue = {};
         imageCompressionControlFeatrue.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT;
-        separateDepthStencilLayoutFeaturesKHR.pNext         = &imageCompressionControlFeatrue;
+		if (IsEnabledInstanceExtension(VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &imageCompressionControlFeatrue, &imageCompressionControlFeatrue.pNext);
 
         VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT imageCompressionControlSwapchainFeatrue = {};
         imageCompressionControlSwapchainFeatrue.sType               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT;
-        imageCompressionControlFeatrue.pNext                        = &imageCompressionControlSwapchainFeatrue;
+		if (IsEnabledInstanceExtension(VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME) && IsEnabledInstanceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &imageCompressionControlSwapchainFeatrue, &imageCompressionControlSwapchainFeatrue.pNext);
 
         VkPhysicalDeviceShaderFloat16Int8Features       shaderFloat16Int8Feature = {};
         shaderFloat16Int8Feature.sType                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES;
-        imageCompressionControlSwapchainFeatrue.pNext   = &shaderFloat16Int8Feature;
+		if (IsEnabledInstanceExtension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &shaderFloat16Int8Feature, &shaderFloat16Int8Feature.pNext);
 
         VkPhysicalDeviceAccelerationStructureFeaturesKHR    accelerationStructureFeature = {};
         accelerationStructureFeature.sType                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-        shaderFloat16Int8Feature.pNext                      = &accelerationStructureFeature;
+		if (IsEnabledInstanceExtension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &accelerationStructureFeature, &accelerationStructureFeature.pNext);
 
         VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR   rayTracingMaintenance1Feature = {};
         rayTracingMaintenance1Feature.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR;
-        accelerationStructureFeature.pNext                  = &rayTracingMaintenance1Feature;
+		if (IsEnabledInstanceExtension(VK_KHR_RAY_TRACING_MAINTENANCE_1_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &rayTracingMaintenance1Feature, &rayTracingMaintenance1Feature.pNext);
 
         VkPhysicalDeviceRayTracingPipelineFeaturesKHR   rayTracingPipelineFeature = {};
         rayTracingPipelineFeature.sType                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-        rayTracingMaintenance1Feature.pNext             = &rayTracingPipelineFeature;
+		if (IsEnabledInstanceExtension(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &rayTracingPipelineFeature, &rayTracingPipelineFeature.pNext);
 
         VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR  rayTracingPositionFetchFeature = {};
         rayTracingPositionFetchFeature.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR;
-        rayTracingPipelineFeature.pNext                     = &rayTracingPositionFetchFeature;
+		if (IsEnabledInstanceExtension(VK_KHR_RAY_TRACING_POSITION_FETCH_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &rayTracingPositionFetchFeature, &rayTracingPositionFetchFeature.pNext);
 
         VkPhysicalDeviceRayQueryFeaturesKHR     rayQueryFeature = {};
         rayQueryFeature.sType                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-        rayTracingPositionFetchFeature.pNext    = &rayQueryFeature;
+		if (IsEnabledInstanceExtension(VK_KHR_RAY_QUERY_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &rayQueryFeature, &rayQueryFeature.pNext);
+
+        VkPhysicalDeviceMultiviewFeatures   multiviewFeature = {};
+        multiviewFeature.sType              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+        if (IsEnabledInstanceExtension(VK_KHR_MULTIVIEW_EXTENSION_NAME))
+            ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &multiviewFeature, &multiviewFeature.pNext);
+
+		VkPhysicalDeviceFragmentShadingRateFeaturesKHR  fragmentShadingRateFeature = {};
+		fragmentShadingRateFeature.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+		if (IsEnabledInstanceExtension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &fragmentShadingRateFeature, &fragmentShadingRateFeature.pNext);
 
         VkPhysicalDeviceMeshShaderFeaturesEXT   meshShader = {};
         meshShader.sType                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
-        rayQueryFeature.pNext                   = &meshShader;
+		if (IsEnabledInstanceExtension(VK_EXT_MESH_SHADER_EXTENSION_NAME))
+			ConcatenateDeviceExtensions(deviceExtHead, pLastPNext, &meshShader, &meshShader.pNext);
         
 
         vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
@@ -403,7 +431,7 @@ namespace GEngine
         createInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount     = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos        = queueCreateInfos.data();
-        createInfo.pNext                    = &deviceFeatures2;
+        createInfo.pNext                    = deviceExtHead;
 
         std::vector<const char*>            extensions = m_InstanceExtensions;
         for (const auto& extension : m_DeviceExtensions)
@@ -719,6 +747,31 @@ namespace GEngine
 			m_Function.vkCmdSetPolygonModeEXT = (PFN_vkCmdSetPolygonModeEXT)vkGetDeviceProcAddr(m_Device, VAR_NAME(vkCmdSetPolygonModeEXT));
 			if (m_Function.vkCmdSetPolygonModeEXT)
 				GE_CORE_INFO("Load Functoin (vkCmdSetPolygonModeEXT)");
+    }
+
+    void VulkanContext::ConcatenateDeviceExtensions(void*& head, void**& pLastPNext, void* pExt, void** pPNext)
+    {
+        if (head == nullptr)
+        {
+            head = pExt;
+        }
+        else
+        {
+			*pLastPNext = pExt;
+        }
+        pLastPNext = pPNext;
+    }
+
+    bool VulkanContext::IsEnabledInstanceExtension(const char* ext)
+    {
+        for(int i = 0; i < m_InstanceExtensions.size(); i++)
+        {
+            if (strcmp(m_InstanceExtensions[i], ext) == 0)
+            {
+                return true;
+            }
+		}
+        return false;
     }
 
     void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)

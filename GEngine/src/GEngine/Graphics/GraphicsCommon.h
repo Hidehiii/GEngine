@@ -523,7 +523,7 @@ namespace GEngine
 	struct ShaderCacheInfo
 	{
 		std::string Name;
-		uint32_t	HashCode;
+		std::string	HashCode;
 	};
 }
 

@@ -85,8 +85,6 @@
 
 
 
-
-
 namespace GEngine {
 
 	// Scope and Ref

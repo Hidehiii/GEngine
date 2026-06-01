@@ -9,7 +9,7 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<OpenGLShader>(shader);
 		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
-		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory();
+		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
 		for(auto& pass : sizes)
 		{

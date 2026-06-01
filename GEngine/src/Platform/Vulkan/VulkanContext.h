@@ -98,6 +98,8 @@ namespace GEngine
 		void						CreateSyncObjects();
 		void						CleanUpSwapChain();
 		void						LoadFunctionEXT(std::vector<const char*> ext);
+		void						ConcatenateDeviceExtensions(void*& head, void**& pLastPNext, void* pExt, void** pPNext);
+		bool						IsEnabledInstanceExtension(const char* ext);
 	private:
 	private:
 		GLFWwindow*							m_WindowHandle;
@@ -139,7 +141,11 @@ namespace GEngine
 			VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
 			VK_KHR_RAY_TRACING_POSITION_FETCH_EXTENSION_NAME,
 			VK_KHR_RAY_QUERY_EXTENSION_NAME,
+			VK_KHR_MULTIVIEW_EXTENSION_NAME,
+			VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
 			VK_EXT_MESH_SHADER_EXTENSION_NAME,
+			VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
+			VK_GOOGLE_USER_TYPE_EXTENSION_NAME
 		};
 		bool								m_VSync = false;
 		VkSwapchainKHR						m_SwapChain;

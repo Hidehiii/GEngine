@@ -9,8 +9,7 @@ namespace GEngine
 	class GENGINE_API Serializer
 	{
 	public:
-		Serializer() = default;
-		~Serializer() = default;
+		Serializer() = delete;
 
 
 		template<typename T>

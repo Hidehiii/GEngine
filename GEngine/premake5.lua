@@ -54,7 +54,8 @@ project "GEngine"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.DirectXHeaders}",
 		"%{IncludeDir.HLSLcc}",
-		"%{IncludeDir.dxc}"
+		"%{IncludeDir.dxc}",
+		"%{IncludeDir.OpenSSL}",
 	}
 
 	links
@@ -112,7 +113,7 @@ project "GEngine"
 			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
 			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
 			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
-			
+			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.OpenSSL_dll}*.dll\" \"%%d\\\""),
 		}
 
 	filter "configurations:Debug"
@@ -130,7 +131,8 @@ project "GEngine"
 			"%{Library.FBX_XML2_Debug}",
 			"%{Library.FBX_Z_Debug}",
 
-			
+			"%{Library.OpenSSL_ssl_Debug}",
+			"%{Library.OpenSSL_crypto_Debug}",
 		}
 	
 	filter "configurations:Release"
@@ -147,6 +149,9 @@ project "GEngine"
 			"%{Library.FBX_SDK_Release}",
 			"%{Library.FBX_XML2_Release}",
 			"%{Library.FBX_Z_Release}",
+
+			"%{Library.OpenSSL_ssl_Release}",
+			"%{Library.OpenSSL_crypto_Release}",
 		}
 
 	filter "configurations:Dist"
@@ -163,4 +168,7 @@ project "GEngine"
 			"%{Library.FBX_SDK_Release}",
 			"%{Library.FBX_XML2_Release}",
 			"%{Library.FBX_Z_Release}",
+
+			"%{Library.OpenSSL_ssl_Release}",
+			"%{Library.OpenSSL_crypto_Release}",
 		}
