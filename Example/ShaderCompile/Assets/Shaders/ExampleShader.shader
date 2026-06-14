@@ -83,4 +83,42 @@ Shader "ExampleShader"
             }
         }
     }
+
+    Pass
+    {
+        Tag Secondary
+
+        #pragma vertex vert
+        #pragma fragment frag
+
+        Program
+        {
+            struct VsInput
+            {
+                float4 vertex : POSITION;
+            };
+
+            struct VsOutput
+            {
+                float4 pos : SV_POSITION;
+            };
+
+            cbuffer material
+            {
+                float3 _Color;
+            };
+
+            VsOutput vert(VsInput IN)
+            {
+                VsOutput OUT;
+                OUT.pos = IN.vertex;
+                return OUT;
+            }
+
+            float4 frag(VsOutput IN) : SV_Target
+            {
+                return float4(_Color, 1.0);
+            }
+        }
+    }
 }

@@ -126,6 +126,11 @@ namespace GEngine
 					
 					size += prop.Size;
 				}
+
+				// The info size is the correct size calculated by shader reflection, 
+				// but the sum of properties size may be wrong due to padding, 
+				// so we use the info size as the cbuffer size and assert in debug mode.
+				// Should fix this later.
 				GE_CORE_ASSERT(size == info.Size, "CBuffer size mismatch!");
 
 #ifdef GE_DEBUG
