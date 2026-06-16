@@ -38,23 +38,6 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown shader type");
 			return 0;
 		}
-
-		const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
-		{
-			switch (stage)
-			{
-			case GL_VERTEX_SHADER:			return ".cached_opengl_vert";
-			case GL_FRAGMENT_SHADER:		return ".cached_opengl_frag";
-			case GL_COMPUTE_SHADER:			return ".cached_opengl_comp";
-			case GL_TESS_CONTROL_SHADER:	return ".cached_opengl_hull";
-			case GL_TESS_EVALUATION_SHADER:	return ".cached_opengl_doma";
-			case GL_GEOMETRY_SHADER:		return ".cached_opengl_geom";
-			case GL_TASK_SHADER_NV:			return ".cached_opengl_ampl";
-			case GL_MESH_SHADER_NV:			return ".cached_opengl_mesh";
-			}
-			GE_CORE_ASSERT(false, "");
-			return "";
-		}
 	}
 
 	
@@ -114,7 +97,7 @@ namespace GEngine
 		glUniformMatrix4fv(glGetUniformLocation(m_Programs[pass], name.c_str()), count, GL_FALSE, Math::ValuePtr(*value));
 	}
 
-	void OpenGLShader::ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	void OpenGLShader::ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders)
 	{
 		m_Programs.clear();
 		m_Programs.resize(shaders.size());
@@ -123,10 +106,10 @@ namespace GEngine
 			GLuint program = glCreateProgram();
 			std::vector<GLuint> shaderIDs;
 
-			for (auto&& [stage, spirv] : shaders[i])
+			for (auto&& [stage, byte] : shaders[i])
 			{
 				GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, byte.data(), byte.size());
 				glSpecializeShader(shaderID, m_StageEntryPoints[i][stage].c_str(), 0, nullptr, nullptr);
 				glAttachShader(program, shaderID);
 			}

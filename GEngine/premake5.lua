@@ -67,7 +67,7 @@ project "GEngine"
 		"Box2D",
 		"opengl32.lib",
 		"d3dcompiler.lib",
-		"D3D12.lib",
+		"d3d12.lib",
 		"dxgi.lib",
 		"dxguid.lib",
 		"%{Library.mono}",

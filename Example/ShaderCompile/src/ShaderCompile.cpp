@@ -7,7 +7,7 @@ namespace GEngine
 	}
 	void ShaderCompile::OnAttach()
 	{
-		Ref<Material> mat = Material::Create("Assets/Shaders/ExampleShader.shader", "ExampleShader");
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/ExampleShader.shader");
 	}
 	void ShaderCompile::OnPresent()
 	{

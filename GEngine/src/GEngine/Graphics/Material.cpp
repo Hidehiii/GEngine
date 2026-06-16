@@ -99,51 +99,76 @@ namespace GEngine
 		GE_CORE_ASSERT(shader, "Shader ref is NULL!");
 		auto& passes = shader->GetPasseReflections();
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes;
-		m_Passes.clear();
+		ClearAllPasses();
 		for (size_t i = 0; i < passes.size(); i++)
 		{
 			m_Passes.push_back(ShaderPass());
-			m_Passes.at(m_Passes.size() - 1).State = passes[i].State;
-			sizes.push_back(std::unordered_map<uint32_t, uint32_t>());
-
-			for (auto& info : passes.at(i).CBuffers)
-			{
-				uint32_t size = 0;
-				for (auto& prop : info.Properties)
-				{
-					ShaderConstantProperty		property;
-					property.CBufferBindPoint	= info.BindPoint;
-					property.PropertyOffset		= prop.Offset;
-
-#ifdef GE_DEBUG
-					if(m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.find(prop.Name) != m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.end())
-					{
-						GE_CORE_WARN("Already exists constant property name '{}' in cbuffer bind point {}!", prop.Name, m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name].CBufferBindPoint);
-						GE_CORE_WARN("Material::InitializePassPropertiesMemory: Duplicate constant property name '{}' in cbuffer '{}', bind point {}!", prop.Name, info.Name, info.BindPoint);
-					}
-#endif
-					m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name] = property;
-					
-					size += prop.Size;
-				}
-				GE_CORE_ASSERT(size <= info.Size, "CBuffer size mismatch!");
-
-#ifdef GE_DEBUG
-				if(m_Passes.at(m_Passes.size() - 1).CBuffers.find(info.BindPoint) != m_Passes.at(m_Passes.size() - 1).CBuffers.end())
-				{
-					GE_CORE_WARN("Already exists cbuffer bind point {}!", info.BindPoint);
-					GE_CORE_WARN("Material::InitializePassPropertiesMemory: Duplicate cbuffer '{}' bind point {}!", info.Name, info.BindPoint);
-				}
-#endif
-				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint] = Buffer();
-				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].Allocate(info.Size);
-				m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].ZeroInitialize();
-
-				sizes.at(sizes.size() - 1)[info.BindPoint] = info.Size;
-			}
+			InitializePassRenderState(passes[i].State);
+			InitializePassCBuffer(passes[i].CBuffers, sizes);
+			InitializePassResource(passes[i].Resources);
 		}
 		return sizes;
 	}
+
+	void Material::InitializePassRenderState(const RenderState& state)
+	{
+		m_Passes.at(m_Passes.size() - 1).State = state;
+	}
+
+	void Material::InitializePassCBuffer(const std::unordered_set<ShaderReflectionCBufferInfo>& cbuffers, std::vector<std::unordered_map<uint32_t, uint32_t>>& sizes)
+	{
+		sizes.push_back(std::unordered_map<uint32_t, uint32_t>());
+
+		for (auto& info : cbuffers)
+		{
+
+			for (auto& prop : info.Properties)
+			{
+				ShaderConstantProperty		property;
+				property.CBufferBindPoint = info.BindPoint;
+				property.PropertyOffset = prop.Offset;
+
+#ifdef GE_DEBUG
+				if (m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.find(prop.Name) != m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.end())
+				{
+					GE_CORE_WARN("Already exists constant property name '{}' in cbuffer bind point {}!", prop.Name, m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name].CBufferBindPoint);
+				}
+#endif
+				m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc[prop.Name] = property;
+			}
+
+#ifdef GE_DEBUG
+			if (m_Passes.at(m_Passes.size() - 1).CBuffers.find(info.BindPoint) != m_Passes.at(m_Passes.size() - 1).CBuffers.end())
+			{
+				GE_CORE_WARN("Already exists cbuffer bind point {}!", info.BindPoint);
+			}
+#endif
+			m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint] = Buffer();
+			m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].Allocate(info.Size);
+			m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].ZeroInitialize();
+
+			sizes.at(sizes.size() - 1)[info.BindPoint] = info.Size;
+		}
+	}
+
+	void Material::InitializePassResource(const std::unordered_set<ShaderReflectionResourceInfo>& resources)
+	{
+		for (auto& res : resources)
+		{
+			ShaderResourceProperty property;
+			property.Location = res.BindPoint;
+
+#ifdef GE_DEBUG
+			if(m_Passes.at(m_Passes.size() - 1).ResourceProperties.find(res.Name) != m_Passes.at(m_Passes.size() - 1).ResourceProperties.end())
+			{
+				GE_CORE_WARN("Already exists resource property name '{}' in bind point {}!", res.Name, m_Passes.at(m_Passes.size() - 1).ResourceProperties[res.Name].Location);
+			}
+#endif
+
+			m_Passes.at(m_Passes.size() - 1).ResourceProperties[res.Name] = property;
+		}
+	}
+
 	void Material::WriteConstProperty(const std::string& name, const void* value, const uint32_t size)
 	{
 		for (auto& pass : m_Passes)
@@ -185,5 +210,31 @@ namespace GEngine
 			}
 		}
 		return nullptr;
+	}
+	void Material::ClearAllPasses()
+	{
+		for (auto& pass : m_Passes)
+		{
+			for (auto& [bindPoint, buffer] : pass.CBuffers)
+			{
+				buffer.Release();
+			}
+			pass.CBuffers.clear();
+			pass.ConstPropertiesDesc.clear();
+			pass.ResourceProperties.clear();
+		}
+		m_Passes.clear();
+	}
+	void Material::ReleaseCBufferMemory(const int& pass, const uint32_t& bindPoint)
+	{
+		GE_CORE_ASSERT(m_Passes.size() > pass, "Pass index out of range!");
+		GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "CBuffer bind point not found in pass!");
+		m_Passes.at(pass).CBuffers.at(bindPoint).Release();
+	}
+	void Material::ReAllocateCBufferMemory(const int& pass, const uint32_t& bindPoint, const uint32_t& size)
+	{
+		GE_CORE_ASSERT(m_Passes.size() > pass, "Pass index out of range!");
+		GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "CBuffer bind point not found in pass!");
+		m_Passes.at(pass).CBuffers.at(bindPoint).Allocate(size);
 	}
 }

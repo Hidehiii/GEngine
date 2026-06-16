@@ -6,13 +6,13 @@
 
 namespace GEngine
 {
-    D3D12CommandPool::D3D12CommandPool()
+    D3D12CommandPool::D3D12CommandPool(int count)
     {
-		m_GraphicsList.resize(Graphics::GetCommandBufferCount());
-		m_ComputeList.resize(Graphics::GetCommandBufferCount());
-		m_TransferList.resize(Graphics::GetCommandBufferCount());
+		m_GraphicsList.resize(count);
+		m_ComputeList.resize(count);
+		m_TransferList.resize(count);
 
-        for (int i = 0; i < Graphics::GetCommandBufferCount(); i++)
+        for (int i = 0; i < count; i++)
         {
             m_GraphicsList[i]   = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
             m_ComputeList[i]    = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_COMPUTE);

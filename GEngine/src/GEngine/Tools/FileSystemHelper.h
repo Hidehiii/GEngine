@@ -25,9 +25,11 @@ namespace GEngine
 		static std::string GetDocumentExtension(const std::string& path);
 
 		static std::vector<char> ReadFile(const std::string& path);
+		static std::vector<unsigned char> ReadFileAsBinary(const std::string& path);
 		static std::string ReadFileAsString(const std::string& path);
 
 		static bool WriteFile(const std::string& path, const std::vector<char>& data);
+		static bool WriteFile(const std::string& path, const std::vector<unsigned char>& data);
 		static bool WriteFile(const std::string& path, const std::string& data);
 	};
 }

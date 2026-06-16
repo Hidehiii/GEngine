@@ -69,15 +69,23 @@ namespace GEngine
 		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
 
 	protected:
-		virtual void										InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc);
+		virtual void										InitializeShader(const std::string& path, 
+																				std::function<void(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>&)> processMachingCodeFunc);
 	private:
 		virtual bool										IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
-		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders);
-		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) = 0;
+		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, 
+																	std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
+																	std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas);
+		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) = 0;
 		virtual void										ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache);
-		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache);
-		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source);
+		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
+																		const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+																		ShaderCacheInfo& cache);
+		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
+																			std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+																			const std::string& source);
+		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas);
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;

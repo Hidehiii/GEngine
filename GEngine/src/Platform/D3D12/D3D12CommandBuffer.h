@@ -38,7 +38,8 @@ namespace GEngine
 	class GENGINE_API D3D12CommandPool
 	{
 	public:
-		D3D12CommandPool();
+		D3D12CommandPool() = default;
+		D3D12CommandPool(int count);
 		~D3D12CommandPool();
 
 		Ref<D3D12CommandBuffer>	GetCommandBuffer(CommandBufferType type);

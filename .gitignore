@@ -28,6 +28,7 @@ GEngine-Editor/GEngineProfile-StartUp.json
 /Sandbox/GEngineProfile-StartUp.json
 /Sandbox/GEngineProfile-ShutDown.json
 
+*.reflection
 
 *.fragment.vulkan
 *.vertex.vulkan

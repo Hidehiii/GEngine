@@ -216,6 +216,26 @@ namespace GEngine
 		return result;
 	}
 
+	std::vector<unsigned char> FileSystemHelper::ReadFileAsBinary(const std::string& path)
+	{
+		std::vector<unsigned char> result;
+		std::ifstream file(path, std::ios::in | std::ios::binary);
+
+		if (!file)
+		{
+			GE_CORE_ERROR("file not found");
+			return result;
+		}
+
+		file.seekg(0, std::ios::end);
+		result.resize(file.tellg());
+		file.seekg(0, std::ios::beg);
+		file.read(reinterpret_cast<char*>(result.data()), result.size());
+		file.close();
+
+		return result;
+	}
+
 	std::string FileSystemHelper::ReadFileAsString(const std::string& path)
 	{
 		std::string str;
@@ -246,6 +266,20 @@ namespace GEngine
 		}
 
 		file.write(data.data(), data.size());
+		file.close();
+		return true;
+	}
+	bool FileSystemHelper::WriteFile(const std::string& path, const std::vector<unsigned char>& data)
+	{
+		std::ofstream file(path, std::ios::out | std::ios::binary);
+
+		if (!file)
+		{
+			GE_CORE_ERROR("file not found");
+			return false;
+		}
+
+		file.write(reinterpret_cast<const char*>(data.data()), data.size());
 		file.close();
 		return true;
 	}

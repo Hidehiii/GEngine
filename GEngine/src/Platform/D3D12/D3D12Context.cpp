@@ -2,9 +2,63 @@
 #include "D3D12Context.h"
 #include "D3D12Utils.h"
 #include "GEngine/Graphics/Graphics.h"
+#include <thread>
+#include <atomic>
 
 namespace GEngine
 {
+#ifdef GE_DEBUG
+	std::atomic_bool	g_D3D12DebugInfoQueueLoggerRunning{ false };
+	std::thread			g_D3D12DebugInfoQueueLoggerThread;
+	static void D3D12DebugInfoQueueLoggerThreadFunc(Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue)
+	{
+		while (g_D3D12DebugInfoQueueLoggerRunning.load())
+		{
+			UINT64 num = infoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
+			for (UINT64 i = 0; i < num; ++i)
+			{
+				SIZE_T msgLen = 0;
+				infoQueue->GetMessage(i, nullptr, &msgLen);
+				std::vector<char> buf(msgLen);
+				D3D12_MESSAGE* msg = reinterpret_cast<D3D12_MESSAGE*>(buf.data());
+				infoQueue->GetMessage(i, msg, &msgLen);
+
+				if (msg->Severity == D3D12_MESSAGE_SEVERITY_WARNING)
+				{
+					GE_CORE_WARN("D3D12 Warning: {0}", msg->pDescription ? msg->pDescription : "null");
+				}
+				if(msg->Severity == D3D12_MESSAGE_SEVERITY_ERROR || msg->Severity == D3D12_MESSAGE_SEVERITY_CORRUPTION)
+				{
+					GE_CORE_ERROR("D3D12 Error: {0}", msg->pDescription ? msg->pDescription : "null");
+				}
+			}
+			// 清除已存消息
+			infoQueue->ClearStoredMessages();
+		}
+	}
+	static void StartD3D12DebugInfoQueueLogger(Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue)
+	{
+		if(g_D3D12DebugInfoQueueLoggerRunning.exchange(true))
+		{
+			return;
+		}
+		GE_CORE_INFO("Starting D3D12 debug info queue logger thread.");
+		g_D3D12DebugInfoQueueLoggerThread = std::thread(D3D12DebugInfoQueueLoggerThreadFunc, infoQueue);
+	}
+	static void StopD3D12DebugInfoQueueLogger()
+	{
+		if(!g_D3D12DebugInfoQueueLoggerRunning.exchange(false))
+		{
+			return;
+		}
+		GE_CORE_INFO("Stopping D3D12 debug info queue logger thread.");
+		if (g_D3D12DebugInfoQueueLoggerThread.joinable())
+		{
+			g_D3D12DebugInfoQueueLoggerThread.join();
+		}
+	}
+#endif
+
 	D3D12Context* D3D12Context::s_ContextInstance = nullptr;
 
 	D3D12Context::D3D12Context(HWND windowHandle)
@@ -19,6 +73,10 @@ namespace GEngine
 	{
 		CreateFactory();
 		CreateDevice();
+#ifdef GE_DEBUG
+		SetupDebugInfoQueue();
+		StartD3D12DebugInfoQueueLogger(m_DebugInfoQueue);
+#endif
 		CreateQueues();
 		CreateSwapChain(width, height);
 		GetDescriptorSize();
@@ -29,12 +87,16 @@ namespace GEngine
 	}
 	void D3D12Context::Uninit()
 	{
+#ifdef GE_DEBUG
+		StopD3D12DebugInfoQueueLogger();
+#endif
 	}
 	void D3D12Context::SwapBuffers()
 	{
 	}
 	void D3D12Context::SetVSync(bool enable)
 	{
+		m_VSync = enable;
 	}
 	void D3D12Context::SetRequiredExtensions(std::vector<const char*> extensions)
 	{
@@ -140,6 +202,11 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
 		D3D12_THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
 		debugController->EnableDebugLayer();
+
+		Microsoft::WRL::ComPtr<ID3D12Debug1> debugController1;
+		D3D12_THROW_IF_FAILED(debugController.As(&debugController1));
+		debugController1->SetEnableGPUBasedValidation(TRUE);
+
 		dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 		D3D12_THROW_IF_FAILED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_Factory)));
@@ -150,14 +217,35 @@ namespace GEngine
 		{
 			Microsoft::WRL::ComPtr<IDXGIAdapter> warpAdapter;
 			D3D12_THROW_IF_FAILED(m_Factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-			D3D12_THROW_IF_FAILED(D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_Device)));
+			D3D12_THROW_IF_FAILED(D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
 		}
 		else
 		{
 			Microsoft::WRL::ComPtr<IDXGIAdapter1> hardwareAdapter;
 			GetHardwareAdapter(m_Factory.Get(), &hardwareAdapter);
-			D3D12_THROW_IF_FAILED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_Device)));
+			D3D12_THROW_IF_FAILED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
 		}
+	}
+	void D3D12Context::SetupDebugInfoQueue()
+	{
+#ifdef GE_DEBUG
+		
+		D3D12_THROW_IF_FAILED(m_Device->QueryInterface(IID_PPV_ARGS(&m_DebugInfoQueue)));
+
+		m_DebugInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+		m_DebugInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+
+		/*D3D12_MESSAGE_ID hide[] =
+		{
+			D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE,
+			D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE,
+		};
+
+		D3D12_INFO_QUEUE_FILTER filter = {};
+		filter.DenyList.NumIDs	= _countof(hide);
+		filter.DenyList.pIDList = hide;
+		D3D12_THROW_IF_FAILED(m_DebugInfoQueue->AddStorageFilterEntries(&filter));*/
+#endif
 	}
 	void D3D12Context::CreateQueues()
 	{
@@ -186,6 +274,7 @@ namespace GEngine
 		swapChainDesc.BufferUsage		= DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.SwapEffect		= DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.SampleDesc.Count	= m_Samples;
+		swapChainDesc.Flags				= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC		fullscreenDesc{};
 		fullscreenDesc.RefreshRate			= { 0, 0 };
@@ -199,7 +288,7 @@ namespace GEngine
 	}
 	void D3D12Context::CreateCommandAllocator()
 	{
-		m_CommandPool = D3D12CommandPool();
+		m_CommandPool = D3D12CommandPool(Graphics::GetCommandBufferCount());
 	}
 	void D3D12Context::CreateFrameResources()
 	{

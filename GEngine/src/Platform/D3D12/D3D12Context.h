@@ -36,6 +36,7 @@ namespace GEngine
 		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
 		Vector4&											GetClearColor() { return m_ClearColor; }
 		UINT												GetBackBufferIndex() { return m_SwapChain->GetCurrentBackBufferIndex(); }
+		bool												IsVSync() { return m_VSync; }
 
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>  GetFence();
 	protected:
@@ -44,6 +45,7 @@ namespace GEngine
 		void						GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter = false);
 		void						CreateFactory();
 		void						CreateDevice();
+		void						SetupDebugInfoQueue();
 		void						CreateQueues();
 		void						CreateSwapChain(const unsigned int width, const unsigned int height);
 		void						CreateCommandAllocator();
@@ -55,11 +57,11 @@ namespace GEngine
 	private:
 		HWND											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
-		Microsoft::WRL::ComPtr<IDXGIFactory7>			m_Factory;
-		Microsoft::WRL::ComPtr<ID3D12Device>			m_Device;
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_GraphicsQueue;
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_ComputeQueue;
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_TransferQueue;
+		Microsoft::WRL::ComPtr<IDXGIFactory7>			m_Factory = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Device>			m_Device = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_GraphicsQueue = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_ComputeQueue = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_TransferQueue = nullptr;
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>			m_SwapChain;
 		UINT											m_RtvDescriptorSize;
 		UINT											m_DsvDescriptorSize;
@@ -68,15 +70,18 @@ namespace GEngine
 		Ref<D3D12RenderPass>							m_SwapChainRenderPass;
 		uint32_t										m_SwapChainWidth, m_SwapChainHeight;
 		bool											m_UseWarpDevice;
-		DXGI_FORMAT										m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		DXGI_FORMAT										m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		RenderPassSpecificationForD3D12					m_RenderPassSpec;
 		std::vector<Ref<D3D12FrameBuffer>>				m_RenderTargets;
 		int												m_Samples = 1;
+		bool											m_VSync = false;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_Fences;
 		size_t												m_FenceIndex = 0;
 		uint64_t											m_FenceValue;
 
 		Vector4											m_ClearColor = { 0, 0, 0, 0 };
+
+		Microsoft::WRL::ComPtr<ID3D12InfoQueue>			m_DebugInfoQueue = nullptr;
 
 		friend class D3D12GraphicsAPI;
 	};

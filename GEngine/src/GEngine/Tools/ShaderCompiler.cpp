@@ -299,7 +299,7 @@ namespace GEngine
 	}
 
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-								std::vector<uint32_t>& machineCode, ShaderReflectionInfo& reflectionData)
+								std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionMeta)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
@@ -345,18 +345,27 @@ namespace GEngine
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
 		}
-		GE_CORE_ASSERT(compiledShaderBlob->GetBufferSize() % 4 == 0, "Shader compiled code size is not aligned to 4 bytes!");
-		machineCode.resize(compiledShaderBlob->GetBufferSize() / 4);
+
+		machineCode.resize(compiledShaderBlob->GetBufferSize());
 		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
-		// use reflection
+		// copy reflection meta
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			ReflectSpirv(machineCode, target, reflectionData);
+			reflectionMeta.resize(compiledShaderBlob->GetBufferSize());
+			memcpy(reflectionMeta.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 		}
-		else
+		else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 		{
-			ReflectDxil(result, target, reflectionData);
+			IDxcBlob* reflectionBlob;
+			hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
+			if (FAILED(hr) || reflectionBlob == nullptr)
+			{
+				GE_CORE_ERROR("Get shader reflection failed");
+				return false;
+			}
+			reflectionMeta.resize(reflectionBlob->GetBufferSize());
+			memcpy(reflectionMeta.data(), reflectionBlob->GetBufferPointer(), reflectionBlob->GetBufferSize());
 		}
 		
 
@@ -371,20 +380,27 @@ namespace GEngine
 	{
 		return s_Instance;
 	}
-	void ShaderCompiler::ReflectDxil(IDxcResult* result, const std::string& target, ShaderReflectionInfo& reflectionOutput)
+	void ShaderCompiler::Reflect(const std::vector<std::byte>& data, const std::string& target, ShaderReflectionInfo& reflectionOutput)
+	{
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		{
+			GE_CORE_ASSERT(data.size() % sizeof(uint32_t) == 0, "SPIR-V code size should be a multiple of {} bytes!", sizeof(uint32_t));
+			std::vector<uint32_t> spirvCode(data.size() / sizeof(uint32_t));
+			memcpy(spirvCode.data(), data.data(), data.size());
+			ReflectSpirv(spirvCode, target, reflectionOutput);
+		}
+		else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+		{
+			ReflectDxil((void*)data.data(), (uint32_t)data.size(), target, reflectionOutput);
+		}
+	}
+	void ShaderCompiler::ReflectDxil(void* data, uint32_t length, const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
 		ID3D12ShaderReflection* reflection;
-		IDxcBlob* reflectionBlob;
-		HRESULT hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
-		if (FAILED(hr) || reflectionBlob == nullptr)
-		{
-			GE_CORE_ERROR("Get shader reflection failed");
-			return;
-		}
 		DxcBuffer reflectionData;
 		reflectionData.Encoding = DXC_CP_ACP;
-		reflectionData.Ptr = reflectionBlob->GetBufferPointer();
-		reflectionData.Size = reflectionBlob->GetBufferSize();
+		reflectionData.Ptr = data;
+		reflectionData.Size = length;
 		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
 
 		//reflectionOutput

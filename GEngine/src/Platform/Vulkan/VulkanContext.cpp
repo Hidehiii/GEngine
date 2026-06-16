@@ -680,7 +680,6 @@ namespace GEngine
 	}
     void VulkanContext::CreateCommandBuffers()
     {
-        m_CommandBufferPool                     = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
         m_CommandBufferPool = VulkanCommandBufferPool(m_QueueFamily, Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
         for (int i = 0; i < Graphics::GetCommandBufferCount() * Graphics::GetFrameCount(); i++)
         {

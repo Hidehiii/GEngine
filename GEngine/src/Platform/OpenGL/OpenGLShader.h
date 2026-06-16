@@ -26,7 +26,7 @@ namespace GEngine
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const int& pass);
 
 	private:
-		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders) override; // stage : spirv
+		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) override; // pass { stage : byte}
 	private:
 		std::vector<uint32_t>								m_Programs;
 	};

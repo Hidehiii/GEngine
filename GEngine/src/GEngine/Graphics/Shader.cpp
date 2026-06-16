@@ -9,6 +9,7 @@
 #include "GEngine/Application.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/D3D12/D3D12Shader.h"
 
 namespace GEngine
 {
@@ -123,24 +124,27 @@ namespace GEngine
 		return ShaderPropertyType();
 	}
 
-	void Shader::InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>&)> processMachingCodeFunc)
+	void Shader::InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>&)> processMachingCodeFunc)
 	{
 		m_FilePath = path;
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
-		std::vector<std::string>											srcCodes; // each pass src code
-		std::vector<std::unordered_map<std::string, std::vector<uint32_t>>> shaders; // pass { stage : code }
-		std::string															source = FileSystemHelper::ReadFileAsString(path);
-		ShaderCacheInfo														cache;
+		std::vector<std::string>												srcCodes; // each pass src code
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionMetas; // pass { stage : reflection meta }
+		std::string																source = FileSystemHelper::ReadFileAsString(path);
+		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
-		if (LoadFromCache(shaders, source))
+		if (LoadFromCache(shaders, reflectionMetas, source))
 		{
+			ReflectShader(reflectionMetas);
 			processMachingCodeFunc(shaders);
 			GE_INFO("Load shader {} from cache.", m_Name);
 			return;
 		}
-		Compile(srcCodes, shaders);
+		Compile(srcCodes, shaders, reflectionMetas);
+		ReflectShader(reflectionMetas);
 		ComputeShaderCacheInfo(source, cache);
-		SaveToCache(shaders, cache);
+		SaveToCache(shaders, reflectionMetas, cache);
 		processMachingCodeFunc(shaders);
 	}
 
@@ -352,46 +356,31 @@ namespace GEngine
 		
 	}
 
-	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders)
+	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, 
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas)
 	{
 		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PasseReflections.size(), "Size of pass and entryPoint not match!");
 		for (int i = 0; i < m_StageEntryPoints.size(); i++)
 		{
 			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
 			GE_CORE_ASSERT(m_StageEntryPoints.at(i).size() > 0, "No entry points found for shader pass " + std::to_string(i));
-			shaders.push_back(std::unordered_map<std::string, std::vector<uint32_t>>());
+			shaders.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
+			reflectionMetas.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
 			
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
 				// 反射所有阶段资源的并集
-				std::vector<uint32_t> machineCode;
-				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, m_PasseReflections.at(i));
+				std::vector<std::byte> machineCode;
+				std::vector<std::byte> reflectionMeta;
+				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionMeta);
 				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
 				shaders.at(i)[stage] = machineCode;
-				GE_DEBUGBREAK();
+				reflectionMetas.at(i)[stage] = reflectionMeta;
 			}
 		}
 		
-		//reflection
-
-		// record properties type
-		for(int i = 0; i < m_PasseReflections.size(); i++)
-		{
-			for (auto& cbuffer : m_PasseReflections.at(i).CBuffers)
-			{
-				for (auto& property : cbuffer.Properties)
-				{
-					m_PropertyTypes[property.Name] = property.Type;
-				}
-			}
-			for (auto& resource : m_PasseReflections.at(i).Resources)
-			{
-				m_PropertyTypes[resource.Name] = resource.Type;
-			}
-		}
-		// ConstPropertiesDesc
-
-		//  ReferenceProperties
+		
 		return true;
 	}
 
@@ -401,7 +390,9 @@ namespace GEngine
 		cache.Name = m_Name;
 	}
 
-	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache)
+	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
+								const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+								ShaderCacheInfo& cache)
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
@@ -456,17 +447,35 @@ namespace GEngine
 				res = FileSystemHelper::IsDocument(cachePath);
 				GE_CORE_ASSERT(res, "Failed to create shader cache file!");
 				// write machine code
-				std::vector<char> data;
-				data.resize(code.size() * sizeof(uint32_t));
-				memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
+				std::vector<char> data(code.size());
+				memcpy(data.data(), code.data(), code.size());
 				res = FileSystemHelper::WriteFile(cachePath, data);
 				GE_CORE_ASSERT(res, "Failed to write shader cache file!");
 			}
 		}
-
+		// each pass and each stage reflection meta write in sperate file
+		for (int i = 0; i < reflectionMetas.size(); i++)
+		{
+			std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
+			for (auto& [stage, meta] : reflectionMetas.at(i))
+			{
+				// create document
+				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt + SHADER_CACHE_REFLECTION_META_FILE_EXTENSION;
+				res = FileSystemHelper::CreateDocument(cachePath);
+				res = FileSystemHelper::IsDocument(cachePath);
+				GE_CORE_ASSERT(res, "Failed to create shader reflection meta cache file!");
+				// write reflection meta
+				std::vector<char> data(meta.size());
+				memcpy(data.data(), meta.data(), meta.size());
+				res = FileSystemHelper::WriteFile(cachePath, data);
+				GE_CORE_ASSERT(res, "Failed to write shader reflection meta cache file!");
+			}
+		}
 	}
 
-	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source)
+	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
+								std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+								const std::string& source)
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
@@ -493,14 +502,14 @@ namespace GEngine
 			return false;
 		}
 		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spv"
-		std::vector<std::string> cacheFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
+		std::vector<std::string> cacheShaderFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
 		std::vector<int> passIndices;
-		if(cacheFiles.size() == 0)
+		if(cacheShaderFiles.size() == 0)
 		{
 			return false;
 		}
 		// it should from 0 to n-1, resize vector to passIndices.back() + 1 to make sure the index is valid
-		for (auto& file : cacheFiles)
+		for (auto& file : cacheShaderFiles)
 		{
 			std::string name = FileSystemHelper::GetDocumentNameWithoutExtension(file);
 			size_t pos = name.find('.');
@@ -510,7 +519,7 @@ namespace GEngine
 		sort(passIndices.begin(), passIndices.end());
 		shaders.resize(passIndices.back() + 1);
 		// each pass and each stage read from sperate file
-		for (auto& file : cacheFiles)
+		for (auto& file : cacheShaderFiles)
 		{
 			std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
 			size_t pos = fileName.find('.');
@@ -519,13 +528,59 @@ namespace GEngine
 			// read machine code
 			std::vector<char> data;
 			data = FileSystemHelper::ReadFile(file);
-			std::vector<uint32_t> code;
-			code.resize(data.size() / sizeof(uint32_t));
+			std::vector<std::byte> code(data.size());
 			memcpy(code.data(), data.data(), data.size());
 			shaders.at(passIndex)[stage] = code;
 			GE_CORE_INFO("Load shader cache file: {}, pass {}, stage {}!", file, passIndex, stage);
 		}
+		// each pass and each stage reflection meta read from sperate file
+		std::vector<std::string> cacheReflectionMetaFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, SHADER_CACHE_REFLECTION_META_FILE_EXTENSION, graphicsAPIExt);
+		reflectionMetas.resize(passIndices.back() + 1);
+		for (auto& file : cacheReflectionMetaFiles)
+		{
+			std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
+			size_t pos = fileName.find('.');
+			std::string stage = fileName.substr(pos + 1, fileName.size() - pos - 1);
+			int passIndex = std::stoi(fileName.substr(0, pos));
+			// read reflection meta
+			std::vector<char> data;
+			data = FileSystemHelper::ReadFile(file);
+			std::vector<std::byte> meta(data.size());
+			memcpy(meta.data(), data.data(), data.size());
+			reflectionMetas.at(passIndex)[stage] = meta;
+			GE_CORE_INFO("Load shader reflection meta cache file: {}, pass {}, stage {}!", file, passIndex, stage);
+		}
 		return true;
+	}
+
+	void Shader::ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas)
+	{
+		//reflection meta
+		for (int i = 0; i < reflectionMetas.size(); i++)
+		{
+			for (auto& [stage, data] : reflectionMetas.at(i))
+			{
+				ShaderCompiler::Get()->Reflect(data, stage, m_PasseReflections.at(i));
+			}
+		}
+		// record properties type
+		for (int i = 0; i < m_PasseReflections.size(); i++)
+		{
+			for (auto& cbuffer : m_PasseReflections.at(i).CBuffers)
+			{
+				for (auto& property : cbuffer.Properties)
+				{
+					m_PropertyTypes[property.Name] = property.Type;
+				}
+			}
+			for (auto& resource : m_PasseReflections.at(i).Resources)
+			{
+				m_PropertyTypes[resource.Name] = resource.Type;
+			}
+		}
+		// ConstPropertiesDesc
+
+		//  ReferenceProperties
 	}
 
 	Ref<Shader> Shader::Create(const std::string& path)
@@ -547,6 +602,15 @@ namespace GEngine
 		}
 		case GRAPHICS_API_VULKAN: {
 			Ref<Shader> shader = CreateRef<VulkanShader>(path);
+			if (GetShader(shader->GetShaderName()) != nullptr)
+			{
+				return GetShader(shader->GetShaderName());
+			}
+			s_Shaders[shader->GetShaderName()] = shader;
+			return shader;
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			Ref<Shader> shader = CreateRef<D3D12Shader>(path);
 			if (GetShader(shader->GetShaderName()) != nullptr)
 			{
 				return GetShader(shader->GetShaderName());

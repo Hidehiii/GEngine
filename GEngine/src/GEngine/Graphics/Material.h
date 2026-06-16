@@ -78,13 +78,19 @@ namespace GEngine
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 	protected:
-		virtual std::vector<std::unordered_map<uint32_t, uint32_t>> InitializePassPropertiesMemory(const Ref<Shader>& shader); // pass{ cbuffer bind point : properties size }
+		virtual std::vector<std::unordered_map<uint32_t, uint32_t>> InitializePassPropertiesMemory(const Ref<Shader>& shader); // return :pass{ cbuffer bind point : properties size }
+		virtual void InitializePassRenderState(const RenderState& state);
+		virtual void InitializePassCBuffer(const std::unordered_set<ShaderReflectionCBufferInfo>& cbuffers, std::vector<std::unordered_map<uint32_t, uint32_t>>& sizes);
+		virtual void InitializePassResource(const std::unordered_set<ShaderReflectionResourceInfo>& resources);
 
 		virtual void WriteConstProperty(const std::string& name, const void* value, const uint32_t size);
 		virtual const void* ReadConstProperty(const std::string& name);
 		virtual void WriteResourceProperty(const std::string& name, void* ptr);
 		virtual void* ReadResourceProperty(const std::string& name);
 
+		virtual void ClearAllPasses();
+		virtual void ReleaseCBufferMemory(const int& pass, const uint32_t& bindPoint);
+		virtual void ReAllocateCBufferMemory(const int& pass, const uint32_t& bindPoint, const uint32_t& size);
 	protected:
 		std::string																m_Name;
 

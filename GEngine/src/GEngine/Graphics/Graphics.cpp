@@ -5,6 +5,7 @@
 #include "GEngine/Components/Components.h"
 #include "Platform/OpenGL/OpenGLGraphicsAPI.h"
 #include "Platform/Vulkan/VulkanGraphicsAPI.h"
+#include "Platform/D3D12/D3D12GraphicsAPI.h"
 #include "GEngine/Tools/ShaderCompiler.h"
 
 namespace GEngine
@@ -22,7 +23,6 @@ namespace GEngine
 		switch (spec.API)
 		{
 		case GRAPHICS_API_NONE:
-		case GRAPHICS_API_DIRECT3DX12:
 			GE_CORE_ASSERT(false, "Renderer api is not supported");
 			break;
 		case GRAPHICS_API_OPENGL:
@@ -30,6 +30,10 @@ namespace GEngine
 			break;
 		case GRAPHICS_API_VULKAN:
 			s_GraphicsAPI = new VulkanGraphicsAPI();
+			break;
+		case GRAPHICS_API_DIRECT3DX12:
+			s_GraphicsAPI = new D3D12GraphicsAPI();
+			break;
 		default:
 			break;
 		}

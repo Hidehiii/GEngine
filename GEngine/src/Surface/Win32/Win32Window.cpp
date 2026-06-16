@@ -168,6 +168,8 @@ namespace GEngine
 		ShowWindow(m_Window, SW_SHOW);
 		UpdateWindow(m_Window);
 
+		GE_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 		{
 			m_Context = new D3D12Context(m_Window);
@@ -177,6 +179,7 @@ namespace GEngine
 	}
 	Win32Window::~Win32Window()
 	{
+		m_Context->Uninit();
 	}
 	void Win32Window::OnUpdate()
 	{

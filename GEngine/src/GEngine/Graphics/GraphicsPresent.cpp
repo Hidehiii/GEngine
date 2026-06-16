@@ -3,6 +3,7 @@
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
+#include "Platform/D3D12/D3D12GraphicsPresent.h"
 #include "GEngine/Graphics/CommandBuffer.h"
 
 namespace GEngine
@@ -28,9 +29,10 @@ namespace GEngine
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GRAPHICS_API_NONE:    GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case GRAPHICS_API_OPENGL:  return CreateScope<OpenGLGraphicsPresent>();
-		case GRAPHICS_API_VULKAN:  return CreateScope<VulkanGraphicsPresent>();
+		case GRAPHICS_API_NONE:			GE_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case GRAPHICS_API_OPENGL:		return CreateScope<OpenGLGraphicsPresent>();
+		case GRAPHICS_API_VULKAN:		return CreateScope<VulkanGraphicsPresent>();
+		case GRAPHICS_API_DIRECT3DX12:	return CreateScope<D3D12GraphicsPresent>();
 		}
 
 		GE_CORE_ASSERT(false, "Unknown RendererAPI!");
