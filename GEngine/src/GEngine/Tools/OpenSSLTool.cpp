@@ -7,22 +7,24 @@
 
 namespace GEngine
 {
-	MD5_CTX		OpenSSLTool::m_MD5Context;
-	SHA256_CTX	OpenSSLTool::m_SHA256Context;
 
 	void OpenSSLTool::Init()
 	{
-		MD5_Init(&m_MD5Context);
-		SHA256_Init(&m_SHA256Context);
+		OpenSSL_add_all_algorithms();
+		OpenSSL_add_all_ciphers();
+		OpenSSL_add_all_digests();
 	}
 
 	std::string OpenSSLTool::ComputeMD5(const std::string& input)
 	{
+		MD5_CTX md5Context;
+		MD5_Init(&md5Context);
+
 		std::vector<unsigned char> data = StringToBinary(input);
-		MD5_Update(&m_MD5Context, data.data(), data.size());
+		MD5_Update(&md5Context, data.data(), data.size());
 
 		unsigned char digest[MD5_DIGEST_LENGTH];
-		MD5_Final(digest, &m_MD5Context);
+		MD5_Final(digest, &md5Context);
 
 		std::stringstream ss;
 		for(int i = 0; i < MD5_DIGEST_LENGTH; i++)
@@ -34,11 +36,14 @@ namespace GEngine
 
 	std::string OpenSSLTool::ComputeSHA256(const std::string& input)
 	{
+		SHA256_CTX sha256Context;
+		SHA256_Init(&sha256Context);
+
 		std::vector<unsigned char> data = StringToBinary(input);
-		SHA256_Update(&m_SHA256Context, data.data(), data.size());
+		SHA256_Update(&sha256Context, data.data(), data.size());
 
 		unsigned char digest[SHA256_DIGEST_LENGTH];
-		SHA256_Final(digest, &m_SHA256Context);
+		SHA256_Final(digest, &sha256Context);
 
 		std::stringstream ss;
 		for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)

@@ -159,7 +159,7 @@ namespace GEngine
 		pos = source.find("\"", pos);
 
 		m_Name = source.substr(pos + 1, source.find("\"", pos + 1) - pos - 1);
-		GE_INFO("Shader name: {}", m_Name);
+		GE_CORE_INFO("Shader name: {}", m_Name);
 
 		pos = source.find("{", pos);
 		stack.push(1);
@@ -167,6 +167,8 @@ namespace GEngine
 
 		while (source.find("Pass", pos) != std::string::npos)
 		{
+			GE_CORE_INFO("Shader pass {}:", m_PasseReflections.size());
+
 			m_PasseReflections.emplace_back(ShaderReflectionInfo());
 			pos = source.find("Pass", pos);
 			pos = source.find("{", pos);
@@ -174,8 +176,6 @@ namespace GEngine
 
 			block = source.substr(pos + 1, source.find("Program", pos + 1) - pos - 1);
 
-			//todo
-			GE_INFO("Command block {}", block);
 			std::string commandLine;
 			size_t commandPos;
 			// cull
@@ -187,7 +187,7 @@ namespace GEngine
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
 				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
-				GE_INFO("Cull mode: {}", words[1]);
+				GE_CORE_TRACE("	Cull mode: {}", words[1]);
 			}
 			//depth test
 			commandPos = block.find("DepthTest", 0);
@@ -198,7 +198,7 @@ namespace GEngine
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
 				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
-				GE_INFO("Depth test: {}", words[1]);
+				GE_CORE_TRACE("	Depth test: {}", words[1]);
 			}
 			//depth write
 			commandPos = block.find("DepthWrite", 0);
@@ -209,7 +209,7 @@ namespace GEngine
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
 				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
-				GE_INFO("Depth write: {}", words[1]);
+				GE_CORE_TRACE("	Depth write: {}", words[1]);
 			}
 			//blend,用空格避免找到BlendOp等类似命令
 			commandPos = block.find("Blend ", 0);
@@ -225,7 +225,7 @@ namespace GEngine
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
-					GE_INFO("Blend mode: {} {}", words[1], words[2]);
+					GE_CORE_TRACE("	Blend mode: {} {}", words[1], words[2]);
 				}
 				if (words.size() == 5)
 				{
@@ -233,7 +233,7 @@ namespace GEngine
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
-					GE_INFO("Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
+					GE_CORE_TRACE("	Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
 				}
 			}
 			// blend op
@@ -248,13 +248,13 @@ namespace GEngine
 				{
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
-					GE_INFO("Blend op: {}", words[1]);
+					GE_CORE_TRACE("	Blend op: {}", words[1]);
 				}
 				if (words.size() == 3)
 				{
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
 					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
-					GE_INFO("Blend op: {} {}", words[1], words[2]);
+					GE_CORE_TRACE("	Blend op: {} {}", words[1], words[2]);
 				}
 			}
 			//color mask
@@ -273,7 +273,7 @@ namespace GEngine
 					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNLE_A;
 				}
 				m_PasseReflections.at(m_PasseReflections.size() - 1).State.ColorMask = mask;
-				GE_INFO("Color mask: {}", mask);
+				GE_CORE_TRACE("	Color mask: {}", mask);
 			}
 			//tag
 			commandPos = block.find("Tag", 0);
@@ -284,7 +284,7 @@ namespace GEngine
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
 				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Tag = words[1];
-				GE_INFO("Tag: {}", words[1]);
+				GE_CORE_TRACE("	Tag: {}", words[1]);
 			}
 			//#pragma
 			commandPos = 0;
@@ -343,8 +343,6 @@ namespace GEngine
 			}
 			block = source.substr(begin, pos - begin - 1);
 
-			// todo
-			GE_INFO("Program block {}", block);
 			// src code
 			shaderSrcCode.push_back(block);
 
@@ -399,8 +397,8 @@ namespace GEngine
 
 	void Shader::ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache)
 	{
-		cache.Name		= m_Name;
 		cache.HashCode	= OpenSSLTool::ComputeMD5(source);
+		cache.Name = m_Name;
 	}
 
 	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, ShaderCacheInfo& cache)
@@ -422,51 +420,50 @@ namespace GEngine
 			res = FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
 			GE_CORE_ASSERT(res, "Failed to create shader cache directory!");
 		}
-		// folder nae is file name without ext
+		// folder name is the file name without ext
 		if(FileSystemHelper::IsFolder(cacheFolder) == false)
 		{
 			res = FileSystemHelper::CreateFolder(cacheFolder);
 			GE_CORE_ASSERT(res, "Failed to create shader cache sub directory!");
 		}
+
+		// clear old cache files
+		std::vector<std::string> oldCaches = FileSystemHelper::GetDocumentsInFolder(cacheFolder, "", "");
+		for (auto& oldCache : oldCaches)
+		{
+			res = FileSystemHelper::DeleteDocument(oldCache);
+			GE_CORE_ASSERT(res, "Failed to delete old shader cache file!");
+		}
+
+		// create a info file to indentify the shader, it can be used to check if the cache is valid when loading cache, include shader name, hash code
+		if (FileSystemHelper::CreateDocument(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME) == false)
+		{
+			GE_CORE_ASSERT(false, "Failed to create shader cache info file!");
+		}
 		else
 		{
-			// clear old cache files
-			std::vector<std::string> oldCaches = FileSystemHelper::GetDocumentsInFolder(cacheFolder, "", "");
-			for (auto& oldCache : oldCaches)
+			Serializer::Serialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cache);
+		}
+		// each pass and each stage write in sperate file
+		for (int i = 0; i < shaders.size(); i++)
+		{
+			std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
+			for (auto& [stage, code] : shaders.at(i))
 			{
-				res = FileSystemHelper::DeleteDocument(oldCache);
-				GE_CORE_ASSERT(res, "Failed to delete old shader cache file!");
-			}
-
-			// create a info file to indentify the shader, it can be used to check if the cache is valid when loading cache, include shader name, hash code
-			if (FileSystemHelper::CreateDocument(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME) == false)
-			{
-				GE_CORE_ASSERT(false, "Failed to create shader cache info file!");
-			}
-			else
-			{
-				Serializer::Serialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cache);
-			}
-			// each pass and each stage write in sperate file
-			for (int i = 0; i < shaders.size(); i++)
-			{
-				std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
-				for (auto& [stage, code] : shaders.at(i))
-				{
-					// create document
-					std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
-					res = FileSystemHelper::CreateDocument(cachePath);
-					res = FileSystemHelper::IsDocument(cachePath);
-					GE_CORE_ASSERT(res, "Failed to create shader cache file!");
-					// write machine code
-					std::vector<char> data;
-					data.resize(code.size() * sizeof(uint32_t));
-					memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
-					res = FileSystemHelper::WriteFile(cachePath, data);
-					GE_CORE_ASSERT(res, "Failed to write shader cache file!");
-				}
+				// create document
+				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
+				res = FileSystemHelper::CreateDocument(cachePath);
+				res = FileSystemHelper::IsDocument(cachePath);
+				GE_CORE_ASSERT(res, "Failed to create shader cache file!");
+				// write machine code
+				std::vector<char> data;
+				data.resize(code.size() * sizeof(uint32_t));
+				memcpy(data.data(), code.data(), code.size() * sizeof(uint32_t));
+				res = FileSystemHelper::WriteFile(cachePath, data);
+				GE_CORE_ASSERT(res, "Failed to write shader cache file!");
 			}
 		}
+
 	}
 
 	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<uint32_t>>>& shaders, const std::string& source)
@@ -492,6 +489,7 @@ namespace GEngine
 		Serializer::Deserialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cacheInfo);
 		if (IdentifyShaderCache(source, cacheInfo) == false)
 		{
+			GE_CORE_INFO("Shader cache is invalid, shader source may be changed, recompile shader! Cache name: {}", cacheInfo.Name);
 			return false;
 		}
 		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spv"
@@ -510,7 +508,7 @@ namespace GEngine
 			passIndices.push_back(passIndex);
 		}
 		sort(passIndices.begin(), passIndices.end());
-		shaders.resize(passIndices.back());
+		shaders.resize(passIndices.back() + 1);
 		// each pass and each stage read from sperate file
 		for (auto& file : cacheFiles)
 		{

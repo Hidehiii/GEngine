@@ -112,6 +112,7 @@ Shader "ExampleShader"
             {
                 VsOutput OUT;
                 OUT.pos = IN.vertex;
+
                 return OUT;
             }
 

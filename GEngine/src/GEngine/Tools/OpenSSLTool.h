@@ -19,9 +19,6 @@ namespace GEngine
 
 		static std::vector<unsigned char> StringToBinary(const std::string& input);
 		static std::string BinaryToString(const std::vector<unsigned char>& input);
-	private:
-		static MD5_CTX		m_MD5Context;
-		static SHA256_CTX	m_SHA256Context;
 	};
 }
 

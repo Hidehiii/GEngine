@@ -53,10 +53,8 @@
 #include "GEngine/Tools/ModelImporter.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
-#include "GEngine/Tools/ShaderCompiler.h"
 
 // Utils
-#include "GEngine/Utils/PlatformUtils.h"
 #include "GEngine/Utils/GUIUtils.h"
 
 // Asset
@@ -68,7 +66,6 @@
 
 // Physics
 #include "GEngine/Physics/2D/Physics2D.h"
-#include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 
 #include "GEngine/Physics/3D/Physics3D.h"
 
