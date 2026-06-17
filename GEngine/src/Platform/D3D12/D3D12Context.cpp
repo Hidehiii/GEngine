@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "D3D12Context.h"
 #include "D3D12Utils.h"
+#include"GEngine/Application.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <thread>
 #include <atomic>
@@ -61,7 +62,7 @@ namespace GEngine
 
 	D3D12Context* D3D12Context::s_ContextInstance = nullptr;
 
-	D3D12Context::D3D12Context(HWND windowHandle)
+	D3D12Context::D3D12Context(void* windowHandle)
 	{
 		m_WindowHandle = windowHandle;
 		s_ContextInstance = this;
@@ -90,9 +91,6 @@ namespace GEngine
 #ifdef GE_DEBUG
 		StopD3D12DebugInfoQueueLogger();
 #endif
-	}
-	void D3D12Context::SwapBuffers()
-	{
 	}
 	void D3D12Context::SetVSync(bool enable)
 	{
@@ -283,7 +281,18 @@ namespace GEngine
 		fullscreenDesc.Windowed				= TRUE;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1>	swapChain;
-		D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			GE_CORE_ASSERT(false, "glfw surface creation is not implemented yet!");
+			break;
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), (HWND)m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unsupported Window Manager API!");
+			break;
+		}
 		D3D12_THROW_IF_FAILED(swapChain.As(&m_SwapChain));
 	}
 	void D3D12Context::CreateCommandAllocator()

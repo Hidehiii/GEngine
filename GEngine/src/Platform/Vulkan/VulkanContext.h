@@ -7,7 +7,6 @@
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <Platform/Vulkan/VMA/vk_mem_alloc.h>
-#include <GLFW/glfw3.h>
 
 
 namespace GEngine
@@ -32,12 +31,11 @@ namespace GEngine
 	class GENGINE_API VulkanContext : public GraphicsContext
 	{
 	public:
-		VulkanContext(GLFWwindow* windowHandle);
+		VulkanContext(void* windowHandle);
 		virtual ~VulkanContext() override;
 
 		virtual void				Init(const unsigned int width, const unsigned int height) override;
 		virtual void				Uninit() override;
-		virtual void				SwapBuffers() override;
 		virtual void				SetVSync(bool enable) override;
 		virtual void				SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
@@ -102,7 +100,7 @@ namespace GEngine
 		bool						IsEnabledInstanceExtension(const char* ext);
 	private:
 	private:
-		GLFWwindow*							m_WindowHandle;
+		void*								m_WindowHandle;
 		static VulkanContext*				s_ContextInstance;
 		std::vector<const char*>			m_Extensions;
 		VkInstance							m_Instance;

@@ -2,8 +2,8 @@
 #include "VulkanImGui.h"
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
+#include "ImGui/backends/imgui_impl_win32.h"
 #include "ImGui/backends/imgui_impl_vulkan.h"
-#include "ImGui/backends/imgui_impl_vulkan.cpp"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "GEngine/Graphics/Graphics.h"
@@ -25,7 +25,7 @@ namespace GEngine {
 	{
 		ImGui_ImplVulkan_Shutdown();
 	}
-	void VulkanImGui::OnAttach(GLFWwindow* window)
+	void VulkanImGui::OnAttach(void* window)
 	{
 		s_Spec.x				= Application::Get().GetWindow().GetWidth();
 		s_Spec.y				= Application::Get().GetWindow().GetHeight();
@@ -67,8 +67,19 @@ namespace GEngine {
 
 		CreateBuffer();
 		CreateCommandBufferAndSyncObjects();
-
-		ImGui_ImplGlfw_InitForVulkan(window, true);
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window, true);
+			break;
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			ImGui_ImplWin32_Init(window);
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown window manager api");
+			break;
+		}
+		
 		VkDescriptorPool descriptorPool;
 
 		std::vector<VkDescriptorPoolSize> poolSizes =

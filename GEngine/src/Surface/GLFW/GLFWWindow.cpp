@@ -3,7 +3,8 @@
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "GEngine/Core/Input.h"
+#include "Surface/GLFW/GLFWInput.h"
+#include <GLFW/glfw3.h>
 #include "GEngine/Application.h"
 
 
@@ -163,7 +164,7 @@ namespace GEngine
 				
 				if(!keyState.IsLongPressTriggered)
 				{
-					if (Application::Get().GetConfig()->m_LongPressThresholdMs <= int(glfwGetTime() * 1000) - keyState.PressStartTime)
+					if (Application::Get().GetConfig()->GetLongPressThresholdMs() <= int(glfwGetTime() * 1000) - keyState.PressStartTime)
 					{
 						KeyLongDownEvent longDownEvent(keycode);
 						data.EventCallback(longDownEvent);
@@ -297,7 +298,7 @@ namespace GEngine
 
 					if (!btnState.IsLongPressTriggered)
 					{
-						if (Application::Get().GetConfig()->m_LongPressThresholdMs <= int(glfwGetTime() * 1000) - btnState.PressStartTime)
+						if (Application::Get().GetConfig()->GetLongPressThresholdMs() <= int(glfwGetTime() * 1000) - btnState.PressStartTime)
 						{
 							MouseButtonLongDownEvent longDownEvent(button);
 							data.EventCallback(longDownEvent);
@@ -390,7 +391,10 @@ namespace GEngine
 	void GLFWWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		m_Context->SwapBuffers();
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL)
+		{
+			glfwSwapBuffers(m_Window);
+		}
 		MouseButtonPreessedCallback();
 		
 	}

@@ -3,7 +3,6 @@
 
 #include "GEngine/Math/Math.h"
 
-class GLFWwindow;
 namespace GEngine
 {
 	
@@ -15,7 +14,7 @@ namespace GEngine
 	public:
 		VulkanImGui() {}
 		virtual ~VulkanImGui();
-		virtual void OnAttach(GLFWwindow* window) override;
+		virtual void OnAttach(void* window) override;
 
 		virtual void Begin() override;
 		virtual void End() override;

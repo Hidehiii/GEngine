@@ -1,9 +1,8 @@
 #pragma once
 
 #include "GEngine/Layer.h"
-#include "ImGui/imgui.h"
-#include <ImGuizmo.h>
 #include "PlatformImGui.h"
+#include <ImGuizmo.h>
 #include "GEngine/Graphics/Texture.h"
 
 namespace GEngine

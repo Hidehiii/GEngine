@@ -31,9 +31,9 @@ namespace GEngine
 		Serializer::Deserialize(m_ConfigPath, m_Config);
 
 		GraphicsSpecification					graphicsSpec{};
-		graphicsSpec.API						= (Graphics_API)m_Config->m_GraphicsAPI;
-		graphicsSpec.CommandBufferCount			= m_Config->m_CommandBufferCount;
-		graphicsSpec.FramesInFlight				= m_Config->m_FramesInFlight;
+		graphicsSpec.API						= (Graphics_API)m_Config->GetGraphicsAPI();
+		graphicsSpec.CommandBufferCount			= m_Config->GetCommandBufferCount();
+		graphicsSpec.FramesInFlight				= m_Config->GetFramesInFlight();
 		graphicsSpec.ViewportWidth				= (uint32_t)spec.Size.x;
 		graphicsSpec.ViewportHeight				= (uint32_t)spec.Size.y;
 
@@ -41,7 +41,7 @@ namespace GEngine
 
 		m_Window = Scope<Window>(Window::Create(WindowProps(m_Specification.Name, (uint32_t)m_Specification.Size.x, (uint32_t)m_Specification.Size.y)));
 		m_Window->SetEventCallback(GE_BIND_CLASS_FUNCTION_LAMBDA(Application::OnEvent));
-		m_Window->SetVSync(m_Config->m_VSync);
+		m_Window->SetVSync(m_Config->GetVSync());
 
 		m_GraphicsPresent = GraphicsPresent::Create();
 

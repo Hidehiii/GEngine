@@ -46,7 +46,6 @@ project "GEngine"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.SPIRVCross}",
 		"%{IncludeDir.shaderc}",
-		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vulkan}",
 		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.FBX}",

@@ -2,19 +2,18 @@
 
 #include "GEngine/Graphics/GraphicsContext.h"
 #include "OpenGLCommandBuffer.h"
-#include <GLFW/glfw3.h>
+
 
 namespace GEngine
 {
 	class GENGINE_API OpenGLContext : public GraphicsContext
 	{
 	public:
-		OpenGLContext(GLFWwindow* windowHandle);
+		OpenGLContext(void* windowHandle);
 		virtual ~OpenGLContext() override;
 
 		virtual void Init(const unsigned int width, const unsigned int height) override;
 		virtual void Uninit() override;
-		virtual void SwapBuffers() override;
 		virtual void SetVSync(bool enable) override { }
 		virtual void SetRequiredExtensions(std::vector<const char*> extensions) override { }
 
@@ -25,7 +24,7 @@ namespace GEngine
 		bool CheckExtensionsSupport();
 		void CreateCommandBuffers();
 	private:
-		GLFWwindow*					m_WindowHandle;
+		void*						m_WindowHandle;
 		static OpenGLContext*		s_ContextInstance;
 		std::vector<const char*>	m_Extensions =
 		{

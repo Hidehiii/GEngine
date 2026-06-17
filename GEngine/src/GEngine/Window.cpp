@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "Window.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Application.h"
 #include "Surface/Win32/Win32Window.h"
 #include "Surface/GLFW/GLFWWindow.h"
 
@@ -9,11 +10,10 @@ namespace GEngine
 {
 	Window* Window::Create(const WindowProps& props)
 	{
-		switch (Graphics::GetGraphicsAPI())
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
 		{
-		case GRAPHICS_API_OPENGL:		return new GLFWWindow(props);
-		case GRAPHICS_API_VULKAN:		return new GLFWWindow(props);
-		case GRAPHICS_API_DIRECT3DX12:	return new Win32Window(props);
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:	return new GLFWWindow(props);
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:	return new Win32Window(props);
 		default:
 			break;
 		}

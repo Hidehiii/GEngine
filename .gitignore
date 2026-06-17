@@ -56,3 +56,5 @@ GEngine-Editor/GEngineProfile-StartUp.json
 *.mesh.d3dx12
 *.amplification.d3dx12
 *.compute.d3dx12
+
+**/cache/

@@ -2,11 +2,10 @@
 #include "OpenGLImGui.h"
 #include "GEngine/Application.h"
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
-#include "ImGui/backends/imgui_impl_opengl3.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_opengl3.cpp"
+#include "ImGui/backends/imgui_impl_win32.h"
+#include "ImGui/backends/imgui_impl_opengl3.h"
 #include "GEngine/Graphics/FrameBuffer.h"
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
 namespace GEngine
@@ -20,13 +19,25 @@ namespace GEngine
 		ImGui_ImplOpenGL3_Shutdown();
 	}
 
-	void OpenGLImGui::OnAttach(GLFWwindow* window)
+	void OpenGLImGui::OnAttach(void* window)
 	{
 		s_Spec.ColorRTs			= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
 		s_RenderPass			= RenderPass::Create(s_Spec);
 		s_FrameBuffer			= FrameBuffer::Create(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			ImGui_ImplGlfw_InitForOpenGL(((GLFWwindow*)window), true);
+			break;
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			ImGui_ImplWin32_Init(window);
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown window manager api");
+			break;
+		}
+		
 		ImGui_ImplOpenGL3_Init("#version 450");
 	}
 	void OpenGLImGui::Begin()

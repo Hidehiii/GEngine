@@ -11,6 +11,7 @@ namespace GEngine
 	}
 	void ShaderCompile::OnPresent()
 	{
+		
 	}
 	void ShaderCompile::OnRender()
 	{

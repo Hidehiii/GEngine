@@ -127,7 +127,7 @@ namespace GEngine
 	void Shader::InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>&)> processMachingCodeFunc)
 	{
 		m_FilePath = path;
-		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
+		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 		std::vector<std::string>												srcCodes; // each pass src code
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionMetas; // pass { stage : reflection meta }
@@ -396,7 +396,7 @@ namespace GEngine
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
-		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
+		std::string cacheFolder = Application::Get().GetConfig()->GetShaderCacheDirectory() + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
@@ -406,9 +406,9 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 			break;
 		}
-		if (FileSystemHelper::IsFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory) == false)
+		if (FileSystemHelper::IsFolder(Application::Get().GetConfig()->GetShaderCacheDirectory()) == false)
 		{
-			res = FileSystemHelper::CreateFolder(Application::Get().GetConfig()->m_ShaderCacheDirectory);
+			res = FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 			GE_CORE_ASSERT(res, "Failed to create shader cache directory!");
 		}
 		// folder name is the file name without ext
@@ -479,7 +479,7 @@ namespace GEngine
 	{
 		bool res = false;
 		std::string graphicsAPIExt;
-		std::string cacheFolder = Application::Get().GetConfig()->m_ShaderCacheDirectory + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
+		std::string cacheFolder = Application::Get().GetConfig()->GetShaderCacheDirectory() + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;

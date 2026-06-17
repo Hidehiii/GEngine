@@ -5,6 +5,7 @@
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Core/Thread.h"
 #include <set>
+#include <GLFW/glfw3.h>
 
 namespace GEngine
 {
@@ -51,7 +52,7 @@ namespace GEngine
         }
     }
 
-	VulkanContext::VulkanContext(GLFWwindow* windowHandle)
+	VulkanContext::VulkanContext(void* windowHandle)
         : m_WindowHandle(windowHandle)
 	{
 		m_Surface = nullptr;
@@ -110,10 +111,7 @@ namespace GEngine
         m_Device = nullptr;
         m_Instance = nullptr;
     }
-	void VulkanContext::SwapBuffers()
-	{
-        
-	}
+
     void VulkanContext::SetVSync(bool enable)
     {
         m_VSync = enable;
@@ -469,7 +467,19 @@ namespace GEngine
     }
     void VulkanContext::CreateSurface()
     {
-        VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface));
+        switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+        {
+            case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+                VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, (GLFWwindow*)m_WindowHandle, nullptr, &m_Surface));
+				break;
+			case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+				GE_CORE_ASSERT(false, "Win32 surface creation is not implemented yet!");
+                break;
+        default:
+			GE_CORE_ASSERT(false, "Unsupported Window Manager API!");
+            break;
+        }
+        
     }
     bool VulkanContext::CheckDeviceExtensionSupport(VkPhysicalDevice device)
     {

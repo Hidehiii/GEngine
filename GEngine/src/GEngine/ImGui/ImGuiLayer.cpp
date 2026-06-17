@@ -2,11 +2,11 @@
 #include "ImGuiLayer.h"
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
+#include "ImGui/backends/imgui_impl_win32.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "GEngine/Graphics/CommandBuffer.h"
-#include "ImGui/backends/imgui_impl_glfw.cpp"
 #include "Platform/OpenGL/OpenGLImGui.h"
 #include "Platform/Vulkan/VulkanImGui.h"
 
@@ -16,7 +16,12 @@ namespace GEngine
 	ImGuiLayer::ImGuiLayer()
 		: Layer("ImGuiLayer")
 	{
-		
+		switch (Graphics::GetGraphicsAPI())
+		{
+		case GRAPHICS_API_OPENGL: m_PlatformImGui = new OpenGLImGui(); break;
+		case GRAPHICS_API_VULKAN: m_PlatformImGui = new VulkanImGui(); break;
+		default: GE_CORE_ASSERT(false, "Unknown renderer api");
+		}
 	}
 
 	ImGuiLayer::~ImGuiLayer()
@@ -24,20 +29,23 @@ namespace GEngine
 		delete m_PlatformImGui;
 		m_PlatformImGui = nullptr;
 
-		ImGui_ImplGlfw_Shutdown();
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+			case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+				ImGui_ImplGlfw_Shutdown();
+				break;
+			case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+				ImGui_ImplWin32_Shutdown();
+				break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown window manager api");
+			break;
+		}
 		ImGui::DestroyContext();
 	}
 
 	void ImGuiLayer::OnAttach()
 	{
-		
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_OPENGL: m_PlatformImGui = new OpenGLImGui(); break;
-		case GRAPHICS_API_VULKAN: m_PlatformImGui = new VulkanImGui(); break;
-		default: GE_CORE_ASSERT(false, "Unknown renderer api");
-		}
-
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		m_Context = ImGui::CreateContext();
@@ -66,12 +74,9 @@ namespace GEngine
 		}
 
 		SetDarkThemeColor();
-
-		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 		
 		// Setup Platform/Renderer backends
-		m_PlatformImGui->OnAttach(window);
+		m_PlatformImGui->OnAttach(Application::Get().GetWindow().GetNativeWindow());
 	}
 
 
@@ -94,8 +99,18 @@ namespace GEngine
 	{
 		
 		m_PlatformImGui->Begin();
-		
-		ImGui_ImplGlfw_NewFrame();
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			ImGui_ImplGlfw_NewFrame();
+			break;
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			ImGui_ImplWin32_NewFrame();
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unknown window manager api");
+			break;
+		}
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 	}

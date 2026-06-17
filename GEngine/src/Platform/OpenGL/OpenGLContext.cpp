@@ -2,7 +2,7 @@
 #include "OpenGLContext.h"
 #include "OpenGLCommandBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
-
+#include "GEngine/Application.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -10,7 +10,7 @@ namespace GEngine
 {
 	OpenGLContext* OpenGLContext::s_ContextInstance = nullptr;
 
-	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
+	OpenGLContext::OpenGLContext(void* windowHandle)
 		: m_WindowHandle(windowHandle)
 	{
 		GE_CORE_ASSERT(windowHandle, "Window handle is null!");
@@ -21,7 +21,19 @@ namespace GEngine
 	}
 	void OpenGLContext::Init(const unsigned int width, const unsigned int height)
 	{
-		glfwMakeContextCurrent(m_WindowHandle);
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		{
+		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			glfwMakeContextCurrent((GLFWwindow*)m_WindowHandle);
+			break;
+		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			GE_CORE_ASSERT(false, "Win32 surface creation is not implemented yet!");
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Unsupported Window Manager API!");
+			break;
+		}
+		
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		GE_CORE_ASSERT(status, "Failed to initialize Glad!");
 
@@ -35,10 +47,6 @@ namespace GEngine
 	}
 	void OpenGLContext::Uninit()
 	{
-	}
-	void OpenGLContext::SwapBuffers()
-	{
-		glfwSwapBuffers(m_WindowHandle);
 	}
 	Ref<OpenGLCommandBuffer> OpenGLContext::GetCommandBuffer(CommandBufferType type)
 	{

@@ -13,12 +13,11 @@ namespace GEngine
 	class GENGINE_API D3D12Context : public  GraphicsContext
 	{
 	public:
-		D3D12Context(HWND windowHandle);
+		D3D12Context(void* windowHandle);
 		virtual ~D3D12Context() override;
 
 		virtual void								Init(const unsigned int width, const unsigned int height) override;
 		virtual void								Uninit() override;
-		virtual void								SwapBuffers() override;
 		virtual void								SetVSync(bool enable) override;
 		virtual void								SetRequiredExtensions(std::vector<const char*> extensions) override;
 
@@ -55,7 +54,7 @@ namespace GEngine
 		void						CreateRenderTargets();
 		void						CreateFences();
 	private:
-		HWND											m_WindowHandle;
+		void*											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
 		Microsoft::WRL::ComPtr<IDXGIFactory7>			m_Factory = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Device>			m_Device = nullptr;

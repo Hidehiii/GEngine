@@ -74,7 +74,7 @@ namespace GEngine
 		inline virtual Vector2 GetMousePosition() = 0;
 		inline virtual float GetMouseX() = 0;
 		inline virtual float GetMouseY() = 0;
-
+	protected:
 		// State storage for event handling
 		static std::unordered_map<KeyCode, KeyStateInfo>		s_KeyStates;
 		static std::unordered_map<MouseCode, MouseBtnStateInfo> s_MouseBtnStates;
@@ -82,6 +82,9 @@ namespace GEngine
 		// State storage for querying in each frame
 		static std::unordered_map<KeyCode, KeyStateInfoForQuery>		s_KeyStatesForQuery;
 		static std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> s_MouseBtnStatesForQuery;
+
+		friend class GLFWWindow; // allow GLFWWindow to update the key and mouse button states
+		friend class Win32Window; // allow Win32Window to update the key and mouse button states
 	};
 
 
