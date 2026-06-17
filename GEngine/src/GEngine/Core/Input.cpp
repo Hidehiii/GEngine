@@ -1,7 +1,9 @@
 #include "GEpch.h"
 #include "Input.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Application.h"
 #include "Surface/GLFW/GLFWInput.h"
+#include "Surface/Win32/Win32Input.h"
 
 namespace GEngine
 {
@@ -12,18 +14,21 @@ namespace GEngine
 	std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> PlatformInput::s_MouseBtnStatesForQuery;
 	void Input::Init()
 	{
-		switch (GraphicsAPI::GetAPI())
+		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
 		{
-		case GRAPHICS_API_NONE:
-			GE_CORE_ASSERT(false, "GRAPHICS_API_NONE is not supported!");
-			return;
-		case GRAPHICS_API_OPENGL:
-		case GRAPHICS_API_VULKAN:
-			s_Instance = new GlfwInput();
-			break;
+			case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
+			{
+				s_Instance = new GLFWInput();
+				break;
+			}
+			case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
+			{
+				s_Instance = new Win32Input();
+				break;
+			}
 		default:
-			GE_CORE_ASSERT(false, "Unknown Graphics API!");
-			return;
+			GE_CORE_ASSERT(false, "Unknown Window Manager API!");
+			break;
 		}
 	}
 

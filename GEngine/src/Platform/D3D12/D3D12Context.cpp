@@ -6,6 +6,11 @@
 #include <thread>
 #include <atomic>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
+
 namespace GEngine
 {
 #ifdef GE_DEBUG
@@ -284,7 +289,7 @@ namespace GEngine
 		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
 		{
 		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
-			GE_CORE_ASSERT(false, "glfw surface creation is not implemented yet!");
+			D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), glfwGetWin32Window((GLFWwindow*)m_WindowHandle), &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
 			break;
 		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
 			D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), (HWND)m_WindowHandle, &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));

@@ -3,6 +3,7 @@
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/D3D12/D3D12Context.h"
 #include "Surface/GLFW/GLFWInput.h"
 #include <GLFW/glfw3.h>
 #include "GEngine/Application.h"
@@ -45,32 +46,36 @@ namespace GEngine
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized	= true;
 		}	
-		if (GraphicsAPI::GetAPI() == GRAPHICS_API_OPENGL)
-		{
-			
-		}
-		else if (GraphicsAPI::GetAPI() == GRAPHICS_API_VULKAN)
+
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
-		if (GraphicsAPI::GetAPI() == GRAPHICS_API_OPENGL)
+		switch (Graphics::GetGraphicsAPI())
+		{
+		case GRAPHICS_API_OPENGL:
 		{
 			m_Context = new OpenGLContext(m_Window);
+			break;
 		}
-		else if (GraphicsAPI::GetAPI() == GRAPHICS_API_VULKAN)
+		case GRAPHICS_API_VULKAN:
 		{
 			m_Context = new VulkanContext(m_Window);
 			m_Context->SetRequiredExtensions(GetRequiredExtensions());
+			break;
 		}
-		else
+		case GRAPHICS_API_DIRECT3DX12:
 		{
-			GE_CORE_ASSERT(false, "Renderer API not supported");
+			m_Context = new D3D12Context(m_Window);
+			break;
 		}
-			
-
-		
+		default:
+			GE_CORE_ASSERT(false, "Unknown Graphics API!");
+			break;
+		}
+	
 		m_Context->Init(m_Data.Width, m_Data.Height);
 
 		

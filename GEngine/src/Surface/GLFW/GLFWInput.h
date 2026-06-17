@@ -3,7 +3,7 @@
 
 namespace GEngine
 {
-	class GENGINE_API GlfwInput : public PlatformInput
+	class GENGINE_API GLFWInput : public PlatformInput
 	{
 	public:
 		inline virtual bool GetKeyPressed(KeyCode keycode) override;
