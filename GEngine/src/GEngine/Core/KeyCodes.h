@@ -9,6 +9,7 @@ namespace GEngine
 {
 	typedef enum KeyCode : int32_t
 	{
+		KEY_UNKNOWN,
 		KEY_SPACE,
 		KEY_APOSTROPHE,
 		KEY_COMMA,
@@ -133,6 +134,7 @@ namespace GEngine
 	
 	static std::unordered_map<uint32_t, std::string> KeyCodeString
 	{
+		{ KEY_UNKNOWN           ,     "KEY_UNKNOWN"			},
 		{ KEY_SPACE             ,     "KEY_SPACE"			},
 		{ KEY_APOSTROPHE        ,     "KEY_APOSTROPHE"		},
 		{ KEY_COMMA             ,     "KEY_COMMA"			},

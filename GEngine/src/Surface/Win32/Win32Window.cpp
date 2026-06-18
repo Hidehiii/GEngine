@@ -76,6 +76,7 @@ namespace GEngine
 		case WM_MOUSEHOVER:
 
 		case WM_KEYDOWN:
+			VK_ESCAPE
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
 
