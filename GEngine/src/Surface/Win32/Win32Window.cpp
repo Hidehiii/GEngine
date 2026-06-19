@@ -113,6 +113,7 @@ namespace GEngine
 	}
 	void Win32Window::OnEndFrame()
 	{
+		UpdateKeyAndMouseStatesForQuery();
 	}
 	float Win32Window::GetTime() const
 	{
@@ -244,7 +245,7 @@ namespace GEngine
 		case WM_KEYDOWN:
 		{
 			KeyCode keycode = Win32ToKeyCode(static_cast<uint32_t>(wParam));
-			KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
+			KeyStateInfo& keyState = Input::s_KeyStates[keycode];
 
 			BOOL isFirstDown = (lParam & (1 << 30)) == 0;
 			if (isFirstDown)
@@ -289,7 +290,7 @@ namespace GEngine
 		case WM_KEYUP:
 		{
 			KeyCode keycode = Win32ToKeyCode(static_cast<uint32_t>(wParam));
-			KeyStateInfo& keyState = PlatformInput::s_KeyStates[keycode];
+			KeyStateInfo& keyState = Input::s_KeyStates[keycode];
 
 			KeyUpEvent upEvent(keycode);
 			m_Data.EventCallback(upEvent);
@@ -336,7 +337,7 @@ namespace GEngine
 	}
 	void Win32Window::MouseButtonDownCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode)
 	{
-		MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[btnCode];
+		MouseBtnStateInfo& btnState = Input::s_MouseBtnStates[btnCode];
 
 		btnState.IsPressed = true;
 		btnState.PressStartTime = int(GetTime());
@@ -345,23 +346,24 @@ namespace GEngine
 		y = HIWORD(lParam);
 		btnState.PressX = (float)x;
 		btnState.PressY = (float)y;
-		btnState.CurX = (float)x;
-		btnState.CurY = (float)y;
 		btnState.IsLongPressTriggered = false;
 
-		MouseButtonDownEvent downEvent(btnCode, btnState.CurX, btnState.CurY);
+		Input::s_MouseX = btnState.PressX;
+		Input::s_MouseY = btnState.PressY;
+
+		MouseButtonDownEvent downEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 		m_Data.EventCallback(downEvent);
 
-		MouseButtonPressedEvent pressedEvent(btnCode, btnState.CurX, btnState.CurY);
+		MouseButtonPressedEvent pressedEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 		m_Data.EventCallback(pressedEvent);
 
 		
 
 		// handling double clicked
-		auto& lastBtn = PlatformInput::s_LastMouseBtnClicked;
+		auto& lastBtn = Input::s_LastMouseBtnClicked;
 		if (lastBtn.first == btnCode && int(GetTime()) - lastBtn.second <= Application::Get().GetConfig()->GetDoubleClickThresholdMs())
 		{
-			MouseButtonDoubleClickEvent doubleClickEvent(btnCode, btnState.CurX, btnState.CurY);
+			MouseButtonDoubleClickEvent doubleClickEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 			m_Data.EventCallback(doubleClickEvent);
 			// reset last clicked button to prevent triple click being detected as double click
 			lastBtn = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0 };
@@ -373,7 +375,7 @@ namespace GEngine
 	}
 	void Win32Window::MouseButtonPressedCallback()
 	{
-		for (auto& [button, btnState] : PlatformInput::s_MouseBtnStates)
+		for (auto& [button, btnState] : Input::s_MouseBtnStates)
 		{
 			int btnCode = MouseCodeToWin32(button);
 			auto state = GetAsyncKeyState(btnCode);
@@ -382,8 +384,8 @@ namespace GEngine
 			GetPhysicalCursorPos(&pt);
 			PhysicalToLogicalPoint(m_Window, &pt);
 			ScreenToClient(m_Window, &pt);
-			btnState.CurX = (float)pt.x;
-			btnState.CurY = (float)pt.y;
+			Input::s_MouseX = (float)pt.x;
+			Input::s_MouseY = (float)pt.y;
 
 			// pressed
 			if (state & 0x8000)
@@ -395,24 +397,24 @@ namespace GEngine
 				else
 				{
 					// btn still pressed, continue handling long press logic
-					MouseButtonPressedEvent event(button, btnState.CurX, btnState.CurY);
+					MouseButtonPressedEvent event(button, Input::s_MouseX, Input::s_MouseY);
 					m_Data.EventCallback(event);
 
 					if (!btnState.IsLongPressTriggered)
 					{
 						if (Application::Get().GetConfig()->GetLongPressThresholdMs() <= int(GetTime()) - btnState.PressStartTime)
 						{
-							MouseButtonLongDownEvent longDownEvent(button, btnState.CurX, btnState.CurY);
+							MouseButtonLongDownEvent longDownEvent(button, Input::s_MouseX, Input::s_MouseY);
 							m_Data.EventCallback(longDownEvent);
 							// trigger long press event
-							MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
+							MouseButtonLongPressedEvent longPressEvent(button, Input::s_MouseX, Input::s_MouseY);
 							m_Data.EventCallback(longPressEvent);
 							btnState.IsLongPressTriggered = true;
 						}
 					}
 					else
 					{
-						MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
+						MouseButtonLongPressedEvent longPressEvent(button, Input::s_MouseX, Input::s_MouseY);
 						m_Data.EventCallback(longPressEvent);
 					}
 				}
@@ -421,16 +423,16 @@ namespace GEngine
 	}
 	void Win32Window::MouseButtonUpCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode)
 	{
-		MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[btnCode];
+		MouseBtnStateInfo& btnState = Input::s_MouseBtnStates[btnCode];
 
 		POINT pt;
 		GetPhysicalCursorPos(&pt);
 		PhysicalToLogicalPoint(m_Window, &pt);
 		ScreenToClient(m_Window, &pt);
-		btnState.CurX = (float)pt.x;
-		btnState.CurY = (float)pt.y;
+		Input::s_MouseX = (float)pt.x;
+		Input::s_MouseY = (float)pt.y;
 
-		MouseButtonUpEvent upEvent(btnCode, btnState.CurX, btnState.CurY);
+		MouseButtonUpEvent upEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 		m_Data.EventCallback(upEvent);
 
 		if (btnState.IsPressed)
@@ -438,17 +440,18 @@ namespace GEngine
 			if (btnState.IsLongPressTriggered)
 			{
 				// long pressed has triggered before, trigger long up event
-				MouseButtonLongUpEvent longUpEvent(btnCode, btnState.CurX, btnState.CurY);
+				MouseButtonLongUpEvent longUpEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 				m_Data.EventCallback(longUpEvent);
 			}
 			else
 			{
 				// normal mouse button up event
-				MouseButtonClickEvent clickEvent(btnCode, btnState.CurX, btnState.CurY);
+				MouseButtonClickEvent clickEvent(btnCode, Input::s_MouseX, Input::s_MouseY);
 				m_Data.EventCallback(clickEvent);
 			}
 			btnState.IsPressed = false;
 			btnState.IsLongPressTriggered = false;
 		}
 	}
+
 }

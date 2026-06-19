@@ -35,8 +35,6 @@ namespace GEngine
 		int PressStartTime = 0;     // 按下时间戳
 		float PressX = 0;               // 按下时X坐标
 		float PressY = 0;               // 按下时Y坐标
-		float CurX = 0;                // 当前X坐标
-		float CurY = 0;                // 当前Y坐标
 		bool IsLongPressTriggered = false; // 长按是否已触发
 	};
 
@@ -55,43 +53,6 @@ namespace GEngine
 		bool IsLongUp = false;       // 按键在本帧是否触发长按释放
 		bool IsLongPressed = false; // 按键是否处于长按状态
 	};
-
-	class PlatformInput
-	{
-	public:
-		inline virtual bool GetKeyPressed(KeyCode keycode) = 0;
-		inline virtual bool GetKeyUp(KeyCode keycode) = 0;
-		inline virtual bool GetKeyDown(KeyCode keycode) = 0;
-		inline virtual bool GetKeyLongPressed(KeyCode keycode) = 0;
-		inline virtual bool GetKeyLongUp(KeyCode keycode) = 0;
-		inline virtual bool GetKeyLongDown(KeyCode keycode) = 0;
-
-		inline virtual bool GetMouseButtonPressed(MouseCode button) = 0;
-		inline virtual bool GetMouseButtonUp(MouseCode button) = 0;
-		inline virtual bool GetMouseButtonDown(MouseCode button) = 0;
-		inline virtual bool GetMouseButtonLongPressed(MouseCode button) = 0;
-		inline virtual bool GetMouseButtonLongUp(MouseCode button) = 0;
-		inline virtual bool GetMouseButtonLongDown(MouseCode button) = 0;
-
-		inline virtual Vector2 GetMousePosition() = 0;
-		inline virtual float GetMouseX() = 0;
-		inline virtual float GetMouseY() = 0;
-	protected:
-		// State for mouse double clicked event
-		static std::pair<MouseCode, float>	s_LastMouseBtnClicked; // 上次被点击的鼠标按钮和时间戳
-
-		// State storage for event handling
-		static std::unordered_map<KeyCode, KeyStateInfo>		s_KeyStates;
-		static std::unordered_map<MouseCode, MouseBtnStateInfo> s_MouseBtnStates;
-
-		// State storage for querying in each frame
-		static std::unordered_map<KeyCode, KeyStateInfoForQuery>		s_KeyStatesForQuery;
-		static std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> s_MouseBtnStatesForQuery;
-
-		friend class GLFWWindow; // allow GLFWWindow to update the key and mouse button states
-		friend class Win32Window; // allow Win32Window to update the key and mouse button states
-	};
-
 
 	class GENGINE_API Input
 	{
@@ -128,7 +89,24 @@ namespace GEngine
 		inline static float GetMouseX();
 		inline static float GetMouseY();
 	private:
-		static PlatformInput* s_Instance;
+		// State for mouse double clicked event
+		static std::pair<MouseCode, float>	s_LastMouseBtnClicked; // 上次被点击的鼠标按钮和时间戳
+
+		// State for mouse position
+		static float s_MouseX;
+		static float s_MouseY;
+
+		// State storage for event handling
+		static std::unordered_map<KeyCode, KeyStateInfo>		s_KeyStates;
+		static std::unordered_map<MouseCode, MouseBtnStateInfo> s_MouseBtnStates;
+
+		// State storage for querying in each frame
+		static std::unordered_map<KeyCode, KeyStateInfoForQuery>		s_KeyStatesForQuery;
+		static std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> s_MouseBtnStatesForQuery;
+
+		friend class Window; // allow Window to call UpdateKeyAndMouseStatesForQuery() every frame
+		friend class GLFWWindow; // allow GLFWWindow to update the key and mouse button states
+		friend class Win32Window; // allow Win32Window to update the key and mouse button states
 	};
 
 	

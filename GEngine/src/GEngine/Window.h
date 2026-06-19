@@ -61,5 +61,7 @@ namespace GEngine
 
 			EventCallbackFn EventCallback;
 		};
+
+		void UpdateKeyAndMouseStatesForQuery();
 	};
 }

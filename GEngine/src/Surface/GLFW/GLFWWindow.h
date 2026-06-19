@@ -2,7 +2,7 @@
 
 #include "GEngine/Window.h"
 #include "GEngine/Graphics/GraphicsContext.h"
-
+#include <GLFW/glfw3.h>
 
 namespace GEngine
 {
@@ -35,8 +35,6 @@ namespace GEngine
 		virtual void Shutdown();
 
 		virtual void MouseButtonPreessedCallback();
-
-		virtual void UpdateKeyAndMouseStatesForQuery();
 	private:
 		GLFWwindow* m_Window;
 		GraphicsContext* m_Context;

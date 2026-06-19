@@ -7,89 +7,76 @@
 
 namespace GEngine
 {
-	PlatformInput* Input::s_Instance = nullptr;
-	std::unordered_map<KeyCode, KeyStateInfo> PlatformInput::s_KeyStates;
-	std::unordered_map<MouseCode, MouseBtnStateInfo> PlatformInput::s_MouseBtnStates;
-	std::unordered_map<KeyCode, KeyStateInfoForQuery> PlatformInput::s_KeyStatesForQuery;
-	std::unordered_map<MouseCode, MouseBtnStateInfoForQuery> PlatformInput::s_MouseBtnStatesForQuery;
+	std::pair<MouseCode, float>									Input::s_LastMouseBtnClicked = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0.0f };
+	float														Input::s_MouseX = 0.0f;
+	float														Input::s_MouseY = 0.0f;
+	std::unordered_map<KeyCode, KeyStateInfo>					Input::s_KeyStates;
+	std::unordered_map<MouseCode, MouseBtnStateInfo>			Input::s_MouseBtnStates;
+	std::unordered_map<KeyCode, KeyStateInfoForQuery>			Input::s_KeyStatesForQuery;
+	std::unordered_map<MouseCode, MouseBtnStateInfoForQuery>	Input::s_MouseBtnStatesForQuery;
 	void Input::Init()
 	{
-		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
-		{
-			case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
-			{
-				s_Instance = new GLFWInput();
-				break;
-			}
-			case Config::CONFIG_WINDOW_MANAGER_API_WIN32:
-			{
-				s_Instance = new Win32Input();
-				break;
-			}
-		default:
-			GE_CORE_ASSERT(false, "Unknown Window Manager API!");
-			break;
-		}
+		GE_CORE_INFO("Initializing Input");
 	}
 
 	bool Input::GetKeyPressed(KeyCode keycode)
 	{
-		return s_Instance->GetKeyPressed(keycode);
+		return s_KeyStatesForQuery[keycode].IsPressed;
 	}
 	bool Input::GetKeyUp(KeyCode keycode)
 	{
-		return s_Instance->GetKeyUp(keycode);
+		return s_KeyStatesForQuery[keycode].IsUp;
 	}
 	bool Input::GetKeyDown(KeyCode keycode)
 	{
-		return s_Instance->GetKeyDown(keycode);
+		return s_KeyStatesForQuery[keycode].IsDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 	bool Input::GetKeyLongPressed(KeyCode keycode)
 	{
-		return s_Instance->GetKeyLongPressed(keycode);
+		return s_KeyStatesForQuery[keycode].IsLongPressed;
 	}
 	bool Input::GetKeyLongUp(KeyCode keycode)
 	{
-		return s_Instance->GetKeyLongUp(keycode);
+		return s_KeyStatesForQuery[keycode].IsLongUp;
 	}
 	bool Input::GetKeyLongDown(KeyCode keycode)
 	{
-		return s_Instance->GetKeyLongDown(keycode);
+		return s_KeyStatesForQuery[keycode].IsLongDown == KeyStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 	bool Input::GetMouseButtonPressed(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonPressed(button);
+		return s_MouseBtnStatesForQuery[button].IsPressed;
 	}
 	bool Input::GetMouseButtonUp(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonUp(button);
+		return s_MouseBtnStatesForQuery[button].IsUp;
 	}
 	bool Input::GetMouseButtonDown(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonDown(button);
+		return s_MouseBtnStatesForQuery[button].IsDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 	bool Input::GetMouseButtonLongPressed(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonLongPressed(button);
+		return s_MouseBtnStatesForQuery[button].IsLongPressed;
 	}
 	bool Input::GetMouseButtonLongUp(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonLongUp(button);
+		return s_MouseBtnStatesForQuery[button].IsLongUp;
 	}
 	bool Input::GetMouseButtonLongDown(MouseCode button)
 	{
-		return s_Instance->GetMouseButtonLongDown(button);
+		return s_MouseBtnStatesForQuery[button].IsLongDown == MouseBtnStateInfoForQuery::STATE_UP_TO_DOWN;
 	}
 	Vector2 Input::GetMousePosition()
 	{
-		return s_Instance->GetMousePosition();
+		return { s_MouseX, s_MouseY };
 	}
 	float Input::GetMouseX()
 	{
-		return s_Instance->GetMouseX();
+		return s_MouseX;
 	}
 	float Input::GetMouseY()
 	{
-		return s_Instance->GetMouseY();
+		return s_MouseY;
 	}
 }
