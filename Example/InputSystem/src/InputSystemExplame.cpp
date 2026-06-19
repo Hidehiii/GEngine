@@ -90,5 +90,10 @@ namespace GEngine
 			GE_INFO("Mouse Button Released Event: {}", event.GetMouseButton());
 			return false;
 			});
+		EventDispatcher::Dispatch<MouseButtonDoubleClickEvent>(e, [&](MouseButtonDoubleClickEvent& event)
+		{
+			GE_INFO("Mouse Button Double Clicked Event: {}", event.GetMouseButton());
+			return false;
+			});
 	}
 }

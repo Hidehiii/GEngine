@@ -145,11 +145,13 @@ namespace GEngine
 			break;
 		}
 		case WM_ACTIVATEAPP:
-
+			break;
 		case WM_ACTIVATE:
-
+			break;
 		case WM_MOUSEMOVE:
+			break;
 		case WM_MOUSEWHEEL:
+			break;
 		case WM_LBUTTONDOWN:
 		{
 			MouseButtonDownCallback(wParam, lParam, MOUSE_BUTTON_LEFT);
@@ -193,9 +195,9 @@ namespace GEngine
 			break;
 		}
 		case WM_PAINT:
-
+			break;
 		case WM_MOVE:
-
+			break;
 		case WM_SIZE:
 		{
 			if (wParam == SIZE_MINIMIZED)
@@ -205,9 +207,9 @@ namespace GEngine
 			break;
 		}
 		case WM_ENTERSIZEMOVE:
-
+			break;
 		case WM_EXITSIZEMOVE:
-
+			break;
 		case WM_GETMINMAXINFO:
 		{
 			if (lParam)
@@ -240,8 +242,9 @@ namespace GEngine
 		}
 
 		case WM_INPUT:
+			break;
 		case WM_MOUSEHOVER:
-
+			break;
 		case WM_KEYDOWN:
 		{
 			KeyCode keycode = Win32ToKeyCode(static_cast<uint32_t>(wParam));
@@ -316,7 +319,7 @@ namespace GEngine
 			break;
 		}
 		case WM_SYSKEYUP:
-
+			break;
 		case WM_SYSKEYDOWN:
 			
 			break;
