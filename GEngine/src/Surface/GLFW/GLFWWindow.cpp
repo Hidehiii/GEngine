@@ -209,7 +209,7 @@ namespace GEngine
 			{
 			case GLFW_PRESS:
 			{
-				MouseCode buttonCode = (MouseCode)button;
+				MouseCode buttonCode = GLFWToMouseCode(button);
 				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
 
 				MouseButtonDownEvent downEvent(buttonCode);
@@ -225,11 +225,27 @@ namespace GEngine
 				btnState.PressX = (float)x;
 				btnState.PressY = (float)y;
 				btnState.IsLongPressTriggered = false;
+
+				// handling double clicked
+				auto& lastBtn = PlatformInput::s_LastMouseBtnClicked;
+				if(lastBtn.first == buttonCode && int(glfwGetTime() * 1000) - lastBtn.second <= Application::Get().GetConfig()->GetDoubleClickThresholdMs())
+				{
+					MouseButtonDoubleClickEvent doubleClickEvent(buttonCode);
+					data.EventCallback(doubleClickEvent);
+					// reset last clicked button to prevent triple click being detected as double click
+					lastBtn = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0 };
+				}
+				else
+				{
+					// record the last clicked button and timestamp for double click detection
+					lastBtn = { buttonCode, (float)glfwGetTime() * 1000 };
+				}
+				
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				MouseCode buttonCode = (MouseCode)button;
+				MouseCode buttonCode = GLFWToMouseCode(button);
 				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
 
 				MouseButtonUpEvent event(buttonCode);

@@ -280,6 +280,7 @@ namespace GEngine
 		out << YAML::Key << "CommandBufferCount" << YAML::Value << (int)config->m_CommandBufferCount;
 		out << YAML::Key << "ShaderCacheDirectory" << YAML::Value << config->m_ShaderCacheDirectory;
 		out << YAML::Key << "LongPressThresholdMs" << YAML::Value << (int)config->m_LongPressThresholdMs;
+		out << YAML::Key << "DoubleClickThresholdMs" << YAML::Value << (int)config->m_DoubleClickThresholdMs;
 		out << YAML::Key << "WindowManagerAPI" << YAML::Value << (int)config->m_WindowManagerAPI;
 
 		out << YAML::EndMap;
@@ -411,6 +412,7 @@ namespace GEngine
 		config->m_CommandBufferCount					= data["CommandBufferCount"].as<uint32_t>();
 		config->m_ShaderCacheDirectory					= data["ShaderCacheDirectory"].as<std::string>();
 		config->m_LongPressThresholdMs					= data["LongPressThresholdMs"].as<uint32_t>();
+		config->m_DoubleClickThresholdMs				= data["DoubleClickThresholdMs"].as<uint32_t>();
 		config->m_WindowManagerAPI						= data["WindowManagerAPI"].as<uint8_t>();
 	}
 	

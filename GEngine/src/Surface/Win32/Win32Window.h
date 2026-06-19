@@ -27,20 +27,16 @@ namespace GEngine
 
 		virtual GraphicsContext* GetContext() const override { return m_Context; }
 
-		inline virtual void* GetNativeWindow() const override { return nullptr; }
+		inline virtual void* GetNativeWindow() const override { return m_Window; }
+
+		LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	private:
 		HWND m_Window;
 		MSG m_Message = { 0 };
+		LARGE_INTEGER m_Frequency;
+		LARGE_INTEGER m_StartCounter;
+
 		GraphicsContext* m_Context;
-
-		struct WindowData
-		{
-			std::string Title;
-			unsigned int Width, Height;
-			bool VSync;
-
-			EventCallbackFn EventCallback;
-		};
 
 		WindowData m_Data;
 	};

@@ -51,5 +51,15 @@ namespace GEngine
 		virtual float GetTime() const = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
+
+	protected:
+		struct WindowData
+		{
+			std::string Title;
+			unsigned int Width, Height;
+			bool VSync;
+
+			EventCallbackFn EventCallback;
+		};
 	};
 }

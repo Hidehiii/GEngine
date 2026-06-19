@@ -163,4 +163,18 @@ namespace GEngine
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_CLICK)
 	};
+
+	class GENGINE_API MouseButtonDoubleClickEvent : public MouseButtonEvent
+	{
+		public:
+		MouseButtonDoubleClickEvent(MouseCode button)
+			: MouseButtonEvent(button) {}
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonDoubleClickEvent: " << m_Button;
+			return ss.str();
+		}
+		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_DOUBLE_CLICK)
+	};
 }

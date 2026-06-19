@@ -25,7 +25,7 @@ namespace GEngine
 		inline virtual float GetMouseY() override;
 	};
 	
-	static std::unordered_map<KeyCode, int32_t> KeyCodeToWin32Value
+	static std::unordered_map<KeyCode, uint32_t> KeyCodeToWin32Value
 	{
 		{ KEY_SPACE			,	VK_SPACE			},
 		{ KEY_APOSTROPHE	,   VK_OEM_7			},
@@ -149,7 +149,7 @@ namespace GEngine
 		{ KEY_MENU          ,   VK_APPS				}
 	};
 
-	inline int32_t KeyCodeToWin32(KeyCode keycode)
+	inline uint32_t KeyCodeToWin32(KeyCode keycode)
 	{
 		if (KeyCodeToWin32Value.find(keycode) != KeyCodeToWin32Value.end())
 			return KeyCodeToWin32Value[keycode];
@@ -157,7 +157,7 @@ namespace GEngine
 			return KEY_UNKNOWN;
 	}
 
-	static std::unordered_map<int32_t, KeyCode> Win32ValueToKeyCode
+	static std::unordered_map<uint32_t, KeyCode> Win32ValueToKeyCode
 	{
 		{ VK_SPACE			,	KEY_SPACE			},
 		{ VK_OEM_7			,   KEY_APOSTROPHE		},
@@ -278,7 +278,7 @@ namespace GEngine
 		{ VK_APPS			,   KEY_MENU			}
 	};
 
-	inline KeyCode Win32ToKeyCode(int32_t win32Keycode)
+	inline KeyCode Win32ToKeyCode(uint32_t win32Keycode)
 	{
 		if (Win32ValueToKeyCode.find(win32Keycode) != Win32ValueToKeyCode.end())
 			return Win32ValueToKeyCode[win32Keycode];

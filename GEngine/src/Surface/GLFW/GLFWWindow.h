@@ -4,9 +4,6 @@
 #include "GEngine/Graphics/GraphicsContext.h"
 
 
-struct GLFWwindow;
-
-
 namespace GEngine
 {
 	class GLFWWindow : public Window
@@ -43,15 +40,6 @@ namespace GEngine
 	private:
 		GLFWwindow* m_Window;
 		GraphicsContext* m_Context;
-
-		struct WindowData
-		{
-			std::string Title;
-			unsigned int Width, Height;
-			bool VSync;
-
-			EventCallbackFn EventCallback;
-		};
 
 		WindowData m_Data;
 

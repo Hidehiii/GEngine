@@ -75,6 +75,9 @@ namespace GEngine
 		inline virtual float GetMouseX() = 0;
 		inline virtual float GetMouseY() = 0;
 	protected:
+		// State for mouse double clicked event
+		static std::pair<MouseCode, float>	s_LastMouseBtnClicked; // 上次被点击的鼠标按钮和时间戳
+
 		// State storage for event handling
 		static std::unordered_map<KeyCode, KeyStateInfo>		s_KeyStates;
 		static std::unordered_map<MouseCode, MouseBtnStateInfo> s_MouseBtnStates;
