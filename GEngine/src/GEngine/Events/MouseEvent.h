@@ -53,25 +53,29 @@ namespace GEngine
 	{
 	public:
 		inline MouseCode GetMouseButton() const { return m_Button; }
+		inline float GetX() const { return m_MouseX; }
+		inline float GetY() const { return m_MouseY; }
 
 		DECLARE_EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE | EVENT_CATEGORY_INPUT)
 	protected:
-		MouseButtonEvent(MouseCode button)
-			: m_Button(button) {}
+		MouseButtonEvent(MouseCode button, float x, float y)
+			: m_Button(button), m_MouseX(x), m_MouseY(y) {}
 
 		MouseCode m_Button;
+		float m_MouseX = 0.0f;
+		float m_MouseY = 0.0f;
 	};
 
 	class GENGINE_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonPressedEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonPressedEvent: " << m_Button;
+			ss << "MouseButtonPressedEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 
@@ -81,12 +85,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonLongPressedEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonLongPressedEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonLongPressedEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonLongPressedEvent: " << m_Button;
+			ss << "MouseButtonLongPressedEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_PRESSED)
@@ -95,12 +99,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonLongDownEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonLongDownEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonLongDownEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonLongDownEvent: " << m_Button;
+			ss << "MouseButtonLongDownEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_DOWN)
@@ -109,12 +113,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonLongUpEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonLongUpEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonLongUpEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonLongUpEvent: " << m_Button;
+			ss << "MouseButtonLongUpEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_LONG_UP)
@@ -123,13 +127,13 @@ namespace GEngine
 	class GENGINE_API MouseButtonUpEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonUpEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonUpEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonReleasedEvent: " << m_Button;
+			ss << "MouseButtonReleasedEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 
@@ -139,12 +143,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonDownEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonDownEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonDownEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonDownEvent: " << m_Button;
+			ss << "MouseButtonDownEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_DOWN)
@@ -153,12 +157,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonClickEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonClickEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonClickEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonClickEvent: " << m_Button;
+			ss << "MouseButtonClickEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_CLICK)
@@ -167,12 +171,12 @@ namespace GEngine
 	class GENGINE_API MouseButtonDoubleClickEvent : public MouseButtonEvent
 	{
 		public:
-		MouseButtonDoubleClickEvent(MouseCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonDoubleClickEvent(MouseCode button, float x, float y)
+			: MouseButtonEvent(button, x, y) {}
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonDoubleClickEvent: " << m_Button;
+			ss << "MouseButtonDoubleClickEvent: " << m_Button << " (" << m_MouseX << ", " << m_MouseY << ")";
 			return ss.str();
 		}
 		DECLARE_EVENT_CLASS_TYPE(EVENT_TYPE_MOUSE_BUTTON_DOUBLE_CLICK)

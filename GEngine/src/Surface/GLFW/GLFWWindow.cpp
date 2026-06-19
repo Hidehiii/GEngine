@@ -212,25 +212,29 @@ namespace GEngine
 				MouseCode buttonCode = GLFWToMouseCode(button);
 				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
 
-				MouseButtonDownEvent downEvent(buttonCode);
-				data.EventCallback(downEvent);
-
-				MouseButtonPressedEvent event(buttonCode);
-				data.EventCallback(event);
-
 				btnState.IsPressed = true;
 				btnState.PressStartTime = int(glfwGetTime() * 1000);
 				double x, y = 0;
 				glfwGetCursorPos(window, &x, &y);
 				btnState.PressX = (float)x;
 				btnState.PressY = (float)y;
+				btnState.CurX = (float)x;
+				btnState.CurY = (float)y;
 				btnState.IsLongPressTriggered = false;
+
+				MouseButtonDownEvent downEvent(buttonCode, btnState.CurX, btnState.CurY);
+				data.EventCallback(downEvent);
+
+				MouseButtonPressedEvent event(buttonCode, btnState.CurX, btnState.CurY);
+				data.EventCallback(event);
+
+				
 
 				// handling double clicked
 				auto& lastBtn = PlatformInput::s_LastMouseBtnClicked;
 				if(lastBtn.first == buttonCode && int(glfwGetTime() * 1000) - lastBtn.second <= Application::Get().GetConfig()->GetDoubleClickThresholdMs())
 				{
-					MouseButtonDoubleClickEvent doubleClickEvent(buttonCode);
+					MouseButtonDoubleClickEvent doubleClickEvent(buttonCode, btnState.CurX, btnState.CurY);
 					data.EventCallback(doubleClickEvent);
 					// reset last clicked button to prevent triple click being detected as double click
 					lastBtn = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0 };
@@ -248,7 +252,12 @@ namespace GEngine
 				MouseCode buttonCode = GLFWToMouseCode(button);
 				MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[buttonCode];
 
-				MouseButtonUpEvent event(buttonCode);
+				double x, y = 0;
+				glfwGetCursorPos(window, &x, &y);
+				btnState.CurX = (float)x;
+				btnState.CurY = (float)y;
+
+				MouseButtonUpEvent event(buttonCode, btnState.CurX, btnState.CurY);
 				data.EventCallback(event);
 
 				if(btnState.IsPressed)
@@ -256,13 +265,13 @@ namespace GEngine
 					if(btnState.IsLongPressTriggered)
 					{
 						// 长按已触发，执行长按释放逻辑（如果有的话）
-						MouseButtonLongUpEvent longUpEvent(buttonCode);
+						MouseButtonLongUpEvent longUpEvent(buttonCode, btnState.CurX, btnState.CurY);
 						data.EventCallback(longUpEvent);
 					}
 					else
 					{
 						// 普通按键释放逻辑
-						MouseButtonClickEvent clickEvent(buttonCode);
+						MouseButtonClickEvent clickEvent(buttonCode, btnState.CurX, btnState.CurY);
 						data.EventCallback(clickEvent);
 					}
 					btnState.IsPressed = false;
@@ -302,6 +311,12 @@ namespace GEngine
 		{
 			int btnCode = MouseCodeToGLFW(button);
 			auto state = glfwGetMouseButton(m_Window, btnCode);
+
+			double x, y = 0;
+			glfwGetCursorPos(m_Window, &x, &y);
+			btnState.CurX = (float)x;
+			btnState.CurY = (float)y;
+
 			if(state == GLFW_RELEASE)
 				continue;
 			if(state == GLFW_PRESS)
@@ -313,7 +328,7 @@ namespace GEngine
 				else
 				{
 					// 按钮仍然按下，继续处理长按逻辑
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressedEvent event(button, btnState.CurX, btnState.CurY);
 					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(m_Window);
 					data.EventCallback(event);
 
@@ -321,17 +336,17 @@ namespace GEngine
 					{
 						if (Application::Get().GetConfig()->GetLongPressThresholdMs() <= int(glfwGetTime() * 1000) - btnState.PressStartTime)
 						{
-							MouseButtonLongDownEvent longDownEvent(button);
+							MouseButtonLongDownEvent longDownEvent(button, btnState.CurX, btnState.CurY);
 							data.EventCallback(longDownEvent);
 							// 触发长按事件
-							MouseButtonLongPressedEvent longPressEvent(button);
+							MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
 							data.EventCallback(longPressEvent);
 							btnState.IsLongPressTriggered = true;
 						}
 					}
 					else
 					{
-						MouseButtonLongPressedEvent longPressEvent(button);
+						MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
 						data.EventCallback(longPressEvent);
 					}
 				}

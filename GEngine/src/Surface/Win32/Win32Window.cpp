@@ -87,7 +87,7 @@ namespace GEngine
 			break;
 		}
 
-		SetWindowLongPtr(m_Window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+		
 		m_Context->Init(m_Data.Width, m_Data.Height);
 	}
 	Win32Window::~Win32Window()
@@ -108,7 +108,7 @@ namespace GEngine
 		}
 		else
 		{
-
+			MouseButtonPressedCallback();
 		}
 	}
 	void Win32Window::OnEndFrame()
@@ -140,11 +140,7 @@ namespace GEngine
 		{
 		case WM_CREATE:
 		{
-			if (lParam)
-			{
-				auto params = reinterpret_cast<LPCREATESTRUCTW>(lParam);
-				SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(params->lpCreateParams));
-			}
+			SetWindowLongPtr(m_Window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 			break;
 		}
 		case WM_ACTIVATEAPP:
@@ -152,51 +148,49 @@ namespace GEngine
 		case WM_ACTIVATE:
 
 		case WM_MOUSEMOVE:
+		case WM_MOUSEWHEEL:
 		case WM_LBUTTONDOWN:
 		{
-			MouseCode btnCode = MOUSE_BUTTON_LEFT;
-			MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[btnCode];
-
-			MouseButtonDownEvent downEvent(btnCode);
-			m_Data.EventCallback(downEvent);
-
-			MouseButtonPressedEvent pressedEvent(btnCode);
-			m_Data.EventCallback(pressedEvent);
-
-			btnState.IsPressed = true;
-			btnState.PressStartTime = int(GetTime());
-			int x, y = 0;
-			x = LOWORD(lParam);
-			y = HIWORD(lParam);
-			btnState.PressX = (float)x;
-			btnState.PressY = (float)y;
-			btnState.IsLongPressTriggered = false;
-
-			// handling double clicked
-			auto& lastBtn = PlatformInput::s_LastMouseBtnClicked;
-			if (lastBtn.first == btnCode && int(GetTime()) - lastBtn.second <= Application::Get().GetConfig()->GetDoubleClickThresholdMs())
-			{
-				MouseButtonDoubleClickEvent doubleClickEvent(btnCode);
-				m_Data.EventCallback(doubleClickEvent);
-				// reset last clicked button to prevent triple click being detected as double click
-				lastBtn = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0 };
-			}
-			else
-			{
-				lastBtn = { btnCode, int(GetTime()) };
-			}
-
+			MouseButtonDownCallback(wParam, lParam, MOUSE_BUTTON_LEFT);
 			break;
 		}
 		case WM_LBUTTONUP:
+		{
+			MouseButtonUpCallback(wParam, lParam, MOUSE_BUTTON_LEFT);
+			break;
+		}
 		case WM_RBUTTONDOWN:
+		{
+			MouseButtonDownCallback(wParam, lParam, MOUSE_BUTTON_RIGHT);
+			break;
+		}
 		case WM_RBUTTONUP:
+		{
+			MouseButtonUpCallback(wParam, lParam, MOUSE_BUTTON_RIGHT);
+			break;
+		}
 		case WM_MBUTTONDOWN:
+		{
+			MouseButtonDownCallback(wParam, lParam, MOUSE_BUTTON_MIDDLE);
+			break;
+		}
 		case WM_MBUTTONUP:
-		case WM_MOUSEWHEEL:
+		{
+			MouseButtonUpCallback(wParam, lParam, MOUSE_BUTTON_MIDDLE);
+			break;
+		}
 		case WM_XBUTTONDOWN:
+		{
+			MouseCode btnCode = Win32ToMouseCode(GET_XBUTTON_WPARAM(wParam));
+			MouseButtonDownCallback(wParam, lParam, btnCode);
+			break;
+		}
 		case WM_XBUTTONUP:
-
+		{
+			MouseCode btnCode = Win32ToMouseCode(GET_XBUTTON_WPARAM(wParam));
+			MouseButtonUpCallback(wParam, lParam, btnCode);
+			break;
+		}
 		case WM_PAINT:
 
 		case WM_MOVE:
@@ -323,36 +317,7 @@ namespace GEngine
 		case WM_SYSKEYUP:
 
 		case WM_SYSKEYDOWN:
-			//if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
-			//{
-			//	// Implements the classic ALT+ENTER fullscreen toggle
-			//	if (s_fullscreen)
-			//	{
-			//		SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-			//		SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
-
-			//		int width = 800;
-			//		int height = 600;
-			//		if (sample)
-			//			sample->GetDefaultSize(width, height);
-
-			//		ShowWindow(hWnd, SW_SHOWNORMAL);
-
-			//		SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
-			//	}
-			//	else
-			//	{
-			//		SetWindowLongPtr(hwnd, GWL_STYLE, WS_POPUP);
-			//		SetWindowLongPtr(hwnd, GWL_EXSTYLE, WS_EX_TOPMOST);
-
-			//		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-
-			//		ShowWindow(hWnd, SW_SHOWMAXIMIZED);
-			//	}
-
-			//	s_fullscreen = !s_fullscreen;
-			//}
-			//Keyboard::ProcessMessage(message, wParam, lParam);
+			
 			break;
 
 		case WM_MOUSEACTIVATE:
@@ -368,5 +333,122 @@ namespace GEngine
 		}
 
 		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+	void Win32Window::MouseButtonDownCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode)
+	{
+		MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[btnCode];
+
+		btnState.IsPressed = true;
+		btnState.PressStartTime = int(GetTime());
+		int x, y = 0;
+		x = LOWORD(lParam);
+		y = HIWORD(lParam);
+		btnState.PressX = (float)x;
+		btnState.PressY = (float)y;
+		btnState.CurX = (float)x;
+		btnState.CurY = (float)y;
+		btnState.IsLongPressTriggered = false;
+
+		MouseButtonDownEvent downEvent(btnCode, btnState.CurX, btnState.CurY);
+		m_Data.EventCallback(downEvent);
+
+		MouseButtonPressedEvent pressedEvent(btnCode, btnState.CurX, btnState.CurY);
+		m_Data.EventCallback(pressedEvent);
+
+		
+
+		// handling double clicked
+		auto& lastBtn = PlatformInput::s_LastMouseBtnClicked;
+		if (lastBtn.first == btnCode && int(GetTime()) - lastBtn.second <= Application::Get().GetConfig()->GetDoubleClickThresholdMs())
+		{
+			MouseButtonDoubleClickEvent doubleClickEvent(btnCode, btnState.CurX, btnState.CurY);
+			m_Data.EventCallback(doubleClickEvent);
+			// reset last clicked button to prevent triple click being detected as double click
+			lastBtn = { MouseCode::MOUSE_BUTTON_UNKNOWN, 0 };
+		}
+		else
+		{
+			lastBtn = { btnCode, int(GetTime()) };
+		}
+	}
+	void Win32Window::MouseButtonPressedCallback()
+	{
+		for (auto& [button, btnState] : PlatformInput::s_MouseBtnStates)
+		{
+			int btnCode = MouseCodeToWin32(button);
+			auto state = GetAsyncKeyState(btnCode);
+
+			POINT pt;
+			GetPhysicalCursorPos(&pt);
+			PhysicalToLogicalPoint(m_Window, &pt);
+			ScreenToClient(m_Window, &pt);
+			btnState.CurX = (float)pt.x;
+			btnState.CurY = (float)pt.y;
+
+			// pressed
+			if (state & 0x8000)
+			{
+				if (btnState.IsPressed == false)
+				{
+					continue;
+				}
+				else
+				{
+					// btn still pressed, continue handling long press logic
+					MouseButtonPressedEvent event(button, btnState.CurX, btnState.CurY);
+					m_Data.EventCallback(event);
+
+					if (!btnState.IsLongPressTriggered)
+					{
+						if (Application::Get().GetConfig()->GetLongPressThresholdMs() <= int(GetTime()) - btnState.PressStartTime)
+						{
+							MouseButtonLongDownEvent longDownEvent(button, btnState.CurX, btnState.CurY);
+							m_Data.EventCallback(longDownEvent);
+							// trigger long press event
+							MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
+							m_Data.EventCallback(longPressEvent);
+							btnState.IsLongPressTriggered = true;
+						}
+					}
+					else
+					{
+						MouseButtonLongPressedEvent longPressEvent(button, btnState.CurX, btnState.CurY);
+						m_Data.EventCallback(longPressEvent);
+					}
+				}
+			}
+		}
+	}
+	void Win32Window::MouseButtonUpCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode)
+	{
+		MouseBtnStateInfo& btnState = PlatformInput::s_MouseBtnStates[btnCode];
+
+		POINT pt;
+		GetPhysicalCursorPos(&pt);
+		PhysicalToLogicalPoint(m_Window, &pt);
+		ScreenToClient(m_Window, &pt);
+		btnState.CurX = (float)pt.x;
+		btnState.CurY = (float)pt.y;
+
+		MouseButtonUpEvent upEvent(btnCode, btnState.CurX, btnState.CurY);
+		m_Data.EventCallback(upEvent);
+
+		if (btnState.IsPressed)
+		{
+			if (btnState.IsLongPressTriggered)
+			{
+				// long pressed has triggered before, trigger long up event
+				MouseButtonLongUpEvent longUpEvent(btnCode, btnState.CurX, btnState.CurY);
+				m_Data.EventCallback(longUpEvent);
+			}
+			else
+			{
+				// normal mouse button up event
+				MouseButtonClickEvent clickEvent(btnCode, btnState.CurX, btnState.CurY);
+				m_Data.EventCallback(clickEvent);
+			}
+			btnState.IsPressed = false;
+			btnState.IsLongPressTriggered = false;
+		}
 	}
 }

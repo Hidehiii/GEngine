@@ -35,6 +35,8 @@ namespace GEngine
 		int PressStartTime = 0;     // 按下时间戳
 		float PressX = 0;               // 按下时X坐标
 		float PressY = 0;               // 按下时Y坐标
+		float CurX = 0;                // 当前X坐标
+		float CurY = 0;                // 当前Y坐标
 		bool IsLongPressTriggered = false; // 长按是否已触发
 	};
 

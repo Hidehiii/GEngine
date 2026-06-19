@@ -31,6 +31,10 @@ namespace GEngine
 
 		LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	private:
+		void MouseButtonDownCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode);
+		void MouseButtonPressedCallback();
+		void MouseButtonUpCallback(WPARAM wParam, LPARAM lParam, MouseCode btnCode);
+	private:
 		HWND m_Window;
 		MSG m_Message = { 0 };
 		LARGE_INTEGER m_Frequency;
