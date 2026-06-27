@@ -202,7 +202,9 @@ namespace GEngine
 				}
 				case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 				{
-					GE_CORE_ASSERT(false, "");
+					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+
+					layoutBindings.push_back(layoutBinding);
 					break;
 				}
 				case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
