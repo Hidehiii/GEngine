@@ -10,9 +10,9 @@
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
 namespace GEngine
 {
-	RenderPassSpecification		s_Spec;
-	Ref<RenderPass>				s_RenderPass;
-	Ref<FrameBuffer>			s_FrameBuffer;
+	static RenderPassSpecification		s_Spec;
+	static Ref<RenderPass>				s_RenderPass;
+	static Ref<FrameBuffer>				s_FrameBuffer;
 
 	OpenGLImGui::~OpenGLImGui()
 	{

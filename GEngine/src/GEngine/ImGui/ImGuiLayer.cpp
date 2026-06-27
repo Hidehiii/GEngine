@@ -9,6 +9,7 @@
 #include "GEngine/Graphics/CommandBuffer.h"
 #include "Platform/OpenGL/OpenGLImGui.h"
 #include "Platform/Vulkan/VulkanImGui.h"
+#include "Platform/D3D12/D3D12ImGui.h"
 
 
 namespace GEngine
@@ -20,6 +21,7 @@ namespace GEngine
 		{
 		case GRAPHICS_API_OPENGL: m_PlatformImGui = new OpenGLImGui(); break;
 		case GRAPHICS_API_VULKAN: m_PlatformImGui = new VulkanImGui(); break;
+		case GRAPHICS_API_DIRECT3DX12: m_PlatformImGui = new D3D12ImGui(); break;
 		default: GE_CORE_ASSERT(false, "Unknown renderer api");
 		}
 	}
