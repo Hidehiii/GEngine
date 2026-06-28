@@ -63,7 +63,7 @@ namespace GEngine
 		virtual ~VulkanCommandBuffer();
 
 		virtual void Begin(Ref<FrameBuffer>& buffer) override;
-
+		virtual void Begin() override;
 		virtual void End() override;
 
 		virtual void Render(Ref<GraphicsPipeline>&pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
@@ -80,8 +80,8 @@ namespace GEngine
 		void ClearWaitSemaphores() { m_WaitSemaphores.clear(); }
 		void ClearSignalSemaphores() { m_SignalSemaphores.clear(); }
 
-		std::vector<VkSemaphore> GetSignalSemaphores() { return m_SignalSemaphores; }
-		std::vector<VkSemaphore> GetWaitSemaphores() { return m_WaitSemaphores; }
+		const std::vector<VkSemaphore>& GetSignalSemaphores() const { return m_SignalSemaphores; }
+		const std::vector<VkSemaphore>& GetWaitSemaphores() const { return m_WaitSemaphores; }
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;

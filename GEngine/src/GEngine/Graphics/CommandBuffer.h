@@ -24,6 +24,7 @@ namespace GEngine
 		virtual CommandBufferType				GetType() { return m_Type; }
 
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
+		virtual void Begin() = 0;
 		virtual void End() = 0;
 	protected:
 		CommandBufferType				m_Type = COMMAND_BUFFER_TYPE_NONE;

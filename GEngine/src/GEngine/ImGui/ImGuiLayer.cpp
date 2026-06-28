@@ -118,8 +118,6 @@ namespace GEngine
 	}
 	void ImGuiLayer::End()
 	{
-		
-
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
@@ -130,13 +128,11 @@ namespace GEngine
 		
 		m_PlatformImGui->End();
 		
-		
+		// I am not sure if this work?
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
 		}
 	}
 	void ImGuiLayer::SetDarkThemeColor()

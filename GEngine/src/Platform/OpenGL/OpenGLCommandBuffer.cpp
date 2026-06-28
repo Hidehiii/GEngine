@@ -26,9 +26,13 @@ namespace GEngine
 		}
 
 	}
+	void OpenGLCommandBuffer::Begin()
+	{
+		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+	}
 	void OpenGLCommandBuffer::End()
 	{
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
 		{
 			m_FrameBuffer->End(this);
 		}

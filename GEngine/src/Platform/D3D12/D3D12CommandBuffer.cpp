@@ -153,9 +153,17 @@ namespace GEngine
 			m_FrameBuffer->Begin(this);
 		}
     }
+    void D3D12CommandBuffer::Begin()
+    {
+        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+
+		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+
+		m_FrameBuffer = nullptr;
+    }
     void D3D12CommandBuffer::End()
     {
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
 		{
 			m_FrameBuffer->End(this);
 		}

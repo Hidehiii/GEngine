@@ -12,7 +12,7 @@ namespace GEngine
 		virtual ~D3D12CommandBuffer();
 
 		virtual void Begin(Ref<FrameBuffer>& buffer) override;
-
+		virtual void Begin() override;
 		virtual void End() override;
 
 		virtual void Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
@@ -25,8 +25,11 @@ namespace GEngine
 		void AddSignalFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_SignalFences.push_back(f); }
 		void AddWaitFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_WaitFences.push_back(f); }
 
-		void ClearSignalFence() { m_SignalFences.clear(); }
-		void ClearWaitFence() { m_WaitFences.clear(); }
+		void ClearSignalFences() { m_SignalFences.clear(); }
+		void ClearWaitFences() { m_WaitFences.clear(); }
+
+		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetSignalFences() const { return m_SignalFences; }
+		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetWaitFences() const { return m_WaitFences; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;

@@ -28,11 +28,11 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetComputeQueue() { return m_ComputeQueue; }
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetTransferQueue() { return m_TransferQueue; }
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>				GetSwapChain() { return m_SwapChain; }
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeGraphicsCommand();
+		Ref<D3D12CommandBuffer>								BeginSingleTimeGraphicsCommand();
 		UINT												GetRtvDescriptorSize() { return m_RtvDescriptorSize; }
 		UINT												GetDsvDescriptorSize() { return m_DsvDescriptorSize; }
 		UINT												GetCbvSrvUavDescriptorSize() { return m_CbvSrvUavDescriptorSize; }
-		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
+		void												EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList);
 		Vector4&											GetClearColor() { return m_ClearColor; }
 		UINT												GetBackBufferIndex() { return m_SwapChain->GetCurrentBackBufferIndex(); }
 		bool												IsVSync() { return m_VSync; }

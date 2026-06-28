@@ -11,13 +11,16 @@
 
 namespace GEngine
 {
-	static RenderPassSpecification			s_Spec;
-	static Ref<D3D12RenderPass>				s_RenderPass = nullptr;
-	static Ref<D3D12FrameBuffer>			s_RenderTarget = nullptr;
-	static ID3D12DescriptorHeap*			s_SrvHeap = nullptr;
+	static RenderPassSpecification				s_Spec;
+	static Ref<D3D12RenderPass>					s_RenderPass = nullptr;
+	static Ref<D3D12FrameBuffer>				s_RenderTarget = nullptr;
+	static ID3D12DescriptorHeap*				s_SrvHeap = nullptr;
+	static std::vector<Ref<D3D12CommandBuffer>>	s_CommandBuffers;
 
 	D3D12ImGui::~D3D12ImGui()
 	{
+		if(s_SrvHeap)
+			s_SrvHeap->Release();
 		ImGui_ImplDX12_Shutdown();
 	}
 	void D3D12ImGui::OnAttach(void* window)
@@ -64,17 +67,52 @@ namespace GEngine
 	}
 	void D3D12ImGui::Begin()
 	{
+		if(s_RenderTarget->GetWidth() != Application::Get().GetWindow().GetWidth() ||
+			s_RenderTarget->GetHeight() != Application::Get().GetWindow().GetHeight())
+		{
+			s_RenderTarget = CreateRef<D3D12FrameBuffer>(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		}
 		ImGui_ImplDX12_NewFrame();
 	}
 	void D3D12ImGui::End()
 	{
+		auto cmdList = s_CommandBuffers.at(Graphics::GetFrame())->GetCommandList();
+		auto cmdAllocator = s_CommandBuffers.at(Graphics::GetFrame())->GetCommandAllocator();
+
+		D3D12_THROW_IF_FAILED(cmdList->Reset(cmdAllocator.Get(), nullptr));
+		s_RenderTarget->Begin(s_CommandBuffers.at(Graphics::GetFrame()).get());
+
+		cmdList->SetDescriptorHeaps(1, &s_SrvHeap);
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList.Get());
+
+		s_RenderTarget->End(s_CommandBuffers.at(Graphics::GetFrame()).get());
+		D3D12_THROW_IF_FAILED(cmdList->Close());
+		D3D12Context::Get()->GetGraphicsQueue()->ExecuteCommandLists(1, (ID3D12CommandList* const*)cmdList.Get());
+
+		auto waitFences = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitFences();
+		for (auto& [fence, value] : waitFences)
+		{
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Wait(fence.Get(), value));
+		}
+
+		s_CommandBuffers.at(Graphics::GetFrame())->ClearWaitFences();
+		s_CommandBuffers.at(Graphics::GetFrame())->ClearSignalFences();
 	}
 	Ref<Texture2D> D3D12ImGui::GetImGuiTexture()
 	{
-		return Ref<Texture2D>();
+		return s_RenderTarget->GetColorRT(0);
 	}
 	Ref<CommandBuffer> D3D12ImGui::GetCommandBuffer()
 	{
-		return Ref<CommandBuffer>();
+		return s_CommandBuffers.at(Graphics::GetFrame());
+	}
+
+	void D3D12ImGui::CreateCommandBuffers()
+	{
+		s_CommandBuffers.resize(Graphics::GetFrameCount());
+		for (size_t i = 0; i < Graphics::GetFrameCount(); i++)
+		{
+			s_CommandBuffers[i] = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
+		}
 	}
 }

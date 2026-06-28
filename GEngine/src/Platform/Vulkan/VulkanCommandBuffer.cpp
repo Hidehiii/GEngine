@@ -224,13 +224,25 @@ namespace GEngine
 		}
 
 	}
+	void VulkanCommandBuffer::Begin()
+	{
+		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
+
+		vkResetCommandBuffer(m_CommandBuffer, 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+	}
 	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)
 	{
 		return CreateRef<VulkanCommandBuffer>(buffer, type);
 	}
 	void VulkanCommandBuffer::End()
 	{
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
 		{
 			m_FrameBuffer->End(this);
 		}

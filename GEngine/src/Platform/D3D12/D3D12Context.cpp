@@ -104,11 +104,11 @@ namespace GEngine
 	void D3D12Context::SetRequiredExtensions(std::vector<const char*> extensions)
 	{
 	}
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12Context::BeginSingleTimeGraphicsCommand()
+	Ref<D3D12CommandBuffer> D3D12Context::BeginSingleTimeGraphicsCommand()
 	{
 		return m_CommandPool.BeginSingleTimeGraphicsCommand();
 	}
-	void D3D12Context::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+	void D3D12Context::EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList)
 	{
 		m_CommandPool.EndSingleTimeGraphicsCommand(commandList);
 	}

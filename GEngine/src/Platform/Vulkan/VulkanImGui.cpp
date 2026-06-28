@@ -129,9 +129,9 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
-		std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitSemaphores();
-		std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetSignalSemaphores();
+		const std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitSemaphores();
+		const std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		const std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetSignalSemaphores();
 
 		VkSubmitInfo                    submitInfo{};
 		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
