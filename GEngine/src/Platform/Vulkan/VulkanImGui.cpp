@@ -169,10 +169,10 @@ namespace GEngine {
 		renderPassInfo.renderArea.extent.height = s_Spec.y;
 
 		VkClearValue							clearColor = {};
-		clearColor.color = { { 0.0f, 0.0f, 0.0f, 0.0f} };
+		clearColor.color						= { { 0.0f, 0.0f, 0.0f, 0.0f} };
 
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
+		renderPassInfo.clearValueCount			= 1;
+		renderPassInfo.pClearValues				= &clearColor;
 
 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
@@ -235,8 +235,8 @@ namespace GEngine {
 		framebufferInfo.renderPass		= s_RenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments	= &s_ColorImageView;
-		framebufferInfo.width = s_Spec.x;
-		framebufferInfo.height = s_Spec.y;
+		framebufferInfo.width			= s_Spec.x;
+		framebufferInfo.height			= s_Spec.y;
 		framebufferInfo.layers			= 1;
 
 		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));

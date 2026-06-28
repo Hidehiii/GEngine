@@ -4,14 +4,17 @@
 #include "GEngine/Application.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12FrameBuffer.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
 #include "ImGui/backends/imgui_impl_win32.h"
 #include "ImGui/backends/imgui_impl_dx12.h"
 
 namespace GEngine
 {
-	static ID3D12DescriptorHeap* s_RtvHeap = nullptr;
-	static ID3D12DescriptorHeap* s_SrvHeap = nullptr;
+	static RenderPassSpecification			s_Spec;
+	static Ref<D3D12RenderPass>				s_RenderPass = nullptr;
+	static Ref<D3D12FrameBuffer>			s_RenderTarget = nullptr;
+	static ID3D12DescriptorHeap*			s_SrvHeap = nullptr;
 
 	D3D12ImGui::~D3D12ImGui()
 	{
@@ -19,13 +22,19 @@ namespace GEngine
 	}
 	void D3D12ImGui::OnAttach(void* window)
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC	rtvHeapDesc = {};
-		rtvHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.NumDescriptors	= Graphics::GetFrameCount();
-		rtvHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		rtvHeapDesc.NodeMask		= 1;
-		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&s_RtvHeap)));
+		s_Spec.ColorRTs						= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		s_Spec.DepthStencil					= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		s_Spec.Samples						= 1;
+		s_Spec.Operation.ColorBegin			= RENDER_PASS_BEGINE_OP_CLEAR;
+		s_Spec.Operation.ColorEnd			= RENDER_PASS_END_OP_STORE;
+		s_Spec.Operation.DepthStencilBegin	= RENDER_PASS_BEGINE_OP_CLEAR;
+		s_Spec.Operation.DepthStencilEnd	= RENDER_PASS_END_OP_STORE;
 
+		s_RenderPass = CreateRef<D3D12RenderPass>(s_Spec);
+		GE_CORE_ASSERT(s_RenderPass != nullptr, "Failed to create D3D12RenderPass for ImGui");
+
+		s_RenderTarget = CreateRef<D3D12FrameBuffer>(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		GE_CORE_ASSERT(s_RenderTarget != nullptr, "Failed to create D3D12FrameBuffer for ImGui");
 
 		D3D12_DESCRIPTOR_HEAP_DESC	srvHeapDesc = {};
 		srvHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;

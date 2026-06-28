@@ -4,12 +4,6 @@
 
 namespace GEngine
 {
-	
-
-	
-
-
-
 	class GENGINE_API RenderPass
 	{
 	public:
