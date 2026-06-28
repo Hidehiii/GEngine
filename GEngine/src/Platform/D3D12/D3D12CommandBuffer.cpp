@@ -33,27 +33,88 @@ namespace GEngine
         return Ref<D3D12CommandBuffer>();
     }
 
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeGraphicsCommand()
+	Ref<D3D12CommandBuffer> D3D12CommandPool::BeginSingleTimeGraphicsCommand()
 	{
-        return Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>();
+		auto cmd = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
+		D3D12_THROW_IF_FAILED(cmd->GetCommandList()->Reset(cmd->GetCommandAllocator().Get(), nullptr));
+
+        return cmd;
 	}
-	void D3D12CommandPool::EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+	void D3D12CommandPool::EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList)
 	{
-		
+		auto cmd = commandList->GetCommandList();
+
+		D3D12_THROW_IF_FAILED(cmd->Close());
+
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetGraphicsQueue();
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+		UINT64 fenceValue = 1;
+        HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+
+        D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
+		queue->Signal(fence.Get(), fenceValue);
+
+		WaitForSingleObject(fenceEvent, INFINITE);
+        CloseHandle(fenceEvent);
 	}
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeComputeCommand()
+    Ref<D3D12CommandBuffer> D3D12CommandPool::BeginSingleTimeComputeCommand()
     {
-        return Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>();
+        auto cmd = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_COMPUTE);
+        D3D12_THROW_IF_FAILED(cmd->GetCommandList()->Reset(cmd->GetCommandAllocator().Get(), nullptr));
+
+        return cmd;
     }
-    void D3D12CommandPool::EndSingleTimeComputeCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+    void D3D12CommandPool::EndSingleTimeComputeCommand(Ref<D3D12CommandBuffer>& commandList)
     {
+		auto cmd = commandList->GetCommandList();
+
+		D3D12_THROW_IF_FAILED(cmd->Close());
+
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetComputeQueue();
+		Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+		UINT64 fenceValue = 1;
+		HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+
+		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
+		queue->Signal(fence.Get(), fenceValue);
+
+		WaitForSingleObject(fenceEvent, INFINITE);
+		CloseHandle(fenceEvent);
     }
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> D3D12CommandPool::BeginSingleTimeTransferCommand()
+    Ref<D3D12CommandBuffer> D3D12CommandPool::BeginSingleTimeTransferCommand()
     {
-        return Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>();
+		auto cmd = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_TRANSFER);
+        D3D12_THROW_IF_FAILED(cmd->GetCommandList()->Reset(cmd->GetCommandAllocator().Get(), nullptr));
+		return cmd;
     }
-    void D3D12CommandPool::EndSingleTimeTransferCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList)
+    void D3D12CommandPool::EndSingleTimeTransferCommand(Ref<D3D12CommandBuffer>& commandList)
     {
+		auto cmd = commandList->GetCommandList();
+
+		D3D12_THROW_IF_FAILED(cmd->Close());
+
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetTransferQueue();
+		Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+		UINT64 fenceValue = 1;
+		HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+
+		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
+		queue->Signal(fence.Get(), fenceValue);
+
+		WaitForSingleObject(fenceEvent, INFINITE);
+		CloseHandle(fenceEvent);
     }
     D3D12CommandBuffer::D3D12CommandBuffer(CommandBufferType type)
     {
@@ -100,7 +161,6 @@ namespace GEngine
 		}
 
         D3D12_THROW_IF_FAILED(m_CommandList->Close());
-        // TODO: 如何多list 之间同步？最好不用在cpu wait
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
         if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)

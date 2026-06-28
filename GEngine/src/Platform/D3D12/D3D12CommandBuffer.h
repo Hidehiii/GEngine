@@ -44,12 +44,12 @@ namespace GEngine
 
 		Ref<D3D12CommandBuffer>	GetCommandBuffer(CommandBufferType type);
 
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeGraphicsCommand();
-		void												EndSingleTimeGraphicsCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeComputeCommand();
-		void												EndSingleTimeComputeCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	BeginSingleTimeTransferCommand();
-		void												EndSingleTimeTransferCommand(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList);
+		Ref<D3D12CommandBuffer>	BeginSingleTimeGraphicsCommand();
+		void					EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList);
+		Ref<D3D12CommandBuffer>	BeginSingleTimeComputeCommand();
+		void					EndSingleTimeComputeCommand(Ref<D3D12CommandBuffer>& commandList);
+		Ref<D3D12CommandBuffer>	BeginSingleTimeTransferCommand();
+		void					EndSingleTimeTransferCommand(Ref<D3D12CommandBuffer>& commandList);
 
 	private:
 		std::vector<Ref<D3D12CommandBuffer>>		m_GraphicsList;
