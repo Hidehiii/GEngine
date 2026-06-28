@@ -11,62 +11,29 @@
 
 namespace GEngine {
 	
-	static VkRenderPass									s_RenderPass;
-	static VkFramebuffer								s_FrameBuffer;
-	static VkImage										s_ColorImage;
-	static VkImageView									s_ColorImageView;
-	static VkDeviceMemory								s_ColorImageMemory;
-	static Vector2										s_Spec;
-	static Ref<VulkanTexture2D>							s_ImGuiImage;
+	static RenderPassSpecification						s_Spec;	
+	static Ref<VulkanRenderPass>						s_RenderPass = nullptr;
+	static Ref<VulkanFrameBuffer>						s_FrameBuffer = nullptr;
 	static std::vector<Ref<VulkanCommandBuffer>>		s_CommandBuffers;
-	static std::vector<VkSemaphore>						s_Semaphores;
-	static std::vector<VkFence>							s_Fences;
 	VulkanImGui::~VulkanImGui()
 	{
 		ImGui_ImplVulkan_Shutdown();
 	}
 	void VulkanImGui::OnAttach(void* window)
 	{
-		s_Spec.x				= Application::Get().GetWindow().GetWidth();
-		s_Spec.y				= Application::Get().GetWindow().GetHeight();
+		s_Spec.ColorRTs						= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		s_Spec.DepthStencil					= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		s_Spec.Samples						= 1;
+		s_Spec.Operation.ColorBegin			= RENDER_PASS_BEGINE_OP_CLEAR;
+		s_Spec.Operation.ColorEnd			= RENDER_PASS_END_OP_STORE;
+		s_Spec.Operation.DepthStencilBegin	= RENDER_PASS_BEGINE_OP_CLEAR;
+		s_Spec.Operation.DepthStencilEnd	= RENDER_PASS_END_OP_STORE;
 
-		std::vector<VkAttachmentDescription>	attachments;
-		VkAttachmentDescription					des = Utils::CreateAttachmentDescription(FRAME_BUFFER_TEXTURE_FORMAT_RGBA8, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-		des.format								= VK_FORMAT_R8G8B8A8_UNORM;
-		attachments.push_back(des);
+		s_RenderPass = CreateRef<VulkanRenderPass>(s_Spec);
 
-		std::vector<VkAttachmentReference>	colorAttachmentRefs;
-		VkAttachmentReference				ref = Utils::CreateAttachmentReference(FRAME_BUFFER_TEXTURE_FORMAT_RGBA8, 0);
-		colorAttachmentRefs.push_back(ref);
+		s_FrameBuffer = CreateRef<VulkanFrameBuffer>(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 
-		VkSubpassDescription			 subpass{};
-		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
-		subpass.pColorAttachments		= colorAttachmentRefs.data();
-		subpass.pDepthStencilAttachment = nullptr;
-
-
-		VkSubpassDependency			 dependency{};
-		dependency.srcSubpass		= VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass		= 0;
-		dependency.srcStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask	= 0;
-		dependency.dstStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask	= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo          renderPassInfo{};
-		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount	= static_cast<uint32_t>(attachments.size());
-		renderPassInfo.pAttachments		= attachments.data();
-		renderPassInfo.subpassCount		= 1;
-		renderPassInfo.pSubpasses		= &subpass;
-		renderPassInfo.dependencyCount	= 1;
-		renderPassInfo.pDependencies	= &dependency;
-
-		VK_CHECK_RESULT(vkCreateRenderPass(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &s_RenderPass));
-
-		CreateBuffer();
-		CreateCommandBufferAndSyncObjects();
+		CreateCommandBuffers();
 		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
 		{
 		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
@@ -120,7 +87,7 @@ namespace GEngine {
 		info.Subpass					= 0;
 		info.Allocator					= nullptr;
 		info.CheckVkResultFn			= nullptr;
-		ImGui_ImplVulkan_Init(&info, s_RenderPass);
+		ImGui_ImplVulkan_Init(&info, s_RenderPass->GetRenderPass());
 
 		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
 		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
@@ -131,16 +98,12 @@ namespace GEngine {
 
 	void VulkanImGui::Begin()
 	{
-		if ((s_Spec.x != Application::Get().GetWindow().GetWidth() ||
-			s_Spec.y != Application::Get().GetWindow().GetHeight()) &&
+		if ((s_FrameBuffer->GetWidth() != Application::Get().GetWindow().GetWidth() ||
+			s_FrameBuffer->GetHeight() != Application::Get().GetWindow().GetHeight()) &&
 			(Application::Get().GetWindow().GetWidth() != 0 &&
 				Application::Get().GetWindow().GetHeight() != 0))
 		{
-			s_Spec.x = Application::Get().GetWindow().GetWidth();
-			s_Spec.y = Application::Get().GetWindow().GetHeight();
-			
-			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), s_FrameBuffer, nullptr);
-			CreateBuffer();
+			s_FrameBuffer = CreateRef<VulkanFrameBuffer>(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 		}
 		ImGui_ImplVulkan_NewFrame();
 	}
@@ -158,27 +121,11 @@ namespace GEngine {
 		vkResetCommandBuffer(cmd, 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &beginInfo));
 
-		s_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		s_FrameBuffer->Begin(s_CommandBuffers.at(Graphics::GetFrame()).get());
 
-		VkRenderPassBeginInfo					renderPassInfo{};
-		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass				= s_RenderPass;
-		renderPassInfo.framebuffer				= s_FrameBuffer;
-		renderPassInfo.renderArea.offset		= { 0, 0 };
-		renderPassInfo.renderArea.extent.width	= s_Spec.x;
-		renderPassInfo.renderArea.extent.height = s_Spec.y;
-
-		VkClearValue							clearColor = {};
-		clearColor.color						= { { 0.0f, 0.0f, 0.0f, 0.0f} };
-
-		renderPassInfo.clearValueCount			= 1;
-		renderPassInfo.pClearValues				= &clearColor;
-
-		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
-		vkCmdEndRenderPass(cmd);
-		s_ImGuiImage->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		s_FrameBuffer->End(s_CommandBuffers.at(Graphics::GetFrame()).get());
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
@@ -204,7 +151,7 @@ namespace GEngine {
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()
 	{
-		return s_ImGuiImage;
+		return s_FrameBuffer->GetColorRT(0);
 	}
 
 	Ref<CommandBuffer> VulkanImGui::GetCommandBuffer()
@@ -212,60 +159,9 @@ namespace GEngine {
 		return s_CommandBuffers.at(Graphics::GetFrame());
 	}
 
-	void VulkanImGui::CreateBuffer()
+	void VulkanImGui::CreateCommandBuffers()
 	{
-		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			s_Spec.x,
-			s_Spec.y,
-			VK_FORMAT_R8G8B8A8_UNORM,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VK_SAMPLE_COUNT_1_BIT,
-			1,
-			0,
-			1,
-			s_ColorImage,
-			s_ColorImageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), s_ColorImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, s_ColorImageView);
-
-		VkFramebufferCreateInfo			framebufferInfo{};
-		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass		= s_RenderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments	= &s_ColorImageView;
-		framebufferInfo.width			= s_Spec.x;
-		framebufferInfo.height			= s_Spec.y;
-		framebufferInfo.layers			= 1;
-
-		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &s_FrameBuffer));
-
-		s_ImGuiImage = CreateRef<VulkanTexture2D>(VK_FORMAT_R8G8B8A8_UNORM, s_ColorImage, s_ColorImageView, s_ColorImageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-	}
-
-	void VulkanImGui::CreateCommandBufferAndSyncObjects()
-	{
-		s_Semaphores.resize(Graphics::GetFrameCount());
-		s_Fences.resize(Graphics::GetFrameCount());
 		s_CommandBuffers.resize(Graphics::GetFrameCount());
-
-
-		for (int i = 0; i < Graphics::GetFrameCount(); i++)
-		{
-			VkSemaphoreCreateInfo   semaphoreInfo{};
-			semaphoreInfo.sType		= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &s_Semaphores[i]));
-		}
-		
-		for (int i = 0; i < Graphics::GetFrameCount(); i++)
-		{
-			VkFenceCreateInfo       fenceInfo{};
-			fenceInfo.sType			= VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			fenceInfo.flags			= VK_FENCE_CREATE_SIGNALED_BIT;
-			VK_CHECK_RESULT(vkCreateFence(VulkanContext::Get()->GetDevice(), &fenceInfo, nullptr, &s_Fences[i]));
-		}
-		
 
 		std::vector<VkCommandBuffer>	cmds;
 		cmds.resize(Graphics::GetFrameCount());

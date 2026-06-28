@@ -23,8 +23,7 @@ namespace GEngine
 
 		virtual Ref<CommandBuffer> GetCommandBuffer() override;
 	private:
-		void CreateBuffer();
-		void CreateCommandBufferAndSyncObjects();
+		void CreateCommandBuffers();
 	private:
 		
 	};
