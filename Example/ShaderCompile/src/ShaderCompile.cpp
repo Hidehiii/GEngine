@@ -10,22 +10,30 @@ namespace GEngine
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/ExampleShader.shader");
 		Ref<Material> material = Material::Create(shader, "ExampleMaterial");
 
-		material->SetConstant<float>("_SomeFloat", 1.0f);
-		float x = material->GetConstant<float>("_SomeFloat");
-		GE_INFO("Material constant _SomeFloat: {0}", x);
+		float trianglePos[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
+		uint32_t triangleIndices[] = {
+			0, 1, 2
+		};
 
-		struct MyStruct
-		{
-			float a;
-			float b;
-		};  // same define with the struct in shader
-		material->SetConstant<MyStruct>("_MyStruct", { 1.0f, 2.0f });
-		MyStruct myStruct = material->GetConstant<MyStruct>("_MyStruct");
-		GE_INFO("Material constant _MyStruct a: {0}, b: {1}", myStruct.a, myStruct.b);
+		m_TrianglePipeline = GraphicsPipeline::Create(
+			material,
+			VertexBuffer::Create(sizeof(float) * _countof(trianglePos))
+		);
+		m_TrianglePipeline->GetVertexBuffer()->SetLayout({
+			{ SHADER_INPUT_DATA_TYPE_FLOAT3, "in_Position" },
+			});
+		m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
+		m_TrianglePipeline->GetVertexBuffer()->SetData(trianglePos, sizeof(float) * _countof(trianglePos));
+
+		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color", Vector4(1.0f, 1.0f, 0.0f, 1.0f));
 	}
 	void ShaderCompile::OnPresent()
 	{
-		
+		GraphicsPresent::Render(m_TrianglePipeline, 0);
 	}
 	void ShaderCompile::OnRender()
 	{

@@ -141,6 +141,15 @@ namespace GEngine
 		return oldBuffer;
 	}
 
+	std::vector<uint32_t> VulkanMaterial::GetDynamicOffsets(const int& pass)
+	{
+		if (m_DynamicUniformBufferOffsets.size() > pass)
+		{
+			return m_DynamicUniformBufferOffsets.at(pass);
+		}
+		return std::vector<uint32_t>();
+	}
+
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
 		

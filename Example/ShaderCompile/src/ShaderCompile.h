@@ -15,6 +15,8 @@ namespace GEngine
 		virtual void OnUpdate() override;
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
+	private:
+		Ref<GraphicsPipeline> m_TrianglePipeline;
 	};
 }
 

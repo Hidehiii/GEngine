@@ -20,7 +20,7 @@ namespace GEngine
 
 		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
 
-		virtual std::vector<uint32_t> GetDynamicOffsets(const int& pass) { return m_DynamicUniformBufferOffsets.at(pass); }
+		virtual std::vector<uint32_t> GetDynamicOffsets(const int& pass);
 
 		std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>	GetUniformBuffer(const int& pass)					{ return m_UniformBuffers.at(pass); }
 		VkDescriptorSetLayout*									GetDescriptorSetLayout(const int& pass)				{ return &m_DescriptorSetLayouts.at(pass); }
