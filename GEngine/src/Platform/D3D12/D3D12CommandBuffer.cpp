@@ -189,8 +189,8 @@ namespace GEngine
             queue->Signal(signal.first.Get(), signal.second);
         }
 
-        ClearWaitFence();
-        ClearSignalFence();
+        ClearWaitFences();
+        ClearSignalFences();
     }
     void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount, uint32_t indexCount)
     {

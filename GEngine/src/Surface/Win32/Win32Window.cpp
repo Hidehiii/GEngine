@@ -87,7 +87,7 @@ namespace GEngine
 			break;
 		}
 
-		
+		SetWindowLongPtr(m_Window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 		m_Context->Init(m_Data.Width, m_Data.Height);
 	}
 	Win32Window::~Win32Window()

@@ -47,11 +47,11 @@ namespace GEngine
 			textureData.RowPitch		= width * pixelSize;
 			textureData.SlicePitch		= textureData.RowPitch * height;
 
-			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+			auto dxCmd = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
 
-			UpdateSubresources(commandList.Get(), texture.Get(), uploadBuffer.Get(), 0, 0, 1, &textureData);
+			UpdateSubresources(dxCmd->GetCommandList().Get(), texture.Get(), uploadBuffer.Get(), 0, 0, 1, &textureData);
 
-			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
+			D3D12Context::Get()->EndSingleTimeGraphicsCommand(dxCmd);
 		}
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
 		{
@@ -60,9 +60,9 @@ namespace GEngine
 		}
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst)
 		{
-			Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
-			TransitionResourceState(commandList, resource, src, dst);
-			D3D12Context::Get()->EndSingleTimeGraphicsCommand(commandList);
+			auto dxCmd = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+			TransitionResourceState(dxCmd->GetCommandList(), resource, src, dst);
+			D3D12Context::Get()->EndSingleTimeGraphicsCommand(dxCmd);
 		}
 		void SetFenceValue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
 		{

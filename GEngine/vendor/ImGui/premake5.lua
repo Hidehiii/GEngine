@@ -26,6 +26,8 @@ project "ImGui"
 		"backends/imgui_impl_opengl3.cpp",
 		"backends/imgui_impl_vulkan.h",
 		"backends/imgui_impl_vulkan.cpp",
+		"backends/imgui_impl_dx12.h",
+		"backends/imgui_impl_dx12.cpp",
 	}
 
 	includedirs

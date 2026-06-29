@@ -328,7 +328,7 @@ namespace GEngine
 
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES,
+				D3D12_HEAP_FLAG_NONE,
 				&desc,
 				D3D12_RESOURCE_STATE_RENDER_TARGET,
 				&clearValue,
@@ -384,7 +384,7 @@ namespace GEngine
 
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES,
+				D3D12_HEAP_FLAG_NONE,
 				&desc,
 				D3D12_RESOURCE_STATE_DEPTH_WRITE,
 				&clearValue,
