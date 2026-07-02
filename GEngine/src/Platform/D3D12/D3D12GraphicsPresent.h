@@ -10,6 +10,11 @@ namespace GEngine
 		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
+
+	private:
+		std::vector<uint64_t>	m_FenceValues;
+		std::vector<HANDLE>		m_FenceEvents;
+		UINT					m_FrameIndex;
 	};
 }
 

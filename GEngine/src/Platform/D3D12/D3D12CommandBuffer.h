@@ -30,6 +30,9 @@ namespace GEngine
 
 		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetSignalFences() const { return m_SignalFences; }
 		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetWaitFences() const { return m_WaitFences; }
+
+		void BeginPresentRender();
+		void EndPresentRender();
 	private:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;

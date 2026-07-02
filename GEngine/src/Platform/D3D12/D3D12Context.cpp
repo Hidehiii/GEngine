@@ -74,6 +74,7 @@ namespace GEngine
 	}
 	D3D12Context::~D3D12Context()
 	{
+		
 	}
 	void D3D12Context::Init(const unsigned int width, const unsigned int height)
 	{
@@ -93,6 +94,19 @@ namespace GEngine
 	}
 	void D3D12Context::Uninit()
 	{
+		WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
+		WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
+		WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
+
+		for(int i = 0; i < m_FenceEvents.size(); i++)
+		{
+			CloseHandle(m_FenceEvents[i]);
+		}
+		for(int i = 0; i < m_Fences.size(); i++)
+		{
+			m_Fences[i]->Release();
+		}
+
 #ifdef GE_DEBUG
 		StopD3D12DebugInfoQueueLogger();
 #endif
@@ -112,26 +126,45 @@ namespace GEngine
 	{
 		m_CommandPool.EndSingleTimeGraphicsCommand(commandList);
 	}
-	std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> D3D12Context::GetFence()
+	Ref<D3D12CommandBuffer> D3D12Context::BeginSingleTimeComputeCommand()
 	{
-		// 应该不会在uint64 max 值到达时候下一个fence 还在用吧
+		return m_CommandPool.BeginSingleTimeComputeCommand();
+	}
+	void D3D12Context::EndSingleTimeComputeCommand(Ref<D3D12CommandBuffer>& commandList)
+	{
+		m_CommandPool.EndSingleTimeComputeCommand(commandList);
+	}
+	Ref<D3D12CommandBuffer> D3D12Context::BeginSingleTimeTransferCommand()
+	{
+		return m_CommandPool.BeginSingleTimeTransferCommand();
+	}
+	void D3D12Context::EndSingleTimeTransferCommand(Ref<D3D12CommandBuffer>& commandList)
+	{
+		m_CommandPool.EndSingleTimeTransferCommand(commandList);
+	}
+	std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> D3D12Context::GetFence(CommandBufferType type)
+	{
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> res;
 
-		if (m_FenceValue >= UINT64_MAX - 1024)
-		{
-			m_FenceIndex = (m_FenceIndex + 1) % m_Fences.size();
+		CheckAndResetFences();
 
-			m_FenceValue = 0;
-
-			m_Fences.at(m_FenceIndex)->Signal(0);
-		}
-
-		m_FenceValue++;
-
-		res.first	= m_Fences.at(m_FenceIndex);
-		res.second	= m_FenceValue;
-
+		res.first = m_Fences.at(UINT(type) - 1);
+		res.second = m_FenceValues.at(UINT(type) - 1);
 		return res;
+	}
+	void D3D12Context::IncreaseFenceValue(CommandBufferType type)
+	{
+		CheckAndResetFences();
+
+		m_FenceValues.at(UINT(type) - 1)++;
+	}
+	void D3D12Context::WaitForFence(CommandBufferType type, uint64_t timeout)
+	{
+		if(m_Fences.at(UINT(type) - 1)->GetCompletedValue() < m_FenceValues.at(UINT(type) - 1))
+		{
+			m_Fences.at(UINT(type) - 1)->SetEventOnCompletion(m_FenceValues.at(UINT(type) - 1), m_FenceEvents.at(UINT(type) - 1));
+			WaitForSingleObject(m_FenceEvents.at(UINT(type) - 1), timeout);
+		}
 	}
 	Ref<D3D12CommandBuffer> D3D12Context::GetCommandBuffer(CommandBufferType type)
 	{
@@ -343,10 +376,31 @@ namespace GEngine
 	}
 	void D3D12Context::CreateFences()
 	{
-		m_Fences.resize(Graphics::GetFrameCount());
-		for (int i = 0; i < Graphics::GetFrameCount(); i++)
+		// each queue has its own fence, and each fence has its own value
+		m_Fences.resize(m_QueueCount);
+		m_FenceValues.resize(m_QueueCount, 0);
+		m_FenceEvents.resize(m_QueueCount);
+		for (int i = 0; i < m_QueueCount; i++)
 		{
 			m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fences[i]));
+			m_FenceEvents[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		}
+	}
+	void D3D12Context::CheckAndResetFences()
+	{
+		for (int i = 0; i < m_QueueCount; i++)
+		{
+			if (m_FenceValues.at(i) >= UINT64_MAX - 1024)
+			{
+				if (m_Fences.at(i)->GetCompletedValue() < m_FenceValues.at(i))
+				{
+					m_Fences.at(i)->SetEventOnCompletion(m_FenceValues.at(i), m_FenceEvents.at(i));
+					WaitForSingleObject(m_FenceEvents.at(i), INFINITE);
+				}
+				m_FenceValues.at(i) = 0;
+				// for convenience, we use the graphics queue to signal the fence, but it doesn't matter which queue we use to signal the fence, as long as we use the same queue to wait for the fence.
+				m_GraphicsQueue->Signal(m_Fences.at(i).Get(), m_FenceValues.at(i));
+			}
 		}
 	}
 }

@@ -62,7 +62,8 @@ namespace GEngine
     }
     void D3D12GraphicsAPI::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
     {
-        auto f = D3D12Context::Get()->GetFence();
+        D3D12Context::Get()->IncreaseFenceValue(first->GetType());
+        auto f = D3D12Context::Get()->GetFence(first->GetType());
 		std::dynamic_pointer_cast<D3D12CommandBuffer>(first)->AddSignalFence(f);
 		std::dynamic_pointer_cast<D3D12CommandBuffer>(second)->AddWaitFence(f);
     }

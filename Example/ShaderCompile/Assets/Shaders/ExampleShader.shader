@@ -20,6 +20,11 @@ Shader "ExampleShader"
                 float4 _Color;
             };
 
+            cbuffer mat
+            {
+                float4 _Color1;
+            };
+
             struct VsInput
             {
                 float4 vertex : POSITION;
@@ -40,7 +45,7 @@ Shader "ExampleShader"
 
             float4 frag(VsOutput IN) : SV_Target
             {
-                return _Color;
+                return float4(_Color.r, _Color1.g, 0.0f, 1.0f);
             }
         }
     }

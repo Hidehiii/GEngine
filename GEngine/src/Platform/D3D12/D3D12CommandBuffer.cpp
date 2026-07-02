@@ -198,4 +198,28 @@ namespace GEngine
     void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
     {
     }
+    void D3D12CommandBuffer::BeginPresentRender()
+    {
+        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+    }
+    void D3D12CommandBuffer::EndPresentRender()
+    {
+        D3D12_THROW_IF_FAILED(m_CommandList->Close());
+
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetGraphicsQueue();
+
+        for (auto wait : m_WaitFences)
+        {
+            queue->Wait(wait.first.Get(), wait.second);
+        }
+        queue->ExecuteCommandLists(1, CommandListCast(m_CommandList.GetAddressOf()));
+
+        for (auto signal : m_SignalFences)
+        {
+            queue->Signal(signal.first.Get(), signal.second);
+        }
+
+        ClearWaitFences();
+        ClearSignalFences();
+    }
 }

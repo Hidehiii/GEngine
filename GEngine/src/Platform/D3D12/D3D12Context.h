@@ -28,16 +28,23 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetComputeQueue() { return m_ComputeQueue; }
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetTransferQueue() { return m_TransferQueue; }
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>				GetSwapChain() { return m_SwapChain; }
+		Ref<D3D12FrameBuffer>								GetRenderTarget(int index) { return m_RenderTargets.at(index); }
 		Ref<D3D12CommandBuffer>								BeginSingleTimeGraphicsCommand();
+		void												EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList);
+		Ref<D3D12CommandBuffer>								BeginSingleTimeComputeCommand();
+		void 												EndSingleTimeComputeCommand(Ref<D3D12CommandBuffer>& commandList);
+		Ref<D3D12CommandBuffer>								BeginSingleTimeTransferCommand();
+		void 												EndSingleTimeTransferCommand(Ref<D3D12CommandBuffer>& commandList);
 		UINT												GetRtvDescriptorSize() { return m_RtvDescriptorSize; }
 		UINT												GetDsvDescriptorSize() { return m_DsvDescriptorSize; }
 		UINT												GetCbvSrvUavDescriptorSize() { return m_CbvSrvUavDescriptorSize; }
-		void												EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList);
 		Vector4&											GetClearColor() { return m_ClearColor; }
 		UINT												GetBackBufferIndex() { return m_SwapChain->GetCurrentBackBufferIndex(); }
 		bool												IsVSync() { return m_VSync; }
 
-		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>  GetFence();
+		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>	GetFence(CommandBufferType type);
+		void														IncreaseFenceValue(CommandBufferType type);
+		void														WaitForFence(CommandBufferType type, uint64_t timeout = INFINITE);
 	protected:
 		Ref<D3D12CommandBuffer>		GetCommandBuffer(CommandBufferType type);
 	private:
@@ -53,6 +60,7 @@ namespace GEngine
 		void						CreateRenderPass();
 		void						CreateRenderTargets();
 		void						CreateFences();
+		void						CheckAndResetFences();
 	private:
 		void*											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
@@ -74,9 +82,10 @@ namespace GEngine
 		std::vector<Ref<D3D12FrameBuffer>>				m_RenderTargets;
 		int												m_Samples = 1;
 		bool											m_VSync = false;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_Fences;
-		size_t												m_FenceIndex = 0;
-		uint64_t											m_FenceValue;
+		UINT												m_QueueCount = 3; // graphics, compute, transfer
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_Fences; //  each queue has its own fence, and each fence has its own value
+		std::vector<uint64_t>								m_FenceValues;
+		std::vector<HANDLE>									m_FenceEvents;
 
 		Vector4											m_ClearColor = { 0, 0, 0, 0 };
 
