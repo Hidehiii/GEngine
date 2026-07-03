@@ -7,7 +7,7 @@ namespace GEngine
 {
 	namespace Utils
 	{
-		void CreateTextures(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipLevel, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS resourceFlag, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_DIMENSION dimesion, D3D12_RESOURCE_STATES state, Microsoft::WRL::ComPtr<ID3D12Resource>& texture)
+		void CreateTexture(uint32_t width, uint32_t height, uint32_t depth, uint32_t mipLevel, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS resourceFlag, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_DIMENSION dimesion, D3D12_RESOURCE_STATES state, Microsoft::WRL::ComPtr<ID3D12Resource>& texture)
 		{
 			D3D12_RESOURCE_DESC				textureDesc = {};
 			textureDesc.MipLevels			= mipLevel;
@@ -29,7 +29,7 @@ namespace GEngine
 				IID_PPV_ARGS(&texture)
 			));
 		}
-		void CreateBuffers(uint32_t size, D3D12_HEAP_TYPE heapType, D3D12_HEAP_FLAGS flag, D3D12_RESOURCE_STATES state, Microsoft::WRL::ComPtr<ID3D12Resource>& buffer)
+		void CreateBuffer(uint32_t size, D3D12_HEAP_TYPE heapType, D3D12_HEAP_FLAGS flag, D3D12_RESOURCE_STATES state, Microsoft::WRL::ComPtr<ID3D12Resource>& buffer)
 		{
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(heapType),
@@ -63,23 +63,6 @@ namespace GEngine
 			auto dxCmd = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
 			TransitionResourceState(dxCmd->GetCommandList(), resource, src, dst);
 			D3D12Context::Get()->EndSingleTimeGraphicsCommand(dxCmd);
-		}
-		void SetFenceValue(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
-		{
-			D3D12_THROW_IF_FAILED(queue->Signal(fence.Get(), value));
-			if (fence->GetCompletedValue() != value)
-			{
-				D3D12_THROW_IF_FAILED(fence->SetEventOnCompletion(value, event));
-				WaitForSingleObject(event, INFINITE);
-			}
-		}
-		void WaitForFence(Microsoft::WRL::ComPtr<ID3D12CommandQueue>& queue, Microsoft::WRL::ComPtr<ID3D12Fence>& fence, const UINT64& value, HANDLE& event)
-		{
-			if (fence->GetCompletedValue() < value)
-			{
-				D3D12_THROW_IF_FAILED(fence->SetEventOnCompletion(value, event));
-				WaitForSingleObject(event, INFINITE);
-			}
 		}
 		HANDLE& CreateFenceEvent(LPSECURITY_ATTRIBUTES IpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR IpName)
 		{

@@ -1,0 +1,48 @@
+#pragma once
+#include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsBuffer.h"
+#include <windows.h>
+#include <wrl.h>
+#include <dxgi1_6.h>
+#include <directx/d3dx12.h>
+
+namespace GEngine
+{
+	class D3D12IndexBuffer;
+
+	class GENGINE_API D3D12VertexBuffer : public VertexBuffer
+	{
+	public:
+		D3D12VertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		virtual ~D3D12VertexBuffer();
+
+		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetDataInstance(const void* data, uint32_t size) override;
+		virtual void SetLayout(const ShaderInputBufferLayout& layout) override;
+		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
+
+		virtual const ShaderInputBufferLayout&		GetLayout() const override { return m_Layout; }
+		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
+		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
+		virtual bool								IsInstanceRendering() override { return m_InstanceRendering; }
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
+	private:
+		Microsoft::WRL::ComPtr<ID3D12Resource>		m_VertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D12Resource>		m_InstanceBuffer;
+		D3D12_VERTEX_BUFFER_VIEW					m_VertexBufferView;
+		D3D12_VERTEX_BUFFER_VIEW					m_InstanceBufferView;
+		std::vector<D3D12_INPUT_ELEMENT_DESC>		m_InputElementDescs;
+
+		Ref<D3D12IndexBuffer>						m_IndexBuffer = nullptr;
+	};
+
+	class GENGINE_API D3D12IndexBuffer : public IndexBuffer
+	{
+	public:
+
+	};
+}
+
+
