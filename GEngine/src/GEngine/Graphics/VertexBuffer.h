@@ -15,7 +15,7 @@ namespace GEngine
 		bool				Normalized = false;
 		bool				IsInstance = false;
 		ShaderInputBufferData() {}
-		ShaderInputBufferData(ShaderInputDataType type, const std::string& name, bool isInstance = false, bool normalized = false)
+		ShaderInputBufferData(ShaderInputDataType type, const std::string& name, bool isInstance, bool normalized = false)
 			: Name(name), Type(type), Size(ShaderIuputDataSize()), Offset(0), IsInstance(isInstance), Normalized(normalized) {
 		}
 
@@ -47,7 +47,7 @@ namespace GEngine
 		}
 
 		inline const std::vector<ShaderInputBufferData>&	GetDatas() const { return m_Datas; }
-		inline uint32_t										GetStride() const { return m_Stride; }
+		inline uint32_t										GetStrideVertex() const { return m_StrideVertex; }
 		inline uint32_t										GetStrideInstance() const { return m_StrideInstance; }
 		inline uint32_t										GetDataCount() const { return (uint32_t)m_Datas.size(); }
 
@@ -60,7 +60,7 @@ namespace GEngine
 		void CalculateOffsetsAndStride();
 	private:
 		std::vector<ShaderInputBufferData>	m_Datas;
-		uint32_t							m_Stride = 0;
+		uint32_t							m_StrideVertex = 0;
 		uint32_t							m_StrideInstance = 0;
 	};
 
@@ -72,15 +72,21 @@ namespace GEngine
 	public:
 		virtual ~VertexBuffer() {}
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
-		virtual void SetDataInstance(const void* data, uint32_t size) = 0;
+		virtual void SetVertexData(const void* data, uint32_t size) = 0;
+		virtual void SetInstanceData(const void* data, uint32_t size) = 0;
 		virtual void SetLayout(const ShaderInputBufferLayout& layout) = 0;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 
 		virtual const ShaderInputBufferLayout&		GetLayout() const = 0;
 		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const = 0;
 		virtual VertexTopology						GetVertexTopologyType() = 0;
+		virtual uint32_t							GetSizeVertex() const { return m_SizeVertex; }
+		virtual uint32_t							GetSizeInstance() const { return m_SizeInstance; }
 		virtual bool								IsInstanceRendering() = 0;
+
+		virtual uint32_t GetVertexCount() const { GE_CORE_ASSERT(m_Layout.GetStrideVertex() > 0, "Invalid layout!"); return m_SizeVertex / m_Layout.GetStrideVertex(); }
+		virtual uint32_t GetIndexCount() const = 0;
+		virtual uint32_t GetInstanceCount() const { return m_InstanceRendering ? m_SizeInstance / m_Layout.GetStrideInstance() : 1; }
 
 		static Ref<VertexBuffer> Create(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
@@ -90,11 +96,10 @@ namespace GEngine
 	protected:
 		VertexTopology							m_TopologyType;
 		ShaderInputBufferLayout					m_Layout;
-		
+		uint32_t								m_SizeVertex;
+		uint32_t								m_SizeInstance;	
 
 		bool									m_InstanceRendering = false;
-
-
 
 		friend class CommandBuffer;
 	};

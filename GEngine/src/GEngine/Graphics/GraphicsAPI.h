@@ -3,7 +3,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Graphics/GraphicsBuffer.h"
+#include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "Material.h"
 

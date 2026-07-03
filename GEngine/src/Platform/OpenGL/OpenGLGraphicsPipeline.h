@@ -4,7 +4,7 @@
 
 #include "Platform/OpenGL/OpenGLMaterial.h"
 
-#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexBuffer.h"
 
 namespace GEngine
 {

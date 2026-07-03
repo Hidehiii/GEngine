@@ -24,10 +24,10 @@ namespace GEngine
 			VertexBuffer::Create(sizeof(float) * _countof(trianglePos))
 		);
 		m_TrianglePipeline->GetVertexBuffer()->SetLayout({
-			{ SHADER_INPUT_DATA_TYPE_FLOAT3, "in_Position" },
+			{ SHADER_INPUT_DATA_TYPE_FLOAT3, "in_Position", false },
 			});
-		m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
-		m_TrianglePipeline->GetVertexBuffer()->SetData(trianglePos, sizeof(float) * _countof(trianglePos));
+		//m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
+		m_TrianglePipeline->GetVertexBuffer()->SetVertexData(trianglePos, sizeof(float) * _countof(trianglePos));
 
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color", Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color1", Vector4(0.0f, 0.5f, 0.0f, 1.0f));

@@ -49,17 +49,17 @@ namespace GEngine
 				);
 			}
 			m_Pipeline->GetVertexBuffer()->SetLayout({
-				{SHADER_INPUT_DATA_TYPE_FLOAT4, "PositionOS"	},
-				{SHADER_INPUT_DATA_TYPE_FLOAT4, "Color"			},
-				{SHADER_INPUT_DATA_TYPE_FLOAT4, "Normal"		},
-				{SHADER_INPUT_DATA_TYPE_FLOAT3, "Tangent"		},
-				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV0"			},
-				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV1"			},
-				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV2"			},
-				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV3"			},
+				{SHADER_INPUT_DATA_TYPE_FLOAT4, "PositionOS"	, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT4, "Color"			, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT4, "Normal"		, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT3, "Tangent"		, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV0"			, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV1"			, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV2"			, false},
+				{SHADER_INPUT_DATA_TYPE_FLOAT2, "UV3"			, false},
 				});
 			m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
-			m_Pipeline->GetVertexBuffer()->SetData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
+			m_Pipeline->GetVertexBuffer()->SetVertexData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
 		}
 	}
 }

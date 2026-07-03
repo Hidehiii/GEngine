@@ -29,7 +29,7 @@ namespace GEngine
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}
 
-		Utils::CreateTextures(width, height, 1, m_MipLevels,
+		Utils::CreateTexture(width, height, 1, m_MipLevels,
 			DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D12_RESOURCE_FLAG_NONE,
 			D3D12_HEAP_FLAG_NONE,
@@ -46,7 +46,7 @@ namespace GEngine
 		{
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}
-		Utils::CreateTextures(width, height, 1, m_MipLevels,
+		Utils::CreateTexture(width, height, 1, m_MipLevels,
 			DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D12_RESOURCE_FLAG_NONE,
 			D3D12_HEAP_FLAG_NONE,
@@ -63,7 +63,7 @@ namespace GEngine
 		{
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}
-		Utils::CreateTextures(width, height, 1, m_MipLevels,
+		Utils::CreateTexture(width, height, 1, m_MipLevels,
 			DXGI_FORMAT_R8G8B8A8_UNORM,
 			D3D12_RESOURCE_FLAG_NONE,
 			D3D12_HEAP_FLAG_NONE,
@@ -88,7 +88,7 @@ namespace GEngine
 	{
 		const UINT64 uploadBufferSize = GetRequiredIntermediateSize(m_Texture.Get(), 0, 1);
 		Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer;
-		Utils::CreateBuffers(uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, uploadBuffer);
+		Utils::CreateBuffer(uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, uploadBuffer);
 		TransitionResourceState(D3D12_RESOURCE_STATE_COPY_DEST);
 		Utils::CopyDataToTextures(m_Width, m_Height, RenderImage2DFormatChannelSize(m_Format), m_Texture, uploadBuffer, data);
 	}

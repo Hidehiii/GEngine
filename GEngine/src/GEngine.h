@@ -22,7 +22,7 @@
 
 // Graphics
 #include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Graphics/GraphicsBuffer.h"
+#include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Graphics/Texture.h"

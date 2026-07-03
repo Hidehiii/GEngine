@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Core/Core.h"
-#include "GEngine/Graphics/GraphicsBuffer.h"
+#include "GEngine/Graphics/VertexBuffer.h"
 #include <windows.h>
 #include <wrl.h>
 #include <dxgi1_6.h>
@@ -17,8 +17,8 @@ namespace GEngine
 		D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~D3D12VertexBuffer();
 
-		virtual void SetData(const void* data, uint32_t size) override;
-		virtual void SetDataInstance(const void* data, uint32_t size) override;
+		virtual void SetVertexData(const void* data, uint32_t size) override;
+		virtual void SetInstanceData(const void* data, uint32_t size) override;
 		virtual void SetLayout(const ShaderInputBufferLayout& layout) override;
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
@@ -29,8 +29,8 @@ namespace GEngine
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
-		Microsoft::WRL::ComPtr<ID3D12Resource>		m_VertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D12Resource>		m_InstanceBuffer;
+		Microsoft::WRL::ComPtr<ID3D12Resource>		m_VertexBuffer = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource>		m_InstanceBuffer = nullptr;
 		D3D12_VERTEX_BUFFER_VIEW					m_VertexBufferView;
 		D3D12_VERTEX_BUFFER_VIEW					m_InstanceBufferView;
 		std::vector<D3D12_INPUT_ELEMENT_DESC>		m_InputElementDescs;

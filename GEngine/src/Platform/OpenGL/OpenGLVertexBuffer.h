@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
-#include "GEngine/Graphics/GraphicsBuffer.h"
+#include "GEngine/Graphics/VertexBuffer.h"
 
 namespace GEngine
 {
@@ -15,8 +15,8 @@ namespace GEngine
 		OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~OpenGLVertexBuffer();
 
-		virtual void SetData(const void* data, uint32_t size) override;
-		virtual void SetDataInstance(const void* data, uint32_t size) override;
+		virtual void SetVertexData(const void* data, uint32_t size) override;
+		virtual void SetInstanceData(const void* data, uint32_t size) override;
 		virtual void SetLayout(const ShaderInputBufferLayout& layout) override;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
 		
@@ -28,8 +28,8 @@ namespace GEngine
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
-		uint32_t								m_VertexBuffer;
-		uint32_t								m_InstanceBuffer;
+		uint32_t								m_VertexBuffer = 0;
+		uint32_t								m_InstanceBuffer = 0;
 		uint32_t								m_VertexArray;
 		Ref<OpenGLIndexBuffer>					m_IndexBuffer = nullptr;
 

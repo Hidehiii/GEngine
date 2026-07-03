@@ -87,14 +87,15 @@ namespace GEngine
 	{
 		PrepareRender(cmdBuffer, frameBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);
-		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
-		if (m_VertexBuffer->IsInstanceRendering())
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexCount();
+		instanceCount = instanceCount > 0 ? instanceCount : m_VertexBuffer->GetInstanceCount();
+		if (indexCount == 0)
 		{
-			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
+			vkCmdDraw(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), m_VertexBuffer->GetVertexCount(), instanceCount, 0, 0);
 		}
 		else
 		{
-			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer(), indexCount, instanceCount, 0, 0, 0);
 		}
 	}
 

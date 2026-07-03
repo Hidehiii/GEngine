@@ -17,54 +17,38 @@ namespace GEngine
 	{
 		m_Material->Update(cmdBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);
-		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexBuffer()->GetCount();
-		if (m_VertexBuffer->IsInstanceRendering())
+		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexCount();
+		instanceCount = instanceCount > 0 ? instanceCount : m_VertexBuffer->GetInstanceCount();
+		GLint mode;
+		switch (m_VertexBuffer->GetVertexTopologyType())
 		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VERTEX_TOPOLOGY_TRIANGLE:
-			{
-				glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-				break;
-			}
-			case VERTEX_TOPOLOGY_LINE:
-			{
-				glDrawElementsInstanced(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-				break;
-			}
-			case VERTEX_TOPOLOGY_POINT:
-			{
-				glDrawElementsInstanced(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
+		case VERTEX_TOPOLOGY_TRIANGLE:
+		{
+			mode = GL_TRIANGLES;
+			break;
+		}
+		case VERTEX_TOPOLOGY_LINE:
+		{
+			mode = GL_LINES;
+			break;
+		}
+		case VERTEX_TOPOLOGY_POINT:
+		{
+			mode = GL_POINTS;
+			break;
+		}
+		default:
+			GE_CORE_ASSERT(false, "Unknow type");
+		}
+		if (indexCount == 0)
+		{
+			glDrawArraysInstanced(mode, 0, m_VertexBuffer->GetVertexCount(), instanceCount);
 		}
 		else
 		{
-			switch (m_VertexBuffer->GetVertexTopologyType())
-			{
-			case VERTEX_TOPOLOGY_TRIANGLE:
-			{
-				glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-				break;
-			}
-			case VERTEX_TOPOLOGY_LINE:
-			{
-				glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
-				break;
-			}
-			case VERTEX_TOPOLOGY_POINT:
-			{
-				glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
-				break;
-			}
-			default:
-				GE_CORE_ASSERT(false, "Unknow type");
-				break;
-			}
+
+			glDrawElementsInstanced(mode, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+
 		}
 	}
     void OpenGLGraphicsPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)

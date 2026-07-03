@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanBuffer.h"
+#include "VulkanVertexBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 
@@ -9,6 +9,7 @@ namespace GEngine
     VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
     {
         m_TopologyType = type;
+		m_SizeVertex = size;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(), 
                             VulkanContext::Get()->GetDevice(),
                             size, 
@@ -19,6 +20,7 @@ namespace GEngine
         if (sizeInstance > 0)
         {
             m_InstanceRendering = true;
+			m_SizeInstance = sizeInstance;
             Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
                 VulkanContext::Get()->GetDevice(),
                 sizeInstance,
@@ -31,6 +33,7 @@ namespace GEngine
     VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
     {
         m_TopologyType = type;
+        m_SizeVertex = size;
         Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
                             VulkanContext::Get()->GetDevice(),
                             size, 
@@ -41,6 +44,7 @@ namespace GEngine
         if (sizeInstance > 0)
         {
             m_InstanceRendering = true;
+			m_SizeInstance = sizeInstance;
             Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
                 VulkanContext::Get()->GetDevice(),
                 sizeInstance,
@@ -49,7 +53,7 @@ namespace GEngine
                 m_InstanceBuffer,
                 m_InstanceBufferMemory);
         }
-        SetData(vertices, size);
+        SetVertexData(vertices, size);
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
@@ -65,21 +69,21 @@ namespace GEngine
         }
         
     }
-    void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
+    void VulkanVertexBuffer::SetVertexData(const void* data, uint32_t size)
     {
 		void* mappedData;
 		vkMapMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, 0, size, 0, &mappedData);
 		memcpy(mappedData, data, size);
 		vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory);
     }
-    void VulkanVertexBuffer::SetDataInstance(const void* data, uint32_t size)
+    void VulkanVertexBuffer::SetInstanceData(const void* data, uint32_t size)
     {
+		GE_CORE_ASSERT(m_InstanceRendering == true, "Instance rendering is not enabled for this vertex buffer.");
         void* mappedData;
         vkMapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory, 0, size, 0, &mappedData);
         memcpy(mappedData, data, size);
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory);
     }
-
 
     void VulkanVertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
     {

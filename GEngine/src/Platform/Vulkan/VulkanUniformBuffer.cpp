@@ -2,7 +2,7 @@
 #include "VulkanUniformBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Platform/Vulkan/VulkanContext.h"
 
 

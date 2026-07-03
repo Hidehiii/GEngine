@@ -1,14 +1,13 @@
 #include "GEpch.h"
-#include "OpenGLBuffer.h"
+#include "OpenGLVertexBuffer.h"
 #include "Platform/OpenGL/OpenGLUtils.h"
 #include <glad/glad.h>
 namespace GEngine
 {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		
-
 		m_TopologyType = type;
+		m_SizeVertex = size;
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
@@ -18,6 +17,7 @@ namespace GEngine
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
+			m_SizeInstance = sizeInstance;
 			glCreateBuffers(1, &m_InstanceBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
@@ -26,7 +26,7 @@ namespace GEngine
 	// Vertex Buffer
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		
+		m_SizeVertex = size;
 		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
@@ -35,11 +35,13 @@ namespace GEngine
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
+			m_SizeInstance = sizeInstance;
 			glCreateBuffers(1, &m_InstanceBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
 			
 		}
+		SetVertexData(vertices, size);
 	}
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
@@ -49,14 +51,15 @@ namespace GEngine
 			glDeleteBuffers(1, &m_InstanceBuffer);
 		}
 	}
-	void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
+	void OpenGLVertexBuffer::SetVertexData(const void* data, uint32_t size)
 	{
 		
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
-	void OpenGLVertexBuffer::SetDataInstance(const void* data, uint32_t size)
+	void OpenGLVertexBuffer::SetInstanceData(const void* data, uint32_t size)
 	{
+		GE_CORE_ASSERT(m_InstanceRendering, "Instance rendering is not enabled for this vertex buffer.");
 		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}

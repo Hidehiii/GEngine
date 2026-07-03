@@ -1,6 +1,6 @@
 #pragma once
 #include "GEngine/Graphics/GraphicsPipeline.h"
-#include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
 
 

@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "GraphicsBuffer.h"
-#include "Platform/OpenGL/OpenGLBuffer.h"
-#include "Platform/Vulkan/VulkanBuffer.h"
+#include "VertexBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Graphics.h"
 
 namespace GEngine
@@ -80,7 +80,7 @@ namespace GEngine
 	void ShaderInputBufferLayout::CalculateOffsetsAndStride()
 	{
 		uint32_t offset = 0;
-		m_Stride = 0;
+		m_StrideVertex = 0;
 		m_StrideInstance = 0;
 		for (auto& element : m_Datas)
 		{
@@ -88,7 +88,7 @@ namespace GEngine
 			{
 				element.Offset = offset;
 				offset += element.Size;
-				m_Stride += element.Size;
+				m_StrideVertex += element.Size;
 			}
 		}
 		offset = 0;
