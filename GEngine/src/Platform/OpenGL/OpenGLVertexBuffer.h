@@ -25,6 +25,7 @@ namespace GEngine
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 		virtual bool								IsInstanceRendering() override { return m_InstanceRendering; }
 
+		virtual uint32_t GetIndexCount() const override;
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:

@@ -94,7 +94,7 @@ namespace GEngine
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStride(), (const void*)element.Offset);
+						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideVertex(), (const void*)element.Offset);
 				}
 				index++;
 				break;
@@ -117,7 +117,7 @@ namespace GEngine
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(index);
 					glVertexAttribIPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						m_Layout.GetStride(), (const void*)element.Offset);
+						m_Layout.GetStrideVertex(), (const void*)element.Offset);
 				}
 				index++;
 				break;
@@ -131,6 +131,11 @@ namespace GEngine
 	void OpenGLVertexBuffer::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = std::static_pointer_cast<OpenGLIndexBuffer>(indexBuffer);
+	}
+
+	uint32_t OpenGLVertexBuffer::GetIndexCount() const
+	{
+		return m_IndexBuffer != nullptr ? m_IndexBuffer->GetCount() : 0;
 	}
 
 	void OpenGLVertexBuffer::Bind(CommandBuffer* cmd) const

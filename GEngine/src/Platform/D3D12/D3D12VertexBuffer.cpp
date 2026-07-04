@@ -7,8 +7,9 @@ namespace GEngine
 {
 	D3D12VertexBuffer::D3D12VertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		m_TopologyType = type;
-		m_SizeVertex = size;
+		m_TopologyType	= type;
+		m_SizeVertex	= size;
+
 		Utils::CreateBuffer(
 			size,
 			D3D12_HEAP_TYPE_UPLOAD,
@@ -16,10 +17,15 @@ namespace GEngine
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			m_VertexBuffer
 		);
+
+		m_VertexBufferView.BufferLocation	= m_VertexBuffer->GetGPUVirtualAddress();
+		m_VertexBufferView.SizeInBytes		= size;
+
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
-			m_SizeInstance = sizeInstance;
+			m_SizeInstance		= sizeInstance;
+
 			Utils::CreateBuffer(
 				sizeInstance,
 				D3D12_HEAP_TYPE_UPLOAD,
@@ -27,13 +33,17 @@ namespace GEngine
 				D3D12_RESOURCE_STATE_GENERIC_READ,
 				m_InstanceBuffer
 			);
+
+			m_InstanceBufferView.BufferLocation = m_InstanceBuffer->GetGPUVirtualAddress();
+			m_InstanceBufferView.SizeInBytes	= sizeInstance;
 		}
 	}
 
 	D3D12VertexBuffer::D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		m_TopologyType = type;
-		m_SizeVertex = size;
+		m_TopologyType	= type;
+		m_SizeVertex	= size;
+
 		Utils::CreateBuffer(
 			size,
 			D3D12_HEAP_TYPE_UPLOAD,
@@ -41,10 +51,15 @@ namespace GEngine
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			m_VertexBuffer
 		);
+
+		m_VertexBufferView.BufferLocation	= m_VertexBuffer->GetGPUVirtualAddress();
+		m_VertexBufferView.SizeInBytes		= size;
+
 		if (sizeInstance > 0)
 		{
 			m_InstanceRendering = true;
-			m_SizeInstance = sizeInstance;
+			m_SizeInstance		= sizeInstance;
+
 			Utils::CreateBuffer(
 				sizeInstance,
 				D3D12_HEAP_TYPE_UPLOAD,
@@ -52,6 +67,9 @@ namespace GEngine
 				D3D12_RESOURCE_STATE_GENERIC_READ,
 				m_InstanceBuffer
 			);
+
+			m_InstanceBufferView.BufferLocation = m_InstanceBuffer->GetGPUVirtualAddress();
+			m_InstanceBufferView.SizeInBytes	= sizeInstance;
 		}
 		SetVertexData(vertices, size);
 	}
@@ -83,16 +101,17 @@ namespace GEngine
 
 	void D3D12VertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
 	{
-		GE_CORE_ASSERT(false, "D3D12VertexBuffer::SetLayout is not implemented yet.");
+		m_Layout			= layout;
+		m_InputElementDescs.clear();
 	}
 
 	void D3D12VertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
 	{
-		GE_CORE_ASSERT(false, "D3D12VertexBuffer::SetIndexBuffer is not implemented yet.");
+		m_IndexBuffer = std::static_pointer_cast<D3D12IndexBuffer>(indexBuffer);
 	}
 
 	void D3D12VertexBuffer::Bind(CommandBuffer* cmd) const
 	{
-		GE_CORE_ASSERT(false, "");
+		GE_CORE_ASSERT(false, "D3D12VertexBuffer::Bind is not implemented yet.");
 	}
 }

@@ -6,8 +6,6 @@
 
 namespace GEngine
 {
-
-
 	class VulkanIndexBuffer;
 
 	class GENGINE_API VulkanVertexBuffer : public VertexBuffer
@@ -27,7 +25,7 @@ namespace GEngine
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 		virtual bool								IsInstanceRendering() override { return m_InstanceRendering; }
 
-		virtual uint32_t GetIndexCount() const override { return m_IndexBuffer != nullptr ? m_IndexBuffer->GetCount() : 0; };
+		virtual uint32_t GetIndexCount() const override;
 
 		const std::vector<VkVertexInputBindingDescription>&		GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
 		const std::vector<VkVertexInputAttributeDescription>&	GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }

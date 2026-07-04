@@ -93,7 +93,7 @@ namespace GEngine
 
         VkVertexInputBindingDescription		bindingDescription{};
         bindingDescription.binding          = 0;
-        bindingDescription.stride           = m_Layout.GetStride();
+        bindingDescription.stride           = m_Layout.GetStrideVertex();
         bindingDescription.inputRate        = VK_VERTEX_INPUT_RATE_VERTEX;
         m_VertexInputBindingDescription.push_back(bindingDescription);
         
@@ -160,6 +160,11 @@ namespace GEngine
     void VulkanVertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
     {
         m_IndexBuffer = std::static_pointer_cast<VulkanIndexBuffer>(indexBuffer);
+    }
+
+    uint32_t VulkanVertexBuffer::GetIndexCount() const
+    {
+        return m_IndexBuffer != nullptr ? m_IndexBuffer->GetCount() : 0;
     }
 
     void VulkanVertexBuffer::Bind(CommandBuffer* cmd) const
