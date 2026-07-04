@@ -23,7 +23,7 @@ namespace GEngine
 		}
 	}
 	// Vertex Buffer
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		m_TotalSizeVertex = size;
 		m_TopologyType = type;

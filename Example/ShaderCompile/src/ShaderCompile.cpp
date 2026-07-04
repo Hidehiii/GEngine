@@ -21,11 +21,11 @@ namespace GEngine
 
 		m_TrianglePipeline = GraphicsPipeline::Create(
 			material,
-			VertexBuffer::Create(sizeof(float) * _countof(trianglePos))
+			VertexBuffer::Create(trianglePos, sizeof(float) * _countof(trianglePos))
 		);
 
 		//m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
-		m_TrianglePipeline->GetVertexBuffer()->SetVertexData(trianglePos, sizeof(float) * _countof(trianglePos));
+		//m_TrianglePipeline->GetVertexBuffer()->SetVertexData(trianglePos, sizeof(float) * _countof(trianglePos));
 
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color", Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color1", Vector4(0.0f, 0.5f, 0.0f, 1.0f));

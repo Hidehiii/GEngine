@@ -38,7 +38,7 @@ namespace GEngine
 		}
 	}
 
-	D3D12VertexBuffer::D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+	D3D12VertexBuffer::D3D12VertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		m_TopologyType	= type;
 		m_TotalSizeVertex	= size;
@@ -115,6 +115,11 @@ namespace GEngine
 
 	void D3D12VertexBuffer::SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass)
 	{
+		GE_CORE_ASSERT(shader, "Shader is null!");
+		m_Shader = shader;
+		m_ShaderPass = pass;
+
+		m_InputElementDescs.clear();
 		GE_CORE_ASSERT(false, "D3D12VertexBuffer::SetShaderAndInputLayout is not implemented yet.");
 	}
 

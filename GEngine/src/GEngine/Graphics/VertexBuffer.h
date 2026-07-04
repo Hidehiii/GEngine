@@ -53,7 +53,7 @@ namespace GEngine
 		virtual uint32_t GetInstanceCount() const;
 
 		static Ref<VertexBuffer> Create(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		static Ref<VertexBuffer> Create(const void* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const = 0;
 

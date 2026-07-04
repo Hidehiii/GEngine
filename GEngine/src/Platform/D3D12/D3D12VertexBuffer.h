@@ -14,7 +14,7 @@ namespace GEngine
 	{
 	public:
 		D3D12VertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
-		D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		D3D12VertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~D3D12VertexBuffer();
 
 		virtual void SetVertexData(const void* data, uint32_t size) override;

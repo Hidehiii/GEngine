@@ -30,7 +30,7 @@ namespace GEngine
 		return nullptr;
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+	Ref<VertexBuffer> VertexBuffer::Create(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{

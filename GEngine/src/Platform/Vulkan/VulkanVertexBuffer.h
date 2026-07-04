@@ -12,7 +12,7 @@ namespace GEngine
 	{
 	public:
 		VulkanVertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
-		VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		VulkanVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~VulkanVertexBuffer();
 
 		virtual void SetVertexData(const void* data, uint32_t size) override;

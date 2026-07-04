@@ -30,7 +30,7 @@ namespace GEngine
                 m_InstanceBufferMemory);
         }
     }
-    VulkanVertexBuffer::VulkanVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+    VulkanVertexBuffer::VulkanVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
     {
         m_TopologyType = type;
         m_TotalSizeVertex = size;

@@ -12,7 +12,7 @@ namespace GEngine
 	{
 	public:
 		OpenGLVertexBuffer(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
-		OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+		OpenGLVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		virtual ~OpenGLVertexBuffer();
 
 		virtual void SetVertexData(const void* data, uint32_t size) override;
