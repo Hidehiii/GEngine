@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Core/Buffer.h"
+#include <variant>
 
 // shader stage strings
 #define SHADER_STAGE_VERTEX "vertex"
@@ -415,17 +416,17 @@ namespace GEngine
 
 	struct RenderState
 	{
-		bool				DepthWrite = true;
-		CompareOperation	DepthTestOp = COMPARE_OP_LESS_EQUAL;
-		int					ColorMask = COLOR_MASK_CHANNLE_R | COLOR_MASK_CHANNLE_G | COLOR_MASK_CHANNLE_B | COLOR_MASK_CHANNLE_A;
-		BlendFactor			BlendColorSrc = BLEND_FACTOR_ONE;
-		BlendFactor			BlendColorDst = BLEND_FACTOR_ZERO;
-		BlendFactor			BlendAlphaSrc = BLEND_FACTOR_ONE;
-		BlendFactor			BlendAlphaDst = BLEND_FACTOR_ZERO;
-		BlendMode			BlendColor = BLEND_MODE_NONE;
-		BlendMode			BlendAlpha = BLEND_MODE_NONE;
-		CullMode			Cull = CULL_MODE_BACK;
-		std::string			Tag = "Default";
+		bool				DepthWrite		= true;
+		CompareOperation	DepthTestOp		= COMPARE_OP_LESS_EQUAL;
+		int					ColorMask		= COLOR_MASK_CHANNLE_R | COLOR_MASK_CHANNLE_G | COLOR_MASK_CHANNLE_B | COLOR_MASK_CHANNLE_A;
+		BlendFactor			BlendColorSrc	= BLEND_FACTOR_ONE;
+		BlendFactor			BlendColorDst	= BLEND_FACTOR_ZERO;
+		BlendFactor			BlendAlphaSrc	= BLEND_FACTOR_ONE;
+		BlendFactor			BlendAlphaDst	= BLEND_FACTOR_ZERO;
+		BlendMode			BlendColor		= BLEND_MODE_NONE;
+		BlendMode			BlendAlpha		= BLEND_MODE_NONE;
+		CullMode			Cull			= CULL_MODE_BACK;
+		std::string			Tag				= "Default";
 
 		bool operator==(const RenderState& other) const
 		{
@@ -523,6 +524,22 @@ namespace GEngine
 		}
 	};
 
+	struct ShaderReflectionVertexInputInfo
+	{
+		ShaderInputDataType Type;
+
+		//  for directX
+		std::string			SemanticName;
+		union 
+		{
+			// for directX
+			uint32_t			SemanticIndex;
+
+			// for vulkan/opengl
+			uint32_t			Location;
+		};
+	};
+
 	struct ShaderCacheInfo
 	{
 		std::string Name;
@@ -599,6 +616,7 @@ namespace GEngine
 	struct ShaderReflectionInfo
 	{
 		RenderState											State;
+		std::vector<ShaderReflectionVertexInputInfo>		VertexInputs;
 		std::unordered_set<ShaderReflectionCBufferInfo>		CBuffers;
 		std::unordered_set<ShaderReflectionResourceInfo>	Resources;
 

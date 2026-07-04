@@ -413,7 +413,6 @@ namespace GEngine
 		{
 			D3D12_SIGNATURE_PARAMETER_DESC inputDesc;
 			reflection->GetInputParameterDesc(i, &inputDesc);
-
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
 		}
 		GE_CORE_INFO("Resource binding:");

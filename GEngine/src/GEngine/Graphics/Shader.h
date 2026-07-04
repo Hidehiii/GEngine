@@ -90,9 +90,9 @@ namespace GEngine
 		std::string													m_FilePath;
 		std::string													m_Name;
 
-		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // stage : name
-		std::vector<ShaderReflectionInfo>							m_PasseReflections;
-		std::unordered_map<std::string, ShaderPropertyType>			m_PropertyTypes; // name : type
+		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // vec index represent pass index, map-> stage : name
+		std::vector<ShaderReflectionInfo>							m_PasseReflections; // vec index represent pass index
+		std::unordered_map<std::string, ShaderPropertyType>			m_PropertyTypes; // name : type, all the pass share the same property type, so all the properties with same name should have the same type, otherwise it will be an error.
 
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);
