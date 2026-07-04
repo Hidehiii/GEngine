@@ -74,7 +74,6 @@ namespace GEngine
 		virtual Ref<Shader>&	GetShader() = 0;
 		virtual std::string		GetName() { return m_Name; };
 
-		virtual void SetShader(const Ref<Shader>& shader) = 0;
 		virtual void SetName(const std::string& name) { m_Name = name; }
 
 	protected:

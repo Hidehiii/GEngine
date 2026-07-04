@@ -16,6 +16,7 @@ namespace GEngine
 	void OpenGLGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		m_Material->Update(cmdBuffer, pass);
+		m_VertexBuffer->CheckInputLayout(m_Material->GetShader(), pass);
 		m_VertexBuffer->Bind(cmdBuffer);
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexCount();
 		instanceCount = instanceCount > 0 ? instanceCount : m_VertexBuffer->GetInstanceCount();
@@ -46,9 +47,7 @@ namespace GEngine
 		}
 		else
 		{
-
 			glDrawElementsInstanced(mode, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
-
 		}
 	}
     void OpenGLGraphicsPipeline::SetVertexBuffer(Ref<VertexBuffer>& buffer)

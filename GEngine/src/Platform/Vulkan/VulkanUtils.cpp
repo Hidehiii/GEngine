@@ -852,6 +852,27 @@ namespace GEngine
 			}
 			return VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		}
+		VkFormat ShaderInputDataToVulkanFormat(ShaderInputDataType type)
+		{
+			switch (type)
+			{
+			case SHADER_INPUT_DATA_TYPE_FLOAT1: return VK_FORMAT_R32_SFLOAT;
+			case SHADER_INPUT_DATA_TYPE_FLOAT2: return VK_FORMAT_R32G32_SFLOAT;
+			case SHADER_INPUT_DATA_TYPE_FLOAT3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case SHADER_INPUT_DATA_TYPE_FLOAT4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case SHADER_INPUT_DATA_TYPE_INT1: return VK_FORMAT_R32_SINT;
+			case SHADER_INPUT_DATA_TYPE_INT2: return VK_FORMAT_R32G32_SINT;
+			case SHADER_INPUT_DATA_TYPE_INT3: return VK_FORMAT_R32G32B32_SINT;
+			case SHADER_INPUT_DATA_TYPE_INT4: return VK_FORMAT_R32G32B32A32_SINT;
+			case SHADER_INPUT_DATA_TYPE_UINT1: return VK_FORMAT_R32_UINT;
+			case SHADER_INPUT_DATA_TYPE_UINT2: return VK_FORMAT_R32G32_UINT;
+			case SHADER_INPUT_DATA_TYPE_UINT3: return VK_FORMAT_R32G32B32_UINT;
+			case SHADER_INPUT_DATA_TYPE_UINT4: return VK_FORMAT_R32G32B32A32_UINT;
+			default:
+				GE_CORE_ASSERT(false, "Unknown ShaderInputDataType");
+			}
+			return VkFormat();
+		}
 		VkPipelineShaderStageCreateInfo CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName)
 		{
 			VkPipelineShaderStageCreateInfo		info{};

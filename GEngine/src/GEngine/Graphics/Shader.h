@@ -50,20 +50,20 @@ namespace GEngine
 	public:
 		virtual ~Shader() = default;
 
-		virtual BlendMode									GetBlendColor(const int& pass) { return m_PasseReflections.at(pass).State.BlendColor; }
-		virtual BlendMode									GetBlendAlpha(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlpha; }
-		virtual CullMode									GetCull(const int& pass) { return m_PasseReflections.at(pass).State.Cull; }
-		virtual BlendFactor									GetBlendColorSrc(const int& pass) { return m_PasseReflections.at(pass).State.BlendColorSrc; }
-		virtual BlendFactor									GetBlendColorDst(const int& pass) { return m_PasseReflections.at(pass).State.BlendColorDst; }
-		virtual BlendFactor									GetBlendAlphaSrc(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlphaSrc; }
-		virtual BlendFactor									GetBlendAlphaDst(const int& pass) { return m_PasseReflections.at(pass).State.BlendAlphaDst; }
-		virtual bool										GetEnableDepthWrite(const int& pass) { return m_PasseReflections.at(pass).State.DepthWrite; }
-		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_PasseReflections.at(pass).State.DepthTestOp; }
-		virtual int											GetColorMask(const int& pass) { return m_PasseReflections.at(pass).State.ColorMask; }
+		virtual BlendMode									GetBlendColor(const int& pass) { return m_PassReflections.at(pass).State.BlendColor; }
+		virtual BlendMode									GetBlendAlpha(const int& pass) { return m_PassReflections.at(pass).State.BlendAlpha; }
+		virtual CullMode									GetCull(const int& pass) { return m_PassReflections.at(pass).State.Cull; }
+		virtual BlendFactor									GetBlendColorSrc(const int& pass) { return m_PassReflections.at(pass).State.BlendColorSrc; }
+		virtual BlendFactor									GetBlendColorDst(const int& pass) { return m_PassReflections.at(pass).State.BlendColorDst; }
+		virtual BlendFactor									GetBlendAlphaSrc(const int& pass) { return m_PassReflections.at(pass).State.BlendAlphaSrc; }
+		virtual BlendFactor									GetBlendAlphaDst(const int& pass) { return m_PassReflections.at(pass).State.BlendAlphaDst; }
+		virtual bool										GetEnableDepthWrite(const int& pass) { return m_PassReflections.at(pass).State.DepthWrite; }
+		virtual CompareOperation							GetDepthTestOp(const int& pass) { return m_PassReflections.at(pass).State.DepthTestOp; }
+		virtual int											GetColorMask(const int& pass) { return m_PassReflections.at(pass).State.ColorMask; }
 
 		virtual const std::string&													GetShaderName() const { return m_Name; }
 		virtual const std::string&													GetShaderPath() { return m_FilePath; }
-		virtual const std::vector<ShaderReflectionInfo>&							GetPasseReflections() { return m_PasseReflections; }
+		virtual const std::vector<ShaderReflectionInfo>&							GetPassReflections() { return m_PassReflections; }
 		virtual const std::vector<std::unordered_map<std::string, std::string>>&	GetStageEntryPoints() { return m_StageEntryPoints; }
 		virtual const std::unordered_map<std::string, std::string>&					GetStageEntryPoints(const int& pass) { return m_StageEntryPoints.at(pass); }
 		virtual const ShaderPropertyType											GetPropertyType(const std::string& name);
@@ -91,7 +91,7 @@ namespace GEngine
 		std::string													m_Name;
 
 		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // vec index represent pass index, map-> stage : name
-		std::vector<ShaderReflectionInfo>							m_PasseReflections; // vec index represent pass index
+		std::vector<ShaderReflectionInfo>							m_PassReflections; // vec index represent pass index
 		std::unordered_map<std::string, ShaderPropertyType>			m_PropertyTypes; // name : type, all the pass share the same property type, so all the properties with same name should have the same type, otherwise it will be an error.
 
 	public:

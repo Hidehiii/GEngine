@@ -18,6 +18,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
+		m_UniformBuffers.clear();
 		for(auto& pass : sizes)
 		{
 			std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>> ubuffers;
@@ -119,11 +120,6 @@ namespace GEngine
 
 
 		//UpdateDescriptorSet(pass, Graphics::GetFrame());
-	}
-
-	void VulkanMaterial::SetShader(const Ref<Shader>& shader)
-	{
-		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
 	}
 
 	Buffer VulkanMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)

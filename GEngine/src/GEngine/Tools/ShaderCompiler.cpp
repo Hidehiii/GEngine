@@ -25,6 +25,53 @@ namespace GEngine
 			return "";
 		}
 
+		ShaderInputDataType ShaderInputDataTypeFromSpirvType(const spirv_cross::SPIRType& type)
+		{
+			switch (type.basetype)
+			{
+			case spirv_cross::SPIRType::BaseType::Float:
+				switch (type.vecsize)
+				{
+				case 1: return SHADER_INPUT_DATA_TYPE_FLOAT1;
+				case 2: return SHADER_INPUT_DATA_TYPE_FLOAT2;
+				case 3: return SHADER_INPUT_DATA_TYPE_FLOAT3;
+				case 4: return SHADER_INPUT_DATA_TYPE_FLOAT4;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable float vector type!");
+					break;
+				}
+				break;
+			case spirv_cross::SPIRType::BaseType::Int:
+				switch (type.vecsize)
+				{
+				case 1: return SHADER_INPUT_DATA_TYPE_INT1;
+				case 2: return SHADER_INPUT_DATA_TYPE_INT2;
+				case 3: return SHADER_INPUT_DATA_TYPE_INT3;
+				case 4: return SHADER_INPUT_DATA_TYPE_INT4;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable int vector type!");
+					break;
+				}
+				break;
+			case spirv_cross::SPIRType::BaseType::UInt:
+				switch (type.vecsize)
+				{
+				case 1: return SHADER_INPUT_DATA_TYPE_UINT1;
+				case 2: return SHADER_INPUT_DATA_TYPE_UINT2;
+				case 3: return SHADER_INPUT_DATA_TYPE_UINT3;
+				case 4: return SHADER_INPUT_DATA_TYPE_UINT4;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable uint vector type!");
+					break;
+				}
+				break;
+			default:
+				GE_CORE_ASSERT(false, "Unknown shader variable base type!");
+				break;
+			}
+			return SHADER_INPUT_DATA_TYPE_NONE;
+		}
+
 		ShaderPropertyType ShaderPropertyTypeFromDxCBufferDesc(const D3D12_SHADER_VARIABLE_DESC& varDesc, const D3D12_SHADER_TYPE_DESC& typeDesc)
 		{
 			switch (typeDesc.Class)
@@ -462,7 +509,17 @@ namespace GEngine
 		for (const auto& input : resources.stage_inputs)
 		{
 			auto& type = compiler.get_type(input.type_id);
-			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", input.name, compiler.get_decoration(input.id, spv::DecorationLocation), type.basetype);
+
+			ShaderReflectionVertexInputInfo inputInfo;
+			inputInfo.SemanticName			= input.name;
+			inputInfo.Type					= Utils::ShaderInputDataTypeFromSpirvType(type);
+			inputInfo.Offset				= compiler.get_decoration(input.id, spv::DecorationOffset);
+			inputInfo.Location				= compiler.get_decoration(input.id, spv::DecorationLocation);
+
+			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}, Offset: {}", input.name, inputInfo.Location, type.basetype, inputInfo.Offset);
+
+			if (target == SHADER_STAGE_VERTEX)
+				reflectionOutput.VertexInputs.push_back(inputInfo);
 		}
 		GE_CORE_INFO("Uniform buffers:");
 		for (const auto& uniformBuffer : resources.uniform_buffers)

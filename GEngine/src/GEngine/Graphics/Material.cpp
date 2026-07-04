@@ -97,7 +97,7 @@ namespace GEngine
 	std::vector<std::unordered_map<uint32_t, uint32_t>> Material::InitializePassPropertiesMemory(const Ref<Shader>& shader)
 	{
 		GE_CORE_ASSERT(shader, "Shader ref is NULL!");
-		auto& passes = shader->GetPasseReflections();
+		auto& passes = shader->GetPassReflections();
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes;
 		ClearAllPasses();
 		for (size_t i = 0; i < passes.size(); i++)

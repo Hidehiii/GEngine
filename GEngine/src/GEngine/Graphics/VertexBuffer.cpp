@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "VertexBuffer.h"
+#include "GEngine/Graphics/Shader.h"
 #include "Platform/OpenGL/OpenGLVertexBuffer.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Graphics.h"
@@ -77,29 +78,23 @@ namespace GEngine
 		return nullptr;
 	}
 
-	void ShaderInputBufferLayout::CalculateOffsetsAndStride()
+	bool VertexBuffer::IsInstanceRendering() const
 	{
-		uint32_t offset = 0;
-		m_StrideVertex = 0;
-		m_StrideInstance = 0;
-		for (auto& element : m_Datas)
-		{
-			if (element.IsInstance == false)
-			{
-				element.Offset = offset;
-				offset += element.Size;
-				m_StrideVertex += element.Size;
-			}
-		}
-		offset = 0;
-		for (auto& element : m_Datas)
-		{
-			if (element.IsInstance)
-			{
-				element.Offset = offset;
-				offset += element.Size;
-				m_StrideInstance += element.Size;
-			}
-		}
+		GE_CORE_ASSERT(m_Shader != nullptr, "Shader is not set for this vertex buffer.");
+		return m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride > 0;
+	}
+
+	uint32_t VertexBuffer::GetVertexCount() const
+	{
+		GE_CORE_ASSERT(m_Shader != nullptr, "Shader is not set for this vertex buffer.");
+		GE_CORE_ASSERT(m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride != 0, "VertexInputVertexStride is zero, cannot calculate vertex count.");
+		return m_TotalSizeVertex / m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride;
+	}
+
+	uint32_t VertexBuffer::GetInstanceCount() const
+	{
+		GE_CORE_ASSERT(m_Shader != nullptr, "Shader is not set for this vertex buffer.");
+		GE_CORE_ASSERT(m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride != 0, "VertexInputInstanceStride is zero, cannot calculate instance count.");
+		return m_TotalSizeInstance > 0 ? m_TotalSizeInstance / m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride : 1;
 	}
 }

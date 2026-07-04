@@ -11,6 +11,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
+		m_UniformBuffers.clear();
 		for(auto& pass : sizes)
 		{
 			std::unordered_map<uint32_t, Ref<OpenGLUniformBuffer>> ubuffers;
@@ -109,11 +110,6 @@ namespace GEngine
 			m_Passes.at(pass).State.BlendAlphaSrc, m_Passes.at(pass).State.BlendAlphaDst);
 		Utils::SetDepthTest(m_Passes.at(pass).State.DepthTestOp);
 		Utils::EnableDepthWrite(m_Passes.at(pass).State.DepthWrite);
-	}
-
-	void OpenGLMaterial::SetShader(const Ref<Shader>& shader)
-	{
-		GE_CORE_CRITICAL("暂时还没有写材质的Shader更换");
 	}
 
 	Buffer OpenGLMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)

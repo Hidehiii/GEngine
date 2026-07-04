@@ -17,13 +17,12 @@ namespace GEngine
 
 		virtual void SetVertexData(const void* data, uint32_t size) override;
 		virtual void SetInstanceData(const void* data, uint32_t size) override;
-		virtual void SetLayout(const ShaderInputBufferLayout& layout) override;
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
-		virtual const ShaderInputBufferLayout&		GetLayout() const override { return m_Layout; }
+
 		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
-		virtual bool								IsInstanceRendering() override { return m_InstanceRendering; }
+
 
 		virtual uint32_t GetIndexCount() const override;
 
@@ -32,10 +31,12 @@ namespace GEngine
 
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
+
+		virtual void SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass) override;
 	private:
 		
-		VkBuffer		m_VertexBuffer;
-		VkBuffer		m_InstanceBuffer;
+		VkBuffer		m_VertexBuffer = nullptr;
+		VkBuffer		m_InstanceBuffer = nullptr;
 		VkDeviceMemory	m_VertexBufferMemory;
 		VkDeviceMemory	m_InstanceBufferMemory;
 		

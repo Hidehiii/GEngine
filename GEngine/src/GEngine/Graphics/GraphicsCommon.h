@@ -260,6 +260,11 @@ namespace GEngine
 		SHADER_INPUT_DATA_TYPE_INT2,
 		SHADER_INPUT_DATA_TYPE_INT3,
 		SHADER_INPUT_DATA_TYPE_INT4,
+
+		SHADER_INPUT_DATA_TYPE_UINT1,
+		SHADER_INPUT_DATA_TYPE_UINT2,
+		SHADER_INPUT_DATA_TYPE_UINT3,
+		SHADER_INPUT_DATA_TYPE_UINT4,
 	};
 
 	enum ShaderPropertyType
@@ -527,6 +532,8 @@ namespace GEngine
 	struct ShaderReflectionVertexInputInfo
 	{
 		ShaderInputDataType Type;
+		uint32_t			Offset;
+		bool				IsPerInstance = false;
 
 		//  for directX
 		std::string			SemanticName;
@@ -538,6 +545,13 @@ namespace GEngine
 			// for vulkan/opengl
 			uint32_t			Location;
 		};
+
+		bool operator==(const ShaderReflectionVertexInputInfo& other) const
+		{
+			return Type == other.Type &&
+				SemanticName == other.SemanticName &&
+				SemanticIndex == other.SemanticIndex;
+		}
 	};
 
 	struct ShaderCacheInfo
@@ -617,12 +631,15 @@ namespace GEngine
 	{
 		RenderState											State;
 		std::vector<ShaderReflectionVertexInputInfo>		VertexInputs;
+		uint32_t											VertexInputVertexStride;
+		uint32_t											VertexInputInstanceStride; // counting start from TEXCOORD8+
 		std::unordered_set<ShaderReflectionCBufferInfo>		CBuffers;
 		std::unordered_set<ShaderReflectionResourceInfo>	Resources;
 
 		bool operator==(const ShaderReflectionInfo& other) const
 		{
 			return State == other.State &&
+				VertexInputs == other.VertexInputs &&
 				CBuffers == other.CBuffers &&
 				Resources == other.Resources;
 		}

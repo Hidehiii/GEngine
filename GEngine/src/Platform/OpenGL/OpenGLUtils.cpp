@@ -199,6 +199,10 @@ namespace GEngine
 			case SHADER_INPUT_DATA_TYPE_INT2:
 			case SHADER_INPUT_DATA_TYPE_INT3:
 			case SHADER_INPUT_DATA_TYPE_INT4:   return GL_INT;
+			case SHADER_INPUT_DATA_TYPE_UINT1:
+			case SHADER_INPUT_DATA_TYPE_UINT2:
+			case SHADER_INPUT_DATA_TYPE_UINT3:
+			case SHADER_INPUT_DATA_TYPE_UINT4:  return GL_UNSIGNED_INT;
 			}
 			GE_CORE_ASSERT(false, "Unknown ShaderDataType!");
 			return 0;

@@ -16,8 +16,6 @@ namespace GEngine
 
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
-		virtual void SetShader(const Ref<Shader>& shader) override;
-
 		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
 
 		virtual std::vector<uint32_t> GetDynamicOffsets(const int& pass);

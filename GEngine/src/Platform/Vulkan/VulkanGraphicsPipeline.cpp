@@ -85,6 +85,7 @@ namespace GEngine
 
 	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
 	{
+		m_VertexBuffer->CheckInputLayout(m_Material->GetShader(), pass);
 		PrepareRender(cmdBuffer, frameBuffer, pass);
 		m_VertexBuffer->Bind(cmdBuffer);
 		indexCount = indexCount > 0 ? indexCount : m_VertexBuffer->GetIndexCount();

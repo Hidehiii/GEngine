@@ -23,9 +23,7 @@ namespace GEngine
 			material,
 			VertexBuffer::Create(sizeof(float) * _countof(trianglePos))
 		);
-		m_TrianglePipeline->GetVertexBuffer()->SetLayout({
-			{ SHADER_INPUT_DATA_TYPE_FLOAT3, "in_Position", false },
-			});
+
 		//m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
 		m_TrianglePipeline->GetVertexBuffer()->SetVertexData(trianglePos, sizeof(float) * _countof(trianglePos));
 

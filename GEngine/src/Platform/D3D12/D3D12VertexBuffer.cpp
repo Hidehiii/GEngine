@@ -8,7 +8,7 @@ namespace GEngine
 	D3D12VertexBuffer::D3D12VertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		m_TopologyType	= type;
-		m_SizeVertex	= size;
+		m_TotalSizeVertex	= size;
 
 		Utils::CreateBuffer(
 			size,
@@ -23,8 +23,7 @@ namespace GEngine
 
 		if (sizeInstance > 0)
 		{
-			m_InstanceRendering = true;
-			m_SizeInstance		= sizeInstance;
+			m_TotalSizeInstance		= sizeInstance;
 
 			Utils::CreateBuffer(
 				sizeInstance,
@@ -42,7 +41,7 @@ namespace GEngine
 	D3D12VertexBuffer::D3D12VertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		m_TopologyType	= type;
-		m_SizeVertex	= size;
+		m_TotalSizeVertex	= size;
 
 		Utils::CreateBuffer(
 			size,
@@ -57,8 +56,7 @@ namespace GEngine
 
 		if (sizeInstance > 0)
 		{
-			m_InstanceRendering = true;
-			m_SizeInstance		= sizeInstance;
+			m_TotalSizeInstance		= sizeInstance;
 
 			Utils::CreateBuffer(
 				sizeInstance,
@@ -91,7 +89,7 @@ namespace GEngine
 
 	void D3D12VertexBuffer::SetInstanceData(const void* data, uint32_t size)
 	{
-		GE_CORE_ASSERT(m_InstanceRendering, "Instance rendering is not enabled for this vertex buffer.");
+		GE_CORE_ASSERT(m_InstanceBuffer, "Instance rendering is not enabled for this vertex buffer.");
 		void* mappedData;
 		D3D12_RANGE readRange = { 0, 0 }; // We do not intend to read from this resource on the CPU.
 		D3D12_THROW_IF_FAILED(m_InstanceBuffer->Map(0, &readRange, &mappedData));
@@ -99,19 +97,25 @@ namespace GEngine
 		m_InstanceBuffer->Unmap(0, nullptr);
 	}
 
-	void D3D12VertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
-	{
-		m_Layout			= layout;
-		m_InputElementDescs.clear();
-	}
-
 	void D3D12VertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = std::static_pointer_cast<D3D12IndexBuffer>(indexBuffer);
+	}
+
+
+	uint32_t D3D12VertexBuffer::GetIndexCount() const
+	{
+		return m_IndexBuffer != nullptr ? m_IndexBuffer->GetCount() : 0;
 	}
 
 	void D3D12VertexBuffer::Bind(CommandBuffer* cmd) const
 	{
 		GE_CORE_ASSERT(false, "D3D12VertexBuffer::Bind is not implemented yet.");
 	}
+
+	void D3D12VertexBuffer::SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass)
+	{
+		GE_CORE_ASSERT(false, "D3D12VertexBuffer::SetShaderAndInputLayout is not implemented yet.");
+	}
+
 }

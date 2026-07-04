@@ -7,7 +7,7 @@ namespace GEngine
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
 		m_TopologyType = type;
-		m_SizeVertex = size;
+		m_TotalSizeVertex = size;
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
@@ -16,8 +16,7 @@ namespace GEngine
 
 		if (sizeInstance > 0)
 		{
-			m_InstanceRendering = true;
-			m_SizeInstance = sizeInstance;
+			m_TotalSizeInstance = sizeInstance;
 			glCreateBuffers(1, &m_InstanceBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
@@ -26,7 +25,7 @@ namespace GEngine
 	// Vertex Buffer
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
 	{
-		m_SizeVertex = size;
+		m_TotalSizeVertex = size;
 		m_TopologyType = type;
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
@@ -34,8 +33,7 @@ namespace GEngine
 
 		if (sizeInstance > 0)
 		{
-			m_InstanceRendering = true;
-			m_SizeInstance = sizeInstance;
+			m_TotalSizeInstance = sizeInstance;
 			glCreateBuffers(1, &m_InstanceBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeInstance, nullptr, GL_DYNAMIC_DRAW);
@@ -46,7 +44,7 @@ namespace GEngine
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		glDeleteBuffers(1, &m_VertexBuffer);
-		if (m_InstanceRendering)
+		if (m_InstanceBuffer)
 		{
 			glDeleteBuffers(1, &m_InstanceBuffer);
 		}
@@ -59,73 +57,9 @@ namespace GEngine
 	}
 	void OpenGLVertexBuffer::SetInstanceData(const void* data, uint32_t size)
 	{
-		GE_CORE_ASSERT(m_InstanceRendering, "Instance rendering is not enabled for this vertex buffer.");
+		GE_CORE_ASSERT(m_InstanceBuffer, "Instance rendering is not enabled for this vertex buffer.");
 		glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
-	}
-
-
-	void OpenGLVertexBuffer::SetLayout(const ShaderInputBufferLayout& layout)
-	{
-		m_Layout = layout;
-		glBindVertexArray(m_VertexArray);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-
-		uint32_t index = 0;
-		for (auto& element : m_Layout)
-		{
-			switch (element.Type)
-			{
-			case SHADER_INPUT_DATA_TYPE_FLOAT1:
-			case SHADER_INPUT_DATA_TYPE_FLOAT2:
-			case SHADER_INPUT_DATA_TYPE_FLOAT3:
-			case SHADER_INPUT_DATA_TYPE_FLOAT4:
-			{
-				if (element.IsInstance)
-				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
-					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideInstance(), (const void*)element.Offset);
-					glVertexAttribDivisor(index, 1);
-				}
-				else
-				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-					glEnableVertexAttribArray(index);
-					glVertexAttribPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						element.Normalized ? GL_TRUE : GL_FALSE, m_Layout.GetStrideVertex(), (const void*)element.Offset);
-				}
-				index++;
-				break;
-			}
-			case SHADER_INPUT_DATA_TYPE_INT1:
-			case SHADER_INPUT_DATA_TYPE_INT2:
-			case SHADER_INPUT_DATA_TYPE_INT3:
-			case SHADER_INPUT_DATA_TYPE_INT4:
-			{
-				if (element.IsInstance)
-				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
-					glEnableVertexAttribArray(index);
-					glVertexAttribIPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						m_Layout.GetStrideInstance(), (const void*)element.Offset);
-					glVertexAttribDivisor(index, 1);
-				}
-				else
-				{
-					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-					glEnableVertexAttribArray(index);
-					glVertexAttribIPointer(index, element.Size, Utils::ShaderInputDataTypeToGLDataType(element.Type),
-						m_Layout.GetStrideVertex(), (const void*)element.Offset);
-				}
-				index++;
-				break;
-			}
-			default: GE_CORE_ASSERT(false, "Unknown ShaderDataType!");
-			}
-
-		}
 	}
 
 	void OpenGLVertexBuffer::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
@@ -142,6 +76,76 @@ namespace GEngine
 	{
 		glBindVertexArray(m_VertexArray);
 		m_IndexBuffer->Bind(cmd);
+	}
+
+	void OpenGLVertexBuffer::SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass)
+	{
+		GE_CORE_ASSERT(shader, "Shader is null!");
+		m_Shader = shader;
+		m_ShaderPass = pass;
+
+		glBindVertexArray(m_VertexArray);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+
+		for (auto& e : m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputs)
+		{
+			switch (e.Type)
+			{
+			case SHADER_INPUT_DATA_TYPE_FLOAT1:
+			case SHADER_INPUT_DATA_TYPE_FLOAT2:
+			case SHADER_INPUT_DATA_TYPE_FLOAT3:
+			case SHADER_INPUT_DATA_TYPE_FLOAT4:
+			{
+				if (e.IsPerInstance)
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
+					glEnableVertexAttribArray(e.Location);
+					glVertexAttribPointer(e.Location, Utils::ShaderInputDataSize(e.Type), 
+						Utils::ShaderInputDataTypeToGLDataType(e.Type), GL_FALSE, 
+						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride, (const void*)e.Offset);
+					glVertexAttribDivisor(e.Location, 1);
+				}
+				else
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+					glEnableVertexAttribArray(e.Location);
+					glVertexAttribPointer(e.Location, Utils::ShaderInputDataSize(e.Type),
+						Utils::ShaderInputDataTypeToGLDataType(e.Type), GL_FALSE,
+						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride, (const void*)e.Offset);
+				}
+				break;
+			}
+			case SHADER_INPUT_DATA_TYPE_INT1:
+			case SHADER_INPUT_DATA_TYPE_INT2:
+			case SHADER_INPUT_DATA_TYPE_INT3:
+			case SHADER_INPUT_DATA_TYPE_INT4:
+			case SHADER_INPUT_DATA_TYPE_UINT1:
+			case SHADER_INPUT_DATA_TYPE_UINT2:
+			case SHADER_INPUT_DATA_TYPE_UINT3:
+			case SHADER_INPUT_DATA_TYPE_UINT4:
+			{
+				if (e.IsPerInstance)
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
+					glEnableVertexAttribArray(e.Location);
+					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataSize(e.Type), 
+						Utils::ShaderInputDataTypeToGLDataType(e.Type),
+						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride, (const void*)e.Offset);
+					glVertexAttribDivisor(e.Location, 1);
+				}
+				else
+				{
+					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+					glEnableVertexAttribArray(e.Location);
+					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataSize(e.Type),
+						Utils::ShaderInputDataTypeToGLDataType(e.Type),
+						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride, (const void*)e.Offset);
+				}
+				break;
+			}
+			default: GE_CORE_ASSERT(false, "Unknown ShaderDataType!");
+			}
+		}
 	}
 
 	// Index Buffer

@@ -171,9 +171,9 @@ namespace GEngine
 
 		while (source.find("Pass", pos) != std::string::npos)
 		{
-			GE_CORE_INFO("Shader pass {}:", m_PasseReflections.size());
+			GE_CORE_INFO("Shader pass {}:", m_PassReflections.size());
 
-			m_PasseReflections.emplace_back(ShaderReflectionInfo());
+			m_PassReflections.emplace_back(ShaderReflectionInfo());
 			pos = source.find("Pass", pos);
 			pos = source.find("{", pos);
 			stack.push(1);
@@ -190,7 +190,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
-				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
+				m_PassReflections.at(m_PassReflections.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
 				GE_CORE_TRACE("	Cull mode: {}", words[1]);
 			}
 			//depth test
@@ -201,7 +201,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
-				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
+				m_PassReflections.at(m_PassReflections.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
 				GE_CORE_TRACE("	Depth test: {}", words[1]);
 			}
 			//depth write
@@ -212,7 +212,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
-				m_PasseReflections.at(m_PasseReflections.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
+				m_PassReflections.at(m_PassReflections.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
 				GE_CORE_TRACE("	Depth write: {}", words[1]);
 			}
 			//blend,用空格避免找到BlendOp等类似命令
@@ -225,18 +225,18 @@ namespace GEngine
 				GE_CORE_ASSERT(words.size() == 3 || words.size() == 5, "Invalid Blend command! " + commandLine);
 				if (words.size() == 3)
 				{
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
 					GE_CORE_TRACE("	Blend mode: {} {}", words[1], words[2]);
 				}
 				if (words.size() == 5)
 				{
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
 					GE_CORE_TRACE("	Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
 				}
 			}
@@ -250,14 +250,14 @@ namespace GEngine
 				GE_CORE_ASSERT(words.size() == 2 || words.size() == 3, "Invalid BlendOp command! " + commandLine);
 				if (words.size() == 2)
 				{
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
 					GE_CORE_TRACE("	Blend op: {}", words[1]);
 				}
 				if (words.size() == 3)
 				{
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_PasseReflections.at(m_PasseReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
+					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
 					GE_CORE_TRACE("	Blend op: {} {}", words[1], words[2]);
 				}
 			}
@@ -276,7 +276,7 @@ namespace GEngine
 					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNLE_B;
 					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNLE_A;
 				}
-				m_PasseReflections.at(m_PasseReflections.size() - 1).State.ColorMask = mask;
+				m_PassReflections.at(m_PassReflections.size() - 1).State.ColorMask = mask;
 				GE_CORE_TRACE("	Color mask: {}", mask);
 			}
 			//tag
@@ -287,7 +287,7 @@ namespace GEngine
 				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
 				words = StringHelper::ClearEmptyStrings(words);
 				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
-				m_PasseReflections.at(m_PasseReflections.size() - 1).State.Tag = words[1];
+				m_PassReflections.at(m_PassReflections.size() - 1).State.Tag = words[1];
 				GE_CORE_TRACE("	Tag: {}", words[1]);
 			}
 			//#pragma
@@ -360,7 +360,7 @@ namespace GEngine
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas)
 	{
-		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PasseReflections.size(), "Size of pass and entryPoint not match!");
+		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PassReflections.size(), "Size of pass and entryPoint not match!");
 		for (int i = 0; i < m_StageEntryPoints.size(); i++)
 		{
 			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
@@ -540,7 +540,7 @@ namespace GEngine
 		{
 			std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
 			size_t pos = fileName.find('.');
-			std::string stage = fileName.substr(pos + 1, fileName.size() - pos - 1);
+			std::string stage = fileName.substr(pos + 1, fileName.find('.', pos + 1) - pos - 1);
 			int passIndex = std::stoi(fileName.substr(0, pos));
 			// read reflection meta
 			std::vector<char> data;
@@ -560,23 +560,50 @@ namespace GEngine
 		{
 			for (auto& [stage, data] : reflectionMetas.at(i))
 			{
-				ShaderCompiler::Get()->Reflect(data, stage, m_PasseReflections.at(i));
+				ShaderCompiler::Get()->Reflect(data, stage, m_PassReflections.at(i));
 			}
 		}
 		// record properties type
-		for (int i = 0; i < m_PasseReflections.size(); i++)
+		for (int i = 0; i < m_PassReflections.size(); i++)
 		{
-			for (auto& cbuffer : m_PasseReflections.at(i).CBuffers)
+			for (auto& cbuffer : m_PassReflections.at(i).CBuffers)
 			{
 				for (auto& property : cbuffer.Properties)
 				{
 					m_PropertyTypes[property.Name] = property.Type;
 				}
 			}
-			for (auto& resource : m_PasseReflections.at(i).Resources)
+			for (auto& resource : m_PassReflections.at(i).Resources)
 			{
 				m_PropertyTypes[resource.Name] = resource.Type;
 			}
+		}
+
+		// calculate vertex input layout, only for vertex shader stage
+		for (int i = 0; i < m_PassReflections.size(); i++)
+		{
+			uint32_t vertexInputStride = 0;
+			uint32_t instanceInputStride = 0;
+			for (int j = 0; j < m_PassReflections.at(i).VertexInputs.size(); j++)
+			{
+				auto& input = m_PassReflections.at(i).VertexInputs.at(j);
+				// if the semantic name contains "TEXCOORD" and the semantic index is greater than or equal to 8, 
+				// it is considered as instance input, otherwise it is considered as vertex input
+				// such as TEXCOORD0, TEXCOORD1, TEXCOORD2, TEXCOORD3, TEXCOORD4, TEXCOORD5, TEXCOORD6, TEXCOORD7 are vertex inputs
+				// TEXCOORD8, TEXCOORD9, TEXCOORD10, TEXCOORD11, TEXCOORD12, TEXCOORD13, TEXCOORD14, TEXCOORD15 are instance inputs
+				if (input.SemanticName.find("TEXCOORD") != std::string::npos && input.SemanticIndex >= 8)
+				{
+					instanceInputStride += Utils::ShaderInputDataSize(input.Type);
+					input.IsPerInstance = true;
+				}
+				else
+				{
+					vertexInputStride += Utils::ShaderInputDataSize(input.Type);
+					input.IsPerInstance = false;
+				}
+			}
+			m_PassReflections.at(i).VertexInputVertexStride = vertexInputStride;
+			m_PassReflections.at(i).VertexInputInstanceStride = instanceInputStride;
 		}
 		// ConstPropertiesDesc
 
