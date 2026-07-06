@@ -5,11 +5,6 @@
 
 namespace GEngine
 {
-	struct DescriptorPoolSpecification
-	{
-
-	};
-
 	class GENGINE_API VulkanDescriptor
 	{
 	public:

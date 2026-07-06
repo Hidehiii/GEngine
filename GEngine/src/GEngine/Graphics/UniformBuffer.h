@@ -16,7 +16,10 @@ namespace GEngine
 		virtual uint32_t GetOffset() const { return m_Offset; }
 		virtual uint32_t GetTotalSize() const { return m_TotalSize; }
 
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t count = 1); // count only for dynamic UBO
+		// size is the size of a single UBO, 
+		// count is only for dynamic UBO, it is the number of UBOs in the dynamic UBO
+		// each UBO in the dynamic UBO will be aligned to the minimum uniform buffer offset alignment
+		static Ref<UniformBuffer> Create(uint32_t size, uint32_t count = 1); 
 
 		
 	protected:
