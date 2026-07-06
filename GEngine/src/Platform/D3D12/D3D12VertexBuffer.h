@@ -24,8 +24,10 @@ namespace GEngine
 		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 
-
 		virtual uint32_t GetIndexCount() const override;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> GetVertexBuffer() const { return m_VertexBuffer; }
+		Microsoft::WRL::ComPtr<ID3D12Resource> GetInstanceBuffer() const { return m_InstanceBuffer; }
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 
@@ -43,7 +45,16 @@ namespace GEngine
 	class GENGINE_API D3D12IndexBuffer : public IndexBuffer
 	{
 	public:
+		D3D12IndexBuffer(const uint32_t* indices, uint32_t count);
+		virtual ~D3D12IndexBuffer();
 
+	protected:
+		virtual void Bind(CommandBuffer* cmd) const override;
+	private:
+		Microsoft::WRL::ComPtr<ID3D12Resource>		m_IndexBuffer = nullptr;
+		D3D12_INDEX_BUFFER_VIEW						m_IndexBufferView;
+
+		friend class D3D12VertexBuffer;
 	};
 }
 

@@ -40,6 +40,12 @@ namespace GEngine
 		return nullptr;
 	}
 
+	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec, const std::initializer_list<RenderPassSpecification>& subpassSpecs)
+	{
+		GE_CORE_ASSERT(false, "RenderPass::Create with subpassSpecs is not implemented yet!");
+		return Ref<RenderPass>();
+	}
+
 	Ref<RenderPass> RenderPass::GetRenderPass(const RenderPassSpecification& spec)
 	{
 		for (auto pass : s_RenderPasses)

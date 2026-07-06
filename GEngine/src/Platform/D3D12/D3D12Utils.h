@@ -44,6 +44,7 @@ namespace GEngine
 
 		DXGI_FORMAT					FrameBufferTextureFormatToDXGIFormat(FrameBufferTextureFormat format);
 		FrameBufferTextureFormat	DXGIFormatToFrameBufferTextureFormat(DXGI_FORMAT format);
+		DXGI_FORMAT					ShaderInputDataTypeToDXGIFormat(ShaderInputDataType type);
 	}
 }
 
