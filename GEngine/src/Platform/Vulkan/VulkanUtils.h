@@ -39,9 +39,9 @@ namespace GEngine
 		void							CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, uint32_t arrayLayers, VkImageCreateFlags flags, uint32_t mipLevel, VkImage& outImage, VkDeviceMemory& imageMemory);
 		void							CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, uint32_t layerCount, VkImageAspectFlags aspectMask, uint32_t mipLevel, VkImageView& outImageView);
 		VkAttachmentDescription2		CreateAttachmentDescription2(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
-		VkAttachmentReference2			CreateAttachmentReference2(FrameBufferTextureFormat format, int index);
+		VkAttachmentReference2			CreateAttachmentReference2(FrameBufferTextureFormat format, uint32_t index);
 		VkAttachmentDescription			CreateAttachmentDescription(FrameBufferTextureFormat format, VkSampleCountFlagBits sample, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
-		VkAttachmentReference			CreateAttachmentReference(FrameBufferTextureFormat format, int index);
+		VkAttachmentReference			CreateAttachmentReference(FrameBufferTextureFormat format, uint32_t index);
 		VkPipelineShaderStageCreateInfo	CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName);
 
 		VkSampleCountFlagBits	SampleCountToVulkanFlag(int sample);

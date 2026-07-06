@@ -28,7 +28,7 @@ namespace GEngine
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);
 	private:
-		void CreateRenderPass(const RenderPassSpecification& spec);
+		void CreateRenderPass();
 		
 	private:
 		VkRenderPass						m_RenderPass;

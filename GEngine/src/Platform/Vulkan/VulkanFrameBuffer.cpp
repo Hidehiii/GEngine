@@ -39,50 +39,22 @@ namespace GEngine
 
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
-		for (int i = 0; i < spec.ColorAttachments.size(); i++)
-		{
-			VkFormat						colorFormat = renderpassSpec.ColorAttachmentsFormat.at(i);
-			m_Images.push_back(spec.ColorImages.at(i));
-			m_Attachments.push_back(spec.ColorAttachments.at(i));
-			m_ColorImageViews.push_back(spec.ColorAttachments.at(i));
-			m_ImagesMemory.push_back(nullptr);
-			if (m_Specification.Samples > 1)
-			{
-				VkImage						tempImage;
-				VkImageView					tempImageView;
-				VkDeviceMemory				tempImageMemory;
-				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-					VulkanContext::Get()->GetDevice(),
-					m_Specification.Width,
-					m_Specification.Height,
-					colorFormat,
-					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-					VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT,
-					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
-					1,
-					0,
-					1,
-					tempImage,
-					tempImageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, tempImageView);
-				m_Images.push_back(tempImage);
-				m_Attachments.push_back(tempImageView);
-				m_ImagesMemory.push_back(tempImageMemory);
-			}
-		}
+		std::vector<VkImageView>	attachments(spec.ColorAttachments);
+		VkImage						image;
+		VkImageView					imageView;
+		VkDeviceMemory				imageMemory;
+		VkFormat					imageFormat;
+		VkFlags						depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+
+		// create depth stencil image if needed
 		if (renderpassSpec.EnableDepthStencilAttachment)
 		{
-			VkDeviceMemory					imageMemory;
-			VkImage							image;
-			VkImageView						imageView;
-			VkFormat						depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
-			VkFlags							depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+			imageFormat = Utils::FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width,
 				m_Specification.Height,
-				depthFormat,
+				imageFormat,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -92,25 +64,54 @@ namespace GEngine
 				1,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
-			m_DepthStencilImage = image;
-			m_DepthStencilImageView = imageView;
-			m_DepthStencilImageMemory = imageMemory;
+			m_SwapChainAdditionalAttachments.push_back(imageView);
 
-			m_Images.push_back(image);
-			m_Attachments.push_back(imageView);
-			m_ImagesMemory.push_back(imageMemory);
-			if (m_Specification.Samples > 1)
+			m_DepthStencilImages.push_back(image);
+			m_DepthStencilImagesMemory.push_back(imageMemory);
+
+			attachments.push_back(imageView);
+		}
+		// create multi sampled attachments if needed
+		if (m_Specification.Samples > 1)
+		{
+			// create color attachments
+			for (int i = 0; i < spec.ColorAttachments.size(); i++)
 			{
-				VkImage						tempImage;
-				VkImageView					tempImageView;
-				VkDeviceMemory				tempImageMemory;
+				imageFormat = renderpassSpec.ColorAttachmentsFormat.at(i);
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width,
 					m_Specification.Height,
-					depthFormat,
+					imageFormat,
+					VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT,
+					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+					1,
+					0,
+					1,
+					image,
+					imageMemory);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+
+				m_SwapChainAdditionalAttachments.push_back(imageView);
+
+				m_ColorImages.push_back(image);
+				m_ColorImagesMemory.push_back(imageMemory);
+
+				attachments.push_back(imageView);
+			}
+			// create depth stencil attachments
+			if (renderpassSpec.EnableDepthStencilAttachment)
+			{
+				imageFormat = Utils::FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+					VulkanContext::Get()->GetDevice(),
+					m_Specification.Width,
+					m_Specification.Height,
+					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT,
@@ -118,21 +119,25 @@ namespace GEngine
 					1,
 					0,
 					1,
-					tempImage,
-					tempImageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, tempImageView);
-				m_Images.push_back(tempImage);
-				m_Attachments.push_back(tempImageView);
-				m_ImagesMemory.push_back(tempImageMemory);
+					image,
+					imageMemory);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+
+				m_SwapChainAdditionalAttachments.push_back(imageView);
+
+				m_DepthStencilImages.push_back(image);
+				m_DepthStencilImagesMemory.push_back(imageMemory);
+
+				attachments.push_back(imageView);
 			}
-			//m_DepthStencilRT = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
 		}
+	
 
 		VkFramebufferCreateInfo         framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass		= m_RenderPass->GetRenderPass();
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(m_Attachments.size());
-		framebufferInfo.pAttachments	= m_Attachments.data();
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments	= attachments.data();
 		framebufferInfo.width			= spec.Width;
 		framebufferInfo.height			= spec.Height;
 		framebufferInfo.layers			= 1;
@@ -145,21 +150,25 @@ namespace GEngine
 		{
 			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
 			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
-			if (m_Specification.Samples > 1)
+			for(int i = 0; i < m_Attachments.size(); i++)
 			{
-				for (int i = 1; i < m_Attachments.size(); i += 2)
-				{
-					vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
-				}
-				for (int i = 1; i < m_Images.size(); i += 2)
-				{
-					vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Images.at(i), nullptr);
-				}
-				for (int i = 1; i < m_ImagesMemory.size(); i += 2)
-				{
-					vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImagesMemory.at(i), nullptr);
-				}
+				vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
 			}
+			for (int i = 0; i < m_SwapChainAdditionalAttachments.size(); i++)
+			{
+				vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_SwapChainAdditionalAttachments.at(i), nullptr);
+			}
+			for(int i = 0; i < m_ColorImages.size(); i++)
+			{
+				vkDestroyImage(VulkanContext::Get()->GetDevice(), m_ColorImages.at(i), nullptr);
+				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ColorImagesMemory.at(i), nullptr);
+			}
+			for(int i = 0; i < m_DepthStencilImages.size(); i++)
+			{
+				vkDestroyImage(VulkanContext::Get()->GetDevice(), m_DepthStencilImages.at(i), nullptr);
+				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_DepthStencilImagesMemory.at(i), nullptr);
+			}
+			
 		}
 		
 	}
@@ -194,7 +203,7 @@ namespace GEngine
 		clearColor.color						= { { setClearColor.r, setClearColor.g, setClearColor.b, setClearColor.a} };
 
 		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
-		if (m_DepthStencilImage != nullptr)
+		if (m_DepthStencilImages.size() > 0)
 		{
 			clearValues.at(clearValues.size() - 1) = { Graphics::IsReverseDepth() ? 0 : 1.0f, 0 };
 		}
@@ -218,34 +227,50 @@ namespace GEngine
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetColorRT(int index)
 	{
-		GE_CORE_ASSERT(index < m_ColorImages.size(), "index out of range");
+		GE_CORE_ASSERT(index < m_ColorRTs.size(), "index out of range");
 		Ref<VulkanTexture2D> texture = m_ColorRTs.at(index);
 		return texture;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencil()
 	{
-		GE_CORE_ASSERT(m_DepthStencilImageView != nullptr, "no depth frame buffer");
+		GE_CORE_ASSERT(m_DepthStencilImages.size() > 0, "no depth frame buffer");
 		Ref<VulkanTexture2D> texture = m_DepthStencil;
 		return texture;
 	}
-	Ref<VulkanFrameBuffer> VulkanFrameBuffer::Create(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
+	Ref<VulkanFrameBuffer> VulkanFrameBuffer::CreateForSwapChain(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
 		return CreateRef<VulkanFrameBuffer>(renderPass, spec, renderpassSpec);
 	}
 	void VulkanFrameBuffer::CreateBuffer()
 	{
+		// if multi samples, we need to create a temporary image for each color attachment and depth attachment
+		// the original images will be placed in the end of the attachments vector
+		// the resolved images will be placed in the beginning of the attachments vector
+		// and get render target will return the resolved images
+		m_ColorRTs.clear();
 
+		m_Attachments.clear();
+
+		m_ColorImages.clear();
+		m_ColorImagesMemory.clear();
+
+		m_DepthStencilImages.clear();
+		m_DepthStencilImagesMemory.clear();
+
+		VkImage						image;
+		VkImageView					imageView;
+		VkDeviceMemory				imageMemory;
+		VkFormat 					imageFormat;
+		VkFlags						depthAspectFlag;
+		// create color attachments
 		for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 		{
-			VkImage						image;
-			VkImageView					imageView;
-			VkDeviceMemory				imageMemory;
-			VkFormat					colorFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.ColorRTs.at(i).TextureFormat);
+			imageFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.ColorRTs.at(i).TextureFormat);
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width,
 				m_Specification.Height,
-				colorFormat,
+				imageFormat,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -255,20 +280,72 @@ namespace GEngine
 				1,
 				image,
 				imageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
-			m_Images.push_back(image);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+
 			m_Attachments.push_back(imageView);
-			m_ImagesMemory.push_back(imageMemory);
-			if (m_Specification.Samples > 1)
+
+			m_ColorImages.push_back(image);
+			m_ColorImagesMemory.push_back(imageMemory);
+
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_ColorRTs.push_back(texture);
+		}
+		// create depth attachment
+		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		{
+			switch (m_Specification.DepthStencil.TextureFormat)
 			{
-				VkImage						tempImage;
-				VkImageView					tempImageView;
-				VkDeviceMemory				tempImageMemory;
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
+			{
+				imageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+				depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+				break;
+			}
+			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
+			{
+				imageFormat = VK_FORMAT_D32_SFLOAT;
+				depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
+				break;
+			}
+			default:
+				GE_CORE_ASSERT(false, "Unknown format");
+				break;
+			}
+			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+				VulkanContext::Get()->GetDevice(),
+				m_Specification.Width,
+				m_Specification.Height,
+				imageFormat,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				VK_SAMPLE_COUNT_1_BIT,
+				1,
+				0,
+				1,
+				image,
+				imageMemory);
+			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+
+			m_Attachments.push_back(imageView);
+
+			m_DepthStencilImages.push_back(image);
+			m_DepthStencilImagesMemory.push_back(imageMemory);
+
+			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
+		}
+		// multi samples
+		// create multi sampled color attachments
+		if (m_Specification.Samples > 1)
+		{
+			// create multi sample color attachments
+			for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
+			{
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width,
 					m_Specification.Height,
-					colorFormat,
+					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -276,92 +353,58 @@ namespace GEngine
 					1,
 					0,
 					1,
-					tempImage,
-					tempImageMemory);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, colorFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, tempImageView);
-				m_Images.push_back(tempImage);
-				m_Attachments.push_back(tempImageView);
-				m_ImagesMemory.push_back(tempImageMemory);
+					image,
+					imageMemory);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+
+				m_Attachments.push_back(imageView);
+
+				m_ColorImages.push_back(image);
+				m_ColorImagesMemory.push_back(imageMemory);
 			}
+			// create multi sample depth attachment
+			if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+			{
+				switch (m_Specification.DepthStencil.TextureFormat)
+				{
+				case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
+				{
+					imageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+					depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+					break;
+				}
+				case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
+				{
+					imageFormat = VK_FORMAT_D32_SFLOAT;
+					depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
+					break;
+				}
+				default:
+					GE_CORE_ASSERT(false, "Unknown format");
+					break;
+				}
+				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
+					VulkanContext::Get()->GetDevice(),
+					m_Specification.Width,
+					m_Specification.Height,
+					imageFormat,
+					VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+					1,
+					0,
+					1,
+					image,
+					imageMemory);
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
-			m_ColorImages.push_back(image);
-			m_ColorImageViews.push_back(imageView);
-			m_ColorImagesMemory.push_back(imageMemory);
+				m_Attachments.push_back(imageView);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(colorFormat, m_ColorImages[i], m_ColorImageViews[i], m_ColorImagesMemory[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-			m_ColorRTs.push_back(texture);
+				m_DepthStencilImages.push_back(image);
+				m_DepthStencilImagesMemory.push_back(imageMemory);
+			}
 		}
-		VkDeviceMemory					imageMemory;
-		VkImage							image;
-		VkImageView						imageView;
-		VkFormat						depthFormat;
-		VkFlags							depthAspectFlag;
-		switch (m_Specification.DepthStencil.TextureFormat)
-		{
-		case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
-		{
-			depthFormat = VK_FORMAT_D24_UNORM_S8_UINT;
-			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-			break;
-		}
-		case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
-		{
-			depthFormat = VK_FORMAT_D32_SFLOAT;
-			depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
-			break;
-		}
-		default:
-			GE_CORE_ASSERT(false, "Unknown format");
-			break;
-		}
-		Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-			VulkanContext::Get()->GetDevice(),
-			m_Specification.Width,
-			m_Specification.Height,
-			depthFormat,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VK_SAMPLE_COUNT_1_BIT,
-			1,
-			0,
-			1,
-			image,
-			imageMemory);
-		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
-		m_Images.push_back(image);
-		m_Attachments.push_back(imageView);
-		m_ImagesMemory.push_back(imageMemory);
-		if (m_Specification.Samples > 1)
-		{
-			VkImage						tempImage;
-			VkImageView					tempImageView;
-			VkDeviceMemory				tempImageMemory;
-			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
-				VulkanContext::Get()->GetDevice(),
-				m_Specification.Width,
-				m_Specification.Height,
-				depthFormat,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				Utils::SampleCountToVulkanFlag(m_Specification.Samples),
-				1,
-				0,
-				1,
-				tempImage,
-				tempImageMemory);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), tempImage, depthFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, tempImageView);
-			m_Images.push_back(tempImage);
-			m_Attachments.push_back(tempImageView);
-			m_ImagesMemory.push_back(tempImageMemory);
-		}
-
-		m_DepthStencilImage = image;
-		m_DepthStencilImageView = imageView;
-		m_DepthStencilImageMemory = imageMemory;
-
-		m_DepthStencil = CreateRef<VulkanTexture2D>(depthFormat, m_DepthStencilImage, m_DepthStencilImageView, m_DepthStencilImageMemory , VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
 
 		VkFramebufferCreateInfo			framebufferInfo{};
 		framebufferInfo.sType			= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

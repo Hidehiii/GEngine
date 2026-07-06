@@ -345,7 +345,7 @@ namespace GEngine
 			return Attachment;
 		}
 
-		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, int index)
+		VkAttachmentReference2 CreateAttachmentReference2(FrameBufferTextureFormat format, uint32_t index)
 		{
 			VkAttachmentReference2		Ref{};
 			Ref.attachment				= index;
@@ -437,7 +437,7 @@ namespace GEngine
 
 			return Attachment;
 		}
-		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, int index)
+		VkAttachmentReference CreateAttachmentReference(FrameBufferTextureFormat format, uint32_t index)
 		{
 			VkAttachmentReference		Ref{};
 			Ref.attachment = index;

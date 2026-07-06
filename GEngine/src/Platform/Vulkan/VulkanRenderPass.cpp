@@ -10,7 +10,7 @@ namespace GEngine
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& spec)
 	{
 		m_Specification = spec;
-		CreateRenderPass(spec);
+		CreateRenderPass();
 	}
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecificationForVulkan& spec)
@@ -171,129 +171,130 @@ namespace GEngine
 		return CreateRef<VulkanRenderPass>(spec);
 	}
 
-	void VulkanRenderPass::CreateRenderPass(const RenderPassSpecification& spec)
+	void VulkanRenderPass::CreateRenderPass()
 	{
-		std::vector<VkAttachmentDescription2>  attachments;
-		for (int i = 0; i < spec.ColorRTs.size(); i++)
+		std::vector<VkSubpassDescription2>		subpasses;
+		std::vector<VkAttachmentDescription2>	attachments;
+		std::vector<VkAttachmentReference2>		colorAttachmentRefs;
+		std::vector<VkAttachmentReference2>		multiSampleColorAttachmentRefs;
+		uint32_t								attachmentIndex = 0;
+		VkAttachmentDescription2				description{};
+		VkAttachmentReference2					ref{};
+		VkAttachmentReference2					depthAttachmentRef{};
+		VkAttachmentReference2					multiSampleDepthAttachmentRef{};
+		VkSubpassDescriptionDepthStencilResolve subpassDepthStencilResolve{};
+		std::vector<VkSubpassDescription2>		subpasses{};
+		// each color attachment. 1 sample
+		for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 		{
-			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.ColorRTs.at(i).TextureFormat,
-				VK_SAMPLE_COUNT_1_BIT, 
-				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
-				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
-			attachments.push_back(des);
-			if (spec.Samples > 1)
-			{
-				des = Utils::CreateAttachmentDescription2(spec.ColorRTs.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
-					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.ColorBegin),
-					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.ColorEnd));
-				attachments.push_back(des);
-			}
+			description = Utils::CreateAttachmentDescription2(m_Specification.ColorRTs.at(i).TextureFormat, VK_SAMPLE_COUNT_1_BIT,
+																Utils::RenderPassBeginOperationToVkAttachmentLoadOp(m_Specification.Operation.ColorBegin),
+																Utils::RenderPassEndOperationToVkAttachmentStoreOp(m_Specification.Operation.ColorEnd));
+			attachments.push_back(description);
 		}
-		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		// only one depth stencil attachment is allowed
+		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
-			VkAttachmentDescription2		des = Utils::CreateAttachmentDescription2(spec.DepthStencil.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
-				Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
-				Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
-			attachments.push_back(des);
-			if (spec.Samples > 1)
+			description = Utils::CreateAttachmentDescription2(m_Specification.DepthStencil.TextureFormat, VK_SAMPLE_COUNT_1_BIT,
+																Utils::RenderPassBeginOperationToVkAttachmentLoadOp(m_Specification.Operation.DepthStencilBegin),
+																Utils::RenderPassEndOperationToVkAttachmentStoreOp(m_Specification.Operation.DepthStencilEnd));
+			attachments.push_back(description);
+			
+		}
+		// multi sample attachments. each color and depth-stencil attachment has a multi sample attachment
+		if (m_Specification.Samples > 1)
+		{
+			for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 			{
-				des = Utils::CreateAttachmentDescription2(spec.DepthStencil.TextureFormat, Utils::SampleCountToVulkanFlag(spec.Samples),
-					Utils::RenderPassBeginOperationToVkAttachmentLoadOp(spec.Operation.DepthStencilBegin),
-					Utils::RenderPassEndOperationToVkAttachmentStoreOp(spec.Operation.DepthStencilEnd));
-				attachments.push_back(des);
+				description = Utils::CreateAttachmentDescription2(m_Specification.ColorRTs.at(i).TextureFormat, Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+																	Utils::RenderPassBeginOperationToVkAttachmentLoadOp(m_Specification.Operation.ColorBegin),
+																	Utils::RenderPassEndOperationToVkAttachmentStoreOp(m_Specification.Operation.ColorEnd));
+				attachments.push_back(description);
+			}
+			if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+			{
+				description = Utils::CreateAttachmentDescription2(m_Specification.DepthStencil.TextureFormat, Utils::SampleCountToVulkanFlag(m_Specification.Samples),
+																	Utils::RenderPassBeginOperationToVkAttachmentLoadOp(m_Specification.Operation.DepthStencilBegin),
+																	Utils::RenderPassEndOperationToVkAttachmentStoreOp(m_Specification.Operation.DepthStencilEnd));
+				attachments.push_back(description);
 			}
 		}
 
-		std::vector<VkAttachmentReference2> colorAttachmentRefs;
-		std::vector<VkAttachmentReference2> resolveAttachmentRefs;
-		if (spec.Samples > 1)
+		// 1 sample color attachment reference
+		for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 		{
-			int index = 0;
-			for (int i = 0; i < spec.ColorRTs.size(); i++)
+			ref = Utils::CreateAttachmentReference2(m_Specification.ColorRTs.at(i).TextureFormat, attachmentIndex);
+			colorAttachmentRefs.push_back(ref);
+			attachmentIndex++;
+		}
+		// 1 sample depth stencil attachment reference
+		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		{
+			depthAttachmentRef = Utils::CreateAttachmentReference2(m_Specification.DepthStencil.TextureFormat, attachmentIndex);
+			attachmentIndex++;
+		}
+		// multi sample color attachment reference
+		if (m_Specification.Samples > 1)
+		{
+			// multi sample color attachment reference
+			for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
 			{
-				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, index);
-				resolveAttachmentRefs.push_back(ref);
-				index++;
-				ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, index);
-				colorAttachmentRefs.push_back(ref);
-				index++;
+				ref = Utils::CreateAttachmentReference2(m_Specification.ColorRTs.at(i).TextureFormat, attachmentIndex);
+				multiSampleColorAttachmentRefs.push_back(ref);
+				attachmentIndex++;
+			}
+			// multi sample depth stencil attachment reference
+			if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+			{
+				multiSampleDepthAttachmentRef = Utils::CreateAttachmentReference2(m_Specification.DepthStencil.TextureFormat, attachmentIndex);
+				
+				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
+				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &depthAttachmentRef;
+				subpassDepthStencilResolve.depthResolveMode					= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+				subpassDepthStencilResolve.stencilResolveMode				= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
 			}
 		}
-		else
-		{
-			for (int i = 0; i < spec.ColorRTs.size(); i++)
-			{
-				VkAttachmentReference2		ref = Utils::CreateAttachmentReference2(spec.ColorRTs.at(i).TextureFormat, i);
-				colorAttachmentRefs.push_back(ref);
-			}
-		}
-		
-
-		VkAttachmentReference2			depthAttachmentRef{};
-		depthAttachmentRef.sType		= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
-
-		VkSubpassDescription2			 subpass{};
+		// subpass info
 		subpass.sType					= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
 		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= colorAttachmentRefs.data();
-		subpass.pResolveAttachments		= resolveAttachmentRefs.data();
-		subpass.pDepthStencilAttachment = nullptr;
-		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
-		{
-			if (spec.Samples > 1)
-			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size() * 2 + 1);
+		subpass.pResolveAttachments		= multiSampleColorAttachmentRefs.data();
+		subpass.pDepthStencilAttachment = m_Specification.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef;
+		// depth stencil resolve info
 
-				VkSubpassDescriptionDepthStencilResolve	subpassDepthStencilResolve{};
-
-				VkAttachmentReference2	ref{};
-				ref = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size() * 2);
-
-				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
-				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &ref;
-				subpassDepthStencilResolve.depthResolveMode					= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
-				subpassDepthStencilResolve.stencilResolveMode				= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
 				subpass.pNext												= &subpassDepthStencilResolve;
-			}
-			else
-			{
-				depthAttachmentRef = Utils::CreateAttachmentReference2(spec.DepthStencil.TextureFormat, spec.ColorRTs.size());
-			}
-			subpass.pDepthStencilAttachment = &depthAttachmentRef;
-		}
-
-		
-
-		VkSubpassDependency2			 dependency{};
-		dependency.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
-		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass			= 0;
-		if (spec.ColorRTs.size() > 0)
-		{
-			dependency.srcStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		}
-		if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
-		{
-			dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			dependency.dstStageMask		|= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-			dependency.dstAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		}
-
-		VkRenderPassCreateInfo2          renderPassInfo{};
-		renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
-		renderPassInfo.attachmentCount	= static_cast<uint32_t>(attachments.size());
-		renderPassInfo.pAttachments		= attachments.data();
-		renderPassInfo.subpassCount		= 1;
-		renderPassInfo.pSubpasses		= &subpass;
-		renderPassInfo.dependencyCount	= 1;
-		renderPassInfo.pDependencies	= &dependency;
-
-		VK_CHECK_RESULT(vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 	}
+
+	VkSubpassDependency2			 dependency{};
+	dependency.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
+	dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass			= 0;
+	if (spec.ColorRTs.size() > 0)
+	{
+		dependency.srcStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	}
+	if (spec.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+	{
+		dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask		|= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	}
+
+	VkRenderPassCreateInfo2          renderPassInfo{};
+	renderPassInfo.sType			= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+	renderPassInfo.attachmentCount	= static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments		= attachments.data();
+	renderPassInfo.subpassCount		= 1;
+	renderPassInfo.pSubpasses		= &subpass;
+	renderPassInfo.dependencyCount	= 1;
+	renderPassInfo.pDependencies	= &dependency;
+
+	VK_CHECK_RESULT(vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+
 	
 }
