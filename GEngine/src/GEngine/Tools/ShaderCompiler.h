@@ -21,7 +21,13 @@ namespace GEngine
 
 		void ReflectDxil(const std::vector<std::byte>& reflectionDxil, const std::string& target, ShaderReflectionInfo& reflectionOutput);
 		// reflect spirv need dxil reflection meta, because spirv-cross can't reflect all the information we need
-		void ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::vector<std::byte>& reflectionDxil, const std::string& target, ShaderReflectionInfo& reflectionOutput);
+		void ReflectSpirv(const std::vector<std::byte>& spirvMachineCode, const std::vector<std::byte>& reflectionDxil, 
+							const std::string& target, ShaderReflectionInfo& reflectionOutput);
+	protected:
+		bool CompileSpirv(const std::string& source, const std::string& target, const std::string& entryPoint,
+							std::vector<std::byte>& machineCode);
+		bool CompileDxil(const std::string& source, const std::string& target, const std::string& entryPoint,
+			std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionDxil);
 	private:
 		IDxcUtils*					m_Utils;
 		IDxcCompiler3*				m_Compiler;

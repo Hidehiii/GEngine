@@ -15,11 +15,11 @@
 
 #define SHADER_STAGE_COMPUTE "compute"
 
-// shader cache extension names
+// shader cache extension names, e.g. cacheDir/fileName/0.vertex.spirv (0 means pass 0 of the shader)
 #define SHADER_CACHE_FILE_EXTENSION_SPIRV ".spirv"
 #define SHADER_CACHE_FILE_EXTENSION_DXIL ".dxil"
 
-// shader reflection file extension name
+// shader reflection file extension name, e.g. cacheDir/fileName/0.vertex.dxil_reflection (0 means pass 0 of the shader)
 #define SHADER_CACHE_REFLECTION_FILE_EXTENSION_DXIL ".dxil_reflection"
 
 // shader cache info file name example: cacheDir/fileName/info (it should include shader name, hash code, etc. to identify the shader and check if the cache is valid when loading cache)

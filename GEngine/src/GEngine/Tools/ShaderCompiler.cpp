@@ -399,21 +399,6 @@ namespace GEngine
 			}
 			return arraySize;
 		}
-
-		std::pair<std::string, uint32_t> SemanticNameAndIndexFromSpirvName(const std::string& spirvName)
-		{
-			if (spirvName.empty())
-				return { std::string(), 0};
-
-			int pos = spirvName.find_last_not_of("0123456789");
-
-			if (pos == spirvName.size() - 1)
-				return { spirvName, 0 };
-			
-			std::string name = spirvName.substr(0, pos + 1);
-			uint32_t index = std::stoi(spirvName.substr(pos + 1));
-			return { name, index };
-		}
 	}
 
 	ShaderCompiler::ShaderCompiler()
@@ -426,30 +411,41 @@ namespace GEngine
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
 								std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionDxil)
 	{
+		bool ret = false;
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		{
+			ret = CompileSpirv(source, target, entryPoint, machineCode);
+			// compile to dxil for reflection
+			std::vector<std::byte> dxilMachineCode;
+			ret = CompileDxil(source, target, entryPoint, dxilMachineCode, reflectionDxil);
+		}
+		else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+		{
+			ret = CompileDxil(source, target, entryPoint, machineCode, reflectionDxil);
+		}
+		return ret;
+	}
+	Ref<ShaderCompiler> ShaderCompiler::Create()
+	{
+		s_Instance = CreateRef<ShaderCompiler>();
+		return s_Instance;
+	}
+	Ref<ShaderCompiler> ShaderCompiler::Get()
+	{
+		return s_Instance;
+	}
+	bool ShaderCompiler::CompileSpirv(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<std::byte>& machineCode)
+	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
 		sourceBuffer.Size		= source.size();
 		sourceBuffer.Encoding	= DXC_CP_ACP;
 
 		std::vector<LPCWSTR> args;
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL)
-		{
-			args.push_back(L"-spirv");
-			args.push_back(L"-fspv-reflect");
-			args.push_back(L"-fspv-preserve-interface");
-			args.push_back(L"-fspv-target-env=opengl4.6");;
-		}
-		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
-		{
-			args.push_back(L"-spirv");
-			args.push_back(L"-fspv-reflect");
-			args.push_back(L"-fspv-preserve-interface");
-			args.push_back(L"-fspv-target-env=vulkan1.3");
-		}
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
-		{
-			args.push_back(L"-Odce-disable-inputs");
-		}
+		args.push_back(L"-spirv");
+		args.push_back(L"-fspv-reflect");
+		args.push_back(L"-fspv-target-env=vulkan1.3");
+
 		args.push_back(L"-E");
 		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
 		args.push_back(entryPointW.c_str());
@@ -486,59 +482,70 @@ namespace GEngine
 		machineCode.resize(compiledShaderBlob->GetBufferSize());
 		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
-		// copy reflection meta
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
-		{
-			reflectionMeta.resize(compiledShaderBlob->GetBufferSize());
-			memcpy(reflectionMeta.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
-		}
-		else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
-		{
-			IDxcBlob* reflectionBlob;
-			hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
-			if (FAILED(hr) || reflectionBlob == nullptr)
-			{
-				GE_CORE_ERROR("Get shader reflection failed");
-				return false;
-			}
-			reflectionMeta.resize(reflectionBlob->GetBufferSize());
-			memcpy(reflectionMeta.data(), reflectionBlob->GetBufferPointer(), reflectionBlob->GetBufferSize());
-		}
-		
-
 		return true;
 	}
-	Ref<ShaderCompiler> ShaderCompiler::Create()
+	bool ShaderCompiler::CompileDxil(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionDxil)
 	{
-		s_Instance = CreateRef<ShaderCompiler>();
-		return s_Instance;
-	}
-	Ref<ShaderCompiler> ShaderCompiler::Get()
-	{
-		return s_Instance;
-	}
-	void ShaderCompiler::Reflect(const std::vector<std::byte>& data, const std::string& target, ShaderReflectionInfo& reflectionOutput)
-	{
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		DxcBuffer				sourceBuffer;
+		sourceBuffer.Ptr		= source.data();
+		sourceBuffer.Size		= source.size();
+		sourceBuffer.Encoding	= DXC_CP_ACP;
+
+		std::vector<LPCWSTR> args;
+		args.push_back(L"-Odce-disable-inputs");
+		args.push_back(L"-E");
+		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
+		args.push_back(entryPointW.c_str());
+		args.push_back(L"-T");
+		std::wstring targetW = StringHelper::StringToWideString(Utils::DXShaderTargetFromString(target));
+		args.push_back(targetW.c_str());
+#if GE_DEBUG
+		args.push_back(L"Zi");
+#endif
+		IDxcResult* result;
+		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(&result));
+		if (FAILED(hr))
 		{
-			GE_CORE_ASSERT(data.size() % sizeof(uint32_t) == 0, "SPIR-V code size should be a multiple of {} bytes!", sizeof(uint32_t));
-			std::vector<uint32_t> spirvCode(data.size() / sizeof(uint32_t));
-			memcpy(spirvCode.data(), data.data(), data.size());
-			ReflectSpirv(spirvCode, target, reflectionOutput);
+			GE_CORE_ERROR("Shader compilation failed");
+			return false;
 		}
-		else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+		IDxcBlobUtf8* errors;
+		result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
+		if (errors && errors->GetStringLength() != 0)
 		{
-			ReflectDxil((void*)data.data(), (uint32_t)data.size(), target, reflectionOutput);
+			GE_CORE_ERROR("Shader compilation error: {0}", errors->GetStringPointer());
+			return false;
 		}
+
+		IDxcBlob* compiledShaderBlob;
+		hr = result->GetResult(&compiledShaderBlob);
+		if (FAILED(hr))
+		{
+			GE_CORE_ERROR("Get compiled shader failed");
+			return false;
+		}
+
+		IDxcBlob* reflectionBlob;
+		hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
+		if (FAILED(hr) || reflectionBlob == nullptr)
+		{
+			GE_CORE_ERROR("Get shader reflection failed");
+			return false;
+		}
+
+		reflectionDxil.resize(reflectionBlob->GetBufferSize());
+		memcpy(reflectionDxil.data(), reflectionBlob->GetBufferPointer(), reflectionBlob->GetBufferSize());
+		return true;
 	}
-	void ShaderCompiler::ReflectDxil(void* data, uint32_t length, const std::string& target, ShaderReflectionInfo& reflectionOutput)
+
+	void ShaderCompiler::ReflectDxil(const std::vector<std::byte>& reflectionDxil, const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
 		HRESULT hr;
 		ID3D12ShaderReflection* reflection;
 		DxcBuffer reflectionData;
 		reflectionData.Encoding = DXC_CP_ACP;
-		reflectionData.Ptr = data;
-		reflectionData.Size = length;
+		reflectionData.Ptr		= reflectionDxil.data();
+		reflectionData.Size		= reflectionDxil.size();
 		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
 
 		//reflectionOutput
@@ -612,29 +619,60 @@ namespace GEngine
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
 		}
 	}
-	void ShaderCompiler::ReflectSpirv(const std::vector<uint32_t>& spirvCode, const std::string& target, ShaderReflectionInfo& reflectionOutput)
+	void ShaderCompiler::ReflectSpirv(const std::vector<std::byte>& spirvMachineCode, const std::vector<std::byte>& reflectionDxil,
+										const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
+		std::vector<uint32_t>			spirvCode;
+		GE_CORE_ASSERT(spirvMachineCode.size() % sizeof(uint32_t) == 0, "SPIR-V machine size should be a multiple of {} bytes!", sizeof(uint32_t));
+		memcpy(spirvCode.data(), spirvMachineCode.data(), spirvMachineCode.size());
+
 		spirv_cross::Compiler			compiler(spirvCode);
 		spirv_cross::ShaderResources	resources = compiler.get_shader_resources();
 
+		HRESULT hr;
+		ID3D12ShaderReflection* reflection;
+		DxcBuffer reflectionData;
+		reflectionData.Encoding = DXC_CP_ACP;
+		reflectionData.Ptr		= reflectionDxil.data();
+		reflectionData.Size		= reflectionDxil.size();
+		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+		D3D12_SHADER_DESC desc;
+		reflection->GetDesc(&desc);
 		//reflectionOutput
 
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
-		uint32_t inputParameterOffset = 0;
 		for (int i = 0; i < resources.stage_inputs.size(); i++)
 		{
 			auto& var_type = compiler.get_type(resources.stage_inputs[i].type_id);
 
+			D3D12_SIGNATURE_PARAMETER_DESC inputDesc;
+			hr = reflection->GetInputParameterDesc(i, &inputDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader input parameter desc!");
+
+			std::string varName = inputDesc.SemanticName;
+			if (inputDesc.SemanticIndex > 0)
+				varName += std::to_string(inputDesc.SemanticIndex);
+
+			ID3D12ShaderReflectionVariable* variable = reflection->GetVariableByName(varName.c_str());
+			if(variable == nullptr && inputDesc.SemanticIndex == 0)
+				varName += "0";
+			variable = reflection->GetVariableByName(varName.c_str());
+			GE_CORE_ASSERT(variable, "Failed to get shader variable by name: {}", varName);
+
+			D3D12_SHADER_VARIABLE_DESC varDesc;
+			hr = variable->GetDesc(&varDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader variable desc!");
+
+
 			ShaderReflectionVertexInputInfo								inputInfo;
-			std::tie(inputInfo.SemanticName, inputInfo.SemanticIndex)	= Utils::SemanticNameAndIndexFromSpirvName(compiler.get_decoration_string(resources.stage_inputs[i].id, spv::DecorationHlslSemanticGOOGLE));
+			inputInfo.SemanticName										= inputDesc.SemanticName;
+			inputInfo.SemanticIndex										= inputDesc.SemanticIndex;
 			inputInfo.Type												= Utils::ShaderInputDataTypeFromSpirvType(var_type);
-			inputInfo.Offset											= inputParameterOffset;
+			inputInfo.Offset											= varDesc.StartOffset;
 			inputInfo.Location											= compiler.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
 
 			GE_CORE_TRACE("Semantic name: {}, Semantic Index {}, Location: {}, Type: {}, Offset: {}", inputInfo.SemanticName, inputInfo.SemanticIndex, inputInfo.Location, inputInfo.Type, inputInfo.Offset);
-
-			inputParameterOffset += Utils::ShaderInputDataSize(inputInfo.Type);
 
 			if (target == SHADER_STAGE_VERTEX)
 				reflectionOutput.VertexInputs.push_back(inputInfo);

@@ -130,13 +130,13 @@ namespace GEngine
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 		std::vector<std::string>												srcCodes; // each pass src code
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
-		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionDxils; // pass { stage : reflection meta }
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionDxils; // pass { stage : reflection dxil }
 		std::string																source = FileSystemHelper::ReadFileAsString(path);
 		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
-		if (LoadFromCache(shaders, reflectionMetas, source))
+		if (LoadFromCache(shaders, reflectionDxils, source))
 		{
-			ReflectShader(reflectionMetas);
+			ReflectShader(reflectionDxils);
 			processMachingCodeFunc(shaders);
 			GE_INFO("Load shader {} from cache.", m_Name);
 			return;
@@ -395,13 +395,13 @@ namespace GEngine
 								ShaderCacheInfo& cache)
 	{
 		bool res = false;
-		std::string graphicsAPIExt;
+		std::string machineCodeExt;
 		std::string cacheFolder = Application::Get().GetConfig()->GetShaderCacheDirectory() + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
-		case GRAPHICS_API_VULKAN: graphicsAPIExt = GRAPHICS_API_EXT_VULKAN; break;
-		case GRAPHICS_API_DIRECT3DX12: graphicsAPIExt = GRAPHICS_API_EXT_D3DX12; break;
+		case GRAPHICS_API_OPENGL: 
+		case GRAPHICS_API_VULKAN: machineCodeExt = SHADER_CACHE_FILE_EXTENSION_SPIRV; break;
+		case GRAPHICS_API_DIRECT3DX12: machineCodeExt = SHADER_CACHE_FILE_EXTENSION_DXIL; break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 			break;
@@ -442,7 +442,7 @@ namespace GEngine
 			for (auto& [stage, code] : shaders.at(i))
 			{
 				// create document
-				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt;
+				std::string cachePath = cachePathSrc + "." + stage + machineCodeExt;
 				res = FileSystemHelper::CreateDocument(cachePath);
 				res = FileSystemHelper::IsDocument(cachePath);
 				GE_CORE_ASSERT(res, "Failed to create shader cache file!");
@@ -453,22 +453,28 @@ namespace GEngine
 				GE_CORE_ASSERT(res, "Failed to write shader cache file!");
 			}
 		}
-		// each pass and each stage reflection meta write in sperate file
-		for (int i = 0; i < reflectionMetas.size(); i++)
+		// each pass and each stage reflection dxil write in sperate file
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+			Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN ||
+			Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 		{
-			std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
-			for (auto& [stage, meta] : reflectionMetas.at(i))
+			// spirv reflection need dxil reflection meta, so we need to save dxil reflection meta to cache for vulkan, too.
+			for (int i = 0; i < reflectionDxils.size(); i++)
 			{
-				// create document
-				std::string cachePath = cachePathSrc + "." + stage + graphicsAPIExt + SHADER_CACHE_REFLECTION_META_FILE_EXTENSION;
-				res = FileSystemHelper::CreateDocument(cachePath);
-				res = FileSystemHelper::IsDocument(cachePath);
-				GE_CORE_ASSERT(res, "Failed to create shader reflection meta cache file!");
-				// write reflection meta
-				std::vector<char> data(meta.size());
-				memcpy(data.data(), meta.data(), meta.size());
-				res = FileSystemHelper::WriteFile(cachePath, data);
-				GE_CORE_ASSERT(res, "Failed to write shader reflection meta cache file!");
+				std::string cachePathSrc = cacheFolder + "/" + std::to_string(i);
+				for (auto& [stage, meta] : reflectionDxils.at(i))
+				{
+					// create document
+					std::string cachePath = cachePathSrc + "." + stage + SHADER_CACHE_REFLECTION_FILE_EXTENSION_DXIL;
+					res = FileSystemHelper::CreateDocument(cachePath);
+					res = FileSystemHelper::IsDocument(cachePath);
+					GE_CORE_ASSERT(res, "Failed to create shader reflection dxil cache file!");
+					// write reflection dxil
+					std::vector<char> data(meta.size());
+					memcpy(data.data(), meta.data(), meta.size());
+					res = FileSystemHelper::WriteFile(cachePath, data);
+					GE_CORE_ASSERT(res, "Failed to write shader reflection dxil cache file!");
+				}
 			}
 		}
 	}
@@ -478,13 +484,13 @@ namespace GEngine
 								const std::string& source)
 	{
 		bool res = false;
-		std::string graphicsAPIExt;
+		std::string machineCodeExt;
 		std::string cacheFolder = Application::Get().GetConfig()->GetShaderCacheDirectory() + FileSystemHelper::GetDocumentNameWithoutExtension(m_FilePath);
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GRAPHICS_API_OPENGL: graphicsAPIExt = GRAPHICS_API_EXT_OPENGL; break;
-		case GRAPHICS_API_VULKAN: graphicsAPIExt = GRAPHICS_API_EXT_VULKAN; break;
-		case GRAPHICS_API_DIRECT3DX12: graphicsAPIExt = GRAPHICS_API_EXT_D3DX12; break;
+		case GRAPHICS_API_OPENGL: 
+		case GRAPHICS_API_VULKAN: machineCodeExt = SHADER_CACHE_FILE_EXTENSION_SPIRV; break;
+		case GRAPHICS_API_DIRECT3DX12: machineCodeExt = SHADER_CACHE_FILE_EXTENSION_DXIL; break;
 		default:
 			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 			break;
@@ -501,8 +507,8 @@ namespace GEngine
 			GE_CORE_INFO("Shader cache is invalid, shader source may be changed, recompile shader! Cache name: {}", cacheInfo.Name);
 			return false;
 		}
-		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spv"
-		std::vector<std::string> cacheShaderFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, graphicsAPIExt, "");
+		// process cache, each pass and each stage read from sperate file, the file name should be in format of "pass.stage.ext", for example "0.vertex.spirv"
+		std::vector<std::string> cacheShaderFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, machineCodeExt, "");
 		std::vector<int> passIndices;
 		if(cacheShaderFiles.size() == 0)
 		{
@@ -534,33 +540,49 @@ namespace GEngine
 			GE_CORE_INFO("Load shader cache file: {}, pass {}, stage {}!", file, passIndex, stage);
 		}
 		// each pass and each stage reflection meta read from sperate file
-		std::vector<std::string> cacheReflectionMetaFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, SHADER_CACHE_REFLECTION_META_FILE_EXTENSION, graphicsAPIExt);
-		reflectionMetas.resize(passIndices.back() + 1);
-		for (auto& file : cacheReflectionMetaFiles)
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL 
+			|| Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN 
+			|| Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 		{
-			std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
-			size_t pos = fileName.find('.');
-			std::string stage = fileName.substr(pos + 1, fileName.find('.', pos + 1) - pos - 1);
-			int passIndex = std::stoi(fileName.substr(0, pos));
-			// read reflection meta
-			std::vector<char> data;
-			data = FileSystemHelper::ReadFile(file);
-			std::vector<std::byte> meta(data.size());
-			memcpy(meta.data(), data.data(), data.size());
-			reflectionMetas.at(passIndex)[stage] = meta;
-			GE_CORE_INFO("Load shader reflection meta cache file: {}, pass {}, stage {}!", file, passIndex, stage);
+			// spirv reflection need dxil reflection meta, so we need to load dxil reflection meta from cache
+			std::vector<std::string> cacheReflectionDxilFiles = FileSystemHelper::GetDocumentsInFolder(cacheFolder, SHADER_CACHE_REFLECTION_FILE_EXTENSION_DXIL, "");
+			reflectionDxils.resize(passIndices.back() + 1);
+			for (auto& file : cacheReflectionDxilFiles)
+			{
+				std::string fileName = FileSystemHelper::GetDocumentNameWithoutExtension(file);
+				size_t pos = fileName.find('.');
+				std::string stage = fileName.substr(pos + 1, fileName.find('.', pos + 1) - pos - 1);
+				int passIndex = std::stoi(fileName.substr(0, pos));
+				// read reflection meta
+				std::vector<char> data;
+				data = FileSystemHelper::ReadFile(file);
+				std::vector<std::byte> meta(data.size());
+				memcpy(meta.data(), data.data(), data.size());
+				reflectionDxils.at(passIndex)[stage] = meta;
+				GE_CORE_INFO("Load shader reflection dxil cache file: {}, pass {}, stage {}!", file, passIndex, stage);
+			}
 		}
 		return true;
 	}
 
-	void Shader::ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils)
+	void Shader::ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
+								const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils)
 	{
 		//reflection meta
-		for (int i = 0; i < reflectionMetas.size(); i++)
+		for (int i = 0; i < reflectionDxils.size(); i++)
 		{
-			for (auto& [stage, data] : reflectionMetas.at(i))
+			for (auto& [stage, data] : reflectionDxils.at(i))
 			{
-				ShaderCompiler::Get()->Reflect(data, stage, m_PassReflections.at(i));
+				if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+					Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+				{
+					ShaderCompiler::Get()->ReflectSpirv(shaders.at(i).at(stage),
+											data, stage, m_PassReflections.at(i));
+				}
+				else if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+				{
+					ShaderCompiler::Get()->ReflectDxil(data, stage, m_PassReflections.at(i));
+				}
 			}
 		}
 		// record properties type

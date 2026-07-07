@@ -85,7 +85,8 @@ namespace GEngine
 		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
 																			std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils, 
 																			const std::string& source);
-		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils);
+		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
+																			const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils);
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;
