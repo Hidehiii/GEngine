@@ -28,6 +28,7 @@ Shader "ExampleShader"
             struct VsInput
             {
                 float3 vertex : POSITION;
+                float2 yz : COLOR0;
             };
 
             struct VsOutput
@@ -37,7 +38,7 @@ Shader "ExampleShader"
 
             VsOutput vert(VsInput IN)
             {
-                VsOutput OUT;
+                VsOutput OUT;;
                 OUT.pos = float4(IN.vertex, 1.0f);
 
                 return OUT;

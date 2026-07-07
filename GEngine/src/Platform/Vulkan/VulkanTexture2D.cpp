@@ -109,6 +109,8 @@ namespace GEngine
     }
     VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag)
     {
+		// create from vulkan frame buffer, so we don't need to create image and image view, just use the existing ones
+		// leave the width and height to 0, because we don't know the width and height of the image created by vulkan frame buffer
         m_Format = Utils::VulkanFormatToRenderImage2DFormat(format);
         m_Image         = image;
         m_ImageView     = imageView;
@@ -118,7 +120,11 @@ namespace GEngine
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-		if (VulkanContext::Get()->GetDevice())
+        // if the texture 2d is created by vulkan frame buffer,
+		// the image and image view will be destroyed by vulkan frame buffer, 
+        // so we need to check if the image and image view are valid before destroying them
+		// the image created by vk frame buffer would not have a valid width and height, so we can use this to check if the image is created by vk frame buffer
+		if (VulkanContext::Get()->GetDevice() && m_Width != 0 && m_Height != 0)
 		{
 			vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
 			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);

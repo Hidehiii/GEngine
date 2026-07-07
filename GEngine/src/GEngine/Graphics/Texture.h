@@ -23,7 +23,7 @@ namespace GEngine
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) = 0;
 
 	protected:
-		uint32_t m_Width, m_Height;
+		uint32_t m_Width = 0, m_Height = 0;
 		RenderImage2DFormat	m_Format;
 		bool m_GenerateMipmap = true;
 		uint32_t m_MipLevels = 1;

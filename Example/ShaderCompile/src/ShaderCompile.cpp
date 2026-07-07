@@ -11,7 +11,7 @@ namespace GEngine
 		Ref<Material> material = Material::Create(shader, "ExampleMaterial");
 
 		float trianglePos[] = {
-			-0.5f, -0.5f, 0.0f,
+			-0.5f, -0.8f, 0.0f, 
 			 0.5f, -0.5f, 0.0f,
 			 0.0f,  0.5f, 0.0f
 		};

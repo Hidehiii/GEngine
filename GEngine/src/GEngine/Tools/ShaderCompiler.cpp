@@ -25,6 +25,69 @@ namespace GEngine
 			return "";
 		}
 
+		ShaderInputDataType ShaderInputDataTypeFromDxType(const D3D12_SHADER_TYPE_DESC& typeDesc)
+		{
+			switch (typeDesc.Class)
+			{
+			case D3D_SVC_SCALAR:
+				switch (typeDesc.Type)
+				{
+				case D3D_SVT_INT:		return SHADER_INPUT_DATA_TYPE_INT1;
+				case D3D_SVT_UINT:		return SHADER_INPUT_DATA_TYPE_UINT1;
+				case D3D_SVT_FLOAT:		return SHADER_INPUT_DATA_TYPE_FLOAT1;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable scalar type!");
+					break;
+				}
+				break;
+			case D3D_SVC_VECTOR:
+				switch (typeDesc.Type)
+				{
+				case D3D_SVT_INT:
+					switch (typeDesc.Columns)
+					{
+					case 2: return SHADER_INPUT_DATA_TYPE_INT2;
+					case 3: return SHADER_INPUT_DATA_TYPE_INT3;
+					case 4: return SHADER_INPUT_DATA_TYPE_INT4;
+					default:
+						GE_CORE_ASSERT(false, "Unknown shader variable int vector type!");
+						break;
+					}
+					break;
+				case D3D_SVT_UINT:
+					switch (typeDesc.Columns)
+					{
+					case 2: return SHADER_INPUT_DATA_TYPE_UINT2;
+					case 3: return SHADER_INPUT_DATA_TYPE_UINT3;
+					case 4: return SHADER_INPUT_DATA_TYPE_UINT4;
+					default:
+						GE_CORE_ASSERT(false, "Unknown shader variable uint vector type!");
+						break;
+					}
+					break;
+				case D3D_SVT_FLOAT:
+					switch (typeDesc.Columns)
+					{
+					case 2: return SHADER_INPUT_DATA_TYPE_FLOAT2;
+					case 3: return SHADER_INPUT_DATA_TYPE_FLOAT3;
+					case 4: return SHADER_INPUT_DATA_TYPE_FLOAT4;
+					default:
+						GE_CORE_ASSERT(false, "Unknown shader variable float vector type!");
+						break;
+					}
+					break;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable vector type!");
+					break;
+				}
+				break;
+			default:
+				GE_CORE_ASSERT(false, "Unknown shader variable base type!");
+				break;
+			}
+			return SHADER_INPUT_DATA_TYPE_NONE;
+		}
+
 		ShaderInputDataType ShaderInputDataTypeFromSpirvType(const spirv_cross::SPIRType& type)
 		{
 			switch (type.basetype)
@@ -336,6 +399,21 @@ namespace GEngine
 			}
 			return arraySize;
 		}
+
+		std::pair<std::string, uint32_t> SemanticNameAndIndexFromSpirvName(const std::string& spirvName)
+		{
+			if (spirvName.empty())
+				return { std::string(), 0};
+
+			int pos = spirvName.find_last_not_of("0123456789");
+
+			if (pos == spirvName.size() - 1)
+				return { spirvName, 0 };
+			
+			std::string name = spirvName.substr(0, pos + 1);
+			uint32_t index = std::stoi(spirvName.substr(pos + 1));
+			return { name, index };
+		}
 	}
 
 	ShaderCompiler::ShaderCompiler()
@@ -354,11 +432,23 @@ namespace GEngine
 		sourceBuffer.Encoding	= DXC_CP_ACP;
 
 		std::vector<LPCWSTR> args;
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL)
 		{
 			args.push_back(L"-spirv");
 			args.push_back(L"-fspv-reflect");
+			args.push_back(L"-fspv-preserve-interface");
+			args.push_back(L"-fspv-target-env=opengl4.6");;
+		}
+		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		{
+			args.push_back(L"-spirv");
+			args.push_back(L"-fspv-reflect");
+			args.push_back(L"-fspv-preserve-interface");
 			args.push_back(L"-fspv-target-env=vulkan1.3");
+		}
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+		{
+			args.push_back(L"-Odce-disable-inputs");
 		}
 		args.push_back(L"-E");
 		std::wstring entryPointW = StringHelper::StringToWideString(entryPoint);
@@ -443,6 +533,7 @@ namespace GEngine
 	}
 	void ShaderCompiler::ReflectDxil(void* data, uint32_t length, const std::string& target, ShaderReflectionInfo& reflectionOutput)
 	{
+		HRESULT hr;
 		ID3D12ShaderReflection* reflection;
 		DxcBuffer reflectionData;
 		reflectionData.Encoding = DXC_CP_ACP;
@@ -459,7 +550,31 @@ namespace GEngine
 		for (int i = 0; i < desc.InputParameters; i++)
 		{
 			D3D12_SIGNATURE_PARAMETER_DESC inputDesc;
-			reflection->GetInputParameterDesc(i, &inputDesc);
+			hr = reflection->GetInputParameterDesc(i, &inputDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader input parameter desc!");
+
+			std::string varName = inputDesc.SemanticName;
+			if(inputDesc.SemanticIndex > 0)
+				varName += std::to_string(inputDesc.SemanticIndex);
+
+			ID3D12ShaderReflectionVariable* variable = reflection->GetVariableByName(varName.c_str());
+			GE_CORE_ASSERT(variable, "Failed to get shader variable by name: {}", varName);
+
+			D3D12_SHADER_VARIABLE_DESC varDesc;
+			hr = variable->GetDesc(&varDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader variable desc!");
+
+			D3D12_SHADER_TYPE_DESC typeDesc;
+			hr = variable->GetType()->GetDesc(&typeDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader variable type desc!");
+
+			ShaderReflectionVertexInputInfo vertexInputInfo;
+			vertexInputInfo.SemanticName = inputDesc.SemanticName;
+			vertexInputInfo.SemanticIndex = inputDesc.SemanticIndex;
+			vertexInputInfo.Offset = varDesc.StartOffset;
+			vertexInputInfo.Type = Utils::ShaderInputDataTypeFromDxType(typeDesc);
+			//vertexInputInfo.
+
 			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
 		}
 		GE_CORE_INFO("Resource binding:");
@@ -506,17 +621,20 @@ namespace GEngine
 
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
-		for (const auto& input : resources.stage_inputs)
+		uint32_t inputParameterOffset = 0;
+		for (int i = 0; i < resources.stage_inputs.size(); i++)
 		{
-			auto& type = compiler.get_type(input.type_id);
+			auto& var_type = compiler.get_type(resources.stage_inputs[i].type_id);
 
-			ShaderReflectionVertexInputInfo inputInfo;
-			inputInfo.SemanticName			= input.name;
-			inputInfo.Type					= Utils::ShaderInputDataTypeFromSpirvType(type);
-			inputInfo.Offset				= compiler.get_decoration(input.id, spv::DecorationOffset);
-			inputInfo.Location				= compiler.get_decoration(input.id, spv::DecorationLocation);
+			ShaderReflectionVertexInputInfo								inputInfo;
+			std::tie(inputInfo.SemanticName, inputInfo.SemanticIndex)	= Utils::SemanticNameAndIndexFromSpirvName(compiler.get_decoration_string(resources.stage_inputs[i].id, spv::DecorationHlslSemanticGOOGLE));
+			inputInfo.Type												= Utils::ShaderInputDataTypeFromSpirvType(var_type);
+			inputInfo.Offset											= inputParameterOffset;
+			inputInfo.Location											= compiler.get_decoration(resources.stage_inputs[i].id, spv::DecorationLocation);
 
-			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}, Offset: {}", input.name, inputInfo.Location, type.basetype, inputInfo.Offset);
+			GE_CORE_TRACE("Semantic name: {}, Semantic Index {}, Location: {}, Type: {}, Offset: {}", inputInfo.SemanticName, inputInfo.SemanticIndex, inputInfo.Location, inputInfo.Type, inputInfo.Offset);
+
+			inputParameterOffset += Utils::ShaderInputDataSize(inputInfo.Type);
 
 			if (target == SHADER_STAGE_VERTEX)
 				reflectionOutput.VertexInputs.push_back(inputInfo);

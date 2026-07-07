@@ -611,20 +611,19 @@ namespace GEngine
 
 		//  for directX
 		std::string			SemanticName;
-		union 
-		{
-			// for directX
-			uint32_t			SemanticIndex;
-
-			// for vulkan/opengl
-			uint32_t			Location;
-		};
+		// for directX
+		uint32_t			SemanticIndex;
+		// for vulkan/opengl
+		uint32_t			Location;
 
 		bool operator==(const ShaderReflectionVertexInputInfo& other) const
 		{
 			return Type == other.Type &&
+				Offset == other.Offset &&
+				IsPerInstance == other.IsPerInstance &&
 				SemanticName == other.SemanticName &&
-				SemanticIndex == other.SemanticIndex;
+				SemanticIndex == other.SemanticIndex &&
+				Location == other.Location;
 		}
 	};
 
