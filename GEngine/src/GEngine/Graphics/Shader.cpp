@@ -69,20 +69,20 @@ namespace GEngine
 		{
 			if (StringHelper::ToLower(value) == VAR_NAME(less))			return COMPARE_OP_LESS;
 			if (StringHelper::ToLower(value) == VAR_NAME(greater))		return COMPARE_OP_GREATER;
-			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))		return COMPARE_OP_LESS_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(lequal))			return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))	return COMPARE_OP_LESS_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(lequal))		return COMPARE_OP_LESS_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))	return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(gequal))			return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(equal))			return COMPARE_OP_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(gequal))		return COMPARE_OP_GREATER_EQUAL;
+			if (StringHelper::ToLower(value) == VAR_NAME(equal))		return COMPARE_OP_EQUAL;
 			if (StringHelper::ToLower(value) == VAR_NAME(notequal))		return COMPARE_OP_NOT_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(always))			return COMPARE_OP_ALWAYS;
+			if (StringHelper::ToLower(value) == VAR_NAME(always))		return COMPARE_OP_ALWAYS;
 
 			return COMPARE_OP_LESS_EQUAL;
 		}
 		CullMode ShaderCullModeFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(none))	return CULL_MODE_NONE;
-			if (StringHelper::ToLower(value) == VAR_NAME(back))	return CULL_MODE_BACK;
+			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CULL_MODE_NONE;
+			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CULL_MODE_BACK;
 			if (StringHelper::ToLower(value) == VAR_NAME(front))	return CULL_MODE_FRONT;
 			return CULL_MODE_BACK;
 		}
@@ -97,7 +97,7 @@ namespace GEngine
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))				return BLEND_FACTOR_ONE;
+			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))					return BLEND_FACTOR_ONE;
 			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BLEND_FACTOR_ZERO;
 
 			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
@@ -105,11 +105,11 @@ namespace GEngine
 		BlendMode ShaderBlendModeFromString(const std::string& type)
 		{
 			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BLEND_MODE_NONE;
-			if (StringHelper::ToLower(type) == VAR_NAME(add))					return BLEND_MODE_ADD;
+			if (StringHelper::ToLower(type) == VAR_NAME(add))				return BLEND_MODE_ADD;
 			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BLEND_MODE_SUBSTRACT;
 			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BLEND_MODE_REVERSE_SUBSTRACT;
-			if (StringHelper::ToLower(type) == VAR_NAME(min))					return BLEND_MODE_MIN;
-			if (StringHelper::ToLower(type) == VAR_NAME(max))					return BLEND_MODE_MAX;
+			if (StringHelper::ToLower(type) == VAR_NAME(min))				return BLEND_MODE_MIN;
+			if (StringHelper::ToLower(type) == VAR_NAME(max))				return BLEND_MODE_MAX;
 
 			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
 			return BLEND_MODE_NONE;
@@ -130,7 +130,7 @@ namespace GEngine
 		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 		std::vector<std::string>												srcCodes; // each pass src code
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
-		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionMetas; // pass { stage : reflection meta }
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionDxils; // pass { stage : reflection meta }
 		std::string																source = FileSystemHelper::ReadFileAsString(path);
 		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
@@ -358,7 +358,7 @@ namespace GEngine
 
 	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, 
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
-		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas)
+		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils)
 	{
 		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PassReflections.size(), "Size of pass and entryPoint not match!");
 		for (int i = 0; i < m_StageEntryPoints.size(); i++)
@@ -391,7 +391,7 @@ namespace GEngine
 	}
 
 	void Shader::SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
-								const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+								const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils,
 								ShaderCacheInfo& cache)
 	{
 		bool res = false;
@@ -474,7 +474,7 @@ namespace GEngine
 	}
 
 	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
-								std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+								std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils,
 								const std::string& source)
 	{
 		bool res = false;
@@ -553,7 +553,7 @@ namespace GEngine
 		return true;
 	}
 
-	void Shader::ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas)
+	void Shader::ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils)
 	{
 		//reflection meta
 		for (int i = 0; i < reflectionMetas.size(); i++)

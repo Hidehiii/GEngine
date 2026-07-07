@@ -424,7 +424,7 @@ namespace GEngine
 	}
 
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 
-								std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionMeta)
+								std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionDxil)
 	{
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();

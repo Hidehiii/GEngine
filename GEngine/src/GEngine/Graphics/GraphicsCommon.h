@@ -15,13 +15,12 @@
 
 #define SHADER_STAGE_COMPUTE "compute"
 
-// graphics api extension names
-#define GRAPHICS_API_EXT_OPENGL ".opengl"
-#define GRAPHICS_API_EXT_VULKAN ".vulkan"
-#define GRAPHICS_API_EXT_D3DX12 ".d3dx12"
+// shader cache extension names
+#define SHADER_CACHE_FILE_EXTENSION_SPIRV ".spirv"
+#define SHADER_CACHE_FILE_EXTENSION_DXIL ".dxil"
 
-// shader reflection meta file name example: cacheDir/fileName/0.vertex.vulkan.reflection (it should include shader stage and graphics api to identify the reflection meta)
-#define SHADER_CACHE_REFLECTION_META_FILE_EXTENSION ".reflection"
+// shader reflection file extension name
+#define SHADER_CACHE_REFLECTION_FILE_EXTENSION_DXIL ".dxil_reflection"
 
 // shader cache info file name example: cacheDir/fileName/info (it should include shader name, hash code, etc. to identify the shader and check if the cache is valid when loading cache)
 #define SHADER_CACHE_INFO_FILE_NAME "info"

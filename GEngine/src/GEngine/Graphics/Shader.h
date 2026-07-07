@@ -76,16 +76,16 @@ namespace GEngine
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
 		virtual bool										Compile(const std::vector<std::string>& shaderSrcCodes, 
 																	std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
-																	std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas);
+																	std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils);
 		virtual void 										ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) = 0;
 		virtual void										ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										SaveToCache(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
-																		const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+																		const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils, 
 																		ShaderCacheInfo& cache);
 		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
-																			std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas, 
+																			std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils, 
 																			const std::string& source);
-		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionMetas);
+		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils);
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;
