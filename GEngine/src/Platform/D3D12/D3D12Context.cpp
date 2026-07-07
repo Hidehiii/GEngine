@@ -367,7 +367,7 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(rt.GetAddressOf())));
 
 			FrameBufferSpecificationForD3D12	spec{};
-			spec.ColorRTs						= { rt };
+			spec.RenderTargets					= { rt };
 			spec.Width							= m_SwapChainWidth;
 			spec.Height							= m_SwapChainHeight;
 

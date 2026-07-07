@@ -28,6 +28,8 @@
 
 // shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
 
+#define SUBPASS_EXTERNAL_INDEX (~0U)
+
 namespace GEngine
 {
 	enum Graphics_API
@@ -174,30 +176,16 @@ namespace GEngine
 		COMMAND_BUFFER_TYPE_TRANSFER,
 	};
 
-	// Frame buffer texture specification
-	// Contains the texture format
-	struct FrameBufferTextureSpecification
-	{
-		FrameBufferTextureSpecification() = default;
-		FrameBufferTextureSpecification(FrameBufferTextureFormat format)
-			: TextureFormat(format) {
-		}
-
-		FrameBufferTextureFormat TextureFormat = FRAME_BUFFER_TEXTURE_FORMAT_NONE;
-
-		bool operator==(const FrameBufferTextureSpecification& other) const { return TextureFormat == other.TextureFormat; }
-	};
-
 	// Frame buffer attachment specification
 // Contains the frame buffer texture specification
 // Contains the frame buffer texture format
 	struct FrameBufferRenderTargetSpecification
 	{
 		FrameBufferRenderTargetSpecification() = default;
-		FrameBufferRenderTargetSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments)
+		FrameBufferRenderTargetSpecification(std::initializer_list<FrameBufferTextureFormat> attachments)
 			: Attachments(attachments) {
 		}
-		std::vector<FrameBufferTextureSpecification> Attachments;
+		std::vector<FrameBufferTextureFormat> Attachments;
 
 		/*bool operator==(const FrameBufferAttachmentSpecification& other) const { return Attachments == other.Attachments; }*/
 	};
@@ -223,27 +211,113 @@ namespace GEngine
 		}
 	};
 
+	enum SubpassPipelineStage
+	{
+		SUBPASS_PIPELINE_STAGE_NONE = 0,
+		SUBPASS_PIPELINE_STAGE_TOP_OF_PIPELINE = BIT(0),
+		SUBPASS_PIPELINE_STAGE_DRAW_INDIRECT = BIT(1),
+		SUBPASS_PIPELINE_STAGE_VERTEX_INPUT = BIT(2),
+		SUBPASS_PIPELINE_STAGE_VERTEX_SHADER = BIT(3),
+		SUBPASS_PIPELINE_STAGE_HULL_SHADER = BIT(4),
+		SUBPASS_PIPELINE_STAGE_DOMAIN_SHADER = BIT(5),
+		SUBPASS_PIPELINE_STAGE_GEOMETRY_SHADER = BIT(6),
+		SUBPASS_PIPELINE_STAGE_FRAGMENT_SHADER = BIT(7),
+		SUBPASS_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS = BIT(8),
+		SUBPASS_PIPELINE_STAGE_LATE_FRAGMENT_TESTS = BIT(9),
+		SUBPASS_PIPELINE_STAGE_RENDER_TARGET_OUTPUT = BIT(10),
+		SUBPASS_PIPELINE_STAGE_COMPUTE_SHADER = BIT(11),
+		SUBPASS_PIPELINE_STAGE_TRANSFER = BIT(12),
+		SUBPASS_PIPELINE_STAGE_BOTTOM_OF_PIPELINE = BIT(13),
+		SUBPASS_PIPELINE_STAGE_HOST = BIT(14),
+		SUBPASS_PIPELINE_STAGE_ALL_GRAPHICS = BIT(15),
+		SUBPASS_PIPELINE_STAGE_ALL_COMMANDS = BIT(16),
+
+		SUBPASS_PIPELINE_STAGE_AMPLIFICATION_SHADER = BIT(19),
+		SUBPASS_PIPELINE_STAGE_MESH_SHADER = BIT(20),
+	};
+
+	enum SubpassAccess
+	{
+		SUBPASS_ACCESS_NONE = 0,
+		SUBPASS_ACCESS_INDIRECT_COMMAND_READ = BIT(0),
+		SUBPASS_ACCESS_INDEX_READ = BIT(1),
+		SUBPASS_ACCESS_VERTEX_ATTRIBUTE_READ = BIT(2),
+		SUBPASS_ACCESS_UNIFORM_READ = BIT(3),
+		SUBPASS_ACCESS_INPUT_RENDER_TARGET_READ = BIT(4),
+		SUBPASS_ACCESS_SHADER_READ = BIT(5),
+		SUBPASS_ACCESS_SHADER_WRITE = BIT(6),
+		SUBPASS_ACCESS_RENDER_TARGET_READ = BIT(7),
+		SUBPASS_ACCESS_RENDER_TARGET_WRITE = BIT(8),
+		SUBPASS_ACCESS_DEPTH_STENCIL_READ = BIT(9),
+		SUBPASS_ACCESS_DEPTH_STENCIL_WRITE = BIT(10),
+		SUBPASS_ACCESS_TRANSFER_READ = BIT(11),
+		SUBPASS_ACCESS_TRANSFER_WRITE = BIT(12),
+		SUBPASS_ACCESS_HOST_READ = BIT(13),
+		SUBPASS_ACCESS_HOST_WRITE = BIT(14),
+		SUBPASS_ACCESS_MEMORY_READ = BIT(15),
+		SUBPASS_ACCESS_MEMORY_WRITE = BIT(16),
+	};
+
+	struct RenderPassSubpassSpecification
+	{
+		std::vector<uint32_t>	RenderTargetIndices;
+		std::vector<uint32_t>	InputRenderTargetIndices;
+		bool					EnableDepthStencil = true;
+
+		bool operator==(const RenderPassSubpassSpecification& other) const
+		{
+			return RenderTargetIndices == other.RenderTargetIndices &&
+				EnableDepthStencil == other.EnableDepthStencil;
+		}
+	};
+
+	struct RenderPassSubpassDependencySpecification
+	{
+		uint32_t					SrcSubpass;
+		uint32_t					DstSubpass;
+		SubpassPipelineStage		SrcStageMask;
+		SubpassPipelineStage		DstStageMask;
+		SubpassAccess				SrcAccessMask;
+		SubpassAccess				DstAccessMask;
+
+		bool operator==(const RenderPassSubpassDependencySpecification& other) const
+		{
+			return SrcSubpass == other.SrcSubpass &&
+				DstSubpass == other.DstSubpass &&
+				SrcStageMask == other.SrcStageMask &&
+				DstStageMask == other.DstStageMask &&
+				SrcAccessMask == other.SrcAccessMask &&
+				DstAccessMask == other.DstAccessMask;
+		}
+	};
+
 	struct RenderPassSpecification
 	{
-		std::vector<FrameBufferTextureSpecification>	ColorRTs;
-		FrameBufferTextureSpecification					DepthStencil;
-		int												Samples = 1;
-		RenderPassOperation								Operation;
+		std::vector<FrameBufferTextureFormat>	RenderTargets;
+		FrameBufferTextureFormat				DepthStencil;
+		int										Samples = 1;
+		RenderPassOperation						Operation;
+
+		// only work for vulkan, opengl does not support subpass
+		std::vector<RenderPassSubpassSpecification>				Subpasses;
+		std::vector<RenderPassSubpassDependencySpecification>	SubpassDependencies;
 
 		bool operator==(const RenderPassSpecification& other) const
 		{
-			return ColorRTs == other.ColorRTs &&
+			return RenderTargets == other.RenderTargets &&
 				DepthStencil == other.DepthStencil &&
 				Samples == other.Samples &&
-				Operation == other.Operation;
+				Operation == other.Operation &&
+				Subpasses == other.Subpasses &&
+				SubpassDependencies == other.SubpassDependencies;
 		}
 	};
 
 	struct FrameBufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;
-		std::vector<FrameBufferTextureSpecification>	ColorRTs;
-		FrameBufferTextureSpecification					DepthStencil;
+		std::vector<FrameBufferTextureFormat>	RenderTargets;
+		FrameBufferTextureFormat				DepthStencil;
 		uint32_t Samples = 1;
 	};
 

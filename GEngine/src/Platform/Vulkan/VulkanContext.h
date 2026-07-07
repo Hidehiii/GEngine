@@ -67,6 +67,7 @@ namespace GEngine
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 		VkCommandPool				GetGraphicsCommandPool() { return m_CommandBufferPool.GetGraphicsCommandPool(); }
 		VkSemaphore					GetSemaphore();
+		uint32_t					GetSwapChainImageCount() { return m_SwapChainImages.size(); }
 	protected:
 		
 		Ref<VulkanCommandBuffer>	GetCommandBuffer(CommandBufferType type);

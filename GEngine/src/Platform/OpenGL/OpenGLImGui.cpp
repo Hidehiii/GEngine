@@ -21,7 +21,7 @@ namespace GEngine
 
 	void OpenGLImGui::OnAttach(void* window)
 	{
-		s_Spec.ColorRTs			= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		s_Spec.RenderTargets	= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
 		s_RenderPass			= RenderPass::Create(s_Spec);
 		s_FrameBuffer			= FrameBuffer::Create(s_RenderPass, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 
@@ -60,7 +60,7 @@ namespace GEngine
 	}
 	Ref<Texture2D> OpenGLImGui::GetImGuiTexture()
 	{
-		return s_FrameBuffer->GetColorRT(0);
+		return s_FrameBuffer->GetRenderTarget(0);
 	}
 	Ref<CommandBuffer> OpenGLImGui::GetCommandBuffer()
 	{

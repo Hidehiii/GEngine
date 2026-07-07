@@ -20,13 +20,15 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetColorRTCount() override { return m_ColorAttachments.size(); }
-		virtual int								GetRTCount() override { return m_DepthStencilAttachment == 0 ? m_ColorAttachments.size() : m_ColorAttachments.size() + 1; };
+		virtual int								GetRenderTargetCount() override { return m_ColorAttachments.size(); }
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
-		virtual Ref<Texture2D>					GetColorRT(int index) override;
+		virtual Ref<Texture2D>					GetRenderTarget(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
-
+	protected:
+		// for present
+		void BeginPresentRender(CommandBuffer* cmdBuffer) override;
+		void EndPresentRender(CommandBuffer* cmdBuffer) override;
 	private:
 		void CreateBuffer();
 	private:
@@ -37,8 +39,10 @@ namespace GEngine
 		std::vector<uint32_t>							m_ColorAttachments;
 		uint32_t										m_MultiSampleDepthStencilAttachment = 0;
 		std::vector<uint32_t>							m_MultiSampleColorAttachments;
-		std::vector <Ref<OpenGLTexture2D>>				m_ColorRTs;
+		std::vector <Ref<OpenGLTexture2D>>				m_RenderTargets;
 		Ref<OpenGLTexture2D>							m_DepthStencil;
+
+		friend class OpenGLCommandBuffer;
 	};
 }
 

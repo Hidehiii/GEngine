@@ -61,7 +61,7 @@ namespace GEngine
 
     OpenGLFrameBuffer::OpenGLFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
     {
-        m_Specification.ColorRTs                = renderPass->GetSpecification().ColorRTs;
+        m_Specification.RenderTargets           = renderPass->GetSpecification().RenderTargets;
         m_Specification.DepthStencil            = renderPass->GetSpecification().DepthStencil;
         m_Specification.Samples                 = renderPass->GetSpecification().Samples;
         m_Specification.Width                   = width;
@@ -91,6 +91,14 @@ namespace GEngine
             glDeleteTextures(1, &m_MultiSampleDepthStencilAttachment);
         }
     }
+    void OpenGLFrameBuffer::BeginPresentRender(CommandBuffer* cmdBuffer)
+    {
+        this->Begin(cmdBuffer);
+    }
+    void OpenGLFrameBuffer::EndPresentRender(CommandBuffer* cmdBuffer)
+    {
+		this->End(cmdBuffer);
+    }
     void OpenGLFrameBuffer::CreateBuffer()
     {
 
@@ -101,24 +109,24 @@ namespace GEngine
             glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
 
             // Attachments
-            if (m_Specification.ColorRTs.size())
+            if (m_Specification.RenderTargets.size())
             {
-                m_MultiSampleColorAttachments.resize(m_Specification.ColorRTs.size());
+                m_MultiSampleColorAttachments.resize(m_Specification.RenderTargets.size());
                 Utils::CreateTextures(m_Specification.Samples > 1, m_MultiSampleColorAttachments.data(), m_MultiSampleColorAttachments.size());
 
                 for (size_t i = 0; i < m_MultiSampleColorAttachments.size(); i++)
                 {
                     Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleColorAttachments[i]);
-					Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.ColorRTs[i].TextureFormat),
-						Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.ColorRTs[i].TextureFormat), m_Specification.Width, m_Specification.Height, i);
+					Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.RenderTargets[i]),
+						Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.RenderTargets[i]), m_Specification.Width, m_Specification.Height, i);
                 }
             }
 
-            if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+            if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
             {
                 Utils::CreateTextures(m_Specification.Samples > 1, &m_MultiSampleDepthStencilAttachment, 1);
                 Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleDepthStencilAttachment);
-                switch (m_Specification.DepthStencil.TextureFormat)
+                switch (m_Specification.DepthStencil)
                 {
                 case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
                 {
@@ -155,27 +163,27 @@ namespace GEngine
         glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
 
         // Attachments
-        if (m_Specification.ColorRTs.size())
+        if (m_Specification.RenderTargets.size())
         {
-            m_ColorAttachments.resize(m_Specification.ColorRTs.size());
+            m_ColorAttachments.resize(m_Specification.RenderTargets.size());
             Utils::CreateTextures(false, m_ColorAttachments.data(), m_ColorAttachments.size());
 
             for (size_t i = 0; i < m_ColorAttachments.size(); i++)
             {
                 Utils::BindTexture(false, m_ColorAttachments[i]);
-                Utils::AttachColorTexture(m_ColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.ColorRTs[i].TextureFormat), 
-                    Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.ColorRTs[i].TextureFormat), m_Specification.Width, m_Specification.Height, i);
+                Utils::AttachColorTexture(m_ColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.RenderTargets[i]),
+                    Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.RenderTargets[i]), m_Specification.Width, m_Specification.Height, i);
 
                 Ref<OpenGLTexture2D> texture = CreateRef<OpenGLTexture2D>(m_ColorAttachments[i]);
-                m_ColorRTs.push_back(texture);
+                m_RenderTargets.push_back(texture);
             }
         }
 
-        if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+        if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
         {
             Utils::CreateTextures(false, &m_DepthStencilAttachment, 1);
             Utils::BindTexture(false, m_DepthStencilAttachment);
-            switch (m_Specification.DepthStencil.TextureFormat)
+            switch (m_Specification.DepthStencil)
             {
                 case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
                 {
@@ -249,14 +257,15 @@ namespace GEngine
         spec.Operation  = op;
         m_RenderPass    = std::dynamic_pointer_cast<OpenGLRenderPass>(RenderPass::Create(spec));
     }
-    Ref<Texture2D> OpenGLFrameBuffer::GetColorRT(int index)
+    Ref<Texture2D> OpenGLFrameBuffer::GetRenderTarget(int index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
-        return m_ColorRTs.at(index);
+        return m_RenderTargets.at(index);
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetDepthStencil()
     {
         GE_CORE_ASSERT(m_DepthStencilAttachment != 0, "No depth frame buffer");
         return m_DepthStencil;
     }
+
 }

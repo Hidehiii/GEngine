@@ -29,9 +29,8 @@ namespace GEngine
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float							GetHeight() const { return (float)GetSpecification().Height; }
 		virtual uint32_t						GetSamples() const { return GetSpecification().Samples; }
-		virtual int								GetRTCount() = 0;
-		virtual int								GetColorRTCount() = 0;
-		virtual Ref<Texture2D>					GetColorRT(int index) = 0;
+		virtual int								GetRenderTargetCount() = 0;
+		virtual Ref<Texture2D>					GetRenderTarget(int index) = 0;
 		virtual Ref<Texture2D>					GetDepthStencil() = 0;
 		virtual Ref<RenderPass>					GetRenderPass() = 0;
 
@@ -40,11 +39,11 @@ namespace GEngine
 		static Ref<FrameBuffer>	Create(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height);
 		static Ref<FrameBuffer>	Create(const Ref<FrameBuffer>& buffer, Vector2 size);
 		operator bool() const { return this != nullptr; }
-
+	protected:
+		virtual void BeginPresentRender(CommandBuffer* cmdBuffer) = 0;
+		virtual void EndPresentRender(CommandBuffer* cmdBuffer) = 0;
 	protected:
 		FrameBufferSpecification						m_Specification;
-
-		friend class Renderer;
 	};
 
 	namespace Utils

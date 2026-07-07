@@ -78,16 +78,15 @@ namespace GEngine
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
 		vkResetCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), 0);
 		VK_CHECK_RESULT(vkBeginCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), &beginInfo));
-		s_CommandBuffers.at(Graphics::GetFrame())->Begin(std::static_pointer_cast<FrameBuffer>(VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)));
+		std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)));
 	}
 	void VulkanGraphicsPresent::End()
 	{
-		VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)->End(s_CommandBuffers.at(Graphics::GetFrame()).get());
+		std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->EndPresentRender();
 
 		Ref<VulkanCommandBuffer> cmd = std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()));
 
-		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer();
-		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+		VkCommandBuffer commandBuffer = cmd->GetCommandBuffer();
 		std::vector<VkSemaphore> submitWaitSemaphores = cmd->GetWaitSemaphores();
 		std::vector<VkPipelineStageFlags> waitStages(submitWaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkSemaphore s = VulkanContext::Get()->GetSemaphore();

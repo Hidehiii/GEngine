@@ -26,15 +26,18 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetColorRTCount() override { return m_ColorImages.size(); }
-		virtual int								GetRTCount() override { return m_Attachments.size(); }
-		virtual Ref<Texture2D>					GetColorRT(int index) override;
+		virtual int								GetRenderTargetCount() override { return m_ColorImages.size(); }
+		virtual Ref<Texture2D>					GetRenderTarget(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual	Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
 		VkFramebuffer	GetVulkanFrameBuffer() { return m_FrameBuffer; }
 		VkRenderPass	GetVulkanRenderPass() { return m_RenderPass->GetRenderPass(); }
+	protected:
+		// for present
+		void BeginPresentRender(CommandBuffer* cmdBuffer) override;
+		void EndPresentRender(CommandBuffer* cmdBuffer) override;
 	public:
 		//用于给交换链创建使用
 		static Ref<VulkanFrameBuffer> CreateForSwapChain(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec);
@@ -50,8 +53,10 @@ namespace GEngine
 		std::vector<VkImage>		m_DepthStencilImages;
 		std::vector<VkDeviceMemory> m_DepthStencilImagesMemory;
 
-		std::vector<Ref<VulkanTexture2D>>	m_ColorRTs;
+		std::vector<Ref<VulkanTexture2D>>	m_RenderTargets;
 		Ref<VulkanTexture2D>				m_DepthStencil = nullptr;
+
+		friend class VulkanCommandBuffer;
 	};
 }
 

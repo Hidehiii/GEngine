@@ -17,6 +17,7 @@ namespace GEngine
 		virtual void OnEvent(Event& e) override;
 	private:
 		Ref<GraphicsPipeline> m_TrianglePipeline;
+		Ref<GraphicsPipeline> m_QuadPipeline;
 	};
 }
 

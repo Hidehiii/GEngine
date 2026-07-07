@@ -35,12 +35,12 @@ namespace GEngine
 
 	void D3D12GraphicsPresent::Begin()
 	{
-		D3D12Context::Get()->GetRenderTarget(m_FrameIndex)->BeginPresentRender(s_CommandBuffers.at(m_FrameIndex).get());
+		std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(D3D12Context::Get()->GetRenderTarget(m_FrameIndex)));
 	}
 
 	void D3D12GraphicsPresent::End()
 	{
-		D3D12Context::Get()->GetRenderTarget(m_FrameIndex)->EndPresentRender(s_CommandBuffers.at(m_FrameIndex).get());
+		std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex))->EndPresentRender();
 		if (D3D12Context::Get()->IsVSync())
 		{
 			UINT syncInterval = 1; // Enable VSync

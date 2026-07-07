@@ -15,6 +15,22 @@ namespace GEngine
 	{
 		return CreateRef<OpenGLCommandBuffer>(type);
 	}
+	void OpenGLCommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
+	{
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
+		{
+			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
+			m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
+			m_FrameBuffer->BeginPresentRender(this);
+		}
+	}
+	void OpenGLCommandBuffer::EndPresentRender()
+	{
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
+		{
+			m_FrameBuffer->EndPresentRender(this);
+		}
+	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
 		

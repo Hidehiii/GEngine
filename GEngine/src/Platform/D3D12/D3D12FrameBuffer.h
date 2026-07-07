@@ -8,7 +8,7 @@ namespace GEngine
 {
 	struct FrameBufferSpecificationForD3D12
 	{
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		ColorRTs;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		RenderTargets;
 		uint32_t												Width;
 		uint32_t												Height;
 	};
@@ -27,16 +27,15 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetColorRTCount() override { return m_ColorRenderTargets.size(); }
-		virtual int								GetRTCount() override { return m_DepthStencilRenderTarget == nullptr ? m_ColorRenderTargets.size() : m_ColorRenderTargets.size() + 1; };
+		virtual int								GetRenderTargetCount() override { return m_RenderTargetResources.size(); }
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
-		virtual Ref<Texture2D>					GetColorRT(int index) override;
+		virtual Ref<Texture2D>					GetRenderTarget(int index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
-
+	protected:
 		// for present
-		void BeginPresentRender(CommandBuffer* cmdBuffer);
-		void EndPresentRender(CommandBuffer* cmdBuffer);
+		void BeginPresentRender(CommandBuffer* cmdBuffer) override;
+		void EndPresentRender(CommandBuffer* cmdBuffer) override;
 
 	private:
 		void CreateResources();
@@ -45,13 +44,15 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleRtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DsvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleDsvHeap;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_ColorRenderTargets;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_MultiSampleColorRenderTargets;
-		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilRenderTarget = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource>					m_MultiSampleDepthStencilRenderTarget = nullptr;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_RenderTargetResources;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_MultiSampleRenderTargetResources;
+		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilResource = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource>					m_MultiSampleDepthStencilResource = nullptr;
 		Ref<D3D12RenderPass>									m_RenderPass;
-		std::vector<Ref<D3D12Texture2D>>						m_ColorRTs;
+		std::vector<Ref<D3D12Texture2D>>						m_RenderTargets;
 		Ref<D3D12Texture2D>										m_DepthStencil = nullptr;
+
+		friend class D3D12CommandBuffer;
 	};
 
 }

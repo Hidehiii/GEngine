@@ -68,6 +68,8 @@ namespace GEngine
 
 		virtual void Render(Ref<GraphicsPipeline>&pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
+		virtual void SwitchToNextSubpass() override;
+
 		virtual void Compute(Ref<ComputePipeline>&pipeline, int pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type);
@@ -82,11 +84,16 @@ namespace GEngine
 
 		const std::vector<VkSemaphore>& GetSignalSemaphores() const { return m_SignalSemaphores; }
 		const std::vector<VkSemaphore>& GetWaitSemaphores() const { return m_WaitSemaphores; }
+	protected:
+		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) override;
+		virtual void EndPresentRender() override;
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
 		std::vector<VkSemaphore>	m_WaitSemaphores;
 		std::vector<VkSemaphore>	m_SignalSemaphores;
+
+		friend class VulkanGraphicsPresent;
 	};
 }
 

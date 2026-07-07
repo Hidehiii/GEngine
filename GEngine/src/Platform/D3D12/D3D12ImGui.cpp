@@ -25,7 +25,7 @@ namespace GEngine
 	}
 	void D3D12ImGui::OnAttach(void* window)
 	{
-		s_Spec.ColorRTs						= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		s_Spec.RenderTargets				= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
 		s_Spec.DepthStencil					= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 		s_Spec.Samples						= 1;
 		s_Spec.Operation.ColorBegin			= RENDER_PASS_BEGINE_OP_CLEAR;
@@ -100,7 +100,7 @@ namespace GEngine
 	}
 	Ref<Texture2D> D3D12ImGui::GetImGuiTexture()
 	{
-		return s_RenderTarget->GetColorRT(0);
+		return s_RenderTarget->GetRenderTarget(0);
 	}
 	Ref<CommandBuffer> D3D12ImGui::GetCommandBuffer()
 	{

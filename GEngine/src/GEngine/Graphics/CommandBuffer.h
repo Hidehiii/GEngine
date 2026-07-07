@@ -18,6 +18,8 @@ namespace GEngine
 		virtual ~CommandBuffer() = default;
 
 		virtual void Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
+		// only for vulkan for now
+		virtual void SwitchToNextSubpass() = 0;
 
 		virtual void Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z) = 0;
 
@@ -26,6 +28,9 @@ namespace GEngine
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+	protected:
+		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) = 0;
+		virtual void EndPresentRender() = 0;
 	protected:
 		CommandBufferType				m_Type = COMMAND_BUFFER_TYPE_NONE;
 	};

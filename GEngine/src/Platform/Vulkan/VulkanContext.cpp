@@ -728,6 +728,7 @@ namespace GEngine
     {
         vkDeviceWaitIdle(m_Device);
         m_SwapChainFrameBuffers.clear();
+        // swap chain image will be destroyed 
 		for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);

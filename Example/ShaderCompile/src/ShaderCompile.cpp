@@ -15,8 +15,16 @@ namespace GEngine
 			 0.5f, -0.5f, 0.0f,
 			 0.0f,  0.5f, 0.0f
 		};
-		uint32_t triangleIndices[] = {
-			0, 1, 2
+
+		float quadPos[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
+			-0.5f,  0.5f, 0.0f
+		};
+		uint32_t quadIndices[] = {
+			0, 1, 2,
+			2, 3, 0
 		};
 
 		m_TrianglePipeline = GraphicsPipeline::Create(
@@ -24,8 +32,11 @@ namespace GEngine
 			VertexBuffer::Create(trianglePos, sizeof(float) * _countof(trianglePos))
 		);
 
-		//m_TrianglePipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(triangleIndices, _countof(triangleIndices)));
-		//m_TrianglePipeline->GetVertexBuffer()->SetVertexData(trianglePos, sizeof(float) * _countof(trianglePos));
+		m_QuadPipeline = GraphicsPipeline::Create(
+			material,
+			VertexBuffer::Create(quadPos, sizeof(float) * _countof(quadPos))
+		);
+		m_QuadPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(quadIndices, _countof(quadIndices)));
 
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color", Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 		m_TrianglePipeline->GetMaterial()->SetConstant<Vector4>("_Color1", Vector4(0.0f, 0.5f, 0.0f, 1.0f));

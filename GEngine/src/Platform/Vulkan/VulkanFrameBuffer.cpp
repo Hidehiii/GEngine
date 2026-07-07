@@ -10,7 +10,7 @@ namespace GEngine
 
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
-		m_Specification.ColorRTs				= renderPass->GetSpecification().ColorRTs;
+		m_Specification.RenderTargets			= renderPass->GetSpecification().RenderTargets;
 		m_Specification.DepthStencil			= renderPass->GetSpecification().DepthStencil;
 		m_Specification.Samples					= renderPass->GetSpecification().Samples;
 		m_Specification.Width					= width;
@@ -36,6 +36,11 @@ namespace GEngine
 		m_Specification.Width					= spec.Width;
 		m_Specification.Height					= spec.Height;
 		m_Specification.Samples					= renderpassSpec.Samples;
+		// restore the count of render targets to the specification, 
+		// because the spec is only used to create the framebuffer, 
+		// and the render targets are not used to create the framebuffer, 
+		// so we need to restore the count of render targets to the specification.
+		m_Specification.RenderTargets			= std::vector<FrameBufferTextureFormat>(renderpassSpec.ColorAttachmentsFormat.size(), FRAME_BUFFER_TEXTURE_FORMAT_NONE);
 
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
@@ -181,9 +186,9 @@ namespace GEngine
 	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
 		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
-		for (int i = 0; i < m_ColorRTs.size(); i++)
+		for (int i = 0; i < m_RenderTargets.size(); i++)
 		{
-			m_ColorRTs.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			m_RenderTargets.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 		if (m_DepthStencil)
 		{
@@ -211,24 +216,71 @@ namespace GEngine
 		renderPassInfo.pClearValues				= clearValues.data();
 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
-	void VulkanFrameBuffer::End(CommandBuffer* cmdBuffer)
+	void VulkanFrameBuffer::BeginPresentRender(CommandBuffer* cmdBuffer)
+	{
+		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
+		for (int i = 0; i < m_RenderTargets.size(); i++)
+		{
+			m_RenderTargets.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		}
+		if (m_DepthStencil)
+		{
+			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}
+
+		VkRenderPassBeginInfo					renderPassInfo{};
+		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
+		renderPassInfo.framebuffer				= m_FrameBuffer;
+		renderPassInfo.renderArea.offset		= { 0, 0 };
+		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
+		renderPassInfo.renderArea.extent.height	= m_Specification.Height;
+
+		Vector4									setClearColor = VulkanContext::Get()->GetClearColor();
+		VkClearValue							clearColor = {};
+		clearColor.color = { { setClearColor.r, setClearColor.g, setClearColor.b, setClearColor.a} };
+
+		std::vector<VkClearValue>				clearValues(VulkanContext::Get()->GetSwapChainImageCount(), clearColor);
+		if (m_DepthStencilImages.size() > 0)
+		{
+			clearValues.push_back({ Graphics::IsReverseDepth() ? 0 : 1.0f, 0 });
+		}
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	}
+	void VulkanFrameBuffer::EndPresentRender(CommandBuffer* cmdBuffer)
 	{
 		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
 		vkCmdEndRenderPass(cmd);
 
-		for (int i = 0; i < m_ColorRTs.size(); i++)
+		for (int i = 0; i < m_RenderTargets.size(); i++)
 		{
-			m_ColorRTs.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			m_RenderTargets.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		if (m_DepthStencil)
 		{
 			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 	}
-	Ref<Texture2D> VulkanFrameBuffer::GetColorRT(int index)
+	void VulkanFrameBuffer::End(CommandBuffer* cmdBuffer)
 	{
-		GE_CORE_ASSERT(index < m_ColorRTs.size(), "index out of range");
-		Ref<VulkanTexture2D> texture = m_ColorRTs.at(index);
+		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
+		vkCmdEndRenderPass(cmd);
+
+		for (int i = 0; i < m_RenderTargets.size(); i++)
+		{
+			m_RenderTargets.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		if (m_DepthStencil)
+		{
+			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+	}
+	Ref<Texture2D> VulkanFrameBuffer::GetRenderTarget(int index)
+	{
+		GE_CORE_ASSERT(index < m_RenderTargets.size(), "index out of range");
+		Ref<VulkanTexture2D> texture = m_RenderTargets.at(index);
 		return texture;
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencil()
@@ -247,7 +299,7 @@ namespace GEngine
 		// the original images will be placed in the end of the attachments vector
 		// the resolved images will be placed in the beginning of the attachments vector
 		// and get render target will return the resolved images
-		m_ColorRTs.clear();
+		m_RenderTargets.clear();
 
 		m_Attachments.clear();
 
@@ -263,9 +315,9 @@ namespace GEngine
 		VkFormat 					imageFormat;
 		VkFlags						depthAspectFlag;
 		// create color attachments
-		for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
+		for (int i = 0; i < m_Specification.RenderTargets.size(); i++)
 		{
-			imageFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.ColorRTs.at(i).TextureFormat);
+			imageFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.RenderTargets.at(i));
 			Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 				VulkanContext::Get()->GetDevice(),
 				m_Specification.Width,
@@ -288,12 +340,12 @@ namespace GEngine
 			m_ColorImagesMemory.push_back(imageMemory);
 
 			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
-			m_ColorRTs.push_back(texture);
+			m_RenderTargets.push_back(texture);
 		}
 		// create depth attachment
-		if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
-			switch (m_Specification.DepthStencil.TextureFormat)
+			switch (m_Specification.DepthStencil)
 			{
 			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 			{
@@ -335,11 +387,11 @@ namespace GEngine
 			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
 		}
 		// multi samples
-		// create multi sampled color attachments
+		// create multi sampled attachments
 		if (m_Specification.Samples > 1)
 		{
 			// create multi sample color attachments
-			for (int i = 0; i < m_Specification.ColorRTs.size(); i++)
+			for (int i = 0; i < m_Specification.RenderTargets.size(); i++)
 			{
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
@@ -363,9 +415,9 @@ namespace GEngine
 				m_ColorImagesMemory.push_back(imageMemory);
 			}
 			// create multi sample depth attachment
-			if (m_Specification.DepthStencil.TextureFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+			if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 			{
-				switch (m_Specification.DepthStencil.TextureFormat)
+				switch (m_Specification.DepthStencil)
 				{
 				case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				{

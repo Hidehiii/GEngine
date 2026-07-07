@@ -17,6 +17,8 @@ namespace GEngine
 
 		virtual void Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
 
+		virtual void SwitchToNextSubpass() override { GE_CORE_ASSERT(false, "This command is only for vulkan!"); }
+
 		virtual void Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	GetCommandList() { return m_CommandList; }
@@ -30,15 +32,17 @@ namespace GEngine
 
 		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetSignalFences() const { return m_SignalFences; }
 		const std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>& GetWaitFences() const { return m_WaitFences; }
-
-		void BeginPresentRender();
-		void EndPresentRender();
+	protected:
+		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) override;
+		virtual void EndPresentRender() override;
 	private:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;
 		Ref<D3D12FrameBuffer>													m_FrameBuffer;
 		std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>	m_SignalFences;
 		std::vector<std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>>	m_WaitFences;
+
+		friend class D3D12GraphicsPresent;
 	};
 
 	class GENGINE_API D3D12CommandPool

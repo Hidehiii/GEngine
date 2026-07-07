@@ -198,12 +198,17 @@ namespace GEngine
     void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
     {
     }
-    void D3D12CommandBuffer::BeginPresentRender()
+    void D3D12CommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
     {
+		GE_CORE_ASSERT(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS, "Present render must be graphics command buffer");
         D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+
+		m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
+        m_FrameBuffer->BeginPresentRender(this);
     }
     void D3D12CommandBuffer::EndPresentRender()
     {
+		m_FrameBuffer->EndPresentRender(this);
         D3D12_THROW_IF_FAILED(m_CommandList->Close());
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetGraphicsQueue();

@@ -222,7 +222,32 @@ namespace GEngine
 			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
 			m_FrameBuffer->Begin(this);
 		}
+	}
+	void VulkanCommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
+	{
+		VkCommandBufferBeginInfo    beginInfo{};
+		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags				= 0; // Optional
+		beginInfo.pInheritanceInfo	= nullptr; // Optional
 
+		vkResetCommandBuffer(m_CommandBuffer, 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+
+
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
+		{
+			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
+			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
+			m_FrameBuffer->BeginPresentRender(this);
+		}
+	}
+	void VulkanCommandBuffer::EndPresentRender()
+	{
+		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
+		{
+			m_FrameBuffer->EndPresentRender(this);
+		}
+		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
 	}
 	void VulkanCommandBuffer::Begin()
 	{
@@ -280,6 +305,11 @@ namespace GEngine
 	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		std::static_pointer_cast<VulkanGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, pass, instanceCount, indexCount);
+	}
+	void VulkanCommandBuffer::SwitchToNextSubpass()
+	{
+		GE_CORE_ASSERT(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS, "SwitchToNextSubpass is only for graphics command buffer");
+		vkCmdNextSubpass(m_CommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 	}
 	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
 	{
