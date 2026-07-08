@@ -605,10 +605,14 @@ namespace GEngine
 		reflectionData.Size		= reflectionDxil.size();
 		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
 
+		D3D12_SHADER_DESC desc;
+		reflection->GetDesc(&desc);
+
 		//reflectionOutput
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
 		uint32_t vertexInputOffset = 0;
+		GE_CORE_ASSERT(resources.stage_inputs.size() == desc.InputParameters, "SPIR-V stage inputs count does not match DXIL input parameters count!");
 		for (int i = 0; i < resources.stage_inputs.size(); i++)
 		{
 			auto& var_type = compiler.get_type(resources.stage_inputs[i].type_id);
@@ -631,7 +635,18 @@ namespace GEngine
 			if (target == SHADER_STAGE_VERTEX)
 				reflectionOutput.VertexInputs.push_back(inputInfo);
 		}
+		GE_CORE_ASSERT(resources.uniform_buffers.size() == desc.ConstantBuffers, "SPIR-V uniform buffers count does not match DXIL constant buffers count!");
 		GE_CORE_INFO("Uniform buffers:");
+		for (int i = 0; i < resources.uniform_buffers.size(); i++)
+		{
+			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
+			D3D12_SHADER_BUFFER_DESC bufferDesc;
+
+			hr = constantBuffer->GetDesc(&bufferDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader constant buffer desc!");
+
+			GE_CORE_TRACE("  Constant buffer name: {}, variables: {}, size: {}", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
+		}
 		for (const auto& uniformBuffer : resources.uniform_buffers)
 		{
 			auto& type = compiler.get_type(uniformBuffer.type_id);
