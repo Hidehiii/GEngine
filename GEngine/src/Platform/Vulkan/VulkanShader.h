@@ -14,11 +14,19 @@ namespace GEngine
 
 		const VkShaderModule&									GetShaderModule(const std::string& stage, const int& pass) { return m_ShaderModules.at(pass)[stage]; }
 		const std::unordered_map<std::string, VkShaderModule>&	GetShaderModules(const int& pass) { return m_ShaderModules.at(pass); }
+
+		const VkDescriptorSetLayout*							GetDescriptorSetLayout(const int& pass) const { return &m_DescriptorSetLayouts.at(pass); }
 	private:
+		void CreateShaderModules(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders);
+		void CreateDescriptorSetLayouts();
+		void CreatePipelineLayouts();
+
 		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) override; // pass { stage : byte}
 	private:
 
 		std::vector<std::unordered_map<std::string, VkShaderModule>>	m_ShaderModules; // pass { stage : module} 
+		std::vector<VkDescriptorSetLayout>								m_DescriptorSetLayouts;
+		std::vector<VkPipelineLayout>									m_PipelineLayouts;
 	};
 }
 

@@ -58,6 +58,7 @@ namespace GEngine
 		VkSamplerAddressMode	SamplerAddressModeToVkSamplerAddressMode(SamplerAddressMode mode);
 		VkSamplerMipmapMode		SamplerFilterToVkSamplerMipmapMode(SamplerFilter filter);
 		VkFormat				ShaderInputDataToVulkanFormat(ShaderInputDataType type);
+		VkDescriptorType		ShaderPropertyTypeToVkDescriptorType(ShaderPropertyType type);
 	}
 	
 }

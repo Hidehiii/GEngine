@@ -701,7 +701,7 @@ namespace GEngine
     }
 	void VulkanContext::CreateDescriptor()
 	{
-        m_Descriptor            = VulkanDescriptor(1000, 100);
+        m_Descriptor            = VulkanDescriptor(10000, 10000);
 	}
 
     void VulkanContext::CreateSyncObjects()

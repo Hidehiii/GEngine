@@ -54,7 +54,6 @@ namespace GEngine
 			//VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT
 		};
 		
-		VkPipelineLayout									m_PipelineLayout;
 		std::vector<VulkanGraphicsPipelineInfo>				m_GraphicsPipelines;
 		VkPipelineCache										m_PipelineCache;
 		bool												m_RecreatePipeline = false;

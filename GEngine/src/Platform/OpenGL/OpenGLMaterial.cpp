@@ -7,8 +7,8 @@ namespace GEngine
 	OpenGLMaterial::OpenGLMaterial(const Ref<Shader>& shader, const std::string& name)
 	{
 		m_Shader = std::dynamic_pointer_cast<OpenGLShader>(shader);
-		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
+		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
 		m_UniformBuffers.clear();

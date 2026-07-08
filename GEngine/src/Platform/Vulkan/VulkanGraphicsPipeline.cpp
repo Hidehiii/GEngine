@@ -33,7 +33,6 @@ namespace GEngine
 			{
 				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
 			}
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
         
     }
@@ -51,7 +50,6 @@ namespace GEngine
 			{
 				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
 			}
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 			m_RecreatePipeline = false;
 			m_GraphicsPipelines.clear();
 		}
@@ -78,7 +76,7 @@ namespace GEngine
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = m_Material->GetDynamicOffsets(pass);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
-			m_PipelineLayout, 0, 1, 
+			m_Material->GetPipelineLayout(pass), 0, 1,
 			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),
 			offsets.size(), offsets.data());
 	}
@@ -292,14 +290,7 @@ namespace GEngine
 		ColorBlending.blendConstants[2]						= 0.0f;
 		ColorBlending.blendConstants[3]						= 0.0f;
 
-		VkPipelineLayoutCreateInfo					pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount			= 1;
-		pipelineLayoutInfo.pSetLayouts				= m_Material->GetDescriptorSetLayout(pass);
-		pipelineLayoutInfo.pushConstantRangeCount	= 0;
-		pipelineLayoutInfo.pPushConstantRanges		= nullptr;
-
-		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::Get()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
+		
 
 		VkPipelineDepthStencilStateCreateInfo	depthStencil{};
 		depthStencil.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -325,7 +316,7 @@ namespace GEngine
 		pipelineInfo.pDepthStencilState		= &depthStencil;
 		pipelineInfo.pColorBlendState		= &ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
-		pipelineInfo.layout					= m_PipelineLayout;
+		pipelineInfo.layout					= m_Material->GetPipelineLayout(pass);
 		pipelineInfo.renderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional

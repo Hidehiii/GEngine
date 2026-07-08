@@ -18,11 +18,11 @@ namespace GEngine
 		m_Height = height;
 		if (channels == 4)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM;
 		}
 		if (m_GenerateMipmap)
 		{
@@ -82,7 +82,10 @@ namespace GEngine
 	}
 	void D3D12Texture2D::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
 	{
-		GE_CORE_ASSERT(false, "");
+		m_SRVDesc.Format					= Utils::RenderImage2DFormatToDXGIFormat(m_Format);
+		m_SRVDesc.ViewDimension				= D3D12_SRV_DIMENSION_TEXTURE2D;
+		m_SRVDesc.Shader4ComponentMapping	= D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		m_SRVDesc.Texture2D.MipLevels		= m_MipLevels;
 	}
 	void D3D12Texture2D::SetData(const void* data, uint32_t size)
 	{

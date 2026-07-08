@@ -14,8 +14,8 @@ namespace GEngine
 	VulkanMaterial::VulkanMaterial(const Ref<Shader>& shader, const std::string& name)
 	{
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
-		m_Name = name.empty() ? "New Material" : name;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
+		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
 		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
 		m_UniformBuffers.clear();
@@ -33,7 +33,9 @@ namespace GEngine
 			m_UniformBuffers.push_back(ubuffers);
 		}
 
-		CreateDescriptorSetAndLayout();
+		CreateDescriptorAndLayout();
+
+		m_NeedUpdateDescripotrSetFrames = std::vector<uint8_t>(std::pow(2, Graphics::GetFrameCount()) - 1, m_Passes.size());
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
@@ -112,14 +114,11 @@ namespace GEngine
 		}
 
 		// 按需更新？
-		if (m_NeedUpdateDescripotrSetFrames & (uint8_t)(std::pow(2, Graphics::GetFrame())))
+		if (m_NeedUpdateDescripotrSetFrames[pass] & (uint8_t)(std::pow(2, Graphics::GetFrame())))
 		{
 			UpdateDescriptorSet(pass, Graphics::GetFrame());
-			m_NeedUpdateDescripotrSetFrames -= (uint8_t)std::pow(2, Graphics::GetFrame());
+			m_NeedUpdateDescripotrSetFrames[pass] -= (uint8_t)std::pow(2, Graphics::GetFrame());
 		}
-
-
-		//UpdateDescriptorSet(pass, Graphics::GetFrame());
 	}
 
 	Buffer VulkanMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
@@ -146,122 +145,25 @@ namespace GEngine
 		return std::vector<uint32_t>();
 	}
 
-	void VulkanMaterial::CreateDescriptorSetAndLayout()
+	void VulkanMaterial::CreateDescriptorAndLayout()
 	{
-		m_DescriptorSetLayouts.resize(m_Passes.size());
+		
 		m_DescriptorSets.resize(m_Passes.size() * Graphics::GetFrameCount());
 		for (int pass = 0; pass < m_Passes.size(); pass++)
 		{
-			std::vector<VkDescriptorSetLayoutBinding>	layoutBindings;
-
-			// 材质ubo
-			for(auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
-			{
-				VkDescriptorSetLayoutBinding		layoutBinding{};
-				layoutBinding.binding				= bindPoint;
-				layoutBinding.descriptorType		= ubo->GetDescriptorType();
-				layoutBinding.descriptorCount		= 1;
-				layoutBinding.pImmutableSamplers	= nullptr;
-				layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
-
-				layoutBindings.push_back(layoutBinding);
-			}
-
-			for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
-			{
-				auto type = m_Shader->GetPropertyType(name);
-				VkDescriptorSetLayoutBinding		layoutBinding{};
-				layoutBinding.binding				= prop.Location;
-				layoutBinding.descriptorCount		= 1;
-				layoutBinding.pImmutableSamplers	= nullptr;
-				layoutBinding.stageFlags			= VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
-				switch (type)
-				{
-				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY:
-				{
-					GE_CORE_ASSERT(false, "");
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_SAMPLER:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_TEXTURE_2D:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
-				{
-					GE_CORE_ASSERT(false, "");
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:
-				{
-					GE_CORE_ASSERT(false, "");
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				case SHADER_PROPERTY_TYPE_STORAGE_BUFFER:
-				{
-					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-
-					layoutBindings.push_back(layoutBinding);
-					break;
-				}
-				default:
-					break;
-				}
-			}
-
-			// 每个pass都有自己的layout
-			VkDescriptorSetLayoutCreateInfo layoutInfo{};
-			layoutInfo.sType				= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			layoutInfo.bindingCount			= static_cast<uint32_t>(layoutBindings.size());
-			layoutInfo.pBindings			= layoutBindings.data();
-
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::Get()->GetDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayouts[pass]));
-
 			// 只用一个set，需要兼容gl没有set的概念
 			// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
 			VkDescriptorSetAllocateInfo		allocInfo{};
 			allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool		= VulkanContext::Get()->GetDescriptorPool();
 			allocInfo.descriptorSetCount	= 1;
-			allocInfo.pSetLayouts			= &m_DescriptorSetLayouts.at(pass);
+			allocInfo.pSetLayouts			= m_Shader->GetDescriptorSetLayout(pass);
 
 			for (int i = 0; i < Graphics::GetFrameCount(); i++)
 			{
 				VK_CHECK_RESULT(vkAllocateDescriptorSets(VulkanContext::Get()->GetDevice(), &allocInfo, &m_DescriptorSets[pass * Graphics::GetFrameCount() + i]));
 			}
 		}
-
-		
 	}
 	void VulkanMaterial::UpdateDescriptorSet(const int& pass, const int& index)
 	{

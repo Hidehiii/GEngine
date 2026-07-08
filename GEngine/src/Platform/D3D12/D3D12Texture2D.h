@@ -31,6 +31,7 @@ namespace GEngine
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>	m_Texture;
 		D3D12_RESOURCE_STATES					m_State = D3D12_RESOURCE_STATE_COPY_DEST;
+		D3D12_SHADER_RESOURCE_VIEW_DESC			m_SRVDesc{};
 	};
 }
 

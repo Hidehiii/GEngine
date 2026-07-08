@@ -152,5 +152,19 @@ namespace GEngine
 			}
 			return DXGI_FORMAT();
 		}
+		DXGI_FORMAT RenderImage2DFormatToDXGIFormat(RenderImage2DFormat format)
+		{
+			switch (format)
+			{
+			case RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case RENDER_IMAGE_2D_FORMAT_RGBA8_SNORM: return DXGI_FORMAT_R8G8B8A8_SNORM;
+			case RENDER_IMAGE_2D_FORMAT_RGB8_UNORM: GE_CORE_ASSERT(false, "dx12 unsupport!");
+			case RENDER_IMAGE_2D_FORMAT_RGB8_SNORM: GE_CORE_ASSERT(false, "dx12 unsupport!");
+			default:
+				GE_CORE_ASSERT(false, "Unknown RenderImage2DFormat!");
+				break;
+			}
+			return DXGI_FORMAT();
+		}
 	}
 }
