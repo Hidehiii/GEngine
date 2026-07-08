@@ -94,9 +94,9 @@ namespace GEngine
 	{
 		return s_GraphicsAPI->GetComputeCommandBuffer();
 	}
-	uint32_t Graphics::GetMaxTextureSize()
+	uint32_t Graphics::GetMaxTexture2DSize()
 	{
-		return s_GraphicsAPI->GetMaxTextureSize();
+		return s_GraphicsAPI->GetMaxTexture2DSize();
 	}
 	uint32_t Graphics::GetMaxCombinedTextureCount()
 	{

@@ -11,8 +11,8 @@ namespace GEngine
 	{
 	public:
 		D3D12Texture2D(const std::string& path);
-		D3D12Texture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
-		D3D12Texture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8F);
+		D3D12Texture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		D3D12Texture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 		D3D12Texture2D(Microsoft::WRL::ComPtr<ID3D12Resource>& texture, D3D12_RESOURCE_STATES state);
 		virtual ~D3D12Texture2D();
 

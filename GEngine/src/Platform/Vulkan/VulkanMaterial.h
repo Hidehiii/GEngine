@@ -19,9 +19,7 @@ namespace GEngine
 		virtual std::vector<uint32_t> GetDynamicOffsets(const int& pass);
 
 		std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>	GetUniformBuffer(const int& pass)					{ return m_UniformBuffers.at(pass); }
-		VkDescriptorSetLayout*									GetDescriptorSetLayout(const int& pass)				{ return &m_DescriptorSetLayouts.at(pass); }
 		VkDescriptorSet*										GetDescriptorSet(const int& pass, const int& index) { return &m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index); }
-		VkPipelineLayout&										GetPipelineLayout(const int& pass)					{ return m_PipelineLayouts.at(pass); }
 	protected:
 		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
 
@@ -34,9 +32,7 @@ namespace GEngine
 		Ref<VulkanShader>														m_Shader;
 		std::vector<std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>>		m_UniformBuffers; // pass { bind point : buffer }
 		std::vector<std::vector<uint32_t>>										m_DynamicUniformBufferOffsets; // pass { offsets }
-		
 		std::vector<VkDescriptorSet>											m_DescriptorSets;
-		
 		std::vector<uint8_t>													m_NeedUpdateDescripotrSetFrames;
 
 		friend class VulkanGraphicsPipeline;

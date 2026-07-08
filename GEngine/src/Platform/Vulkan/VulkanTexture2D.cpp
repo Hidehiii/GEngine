@@ -22,11 +22,11 @@ namespace GEngine
         m_Height        = height;
         if (channels == 4)
         {
-            m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
+            m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
         }
         else
         {
-            m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F; // 大多数显卡vulkan 不支持这个格式
+            m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM; // 大多数显卡vulkan 不支持这个格式
         }
         if (m_GenerateMipmap)
         {

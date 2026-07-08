@@ -25,7 +25,7 @@ namespace GEngine
 		static Ref<CommandBuffer>	GetGraphicsCommandBuffer();
 		static Ref<CommandBuffer>	GetComputeCommandBuffer();
 
-		static uint32_t GetMaxTextureSize();
+		static uint32_t GetMaxTexture2DSize();
 		static uint32_t GetMaxCombinedTextureCount();
 		static uint32_t GetMaxPerStageTextureCount();
 		static uint32_t GetMaxTextureArrayLayers();

@@ -55,11 +55,11 @@ namespace GEngine
 		m_Height = height;
 		if (channels == 4)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM;
 		}
 		stbi_image_free(data);
 		if (m_GenerateMipmap)
@@ -211,11 +211,11 @@ namespace GEngine
 			RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_NONE;
 			if (channels == 4)
 			{
-				format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
 			}
 			else if (channels == 3)
 			{
-				format = RENDER_IMAGE_2D_FORMAT_RGB8F;
+				format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM;
 			}
 			GE_CORE_ASSERT(m_Format == format, " The cube map image is not the same format!");
 			SetData(data, m_Width * m_Height * RenderImage2DFormatChannelSize(m_Format), (CubeMapFace)i);
