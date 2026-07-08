@@ -18,7 +18,7 @@ namespace GEngine
 
 		virtual std::vector<std::string> GetExtensions() = 0;
 
-		virtual uint32_t GetMaxTextureSize() = 0;
+		virtual uint32_t GetMaxTexture2DSize() = 0;
 		virtual uint32_t GetMaxCombinedTextureCount() = 0;
 		virtual uint32_t GetMaxPerStageTextureCount() = 0;
 		virtual uint32_t GetMaxTextureArrayLayers() = 0;

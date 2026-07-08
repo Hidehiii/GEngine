@@ -11,9 +11,7 @@ namespace GEngine
 	public:
 		VulkanMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial() override;
-
-		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
-
+		
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
 		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
@@ -23,6 +21,10 @@ namespace GEngine
 		std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>	GetUniformBuffer(const int& pass)					{ return m_UniformBuffers.at(pass); }
 		VkDescriptorSetLayout*									GetDescriptorSetLayout(const int& pass)				{ return &m_DescriptorSetLayouts.at(pass); }
 		VkDescriptorSet*										GetDescriptorSet(const int& pass, const int& index) { return &m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index); }
+	protected:
+		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
+
+		virtual void ResourceUpdateNotify() override { m_NeedUpdateDescripotrSetFrames = std::pow(2, Graphics::GetFrameCount()) - 1; }
 	private:
 		// 理论上只要后面不改动ubo和贴图只需要创建和更新一次
 		void CreateDescriptorSetAndLayout();
@@ -30,7 +32,7 @@ namespace GEngine
 		void UpdateDynamicOffsets(const int& pass);
 	private:
 		Ref<VulkanShader>														m_Shader;
-		std::vector<std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>>		m_UniformBuffers;
+		std::vector<std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>>		m_UniformBuffers; // pass { bind point : buffer }
 		std::vector<std::vector<uint32_t>>										m_DynamicUniformBufferOffsets; // pass { offsets }
 		std::vector<VkDescriptorSetLayout>										m_DescriptorSetLayouts;
 		std::vector<VkDescriptorSet>											m_DescriptorSets;

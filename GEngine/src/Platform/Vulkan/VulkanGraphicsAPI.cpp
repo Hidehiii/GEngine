@@ -43,7 +43,7 @@ namespace GEngine
         return ext;
     }
 
-    uint32_t VulkanGraphicsAPI::GetMaxTextureSize()
+    uint32_t VulkanGraphicsAPI::GetMaxTexture2DSize()
     {
 		VkPhysicalDeviceProperties      deviceProperties;
 		vkGetPhysicalDeviceProperties(VulkanContext::Get()->GetPhysicalDevice(), &deviceProperties);

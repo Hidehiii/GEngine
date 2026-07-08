@@ -42,6 +42,8 @@ namespace GEngine
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12Resource>& resource, D3D12_RESOURCE_STATES src, D3D12_RESOURCE_STATES dst);
 
+		void CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+
 		DXGI_FORMAT					FrameBufferTextureFormatToDXGIFormat(FrameBufferTextureFormat format);
 		FrameBufferTextureFormat	DXGIFormatToFrameBufferTextureFormat(DXGI_FORMAT format);
 		DXGI_FORMAT					ShaderInputDataTypeToDXGIFormat(ShaderInputDataType type);

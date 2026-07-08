@@ -68,7 +68,7 @@ namespace GEngine
 		};
 		return ext;
 	}
-	uint32_t OpenGLGraphicsAPI::GetMaxTextureSize()
+	uint32_t OpenGLGraphicsAPI::GetMaxTexture2DSize()
 	{
 		int size;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);

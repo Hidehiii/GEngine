@@ -64,6 +64,14 @@ namespace GEngine
 			TransitionResourceState(dxCmd->GetCommandList(), resource, src, dst);
 			D3D12Context::Get()->EndSingleTimeGraphicsCommand(dxCmd);
 		}
+		void CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+			heapDesc.NumDescriptors = numDescriptors;
+			heapDesc.Type			= type;
+			heapDesc.Flags			= flags;
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap)));
+		}
 		HANDLE& CreateFenceEvent(LPSECURITY_ATTRIBUTES IpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR IpName)
 		{
 			HANDLE event = CreateEvent(IpEventAttributes, bManualReset, bInitialState, IpName);

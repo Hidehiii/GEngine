@@ -19,8 +19,6 @@ namespace GEngine
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name);
 		virtual ~Material() {}
 
-		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) = 0;
-
 		virtual void SetEnableDepthWrite(bool enabled, const int& pass);
 		virtual bool GetEnableDepthWrite(int pass) { return m_Passes.at(pass).State.DepthWrite; }
 
@@ -63,6 +61,7 @@ namespace GEngine
 		void SetResource(const std::string& name, const Ref<T>& value)
 		{
 			WriteResourceProperty(name, (void*)&value);
+			ResourceUpdateNotify();
 		}
 
 		template<typename T>
@@ -90,10 +89,14 @@ namespace GEngine
 		virtual void ClearAllPasses();
 		virtual void ReleaseCBufferMemory(const int& pass, const uint32_t& bindPoint);
 		virtual void ReAllocateCBufferMemory(const int& pass, const uint32_t& bindPoint, const uint32_t& size);
-	protected:
-		std::string																m_Name;
 
-		std::vector<ShaderPass>													m_Passes;
+		virtual void ResourceUpdateNotify() = 0;
+
+		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) = 0;
+	protected:
+		std::string				m_Name;
+
+		std::vector<ShaderPass>	m_Passes;
 	};
 }
 

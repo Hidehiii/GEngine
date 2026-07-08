@@ -42,6 +42,7 @@ namespace GEngine
 	{
 		if (VulkanContext::Get()->GetDevice())
 		{
+			vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory);
 			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_UniformBuffer, nullptr);
 			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, nullptr);
 		}
@@ -49,9 +50,11 @@ namespace GEngine
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size)
 	{
+		// if this is a dynamic uniform buffer, we need to update the offset for each write,
+		// so that we can write to the next uniform buffer in the dynamic uniform buffer
 		if(m_TotalSize > 0)
 		{
-			GE_CORE_ASSERT(size <= m_Aligment, "");
+			GE_CORE_ASSERT(size <= m_Aligment, "over size!");
 			m_Offset = m_Offset + m_Aligment < m_TotalSize ? m_Offset + m_Aligment : 0;
 		}
 

@@ -20,7 +20,7 @@ namespace GEngine
 
 		virtual std::vector<std::string> GetExtensions() override;
 
-		virtual uint32_t GetMaxTextureSize() override;
+		virtual uint32_t GetMaxTexture2DSize() override;
 		virtual uint32_t GetMaxCombinedTextureCount() override;
 		virtual uint32_t GetMaxPerStageTextureCount() override;
 		virtual uint32_t GetMaxTextureArrayLayers() override;

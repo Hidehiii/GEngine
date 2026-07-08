@@ -148,8 +148,6 @@ namespace GEngine
 
 	void VulkanMaterial::CreateDescriptorSetAndLayout()
 	{
-		
-
 		m_DescriptorSetLayouts.resize(m_Passes.size());
 		m_DescriptorSets.resize(m_Passes.size() * Graphics::GetFrameCount());
 		for (int pass = 0; pass < m_Passes.size(); pass++)
