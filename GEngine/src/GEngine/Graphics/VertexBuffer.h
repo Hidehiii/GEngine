@@ -52,8 +52,12 @@ namespace GEngine
 		virtual uint32_t GetIndexCount() const = 0;
 		virtual uint32_t GetInstanceCount() const;
 
+		// combine vertex buffer
 		static Ref<VertexBuffer> Create(uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 		static Ref<VertexBuffer> Create(const void* vertices, uint32_t size, uint32_t sizeInstance = 0, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
+
+		// separate vertex buffer
+		//static Ref<VertexBuffer> Create(const std::vector<uint32_t>& sizes, const std::vector<uint32_t>& sizeInstances, VertexTopology type = VERTEX_TOPOLOGY_TRIANGLE);
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const = 0;
 

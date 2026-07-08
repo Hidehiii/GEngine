@@ -361,7 +361,8 @@ namespace GEngine
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << YAML::Value << cache.Name;
-		out << YAML::Key << "HashCode" << YAML::Value << cache.HashCode;
+		out << YAML::Key << "SpirvHash" << YAML::Value << cache.SpirvHash;
+		out << YAML::Key << "DxilHash" << YAML::Value << cache.DxilHash;
 		out << YAML::EndMap;
 
 		std::ofstream fout(filepath);
@@ -607,6 +608,7 @@ namespace GEngine
 		}
 
 		cache.Name		= data["Name"].as<std::string>();
-		cache.HashCode	= data["HashCode"].as<std::string>();
+		cache.SpirvHash	= data["SpirvHash"].as<std::string>();
+		cache.DxilHash	= data["DxilHash"].as<std::string>();
 	}
 }

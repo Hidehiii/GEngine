@@ -84,7 +84,7 @@ namespace GEngine
 																		ShaderCacheInfo& cache);
 		virtual bool										LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
 																			std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils, 
-																			const std::string& source);
+																			const std::string& source, ShaderCacheInfo& cache);
 		virtual void                                        ReflectShader(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
 																			const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils);
 	protected:

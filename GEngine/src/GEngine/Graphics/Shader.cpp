@@ -134,24 +134,30 @@ namespace GEngine
 		std::string																source = FileSystemHelper::ReadFileAsString(path);
 		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
-		if (LoadFromCache(shaders, reflectionDxils, source))
+		if (LoadFromCache(shaders, reflectionDxils, source, cache))
 		{
-			ReflectShader(reflectionDxils);
+			ReflectShader(shaders, reflectionDxils);
 			processMachingCodeFunc(shaders);
 			GE_INFO("Load shader {} from cache.", m_Name);
 			return;
 		}
-		Compile(srcCodes, shaders, reflectionMetas);
-		ReflectShader(reflectionMetas);
+		Compile(srcCodes, shaders, reflectionDxils);
+		ReflectShader(shaders, reflectionDxils);
 		ComputeShaderCacheInfo(source, cache);
-		SaveToCache(shaders, reflectionMetas, cache);
+		SaveToCache(shaders, reflectionDxils, cache);
 		processMachingCodeFunc(shaders);
 	}
 
 	bool Shader::IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache)
 	{
 		std::string hashCode = OpenSSLTool::ComputeMD5(source);
-		return cache.Name == m_Name && cache.HashCode == hashCode;
+		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+			Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+			return cache.Name == m_Name && cache.SpirvHash == hashCode;
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+			return cache.Name == m_Name && cache.DxilHash == hashCode;
+		// this should never happen, but just in case
+		return cache.Name == m_Name && cache.SpirvHash == hashCode && cache.DxilHash == hashCode;
 	}
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
@@ -366,17 +372,29 @@ namespace GEngine
 			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
 			GE_CORE_ASSERT(m_StageEntryPoints.at(i).size() > 0, "No entry points found for shader pass " + std::to_string(i));
 			shaders.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
-			reflectionMetas.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
+			if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+				Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN ||
+				Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+			{
+				reflectionDxils.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
+			}
+			
 			
 			for (auto&& [stage, entryPoint] : m_StageEntryPoints.at(i))
 			{
 				// 反射所有阶段资源的并集
-				std::vector<std::byte> machineCode;
-				std::vector<std::byte> reflectionMeta;
-				bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionMeta);
-				GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
-				shaders.at(i)[stage] = machineCode;
-				reflectionMetas.at(i)[stage] = reflectionMeta;
+				if(Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+					Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN ||
+					Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+				{
+					std::vector<std::byte> machineCode;
+					std::vector<std::byte> reflectionDxil;
+					bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionDxil);
+					GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
+					shaders.at(i)[stage] = machineCode;
+					reflectionDxils.at(i)[stage] = reflectionDxil;
+				}
+				
 			}
 		}
 		
@@ -386,7 +404,11 @@ namespace GEngine
 
 	void Shader::ComputeShaderCacheInfo(const std::string& source, ShaderCacheInfo& cache)
 	{
-		cache.HashCode	= OpenSSLTool::ComputeMD5(source);
+		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
+			Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+			cache.SpirvHash = OpenSSLTool::ComputeMD5(source);
+		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
+			cache.DxilHash = OpenSSLTool::ComputeMD5(source);
 		cache.Name = m_Name;
 	}
 
@@ -481,7 +503,7 @@ namespace GEngine
 
 	bool Shader::LoadFromCache(std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders, 
 								std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils,
-								const std::string& source)
+								const std::string& source, ShaderCacheInfo& cache)
 	{
 		bool res = false;
 		std::string machineCodeExt;
@@ -502,6 +524,7 @@ namespace GEngine
 		//identify cache by info file, check if the shader name and hash code match, if not match, return false to recompile shader
 		ShaderCacheInfo cacheInfo;
 		Serializer::Deserialize(cacheFolder + "/" + SHADER_CACHE_INFO_FILE_NAME, cacheInfo);
+		cache = cacheInfo;
 		if (IdentifyShaderCache(source, cacheInfo) == false)
 		{
 			GE_CORE_INFO("Shader cache is invalid, shader source may be changed, recompile shader! Cache name: {}", cacheInfo.Name);

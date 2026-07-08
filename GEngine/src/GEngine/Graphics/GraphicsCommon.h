@@ -629,7 +629,8 @@ namespace GEngine
 	struct ShaderCacheInfo
 	{
 		std::string Name;
-		std::string	HashCode;
+		std::string	SpirvHash = "null";
+		std::string DxilHash = "null";
 	};
 }
 
