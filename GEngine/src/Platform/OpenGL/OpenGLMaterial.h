@@ -23,6 +23,9 @@ namespace GEngine
 	private:
 		Ref<OpenGLShader>														m_Shader;
 		std::vector<std::unordered_map<uint32_t, Ref<OpenGLUniformBuffer>>>		m_UniformBuffers; // pass { bind point : buffer }
+
+		friend class OpenGLGraphicsPipeline;
+		friend class OpenGLComputePipeline;
 	};
 }
 

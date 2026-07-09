@@ -594,7 +594,7 @@ namespace GEngine
 		//reflection meta
 		for (int i = 0; i < reflectionDxils.size(); i++)
 		{
-			for (auto& [stage, data] : reflectionDxils.at(i))
+			for (auto&& [stage, data] : reflectionDxils.at(i))
 			{
 				if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
 					Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)

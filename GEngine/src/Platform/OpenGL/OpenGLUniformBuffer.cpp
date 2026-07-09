@@ -5,8 +5,10 @@
 
 namespace GEngine
 {
-	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t count)
+	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic)
 	{
+		m_AutoSetDataDynamic = autoSetDataDynamic;
+
 		if(count > 1)
 		{
 			uint32_t minUboAligment = Graphics::GetMinUniformBufferOffsetAlignment();
@@ -29,7 +31,15 @@ namespace GEngine
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size)
 	{
 		GE_CORE_ASSERT(m_Binding != UINT32_MAX, "Uniform buffer binding point is not set!");
-		if(m_TotalSize > 0)
+
+		glBindBufferRange(GL_UNIFORM_BUFFER, m_Binding, m_UniformBuffer, m_Offset, size);
+		glNamedBufferSubData(m_UniformBuffer, m_Offset, size, data);
+	}
+
+	void OpenGLUniformBuffer::SetDataDynamic(const void* data, uint32_t size)
+	{
+		GE_CORE_ASSERT(m_Binding != UINT32_MAX, "Uniform buffer binding point is not set!");
+		if (m_TotalSize > 0)
 		{
 			GE_CORE_ASSERT(size <= m_Aligment, "");
 			m_Offset = m_Offset + m_Aligment < m_TotalSize ? m_Offset + m_Aligment : 0;

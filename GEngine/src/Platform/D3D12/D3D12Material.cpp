@@ -9,16 +9,20 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<D3D12Shader>(shader);
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
-		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(shader);
+		std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> sizes = InitializePassPropertiesMemory(shader);
 		// create constant buffers for each pass
 		m_ConstantBuffers.clear();
 		for (auto& pass : sizes)
 		{
 			std::unordered_map<uint32_t, Ref<D3D12UniformBuffer>> cbuffers;
-			for (auto& [bindPoint, size] : pass)
+			for (auto& [bindPoint, info] : pass) // info { size, count }
 			{
-				Ref<D3D12UniformBuffer> cb = CreateRef<D3D12UniformBuffer>(size);
-				cbuffers[bindPoint] = cb;
+				if (info.first > 0)
+				{
+					Ref<D3D12UniformBuffer> cb = CreateRef<D3D12UniformBuffer>(info.first, info.second);
+					cbuffers[bindPoint] = cb;
+				}
+				
 			}
 			m_ConstantBuffers.push_back(cbuffers);
 		}

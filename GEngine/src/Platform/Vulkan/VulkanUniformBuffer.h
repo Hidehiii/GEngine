@@ -9,10 +9,11 @@ namespace GEngine
 	class GENGINE_API VulkanUniformBuffer : public UniformBuffer
 	{
 	public:
-		VulkanUniformBuffer(uint32_t size, uint32_t count = 1);
+		VulkanUniformBuffer(uint32_t size, uint32_t count = 1, bool autoSetDataDynamic = true);
 		virtual ~VulkanUniformBuffer();
 
 		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
 		VkDescriptorType GetDescriptorType() const { return m_DescriptorType; }

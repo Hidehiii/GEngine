@@ -15,21 +15,22 @@ Shader "ExampleShader"
 
         Program
         {
+
             cbuffer material
             {
                 float4 _Color;
             };
 
-            cbuffer mat
+            cbuffer _DYNAMIC_mat
             {
                 float4 _Color1;
             };
 
             struct VsInput
             {
-                float3 vertex : POSITION;
+                float3 vertex : POSITION;   
                 //float2 yz : COLOR0;
-            };
+            };    
 
             struct VsOutput
             {

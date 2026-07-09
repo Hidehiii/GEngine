@@ -5,8 +5,10 @@
 
 namespace GEngine
 {
-	D3D12UniformBuffer::D3D12UniformBuffer(uint32_t size, uint32_t count)
+	D3D12UniformBuffer::D3D12UniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic)
 	{
+		m_AutoSetDataDynamic = autoSetDataDynamic;
+
 		if (count > 1)
 		{
 			uint32_t minCbvAligment = Graphics::GetMinUniformBufferOffsetAlignment();
@@ -38,6 +40,14 @@ namespace GEngine
 		}
 	}
 	void D3D12UniformBuffer::SetData(const void* data, uint32_t size)
+	{
+		memcpy(((std::byte*)m_MappedData) + m_Offset, data, size);
+
+		// not sure apply offset now or in the command buffer, but apply offset now for now
+		m_ConstantBufferViewDesc.BufferLocation = m_ConstantBuffer->GetGPUVirtualAddress() + m_Offset;
+		m_ConstantBufferViewDesc.SizeInBytes	= size;
+	}
+	void D3D12UniformBuffer::SetDataDynamic(const void* data, uint32_t size)
 	{
 		// if this is a dynamic uniform buffer, we need to update the offset for each write,
 		// so that we can write to the next uniform buffer in the dynamic uniform buffer

@@ -8,10 +8,11 @@ namespace GEngine
 	class GENGINE_API OpenGLUniformBuffer : public UniformBuffer
 	{
 	public:
-		OpenGLUniformBuffer(uint32_t size, uint32_t count = 1);
+		OpenGLUniformBuffer(uint32_t size, uint32_t count = 1, bool autoSetDataDynamic = true);
 		virtual ~OpenGLUniformBuffer();
 
 		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
 		virtual void SetBindPoint(uint32_t binding);
 	private:

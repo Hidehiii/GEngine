@@ -22,11 +22,11 @@ namespace GEngine
 		m_Height		= height;
 		if (channels == 4)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
 		}
 		else if (channels == 3)
 		{
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8F;
+			m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM;
 		}
 		if (m_GenerateMipmap)
 		{

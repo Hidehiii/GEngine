@@ -23,7 +23,7 @@ namespace GEngine
 	protected:
 		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
 
-		virtual void ResourceUpdateNotify() override { m_NeedUpdateDescripotrSetFrames = std::vector<uint8_t>(std::pow(2, Graphics::GetFrameCount()) - 1, m_Passes.size()); }
+		virtual void ResourceUpdateNotify() override { m_NeedUpdateDescripotrSetFrames = std::vector<uint8_t>(m_Passes.size(), UINT8_MAX); }
 	private:
 		void CreateDescriptorAndLayout();
 		void UpdateDescriptorSet(const int& pass, const int& index);
@@ -36,6 +36,7 @@ namespace GEngine
 		std::vector<uint8_t>													m_NeedUpdateDescripotrSetFrames;
 
 		friend class VulkanGraphicsPipeline;
+		friend class VulkanComputePipeline;
 	};
 
 }

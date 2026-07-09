@@ -16,6 +16,7 @@ namespace GEngine
 		const std::unordered_map<std::string, VkShaderModule>&	GetShaderModules(const int& pass) { return m_ShaderModules.at(pass); }
 
 		const VkDescriptorSetLayout*							GetDescriptorSetLayout(const int& pass) const { return &m_DescriptorSetLayouts.at(pass); }
+		const VkPipelineLayout									GetPipelineLayout(const int& pass) const { return m_PipelineLayouts.at(pass); }
 	private:
 		void CreateShaderModules(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders);
 		void CreateDescriptorSetLayouts();

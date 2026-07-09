@@ -9,17 +9,17 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<OpenGLShader>(shader);
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
-		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
+		std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
 		m_UniformBuffers.clear();
 		for(auto& pass : sizes)
 		{
 			std::unordered_map<uint32_t, Ref<OpenGLUniformBuffer>> ubuffers;
-			for (auto& [bindPoint, size] : pass)
+			for (auto& [bindPoint, info] : pass) // info { size, count }
 			{
-				if (size > 0)
+				if (info.first > 0)
 				{
-					Ref<OpenGLUniformBuffer> ubo = CreateRef<OpenGLUniformBuffer>(size);
+					Ref<OpenGLUniformBuffer> ubo = CreateRef<OpenGLUniformBuffer>(info.first, info.second);
 					ubuffers[bindPoint] = ubo;
 				}
 			}
@@ -38,11 +38,11 @@ namespace GEngine
 			GE_CORE_ASSERT(ubo, "Uniform buffer is null!");
 			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "Uniform buffer bind point not found in pass!");
 			ubo->SetBindPoint(bindPoint);
-			if (ubo->IsDynamic() == false)
-			{
-				GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+			if(ubo->IsDynamic() && ubo->IsAutoSetDataDynamic())
+				ubo->SetDataDynamic(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
+			else
 				ubo->SetData(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
-			}
 		}
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)

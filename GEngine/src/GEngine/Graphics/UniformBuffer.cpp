@@ -6,15 +6,15 @@
 
 namespace GEngine
 {
-	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t count)
+	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t count, bool autoSetDataDynamic)
 	{
 		Ref<UniformBuffer>	buf;
 
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_NONE:    GE_CORE_ASSERT(false, "Unknown GraphicsAPI!"); break;
-		case GRAPHICS_API_OPENGL:  buf = CreateRef<OpenGLUniformBuffer>(size, count); break;
-		case GRAPHICS_API_VULKAN:  buf = CreateRef<VulkanUniformBuffer>(size, count); break;
+		case GRAPHICS_API_OPENGL:  buf = CreateRef<OpenGLUniformBuffer>(size, count, autoSetDataDynamic); break;
+		case GRAPHICS_API_VULKAN:  buf = CreateRef<VulkanUniformBuffer>(size, count, autoSetDataDynamic); break;
 		}
 		
 		return buf;

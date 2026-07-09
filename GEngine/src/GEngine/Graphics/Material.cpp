@@ -94,11 +94,11 @@ namespace GEngine
 		m_Passes.at(pass).State.BlendColorDst = dest;
 		m_Passes.at(pass).State.BlendAlphaDst = dest;
 	}
-	std::vector<std::unordered_map<uint32_t, uint32_t>> Material::InitializePassPropertiesMemory(const Ref<Shader>& shader)
+	std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> Material::InitializePassPropertiesMemory(const Ref<Shader>& shader)
 	{
 		GE_CORE_ASSERT(shader, "Shader ref is NULL!");
 		auto& passes = shader->GetPassReflections();
-		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes;
+		std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> sizes;
 		ClearAllPasses();
 		for (size_t i = 0; i < passes.size(); i++)
 		{
@@ -115,9 +115,9 @@ namespace GEngine
 		m_Passes.at(m_Passes.size() - 1).State = state;
 	}
 
-	void Material::InitializePassCBuffer(const std::unordered_set<ShaderReflectionCBufferInfo>& cbuffers, std::vector<std::unordered_map<uint32_t, uint32_t>>& sizes)
+	void Material::InitializePassCBuffer(const std::unordered_set<ShaderReflectionCBufferInfo>& cbuffers, std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>>& sizes)
 	{
-		sizes.push_back(std::unordered_map<uint32_t, uint32_t>());
+		sizes.push_back(std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>());
 
 		for (auto& info : cbuffers)
 		{
@@ -125,8 +125,8 @@ namespace GEngine
 			for (auto& prop : info.Properties)
 			{
 				ShaderConstantProperty		property;
-				property.CBufferBindPoint = info.BindPoint;
-				property.PropertyOffset = prop.Offset;
+				property.CBufferBindPoint	= info.BindPoint;
+				property.PropertyOffset		= prop.Offset;
 
 #ifdef GE_DEBUG
 				if (m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.find(prop.Name) != m_Passes.at(m_Passes.size() - 1).ConstPropertiesDesc.end())
@@ -147,7 +147,9 @@ namespace GEngine
 			m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].Allocate(info.Size);
 			m_Passes.at(m_Passes.size() - 1).CBuffers[info.BindPoint].ZeroInitialize();
 
-			sizes.at(sizes.size() - 1)[info.BindPoint] = info.Size;
+			// for dynamic buffer
+			// we alloc frame count buffer for dynamic buffer, and alloc 1 buffer for static buffer
+			sizes.at(sizes.size() - 1)[info.BindPoint] = { info.Size, info.IsDynamic ? Graphics::GetFrameCount() : 1 };
 		}
 	}
 

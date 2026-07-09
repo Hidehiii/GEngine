@@ -39,6 +39,7 @@ namespace GEngine
 
 	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const int& pass)
 	{
+		m_Material->UpdateDynamicOffsets(pass);
 		m_Material->Update(cmdBuffer, pass);
 
 		auto cmd = static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer();
@@ -76,8 +77,8 @@ namespace GEngine
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = m_Material->GetDynamicOffsets(pass);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
-			m_Material->GetPipelineLayout(pass), 0, 1,
-			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),
+			std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetPipelineLayout(pass), 
+			0, 1, m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),
 			offsets.size(), offsets.data());
 	}
 
@@ -316,7 +317,7 @@ namespace GEngine
 		pipelineInfo.pDepthStencilState		= &depthStencil;
 		pipelineInfo.pColorBlendState		= &ColorBlending;
 		pipelineInfo.pDynamicState			= &dynamicStateCreateInfo;
-		pipelineInfo.layout					= m_Material->GetPipelineLayout(pass);
+		pipelineInfo.layout					= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetPipelineLayout(pass);
 		pipelineInfo.renderPass				= std::static_pointer_cast<VulkanFrameBuffer>(frameBuffer)->GetVulkanRenderPass();
 		pipelineInfo.subpass				= 0;
 		pipelineInfo.basePipelineHandle		= VK_NULL_HANDLE; // Optional

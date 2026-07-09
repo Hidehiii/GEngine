@@ -16,26 +16,28 @@ namespace GEngine
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
-		std::vector<std::unordered_map<uint32_t, uint32_t>> sizes = InitializePassPropertiesMemory(m_Shader);
+		std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> sizes = InitializePassPropertiesMemory(m_Shader);
 		// Create uniform buffer
 		m_UniformBuffers.clear();
 		for(auto& pass : sizes)
 		{
 			std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>> ubuffers;
-			for (auto& [bindPoint, size] : pass)
+			for (auto& [bindPoint, info] : pass) // info: { size, count }
 			{
-				if (size > 0)
+				if (info.first > 0)
 				{
-					Ref<VulkanUniformBuffer> ubo = CreateRef<VulkanUniformBuffer>(size);
+					Ref<VulkanUniformBuffer> ubo = CreateRef<VulkanUniformBuffer>(info.first, info.second);
 					ubuffers[bindPoint] = ubo;
 				}
 			}
 			m_UniformBuffers.push_back(ubuffers);
 		}
 
+		m_DynamicUniformBufferOffsets.resize(m_Passes.size());
+
 		CreateDescriptorAndLayout();
 
-		m_NeedUpdateDescripotrSetFrames = std::vector<uint8_t>(std::pow(2, Graphics::GetFrameCount()) - 1, m_Passes.size());
+		ResourceUpdateNotify();
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
@@ -51,11 +53,11 @@ namespace GEngine
 		{
 			GE_CORE_ASSERT(ubo, "Uniform buffer is null!");
 			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "Uniform buffer bind point not found in pass!");
-			if (ubo->IsDynamic() == false)
-			{
-				GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+			GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.at(bindPoint).Data, "CBuffer is NULL!");
+			if(ubo->IsDynamic() && ubo->IsAutoSetDataDynamic())
+				ubo->SetDataDynamic(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
+			else
 				ubo->SetData(m_Passes.at(pass).CBuffers.at(bindPoint).ReadBytes(), m_Passes.at(pass).CBuffers.at(bindPoint).GetSize());
-			}
 		}
 
 		for (auto&& [name, prop] : m_Passes.at(pass).ResourceProperties)
@@ -114,10 +116,10 @@ namespace GEngine
 		}
 
 		// 按需更新？
-		if (m_NeedUpdateDescripotrSetFrames[pass] & (uint8_t)(std::pow(2, Graphics::GetFrame())))
+		if (m_NeedUpdateDescripotrSetFrames[pass] & ((uint8_t)(1 << Graphics::GetFrame())))
 		{
 			UpdateDescriptorSet(pass, Graphics::GetFrame());
-			m_NeedUpdateDescripotrSetFrames[pass] -= (uint8_t)std::pow(2, Graphics::GetFrame());
+			m_NeedUpdateDescripotrSetFrames[pass] -= ((uint8_t)(1 << Graphics::GetFrame()));
 		}
 	}
 
@@ -129,10 +131,6 @@ namespace GEngine
 		ubuffers.at(bindPoint) = std::dynamic_pointer_cast<VulkanUniformBuffer>(buf);
 		Buffer oldBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
 		m_Passes.at(pass).CBuffers[bindPoint] = buffer;
-		if (buf->IsDynamic())
-		{
-			UpdateDynamicOffsets(pass);
-		}
 		return oldBuffer;
 	}
 
@@ -151,7 +149,7 @@ namespace GEngine
 		m_DescriptorSets.resize(m_Passes.size() * Graphics::GetFrameCount());
 		for (int pass = 0; pass < m_Passes.size(); pass++)
 		{
-			// 只用一个set，需要兼容gl没有set的概念
+			// 只用一个set
 			// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
 			VkDescriptorSetAllocateInfo		allocInfo{};
 			allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

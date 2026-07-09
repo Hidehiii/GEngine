@@ -73,7 +73,7 @@ namespace GEngine
 		VkPipelineLayoutCreateInfo			pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount	= 1;
-		pipelineLayoutInfo.pSetLayouts		= m_Material->GetDescriptorSetLayout(pass);
+		pipelineLayoutInfo.pSetLayouts		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetDescriptorSetLayout(pass);
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::Get()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 

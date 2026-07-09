@@ -159,6 +159,8 @@ namespace GEngine
 			{
 				return SHADER_PROPERTY_TYPE_STRUCTURE;
 			}
+			default:
+				GE_CORE_ASSERT(false, "Unknown shader variable class!");
 			}
 		}
 
@@ -524,12 +526,15 @@ namespace GEngine
 		reflectionData.Encoding = DXC_CP_ACP;
 		reflectionData.Ptr		= reflectionDxil.data();
 		reflectionData.Size		= reflectionDxil.size();
-		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+		hr = m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+		GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to create shader reflection!");
 
 		//reflectionOutput
 
 		D3D12_SHADER_DESC desc;
-		reflection->GetDesc(&desc);
+		hr = reflection->GetDesc(&desc);
+		GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader desc!");
+
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
 		uint32_t vertexInputOffset = 0;
@@ -544,47 +549,115 @@ namespace GEngine
 			vertexInputInfo.SemanticIndex		= inputDesc.SemanticIndex;
 			vertexInputInfo.Offset				= vertexInputOffset;
 			vertexInputInfo.Type				= Utils::ShaderInputDataTypeFromDxType(inputDesc);
-			//vertexInputInfo.
 
-			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", inputDesc.SemanticName, inputDesc.SemanticIndex, inputDesc.Register, inputDesc.SystemValueType, inputDesc.ComponentType);
+			GE_CORE_TRACE("Semantic name: {}, Semantic index: {}, register: {}, SVtype: {}, Type: {}, Offset: {}!", 
+				vertexInputInfo.SemanticName,
+				vertexInputInfo.SemanticIndex,
+				inputDesc.Register, 
+				inputDesc.SystemValueType, 
+				vertexInputInfo.Type,
+				vertexInputInfo.Offset);
 
 			vertexInputOffset += Utils::ShaderInputDataSize(vertexInputInfo.Type);
 
-			reflectionOutput.VertexInputs.push_back(vertexInputInfo);
+			if (target == SHADER_STAGE_VERTEX)
+				reflectionOutput.VertexInputs.push_back(vertexInputInfo);
+		}
+		GE_CORE_INFO("CBuffer");
+		for (int i = 0; i < desc.ConstantBuffers; i++)
+		{
+			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
+
+			D3D12_SHADER_BUFFER_DESC bufferDesc;
+			hr = constantBuffer->GetDesc(&bufferDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader constant buffer desc!");
+
+			D3D12_SHADER_INPUT_BIND_DESC resDesc;
+			hr = reflection->GetResourceBindingDescByName(bufferDesc.Name, &resDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader resource binding desc!");
+
+			ShaderReflectionCBufferInfo cbufferInfo;
+			cbufferInfo.Name			= bufferDesc.Name;
+			cbufferInfo.BindPoint		= resDesc.BindPoint;
+			cbufferInfo.Size			= bufferDesc.Size;
+			cbufferInfo.RegisterSpace	= resDesc.Space;
+			cbufferInfo.IsDynamic		= cbufferInfo.Name.find(SHADER_DYNAMIC_CBUFFER_KEY_WORDS) != cbufferInfo.Name.npos;
+
+			GE_CORE_TRACE("  Constant buffer name: {}, Variable count: {}, Size: {}, Bind point: {}, Bind count: {}, Register space: {}, Is dynamic: {}!", 
+				cbufferInfo.Name,
+				bufferDesc.Variables, 
+				cbufferInfo.Size,
+				cbufferInfo.BindPoint,
+				resDesc.BindCount,
+				cbufferInfo.RegisterSpace,
+				cbufferInfo.IsDynamic);
+
+			for (int j = 0; j < bufferDesc.Variables; j++)
+			{
+				ID3D12ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
+				ID3D12ShaderReflectionType* type = variable->GetType();
+
+				D3D12_SHADER_VARIABLE_DESC varDesc;
+				hr = variable->GetDesc(&varDesc);
+				GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader variable desc!");
+
+				D3D12_SHADER_TYPE_DESC typeDesc;
+				type->GetDesc(&typeDesc);
+				GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader type desc!");
+
+				ShaderReflectionPropertyInfo	constantInfo;
+				constantInfo.Name				= varDesc.Name;
+				constantInfo.Type				= Utils::ShaderPropertyTypeFromDxCBufferDesc(varDesc, typeDesc);
+				constantInfo.Size				= varDesc.Size;
+				constantInfo.Offset				= varDesc.StartOffset;
+				constantInfo.ArraySize			= 1; // TODO: support array size
+
+				GE_CORE_TRACE("    var name {}, start offset {}, size {}!", 
+					constantInfo.Name,
+					constantInfo.Offset,
+					constantInfo.Size);
+				GE_CORE_TRACE("      type name {}, class {}, type {}, rows {}, columns {}, elements {}, members {}!", 
+					typeDesc.Name, 
+					typeDesc.Class, 
+					typeDesc.Type, typeDesc.Rows, 
+					typeDesc.Columns, 
+					typeDesc.Elements, 
+					typeDesc.Members);
+
+				cbufferInfo.Properties.push_back(constantInfo);
+			}
+			reflectionOutput.CBuffers.insert(cbufferInfo);
 		}
 		GE_CORE_INFO("Resource binding:");
 		for (int i = 0; i < desc.BoundResources; i++)
 		{
 			D3D12_SHADER_INPUT_BIND_DESC resDesc;
-			reflection->GetResourceBindingDesc(i, &resDesc);
-
-			GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", resDesc.Name, resDesc.Type, resDesc.BindPoint, resDesc.BindCount, resDesc.Space);
-			if(resDesc.Type == D3D_SIT_CBUFFER)
+			hr = reflection->GetResourceBindingDesc(i, &resDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader resource binding desc!");
+			
+			if(resDesc.Type != D3D_SIT_CBUFFER)
 			{
-				ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByName(resDesc.Name);
-				D3D12_SHADER_BUFFER_DESC bufferDesc;
-				constantBuffer->GetDesc(&bufferDesc);
-				GE_CORE_TRACE("  Constant buffer name {}, variables {}, size {}!", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
-				for (int j = 0; j < bufferDesc.Variables; j++)
-				{
-					ID3D12ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
-					ID3D12ShaderReflectionType* type = variable->GetType();
-					D3D12_SHADER_VARIABLE_DESC varDesc;
-					D3D12_SHADER_TYPE_DESC typeDesc;
-					variable->GetDesc(&varDesc);
-					type->GetDesc(&typeDesc);
-					GE_CORE_TRACE("    var name {}, start offset {}, size {}!", varDesc.Name, varDesc.StartOffset, varDesc.Size);
-					GE_CORE_TRACE("      type name {}, class {}, type {}, rows {}, columns {}, elements {}, members {}!", typeDesc.Name, typeDesc.Class, typeDesc.Type, typeDesc.Rows, typeDesc.Columns, typeDesc.Elements, typeDesc.Members);
-				}
+				GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", 
+					resDesc.Name, 
+					resDesc.Type, 
+					resDesc.BindPoint, 
+					resDesc.BindCount,
+					resDesc.Space);
 			}
 		}
 		GE_CORE_INFO("Output parameters:");
 		for (int i = 0; i < desc.OutputParameters; i++)
 		{
 			D3D12_SIGNATURE_PARAMETER_DESC outputDesc;
-			reflection->GetOutputParameterDesc(i, &outputDesc);
+			hr = reflection->GetOutputParameterDesc(i, &outputDesc);
+			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader output parameter desc!");
 
-			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", outputDesc.SemanticName, outputDesc.SemanticIndex, outputDesc.Register, outputDesc.SystemValueType, outputDesc.ComponentType);
+			GE_CORE_TRACE("Semantic name {}, index {}, register {}, SVtype {}, type {}!", 
+				outputDesc.SemanticName,
+				outputDesc.SemanticIndex,
+				outputDesc.Register,
+				outputDesc.SystemValueType,
+				outputDesc.ComponentType);
 		}
 	}
 	void ShaderCompiler::ReflectSpirv(const std::vector<std::byte>& spirvMachineCode, const std::vector<std::byte>& reflectionDxil,
@@ -603,16 +676,17 @@ namespace GEngine
 		reflectionData.Encoding = DXC_CP_ACP;
 		reflectionData.Ptr		= reflectionDxil.data();
 		reflectionData.Size		= reflectionDxil.size();
-		m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+		hr = m_Utils->CreateReflection(&reflectionData, IID_PPV_ARGS(&reflection));
+		GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to create shader reflection!");
 
 		D3D12_SHADER_DESC desc;
-		reflection->GetDesc(&desc);
+		hr = reflection->GetDesc(&desc);
+		GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader desc!");
 
 		//reflectionOutput
 		GE_CORE_INFO("Shader stage {}", target);
 		GE_CORE_INFO("Input parameters:");
 		uint32_t vertexInputOffset = 0;
-		GE_CORE_ASSERT(resources.stage_inputs.size() == desc.InputParameters, "SPIR-V stage inputs count does not match DXIL input parameters count!");
 		for (int i = 0; i < resources.stage_inputs.size(); i++)
 		{
 			auto& var_type = compiler.get_type(resources.stage_inputs[i].type_id);
@@ -635,33 +709,24 @@ namespace GEngine
 			if (target == SHADER_STAGE_VERTEX)
 				reflectionOutput.VertexInputs.push_back(inputInfo);
 		}
-		GE_CORE_ASSERT(resources.uniform_buffers.size() == desc.ConstantBuffers, "SPIR-V uniform buffers count does not match DXIL constant buffers count!");
 		GE_CORE_INFO("Uniform buffers:");
-		for (int i = 0; i < resources.uniform_buffers.size(); i++)
-		{
-			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
-			D3D12_SHADER_BUFFER_DESC bufferDesc;
-
-			hr = constantBuffer->GetDesc(&bufferDesc);
-			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader constant buffer desc!");
-
-			GE_CORE_TRACE("  Constant buffer name: {}, variables: {}, size: {}", bufferDesc.Name, bufferDesc.Variables, bufferDesc.Size);
-		}
 		for (const auto& uniformBuffer : resources.uniform_buffers)
 		{
 			auto& type = compiler.get_type(uniformBuffer.type_id);
 
 			ShaderReflectionCBufferInfo cbufferInfo;
-			cbufferInfo.Name			= uniformBuffer.name;
+			cbufferInfo.Name			= uniformBuffer.name.substr(std::string("type.").size()); // remove "type." prefix
 			cbufferInfo.BindPoint		= compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding);
 			cbufferInfo.Size			= compiler.get_declared_struct_size(type);
+			cbufferInfo.IsDynamic		= cbufferInfo.Name.find(SHADER_DYNAMIC_CBUFFER_KEY_WORDS) != cbufferInfo.Name.npos;
 			// ??? is that right?
 			cbufferInfo.RegisterSpace	= compiler.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet);
 
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", uniformBuffer.name,
-				compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding),
-				compiler.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet),
-				compiler.get_declared_struct_size(type));
+			GE_CORE_TRACE("Name: {}, Binding: {}, Size: {}, Is dynamic: {}", 
+				cbufferInfo.Name, 
+				cbufferInfo.BindPoint, 
+				cbufferInfo.Size, 
+				cbufferInfo.IsDynamic);
 			// members of the uniform buffer
 			for (int i = 0; i < type.member_types.size(); i++)
 			{
@@ -675,16 +740,15 @@ namespace GEngine
 				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Width {}, Vec Size {}, Colums {}, Size {}, Array size {}", 
 					constantInfo.Name,
 					constantInfo.Offset,
-					compiler.get_type(type.member_types[i]).basetype,
+					constantInfo.Type,
 					compiler.get_type(type.member_types[i]).width,
 					compiler.get_type(type.member_types[i]).vecsize,
 					compiler.get_type(type.member_types[i]).columns,
-					compiler.get_declared_struct_member_size(type, i),
+					constantInfo.Size,
 					constantInfo.ArraySize);
 
 				cbufferInfo.Properties.push_back(constantInfo);
 			}
-
 			reflectionOutput.CBuffers.insert(cbufferInfo);
 		}
 		GE_CORE_INFO("Separate images:");
@@ -699,14 +763,14 @@ namespace GEngine
 			imageInfo.RegisterSpace			= compiler.get_decoration(separateImage.id, spv::DecorationDescriptorSet);
 
 			auto& type = compiler.get_type(separateImage.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}, Dim {}, Depth {}, Format {}", 
+			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Dim: {}, Depth: {}, Format: {}, Array size: {}", 
 				imageInfo.Name,
 				imageInfo.BindPoint,
-				compiler.get_decoration(separateImage.id, spv::DecorationDescriptorSet),
-				type.basetype,
+				imageInfo.Type,
 				type.image.dim,
 				type.image.depth,
-				type.image.format);
+				type.image.format,
+				imageInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(imageInfo);
 		}
@@ -722,10 +786,11 @@ namespace GEngine
 			samplerInfo.RegisterSpace		= compiler.get_decoration(separateSampler.id, spv::DecorationDescriptorSet);
 
 			auto& type = compiler.get_type(separateSampler.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}", separateSampler.name,
-				compiler.get_decoration(separateSampler.id, spv::DecorationBinding),
-				compiler.get_decoration(separateSampler.id, spv::DecorationDescriptorSet),
-				type.basetype);
+			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Array size: {}", 
+				separateSampler.name,
+				samplerInfo.BindPoint,
+				samplerInfo.Type,
+				samplerInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(samplerInfo);
 		}
@@ -741,14 +806,14 @@ namespace GEngine
 			storageImageInfo.RegisterSpace	= compiler.get_decoration(storageImage.id, spv::DecorationDescriptorSet);
 
 			auto& type = compiler.get_type(storageImage.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Type: {}, Dim {}, Depth {}, Format {}", 
+			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Dim: {}, Depth: {}, Format: {}, Array size: {}", 
 				storageImage.name,
-				compiler.get_decoration(storageImage.id, spv::DecorationBinding),
-				compiler.get_decoration(storageImage.id, spv::DecorationDescriptorSet),
-				type.basetype,
+				storageImageInfo.BindPoint,
+				storageImageInfo.Type,
 				type.image.dim,
 				type.image.depth,
-				type.image.format);
+				type.image.format,
+				storageImageInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(storageImageInfo);
 		}
@@ -765,15 +830,19 @@ namespace GEngine
 			bufferInfo.RegisterSpace		= compiler.get_decoration(storageBuffer.id, spv::DecorationDescriptorSet);
 
 			auto& type = compiler.get_type(storageBuffer.type_id);
-			GE_CORE_TRACE("Name: {}, Binding: {}, Set: {}, Size: {}", storageBuffer.name,
-				compiler.get_decoration(storageBuffer.id, spv::DecorationBinding),
-				compiler.get_decoration(storageBuffer.id, spv::DecorationDescriptorSet),
-				compiler.get_declared_struct_size(type));
+			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Size(not record): {}, Array size: {}", 
+				storageBuffer.name,
+				bufferInfo.BindPoint,
+				bufferInfo.Type,
+				compiler.get_declared_struct_size(type),
+				bufferInfo.ArraySize);
+
 			for (int i = 0; i < type.member_types.size(); i++)
 			{
 				auto& memberType = compiler.get_type(type.member_types[i]);
 				std::string memberName = compiler.get_member_name(storageBuffer.base_type_id, i);
-				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", memberName,
+				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", 
+					memberName,
 					compiler.get_member_decoration(storageBuffer.base_type_id, i, spv::DecorationOffset),
 					memberType.basetype,
 					compiler.get_declared_struct_member_size(type, i));
@@ -785,7 +854,10 @@ namespace GEngine
 		for (const auto& output : resources.stage_outputs)
 		{
 			auto& type = compiler.get_type(output.type_id);
-			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", output.name, compiler.get_decoration(output.id, spv::DecorationLocation), type.basetype);
+			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", 
+				output.name, 
+				compiler.get_decoration(output.id, spv::DecorationLocation), 
+				type.basetype);
 		}
 
 	}

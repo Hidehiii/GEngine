@@ -25,6 +25,9 @@
 // shader cache info file name example: cacheDir/fileName/info (it should include shader name, hash code, etc. to identify the shader and check if the cache is valid when loading cache)
 #define SHADER_CACHE_INFO_FILE_NAME "info"
 
+// shader declare dynamic cbuffer key words in cbuffer name, e.g. cbuffer _DYNAMIC_Camera { ... }
+#define SHADER_DYNAMIC_CBUFFER_KEY_WORDS "_DYNAMIC_"
+
 // shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
 
 #define SUBPASS_EXTERNAL_INDEX (~0U)
