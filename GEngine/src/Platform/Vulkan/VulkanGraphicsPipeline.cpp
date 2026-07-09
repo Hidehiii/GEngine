@@ -76,6 +76,7 @@ namespace GEngine
 		vkCmdSetCullMode(cmd, Utils::CullModeToVkCullMode(m_Material->GetCull(pass)));
 		vkCmdSetDepthBounds(cmd, Graphics::IsReverseDepth() ? 1.0f : 0.0f, Graphics::IsReverseDepth() ? 0.0f : 1.0f);
 		auto offsets = m_Material->GetDynamicOffsets(pass);
+		// we assume all the resources are in set 0, so we only bind one set for each pass
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
 			std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetPipelineLayout(pass), 
 			0, 1, m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),

@@ -149,7 +149,7 @@ namespace GEngine
 		m_DescriptorSets.resize(m_Passes.size() * Graphics::GetFrameCount());
 		for (int pass = 0; pass < m_Passes.size(); pass++)
 		{
-			// 只用一个set
+			// we assume all the resources are in set 0, so we only create one set layout for each pass
 			// 创建多个set用于多帧时候的不同绑定和更新，不然会更新到在cmdBuffer里用的set
 			VkDescriptorSetAllocateInfo		allocInfo{};
 			allocInfo.sType					= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

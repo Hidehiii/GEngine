@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include <dxgi1_6.h>
 #include <directx/d3dx12.h>
+#include <set>
 
 namespace GEngine
 {
@@ -21,7 +22,7 @@ namespace GEngine
 			bool IsValid() const { return StartIndex != UINT32_MAX && Count > 0; }
 		};
 
-		D3D12DescriptorHeap(uint32_t rtvCount, uint32_t dsvCount, uint32_t cbvSrvUavCount);
+		D3D12DescriptorHeap(uint32_t rtvCount = 10000, uint32_t dsvCount = 10000, uint32_t cbvSrvUavCount = 10000);
 		~D3D12DescriptorHeap();
 
 		D3D12DescriptorAllocationInfo	Allocate(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count);

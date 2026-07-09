@@ -59,6 +59,7 @@ namespace GEngine
 
 	void VulkanShader::CreateDescriptorSetLayouts()
 	{
+		// we assume all the resources are in set 0, so we only create one set layout for each pass
 		m_DescriptorSetLayouts.resize(m_PassReflections.size());
 		for (int pass = 0; pass < m_PassReflections.size(); pass++)
 		{
@@ -89,9 +90,9 @@ namespace GEngine
 			}
 
 			VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
-			layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			layoutCreateInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-			layoutCreateInfo.pBindings = layoutBindings.data();
+			layoutCreateInfo.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutCreateInfo.bindingCount	= static_cast<uint32_t>(layoutBindings.size());
+			layoutCreateInfo.pBindings		= layoutBindings.data();
 
 			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::Get()->GetDevice(), &layoutCreateInfo, nullptr, &m_DescriptorSetLayouts[pass]));
 		}

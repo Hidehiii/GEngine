@@ -28,6 +28,9 @@ namespace GEngine
 
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, D3D12_RESOURCE_STATES dst);
 		void TransitionResourceState(D3D12_RESOURCE_STATES dst);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC GetShaderResourceViewDesc() const { return m_SRVDesc; }
+		Microsoft::WRL::ComPtr<ID3D12Resource> GetResource() const { return m_Texture; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>	m_Texture;
 		D3D12_RESOURCE_STATES					m_State = D3D12_RESOURCE_STATE_COPY_DEST;

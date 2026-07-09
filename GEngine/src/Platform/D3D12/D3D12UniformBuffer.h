@@ -17,6 +17,7 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
+		D3D12_CONSTANT_BUFFER_VIEW_DESC GetConstantBufferViewDesc() const { return m_ConstantBufferViewDesc; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>			m_ConstantBuffer = nullptr;
 		D3D12_CONSTANT_BUFFER_VIEW_DESC					m_ConstantBufferViewDesc{};

@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "D3D12Material.h"
 #include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12Texture2D.h"
 
 namespace GEngine
 {
@@ -32,7 +33,8 @@ namespace GEngine
 
 	void D3D12Material::CreateDescriptorHeap()
 	{
-		m_DescriptorHeaps.resize(m_Passes.size());
+		m_CbvSrvUavHeaps.clear();
+		m_CbvSrvUavHeaps.resize(m_Shader->GetPassReflections().size());
 		// create descriptor heap for each pass
 		for (int i = 0; i < m_Shader->GetPassReflections().size(); i++)
 		{
@@ -43,21 +45,75 @@ namespace GEngine
 				if (resource.Type != SHADER_PROPERTY_TYPE_SAMPLER)
 					CbvSrvUavCount++;
 			}
-
-			D3D12_DESCRIPTOR_HEAP_DESC	heapDesc = {};
-			heapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			heapDesc.NumDescriptors		= CbvSrvUavCount;
-			heapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-			D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_DescriptorHeaps.at(i)));
+			m_CbvSrvUavHeaps[i] = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CbvSrvUavCount);
 		}
 		// write descriptor heap for each pass
-		for (int i = 0; i < m_DescriptorHeaps.size(); i++)
+		for (int pass = 0; pass < m_CbvSrvUavHeaps.size(); pass++)
 		{
-			UINT descStep = D3D12Context::Get()->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle(m_DescriptorHeaps.at(i)->GetCPUDescriptorHandleForHeapStart());
+			UINT descStep = D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize();
+			// each frame 
+			for (int frame = 0; frame < m_CbvSrvUavHeaps.at(pass).CpuHandles.size(); frame++)
+			{
+				CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle(m_CbvSrvUavHeaps.at(pass).CpuHandles.at(frame));
+				uint32_t slotIndex = 0;
+				// material cbv
+				for (auto& [bindpoint, buffer] : m_ConstantBuffers.at(pass))
+				{
+					// offset the cpu handle by the slot index
+					cpuHandle.Offset(slotIndex, descStep);
+					slotIndex++;
 
-			// material cbv
+					D3D12Context::Get()->GetDevice()->CreateConstantBufferView(&buffer->GetConstantBufferViewDesc(), cpuHandle);
+				}
+				// other resources
+				for (auto& [name, prop] : m_Passes.at(pass).ResourceProperties)
+				{
+					// offset the cpu handle by the slot index
+					cpuHandle.Offset(slotIndex, descStep);
+					slotIndex++;
+
+					auto type = m_Shader->GetPropertyType(name);
+					switch (type)
+					{
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_SAMPLER: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_2D:
+					{
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(
+							(*((Ref<D3D12Texture2D>*)prop.Ptr))->GetResource().Get(),
+							&((*((Ref<D3D12Texture2D>*)prop.Ptr))->GetShaderResourceViewDesc()),
+							cpuHandle);
+						break;
+					}
+					case SHADER_PROPERTY_TYPE_TEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_3D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_TEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_2D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWBUFFER: GE_CORE_ASSERT(false, "Unsupport now!");
+					case SHADER_PROPERTY_TYPE_RWBUFFER_DYNAMIC: GE_CORE_ASSERT(false, "Unsupport now!");
+					default:
+						GE_CORE_ASSERT(false, "Unsupport now!");
+						break;
+					}
+				}
+			}
 		}
 	}
 }
