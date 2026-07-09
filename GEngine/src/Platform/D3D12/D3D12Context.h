@@ -5,7 +5,8 @@
 #include <wrl.h>
 #include <dxgi1_6.h>
 #include <directx/d3dx12.h>
-#include "D3D12CommandBuffer.h"
+#include "Platform/D3D12/D3D12CommandBuffer.h"
+#include "Platform/D3D12/D3D12DescriptorHeap.h"
 #include "GEngine/Math/Math.h"
 
 namespace GEngine
@@ -35,12 +36,14 @@ namespace GEngine
 		void 												EndSingleTimeComputeCommand(Ref<D3D12CommandBuffer>& commandList);
 		Ref<D3D12CommandBuffer>								BeginSingleTimeTransferCommand();
 		void 												EndSingleTimeTransferCommand(Ref<D3D12CommandBuffer>& commandList);
-		UINT												GetRtvDescriptorSize() { return m_RtvDescriptorSize; }
-		UINT												GetDsvDescriptorSize() { return m_DsvDescriptorSize; }
-		UINT												GetCbvSrvUavDescriptorSize() { return m_CbvSrvUavDescriptorSize; }
+		UINT												GetRtvDescriptorIncrementSize() { return m_RtvDescriptorIncrementSize; }
+		UINT												GetDsvDescriptorIncrementSize() { return m_DsvDescriptorIncrementSize; }
+		UINT												GetCbvSrvUavDescriptorIncrementSize() { return m_CbvSrvUavDescriptorIncrementSize; }
 		Vector4&											GetClearColor() { return m_ClearColor; }
 		UINT												GetBackBufferIndex() { return m_SwapChain->GetCurrentBackBufferIndex(); }
 		bool												IsVSync() { return m_VSync; }
+		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo	AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count) { return m_HeapPool.Allocate(type, count); }
+		void												FreeDescriptor(const D3D12DescriptorHeap::D3D12DescriptorAllocationInfo& info) { m_HeapPool.Free(info); }			
 
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>	GetFence(CommandBufferType type);
 		void														IncreaseFenceValue(CommandBufferType type);
@@ -60,6 +63,7 @@ namespace GEngine
 		void						CreateRenderPass();
 		void						CreateRenderTargets();
 		void						CreateFences();
+		void						CreateDescriptorHeaps();
 		void						CheckAndResetFences();
 	private:
 		void*											m_WindowHandle;
@@ -70,9 +74,10 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_ComputeQueue = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_TransferQueue = nullptr;
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>			m_SwapChain;
-		UINT											m_RtvDescriptorSize;
-		UINT											m_DsvDescriptorSize;
-		UINT											m_CbvSrvUavDescriptorSize;
+		D3D12DescriptorHeap								m_HeapPool;
+		UINT											m_RtvDescriptorIncrementSize;
+		UINT											m_DsvDescriptorIncrementSize;
+		UINT											m_CbvSrvUavDescriptorIncrementSize;
 		D3D12CommandPool								m_CommandPool;
 		Ref<D3D12RenderPass>							m_SwapChainRenderPass;
 		uint32_t										m_SwapChainWidth, m_SwapChainHeight;

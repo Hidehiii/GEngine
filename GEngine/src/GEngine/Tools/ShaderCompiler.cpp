@@ -174,8 +174,22 @@ namespace GEngine
 				return SHADER_PROPERTY_TYPE_TEXTURE_2D;
 			case D3D_SIT_SAMPLER:
 				return SHADER_PROPERTY_TYPE_SAMPLER;
-			case D3D_SIT_UAV_RWTYPED:
+			case D3D_SIT_UAV_RWSTRUCTURED:
 				return SHADER_PROPERTY_TYPE_RWBUFFER;
+			case D3D_SIT_UAV_RWTYPED:
+			{
+				switch (inputDesc.Dimension)
+				{
+				case D3D_SRV_DIMENSION_TEXTURE1D:			return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D;
+				case D3D_SRV_DIMENSION_TEXTURE1DARRAY:		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D_ARRAY;
+				case D3D_SRV_DIMENSION_TEXTURE2D:			return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D;
+				case D3D_SRV_DIMENSION_TEXTURE2DARRAY:		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D_ARRAY;
+				case D3D_SRV_DIMENSION_TEXTURE3D:			return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D;
+				case D3D_SRV_DIMENSION_TEXTURECUBE:			return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE;
+				case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:	return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE_ARRAY;
+				}
+				return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN;
+			}
 			default:
 				GE_CORE_ASSERT(false, "Unknown shader resource type!");
 			}
@@ -319,22 +333,37 @@ namespace GEngine
 			// base type image
 			case spirv_cross::SPIRType::BaseType::Image:
 			{
-				switch (type.image.dim)
+				switch (baseType)
 				{
-				case spv::Dim::Dim1D: 						return SHADER_PROPERTY_TYPE_TEXTURE_1D;
-				case spv::Dim::Dim2D: 						return SHADER_PROPERTY_TYPE_TEXTURE_2D;
-				case spv::Dim::Dim3D: 						return SHADER_PROPERTY_TYPE_TEXTURE_3D;
-				case spv::Dim::DimCube: 					return SHADER_PROPERTY_TYPE_TEXTURE_CUBE;
-				case spv::Dim::DimBuffer:
+				case SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN:
 				{
-					if (baseType == SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN)
+					switch (type.image.dim)
 					{
-						return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
+					case spv::Dim::Dim1D:		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D;
+					case spv::Dim::Dim2D: 		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D;
+					case spv::Dim::Dim3D: 		return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D;
+					case spv::Dim::DimCube: 	return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE;
+					case spv::Dim::DimBuffer:	return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
+					default: GE_CORE_ASSERT(false, "Unknown shader variable image type!");
+					}
+				}
+				case SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN:
+				{
+					switch (type.image.dim)
+					{
+					case spv::Dim::Dim1D:		return SHADER_PROPERTY_TYPE_TEXTURE_1D;
+					case spv::Dim::Dim2D: 		return SHADER_PROPERTY_TYPE_TEXTURE_2D;
+					case spv::Dim::Dim3D: 		return SHADER_PROPERTY_TYPE_TEXTURE_3D;
+					case spv::Dim::DimCube: 	return SHADER_PROPERTY_TYPE_TEXTURE_CUBE;
+					case spv::Dim::DimBuffer:	return SHADER_PROPERTY_TYPE_STORAGE_BUFFER;
+					default: GE_CORE_ASSERT(false, "Unknown shader variable image type!");
 					}
 				}
 				default:
-					GE_CORE_ASSERT(false, "Unknown shader variable image type!");
+					GE_CORE_ASSERT(false, "Can not convert image type!");
+					break;
 				}
+				
 				GE_CORE_ASSERT(false, "Unknown shader variable image type!");
 				break;
 			}
@@ -343,7 +372,18 @@ namespace GEngine
 				return SHADER_PROPERTY_TYPE_SAMPLER;
 			// base type sampled image
 			case spirv_cross::SPIRType::BaseType::SampledImage:
+			{
+				switch (type.image.dim)
+				{
+				case spv::Dim::Dim1D: 						return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D;
+				case spv::Dim::Dim2D: 						return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D;
+				case spv::Dim::Dim3D: 						return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D;
+				case spv::Dim::DimCube: 					return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE;
+				default:
+					GE_CORE_ASSERT(false, "Unknown shader variable sampled image type!");
+				}
 				return SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D;
+			}
 			// base type storage buffer
 			// base type struct
 			case spirv_cross::SPIRType::BaseType::Struct:
@@ -612,11 +652,11 @@ namespace GEngine
 				constantInfo.Offset				= varDesc.StartOffset;
 				constantInfo.ArraySize			= 1; // TODO: support array size
 
-				GE_CORE_TRACE("    var name {}, start offset {}, size {}!", 
+				GE_CORE_TRACE("    Var name: {}, Start offset: {}, Size: {}!", 
 					constantInfo.Name,
 					constantInfo.Offset,
 					constantInfo.Size);
-				GE_CORE_TRACE("      type name {}, class {}, type {}, rows {}, columns {}, elements {}, members {}!", 
+				GE_CORE_TRACE("      Type name: {}, Class: {}, Type: {}, Rows: {}, Columns: {}, Elements: {}, Members: {}!", 
 					typeDesc.Name, 
 					typeDesc.Class, 
 					typeDesc.Type, typeDesc.Rows, 
@@ -634,15 +674,24 @@ namespace GEngine
 			D3D12_SHADER_INPUT_BIND_DESC resDesc;
 			hr = reflection->GetResourceBindingDesc(i, &resDesc);
 			GE_CORE_ASSERT(SUCCEEDED(hr), "Failed to get shader resource binding desc!");
-			
+			// exclude constant buffer, which is already reflected above
 			if(resDesc.Type != D3D_SIT_CBUFFER)
 			{
-				GE_CORE_TRACE("var name {}, type {}, bind point {}, bind count {}, register space {}!", 
-					resDesc.Name, 
-					resDesc.Type, 
-					resDesc.BindPoint, 
-					resDesc.BindCount,
-					resDesc.Space);
+				ShaderReflectionResourceInfo	resourceInfo;
+				resourceInfo.Name				= resDesc.Name;
+				resourceInfo.Type				= Utils::ShaderPropertyTypeFromDxResourceDesc(resDesc);
+				resourceInfo.BindPoint			= resDesc.BindPoint;
+				resourceInfo.ArraySize			= resDesc.BindCount;
+				resourceInfo.RegisterSpace		= resDesc.Space;
+
+				GE_CORE_TRACE("Var name: {}, Type: {}, Bind point: {}, Bind count: {}, Register space: {}!", 
+					resourceInfo.Name, 
+					resourceInfo.Type, 
+					resourceInfo.BindPoint, 
+					resourceInfo.ArraySize,
+					resourceInfo.RegisterSpace);
+
+				reflectionOutput.Resources.insert(resourceInfo);
 			}
 		}
 		GE_CORE_INFO("Output parameters:");

@@ -1,7 +1,8 @@
 #pragma once
 #include "GEngine/Graphics/FrameBuffer.h"
-#include "D3D12RenderPass.h"
-#include "D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12RenderPass.h"
+#include "Platform/D3D12/D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12DescriptorHeap.h"
 #include <directx/d3dx12.h>
 
 namespace GEngine
@@ -40,10 +41,10 @@ namespace GEngine
 	private:
 		void CreateResources();
 	private:
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RtvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleRtvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DsvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_MultiSampleDsvHeap;
+		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_RtvHeap;
+		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_MultiSampleRtvHeap;
+		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_DsvHeap;
+		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_MultiSampleDsvHeap;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_RenderTargetResources;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_MultiSampleRenderTargetResources;
 		Microsoft::WRL::ComPtr<ID3D12Resource>					m_DepthStencilResource = nullptr;

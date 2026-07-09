@@ -68,8 +68,8 @@ namespace GEngine
 	D3D12Context* D3D12Context::s_ContextInstance = nullptr;
 
 	D3D12Context::D3D12Context(void* windowHandle)
+		: m_WindowHandle(windowHandle)
 	{
-		m_WindowHandle = windowHandle;
 		s_ContextInstance = this;
 	}
 	D3D12Context::~D3D12Context()
@@ -86,6 +86,7 @@ namespace GEngine
 #endif
 		CreateQueues();
 		CreateSwapChain(width, height);
+		CreateDescriptorHeaps();
 		GetDescriptorSize();
 		CreateCommandAllocator();
 		CreateRenderPass();
@@ -342,9 +343,9 @@ namespace GEngine
 	}
 	void D3D12Context::GetDescriptorSize()
 	{
-		m_RtvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		m_DsvDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		m_CbvSrvUavDescriptorSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_RtvDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		m_DsvDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		m_CbvSrvUavDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 	void D3D12Context::CreateRenderPass()
 	{
@@ -385,6 +386,10 @@ namespace GEngine
 			m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fences[i]));
 			m_FenceEvents[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		}
+	}
+	void D3D12Context::CreateDescriptorHeaps()
+	{
+		m_HeapPool = D3D12DescriptorHeap(10000, 10000, 10000);
 	}
 	void D3D12Context::CheckAndResetFences()
 	{

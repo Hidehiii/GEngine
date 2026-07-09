@@ -1,8 +1,8 @@
 #include "GEpch.h"
-#include "D3D12FrameBuffer.h"
-#include "D3D12Utils.h"
-#include "D3D12Context.h"
-#include "D3D12CommandBuffer.h"
+#include "Platform/D3D12/D3D12FrameBuffer.h"
+#include "Platform/D3D12/D3D12Utils.h"
+#include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12CommandBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
@@ -17,36 +17,28 @@ namespace GEngine
 
 		m_RenderPass = std::dynamic_pointer_cast<D3D12RenderPass>(renderPass);
 
-		D3D12_DESCRIPTOR_HEAP_DESC	heapDesc = {};
-		heapDesc.NumDescriptors		= m_Specification.RenderTargets.size();
-		heapDesc.Type				= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		// TODO : shader visiable?
-		heapDesc.Flags				= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		m_RtvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_Specification.RenderTargets.size());
 
-		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_RtvHeap)));
 		if (m_Specification.Samples > 1)
 		{
-			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_MultiSampleRtvHeap)));
+			m_MultiSampleRtvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_Specification.RenderTargets.size());
 		}
 
 		if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 		{
-			heapDesc.NumDescriptors = 1;
-			heapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-
-			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_DsvHeap)));
+			m_DsvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
 
 			if (m_Specification.Samples > 1)
 			{
-				D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_MultiSampleDsvHeap)));
+				m_MultiSampleDsvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
 			}
 		}
 		
-
 		CreateResources();
 	}
 	D3D12FrameBuffer::D3D12FrameBuffer(const Ref<D3D12RenderPass>& renderpass, const FrameBufferSpecificationForD3D12& spec, const RenderPassSpecificationForD3D12& renderpassSpec)
 	{
+		// we have not assume multi sample, so we just use 1 sample for now
 		m_Specification.Width	= spec.Width;
 		m_Specification.Height	= spec.Height;
 		m_RenderPass			= std::dynamic_pointer_cast<D3D12RenderPass>(renderpass);
@@ -54,13 +46,14 @@ namespace GEngine
 
 		m_RenderTargetResources = spec.RenderTargets;
 
-		D3D12_DESCRIPTOR_HEAP_DESC	heapDesc = {};
-		heapDesc.NumDescriptors = spec.RenderTargets.size();
-		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		// TODO : shader visiable?
-		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		m_RtvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_RenderTargetResources.size());
 
-		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_RtvHeap)));
+		if(m_Specification.Samples > 1)
+		{
+			m_MultiSampleRtvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_RenderTargetResources.size());
+
+			m_MultiSampleRenderTargetResources.resize(m_RenderTargetResources.size());
+		}
 
 		for (int i = 0; i < spec.RenderTargets.size(); i++)
 		{
@@ -68,20 +61,23 @@ namespace GEngine
 			rtvDesc.Format					= renderpassSpec.BackBufferFormat[i];
 			rtvDesc.ViewDimension			= D3D12_RTV_DIMENSION_TEXTURE2D;
 
-			const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(
-				m_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
-				static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorSize());
-			D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_RenderTargetResources[i].Get(), &rtvDesc, rtvDescriptor);
+			for(int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+			{
+				const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(m_RtvHeap.CpuHandles.at(frame),static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorIncrementSize());
+				D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_RenderTargetResources[i].Get(), &rtvDesc, rtvDescriptor);
+			}
 		}
 
 		if (renderpassSpec.EnableDepthStencil)
 		{
 			m_Specification.DepthStencil = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 
-			heapDesc.NumDescriptors = 1;
-			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+			m_DsvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
 
-			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_DsvHeap)));
+			if (m_Specification.Samples > 1)
+			{
+				m_MultiSampleDsvHeap = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+			}
 
 			const CD3DX12_CLEAR_VALUE		clearValue(Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil), 1, 0);
 			D3D12_DEPTH_STENCIL_VIEW_DESC	dsvDesc = {};
@@ -107,13 +103,28 @@ namespace GEngine
 				&clearValue,
 				IID_PPV_ARGS(m_DepthStencilResource.GetAddressOf())));
 
-
-			D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilResource.Get(), &dsvDesc, m_DsvHeap->GetCPUDescriptorHandleForHeapStart());
+			for(int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+			{
+				const CD3DX12_CPU_DESCRIPTOR_HANDLE dsvDescriptor(m_DsvHeap.CpuHandles.at(frame), 0, D3D12Context::Get()->GetDsvDescriptorIncrementSize());
+				D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilResource.Get(), &dsvDesc, dsvDescriptor);
+			}
 		}
 	}
 	D3D12FrameBuffer::~D3D12FrameBuffer()
 	{
-		GE_CORE_ASSERT(false, "");
+		D3D12Context::Get()->FreeDescriptor(m_RtvHeap);
+		if (m_Specification.Samples > 1)
+		{
+			D3D12Context::Get()->FreeDescriptor(m_MultiSampleRtvHeap);
+		}
+		if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		{
+			D3D12Context::Get()->FreeDescriptor(m_DsvHeap);
+			if (m_Specification.Samples > 1)
+			{
+				D3D12Context::Get()->FreeDescriptor(m_MultiSampleDsvHeap);
+			}
+		}
 	}
 	void D3D12FrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
@@ -128,13 +139,13 @@ namespace GEngine
 			m_DepthStencil->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		}
 
-		auto rtvDescriptor = m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
-		auto dsvDescriptor = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+		auto rtvDescriptor = m_RtvHeap.CpuHandles.at(Graphics::GetFrame());
+		auto dsvDescriptor = m_DsvHeap.CpuHandles.at(Graphics::GetFrame());
 
 		if (m_Specification.Samples > 1)
 		{
-			rtvDescriptor = m_MultiSampleRtvHeap->GetCPUDescriptorHandleForHeapStart();
-			dsvDescriptor = m_MultiSampleDsvHeap->GetCPUDescriptorHandleForHeapStart();	
+			rtvDescriptor = m_MultiSampleRtvHeap.CpuHandles.at(Graphics::GetFrame());
+			dsvDescriptor = m_MultiSampleDsvHeap.CpuHandles.at(Graphics::GetFrame());
 		}
 
 		cmd->OMSetRenderTargets(1, &rtvDescriptor, TRUE, &dsvDescriptor);
@@ -171,6 +182,7 @@ namespace GEngine
 		if (m_Specification.Samples > 1)
 		{
 			std::vector< D3D12_RESOURCE_BARRIER>	barriers;
+			// transition the MSAA render target to resolve source and the resolve destination to resolve destination
 			for (int i = 0; i < m_RenderTargets.size(); i++)
 			{
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleRenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_RESOLVE_SOURCE));
@@ -182,6 +194,8 @@ namespace GEngine
 				m_DepthStencil->TransitionResourceState(cmd, D3D12_RESOURCE_STATE_RESOLVE_DEST);
 			}
 			cmd->ResourceBarrier(barriers.size(), barriers.data());
+			barriers.clear();
+			// resolve the MSAA render target to the resolve destination
 			for (int i = 0; i < m_RenderTargets.size(); i++)
 			{
 				cmd->ResolveSubresource(m_RenderTargetResources[i].Get(), 0, m_MultiSampleRenderTargetResources[i].Get(), 0, Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.RenderTargets[i]));
@@ -190,7 +204,7 @@ namespace GEngine
 			{
 				cmd->ResolveSubresource(m_DepthStencilResource.Get(), 0, m_MultiSampleDepthStencilResource.Get(), 0, Utils::FrameBufferTextureFormatToDXGIFormat(m_Specification.DepthStencil));
 			}
-			barriers.clear();
+			// transition the MSAA render target back to render target and the resolve destination back to shader resource
 			for (int i = 0; i < m_RenderTargets.size(); i++)
 			{
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleRenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -200,6 +214,7 @@ namespace GEngine
 			{
 				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleDepthStencilResource.Get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 			}
+			cmd->ResourceBarrier(barriers.size(), barriers.data());
 		}
 		
 
@@ -237,8 +252,14 @@ namespace GEngine
 		}
 		cmd->ResourceBarrier(barriers.size(), barriers.data());
 
-		auto rtvDescriptor = m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
-		auto dsvDescriptor = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+		auto rtvDescriptor = m_RtvHeap.CpuHandles.at(Graphics::GetFrame());
+		auto dsvDescriptor = m_DsvHeap.CpuHandles.at(Graphics::GetFrame());
+
+		if(m_Specification.Samples > 1)
+		{
+			rtvDescriptor = m_MultiSampleRtvHeap.CpuHandles.at(Graphics::GetFrame());
+			dsvDescriptor = m_MultiSampleDsvHeap.CpuHandles.at(Graphics::GetFrame());
+		}
 
 		cmd->OMSetRenderTargets(1, &rtvDescriptor, TRUE, &dsvDescriptor);
 		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
@@ -274,14 +295,18 @@ namespace GEngine
 		std::vector< D3D12_RESOURCE_BARRIER>	barriers;
 		for (int i = 0; i < m_RenderTargets.size(); i++)
 		{
-			barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_RenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+			if(m_Specification.Samples > 1)
+				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleRenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+			else
+				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_RenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 		}
 		cmd->ResourceBarrier(barriers.size(), barriers.data());
 	}
 	void D3D12FrameBuffer::CreateResources()
 	{
 		m_RenderTargetResources.resize(m_Specification.RenderTargets.size());
-		m_MultiSampleRenderTargetResources.resize(m_Specification.RenderTargets.size());
+		if(m_Specification.Samples > 1)
+			m_MultiSampleRenderTargetResources.resize(m_Specification.RenderTargets.size());
 		m_RenderTargets.resize(m_Specification.RenderTargets.size());
 
 		for (UINT i = 0; i < m_Specification.RenderTargets.size(); i++)
@@ -313,8 +338,12 @@ namespace GEngine
 					&clearValue,
 					IID_PPV_ARGS(m_MultiSampleRenderTargetResources[i].GetAddressOf())));
 
-				const CD3DX12_CPU_DESCRIPTOR_HANDLE multiSampleRtvDescriptor(m_MultiSampleRtvHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorSize());
-				D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_MultiSampleRenderTargetResources[i].Get(), &rtvDesc, multiSampleRtvDescriptor);
+				// create multi sample rtv for each frame
+				for (int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+				{
+					const CD3DX12_CPU_DESCRIPTOR_HANDLE multiSampleRtvDescriptor(m_MultiSampleRtvHeap.CpuHandles[frame], static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorIncrementSize());
+					D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_MultiSampleRenderTargetResources[i].Get(), &rtvDesc, multiSampleRtvDescriptor);
+				}
 			}
 
 			D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -335,8 +364,12 @@ namespace GEngine
 				&clearValue,
 				IID_PPV_ARGS(m_RenderTargetResources[i].GetAddressOf())));
 
-			const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorSize());
-			D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_RenderTargetResources[i].Get(), &rtvDesc, rtvDescriptor);
+			// create rtv for each frame
+			for(int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+			{
+				const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(m_RtvHeap.CpuHandles[frame], static_cast<INT>(i), D3D12Context::Get()->GetRtvDescriptorIncrementSize());
+				D3D12Context::Get()->GetDevice()->CreateRenderTargetView(m_RenderTargetResources[i].Get(), &rtvDesc, rtvDescriptor);
+			}
 
 			m_RenderTargets.at(i) = CreateRef<D3D12Texture2D>(m_RenderTargetResources[i], D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
@@ -370,7 +403,12 @@ namespace GEngine
 					&clearValue,
 					IID_PPV_ARGS(m_MultiSampleDepthStencilResource.GetAddressOf())));
 
-				D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_MultiSampleDepthStencilResource.Get(), &dsvDesc, m_MultiSampleDsvHeap->GetCPUDescriptorHandleForHeapStart());
+				// create multi sample dsv for each frame
+				for(int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+				{
+					const CD3DX12_CPU_DESCRIPTOR_HANDLE multiSampleDsvDescriptor(m_MultiSampleDsvHeap.CpuHandles[frame], 0, D3D12Context::Get()->GetDsvDescriptorIncrementSize());
+					D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_MultiSampleDepthStencilResource.Get(), &dsvDesc, multiSampleDsvDescriptor);
+				}
 			}
 
 			D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -391,8 +429,12 @@ namespace GEngine
 				&clearValue,
 				IID_PPV_ARGS(m_DepthStencilResource.GetAddressOf())));
 			
-
-			D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilResource.Get(), &dsvDesc, m_DsvHeap->GetCPUDescriptorHandleForHeapStart());
+			// create dsv for each frame
+			for(int frame = 0; frame < Graphics::GetFrameCount(); frame++)
+			{
+				const CD3DX12_CPU_DESCRIPTOR_HANDLE dsvDescriptor(m_DsvHeap.CpuHandles[frame], 0, D3D12Context::Get()->GetDsvDescriptorIncrementSize());
+				D3D12Context::Get()->GetDevice()->CreateDepthStencilView(m_DepthStencilResource.Get(), &dsvDesc, dsvDescriptor);
+			}
 
 			m_DepthStencil = CreateRef<D3D12Texture2D>(m_DepthStencilResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		}
