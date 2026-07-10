@@ -257,7 +257,7 @@ namespace GEngine
         spec.Operation  = op;
         m_RenderPass    = std::dynamic_pointer_cast<OpenGLRenderPass>(RenderPass::Create(spec));
     }
-    Ref<Texture2D> OpenGLFrameBuffer::GetRenderTarget(int index)
+    Ref<Texture2D> OpenGLFrameBuffer::GetRenderTarget(uint32_t index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
         return m_RenderTargets.at(index);

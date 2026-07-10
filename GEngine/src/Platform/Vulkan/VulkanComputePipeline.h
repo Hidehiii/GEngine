@@ -17,17 +17,21 @@ namespace GEngine
 		virtual ~VulkanComputePipeline() override;
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
+
+		bool operator==(const VulkanComputePipeline& other) const
+		{
+			return m_Material == other.m_Material;
+		}
 	protected:
-		virtual void Compute(CommandBuffer* cmdBuffer, int pass, uint32_t x, uint32_t y, uint32_t z) override;
+		virtual void Compute(CommandBuffer* cmdBuffer, uint32_t pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		friend class VulkanCommandBuffer;
 	private:
-		VkPipeline GetPipeline(const int& pass);
-		void PrepareCompute(CommandBuffer* cmdBuffer, const int& pass);
+		VkPipeline GetPipeline(const uint32_t& pass);
+		void PrepareCompute(CommandBuffer* cmdBuffer, const uint32_t& pass);
 	private:
 		Ref<VulkanMaterial>									m_Material;
 
-		VkPipelineLayout									m_PipelineLayout;
 		VkPipelineCache										m_PipelineCache;
 		std::vector<VulkanComputePipelineInfo>				m_ComputePipelines;
 		bool												m_RecreatePipeline = false;

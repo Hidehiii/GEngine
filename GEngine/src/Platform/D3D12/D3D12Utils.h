@@ -48,6 +48,8 @@ namespace GEngine
 		FrameBufferTextureFormat	DXGIFormatToFrameBufferTextureFormat(DXGI_FORMAT format);
 		DXGI_FORMAT					ShaderInputDataTypeToDXGIFormat(ShaderInputDataType type);
 		DXGI_FORMAT					RenderImage2DFormatToDXGIFormat(RenderImage2DFormat format);
+		D3D12_CULL_MODE				CullModeToD3D12CullMode(CullMode mode);
+		D3D12_BLEND					BlendFactorToD3D12Blend(BlendFactor factor);
 	}
 }
 

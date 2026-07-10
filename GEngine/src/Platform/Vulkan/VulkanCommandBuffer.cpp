@@ -302,7 +302,7 @@ namespace GEngine
 		ClearSignalSemaphores();
 		ClearWaitSemaphores();
 	}
-	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount, uint32_t indexCount)
+	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		std::static_pointer_cast<VulkanGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, pass, instanceCount, indexCount);
 	}
@@ -311,7 +311,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS, "SwitchToNextSubpass is only for graphics command buffer");
 		vkCmdNextSubpass(m_CommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 	}
-	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
+	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
 	{
 		std::static_pointer_cast<VulkanComputePipeline>(pipeline)->Compute(this, pass, x, y, z);
 	}

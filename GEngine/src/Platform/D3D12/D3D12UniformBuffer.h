@@ -18,6 +18,11 @@ namespace GEngine
 		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC GetConstantBufferViewDesc() const { return m_ConstantBufferViewDesc; }
+
+		bool operator==(const D3D12UniformBuffer& other) const
+		{
+			return m_ConstantBuffer.Get() == other.m_ConstantBuffer.Get();
+		}
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource>			m_ConstantBuffer = nullptr;
 		D3D12_CONSTANT_BUFFER_VIEW_DESC					m_ConstantBufferViewDesc{};

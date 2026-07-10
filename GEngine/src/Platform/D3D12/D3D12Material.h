@@ -14,6 +14,11 @@ namespace GEngine
 	{
 	public:
 		D3D12Material(const Ref<Shader>& shader, const std::string& name = "");
+
+		bool operator==(const D3D12Material& other) const
+		{
+			return m_Shader == other.m_Shader && m_ConstantBuffers == other.m_ConstantBuffers;
+		}
 	private:
 		void CreateDescriptorHeap();
 	private:

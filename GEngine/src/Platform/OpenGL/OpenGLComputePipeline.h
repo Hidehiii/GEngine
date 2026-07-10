@@ -13,8 +13,12 @@ namespace GEngine
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 
+		bool operator==(const OpenGLComputePipeline& other) const
+		{
+			return m_Material == other.m_Material;
+		}
 	protected:
-		virtual void Compute(CommandBuffer* cmdBuffer, int pass, uint32_t x, uint32_t y, uint32_t z) override;
+		virtual void Compute(CommandBuffer* cmdBuffer, uint32_t pass, uint32_t x, uint32_t y, uint32_t z) override;
 
 		friend class OpenGLCommandBuffer;
 

@@ -30,6 +30,7 @@ namespace GEngine
 		void	SetDepthTest(CompareOperation op);
 		void	SetCull(CullMode mode);
 		void	SetBlend(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha);
+		void    SetColorMask(uint32_t mask);
 	}
 }
 

@@ -8,7 +8,7 @@ namespace GEngine
 	{
 		std::vector<DXGI_FORMAT>								BackBufferFormat;
 		bool													EnableDepthStencil;
-		int														Samples;
+		uint32_t												Samples;
 		RenderPassOperation										Operation;
 	};
 

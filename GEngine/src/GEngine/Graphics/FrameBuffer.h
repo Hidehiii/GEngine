@@ -29,8 +29,8 @@ namespace GEngine
 		virtual float							GetWidth() const { return (float)GetSpecification().Width; }
 		virtual float							GetHeight() const { return (float)GetSpecification().Height; }
 		virtual uint32_t						GetSamples() const { return GetSpecification().Samples; }
-		virtual int								GetRenderTargetCount() = 0;
-		virtual Ref<Texture2D>					GetRenderTarget(int index) = 0;
+		virtual uint32_t						GetRenderTargetCount() = 0;
+		virtual Ref<Texture2D>					GetRenderTarget(uint32_t index) = 0;
 		virtual Ref<Texture2D>					GetDepthStencil() = 0;
 		virtual Ref<RenderPass>					GetRenderPass() = 0;
 

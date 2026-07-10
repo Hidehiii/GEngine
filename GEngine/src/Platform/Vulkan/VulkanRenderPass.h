@@ -27,6 +27,11 @@ namespace GEngine
 		VkRenderPass						GetRenderPass() { return m_RenderPass; }
 
 		static Ref<VulkanRenderPass> Create(const RenderPassSpecificationForVulkan& spec);
+
+		bool operator==(const VulkanRenderPass& other) const
+		{
+			return m_RenderPass == other.m_RenderPass;
+		}
 	private:
 		void CreateRenderPass();
 		

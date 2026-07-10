@@ -15,8 +15,14 @@ namespace GEngine
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
+
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout);
+
+		bool operator==(const VulkanStorageImage2D& other) const
+		{
+			return m_Image == other.m_Image && m_ImageView == other.m_ImageView;
+		}
 	private:
 		uint32_t						m_Width, m_Height;
 		ComputeImage2DFormat			m_Format;

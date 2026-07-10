@@ -28,11 +28,25 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetRenderTargetCount() override { return m_RenderTargetResources.size(); }
+		virtual uint32_t						GetRenderTargetCount() override { return m_RenderTargetResources.size(); }
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
-		virtual Ref<Texture2D>					GetRenderTarget(int index) override;
+		virtual Ref<Texture2D>					GetRenderTarget(uint32_t index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
+
+		bool operator==(const D3D12FrameBuffer& other) const
+		{
+			if (m_RenderTargetResources.size() != other.m_RenderTargetResources.size())
+				return false;
+			for (size_t i = 0; i < m_RenderTargetResources.size(); ++i)
+			{
+				if (m_RenderTargetResources[i].Get() != other.m_RenderTargetResources[i].Get())
+					return false;
+			}
+			if (m_DepthStencilResource.Get() != other.m_DepthStencilResource.Get())
+				return false;
+			return true;
+		}
 	protected:
 		// for present
 		void BeginPresentRender(CommandBuffer* cmdBuffer) override;

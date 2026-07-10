@@ -41,7 +41,7 @@ namespace GEngine
 
 		D3D12_DESCRIPTOR_HEAP_DESC	srvHeapDesc = {};
 		srvHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		srvHeapDesc.NumDescriptors	= 1;
+		srvHeapDesc.NumDescriptors	= 10000;
 		srvHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&s_SrvHeap)));
 		

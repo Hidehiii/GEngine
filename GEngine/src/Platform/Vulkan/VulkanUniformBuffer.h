@@ -16,7 +16,12 @@ namespace GEngine
 		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
-		VkDescriptorType GetDescriptorType() const { return m_DescriptorType; }
+		VkDescriptorType		GetDescriptorType() const { return m_DescriptorType; }
+
+		bool operator==(const VulkanUniformBuffer& other) const
+		{
+			return m_UniformBuffer == other.m_UniformBuffer;
+		}
 	private:
 		VkBuffer					m_UniformBuffer = nullptr;
 		VkDeviceMemory				m_UniformBufferMemory;

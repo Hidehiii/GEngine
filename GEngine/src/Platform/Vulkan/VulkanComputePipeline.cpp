@@ -30,7 +30,6 @@ namespace GEngine
 			{
 				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
 			}
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
 	}
 	Ref<Material> VulkanComputePipeline::GetMaterial()
@@ -42,12 +41,12 @@ namespace GEngine
 		m_Material = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		m_RecreatePipeline = true;
 	}
-	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, int pass, uint32_t x, uint32_t y, uint32_t z)
+	void VulkanComputePipeline::Compute(CommandBuffer* cmdBuffer, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
 	{
 		PrepareCompute(cmdBuffer, pass);
 		vkCmdDispatch(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), x, y, z);
 	}
-	VkPipeline VulkanComputePipeline::GetPipeline(const int& pass)
+	VkPipeline VulkanComputePipeline::GetPipeline(const uint32_t& pass)
 	{
 		for (int i = m_ComputePipelines.size() - 1; i >= 0; i--)
 		{
@@ -70,16 +69,9 @@ namespace GEngine
 		
 		GE_CORE_ASSERT(funcNames.find(SHADER_STAGE_COMPUTE) != funcNames.end(), "there are no shader stage in compute pipeline pass {}", pass);
 
-		VkPipelineLayoutCreateInfo			pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType			= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount	= 1;
-		pipelineLayoutInfo.pSetLayouts		= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetDescriptorSetLayout(pass);
-
-		VK_CHECK_RESULT(vkCreatePipelineLayout(VulkanContext::Get()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
-
 		VkComputePipelineCreateInfo		pipelineInfo{};
 		pipelineInfo.sType				= VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-		pipelineInfo.layout				= m_PipelineLayout;
+		pipelineInfo.layout				= std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetPipelineLayout(pass);
 		pipelineInfo.stage				= shaderStage;
 
 		VkPipeline pipeline;
@@ -94,7 +86,8 @@ namespace GEngine
 
 		return pipeline;
 	}
-	void VulkanComputePipeline::PrepareCompute(CommandBuffer* cmdBuffer, const int& pass)
+
+	void VulkanComputePipeline::PrepareCompute(CommandBuffer* cmdBuffer, const uint32_t& pass)
 	{
 		m_Material->Update(cmdBuffer, pass);
 
@@ -104,8 +97,6 @@ namespace GEngine
 			{
 				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
 			}
-			
-			vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), m_PipelineLayout, nullptr);
 		}
 
 
@@ -113,7 +104,7 @@ namespace GEngine
 
 		auto offsets = m_Material->GetDynamicOffsets(pass);
 		vkCmdBindDescriptorSets(static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, 
-			m_PipelineLayout, 0, 1, 
+			std::dynamic_pointer_cast<VulkanShader>(m_Material->GetShader())->GetPipelineLayout(pass), 0, 1,
 			m_Material->GetDescriptorSet(pass, Graphics::GetFrame()),
 			offsets.size(), offsets.data());
 	}

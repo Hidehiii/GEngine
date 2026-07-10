@@ -14,6 +14,10 @@ namespace GEngine
 		D3D12Shader(const std::string& path);
 		virtual ~D3D12Shader();
 
+		bool operator==(const D3D12Shader& other) const
+		{
+			return m_ByteCodes == other.m_ByteCodes;
+		}
 	private:
 		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) override; //  pass { stage : byte}
 

@@ -19,25 +19,28 @@ namespace GEngine
 		static Ref<Material> Copy(const Ref<Material>& other, const std::string& name);
 		virtual ~Material() {}
 
-		virtual void SetEnableDepthWrite(bool enabled, const int& pass);
-		virtual bool GetEnableDepthWrite(int pass) { return m_Passes.at(pass).State.DepthWrite; }
+		virtual uint32_t	GetColorMask(uint32_t pass) { return m_Passes.at(pass).State.ColorMask; }
+		virtual void		SetColorMask(uint32_t mask, const uint32_t& pass) { m_Passes.at(pass).State.ColorMask = mask; }
 
-		virtual void				SetDepthTestOp(CompareOperation op, const int& pass);
-		virtual CompareOperation	GetDepthTestOp(int pass)	{ return m_Passes.at(pass).State.DepthTestOp; }
+		virtual void SetEnableDepthWrite(bool enabled, const uint32_t& pass);
+		virtual bool GetEnableDepthWrite(uint32_t pass) { return m_Passes.at(pass).State.DepthWrite; }
 
-		virtual void SetCullMode(CullMode mode, int pass);
-		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, int pass);
-		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, int pass);
+		virtual void				SetDepthTestOp(CompareOperation op, const uint32_t& pass);
+		virtual CompareOperation	GetDepthTestOp(uint32_t pass)	{ return m_Passes.at(pass).State.DepthTestOp; }
 
-		virtual CullMode	GetCull(int pass)					{ return m_Passes.at(pass).State.Cull; }
-		virtual BlendMode	GetBlendColor(int pass)				{ return m_Passes.at(pass).State.BlendColor; }
-		virtual BlendMode	GetBlendAlpha(int pass)				{ return m_Passes.at(pass).State.BlendAlpha; }
-		virtual BlendFactor GetBlendColorSrc(int pass)			{ return m_Passes.at(pass).State.BlendColorSrc; }
-		virtual BlendFactor GetBlendAlphaSrc(int pass)			{ return m_Passes.at(pass).State.BlendAlphaSrc; }
-		virtual BlendFactor GetBlendColorDst(int pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
-		virtual BlendFactor GetBlendAlphaDst(int pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
+		virtual void SetCullMode(CullMode mode, uint32_t pass);
+		virtual void SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, uint32_t pass);
+		virtual void SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, uint32_t pass);
 
-		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) = 0; // replace ubo and buffer in pass, return old buffer to release
+		virtual CullMode	GetCull(uint32_t pass)					{ return m_Passes.at(pass).State.Cull; }
+		virtual BlendMode	GetBlendColor(uint32_t pass)				{ return m_Passes.at(pass).State.BlendColor; }
+		virtual BlendMode	GetBlendAlpha(uint32_t pass)				{ return m_Passes.at(pass).State.BlendAlpha; }
+		virtual BlendFactor GetBlendColorSrc(uint32_t pass)			{ return m_Passes.at(pass).State.BlendColorSrc; }
+		virtual BlendFactor GetBlendAlphaSrc(uint32_t pass)			{ return m_Passes.at(pass).State.BlendAlphaSrc; }
+		virtual BlendFactor GetBlendColorDst(uint32_t pass)			{ return m_Passes.at(pass).State.BlendColorDst; }
+		virtual BlendFactor GetBlendAlphaDst(uint32_t pass)			{ return m_Passes.at(pass).State.BlendAlphaDst; }
+
+		virtual Buffer SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) = 0; // replace ubo and buffer in pass, return old buffer to release
 
 		template<typename T>
 		void SetConstant(const std::string& name, const T& value)
@@ -88,12 +91,12 @@ namespace GEngine
 		virtual void* ReadResourceProperty(const std::string& name);
 
 		virtual void ClearAllPasses();
-		virtual void ReleaseCBufferMemory(const int& pass, const uint32_t& bindPoint);
-		virtual void ReAllocateCBufferMemory(const int& pass, const uint32_t& bindPoint, const uint32_t& size);
+		virtual void ReleaseCBufferMemory(const uint32_t& pass, const uint32_t& bindPoint);
+		virtual void ReAllocateCBufferMemory(const uint32_t& pass, const uint32_t& bindPoint, const uint32_t& size);
 
 		virtual void ResourceUpdateNotify() = 0;
 
-		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) = 0;
+		virtual void Update(CommandBuffer* cmdBuffer, const uint32_t& pass) = 0;
 	protected:
 		std::string				m_Name;
 

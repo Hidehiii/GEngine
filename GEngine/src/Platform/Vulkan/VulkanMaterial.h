@@ -14,14 +14,19 @@ namespace GEngine
 		
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
-		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
+		virtual Buffer SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
 
 		virtual std::vector<uint32_t> GetDynamicOffsets(const int& pass);
 
 		std::unordered_map<uint32_t, Ref<VulkanUniformBuffer>>	GetUniformBuffer(const int& pass)					{ return m_UniformBuffers.at(pass); }
 		VkDescriptorSet*										GetDescriptorSet(const int& pass, const int& index) { return &m_DescriptorSets.at(pass * Graphics::GetFrameCount() + index); }
+
+		bool operator==(const VulkanMaterial& other) const
+		{
+			return m_Shader == other.m_Shader;
+		}
 	protected:
-		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
+		virtual void Update(CommandBuffer* cmdBuffer, const uint32_t& pass) override;
 
 		virtual void ResourceUpdateNotify() override { m_NeedUpdateDescripotrSetFrames = std::vector<uint8_t>(m_Passes.size(), UINT8_MAX); }
 	private:

@@ -298,5 +298,10 @@ namespace GEngine
 				Utils::BlendFactorToGLBlendFactor(srcAlpha),
 				Utils::BlendFactorToGLBlendFactor(dstAlpha));
 		}
+
+		void SetColorMask(uint32_t mask)
+		{
+			glColorMask((mask & COLOR_MASK_CHANNEL_R) != 0, (mask & COLOR_MASK_CHANNEL_G) != 0, (mask & COLOR_MASK_CHANNEL_B) != 0, (mask & COLOR_MASK_CHANNEL_A) != 0);
+		}
 	}
 }

@@ -29,7 +29,7 @@ namespace GEngine
 	OpenGLMaterial::~OpenGLMaterial()
 	{
 	}
-	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer, const int& pass)
+	void OpenGLMaterial::Update(CommandBuffer* cmdBuffer, const uint32_t& pass)
 	{
 		m_Shader->Use(pass);
 
@@ -110,9 +110,10 @@ namespace GEngine
 			m_Passes.at(pass).State.BlendAlphaSrc, m_Passes.at(pass).State.BlendAlphaDst);
 		Utils::SetDepthTest(m_Passes.at(pass).State.DepthTestOp);
 		Utils::EnableDepthWrite(m_Passes.at(pass).State.DepthWrite);
+		Utils::SetColorMask(m_Passes.at(pass).State.ColorMask);
 	}
 
-	Buffer OpenGLMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
+	Buffer OpenGLMaterial::SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
 	{
 		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
 		auto& ubuffers = m_UniformBuffers.at(pass);

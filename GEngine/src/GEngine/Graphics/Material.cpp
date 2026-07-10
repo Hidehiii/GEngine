@@ -64,19 +64,19 @@ namespace GEngine
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
     }
-	void Material::SetEnableDepthWrite(bool enabled, const int& pass)
+	void Material::SetEnableDepthWrite(bool enabled, const uint32_t& pass)
 	{
 		m_Passes.at(pass).State.DepthWrite = enabled;
 	}
-	void Material::SetDepthTestOp(CompareOperation op, const int& pass)
+	void Material::SetDepthTestOp(CompareOperation op, const uint32_t& pass)
 	{
 		m_Passes.at(pass).State.DepthTestOp = op;
 	}
-	void Material::SetCullMode(CullMode mode, int pass)
+	void Material::SetCullMode(CullMode mode, uint32_t pass)
 	{
 		m_Passes.at(pass).State.Cull = mode;
 	}
-	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, int pass)
+	void Material::SetBlendMode(BlendMode modeColor, BlendMode modeAlpha, BlendFactor srcColor, BlendFactor dstColor, BlendFactor srcAlpha, BlendFactor dstAlpha, uint32_t pass)
 	{
 		m_Passes.at(pass).State.BlendColor = modeColor;
 		m_Passes.at(pass).State.BlendAlpha = modeAlpha;
@@ -85,7 +85,7 @@ namespace GEngine
 		m_Passes.at(pass).State.BlendColorDst = dstColor;
 		m_Passes.at(pass).State.BlendAlphaDst = dstAlpha;
 	}
-	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, int pass)
+	void Material::SetBlendMode(BlendMode mode, BlendFactor source, BlendFactor dest, uint32_t pass)
 	{
 		m_Passes.at(pass).State.BlendColor = mode;
 		m_Passes.at(pass).State.BlendAlpha = mode;
@@ -227,13 +227,13 @@ namespace GEngine
 		}
 		m_Passes.clear();
 	}
-	void Material::ReleaseCBufferMemory(const int& pass, const uint32_t& bindPoint)
+	void Material::ReleaseCBufferMemory(const uint32_t& pass, const uint32_t& bindPoint)
 	{
 		GE_CORE_ASSERT(m_Passes.size() > pass, "Pass index out of range!");
 		GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "CBuffer bind point not found in pass!");
 		m_Passes.at(pass).CBuffers.at(bindPoint).Release();
 	}
-	void Material::ReAllocateCBufferMemory(const int& pass, const uint32_t& bindPoint, const uint32_t& size)
+	void Material::ReAllocateCBufferMemory(const uint32_t& pass, const uint32_t& bindPoint, const uint32_t& size)
 	{
 		GE_CORE_ASSERT(m_Passes.size() > pass, "Pass index out of range!");
 		GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "CBuffer bind point not found in pass!");

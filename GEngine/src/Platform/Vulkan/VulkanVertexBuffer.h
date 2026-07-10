@@ -29,6 +29,10 @@ namespace GEngine
 		const std::vector<VkVertexInputBindingDescription>&		GetVertexInputBindingDescription() const { return m_VertexInputBindingDescription; }
 		const std::vector<VkVertexInputAttributeDescription>&	GetVertexInputAttributeDescriptions() const { return m_VertexInputAttributeDescriptions; }
 
+		bool operator==(const VulkanVertexBuffer& other) const
+		{
+			return m_VertexBuffer == other.m_VertexBuffer && m_InstanceBuffer == other.m_InstanceBuffer && m_IndexBuffer == other.m_IndexBuffer;
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 
@@ -54,7 +58,10 @@ namespace GEngine
 		VulkanIndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~VulkanIndexBuffer();
 		
-
+		bool operator==(const VulkanIndexBuffer& other) const
+		{
+			return m_IndexBuffer == other.m_IndexBuffer;
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:

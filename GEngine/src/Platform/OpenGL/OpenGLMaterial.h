@@ -15,11 +15,16 @@ namespace GEngine
 
 		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
 
-		virtual Buffer SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
+		virtual Buffer SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
+
+		bool operator==(const OpenGLMaterial& other) const
+		{
+			return m_Shader == other.m_Shader && m_UniformBuffers == other.m_UniformBuffers;
+		}
 	protected:
 		virtual void ResourceUpdateNotify() override {}
 
-		virtual void Update(CommandBuffer* cmdBuffer, const int& pass) override;
+		virtual void Update(CommandBuffer* cmdBuffer, const uint32_t& pass) override;
 	private:
 		Ref<OpenGLShader>														m_Shader;
 		std::vector<std::unordered_map<uint32_t, Ref<OpenGLUniformBuffer>>>		m_UniformBuffers; // pass { bind point : buffer }

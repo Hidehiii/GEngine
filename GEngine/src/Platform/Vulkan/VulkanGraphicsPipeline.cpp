@@ -37,7 +37,7 @@ namespace GEngine
         
     }
 
-	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const int& pass)
+	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const uint32_t& pass)
 	{
 		m_Material->UpdateDynamicOffsets(pass);
 		m_Material->Update(cmdBuffer, pass);
@@ -83,7 +83,7 @@ namespace GEngine
 			offsets.size(), offsets.data());
 	}
 
-	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount, uint32_t indexCount)
+	void VulkanGraphicsPipeline::Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
 	{
 		m_VertexBuffer->CheckInputLayout(m_Material->GetShader(), pass);
 		PrepareRender(cmdBuffer, frameBuffer, pass);
@@ -122,7 +122,7 @@ namespace GEngine
 		m_RecreatePipeline = true;
 	}
     
-	VkPipeline VulkanGraphicsPipeline::GetPipeline(const Ref<FrameBuffer>& frameBuffer, const int& pass)
+	VkPipeline VulkanGraphicsPipeline::GetPipeline(const Ref<FrameBuffer>& frameBuffer, const uint32_t& pass)
 	{
 		for (int i = m_GraphicsPipelines.size() - 1; i >= 0; i--)
 		{
@@ -225,60 +225,23 @@ namespace GEngine
 		Multisampling.alphaToOneEnable						= VK_FALSE;
 
 		VkPipelineColorBlendAttachmentState					ColorBlendAttachment{};
-		ColorBlendAttachment.colorWriteMask					= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		ColorBlendAttachment.colorWriteMask					= Utils::ColorMaskToVkColorComponentFlags(m_Material->GetColorMask(pass));
 		ColorBlendAttachment.blendEnable					= VK_TRUE;
 		ColorBlendAttachment.srcColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorSrc(pass));
 		ColorBlendAttachment.dstColorBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendColorDst(pass));
 		ColorBlendAttachment.colorBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendColor(pass))
-		{
-		case BLEND_MODE_NONE:
+		if(m_Material->GetBlendColor(pass) == BLEND_MODE_NONE)
 			ColorBlendAttachment.blendEnable = VK_FALSE;
-			break;
-		case BLEND_MODE_ADD:
-			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			break;
-		case BLEND_MODE_SUBSTRACT:
-			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_SUBTRACT;
-			break;
-		case BLEND_MODE_REVERSE_SUBSTRACT:
-			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
-			break;
-		case BLEND_MODE_MIN:
-			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MIN;
-			break;
-		case BLEND_MODE_MAX:
-			ColorBlendAttachment.colorBlendOp = VK_BLEND_OP_MAX;
-			break;
-		default:
-			break;
-		}
+		else
+			ColorBlendAttachment.colorBlendOp = Utils::BlendModeToVkBlendOp(m_Material->GetBlendColor(pass));
 		ColorBlendAttachment.srcAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaSrc(pass));
 		ColorBlendAttachment.dstAlphaBlendFactor			= Utils::BlendFactorToVulkanBlendFactor(m_Material->GetBlendAlphaDst(pass));
 		ColorBlendAttachment.alphaBlendOp					= VK_BLEND_OP_ADD;
-		switch (m_Material->GetBlendAlpha(pass))
-		{
-		case BLEND_MODE_NONE:
+		if(m_Material->GetBlendAlpha(pass) == BLEND_MODE_NONE)
 			ColorBlendAttachment.blendEnable = VK_FALSE;
-			break;
-		case BLEND_MODE_ADD:
-			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			break;
-		case BLEND_MODE_SUBSTRACT:
-			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
-			break;
-		case BLEND_MODE_REVERSE_SUBSTRACT:
-			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
-			break;
-		case BLEND_MODE_MIN:
-			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MIN;
-			break;
-		case BLEND_MODE_MAX:
-			ColorBlendAttachment.alphaBlendOp = VK_BLEND_OP_MAX;
-			break;
-		default:
-			break;
-		}
+		else
+			ColorBlendAttachment.alphaBlendOp = Utils::BlendModeToVkBlendOp(m_Material->GetBlendAlpha(pass));
+
 		std::vector<VkPipelineColorBlendAttachmentState>	attachmentsBlend(frameBuffer->GetSpecification().RenderTargets.size(), ColorBlendAttachment);
 
 		VkPipelineColorBlendStateCreateInfo					ColorBlending{};

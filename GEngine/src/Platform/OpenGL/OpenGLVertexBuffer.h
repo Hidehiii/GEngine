@@ -23,6 +23,11 @@ namespace GEngine
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 
 		virtual uint32_t GetIndexCount() const override;
+		
+		bool operator==(const OpenGLVertexBuffer& other) const
+		{
+			return m_VertexBuffer == other.m_VertexBuffer && m_InstanceBuffer == other.m_InstanceBuffer && m_IndexBuffer == other.m_IndexBuffer;
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 
@@ -43,6 +48,10 @@ namespace GEngine
 		OpenGLIndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~OpenGLIndexBuffer();
 
+		bool operator==(const OpenGLIndexBuffer& other) const
+		{
+			return m_Buffer == other.m_Buffer;
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:

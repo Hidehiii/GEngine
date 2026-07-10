@@ -17,11 +17,11 @@ namespace GEngine
 	public:
 		virtual ~CommandBuffer() = default;
 
-		virtual void Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
+		virtual void Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) = 0;
 		// only for vulkan for now
 		virtual void SwitchToNextSubpass() = 0;
 
-		virtual void Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z) = 0;
+		virtual void Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z) = 0;
 
 		virtual CommandBufferType				GetType() { return m_Type; }
 

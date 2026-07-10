@@ -166,5 +166,38 @@ namespace GEngine
 			}
 			return DXGI_FORMAT();
 		}
+
+		D3D12_CULL_MODE CullModeToD3D12CullMode(CullMode mode)
+		{
+			switch (mode)
+			{
+			case CULL_MODE_NONE: return D3D12_CULL_MODE_NONE;
+			case CULL_MODE_FRONT: return D3D12_CULL_MODE_FRONT;
+			case CULL_MODE_BACK: return D3D12_CULL_MODE_BACK;
+			default: GE_CORE_ASSERT(false, "Unknown CullMode!");
+				break;
+			}
+			return D3D12_CULL_MODE();
+		}
+
+		D3D12_BLEND BlendFactorToD3D12Blend(BlendFactor factor)
+		{
+			switch (factor)
+			{
+			case BLEND_FACTOR_SRC_ALPHA: return D3D12_BLEND_SRC_ALPHA;
+			case BLEND_FACTOR_DST_ALPHA: return D3D12_BLEND_DEST_ALPHA;
+			case BLEND_FACTOR_SRC_COLOR: return D3D12_BLEND_SRC_COLOR;
+			case BLEND_FACTOR_DST_COLOR: return D3D12_BLEND_DEST_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_SRC_ALPHA: return D3D12_BLEND_INV_SRC_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_DST_ALPHA: return D3D12_BLEND_INV_DEST_ALPHA;
+			case BLEND_FACTOR_ONE_MINUS_SRC_COLOR: return D3D12_BLEND_INV_SRC_COLOR;
+			case BLEND_FACTOR_ONE_MINUS_DST_COLOR: return D3D12_BLEND_INV_DEST_COLOR;
+			case BLEND_FACTOR_ONE: return D3D12_BLEND_ONE;
+			case BLEND_FACTOR_ZERO: return D3D12_BLEND_ZERO;
+			default:GE_CORE_ASSERT(false, "Unknown BlendFactor!");
+				break;
+			}
+			return D3D12_BLEND();
+		}
 	}
 }

@@ -233,7 +233,7 @@ namespace GEngine
 		spec.Operation	= op;
 		m_RenderPass	= std::dynamic_pointer_cast<D3D12RenderPass>(RenderPass::Create(spec));
 	}
-	Ref<Texture2D> D3D12FrameBuffer::GetRenderTarget(int index)
+	Ref<Texture2D> D3D12FrameBuffer::GetRenderTarget(uint32_t index)
 	{
 		return m_RenderTargets.at(index);
 	}

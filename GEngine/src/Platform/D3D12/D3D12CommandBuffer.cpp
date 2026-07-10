@@ -192,10 +192,10 @@ namespace GEngine
         ClearWaitFences();
         ClearSignalFences();
     }
-    void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, int pass, uint32_t instanceCount, uint32_t indexCount)
+    void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
     {
     }
-    void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, int pass, uint32_t x, uint32_t y, uint32_t z)
+    void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
     {
     }
     void D3D12CommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)

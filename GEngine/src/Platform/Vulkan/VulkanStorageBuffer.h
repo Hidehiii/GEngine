@@ -13,9 +13,14 @@ namespace GEngine
 		virtual void Bind(uint32_t slot) override;
 
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
+
+		bool operator==(const VulkanStorageBuffer& other) const
+		{
+			return m_StorageBuffer == other.m_StorageBuffer && m_StorageBufferMemory == other.m_StorageBufferMemory;
+		}
 	private:
-		VkBuffer		m_StorageBuffer;
-		VkDeviceMemory	m_StorageBufferMemory;
+		VkBuffer					m_StorageBuffer;
+		VkDeviceMemory				m_StorageBufferMemory;
 		uint32_t					m_Offset = 0;
 		VkDescriptorBufferInfo		m_BufferInfo{};
 	};

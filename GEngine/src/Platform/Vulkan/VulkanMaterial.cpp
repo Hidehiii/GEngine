@@ -47,7 +47,7 @@ namespace GEngine
 		}
 	}
 
-	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const int& pass)
+	void VulkanMaterial::Update(CommandBuffer* cmdBuffer, const uint32_t& pass)
 	{
 		for (auto& [bindPoint, ubo] : m_UniformBuffers.at(pass))
 		{
@@ -123,7 +123,7 @@ namespace GEngine
 		}
 	}
 
-	Buffer VulkanMaterial::SetUniformBuffer(const int& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
+	Buffer VulkanMaterial::SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
 	{
 		GE_CORE_ASSERT(m_UniformBuffers.size() > pass, "Pass index out of range!");
 		auto& ubuffers = m_UniformBuffers.at(pass);

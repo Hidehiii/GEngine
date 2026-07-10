@@ -28,6 +28,8 @@ namespace GEngine
 
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout);
+
+		bool operator==(const VulkanCubeMap& other) const { return m_Image == other.m_Image; }
 	private:
 		void LoadImageData();
 	private:

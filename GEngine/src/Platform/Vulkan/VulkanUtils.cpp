@@ -913,6 +913,32 @@ namespace GEngine
 			}
 			return VkDescriptorType();
 		}
+
+		VkColorComponentFlags ColorMaskToVkColorComponentFlags(uint32_t mask)
+		{
+			VkColorComponentFlags flags = 0;
+			if (mask & COLOR_MASK_CHANNEL_R)	flags |= VK_COLOR_COMPONENT_R_BIT;
+			if (mask & COLOR_MASK_CHANNEL_G)	flags |= VK_COLOR_COMPONENT_G_BIT;
+			if (mask & COLOR_MASK_CHANNEL_B)	flags |= VK_COLOR_COMPONENT_B_BIT;
+			if (mask & COLOR_MASK_CHANNEL_A)	flags |= VK_COLOR_COMPONENT_A_BIT;
+			return flags;
+		}
+
+		VkBlendOp BlendModeToVkBlendOp(BlendMode mode)
+		{
+			switch (mode)
+			{
+			case BLEND_MODE_ADD: return VK_BLEND_OP_ADD;
+			case BLEND_MODE_SUBSTRACT: return VK_BLEND_OP_SUBTRACT;
+			case BLEND_MODE_REVERSE_SUBSTRACT: return VK_BLEND_OP_REVERSE_SUBTRACT;
+			case BLEND_MODE_MIN: return VK_BLEND_OP_MIN;
+			case BLEND_MODE_MAX: return VK_BLEND_OP_MAX;
+			default:GE_CORE_ASSERT(false, "Unknown blend op!");
+				break;
+			}
+			return VkBlendOp();
+		}
+
 		VkPipelineShaderStageCreateInfo CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName)
 		{
 			VkPipelineShaderStageCreateInfo		info{};

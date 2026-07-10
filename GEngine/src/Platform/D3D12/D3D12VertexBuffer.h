@@ -28,6 +28,12 @@ namespace GEngine
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetVertexBuffer() const { return m_VertexBuffer; }
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetInstanceBuffer() const { return m_InstanceBuffer; }
+
+		bool operator==(const D3D12VertexBuffer& other) const
+		{
+			return m_VertexBuffer.Get() == other.m_VertexBuffer.Get() &&
+				m_InstanceBuffer.Get() == other.m_InstanceBuffer.Get();
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 
@@ -48,6 +54,10 @@ namespace GEngine
 		D3D12IndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~D3D12IndexBuffer();
 
+		bool operator==(const D3D12IndexBuffer& other) const
+		{
+			return m_IndexBuffer.Get() == other.m_IndexBuffer.Get();
+		}
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:

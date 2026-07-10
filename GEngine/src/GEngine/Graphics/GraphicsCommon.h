@@ -304,7 +304,7 @@ namespace GEngine
 	{
 		std::vector<FrameBufferTextureFormat>	RenderTargets;
 		FrameBufferTextureFormat				DepthStencil;
-		int										Samples = 1;
+		uint32_t								Samples = 1;
 		RenderPassOperation						Operation;
 
 		// only work for vulkan, opengl does not support subpass
@@ -514,17 +514,17 @@ namespace GEngine
 
 	enum ColorMaskChannel
 	{
-		COLOR_MASK_CHANNLE_R = BIT(0),
-		COLOR_MASK_CHANNLE_G = BIT(1),
-		COLOR_MASK_CHANNLE_B = BIT(2),
-		COLOR_MASK_CHANNLE_A = BIT(3),
+		COLOR_MASK_CHANNEL_R = BIT(0),
+		COLOR_MASK_CHANNEL_G = BIT(1),
+		COLOR_MASK_CHANNEL_B = BIT(2),
+		COLOR_MASK_CHANNEL_A = BIT(3),
 	};
 
 	struct RenderState
 	{
 		bool				DepthWrite		= true;
 		CompareOperation	DepthTestOp		= COMPARE_OP_LESS_EQUAL;
-		int					ColorMask		= COLOR_MASK_CHANNLE_R | COLOR_MASK_CHANNLE_G | COLOR_MASK_CHANNLE_B | COLOR_MASK_CHANNLE_A;
+		uint32_t			ColorMask		= COLOR_MASK_CHANNEL_R | COLOR_MASK_CHANNEL_G | COLOR_MASK_CHANNEL_B | COLOR_MASK_CHANNEL_A;
 		BlendFactor			BlendColorSrc	= BLEND_FACTOR_ONE;
 		BlendFactor			BlendColorDst	= BLEND_FACTOR_ZERO;
 		BlendFactor			BlendAlphaSrc	= BLEND_FACTOR_ONE;

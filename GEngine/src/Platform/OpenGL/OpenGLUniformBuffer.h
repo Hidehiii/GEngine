@@ -15,6 +15,11 @@ namespace GEngine
 		virtual void SetDataDynamic(const void* data, uint32_t size) override;
 
 		virtual void SetBindPoint(uint32_t binding);
+
+		bool operator==(const OpenGLUniformBuffer& other) const
+		{
+			return m_UniformBuffer == other.m_UniformBuffer && m_Binding == other.m_Binding;
+		}
 	private:
 		uint32_t m_UniformBuffer = 0;
 		uint32_t m_Binding = UINT32_MAX;

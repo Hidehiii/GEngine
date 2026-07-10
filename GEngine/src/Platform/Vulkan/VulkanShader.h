@@ -17,6 +17,11 @@ namespace GEngine
 
 		const VkDescriptorSetLayout*							GetDescriptorSetLayout(const int& pass) const { return &m_DescriptorSetLayouts.at(pass); }
 		const VkPipelineLayout									GetPipelineLayout(const int& pass) const { return m_PipelineLayouts.at(pass); }
+
+		bool operator==(const VulkanShader& other) const
+		{
+			return m_Name == other.m_Name && m_FilePath == other.m_FilePath;
+		}
 	private:
 		void CreateShaderModules(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders);
 		void CreateDescriptorSetLayouts();

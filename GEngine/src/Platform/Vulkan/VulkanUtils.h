@@ -59,6 +59,8 @@ namespace GEngine
 		VkSamplerMipmapMode		SamplerFilterToVkSamplerMipmapMode(SamplerFilter filter);
 		VkFormat				ShaderInputDataToVulkanFormat(ShaderInputDataType type);
 		VkDescriptorType		ShaderPropertyTypeToVkDescriptorType(ShaderPropertyType type);
+		VkColorComponentFlags	ColorMaskToVkColorComponentFlags(uint32_t mask);
+		VkBlendOp				BlendModeToVkBlendOp(BlendMode mode);
 	}
 	
 }

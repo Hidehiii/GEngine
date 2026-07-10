@@ -25,6 +25,10 @@ namespace GEngine
 		virtual void SetMat4x4(const std::string& name, const Matrix4x4& value, const int& pass);
 		virtual void SetMat4x4Array(const std::string& name, const Matrix4x4* value, const uint32_t count, const int& pass);
 
+		bool operator==(const OpenGLShader& other) const
+		{
+			return m_Name == other.m_Name && m_FilePath == other.m_FilePath;
+		}
 	private:
 		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) override; // pass { stage : byte}
 	private:

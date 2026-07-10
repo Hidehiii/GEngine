@@ -7,14 +7,6 @@
 
 namespace GEngine
 {
-	// 用于识别当前pass和pipeline是否兼容
-	struct VulkanGraphicsPipelineInfo
-	{
-		VkPipeline		GraphicsPipeline;
-		VkRenderPass	RenderPass;
-		int				Pass;
-	};
-
 	class GENGINE_API VulkanGraphicsPipeline : public GraphicsPipeline
 	{
 	public:
@@ -28,12 +20,24 @@ namespace GEngine
 		virtual Ref<Material>	GetMaterial() override;
 		virtual void			SetMaterial(Ref<Material>& material) override;
 
+		bool operator==(const VulkanGraphicsPipeline& other) const
+		{
+			return m_Material == other.m_Material && m_VertexBuffer == other.m_VertexBuffer;
+		}
 	protected:
-		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, int pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+		virtual void Render(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, uint32_t pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
+
+		// 用于识别当前pass和pipeline是否兼容
+		struct VulkanGraphicsPipelineInfo
+		{
+			VkPipeline		GraphicsPipeline;
+			VkRenderPass	RenderPass;
+			uint32_t		Pass;
+		};
 
 	private:
-		void PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const int& pass);
-		VkPipeline GetPipeline(const Ref<FrameBuffer>& frameBuffer, const int& pass);
+		void PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const uint32_t& pass);
+		VkPipeline GetPipeline(const Ref<FrameBuffer>& frameBuffer, const uint32_t& pass);
 	private:
 		Ref<VulkanMaterial>									m_Material;
 		Ref<VulkanVertexBuffer>								m_VertexBuffer;

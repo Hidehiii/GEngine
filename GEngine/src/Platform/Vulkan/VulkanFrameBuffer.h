@@ -26,14 +26,19 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual int								GetRenderTargetCount() override { return m_ColorImages.size(); }
-		virtual Ref<Texture2D>					GetRenderTarget(int index) override;
+		virtual uint32_t						GetRenderTargetCount() override { return m_ColorImages.size(); }
+		virtual Ref<Texture2D>					GetRenderTarget(uint32_t index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 		virtual	Ref<RenderPass>					GetRenderPass() override { return std::static_pointer_cast<RenderPass>(m_RenderPass); }
 
 		VkFramebuffer	GetVulkanFrameBuffer() { return m_FrameBuffer; }
 		VkRenderPass	GetVulkanRenderPass() { return m_RenderPass->GetRenderPass(); }
+
+		bool operator==(const VulkanFrameBuffer& other) const
+		{
+			return m_FrameBuffer == other.m_FrameBuffer;
+		}
 	protected:
 		// for present
 		void BeginPresentRender(CommandBuffer* cmdBuffer) override;
