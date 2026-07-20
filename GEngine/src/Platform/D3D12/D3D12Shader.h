@@ -18,6 +18,11 @@ namespace GEngine
 		{
 			return m_ByteCodes == other.m_ByteCodes;
 		}
+
+	public:
+		const std::vector<std::unordered_map<std::string, D3D12_SHADER_BYTECODE>>&	GetByteCodes() const { return m_ByteCodes; }
+		const std::vector<Microsoft::WRL::ComPtr<ID3D12RootSignature>>&				GetRootSignatures() const { return m_RootSignatures; }
+
 	private:
 		virtual void ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders) override; //  pass { stage : byte}
 

@@ -70,6 +70,8 @@ namespace GEngine
 		renderTargetBlendDesc.DestBlend = Utils::BlendFactorToD3D12Blend(m_Material->GetBlendColorDst(pass));
 
 		CD3DX12_BLEND_DESC blendDesc(D3D12_DEFAULT);
+		
+		// END_OF_OLD_CODE
 		blendDesc.RenderTarget
 
 		return Microsoft::WRL::ComPtr<ID3D12PipelineState>();

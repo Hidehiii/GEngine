@@ -199,5 +199,51 @@ namespace GEngine
 			}
 			return D3D12_BLEND();
 		}
+
+		D3D12_BLEND_OP BlendModeToD3D12BlendOp(BlendMode mode)
+		{
+			switch (mode)
+			{
+			case BLEND_MODE_NONE:				return D3D12_BLEND_OP_ADD;
+			case BLEND_MODE_ADD:				return D3D12_BLEND_OP_ADD;
+			case BLEND_MODE_SUBSTRACT:			return D3D12_BLEND_OP_SUBTRACT;
+			case BLEND_MODE_REVERSE_SUBSTRACT:	return D3D12_BLEND_OP_REV_SUBTRACT;
+			case BLEND_MODE_MIN:				return D3D12_BLEND_OP_MIN;
+			case BLEND_MODE_MAX:				return D3D12_BLEND_OP_MAX;
+			default:
+				GE_CORE_ASSERT(false, "Unknown BlendMode!");
+				return D3D12_BLEND_OP_ADD;
+			}
+		}
+
+		D3D12_COMPARISON_FUNC CompareOperationToD3D12ComparisonFunc(CompareOperation op)
+		{
+			switch (op)
+			{
+			case COMPARE_OP_LESS:			return D3D12_COMPARISON_FUNC_LESS;
+			case COMPARE_OP_GREATER:		return D3D12_COMPARISON_FUNC_GREATER;
+			case COMPARE_OP_LESS_EQUAL:		return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			case COMPARE_OP_GREATER_EQUAL:	return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+			case COMPARE_OP_EQUAL:			return D3D12_COMPARISON_FUNC_EQUAL;
+			case COMPARE_OP_NOT_EQUAL:		return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+			case COMPARE_OP_ALWAYS:			return D3D12_COMPARISON_FUNC_ALWAYS;
+			default:
+				GE_CORE_ASSERT(false, "Unknown CompareOperation!");
+				return D3D12_COMPARISON_FUNC_LESS;
+			}
+		}
+
+		D3D12_PRIMITIVE_TOPOLOGY VertexTopologyToD3D12PrimitiveTopology(VertexTopology type)
+		{
+			switch (type)
+			{
+			case VERTEX_TOPOLOGY_POINT:		return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+			case VERTEX_TOPOLOGY_LINE:		return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+			case VERTEX_TOPOLOGY_TRIANGLE:	return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			default:
+				GE_CORE_ASSERT(false, "Unknown VertexTopology!");
+				return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			}
+		}
 	}
 }

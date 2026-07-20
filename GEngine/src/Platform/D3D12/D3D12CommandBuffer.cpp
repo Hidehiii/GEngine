@@ -51,9 +51,9 @@ namespace GEngine
 		UINT64 fenceValue = 1;
         HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-
         D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
 
 		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
 		queue->Signal(fence.Get(), fenceValue);
@@ -79,9 +79,9 @@ namespace GEngine
 		UINT64 fenceValue = 1;
 		HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+        D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 
-		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
 
 		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
 		queue->Signal(fence.Get(), fenceValue);
@@ -106,9 +106,9 @@ namespace GEngine
 		UINT64 fenceValue = 1;
 		HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+        D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 
-		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
 
 		queue->ExecuteCommandLists(1, CommandListCast(cmd.GetAddressOf()));
 		queue->Signal(fence.Get(), fenceValue);
@@ -194,9 +194,12 @@ namespace GEngine
     }
     void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
     {
+		auto d3dPipeline = std::static_pointer_cast<D3D12GraphicsPipeline>(pipeline);
+		d3dPipeline->Render(this, m_FrameBuffer, pass, instanceCount, indexCount);
     }
     void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
     {
+		GE_CORE_ASSERT(false, "Compute not implemented for D3D12 yet!");
     }
     void D3D12CommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
     {

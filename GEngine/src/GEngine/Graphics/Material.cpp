@@ -4,6 +4,7 @@
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLMaterial.h"
 #include "Platform/Vulkan/VulkanMaterial.h"
+#include "Platform/D3D12/D3D12Material.h"
 
 namespace GEngine
 {
@@ -20,6 +21,9 @@ namespace GEngine
 		}
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(shader, name);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12Material>(shader, name);
 		}
 		}
 
@@ -40,12 +44,15 @@ namespace GEngine
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
 		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12Material>(Shader::Create(shaderPath), name);
+		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
-    Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
+	Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
     {
 		switch (Graphics::GetGraphicsAPI())
 		{
@@ -58,6 +65,9 @@ namespace GEngine
 		}
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12Material>(Shader::Create(other->GetShader()->GetShaderPath()), name);
 		}
 		}
 

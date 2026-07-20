@@ -29,6 +29,10 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetVertexBuffer() const { return m_VertexBuffer; }
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetInstanceBuffer() const { return m_InstanceBuffer; }
 
+		const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetInputElementDescs() const { return m_InputElementDescs; }
+		const D3D12_VERTEX_BUFFER_VIEW&			GetVertexBufferView() const { return m_VertexBufferView; }
+		bool									HasInstanceBuffer() const { return m_InstanceBuffer != nullptr; }
+
 		bool operator==(const D3D12VertexBuffer& other) const
 		{
 			return m_VertexBuffer.Get() == other.m_VertexBuffer.Get() &&

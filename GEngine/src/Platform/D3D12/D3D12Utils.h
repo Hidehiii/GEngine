@@ -50,6 +50,9 @@ namespace GEngine
 		DXGI_FORMAT					RenderImage2DFormatToDXGIFormat(RenderImage2DFormat format);
 		D3D12_CULL_MODE				CullModeToD3D12CullMode(CullMode mode);
 		D3D12_BLEND					BlendFactorToD3D12Blend(BlendFactor factor);
+		D3D12_BLEND_OP				BlendModeToD3D12BlendOp(BlendMode mode);
+		D3D12_COMPARISON_FUNC		CompareOperationToD3D12ComparisonFunc(CompareOperation op);
+		D3D12_PRIMITIVE_TOPOLOGY	VertexTopologyToD3D12PrimitiveTopology(VertexTopology type);
 	}
 }
 

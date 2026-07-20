@@ -8,6 +8,7 @@ namespace GEngine
 	D3D12Material::D3D12Material(const Ref<Shader>& shader, const std::string& name)
 	{
 		m_Shader = std::dynamic_pointer_cast<D3D12Shader>(shader);
+		m_ShaderBase = shader;
 		GE_CORE_ASSERT(m_Shader, "Shader is null!");
 		m_Name = name.empty() ? m_Shader->GetShaderName() + " Material" : name;
 		std::vector<std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>>> sizes = InitializePassPropertiesMemory(shader);
@@ -29,6 +30,29 @@ namespace GEngine
 		}
 
 		CreateDescriptorHeap();
+	}
+
+	Buffer D3D12Material::SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
+	{
+		GE_CORE_ASSERT(pass < m_Passes.size(), "Pass index out of range!");
+		GE_CORE_ASSERT(m_Passes.at(pass).CBuffers.find(bindPoint) != m_Passes.at(pass).CBuffers.end(), "CBuffer bind point not found!");
+		Buffer old = m_Passes.at(pass).CBuffers.at(bindPoint);
+		m_Passes.at(pass).CBuffers.at(bindPoint) = buffer;
+		return old;
+	}
+
+	void D3D12Material::Update(CommandBuffer* cmdBuffer, const uint32_t& pass)
+	{
+		GE_CORE_ASSERT(pass < m_Passes.size(), "Pass index out of range!");
+		GE_CORE_ASSERT(m_ConstantBuffers.size() > pass, "Pass index out of range for constant buffers!");
+		for (auto& [bindPoint, buffer] : m_ConstantBuffers.at(pass))
+		{
+			auto& cpuBuffer = m_Passes.at(pass).CBuffers.at(bindPoint);
+			if (cpuBuffer.Size > 0)
+			{
+				buffer->SetData(cpuBuffer.Data, cpuBuffer.Size);
+			}
+		}
 	}
 
 	void D3D12Material::CreateDescriptorHeap()
