@@ -13,7 +13,22 @@ namespace GEngine
             for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
                 if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
                     return i;
-                }
+	}
+
+		VkPrimitiveTopology VertexTopologyToVkPrimitiveTopology(VertexTopology type)
+		{
+			switch (type)
+			{
+			case VERTEX_TOPOLOGY_POINT:		return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			case VERTEX_TOPOLOGY_LINE:		return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			case VERTEX_TOPOLOGY_TRIANGLE:	return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			default:
+				GE_CORE_ASSERT(false, "Unknown VertexTopology!");
+				return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			}
+		}
+
+		VkPipelineShaderStageCreateInfo CreatePipelineShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* funcName)
             }
 
             GE_CORE_ASSERT(false, "failed to find suitable memory type!");

@@ -50,6 +50,8 @@ namespace GEngine
 		std::vector<D3D12_INPUT_ELEMENT_DESC>		m_InputElementDescs;
 
 		Ref<D3D12IndexBuffer>						m_IndexBuffer = nullptr;
+
+		friend class D3D12GraphicsPipeline;
 	};
 
 	class GENGINE_API D3D12IndexBuffer : public IndexBuffer

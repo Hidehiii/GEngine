@@ -71,6 +71,9 @@ namespace GEngine
 	protected:
 		virtual void										InitializeShader(const std::string& path, 
 																				std::function<void(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>&)> processMachingCodeFunc);
+	public:
+		bool												IsMeshPass(uint32_t pass) const { return pass < m_IsMeshWorkflow.size() && m_IsMeshWorkflow[pass]; }
+	protected:
 	private:
 		virtual bool										IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache);
 		virtual void										Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCodes);
@@ -90,6 +93,7 @@ namespace GEngine
 	protected:
 		std::string													m_FilePath;
 		std::string													m_Name;
+		std::vector<uint8_t>										m_IsMeshWorkflow;
 
 		std::vector<std::unordered_map<std::string, std::string>>	m_StageEntryPoints; // vec index represent pass index, map-> stage : name
 		std::vector<ShaderReflectionInfo>							m_PassReflections; // vec index represent pass index

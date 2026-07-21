@@ -178,13 +178,7 @@ namespace GEngine
 		VkPipelineInputAssemblyStateCreateInfo				InputAssembly{};
 		InputAssembly.sType									= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		InputAssembly.topology								= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		switch (m_VertexBuffer->GetVertexTopologyType())
-		{
-		case VERTEX_TOPOLOGY_POINT:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
-		case VERTEX_TOPOLOGY_LINE:		InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST; break;
-		case VERTEX_TOPOLOGY_TRIANGLE:	InputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
-		default: GE_CORE_ASSERT(false, "unkown topolopgy");
-		}
+		InputAssembly.topology 								= Utils::VertexTopologyToVkPrimitiveTopology(m_VertexBuffer->GetVertexTopologyType());
 		InputAssembly.primitiveRestartEnable				= VK_FALSE;
 
 		VkViewport			Viewport{};
@@ -273,8 +267,16 @@ namespace GEngine
 		pipelineInfo.sType					= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount				= static_cast<uint32_t>(ShaderStages.size());
 		pipelineInfo.pStages				= ShaderStages.data();
-		pipelineInfo.pVertexInputState		= &VertexInputInfo;
-		pipelineInfo.pInputAssemblyState	= &InputAssembly;
+		if (m_Material->GetShader()->IsMeshPass(pass))
+		{
+			pipelineInfo.pVertexInputState		= VK_NULL_HANDLE;
+			pipelineInfo.pInputAssemblyState	= VK_NULL_HANDLE;
+		}
+		else
+		{
+			pipelineInfo.pVertexInputState		= &VertexInputInfo;
+			pipelineInfo.pInputAssemblyState	= &InputAssembly;
+		}
 		pipelineInfo.pViewportState			= &ViewportState;
 		pipelineInfo.pRasterizationState	= &Rasterizer;
 		pipelineInfo.pMultisampleState		= &Multisampling;

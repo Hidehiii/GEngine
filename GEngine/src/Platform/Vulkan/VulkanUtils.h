@@ -61,6 +61,7 @@ namespace GEngine
 		VkDescriptorType		ShaderPropertyTypeToVkDescriptorType(ShaderPropertyType type);
 		VkColorComponentFlags	ColorMaskToVkColorComponentFlags(uint32_t mask);
 		VkBlendOp				BlendModeToVkBlendOp(BlendMode mode);
+		VkPrimitiveTopology		VertexTopologyToVkPrimitiveTopology(VertexTopology type);
 	}
 	
 }

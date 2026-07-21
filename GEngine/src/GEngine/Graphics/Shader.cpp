@@ -299,6 +299,7 @@ namespace GEngine
 			//#pragma
 			commandPos = 0;
 			m_StageEntryPoints.push_back(std::unordered_map<std::string, std::string>());
+			m_IsMeshWorkflow.push_back(0);
 			while (block.find("#pragma", commandPos) != std::string::npos)
 			{
 				commandPos = block.find("#pragma", commandPos);
@@ -319,9 +320,15 @@ namespace GEngine
 				else if (StringHelper::ToUpper(words[1]) == "COMPUTE")
 					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_COMPUTE] = words[2];
 				else if (StringHelper::ToUpper(words[1]) == "AMPLIFICATION")
+				{
 					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_AMPLIFICATION] = words[2];
+					m_IsMeshWorkflow.back() = 1;
+				}
 				else if (StringHelper::ToUpper(words[1]) == "MESH")
+				{
 					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_MESH] = words[2];
+					m_IsMeshWorkflow.back() = 1;
+				}
 				else
 					GE_CORE_ASSERT(false, "Unknown shader stage in pragma command! " + commandLine);
 				commandPos++;
