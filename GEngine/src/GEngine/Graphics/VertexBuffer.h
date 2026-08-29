@@ -42,7 +42,7 @@ namespace GEngine
 		virtual void SetInstanceData(const void* data, uint32_t size) = 0;
 		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
 
-		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const = 0;
+		virtual Ref<IndexBuffer>						GetIndexBuffer() const = 0;
 		virtual VertexTopology						GetVertexTopologyType() = 0;
 		virtual uint32_t							GetTotalSizeVertex() const { return m_TotalSizeVertex; }
 		virtual uint32_t							GetTotalSizeInstance() const { return m_TotalSizeInstance; }

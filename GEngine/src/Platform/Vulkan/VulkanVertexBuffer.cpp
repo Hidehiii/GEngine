@@ -84,6 +84,11 @@ namespace GEngine
         vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory);
     }
 
+    Ref<IndexBuffer> VulkanVertexBuffer::GetIndexBuffer() const
+    {
+        return m_IndexBuffer;
+    }
+
     void VulkanVertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
     {
         m_IndexBuffer = std::static_pointer_cast<VulkanIndexBuffer>(indexBuffer);

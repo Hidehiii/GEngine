@@ -207,7 +207,7 @@ namespace GEngine
 			data = stbi_load(m_Path.at(i).c_str(), &width, &height, &channels, 0);
 			GE_CORE_ASSERT(data, "Failed to load image!");
 			GE_CORE_ASSERT(m_Width == width, " The cube map image is not the same size!");
-			GE_CORE_ASSERT(m_Height = height, " The cube map image is not the same size!");
+			GE_CORE_ASSERT(m_Height == height, " The cube map image is not the same size!");
 			RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_NONE;
 			if (channels == 4)
 			{

@@ -5,6 +5,11 @@
 #include "OpenGLUtils.h"
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
 #include "OpenGLContext.h"
+#include "Platform/OpenGL/OpenGLRenderPass.h"
+#include "Platform/OpenGL/OpenGLFrameBuffer.h"
+#include "Platform/OpenGL/OpenGLTexture2D.h"
+#include "Platform/OpenGL/OpenGLUniformBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexBuffer.h"
 
 namespace GEngine
 {
@@ -67,6 +72,61 @@ namespace GEngine
 			ext.push_back(currentExt);
 		};
 		return ext;
+	}
+	GraphicsCapabilities OpenGLGraphicsAPI::GetCapabilities() const
+	{
+		GraphicsCapabilities capabilities;
+		capabilities.RenderPass = true;
+		capabilities.FrameBuffer = true;
+		capabilities.Texture2D = true;
+		capabilities.Texture2DArray = true;
+		capabilities.CubeMap = true;
+		capabilities.Sampler = true;
+		capabilities.UniformBuffer = true;
+		capabilities.StorageBuffer = true;
+		capabilities.StorageImage = true;
+		capabilities.Compute = true;
+		return capabilities;
+	}
+	Ref<RenderPass> OpenGLGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
+	{
+		return CreateRef<OpenGLRenderPass>(spec);
+	}
+	Ref<FrameBuffer> OpenGLGraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
+	{
+		return CreateRef<OpenGLFrameBuffer>(renderPass, width, height);
+	}
+	Ref<FrameBuffer> OpenGLGraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+	{
+		return CreateRef<OpenGLFrameBuffer>(buffer, width, height);
+	}
+	Ref<Texture2D> OpenGLGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+	{
+		return CreateRef<OpenGLTexture2D>(width, height, format);
+	}
+	Ref<Texture2D> OpenGLGraphicsAPI::CreateTexture2D(const std::string& path)
+	{
+		return CreateRef<OpenGLTexture2D>(path);
+	}
+	Ref<Texture2D> OpenGLGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
+	{
+		return CreateRef<OpenGLTexture2D>(width, height, data, size, format);
+	}
+	Ref<UniformBuffer> OpenGLGraphicsAPI::CreateUniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic)
+	{
+		return CreateRef<OpenGLUniformBuffer>(size, count, autoSetDataDynamic);
+	}
+	Ref<VertexBuffer> OpenGLGraphicsAPI::CreateVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
+	{
+		return CreateRef<OpenGLVertexBuffer>(size, sizeInstance, type);
+	}
+	Ref<VertexBuffer> OpenGLGraphicsAPI::CreateVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+	{
+		return CreateRef<OpenGLVertexBuffer>(vertices, size, sizeInstance, type);
+	}
+	Ref<IndexBuffer> OpenGLGraphicsAPI::CreateIndexBuffer(const uint32_t* indices, uint32_t count)
+	{
+		return CreateRef<OpenGLIndexBuffer>(indices, count);
 	}
 	uint32_t OpenGLGraphicsAPI::GetMaxTexture2DSize()
 	{

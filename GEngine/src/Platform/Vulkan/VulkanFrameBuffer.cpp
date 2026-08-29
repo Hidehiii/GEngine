@@ -277,7 +277,7 @@ namespace GEngine
 			m_DepthStencil->SetImageLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 	}
-	Ref<Texture2D> VulkanFrameBuffer::GetRenderTarget(int index)
+	Ref<Texture2D> VulkanFrameBuffer::GetRenderTarget(uint32_t index)
 	{
 		GE_CORE_ASSERT(index < m_RenderTargets.size(), "index out of range");
 		Ref<VulkanTexture2D> texture = m_RenderTargets.at(index);

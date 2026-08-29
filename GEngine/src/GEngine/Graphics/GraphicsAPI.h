@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/GraphicsCommon.h"
+#include "GEngine/Graphics/RenderDevice.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
@@ -12,11 +13,27 @@ namespace GEngine
 	class CommandBuffer;
 	class FrameBuffer;
 
-	class GENGINE_API GraphicsAPI
+	struct GraphicsCapabilities
+	{
+		bool RenderPass = false;
+		bool FrameBuffer = false;
+		bool Texture2D = false;
+		bool Texture2DArray = false;
+		bool CubeMap = false;
+		bool Sampler = false;
+		bool UniformBuffer = false;
+		bool StorageBuffer = false;
+		bool StorageImage = false;
+		bool Compute = false;
+		bool Subpasses = false;
+	};
+
+	class GENGINE_API GraphicsAPI : public RenderDevice
 	{
 	public:
 
 		virtual std::vector<std::string> GetExtensions() = 0;
+		virtual GraphicsCapabilities GetCapabilities() const = 0;
 
 		virtual uint32_t GetMaxTexture2DSize() = 0;
 		virtual uint32_t GetMaxCombinedTextureCount() = 0;

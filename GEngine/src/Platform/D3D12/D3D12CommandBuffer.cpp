@@ -2,6 +2,8 @@
 #include "D3D12CommandBuffer.h"
 #include "D3D12Context.h"
 #include "D3D12Utils.h"
+#include "D3D12ComputePipeline.h"
+#include "D3D12GraphicsPipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
@@ -199,7 +201,9 @@ namespace GEngine
     }
     void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
     {
-		GE_CORE_ASSERT(false, "Compute not implemented for D3D12 yet!");
+		auto d3dPipeline = std::dynamic_pointer_cast<D3D12ComputePipeline>(pipeline);
+		GE_CORE_ASSERT(d3dPipeline, "D3D12 command buffers require D3D12 compute pipelines.");
+		d3dPipeline->Compute(this, pass, x, y, z);
     }
     void D3D12CommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
     {

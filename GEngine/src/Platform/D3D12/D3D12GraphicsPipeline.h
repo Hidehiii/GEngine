@@ -47,6 +47,8 @@ namespace GEngine
 		std::vector<D3D12GraphicsPipelineInfo>	m_PipelineStates;
 
 		bool									m_RecreatePipelineState = false;
+
+		friend class D3D12CommandBuffer;
 	};
 }
 

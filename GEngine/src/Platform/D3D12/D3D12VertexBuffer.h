@@ -21,7 +21,7 @@ namespace GEngine
 		virtual void SetInstanceData(const void* data, uint32_t size) override;
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
-		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
+		virtual Ref<IndexBuffer>						GetIndexBuffer() const override;
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 
 		virtual uint32_t GetIndexCount() const override;

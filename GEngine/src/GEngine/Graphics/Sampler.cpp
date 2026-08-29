@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "Platform/OpenGL/OpenGLSampler.h"
 #include "Platform/Vulkan/VulkanSampler.h"
+#include "Platform/D3D12/D3D12Sampler.h"
 
 namespace GEngine
 {
@@ -10,34 +11,32 @@ namespace GEngine
 
 	Ref<Sampler> Sampler::GetSampler(const SamplerSpecification& spec)
 	{
+		if (s_Samplers.find(spec) != s_Samplers.end())
+			return s_Samplers.at(spec);
+
 		switch (Graphics::GetGraphicsAPI())
 		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
 		case GRAPHICS_API_OPENGL: {
-			Ref<Sampler> sampler = GetSampler(spec);
-			if (sampler == nullptr)
-			{
-				sampler = CreateRef<OpenGLSampler>(spec);
-				s_Samplers[spec] = (sampler);
-			}
+			Ref<Sampler> sampler = CreateRef<OpenGLSampler>(spec);
+			s_Samplers.emplace(spec, sampler);
 			return sampler;
 		}
 		case GRAPHICS_API_VULKAN: {
-			Ref<Sampler> sampler = GetSampler(spec);
-			if (sampler == nullptr)
-			{
-				sampler = CreateRef<VulkanSampler>(spec);
-				s_Samplers[spec] = (sampler);
-			}
+			Ref<Sampler> sampler = CreateRef<VulkanSampler>(spec);
+			s_Samplers.emplace(spec, sampler);
 			return sampler;
 		}
+		case GRAPHICS_API_DIRECT3DX12:
+		{
+			Ref<Sampler> sampler = CreateRef<D3D12Sampler>(spec);
+			s_Samplers.emplace(spec, sampler);
+			return sampler;
 		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		case GRAPHICS_API_NONE:
+		default:
+			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+			return nullptr;
+		}
 	}
 	Ref<Sampler> Sampler::GetDefaultSampler()
 	{
@@ -46,8 +45,6 @@ namespace GEngine
 	}
 	Ref<Sampler> Sampler::Create(const SamplerSpecification& spec)
 	{
-		if(s_Samplers.find(spec) != s_Samplers.end())
-			return s_Samplers[spec];
-		return nullptr;
+		return GetSampler(spec);
 	}
 }

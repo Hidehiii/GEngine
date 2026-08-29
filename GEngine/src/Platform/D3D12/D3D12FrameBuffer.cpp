@@ -36,6 +36,10 @@ namespace GEngine
 		
 		CreateResources();
 	}
+	D3D12FrameBuffer::D3D12FrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+		: D3D12FrameBuffer(buffer->GetRenderPass(), width, height)
+	{
+	}
 	D3D12FrameBuffer::D3D12FrameBuffer(const Ref<D3D12RenderPass>& renderpass, const FrameBufferSpecificationForD3D12& spec, const RenderPassSpecificationForD3D12& renderpassSpec)
 	{
 		// we have not assume multi sample, so we just use 1 sample for now

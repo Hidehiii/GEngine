@@ -97,6 +97,11 @@ namespace GEngine
 		m_InstanceBuffer->Unmap(0, nullptr);
 	}
 
+	Ref<IndexBuffer> D3D12VertexBuffer::GetIndexBuffer() const
+	{
+		return m_IndexBuffer;
+	}
+
 	void D3D12VertexBuffer::SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = std::static_pointer_cast<D3D12IndexBuffer>(indexBuffer);

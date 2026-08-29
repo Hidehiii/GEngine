@@ -22,7 +22,7 @@ namespace GEngine
 			bool IsValid() const { return StartIndex != UINT32_MAX && Count > 0; }
 		};
 
-		D3D12DescriptorHeap(uint32_t rtvCount = 10000, uint32_t dsvCount = 10000, uint32_t cbvSrvUavCount = 10000);
+		D3D12DescriptorHeap(uint32_t rtvCount = 10000, uint32_t dsvCount = 10000, uint32_t cbvSrvUavCount = 10000, uint32_t samplerCount = 10000);
 		~D3D12DescriptorHeap();
 
 		D3D12DescriptorAllocationInfo	Allocate(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count);
@@ -31,6 +31,7 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetRtvDescriptorHeap(const uint32_t& frame) const { return m_RtvHeapInfo.Heaps.at(frame); }
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap(const uint32_t& frame) const { return m_DsvHeapInfo.Heaps.at(frame); }
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetCbvSrvUavDescriptorHeap(const uint32_t& frame) const { return m_CbvSrvUavHeapInfo.Heaps.at(frame); }
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSamplerDescriptorHeap(const uint32_t& frame) const { return m_SamplerHeapInfo.Heaps.at(frame); }
 	private:
 		struct DescriptorHeapInfo
 		{
@@ -47,6 +48,7 @@ namespace GEngine
 		DescriptorHeapInfo m_RtvHeapInfo;
 		DescriptorHeapInfo m_DsvHeapInfo;
 		DescriptorHeapInfo m_CbvSrvUavHeapInfo;
+		DescriptorHeapInfo m_SamplerHeapInfo;
 	};
 }
 

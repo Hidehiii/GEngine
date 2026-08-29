@@ -2,6 +2,12 @@
 #include "D3D12Material.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12Sampler.h"
+#include "Platform/D3D12/D3D12StorageBuffer.h"
+#include "Platform/D3D12/D3D12StorageImage2D.h"
+#include "Platform/D3D12/D3D12Texture2DArray.h"
+#include "Platform/D3D12/D3D12CubeMap.h"
+#include "Platform/D3D12/D3D12TextureCombineSampler.h"
 
 namespace GEngine
 {
@@ -32,6 +38,17 @@ namespace GEngine
 		CreateDescriptorHeap();
 	}
 
+	D3D12Material::~D3D12Material()
+	{
+		if (!D3D12Context::Get())
+			return;
+
+		for (const auto& allocation : m_CbvSrvUavHeaps)
+			if (allocation.IsValid()) D3D12Context::Get()->FreeDescriptor(allocation);
+		for (const auto& allocation : m_SamplerHeaps)
+			if (allocation.IsValid()) D3D12Context::Get()->FreeDescriptor(allocation);
+	}
+
 	Buffer D3D12Material::SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf)
 	{
 		GE_CORE_ASSERT(pass < m_Passes.size(), "Pass index out of range!");
@@ -57,84 +74,140 @@ namespace GEngine
 
 	void D3D12Material::CreateDescriptorHeap()
 	{
+		for (const auto& allocation : m_CbvSrvUavHeaps)
+			if (allocation.IsValid()) D3D12Context::Get()->FreeDescriptor(allocation);
+		for (const auto& allocation : m_SamplerHeaps)
+			if (allocation.IsValid()) D3D12Context::Get()->FreeDescriptor(allocation);
+
 		m_CbvSrvUavHeaps.clear();
 		m_CbvSrvUavHeaps.resize(m_Shader->GetPassReflections().size());
+		m_SamplerHeaps.clear();
+		m_SamplerHeaps.resize(m_Shader->GetPassReflections().size());
+
 		// create descriptor heap for each pass
 		for (int i = 0; i < m_Shader->GetPassReflections().size(); i++)
 		{
-			// calculate the number of CBV, SRV, UAV for this pass
-			uint32_t CbvSrvUavCount = 0;
-			for (auto& resource : m_Shader->GetPassReflections().at(i).Resources)
+			uint32_t cbvSrvUavCount = static_cast<uint32_t>(m_Shader->GetPassReflections().at(i).CBuffers.size());
+			uint32_t samplerCount = 0;
+			for (const auto& resource : m_Shader->GetPassReflections().at(i).Resources)
 			{
-				if (resource.Type != SHADER_PROPERTY_TYPE_SAMPLER)
-					CbvSrvUavCount++;
+				resource.Type == SHADER_PROPERTY_TYPE_SAMPLER ? ++samplerCount : ++cbvSrvUavCount;
 			}
-			m_CbvSrvUavHeaps[i] = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CbvSrvUavCount);
+			if (cbvSrvUavCount > 0)
+				m_CbvSrvUavHeaps[i] = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, cbvSrvUavCount);
+			if (samplerCount > 0)
+				m_SamplerHeaps[i] = D3D12Context::Get()->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, samplerCount);
 		}
-		// write descriptor heap for each pass
-		for (int pass = 0; pass < m_CbvSrvUavHeaps.size(); pass++)
+
+		for (uint32_t pass = 0; pass < m_Passes.size(); pass++)
 		{
-			UINT descStep = D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize();
-			// each frame 
-			for (int frame = 0; frame < m_CbvSrvUavHeaps.at(pass).CpuHandles.size(); frame++)
+			std::vector<ShaderReflectionCBufferInfo> reflectedCBuffers(
+				m_Shader->GetPassReflections().at(pass).CBuffers.begin(), m_Shader->GetPassReflections().at(pass).CBuffers.end());
+			std::sort(reflectedCBuffers.begin(), reflectedCBuffers.end(), [](const auto& left, const auto& right) { return left.BindPoint < right.BindPoint; });
+
+			std::vector<ShaderReflectionResourceInfo> resources(
+				m_Shader->GetPassReflections().at(pass).Resources.begin(), m_Shader->GetPassReflections().at(pass).Resources.end());
+			std::sort(resources.begin(), resources.end(), [](const auto& left, const auto& right) { return left.BindPoint < right.BindPoint; });
+
+			const auto& resourceHeap = m_CbvSrvUavHeaps.at(pass);
+			for (uint32_t frame = 0; frame < resourceHeap.CpuHandles.size(); frame++)
 			{
-				CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle(m_CbvSrvUavHeaps.at(pass).CpuHandles.at(frame));
 				uint32_t slotIndex = 0;
-				// material cbv
-				for (auto& [bindpoint, buffer] : m_ConstantBuffers.at(pass))
+				for (const auto& cbuffer : reflectedCBuffers)
 				{
-					// offset the cpu handle by the slot index
-					cpuHandle.Offset(slotIndex, descStep);
-					slotIndex++;
-
-					D3D12Context::Get()->GetDevice()->CreateConstantBufferView(&buffer->GetConstantBufferViewDesc(), cpuHandle);
+					CD3DX12_CPU_DESCRIPTOR_HANDLE handle(resourceHeap.CpuHandles.at(frame), slotIndex++, D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize());
+					auto buffer = m_ConstantBuffers.at(pass).find(cbuffer.BindPoint);
+					if (buffer != m_ConstantBuffers.at(pass).end())
+						D3D12Context::Get()->GetDevice()->CreateConstantBufferView(&buffer->second->GetConstantBufferViewDesc(), handle);
+					else
+						D3D12Context::Get()->GetDevice()->CreateConstantBufferView(nullptr, handle);
 				}
-				// other resources
-				for (auto& [name, prop] : m_Passes.at(pass).ResourceProperties)
+				for (const auto& resource : resources)
 				{
-					// offset the cpu handle by the slot index
-					cpuHandle.Offset(slotIndex, descStep);
-					slotIndex++;
-
-					auto type = m_Shader->GetPropertyType(name);
-					switch (type)
+					if (resource.Type == SHADER_PROPERTY_TYPE_SAMPLER)
+						continue;
+					CD3DX12_CPU_DESCRIPTOR_HANDLE handle(resourceHeap.CpuHandles.at(frame), slotIndex++, D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize());
+					auto property = m_Passes.at(pass).ResourceProperties.find(resource.Name);
+					if (resource.Type == SHADER_PROPERTY_TYPE_TEXTURE_2D && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
 					{
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_SAMPLER: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_2D:
-					{
+						auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(*static_cast<Ref<Texture2D>*>(property->second.Ptr));
+						GE_CORE_ASSERT(texture, "D3D12 materials require D3D12 textures.");
 						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(
-							(*((Ref<D3D12Texture2D>*)prop.Ptr))->GetResource().Get(),
-							&((*((Ref<D3D12Texture2D>*)prop.Ptr))->GetShaderResourceViewDesc()),
-							cpuHandle);
-						break;
+							texture->GetResource().Get(), &texture->GetShaderResourceViewDesc(), handle);
 					}
-					case SHADER_PROPERTY_TYPE_TEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_3D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_TEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_1D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_2D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_3D: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_1D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_2D_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE_ARRAY: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWBUFFER: GE_CORE_ASSERT(false, "Unsupport now!");
-					case SHADER_PROPERTY_TYPE_RWBUFFER_DYNAMIC: GE_CORE_ASSERT(false, "Unsupport now!");
-					default:
-						GE_CORE_ASSERT(false, "Unsupport now!");
-						break;
+					else if (resource.Type == SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto texture = std::dynamic_pointer_cast<D3D12Texture2DArray>(*static_cast<Ref<Texture2DArray>*>(property->second.Ptr));
+						GE_CORE_ASSERT(texture, "D3D12 materials require D3D12 texture arrays.");
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(texture->GetResource(), &texture->GetShaderResourceViewDesc(), handle);
+					}
+					else if (resource.Type == SHADER_PROPERTY_TYPE_TEXTURE_CUBE && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto texture = std::dynamic_pointer_cast<D3D12CubeMap>(*static_cast<Ref<CubeMap>*>(property->second.Ptr));
+						GE_CORE_ASSERT(texture, "D3D12 materials require D3D12 cube maps.");
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(texture->GetResource(), &texture->GetShaderResourceViewDesc(), handle);
+					}
+					else if (resource.Type == SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto combined = std::dynamic_pointer_cast<D3D12Texture2DCombineSampler>(*static_cast<Ref<Texture2DCombineSampler>*>(property->second.Ptr));
+						auto texture = combined ? std::dynamic_pointer_cast<D3D12Texture2D>(combined->GetTexture()) : nullptr;
+						GE_CORE_ASSERT(texture, "D3D12 combined textures require a D3D12 texture.");
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(texture->GetResource().Get(), &texture->GetShaderResourceViewDesc(), handle);
+					}
+					else if (resource.Type == SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto combined = std::dynamic_pointer_cast<D3D12CubeMapCombineSampler>(*static_cast<Ref<CubeMapCombineSampler>*>(property->second.Ptr));
+						auto texture = combined ? std::dynamic_pointer_cast<D3D12CubeMap>(combined->GetCubeMap()) : nullptr;
+						GE_CORE_ASSERT(texture, "D3D12 combined cube maps require a D3D12 cube map.");
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(texture->GetResource(), &texture->GetShaderResourceViewDesc(), handle);
+					}
+					else if (resource.Type == SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto image = std::dynamic_pointer_cast<D3D12StorageImage2D>(*static_cast<Ref<StorageImage2D>*>(property->second.Ptr));
+						GE_CORE_ASSERT(image, "D3D12 materials require D3D12 storage images.");
+						D3D12Context::Get()->GetDevice()->CreateUnorderedAccessView(image->GetResource(), nullptr, &image->GetUnorderedAccessViewDesc(), handle);
+					}
+					else if (resource.Type == SHADER_PROPERTY_TYPE_STORAGE_BUFFER && property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto buffer = std::dynamic_pointer_cast<D3D12StorageBuffer>(*static_cast<Ref<StorageBuffer>*>(property->second.Ptr));
+						GE_CORE_ASSERT(buffer, "D3D12 materials require D3D12 storage buffers.");
+						D3D12Context::Get()->GetDevice()->CreateUnorderedAccessView(buffer->GetResource(), nullptr, &buffer->GetUnorderedAccessViewDesc(), handle);
+					}
+					else if (resource.Type >= SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN)
+					{
+						D3D12Context::Get()->GetDevice()->CreateUnorderedAccessView(nullptr, nullptr, nullptr, handle);
+					}
+					else
+					{
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(nullptr, nullptr, handle);
+					}
+				}
+			}
+
+			const auto& samplerHeap = m_SamplerHeaps.at(pass);
+			for (uint32_t frame = 0; frame < samplerHeap.CpuHandles.size(); frame++)
+			{
+				uint32_t slotIndex = 0;
+				for (const auto& resource : resources)
+				{
+					if (resource.Type != SHADER_PROPERTY_TYPE_SAMPLER)
+						continue;
+					CD3DX12_CPU_DESCRIPTOR_HANDLE handle(samplerHeap.CpuHandles.at(frame), slotIndex++, D3D12Context::Get()->GetSamplerDescriptorIncrementSize());
+					auto property = m_Passes.at(pass).ResourceProperties.find(resource.Name);
+					if (property != m_Passes.at(pass).ResourceProperties.end() && property->second.Ptr)
+					{
+						auto sampler = std::dynamic_pointer_cast<D3D12Sampler>(*static_cast<Ref<Sampler>*>(property->second.Ptr));
+						GE_CORE_ASSERT(sampler, "D3D12 materials require D3D12 samplers.");
+						D3D12Context::Get()->GetDevice()->CreateSampler(&sampler->GetDescriptor(), handle);
+					}
+					else
+					{
+						D3D12_SAMPLER_DESC defaultSampler{};
+						defaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+						defaultSampler.AddressU = defaultSampler.AddressV = defaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+						defaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+						defaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
+						D3D12Context::Get()->GetDevice()->CreateSampler(&defaultSampler, handle);
 					}
 				}
 			}

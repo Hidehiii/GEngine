@@ -21,6 +21,8 @@ namespace GEngine
 		static uint32_t				GetCommandBufferCount();
 
 		static bool					IsReverseDepth();
+		static GraphicsCapabilities	GetCapabilities();
+		static RenderDevice&		GetRenderDevice();
 
 		static Ref<CommandBuffer>	GetGraphicsCommandBuffer();
 		static Ref<CommandBuffer>	GetComputeCommandBuffer();

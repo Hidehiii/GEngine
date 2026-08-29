@@ -16,7 +16,8 @@ namespace GEngine
 		case RENDER_IMAGE_2D_FORMAT_RGB8_UNORM:		return 3;
 		case RENDER_IMAGE_2D_FORMAT_RGB8_SNORM:		return 3;
 		default:
-			break;
+			GE_CORE_ASSERT(false, "Unsupported RenderImage2DFormat.");
+			return 0;
 		}
 	}
 

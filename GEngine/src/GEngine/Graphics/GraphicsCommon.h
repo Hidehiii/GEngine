@@ -566,6 +566,7 @@ namespace GEngine
 	{
 		uint32_t			Location = 0;
 		void* Ptr			= nullptr;
+		Ref<void> Owner;
 	};
 
 	struct ShaderPass

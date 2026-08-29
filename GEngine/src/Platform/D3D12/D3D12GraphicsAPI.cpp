@@ -1,6 +1,11 @@
 #include "GEpch.h"
 #include "D3D12GraphicsAPI.h"
 #include "D3D12Context.h"
+#include "Platform/D3D12/D3D12RenderPass.h"
+#include "Platform/D3D12/D3D12FrameBuffer.h"
+#include "Platform/D3D12/D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12UniformBuffer.h"
+#include "Platform/D3D12/D3D12VertexBuffer.h"
 
 
 namespace GEngine
@@ -38,6 +43,61 @@ namespace GEngine
         if(opts.TypedUAVLoadAdditionalFormats)
 			exts.emplace_back("TYPED_UAV_LOAD_ADDITIONAL_FORMATS");
         return exts;
+    }
+    GraphicsCapabilities D3D12GraphicsAPI::GetCapabilities() const
+    {
+        GraphicsCapabilities capabilities;
+        capabilities.RenderPass = true;
+        capabilities.FrameBuffer = true;
+        capabilities.Texture2D = true;
+        capabilities.Texture2DArray = true;
+        capabilities.CubeMap = true;
+        capabilities.Sampler = true;
+        capabilities.UniformBuffer = true;
+        capabilities.StorageBuffer = true;
+        capabilities.StorageImage = true;
+        capabilities.Compute = true;
+        return capabilities;
+    }
+    Ref<RenderPass> D3D12GraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
+    {
+        return CreateRef<D3D12RenderPass>(spec);
+    }
+    Ref<FrameBuffer> D3D12GraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
+    {
+        return CreateRef<D3D12FrameBuffer>(renderPass, width, height);
+    }
+    Ref<FrameBuffer> D3D12GraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+    {
+        return CreateRef<D3D12FrameBuffer>(buffer, width, height);
+    }
+    Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+    {
+        return CreateRef<D3D12Texture2D>(width, height, format);
+    }
+    Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(const std::string& path)
+    {
+        return CreateRef<D3D12Texture2D>(path);
+    }
+    Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
+    {
+        return CreateRef<D3D12Texture2D>(width, height, data, size, format);
+    }
+    Ref<UniformBuffer> D3D12GraphicsAPI::CreateUniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic)
+    {
+        return CreateRef<D3D12UniformBuffer>(size, count, autoSetDataDynamic);
+    }
+    Ref<VertexBuffer> D3D12GraphicsAPI::CreateVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
+    {
+        return CreateRef<D3D12VertexBuffer>(size, sizeInstance, type);
+    }
+    Ref<VertexBuffer> D3D12GraphicsAPI::CreateVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+    {
+        return CreateRef<D3D12VertexBuffer>(vertices, size, sizeInstance, type);
+    }
+    Ref<IndexBuffer> D3D12GraphicsAPI::CreateIndexBuffer(const uint32_t* indices, uint32_t count)
+    {
+        return CreateRef<D3D12IndexBuffer>(indices, count);
     }
     uint32_t D3D12GraphicsAPI::GetMaxTexture2DSize()
     {
@@ -112,9 +172,18 @@ namespace GEngine
     }
     void D3D12GraphicsAPI::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
     {
+		GE_CORE_ASSERT(first && second, "Command barriers require two command buffers.");
+		// Submissions to the same D3D12 queue are already ordered.  Adding a queue
+		// wait here can deadlock if callers submit the two buffers in reverse order.
+		if (first->GetType() == second->GetType())
+			return;
+
+		auto firstD3D = std::dynamic_pointer_cast<D3D12CommandBuffer>(first);
+		auto secondD3D = std::dynamic_pointer_cast<D3D12CommandBuffer>(second);
+		GE_CORE_ASSERT(firstD3D && secondD3D, "D3D12 barriers require D3D12 command buffers.");
         D3D12Context::Get()->IncreaseFenceValue(first->GetType());
         auto f = D3D12Context::Get()->GetFence(first->GetType());
-		std::dynamic_pointer_cast<D3D12CommandBuffer>(first)->AddSignalFence(f);
-		std::dynamic_pointer_cast<D3D12CommandBuffer>(second)->AddWaitFence(f);
+		firstD3D->AddSignalFence(f);
+		secondD3D->AddWaitFence(f);
     }
 }

@@ -6,7 +6,7 @@
 
 namespace GEngine
 {
-	D3D12DescriptorHeap::D3D12DescriptorHeap(uint32_t rtvCount, uint32_t dsvCount, uint32_t cbvSrvUavCount)
+	D3D12DescriptorHeap::D3D12DescriptorHeap(uint32_t rtvCount, uint32_t dsvCount, uint32_t cbvSrvUavCount, uint32_t samplerCount)
 	{
 		// rtv
 		m_RtvHeapInfo.DescriptorCount = rtvCount;
@@ -51,6 +51,20 @@ namespace GEngine
 		{
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_CbvSrvUavHeapInfo.Heaps[i])));
 		}
+
+		m_SamplerHeapInfo.DescriptorCount = samplerCount;
+		m_SamplerHeapInfo.DescriptorUsage = std::vector<uint8_t>(samplerCount, 0);
+		m_SamplerHeapInfo.Heaps.resize(Graphics::GetFrameCount());
+		m_SamplerHeapInfo.FreeIndices.insert(0);
+
+		heapDesc.NumDescriptors = samplerCount;
+		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+		for (int i = 0; i < Graphics::GetFrameCount(); i++)
+		{
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_SamplerHeapInfo.Heaps[i])));
+		}
 	}
 
 	D3D12DescriptorHeap::~D3D12DescriptorHeap()
@@ -64,6 +78,7 @@ namespace GEngine
 			m_RtvHeapInfo.Heaps[i].Reset();
 			m_DsvHeapInfo.Heaps[i].Reset();
 			m_CbvSrvUavHeapInfo.Heaps[i].Reset();
+			m_SamplerHeapInfo.Heaps[i].Reset();
 		}
 	}
 
@@ -74,6 +89,7 @@ namespace GEngine
 		case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: return AllocateFromHeap(m_CbvSrvUavHeapInfo, type, count);
 		case D3D12_DESCRIPTOR_HEAP_TYPE_RTV: return AllocateFromHeap(m_RtvHeapInfo, type, count);
 		case D3D12_DESCRIPTOR_HEAP_TYPE_DSV: return AllocateFromHeap(m_DsvHeapInfo, type, count);
+		case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER: return AllocateFromHeap(m_SamplerHeapInfo, type, count);
 		default:GE_CORE_ASSERT(false, "Unknown descriptor heap type!");
 			break;
 		}
@@ -86,6 +102,7 @@ namespace GEngine
 		case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: FreeToHeap(m_CbvSrvUavHeapInfo, info); break;
 		case D3D12_DESCRIPTOR_HEAP_TYPE_RTV: FreeToHeap(m_RtvHeapInfo, info); break;
 		case D3D12_DESCRIPTOR_HEAP_TYPE_DSV: FreeToHeap(m_DsvHeapInfo, info); break;
+		case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER: FreeToHeap(m_SamplerHeapInfo, info); break;
 		default: GE_CORE_ASSERT(false, "Unknown descriptor heap type!");
 			break;
 		}
@@ -98,10 +115,14 @@ namespace GEngine
 		allocationInfo.Count			= count;
 		allocationInfo.StartIndex		= UINT32_MAX;
 
-		// look for free indices
+		if (count == 0)
+			return allocationInfo;
+
+		// Look for a contiguous free range.  The heap is shared by all frames, while
+		// each allocation stores one CPU/GPU handle pair per frame.
 		for (auto& index : heapInfo.FreeIndices)
 		{
-			for (int i = 0; i < count; i++)
+			for (uint32_t i = 0; i < count; i++)
 			{
 				// free space is not continuous, break and try next index
 				if (index + i < heapInfo.DescriptorUsage.size() && heapInfo.DescriptorUsage[index + i] != 0)
@@ -123,7 +144,7 @@ namespace GEngine
 		// if found free space, mark as used
 		if (allocationInfo.StartIndex != UINT32_MAX)
 		{
-			for (int i = 0; i < count; i++)
+			for (uint32_t i = 0; i < count; i++)
 			{
 				heapInfo.DescriptorUsage[allocationInfo.StartIndex + i] = 1;
 				heapInfo.FreeIndices.erase(allocationInfo.StartIndex + i);
@@ -138,10 +159,11 @@ namespace GEngine
 				}
 			}
 			// add each frame's cpu and gpu handles to allocation info
+			const UINT descriptorIncrement = D3D12Context::Get()->GetDevice()->GetDescriptorHandleIncrementSize(type);
 			for(int i = 0; i < Graphics::GetFrameCount(); i++)
 			{
-				allocationInfo.CpuHandles.push_back(CD3DX12_CPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetCPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize()));
-				allocationInfo.GpuHandles.push_back(CD3DX12_GPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetGPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, D3D12Context::Get()->GetCbvSrvUavDescriptorIncrementSize()));
+				allocationInfo.CpuHandles.push_back(CD3DX12_CPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetCPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, descriptorIncrement));
+				allocationInfo.GpuHandles.push_back(CD3DX12_GPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetGPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, descriptorIncrement));
 			}
 		}
 		else
@@ -159,42 +181,20 @@ namespace GEngine
 			return;
 		}
 			
-		// mark the descriptors as free
-		for (int i = 0; i < info.Count; i++)
+		GE_CORE_ASSERT(info.StartIndex + info.Count <= heapInfo.DescriptorCount, "Descriptor allocation is outside this heap!");
+		for (uint32_t i = 0; i < info.Count; i++)
 		{
 			heapInfo.DescriptorUsage[info.StartIndex + i] = 0;
 		}
-		// looking front and back for free indices to merge
-		uint32_t startIndex = info.StartIndex;
-		// looking front
-		for(int i = startIndex - 1; i >= 0; i--)
+
+		// Rebuild range starts.  This is rare (material/frame-buffer destruction) and
+		// avoids the unsigned-underflow and stale-range bugs in the old merge code.
+		heapInfo.FreeIndices.clear();
+		for (uint32_t index = 0; index < heapInfo.DescriptorCount; ++index)
 		{
-			if (heapInfo.DescriptorUsage[i] == 0)
-			{
-				heapInfo.FreeIndices.erase(i);
-				startIndex = i;
-			}
-			else
-			{
-				break;
-			}
+			if (heapInfo.DescriptorUsage[index] == 0 && (index == 0 || heapInfo.DescriptorUsage[index - 1] != 0))
+				heapInfo.FreeIndices.insert(index);
 		}
-		heapInfo.FreeIndices.insert(startIndex);
-		// looking back
-		startIndex = info.StartIndex + info.Count - 1;
-		for(int i = startIndex; i < heapInfo.DescriptorUsage.size(); i++)
-		{
-			if (heapInfo.DescriptorUsage[i] == 0)
-			{
-				heapInfo.FreeIndices.erase(i);
-				startIndex = i;
-			}
-			else
-			{
-				break;
-			}
-		}
-		heapInfo.FreeIndices.insert(startIndex);
 	}
 }
 

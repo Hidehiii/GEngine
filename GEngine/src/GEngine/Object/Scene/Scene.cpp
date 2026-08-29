@@ -113,11 +113,6 @@ namespace GEngine
 	}
 	Scene::~Scene()
 	{
-		MAIN_THREAD_MUTEX_LOCK;
-		if (m_PhysicsTimerWheel != nullptr)
-		{
-			m_PhysicsTimerWheel->Stop();
-		}
 	}
 	Ref<Scene> Scene::Copy(Ref<Scene> scene)
 	{
@@ -217,9 +212,6 @@ namespace GEngine
 	// 在场景第一帧之前调用
 	void Scene::OnAwake()
 	{
-		// Create TimerWheel
-		m_PhysicsTimerWheel =  CreateRef<PhysicsTimerWheel>(10, 1000 * Time::GetFixedTime());
-
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnAwake);
 		// Add physics world 2D
 		m_PhysicsWorld2D = CreateRef<Physics2DWorld>(Vector2(0.0f, -9.8f), this);
@@ -259,7 +251,7 @@ namespace GEngine
 				fixtureDef.SetPolygonShape(&shape);
 				fixtureDef.SetDensity(boxCollider.m_Density);
 				fixtureDef.SetFriction(boxCollider.m_Friction);
-				fixtureDef.SetRestitution(boxCollider.m_Friction);
+				fixtureDef.SetRestitution(boxCollider.m_Restitution);
 				fixtureDef.SetRestitutionThreshold(boxCollider.m_RestitutionThreshold);
 				fixtureDef.SetIsTrigger(boxCollider.m_IsTrigger);
 				fixtureDef.SetGameObject(gameObject);
@@ -277,7 +269,7 @@ namespace GEngine
 				fixtureDef.SetCircleShape(&shape);
 				fixtureDef.SetDensity(circleCollider.m_Density);
 				fixtureDef.SetFriction(circleCollider.m_Friction);
-				fixtureDef.SetRestitution(circleCollider.m_Friction);
+				fixtureDef.SetRestitution(circleCollider.m_Restitution);
 				fixtureDef.SetRestitutionThreshold(circleCollider.m_RestitutionThreshold);
 				fixtureDef.SetIsTrigger(circleCollider.m_IsTrigger);
 				fixtureDef.SetGameObject(gameObject);
@@ -290,38 +282,43 @@ namespace GEngine
 	{
 
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnStart);
-
-		// Start timerwheel
-		m_PhysicsTimerWheel->Start();
-		// Add physics update
-		m_PhysicsTimerWheel->AddTask(1000.0f * Time::GetFixedTime(), [&]() {
-				m_PhysicsWorld2D->Simulate(Time::GetPhysicsDeltaTime());
-				//m_PhysicsWorld3D->Simulate(Time::GetPhysicsDeltaTime());
-
-				// retrieve transform
-				auto view = m_Registry.view<RigidBody2D>();
-				for (auto entity : view)
-				{
-					GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
-					auto& transform = gameObject.GetComponent<Transform>();
-					auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
-
-					Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
-					const auto& pos = body->GetPosition();
-					transform.m_Position.x = pos.x;
-					transform.m_Position.y = pos.y;
-					transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
-				}
-
-				CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnPhysicsUpdate);
-			});
-		
 	}
 	// 场景中的所有对象在每一帧开始时调用
 	// 更新物理和脚本
 	void Scene::OnUpdate()
 	{
+		if (!m_PhysicsPaused)
+		{
+			float frameDelta = Time::GetDeltaTime();
+			frameDelta = frameDelta > 0.25f ? 0.25f : frameDelta;
+			m_PhysicsAccumulator += frameDelta;
+
+			while (m_PhysicsAccumulator >= Time::GetFixedTime())
+			{
+				OnFixedUpdate();
+				m_PhysicsAccumulator -= Time::GetFixedTime();
+			}
+		}
 		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnUpdate);
+	}
+	void Scene::OnFixedUpdate()
+	{
+		m_PhysicsWorld2D->Simulate(Time::GetFixedTime());
+
+		auto view = m_Registry.view<RigidBody2D>();
+		for (auto entity : view)
+		{
+			GameObject gameObject = m_Registry.get<RigidBody2D>(entity).m_GameObject;
+			auto& transform = gameObject.GetComponent<Transform>();
+			auto& rigidBody = gameObject.GetComponent<RigidBody2D>();
+			Physics2DBody* body = (Physics2DBody*)rigidBody.m_Body;
+			const auto& pos = body->GetPosition();
+			transform.m_Position.x = pos.x;
+			transform.m_Position.y = pos.y;
+			transform.SetEulerAngleInRadians({ 0.0f, 0.0f, body->GetAngle() });
+		}
+
+		CallComponentFunction(AllComponents{}, m_Registry, ComponentFunction::OnPhysicsUpdate);
 	}
 	// 场景中的所有对象在每一帧结束时调用
 	void Scene::OnLateUpdate()
@@ -344,17 +341,11 @@ namespace GEngine
 	}
 	void Scene::OnPause()
 	{
-		if (m_PhysicsTimerWheel)
-		{
-			m_PhysicsTimerWheel->Pause();
-		}
+		m_PhysicsPaused = true;
 	}
 	void Scene::OnResume()
 	{
-		if (m_PhysicsTimerWheel)
-		{
-			m_PhysicsTimerWheel->Continue();
-		}
+		m_PhysicsPaused = false;
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

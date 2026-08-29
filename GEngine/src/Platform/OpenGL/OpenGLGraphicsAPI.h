@@ -16,6 +16,17 @@ namespace GEngine
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;
 
 		virtual std::vector<std::string> GetExtensions() override;
+		virtual GraphicsCapabilities GetCapabilities() const override;
+		virtual Ref<RenderPass> CreateRenderPass(const RenderPassSpecification& spec) override;
+		virtual Ref<FrameBuffer> CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height) override;
+		virtual Ref<FrameBuffer> ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height) override;
+		virtual Ref<Texture2D> CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format) override;
+		virtual Ref<Texture2D> CreateTexture2D(const std::string& path) override;
+		virtual Ref<Texture2D> CreateTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format) override;
+		virtual Ref<UniformBuffer> CreateUniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic) override;
+		virtual Ref<VertexBuffer> CreateVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type) override;
+		virtual Ref<VertexBuffer> CreateVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type) override;
+		virtual Ref<IndexBuffer> CreateIndexBuffer(const uint32_t* indices, uint32_t count) override;
 
 		virtual uint32_t GetMaxTexture2DSize() override;
 		virtual uint32_t GetMaxCombinedTextureCount() override;

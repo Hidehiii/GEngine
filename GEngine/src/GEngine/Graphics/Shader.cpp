@@ -277,10 +277,10 @@ namespace GEngine
 				int mask = 0;
 				for (size_t i = 1; i < words.size(); i++)
 				{
-					if (StringHelper::ToUpper(words[i]) == "R") mask |= COLOR_MASK_CHANNLE_R;
-					if (StringHelper::ToUpper(words[i]) == "G") mask |= COLOR_MASK_CHANNLE_G;
-					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNLE_B;
-					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNLE_A;
+					if (StringHelper::ToUpper(words[i]) == "R") mask |= COLOR_MASK_CHANNEL_R;
+					if (StringHelper::ToUpper(words[i]) == "G") mask |= COLOR_MASK_CHANNEL_G;
+					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNEL_B;
+					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNEL_A;
 				}
 				m_PassReflections.at(m_PassReflections.size() - 1).State.ColorMask = mask;
 				GE_CORE_TRACE("	Color mask: {}", mask);

@@ -202,13 +202,14 @@ namespace GEngine
 		}
 		return nullptr;
 	}
-	void Material::WriteResourceProperty(const std::string& name, void* ptr)
+	void Material::WriteResourceProperty(const std::string& name, const Ref<void>& owner, void* ptr)
 	{
 		for (auto& pass : m_Passes)
 		{
 			if (pass.ResourceProperties.find(name) != pass.ResourceProperties.end())
 			{
 				pass.ResourceProperties.at(name).Ptr = ptr;
+				pass.ResourceProperties.at(name).Owner = owner;
 			}
 		}
 	}

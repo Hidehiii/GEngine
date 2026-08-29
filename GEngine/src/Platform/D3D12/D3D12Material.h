@@ -14,6 +14,7 @@ namespace GEngine
 	{
 	public:
 		D3D12Material(const Ref<Shader>& shader, const std::string& name = "");
+		virtual ~D3D12Material() override;
 
 		virtual Ref<Shader>&		GetShader() override { return m_ShaderBase; }
 		virtual Buffer				SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
@@ -21,6 +22,7 @@ namespace GEngine
 		virtual void				ResourceUpdateNotify() override { CreateDescriptorHeap(); }
 
 		const std::vector<D3D12DescriptorHeap::D3D12DescriptorAllocationInfo>&	GetCbvSrvUavHeaps() const { return m_CbvSrvUavHeaps; }
+		const std::vector<D3D12DescriptorHeap::D3D12DescriptorAllocationInfo>& GetSamplerHeaps() const { return m_SamplerHeaps; }
 		const std::vector<std::unordered_map<uint32_t, Ref<D3D12UniformBuffer>>>&	GetConstantBuffers() const { return m_ConstantBuffers; }
 
 		bool operator==(const D3D12Material& other) const
@@ -34,6 +36,7 @@ namespace GEngine
 		Ref<D3D12Shader>													m_Shader;
 		std::vector<std::unordered_map<uint32_t, Ref<D3D12UniformBuffer>>>	m_ConstantBuffers; // pass { bind point : buffer }
 		std::vector<D3D12DescriptorHeap::D3D12DescriptorAllocationInfo>		m_CbvSrvUavHeaps;							
+		std::vector<D3D12DescriptorHeap::D3D12DescriptorAllocationInfo>		m_SamplerHeaps;
 	};
 }
 

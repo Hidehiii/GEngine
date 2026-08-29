@@ -1,16 +1,17 @@
 #include "GEpch.h"
 #include "Texture.h"
 #include "Graphics.h"
-#include "Platform/OpenGL/OpenGLTexture2D.h"
-#include "Platform/Vulkan/VulkanTexture2D.h"
 #include "Platform/OpenGL/OpenGLCubeMap.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
+#include "Platform/D3D12/D3D12CubeMap.h"
 #include "Platform/OpenGL/OpenGLTexture2DArray.h"
 #include "Platform/Vulkan/VulkanTexture2DArray.h"
+#include "Platform/D3D12/D3D12Texture2DArray.h"
 #include "Platform/OpenGL/OpenGLTexture2DCombineSampler.h"
 #include "Platform/Vulkan/VulkanTexture2DCombineSampler.h"
 #include "Platform/OpenGL/OpenGLCubeMapCombineSampler.h"
 #include "Platform/Vulkan/VulkanCubeMapCombineSampler.h"
+#include "Platform/D3D12/D3D12TextureCombineSampler.h"
 
 namespace GEngine
 {
@@ -31,6 +32,9 @@ namespace GEngine
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanTexture2DCombineSampler>(texture, sampler);
 		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12Texture2DCombineSampler>(texture, sampler);
+		}
 		default:
 			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 			break;
@@ -40,60 +44,15 @@ namespace GEngine
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLTexture2D>(width, height, format);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanTexture2D>(width, height, format);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateTexture2D(width, height, format);
 	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLTexture2D>(path);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanTexture2D>(path);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateTexture2D(path);
 	}
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLTexture2D>(width, height, data, size, format);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanTexture2D>(width, height, data, size, format);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateTexture2D(width, height, data, size, format);
 	}
 	Ref<Texture2D> Texture2D::White()
 	{
@@ -119,6 +78,9 @@ namespace GEngine
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanCubeMapCombineSampler>(cubemap, sampler);
 		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12CubeMapCombineSampler>(cubemap, sampler);
+		}
 		default:
 			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 			break;
@@ -140,6 +102,9 @@ namespace GEngine
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
 		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12CubeMap>(width, height, generateMipmap, format);
+		}
 		}
 
 		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
@@ -158,6 +123,9 @@ namespace GEngine
 		}
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 		}
 		}
 
@@ -192,6 +160,9 @@ namespace GEngine
 		}
 		case GRAPHICS_API_VULKAN: {
 			return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
+		}
+		case GRAPHICS_API_DIRECT3DX12: {
+			return CreateRef<D3D12Texture2DArray>(width, height, layers, format);
 		}
 		}
 

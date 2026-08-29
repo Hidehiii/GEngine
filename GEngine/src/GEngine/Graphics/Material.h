@@ -63,7 +63,8 @@ namespace GEngine
 		template<typename T>
 		void SetResource(const std::string& name, const Ref<T>& value)
 		{
-			WriteResourceProperty(name, (void*)&value);
+			auto storage = CreateRef<Ref<T>>(value);
+			WriteResourceProperty(name, storage, storage.get());
 			ResourceUpdateNotify();
 		}
 
@@ -87,7 +88,7 @@ namespace GEngine
 
 		virtual void WriteConstProperty(const std::string& name, const void* value, const uint32_t size);
 		virtual const void* ReadConstProperty(const std::string& name);
-		virtual void WriteResourceProperty(const std::string& name, void* ptr);
+		virtual void WriteResourceProperty(const std::string& name, const Ref<void>& owner, void* ptr);
 		virtual void* ReadResourceProperty(const std::string& name);
 
 		virtual void ClearAllPasses();

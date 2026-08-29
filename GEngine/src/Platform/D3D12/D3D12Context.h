@@ -48,9 +48,14 @@ namespace GEngine
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>	GetFence(CommandBufferType type);
 		void														IncreaseFenceValue(CommandBufferType type);
 		void														WaitForFence(CommandBufferType type, uint64_t timeout = INFINITE);
+	public:
+		UINT GetSamplerDescriptorIncrementSize() const { return m_SamplerDescriptorIncrementSize; }
+		ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap(uint32_t frame) const { return m_HeapPool.GetCbvSrvUavDescriptorHeap(frame).Get(); }
+		ID3D12DescriptorHeap* GetSamplerDescriptorHeap(uint32_t frame) const { return m_HeapPool.GetSamplerDescriptorHeap(frame).Get(); }
 	protected:
 		Ref<D3D12CommandBuffer>		GetCommandBuffer(CommandBufferType type);
 	private:
+		UINT m_SamplerDescriptorIncrementSize = 0;
 		void						GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter = false);
 		void						CreateFactory();
 		void						CreateDevice();

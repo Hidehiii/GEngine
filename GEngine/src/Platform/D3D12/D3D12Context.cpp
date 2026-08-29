@@ -346,6 +346,7 @@ namespace GEngine
 		m_RtvDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		m_DsvDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		m_CbvSrvUavDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_SamplerDescriptorIncrementSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 	}
 	void D3D12Context::CreateRenderPass()
 	{
@@ -389,7 +390,7 @@ namespace GEngine
 	}
 	void D3D12Context::CreateDescriptorHeaps()
 	{
-		m_HeapPool = D3D12DescriptorHeap(10000, 10000, 10000);
+		m_HeapPool = D3D12DescriptorHeap(10000, 10000, 10000, 10000);
 	}
 	void D3D12Context::CheckAndResetFences()
 	{

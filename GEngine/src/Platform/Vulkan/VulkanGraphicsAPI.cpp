@@ -4,6 +4,11 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
+#include "Platform/Vulkan/VulkanRenderPass.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+#include "Platform/Vulkan/VulkanTexture2D.h"
+#include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include <set>
 
 namespace GEngine
@@ -41,6 +46,63 @@ namespace GEngine
             ext.push_back(extension.extensionName);
         }
         return ext;
+    }
+
+    GraphicsCapabilities VulkanGraphicsAPI::GetCapabilities() const
+    {
+        GraphicsCapabilities capabilities;
+        capabilities.RenderPass = true;
+        capabilities.FrameBuffer = true;
+        capabilities.Texture2D = true;
+        capabilities.Texture2DArray = true;
+        capabilities.CubeMap = true;
+        capabilities.Sampler = true;
+        capabilities.UniformBuffer = true;
+        capabilities.StorageBuffer = true;
+        capabilities.StorageImage = true;
+        capabilities.Compute = true;
+        capabilities.Subpasses = true;
+        return capabilities;
+    }
+    Ref<RenderPass> VulkanGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
+    {
+        return CreateRef<VulkanRenderPass>(spec);
+    }
+    Ref<FrameBuffer> VulkanGraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
+    {
+        return CreateRef<VulkanFrameBuffer>(renderPass, width, height);
+    }
+    Ref<FrameBuffer> VulkanGraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
+    {
+        return CreateRef<VulkanFrameBuffer>(buffer, width, height);
+    }
+    Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+    {
+        return CreateRef<VulkanTexture2D>(width, height, format);
+    }
+    Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(const std::string& path)
+    {
+        return CreateRef<VulkanTexture2D>(path);
+    }
+    Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
+    {
+        return CreateRef<VulkanTexture2D>(width, height, data, size, format);
+    }
+    Ref<UniformBuffer> VulkanGraphicsAPI::CreateUniformBuffer(uint32_t size, uint32_t count, bool autoSetDataDynamic)
+    {
+        return CreateRef<VulkanUniformBuffer>(size, count, autoSetDataDynamic);
+    }
+    Ref<VertexBuffer> VulkanGraphicsAPI::CreateVertexBuffer(uint32_t size, uint32_t sizeInstance, VertexTopology type)
+    {
+        return CreateRef<VulkanVertexBuffer>(size, sizeInstance, type);
+    }
+    Ref<VertexBuffer> VulkanGraphicsAPI::CreateVertexBuffer(const void* vertices, uint32_t size, uint32_t sizeInstance, VertexTopology type)
+    {
+        return CreateRef<VulkanVertexBuffer>(vertices, size, sizeInstance, type);
+    }
+    Ref<IndexBuffer> VulkanGraphicsAPI::CreateIndexBuffer(const uint32_t* indices, uint32_t count)
+    {
+        return CreateRef<VulkanIndexBuffer>(indices, count);
     }
 
     uint32_t VulkanGraphicsAPI::GetMaxTexture2DSize()

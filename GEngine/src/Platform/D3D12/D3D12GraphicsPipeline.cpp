@@ -71,13 +71,24 @@ namespace GEngine
 		auto shader = std::dynamic_pointer_cast<D3D12Shader>(m_Material->GetShader());
 		cmdList->SetGraphicsRootSignature(shader->GetRootSignatures()[pass].Get());
 
-		//TODO: heap set in graphics present, set once in one frame, not per pipeline
-
-		auto& heapInfo = m_Material->GetCbvSrvUavHeaps()[pass];
-		if (heapInfo.IsValid())
+		ID3D12DescriptorHeap* descriptorHeaps[] =
 		{
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle(heapInfo.GpuHandles[Graphics::GetFrame()]);
-			cmdList->SetGraphicsRootDescriptorTable(0, gpuHandle);
+			D3D12Context::Get()->GetCbvSrvUavDescriptorHeap(Graphics::GetFrame()),
+			D3D12Context::Get()->GetSamplerDescriptorHeap(Graphics::GetFrame())
+		};
+		cmdList->SetDescriptorHeaps(2, descriptorHeaps);
+
+		const auto& bindingLayout = shader->GetRootBindingLayout(pass);
+		const auto& resourceHeap = m_Material->GetCbvSrvUavHeaps()[pass];
+		if (bindingLayout.ResourceTableRootIndex >= 0 && resourceHeap.IsValid())
+		{
+			cmdList->SetGraphicsRootDescriptorTable(bindingLayout.ResourceTableRootIndex, resourceHeap.GpuHandles[Graphics::GetFrame()]);
+		}
+
+		const auto& samplerHeap = m_Material->GetSamplerHeaps()[pass];
+		if (bindingLayout.SamplerTableRootIndex >= 0 && samplerHeap.IsValid())
+		{
+			cmdList->SetGraphicsRootDescriptorTable(bindingLayout.SamplerTableRootIndex, samplerHeap.GpuHandles[Graphics::GetFrame()]);
 		}
 
 		m_VertexBuffer->Bind(cmdBuffer);

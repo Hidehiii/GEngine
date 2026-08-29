@@ -20,7 +20,7 @@ namespace GEngine
 		virtual void SetIndexBuffer(const Ref<GEngine::IndexBuffer>& indexBuffer) override;
 
 
-		virtual const Ref<IndexBuffer>&				GetIndexBuffer() const override { return std::dynamic_pointer_cast<IndexBuffer>(m_IndexBuffer); }
+		virtual Ref<IndexBuffer>						GetIndexBuffer() const override;
 		virtual VertexTopology						GetVertexTopologyType() override { return m_TopologyType; }
 
 

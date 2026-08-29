@@ -61,6 +61,7 @@ namespace GEngine
 			if constexpr (std::is_same<T, Camera>::value)
 				component.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
+		void OnFixedUpdate();
 		/*template<typename T>
 		void OnComponentRemoved(GameObject gameObject, T& component);
 
@@ -73,7 +74,8 @@ namespace GEngine
 		uint32_t						m_ViewportWidth = 1920, m_ViewportHeight = 1080;
 		std::vector<GameObject>			m_DeletedGameObject;
 
-		Ref<PhysicsTimerWheel>			m_PhysicsTimerWheel = nullptr;
+		float						m_PhysicsAccumulator = 0.0f;
+		bool						m_PhysicsPaused = false;
 
 		Ref<Physics2DWorld>				m_PhysicsWorld2D = nullptr;
 		Ref<PhysicalContactListener2D>	m_PhysicalContactListener2D = nullptr;

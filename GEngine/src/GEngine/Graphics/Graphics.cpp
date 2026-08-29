@@ -86,6 +86,15 @@ namespace GEngine
 	{
 		return s_ReverseDepth;
 	}
+	GraphicsCapabilities Graphics::GetCapabilities()
+	{
+		return s_GraphicsAPI->GetCapabilities();
+	}
+	RenderDevice& Graphics::GetRenderDevice()
+	{
+		GE_CORE_ASSERT(s_GraphicsAPI != nullptr, "Graphics API has not been initialized");
+		return *s_GraphicsAPI;
+	}
 	Ref<CommandBuffer> Graphics::GetGraphicsCommandBuffer()
 	{
 		return s_GraphicsAPI->GetGraphicsCommandBuffer();

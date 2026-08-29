@@ -62,6 +62,11 @@ namespace GEngine
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 
+	Ref<IndexBuffer> OpenGLVertexBuffer::GetIndexBuffer() const
+	{
+		return m_IndexBuffer;
+	}
+
 	void OpenGLVertexBuffer::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = std::static_pointer_cast<OpenGLIndexBuffer>(indexBuffer);
