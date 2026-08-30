@@ -7,6 +7,25 @@
 #include "Platform/D3D12/D3D12UniformBuffer.h"
 #include "Platform/D3D12/D3D12VertexBuffer.h"
 
+namespace
+{
+	D3D12_RESOURCE_STATES ToD3D12ResourceState(GEngine::GraphicsResourceState state)
+	{
+		using State = GEngine::GraphicsResourceState;
+		switch (state)
+		{
+		case State::RenderTarget: return D3D12_RESOURCE_STATE_RENDER_TARGET;
+		case State::DepthWrite: return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		case State::ShaderRead: return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+		case State::ShaderWrite: return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		case State::CopySource: return D3D12_RESOURCE_STATE_COPY_SOURCE;
+		case State::CopyDestination: return D3D12_RESOURCE_STATE_COPY_DEST;
+		case State::Present: return D3D12_RESOURCE_STATE_PRESENT;
+		case State::Undefined: return D3D12_RESOURCE_STATE_COMMON;
+		}
+		return D3D12_RESOURCE_STATE_COMMON;
+	}
+}
 
 namespace GEngine
 {
@@ -186,4 +205,17 @@ namespace GEngine
 		firstD3D->AddSignalFence(f);
 		secondD3D->AddWaitFence(f);
     }
+
+	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
+		GraphicsResourceType, GraphicsResourceState before, GraphicsResourceState after)
+	{
+		if (nativeResource == nullptr || before == after)
+			return;
+
+		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(nativeResource),
+			ToD3D12ResourceState(before), ToD3D12ResourceState(after));
+		d3dCommandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);
+	}
 }

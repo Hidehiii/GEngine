@@ -15,7 +15,8 @@ namespace GEngine
 	class GENGINE_API GraphicsPresent
 	{
 	public:
-		GraphicsPresent() {}
+		GraphicsPresent();
+		virtual ~GraphicsPresent();
 		virtual bool AquireImage() { return true; }
 		virtual void Begin() {}
 		virtual void End() {}
@@ -31,7 +32,9 @@ namespace GEngine
 		friend class RenderSystem;
 
 		static Scope<GraphicsPresent> Create();
+		static void SetActivePresenter(GraphicsPresent* presenter);
 	protected:
-		static std::vector<Ref<CommandBuffer>>	s_CommandBuffers;
+		std::vector<Ref<CommandBuffer>>	m_CommandBuffers;
+		static GraphicsPresent*			s_ActivePresenter;
 	};
 }

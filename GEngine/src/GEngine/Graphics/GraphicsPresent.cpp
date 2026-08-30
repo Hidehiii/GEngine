@@ -8,11 +8,25 @@
 
 namespace GEngine
 {
-	std::vector<Ref<CommandBuffer>>	GraphicsPresent::s_CommandBuffers;
+	GraphicsPresent*	GraphicsPresent::s_ActivePresenter = nullptr;
+
+	GraphicsPresent::GraphicsPresent() = default;
+	GraphicsPresent::~GraphicsPresent()
+	{
+		if (s_ActivePresenter == this)
+			s_ActivePresenter = nullptr;
+	}
+
+	void GraphicsPresent::SetActivePresenter(GraphicsPresent* presenter)
+	{
+		GE_CORE_ASSERT(presenter != nullptr, "An active graphics presenter is required.");
+		s_ActivePresenter = presenter;
+	}
 
 	Ref<CommandBuffer> GraphicsPresent::GetCommandBuffer()
 	{
-		return s_CommandBuffers.at(Graphics::GetFrame());
+		GE_CORE_ASSERT(s_ActivePresenter != nullptr, "No active graphics presenter is available.");
+		return s_ActivePresenter->m_CommandBuffers.at(Graphics::GetFrame());
 	}
 
 	bool GraphicsPresent::AcquireFrame(FrameContext& frameContext)

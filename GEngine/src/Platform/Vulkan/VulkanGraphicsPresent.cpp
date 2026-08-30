@@ -10,7 +10,7 @@ namespace GEngine
 	VulkanGraphicsPresent::VulkanGraphicsPresent()
 	{
 		m_Fences.resize(Graphics::GetFrameCount());
-		s_CommandBuffers.resize(Graphics::GetFrameCount());
+		m_CommandBuffers.resize(Graphics::GetFrameCount());
 		for (int i = 0; i < m_Fences.size(); i++)
 		{
 			VkFenceCreateInfo       fenceInfo{};
@@ -29,9 +29,9 @@ namespace GEngine
 		allocInfo.commandBufferCount	= Graphics::GetFrameCount();
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(VulkanContext::Get()->GetDevice(), &allocInfo, cmds.data()));
 
-		for (int i = 0; i < s_CommandBuffers.size(); i++)
+		for (int i = 0; i < m_CommandBuffers.size(); i++)
 		{
-			s_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
+			m_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
 		}
 	}
 	bool VulkanGraphicsPresent::AquireImage()
@@ -84,15 +84,15 @@ namespace GEngine
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags				= 0; // Optional
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
-		vkResetCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), &beginInfo));
-		std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)));
+		vkResetCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), 0);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), &beginInfo));
+		std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)));
 	}
 	void VulkanGraphicsPresent::End()
 	{
-		std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()))->EndPresentRender();
+		std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->EndPresentRender();
 
-		Ref<VulkanCommandBuffer> cmd = std::dynamic_pointer_cast<VulkanCommandBuffer>(s_CommandBuffers.at(Graphics::GetFrame()));
+		Ref<VulkanCommandBuffer> cmd = std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()));
 
 		VkCommandBuffer commandBuffer = cmd->GetCommandBuffer();
 		std::vector<VkSemaphore> submitWaitSemaphores = cmd->GetWaitSemaphores();

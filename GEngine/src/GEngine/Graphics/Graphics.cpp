@@ -69,6 +69,12 @@ namespace GEngine
 	{
 		s_GraphicsAPI->SetCommandsBarrier(first, second);
 	}
+	void Graphics::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
+		GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after)
+	{
+		GE_CORE_ASSERT(s_GraphicsAPI != nullptr, "Graphics API has not been initialized");
+		s_GraphicsAPI->TransitionResource(commandBuffer, nativeResource, resourceType, before, after);
+	}
 	void Graphics::SetReverseDepth(bool reverse)
 	{
 		s_ReverseDepth = reverse;

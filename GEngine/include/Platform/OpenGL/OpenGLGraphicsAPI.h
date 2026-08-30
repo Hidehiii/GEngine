@@ -42,6 +42,8 @@ namespace GEngine
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) override {}
+		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
+			GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after) override;
 	};
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Renderer/FrameContext.h"
 
 #include <functional>
@@ -22,26 +23,17 @@ namespace GEngine
 		static constexpr PassHandle InvalidPass = UINT32_MAX;
 		static constexpr ResourceHandle InvalidResource = UINT32_MAX;
 
-		enum class ResourceState : uint8_t
-		{
-			Undefined,
-			RenderTarget,
-			DepthWrite,
-			ShaderRead,
-			ShaderWrite,
-			CopySource,
-			CopyDestination,
-			Present
-		};
+		using ResourceState = GraphicsResourceState;
 
 		using ExecuteCallback = std::function<void(FrameContext&)>;
-		using TransitionCallback = std::function<void(const FrameContext&, ResourceHandle, ResourceState, ResourceState)>;
+		using TransitionCallback = std::function<void(const FrameContext&, ResourceHandle, GraphicsResourceType, ResourceState, ResourceState)>;
 
 		PassHandle AddPass(std::string name, ExecuteCallback execute);
 		PassHandle AddPass(std::string name, std::function<void()> execute);
 		void AddDependency(PassHandle pass, PassHandle dependency);
 		ResourceHandle ImportResource(std::string name, ResourceState initialState = ResourceState::Undefined);
-		ResourceHandle ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState);
+		ResourceHandle ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState,
+			GraphicsResourceType resourceType = GraphicsResourceType::Unknown);
 		ResourceHandle ImportTexture(std::string name, const Ref<Texture>& texture, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle ImportStorageBuffer(std::string name, const Ref<StorageBuffer>& buffer, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle ImportStorageImage(std::string name, const Ref<StorageImage2D>& image, ResourceState initialState = ResourceState::Undefined);
@@ -67,6 +59,7 @@ namespace GEngine
 			std::string Name;
 			ResourceState InitialState;
 			void* NativeResource = nullptr;
+			GraphicsResourceType Type = GraphicsResourceType::Unknown;
 		};
 
 		struct ResourceTransition

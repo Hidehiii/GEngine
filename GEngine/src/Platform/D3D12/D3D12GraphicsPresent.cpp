@@ -8,12 +8,12 @@ namespace GEngine
 {
 	D3D12GraphicsPresent::D3D12GraphicsPresent()
 	{
-		s_CommandBuffers.resize(Graphics::GetFrameCount());
+		m_CommandBuffers.resize(Graphics::GetFrameCount());
 		m_FenceValues.resize(Graphics::GetFrameCount(), 0);
 		m_FenceEvents.resize(Graphics::GetFrameCount(), nullptr);
 		for (int i = 0; i < Graphics::GetFrameCount(); i++)
 		{
-			s_CommandBuffers.at(i) = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
+			m_CommandBuffers.at(i) = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
 			m_FenceEvents.at(i) = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		}
 
@@ -46,13 +46,13 @@ namespace GEngine
 
 	void D3D12GraphicsPresent::Begin()
 	{
-		std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(D3D12Context::Get()->GetRenderTarget(m_FrameIndex)));
+		std::dynamic_pointer_cast<D3D12CommandBuffer>(m_CommandBuffers.at(m_FrameIndex))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(D3D12Context::Get()->GetRenderTarget(m_FrameIndex)));
 	}
 
 	void D3D12GraphicsPresent::BeginFrame(const FrameContext& frameContext)
 	{
 		GE_CORE_ASSERT(frameContext.GetPresentationImageIndex() == m_FrameIndex, "D3D12 presentation image changed between acquire and begin.");
-		auto commandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex));
+		auto commandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(m_CommandBuffers.at(m_FrameIndex));
 		// AcquireFrame waited for this back-buffer slot's fence.  Resetting the
 		// allocator here releases command memory accumulated by its previous use
 		// before the list records another frame.
@@ -62,7 +62,7 @@ namespace GEngine
 
 	void D3D12GraphicsPresent::End()
 	{
-		std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex))->EndPresentRender();
+		std::dynamic_pointer_cast<D3D12CommandBuffer>(m_CommandBuffers.at(m_FrameIndex))->EndPresentRender();
 		if (D3D12Context::Get()->IsVSync())
 		{
 			UINT syncInterval = 1; // Enable VSync

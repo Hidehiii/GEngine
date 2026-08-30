@@ -4,27 +4,6 @@
 #include "GEngine/Graphics/GraphicsPresent.h"
 #include "GEngine/ImGui/ImGuiLayer.h"
 #include "GEngine/LayerStack.h"
-#include "Platform/D3D12/D3D12CommandBuffer.h"
-
-namespace
-{
-	D3D12_RESOURCE_STATES ToD3D12ResourceState(GEngine::RenderGraph::ResourceState state)
-	{
-		using ResourceState = GEngine::RenderGraph::ResourceState;
-		switch (state)
-		{
-		case ResourceState::RenderTarget: return D3D12_RESOURCE_STATE_RENDER_TARGET;
-		case ResourceState::DepthWrite: return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-		case ResourceState::ShaderRead: return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-		case ResourceState::ShaderWrite: return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		case ResourceState::CopySource: return D3D12_RESOURCE_STATE_COPY_SOURCE;
-		case ResourceState::CopyDestination: return D3D12_RESOURCE_STATE_COPY_DEST;
-		case ResourceState::Present: return D3D12_RESOURCE_STATE_PRESENT;
-		case ResourceState::Undefined: return D3D12_RESOURCE_STATE_COMMON;
-		}
-		return D3D12_RESOURCE_STATE_COMMON;
-	}
-}
 
 namespace GEngine
 {
@@ -42,19 +21,13 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(m_Configured, "RenderSystem must be configured before it initializes.");
 		m_Present = GraphicsPresent::Create();
-		m_RenderGraph.SetTransitionCallback([this](const FrameContext&, RenderGraph::ResourceHandle resource, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
+		GraphicsPresent::SetActivePresenter(m_Present.get());
+		m_RenderGraph.SetTransitionCallback([this](const FrameContext&, RenderGraph::ResourceHandle resource, GraphicsResourceType resourceType, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
 		{
-			if (Graphics::GetGraphicsAPI() != GRAPHICS_API_DIRECT3DX12)
-				return;
-
-			auto* nativeResource = static_cast<ID3D12Resource*>(m_RenderGraph.GetNativeResource(resource));
+			void* nativeResource = m_RenderGraph.GetNativeResource(resource);
 			if (nativeResource == nullptr || before == after)
 				return;
-
-			auto commandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(GraphicsPresent::GetCommandBuffer());
-			GE_CORE_ASSERT(commandBuffer, "D3D12 render-graph transitions require a D3D12 graphics command buffer.");
-			auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(nativeResource, ToD3D12ResourceState(before), ToD3D12ResourceState(after));
-			commandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);
+			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), nativeResource, resourceType, before, after);
 		});
 		Graphics::Init();
 	}
@@ -106,7 +79,8 @@ namespace GEngine
 
 		if (void* nativeResource = m_Present->GetPresentationNativeResource())
 		{
-			const auto backBuffer = m_RenderGraph.ImportExternalResource("PresentationBackBuffer", nativeResource, RenderGraph::ResourceState::Present);
+			const auto backBuffer = m_RenderGraph.ImportExternalResource("PresentationBackBuffer", nativeResource,
+				RenderGraph::ResourceState::Present, GraphicsResourceType::Texture);
 			m_RenderGraph.Write(presentPass, backBuffer, RenderGraph::ResourceState::RenderTarget);
 			const auto releasePass = m_RenderGraph.AddPass("ReleasePresentation", []() {});
 			m_RenderGraph.Write(releasePass, backBuffer, RenderGraph::ResourceState::Present);

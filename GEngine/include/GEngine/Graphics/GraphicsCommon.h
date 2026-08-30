@@ -186,6 +186,28 @@ namespace GEngine
 		COMMAND_BUFFER_TYPE_TRANSFER,
 	};
 
+	// Portable resource usage states. Backends translate these to their native
+	// synchronization model (D3D12 barriers, Vulkan layouts/barriers, or OpenGL
+	// memory barriers) when a render-graph pass begins.
+	enum class GraphicsResourceState : uint8_t
+	{
+		Undefined,
+		RenderTarget,
+		DepthWrite,
+		ShaderRead,
+		ShaderWrite,
+		CopySource,
+		CopyDestination,
+		Present
+	};
+
+	enum class GraphicsResourceType : uint8_t
+	{
+		Unknown,
+		Texture,
+		Buffer
+	};
+
 	// Frame buffer attachment specification
 // Contains the frame buffer texture specification
 // Contains the frame buffer texture format

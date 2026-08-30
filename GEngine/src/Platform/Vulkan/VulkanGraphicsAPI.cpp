@@ -11,6 +11,33 @@
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include <set>
 
+namespace
+{
+	struct VulkanResourceState
+	{
+		VkImageLayout Layout;
+		VkAccessFlags Access;
+		VkPipelineStageFlags Stage;
+	};
+
+	VulkanResourceState ToVulkanResourceState(GEngine::GraphicsResourceState state)
+	{
+		using State = GEngine::GraphicsResourceState;
+		switch (state)
+		{
+		case State::RenderTarget: return { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		case State::DepthWrite: return { VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT };
+		case State::ShaderRead: return { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+		case State::ShaderWrite: return { VK_IMAGE_LAYOUT_GENERAL, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT };
+		case State::CopySource: return { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT };
+		case State::CopyDestination: return { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT };
+		case State::Present: return { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 0, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };
+		case State::Undefined: return { VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
+		}
+		return { VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
+	}
+}
+
 namespace GEngine
 {
     VulkanGraphicsAPI::VulkanGraphicsAPI()
@@ -180,5 +207,52 @@ namespace GEngine
         std::dynamic_pointer_cast<VulkanCommandBuffer>(first)->AddSignalSemaphore(s);
         std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
     }
+
+	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
+		GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after)
+	{
+		if (nativeResource == nullptr || before == after)
+			return;
+
+		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan resource transitions require a Vulkan command buffer.");
+		const auto source = ToVulkanResourceState(before);
+		const auto destination = ToVulkanResourceState(after);
+
+		if (resourceType == GraphicsResourceType::Buffer)
+		{
+			VkBufferMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			barrier.srcAccessMask = source.Access;
+			barrier.dstAccessMask = destination.Access;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.buffer = reinterpret_cast<VkBuffer>(nativeResource);
+			barrier.offset = 0;
+			barrier.size = VK_WHOLE_SIZE;
+			vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(), source.Stage, destination.Stage, 0,
+				0, nullptr, 1, &barrier, 0, nullptr);
+			return;
+		}
+
+		GE_CORE_ASSERT(resourceType == GraphicsResourceType::Texture, "Vulkan render-graph resources must declare their type.");
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.srcAccessMask = source.Access;
+		barrier.dstAccessMask = destination.Access;
+		barrier.oldLayout = source.Layout;
+		barrier.newLayout = destination.Layout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = reinterpret_cast<VkImage>(nativeResource);
+		barrier.subresourceRange.aspectMask = (before == GraphicsResourceState::DepthWrite || after == GraphicsResourceState::DepthWrite)
+			? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(), source.Stage, destination.Stage, 0,
+			0, nullptr, 0, nullptr, 1, &barrier);
+	}
 
 }

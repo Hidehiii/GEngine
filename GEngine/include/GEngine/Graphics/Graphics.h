@@ -13,6 +13,8 @@ namespace GEngine
 	{
 	public:
 		static void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
+		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
+			GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after);
 		static void SetReverseDepth(bool reverse);
 
 		static Graphics_API			GetGraphicsAPI();

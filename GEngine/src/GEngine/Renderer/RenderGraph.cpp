@@ -34,15 +34,16 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(!name.empty(), "Render-graph resources require a name.");
 		m_IsCompiled = false;
-		m_Resources.push_back({ std::move(name), initialState, nullptr });
+		m_Resources.push_back({ std::move(name), initialState, nullptr, GraphicsResourceType::Unknown });
 		return static_cast<ResourceHandle>(m_Resources.size() - 1);
 	}
 
-	RenderGraph::ResourceHandle RenderGraph::ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState)
+	RenderGraph::ResourceHandle RenderGraph::ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState, GraphicsResourceType resourceType)
 	{
 		GE_CORE_ASSERT(nativeResource != nullptr, "External render-graph resources require a native resource.");
 		const auto resource = ImportResource(std::move(name), initialState);
 		m_Resources[resource].NativeResource = nativeResource;
+		m_Resources[resource].Type = resourceType;
 		return resource;
 	}
 
@@ -50,7 +51,7 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(texture, "Render-graph texture imports require a texture.");
 		if (void* nativeResource = texture->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState);
+			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Texture);
 		return ImportResource(std::move(name), initialState);
 	}
 
@@ -58,7 +59,7 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(buffer, "Render-graph storage-buffer imports require a buffer.");
 		if (void* nativeResource = buffer->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState);
+			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Buffer);
 		return ImportResource(std::move(name), initialState);
 	}
 
@@ -66,7 +67,7 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(image, "Render-graph storage-image imports require an image.");
 		if (void* nativeResource = image->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState);
+			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Texture);
 		return ImportResource(std::move(name), initialState);
 	}
 
@@ -118,7 +119,7 @@ namespace GEngine
 			for (const auto& transition : m_Passes[pass].Transitions)
 			{
 				if (m_TransitionCallback)
-					m_TransitionCallback(frameContext, transition.Resource, transition.Before, transition.After);
+					m_TransitionCallback(frameContext, transition.Resource, m_Resources[transition.Resource].Type, transition.Before, transition.After);
 			}
 			m_Passes[pass].Execute(frameContext);
 		}

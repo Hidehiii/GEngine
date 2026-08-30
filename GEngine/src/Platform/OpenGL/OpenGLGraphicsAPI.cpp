@@ -186,4 +186,34 @@ namespace GEngine
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
 		return x;
 	}
+	void OpenGLGraphicsAPI::TransitionResource(const Ref<CommandBuffer>&, void*, GraphicsResourceType,
+		GraphicsResourceState before, GraphicsResourceState after)
+	{
+		if (before != GraphicsResourceState::ShaderWrite && before != GraphicsResourceState::CopyDestination &&
+			before != GraphicsResourceState::RenderTarget)
+			return;
+
+		GLbitfield barriers = 0;
+		switch (after)
+		{
+		case GraphicsResourceState::ShaderRead:
+			barriers = GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
+			break;
+		case GraphicsResourceState::ShaderWrite:
+			barriers = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
+			break;
+		case GraphicsResourceState::RenderTarget:
+		case GraphicsResourceState::Present:
+			barriers = GL_FRAMEBUFFER_BARRIER_BIT;
+			break;
+		case GraphicsResourceState::CopySource:
+		case GraphicsResourceState::CopyDestination:
+			barriers = GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT;
+			break;
+		default:
+			break;
+		}
+		if (barriers != 0)
+			glMemoryBarrier(barriers);
+	}
 }
