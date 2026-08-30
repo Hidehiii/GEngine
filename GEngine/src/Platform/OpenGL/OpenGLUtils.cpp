@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 
 namespace GEngine
 {

@@ -1,10 +1,12 @@
 #include "GEpch.h"
-#include "D3D12Context.h"
-#include "D3D12Utils.h"
-#include"GEngine/Application.h"
+#include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12Utils.h"
+#include "GEngine/Core/Config.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <thread>
 #include <atomic>
+#include <chrono>
+#include <cstdlib>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
@@ -13,6 +15,15 @@
 
 namespace GEngine
 {
+namespace
+{
+	bool IsD3D12DebugLayerRequested()
+	{
+		const char* value = std::getenv("GENGINE_D3D12_DEBUG_LAYER");
+		return value != nullptr && value[0] == '1' && value[1] == '\0';
+	}
+}
+
 #ifdef GE_DEBUG
 	std::atomic_bool	g_D3D12DebugInfoQueueLoggerRunning{ false };
 	std::thread			g_D3D12DebugInfoQueueLoggerThread;
@@ -40,6 +51,7 @@ namespace GEngine
 			}
 			// 清除已存消息
 			infoQueue->ClearStoredMessages();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 	static void StartD3D12DebugInfoQueueLogger(Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue)
@@ -81,8 +93,8 @@ namespace GEngine
 		CreateFactory();
 		CreateDevice();
 #ifdef GE_DEBUG
-		SetupDebugInfoQueue();
-		StartD3D12DebugInfoQueueLogger(m_DebugInfoQueue);
+		if (IsD3D12DebugLayerRequested())
+			SetupDebugInfoQueue();
 #endif
 		CreateQueues();
 		CreateSwapChain(width, height);
@@ -103,14 +115,8 @@ namespace GEngine
 		{
 			CloseHandle(m_FenceEvents[i]);
 		}
-		for(int i = 0; i < m_Fences.size(); i++)
-		{
-			m_Fences[i]->Release();
-		}
+		m_Fences.clear();
 
-#ifdef GE_DEBUG
-		StopD3D12DebugInfoQueueLogger();
-#endif
 	}
 	void D3D12Context::SetVSync(bool enable)
 	{
@@ -236,15 +242,13 @@ namespace GEngine
 	{
 		UINT dxgiFactoryFlags = 0;
 #ifdef GE_DEBUG
-		Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
-		D3D12_THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-		debugController->EnableDebugLayer();
-
-		Microsoft::WRL::ComPtr<ID3D12Debug1> debugController1;
-		D3D12_THROW_IF_FAILED(debugController.As(&debugController1));
-		debugController1->SetEnableGPUBasedValidation(TRUE);
-
-		dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+		if (IsD3D12DebugLayerRequested())
+		{
+			Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
+			D3D12_THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+			debugController->EnableDebugLayer();
+			dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+		}
 #endif
 		D3D12_THROW_IF_FAILED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_Factory)));
 	}
@@ -268,9 +272,21 @@ namespace GEngine
 #ifdef GE_DEBUG
 		
 		D3D12_THROW_IF_FAILED(m_Device->QueryInterface(IID_PPV_ARGS(&m_DebugInfoQueue)));
+		// The debug layer retains validation messages in this queue.  A busy frame
+		// loop can produce messages faster than a developer consumes them, so leave
+		// diagnostics enabled but bound their retained memory.
+		D3D12_THROW_IF_FAILED(m_DebugInfoQueue->SetMessageCountLimit(1024));
 
-		m_DebugInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-		m_DebugInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+		D3D12_MESSAGE_SEVERITY suppressedSeverities[] =
+		{
+			D3D12_MESSAGE_SEVERITY_INFO,
+			D3D12_MESSAGE_SEVERITY_MESSAGE
+		};
+		D3D12_INFO_QUEUE_FILTER filter{};
+		filter.DenyList.NumSeverities = _countof(suppressedSeverities);
+		filter.DenyList.pSeverityList = suppressedSeverities;
+		D3D12_THROW_IF_FAILED(m_DebugInfoQueue->AddStorageFilterEntries(&filter));
+		StartD3D12DebugInfoQueueLogger(m_DebugInfoQueue);
 
 		/*D3D12_MESSAGE_ID hide[] =
 		{
@@ -320,7 +336,7 @@ namespace GEngine
 		fullscreenDesc.Windowed				= TRUE;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1>	swapChain;
-		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		switch (Graphics::GetWindowManagerAPI())
 		{
 		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
 			D3D12_THROW_IF_FAILED(m_Factory->CreateSwapChainForHwnd(m_GraphicsQueue.Get(), glfwGetWin32Window((GLFWwindow*)m_WindowHandle), &swapChainDesc, &fullscreenDesc, nullptr, &swapChain));
@@ -390,7 +406,7 @@ namespace GEngine
 	}
 	void D3D12Context::CreateDescriptorHeaps()
 	{
-		m_HeapPool = D3D12DescriptorHeap(10000, 10000, 10000, 10000);
+		m_HeapPool.Initialize(256, 256, 4096, 256);
 	}
 	void D3D12Context::CheckAndResetFences()
 	{

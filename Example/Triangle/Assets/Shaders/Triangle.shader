@@ -1,0 +1,41 @@
+Shader "Triangle"
+{
+    Pass
+    {
+        Cull Off
+        DepthTest Always
+        DepthWrite Off
+        Blend SrcAlpha OneMinusSrcAlpha
+        BlendOp None
+        ColorMask R G B A
+        Tag Triangle
+
+        #pragma vertex vert
+        #pragma fragment frag
+
+        Program
+        {
+            struct VsInput
+            {
+                float3 position : POSITION;
+            };
+
+            struct VsOutput
+            {
+                float4 position : SV_POSITION;
+            };
+
+            VsOutput vert(VsInput input)
+            {
+                VsOutput output;
+                output.position = float4(input.position, 1.0f);
+                return output;
+            }
+
+            float4 frag(VsOutput input) : SV_Target
+            {
+                return float4(0.15f, 0.75f, 1.0f, 1.0f);
+            }
+        }
+    }
+}

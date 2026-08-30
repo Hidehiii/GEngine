@@ -47,6 +47,11 @@ namespace GEngine
 		m_Specification.Height	= spec.Height;
 		m_RenderPass			= std::dynamic_pointer_cast<D3D12RenderPass>(renderpass);
 		m_Specification.Samples = renderpassSpec.Samples;
+		for (const auto format : renderpassSpec.BackBufferFormat)
+			m_Specification.RenderTargets.push_back(Utils::DXGIFormatToFrameBufferTextureFormat(format));
+		m_Specification.DepthStencil = renderpassSpec.EnableDepthStencil
+			? FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8
+			: FRAME_BUFFER_TEXTURE_FORMAT_NONE;
 
 		m_RenderTargetResources = spec.RenderTargets;
 
@@ -249,13 +254,6 @@ namespace GEngine
 	{
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
-		std::vector< D3D12_RESOURCE_BARRIER>	barriers;
-		for (int i = 0; i < m_RenderTargets.size(); i++)
-		{
-			barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_RenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		}
-		cmd->ResourceBarrier(barriers.size(), barriers.data());
-
 		auto rtvDescriptor = m_RtvHeap.CpuHandles.at(Graphics::GetFrame());
 		auto dsvDescriptor = m_DsvHeap.CpuHandles.at(Graphics::GetFrame());
 
@@ -293,18 +291,7 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::EndPresentRender(CommandBuffer* cmdBuffer)
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
-		
-
-		std::vector< D3D12_RESOURCE_BARRIER>	barriers;
-		for (int i = 0; i < m_RenderTargets.size(); i++)
-		{
-			if(m_Specification.Samples > 1)
-				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_MultiSampleRenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-			else
-				barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_RenderTargetResources[i].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-		}
-		cmd->ResourceBarrier(barriers.size(), barriers.data());
+		// RenderGraph owns the swap-chain PRESENT <-> RENDER_TARGET transitions.
 	}
 	void D3D12FrameBuffer::CreateResources()
 	{

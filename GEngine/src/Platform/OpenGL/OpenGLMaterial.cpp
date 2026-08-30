@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLMaterial.h"
+#include "Platform/OpenGL/OpenGLMaterial.h"
 #include "Platform/OpenGL/OpenGLUtils.h"
 
 namespace GEngine

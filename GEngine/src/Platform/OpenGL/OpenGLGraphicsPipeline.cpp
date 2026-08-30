@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLGraphicsPipeline.h"
+#include "Platform/OpenGL/OpenGLGraphicsPipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 

@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "Sampler.h"
-#include "Graphics.h"
+#include "GEngine/Graphics/Sampler.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLSampler.h"
 #include "Platform/Vulkan/VulkanSampler.h"
 #include "Platform/D3D12/D3D12Sampler.h"

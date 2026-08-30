@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "D3D12VertexBuffer.h"
+#include "Platform/D3D12/D3D12VertexBuffer.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "Platform/D3D12/D3D12Context.h"
 

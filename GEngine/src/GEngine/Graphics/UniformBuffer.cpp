@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "UniformBuffer.h"
+#include "GEngine/Graphics/UniformBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine

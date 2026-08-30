@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "OpenGLStorageImage2D.h"
+#include "Platform/OpenGL/OpenGLStorageImage2D.h"
 #include <glad/glad.h>
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 
 namespace GEngine
 {

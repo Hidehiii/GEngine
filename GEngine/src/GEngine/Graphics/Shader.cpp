@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Shader.h"
+#include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
@@ -81,9 +81,11 @@ namespace GEngine
 		}
 		CullMode ShaderCullModeFromString(const std::string& value)
 		{
-			if (StringHelper::ToLower(value) == VAR_NAME(none))		return CULL_MODE_NONE;
-			if (StringHelper::ToLower(value) == VAR_NAME(back))		return CULL_MODE_BACK;
-			if (StringHelper::ToLower(value) == VAR_NAME(front))	return CULL_MODE_FRONT;
+			const std::string cullMode = StringHelper::ToLower(value);
+			if (cullMode == VAR_NAME(none) || cullMode == VAR_NAME(off)) return CULL_MODE_NONE;
+			if (cullMode == VAR_NAME(back))		return CULL_MODE_BACK;
+			if (cullMode == VAR_NAME(front))	return CULL_MODE_FRONT;
+			GE_CORE_WARN("Unknown cull mode '{}', falling back to back-face culling.", value);
 			return CULL_MODE_BACK;
 		}
 		
@@ -636,22 +638,23 @@ namespace GEngine
 		{
 			uint32_t vertexInputStride = 0;
 			uint32_t instanceInputStride = 0;
-			for (int j = 0; j < m_PassReflections.at(i).VertexInputs.size(); j++)
+			for (auto& input : m_PassReflections.at(i).VertexInputs)
 			{
-				auto& input = m_PassReflections.at(i).VertexInputs.at(j);
 				// if the semantic name contains "TEXCOORD" and the semantic index is greater than or equal to 8, 
 				// it is considered as instance input, otherwise it is considered as vertex input
 				// such as TEXCOORD0, TEXCOORD1, TEXCOORD2, TEXCOORD3, TEXCOORD4, TEXCOORD5, TEXCOORD6, TEXCOORD7 are vertex inputs
 				// TEXCOORD8, TEXCOORD9, TEXCOORD10, TEXCOORD11, TEXCOORD12, TEXCOORD13, TEXCOORD14, TEXCOORD15 are instance inputs
 				if (input.SemanticName.find("TEXCOORD") != std::string::npos && input.SemanticIndex >= 8)
 				{
-					instanceInputStride += Utils::ShaderInputDataSize(input.Type);
 					input.IsPerInstance = true;
+					input.Offset = instanceInputStride;
+					instanceInputStride += Utils::ShaderInputDataSize(input.Type);
 				}
 				else
 				{
-					vertexInputStride += Utils::ShaderInputDataSize(input.Type);
 					input.IsPerInstance = false;
+					input.Offset = vertexInputStride;
+					vertexInputStride += Utils::ShaderInputDataSize(input.Type);
 				}
 			}
 			m_PassReflections.at(i).VertexInputVertexStride = vertexInputStride;

@@ -13,7 +13,7 @@ project "GEngine"
 
 	files
 	{
-		"src/**.h",
+		"include/**.h",
 		"src/**.cpp",
 		"vendor/glm/**.hpp",
 		"vendor/glm/**.inl",
@@ -33,6 +33,7 @@ project "GEngine"
 
 	includedirs
 	{
+		"include",
 		"src",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.GLFW}",
@@ -108,15 +109,18 @@ project "GEngine"
 
 		postbuildcommands
 		{
-			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do IF \"%%d\\\" neq \"%{cfg.buildtarget.directory}\" (xcopy /Q /Y /I \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" \"%%d\\\" > nul) ELSE (echo Skipping copy \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" to \"%%d\")"),
-			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.OpenSSL_dll}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do IF \"%%d\\\" neq \"%{cfg.buildtarget.directory}\" (xcopy /Q /Y /I \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" \"%%d\\\" > nul) ELSE (echo Skipping copy \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" to \"%%d\")"),
+			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.OpenSSL_dll}*.dll\" \"%%d\\\""),
 		}
 
 	filter "configurations:Debug"
 		defines "GE_DEBUG"
+		-- Debug builds compile multiple translation units in parallel. /FS serializes
+		-- shared PDB writes so they do not intermittently fail with C1041.
+		buildoptions { "/FS" }
 		runtime "Debug"
 		symbols "On"
 

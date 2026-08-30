@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Object.h"
+#include "GEngine/Object/Object.h"
 
 namespace GEngine
 {

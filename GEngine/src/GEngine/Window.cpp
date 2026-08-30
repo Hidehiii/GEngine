@@ -1,7 +1,6 @@
 #include "GEpch.h"
-#include "Window.h"
-#include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Application.h"
+#include "GEngine/Window.h"
+#include "GEngine/Core/Config.h"
 #include "Surface/Win32/Win32Window.h"
 #include "Surface/GLFW/GLFWWindow.h"
 #include "GEngine/Core/Input.h"
@@ -9,9 +8,9 @@
 
 namespace GEngine
 {
-	Window* Window::Create(const WindowProps& props)
+	Window* Window::Create(const WindowProps& props, uint8_t windowManagerAPI)
 	{
-		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		switch (windowManagerAPI)
 		{
 		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:	return new GLFWWindow(props);
 		case Config::CONFIG_WINDOW_MANAGER_API_WIN32:	return new Win32Window(props);

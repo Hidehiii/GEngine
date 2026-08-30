@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Attribute.h"
+#include "GEngine/Components/Attribute/Attribute.h"
 
 namespace GEngine
 {

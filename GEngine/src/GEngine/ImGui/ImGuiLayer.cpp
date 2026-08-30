@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "ImGuiLayer.h"
+#include "GEngine/ImGui/ImGuiLayer.h"
 #include "GEngine/Application.h"
 #include "ImGui/backends/imgui_impl_glfw.h"
 #include "ImGui/backends/imgui_impl_win32.h"
@@ -60,8 +60,12 @@ namespace GEngine
 		//io.ConfigViewportsNoAutoMerge = true;
 		//io.ConfigViewportsNoTaskBarIcon = true;
 
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Bold.ttf", 20.0f);
-		io.FontDefault =  io.Fonts->AddFontFromFileTTF("Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.ttf", 20.0f);
+		const std::filesystem::path fontDirectory = "Assets/Fonts/Noto_Sans_SC/static";
+		if (std::filesystem::exists(fontDirectory / "NotoSansSC-Regular.ttf"))
+		{
+			io.Fonts->AddFontFromFileTTF((fontDirectory / "NotoSansSC-Bold.ttf").string().c_str(), 20.0f);
+			io.FontDefault = io.Fonts->AddFontFromFileTTF((fontDirectory / "NotoSansSC-Regular.ttf").string().c_str(), 20.0f);
+		}
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();

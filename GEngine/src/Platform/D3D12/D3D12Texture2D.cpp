@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12Texture2D.h"
 #include "stb_image.h"
-#include "D3D12Utils.h"
+#include "Platform/D3D12/D3D12Utils.h"
 
 namespace GEngine
 {

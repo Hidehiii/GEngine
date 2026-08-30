@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLRenderPass.h"
+#include "Platform/OpenGL/OpenGLRenderPass.h"
 
 namespace GEngine
 {

@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "OpenGLTexture2DArray.h"
+#include "Platform/OpenGL/OpenGLTexture2DArray.h"
 #include <glad/glad.h>
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 
 namespace GEngine

@@ -1,0 +1,751 @@
+#pragma once
+#include "GEngine/Core/Core.h"
+#include "GEngine/Core/Buffer.h"
+#include <variant>
+
+// shader stage strings
+#define SHADER_STAGE_VERTEX "vertex"
+#define SHADER_STAGE_HULL "hull"
+#define SHADER_STAGE_DOMAIN "domain"
+#define SHADER_STAGE_GEOMETRY "geometry"
+#define SHADER_STAGE_FRAGMENT "fragment"
+
+#define SHADER_STAGE_AMPLIFICATION "amplification"
+#define SHADER_STAGE_MESH "mesh"
+
+#define SHADER_STAGE_COMPUTE "compute"
+
+// shader cache extension names, e.g. cacheDir/fileName/0.vertex.spirv (0 means pass 0 of the shader)
+#define SHADER_CACHE_FILE_EXTENSION_SPIRV ".spirv"
+#define SHADER_CACHE_FILE_EXTENSION_DXIL ".dxil"
+
+// shader reflection file extension name, e.g. cacheDir/fileName/0.vertex.dxil_reflection (0 means pass 0 of the shader)
+#define SHADER_CACHE_REFLECTION_FILE_EXTENSION_DXIL ".dxil_reflection"
+
+// shader cache info file name example: cacheDir/fileName/info (it should include shader name, hash code, etc. to identify the shader and check if the cache is valid when loading cache)
+#define SHADER_CACHE_INFO_FILE_NAME "info"
+
+// shader declare dynamic cbuffer key words in cbuffer name, e.g. cbuffer _DYNAMIC_Camera { ... }
+#define SHADER_DYNAMIC_CBUFFER_KEY_WORDS "_DYNAMIC_"
+
+// shader cache file name example: cacheDir/fileName/0.vertex.opengl (0 means pass 0 of the shader)
+
+#define SUBPASS_EXTERNAL_INDEX (~0U)
+
+namespace GEngine
+{
+	enum Graphics_API
+	{
+		GRAPHICS_API_NONE = 0,
+		GRAPHICS_API_OPENGL = 1,
+		GRAPHICS_API_VULKAN = 2,
+		GRAPHICS_API_DIRECT3DX12 = 3
+	};
+
+	struct GraphicsSpecification
+	{
+		Graphics_API		API;
+		uint8_t				FramesInFlight;
+		uint32_t			CommandBufferCount;
+		uint32_t			ViewportWidth;
+		uint32_t			ViewportHeight;
+		uint8_t				WindowManagerAPI;
+	};
+
+	enum RenderImage2DFormat
+	{
+		RENDER_IMAGE_2D_FORMAT_NONE,
+
+		RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM,
+		RENDER_IMAGE_2D_FORMAT_RGBA8_SNORM,
+
+		RENDER_IMAGE_2D_FORMAT_RGB8_UNORM,
+		RENDER_IMAGE_2D_FORMAT_RGB8_SNORM,
+	};
+
+	enum ComputeImage2DFormat
+	{
+		COMPUTE_IMAGE_2D_FORMAT_NONE,
+
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32_SFLOAT,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16_SFLOAT,
+		COMPUTE_IMAGE_2D_FORMAT_RG32_SFLOAT,
+		COMPUTE_IMAGE_2D_FORMAT_RG16_SFLOAT,
+		COMPUTE_IMAGE_2D_FORMAT_R32_SFLOAT,
+		COMPUTE_IMAGE_2D_FORMAT_R16_SFLOAT,
+
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32_SINT,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16_SINT,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA8_SINT,
+
+		COMPUTE_IMAGE_2D_FORMAT_RGBA32_UINT,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA16_UINT,
+		COMPUTE_IMAGE_2D_FORMAT_RGBA8_UINT,
+		COMPUTE_IMAGE_2D_FORMAT_R32_UINT
+	};
+
+	enum SamplerFilter
+	{
+		SAMPLER_FILTER_LINEAR,
+		SAMPLER_FILTER_NEAREST,
+	};
+
+	enum SamplerAddressMode
+	{
+		SAMPLER_ADDRESS_REPEAT,
+		SAMPLER_ADDRESS_MIRRORED_REPEAT,
+		SAMPLER_ADDRESS_CLAMP_TO_EDGE,
+		SAMPLER_ADDRESS_CLAMP_TO_BORDER,
+		SAMPLER_ADDRESS_MIRROR_CLAMP_TO_EDGE,
+	};
+
+	struct SamplerSpecification
+	{
+		SamplerFilter MagFilter		= SAMPLER_FILTER_LINEAR;
+		SamplerFilter MinFilter		= SAMPLER_FILTER_LINEAR;
+		SamplerFilter MipmapFilter	= SAMPLER_FILTER_LINEAR;
+
+		SamplerAddressMode WrapU = SAMPLER_ADDRESS_REPEAT;
+		SamplerAddressMode WrapV = SAMPLER_ADDRESS_REPEAT;
+		SamplerAddressMode WrapW = SAMPLER_ADDRESS_REPEAT;
+
+		bool operator==(const SamplerSpecification& other) const
+		{
+			return MagFilter == other.MagFilter &&
+				MinFilter == other.MinFilter &&
+				MipmapFilter == other.MipmapFilter &&
+				WrapU == other.WrapU &&
+				WrapV == other.WrapV &&
+				WrapW == other.WrapW;
+		}
+	};
+
+
+	enum BlendFactor
+	{
+		BLEND_FACTOR_SRC_ALPHA				= 1,
+		BLEND_FACTOR_DST_ALPHA				= 2,
+		BLEND_FACTOR_SRC_COLOR				= 3,
+		BLEND_FACTOR_DST_COLOR				= 4,
+		BLEND_FACTOR_ONE_MINUS_SRC_ALPHA	= 5,
+		BLEND_FACTOR_ONE_MINUS_DST_ALPHA	= 6,
+		BLEND_FACTOR_ONE_MINUS_SRC_COLOR	= 7,
+		BLEND_FACTOR_ONE_MINUS_DST_COLOR	= 8,
+		BLEND_FACTOR_ONE					= 9,
+		BLEND_FACTOR_ZERO					= 10
+	};
+
+	enum CubeMapFace
+	{
+		CUBE_MAP_FACE_RIGHT		= 0, // +X
+		CUBE_MAP_FACE_LEFT		= 1, // -X
+		CUBE_MAP_FACE_TOP		= 2, // +Y
+		CUBE_MAP_FACE_BUTTOM	= 3, // -Y
+		CUBE_MAP_FACE_BACK		= 4, // +Z
+		CUBE_MAP_FACE_FRONT		= 5  // -Z
+	};
+
+	enum FrameBufferTextureFormat
+	{
+		FRAME_BUFFER_TEXTURE_FORMAT_NONE = 0,
+
+		// Color
+		FRAME_BUFFER_TEXTURE_FORMAT_RGBA8,
+		FRAME_BUFFER_TEXTURE_FORMAT_R32F,
+		FRAME_BUFFER_TEXTURE_FORMAT_RG16F,
+		FRAME_BUFFER_TEXTURE_FORMAT_R32I,
+		FRAME_BUFFER_TEXTURE_FORMAT_RG16I,
+		FRAME_BUFFER_TEXTURE_FORMAT_R32UI,
+		FRAME_BUFFER_TEXTURE_FORMAT_RG16UI,
+
+		// Depth,Stencil
+		FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8,
+
+		// Depth
+		FRAME_BUFFER_TEXTURE_FORMAT_DEPTH
+	};
+
+	enum RenderPassBeginOperation
+	{
+		RENDER_PASS_BEGINE_OP_NONE = 0,  // begin
+		RENDER_PASS_BEGINE_OP_LOAD = 1,  // begin
+		RENDER_PASS_BEGINE_OP_CLEAR = 2,
+	};
+
+	enum RenderPassEndOperation
+	{
+		RENDER_PASS_END_OP_NONE = 0,
+		RENDER_PASS_END_OP_STORE = 1,
+	};
+
+	enum CommandBufferType
+	{
+		COMMAND_BUFFER_TYPE_NONE,
+		COMMAND_BUFFER_TYPE_GRAPHICS,
+		COMMAND_BUFFER_TYPE_COMPUTE,
+		COMMAND_BUFFER_TYPE_TRANSFER,
+	};
+
+	// Frame buffer attachment specification
+// Contains the frame buffer texture specification
+// Contains the frame buffer texture format
+	struct FrameBufferRenderTargetSpecification
+	{
+		FrameBufferRenderTargetSpecification() = default;
+		FrameBufferRenderTargetSpecification(std::initializer_list<FrameBufferTextureFormat> attachments)
+			: Attachments(attachments) {
+		}
+		std::vector<FrameBufferTextureFormat> Attachments;
+
+		/*bool operator==(const FrameBufferAttachmentSpecification& other) const { return Attachments == other.Attachments; }*/
+	};
+
+	struct RenderPassOperation
+	{
+		RenderPassBeginOperation	ColorBegin			= RENDER_PASS_BEGINE_OP_CLEAR;
+		RenderPassEndOperation		ColorEnd			= RENDER_PASS_END_OP_STORE;
+		RenderPassBeginOperation	DepthStencilBegin	= RENDER_PASS_BEGINE_OP_CLEAR;
+		RenderPassEndOperation		DepthStencilEnd		= RENDER_PASS_END_OP_STORE;
+
+		bool operator==(const RenderPassOperation& other) const
+		{
+			return ColorBegin == other.ColorBegin &&
+				ColorEnd == other.ColorEnd &&
+				DepthStencilBegin == other.DepthStencilBegin &&
+				DepthStencilEnd == other.DepthStencilEnd;
+		}
+
+		bool operator!=(const RenderPassOperation& other) const
+		{
+			return !this->operator==(other);
+		}
+	};
+
+	enum SubpassPipelineStage
+	{
+		SUBPASS_PIPELINE_STAGE_NONE = 0,
+		SUBPASS_PIPELINE_STAGE_TOP_OF_PIPELINE = BIT(0),
+		SUBPASS_PIPELINE_STAGE_DRAW_INDIRECT = BIT(1),
+		SUBPASS_PIPELINE_STAGE_VERTEX_INPUT = BIT(2),
+		SUBPASS_PIPELINE_STAGE_VERTEX_SHADER = BIT(3),
+		SUBPASS_PIPELINE_STAGE_HULL_SHADER = BIT(4),
+		SUBPASS_PIPELINE_STAGE_DOMAIN_SHADER = BIT(5),
+		SUBPASS_PIPELINE_STAGE_GEOMETRY_SHADER = BIT(6),
+		SUBPASS_PIPELINE_STAGE_FRAGMENT_SHADER = BIT(7),
+		SUBPASS_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS = BIT(8),
+		SUBPASS_PIPELINE_STAGE_LATE_FRAGMENT_TESTS = BIT(9),
+		SUBPASS_PIPELINE_STAGE_RENDER_TARGET_OUTPUT = BIT(10),
+		SUBPASS_PIPELINE_STAGE_COMPUTE_SHADER = BIT(11),
+		SUBPASS_PIPELINE_STAGE_TRANSFER = BIT(12),
+		SUBPASS_PIPELINE_STAGE_BOTTOM_OF_PIPELINE = BIT(13),
+		SUBPASS_PIPELINE_STAGE_HOST = BIT(14),
+		SUBPASS_PIPELINE_STAGE_ALL_GRAPHICS = BIT(15),
+		SUBPASS_PIPELINE_STAGE_ALL_COMMANDS = BIT(16),
+
+		SUBPASS_PIPELINE_STAGE_AMPLIFICATION_SHADER = BIT(19),
+		SUBPASS_PIPELINE_STAGE_MESH_SHADER = BIT(20),
+	};
+
+	enum SubpassAccess
+	{
+		SUBPASS_ACCESS_NONE = 0,
+		SUBPASS_ACCESS_INDIRECT_COMMAND_READ = BIT(0),
+		SUBPASS_ACCESS_INDEX_READ = BIT(1),
+		SUBPASS_ACCESS_VERTEX_ATTRIBUTE_READ = BIT(2),
+		SUBPASS_ACCESS_UNIFORM_READ = BIT(3),
+		SUBPASS_ACCESS_INPUT_RENDER_TARGET_READ = BIT(4),
+		SUBPASS_ACCESS_SHADER_READ = BIT(5),
+		SUBPASS_ACCESS_SHADER_WRITE = BIT(6),
+		SUBPASS_ACCESS_RENDER_TARGET_READ = BIT(7),
+		SUBPASS_ACCESS_RENDER_TARGET_WRITE = BIT(8),
+		SUBPASS_ACCESS_DEPTH_STENCIL_READ = BIT(9),
+		SUBPASS_ACCESS_DEPTH_STENCIL_WRITE = BIT(10),
+		SUBPASS_ACCESS_TRANSFER_READ = BIT(11),
+		SUBPASS_ACCESS_TRANSFER_WRITE = BIT(12),
+		SUBPASS_ACCESS_HOST_READ = BIT(13),
+		SUBPASS_ACCESS_HOST_WRITE = BIT(14),
+		SUBPASS_ACCESS_MEMORY_READ = BIT(15),
+		SUBPASS_ACCESS_MEMORY_WRITE = BIT(16),
+	};
+
+	struct RenderPassSubpassSpecification
+	{
+		std::vector<uint32_t>	RenderTargetIndices;
+		std::vector<uint32_t>	InputRenderTargetIndices;
+		bool					EnableDepthStencil = true;
+
+		bool operator==(const RenderPassSubpassSpecification& other) const
+		{
+			return RenderTargetIndices == other.RenderTargetIndices &&
+				EnableDepthStencil == other.EnableDepthStencil;
+		}
+	};
+
+	struct RenderPassSubpassDependencySpecification
+	{
+		uint32_t					SrcSubpass;
+		uint32_t					DstSubpass;
+		SubpassPipelineStage		SrcStageMask;
+		SubpassPipelineStage		DstStageMask;
+		SubpassAccess				SrcAccessMask;
+		SubpassAccess				DstAccessMask;
+
+		bool operator==(const RenderPassSubpassDependencySpecification& other) const
+		{
+			return SrcSubpass == other.SrcSubpass &&
+				DstSubpass == other.DstSubpass &&
+				SrcStageMask == other.SrcStageMask &&
+				DstStageMask == other.DstStageMask &&
+				SrcAccessMask == other.SrcAccessMask &&
+				DstAccessMask == other.DstAccessMask;
+		}
+	};
+
+	struct RenderPassSpecification
+	{
+		std::vector<FrameBufferTextureFormat>	RenderTargets;
+		FrameBufferTextureFormat				DepthStencil;
+		uint32_t								Samples = 1;
+		RenderPassOperation						Operation;
+
+		// only work for vulkan, opengl does not support subpass
+		std::vector<RenderPassSubpassSpecification>				Subpasses;
+		std::vector<RenderPassSubpassDependencySpecification>	SubpassDependencies;
+
+		bool operator==(const RenderPassSpecification& other) const
+		{
+			return RenderTargets == other.RenderTargets &&
+				DepthStencil == other.DepthStencil &&
+				Samples == other.Samples &&
+				Operation == other.Operation &&
+				Subpasses == other.Subpasses &&
+				SubpassDependencies == other.SubpassDependencies;
+		}
+	};
+
+	struct FrameBufferSpecification
+	{
+		uint32_t Width = 0, Height = 0;
+		std::vector<FrameBufferTextureFormat>	RenderTargets;
+		FrameBufferTextureFormat				DepthStencil;
+		uint32_t Samples = 1;
+	};
+
+	enum ShaderInputDataType
+	{
+		SHADER_INPUT_DATA_TYPE_NONE,
+
+		SHADER_INPUT_DATA_TYPE_FLOAT1,
+		SHADER_INPUT_DATA_TYPE_FLOAT2,
+		SHADER_INPUT_DATA_TYPE_FLOAT3,
+		SHADER_INPUT_DATA_TYPE_FLOAT4,
+
+		SHADER_INPUT_DATA_TYPE_INT1,
+		SHADER_INPUT_DATA_TYPE_INT2,
+		SHADER_INPUT_DATA_TYPE_INT3,
+		SHADER_INPUT_DATA_TYPE_INT4,
+
+		SHADER_INPUT_DATA_TYPE_UINT1,
+		SHADER_INPUT_DATA_TYPE_UINT2,
+		SHADER_INPUT_DATA_TYPE_UINT3,
+		SHADER_INPUT_DATA_TYPE_UINT4,
+	};
+
+	enum ShaderPropertyType
+	{
+		SHADER_PROPERTY_TYPE_NONE,
+
+		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER,
+		SHADER_PROPERTY_TYPE_CBUFFER_MEMBER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_MENBER,
+
+		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
+		SHADER_PROPERTY_TYPE_CBUFFER = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER,
+
+		SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_DYNAMIC,
+		SHADER_PROPERTY_TYPE_CBUFFER_DYNAMIC = SHADER_PROPERTY_TYPE_UNIFORM_BUFFER_DYNAMIC,
+
+		SHADER_PROPERTY_TYPE_BOOLEAN,
+
+		SHADER_PROPERTY_TYPE_INT,
+		SHADER_PROPERTY_TYPE_INT_2,
+		SHADER_PROPERTY_TYPE_INT_3,
+		SHADER_PROPERTY_TYPE_INT_4,
+
+		SHADER_PROPERTY_TYPE_INT_2X2,
+		SHADER_PROPERTY_TYPE_INT_2X3,
+		SHADER_PROPERTY_TYPE_INT_2X4,
+
+		SHADER_PROPERTY_TYPE_INT_3X2,
+		SHADER_PROPERTY_TYPE_INT_3X3,
+		SHADER_PROPERTY_TYPE_INT_3X4,
+
+		SHADER_PROPERTY_TYPE_INT_4X2,
+		SHADER_PROPERTY_TYPE_INT_4X3,
+		SHADER_PROPERTY_TYPE_INT_4X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT,
+		SHADER_PROPERTY_TYPE_FLOAT_2,
+		SHADER_PROPERTY_TYPE_FLOAT_3,
+		SHADER_PROPERTY_TYPE_FLOAT_4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_2X2,
+		SHADER_PROPERTY_TYPE_FLOAT_2X3,
+		SHADER_PROPERTY_TYPE_FLOAT_2X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_3X2,
+		SHADER_PROPERTY_TYPE_FLOAT_3X3,
+		SHADER_PROPERTY_TYPE_FLOAT_3X4,
+
+		SHADER_PROPERTY_TYPE_FLOAT_4X2,
+		SHADER_PROPERTY_TYPE_FLOAT_4X3,
+		SHADER_PROPERTY_TYPE_FLOAT_4X4,
+
+		SHADER_PROPERTY_TYPE_VECTOR_2 = SHADER_PROPERTY_TYPE_FLOAT_2,
+		SHADER_PROPERTY_TYPE_VECTOR_3 = SHADER_PROPERTY_TYPE_FLOAT_3,
+		SHADER_PROPERTY_TYPE_COLOR_3 = SHADER_PROPERTY_TYPE_VECTOR_3,
+		SHADER_PROPERTY_TYPE_VECTOR_4 = SHADER_PROPERTY_TYPE_FLOAT_4,
+		SHADER_PROPERTY_TYPE_COLOR_4 = SHADER_PROPERTY_TYPE_VECTOR_4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_2X2 = SHADER_PROPERTY_TYPE_FLOAT_2X2,
+		SHADER_PROPERTY_TYPE_MATRIX_2X3 = SHADER_PROPERTY_TYPE_FLOAT_2X3,
+		SHADER_PROPERTY_TYPE_MATRIX_2X4 = SHADER_PROPERTY_TYPE_FLOAT_2X4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_3X2 = SHADER_PROPERTY_TYPE_FLOAT_3X2,
+		SHADER_PROPERTY_TYPE_MATRIX_3X3 = SHADER_PROPERTY_TYPE_FLOAT_3X3,
+		SHADER_PROPERTY_TYPE_MATRIX_3X4 = SHADER_PROPERTY_TYPE_FLOAT_3X4,
+
+		SHADER_PROPERTY_TYPE_MATRIX_4X2 = SHADER_PROPERTY_TYPE_FLOAT_4X2,
+		SHADER_PROPERTY_TYPE_MATRIX_4X3 = SHADER_PROPERTY_TYPE_FLOAT_4X3,
+		SHADER_PROPERTY_TYPE_MATRIX_4X4 = SHADER_PROPERTY_TYPE_FLOAT_4X4,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_UNKNOWN_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_3D_ARRAY,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE,
+
+		SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_CUBE_ARRAY,
+
+		SHADER_PROPERTY_TYPE_SAMPLER,
+
+		SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_TEXTURE_1D,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D,
+		SHADER_PROPERTY_TYPE_TEXTURE_3D,
+
+		SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_TEXTURE_3D_ARRAY,
+
+		SHADER_PROPERTY_TYPE_TEXTURE_CUBE,
+		SHADER_PROPERTY_TYPE_TEXTURE_CUBE_ARRAY,
+
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_UNKNOWN = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_1D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_2D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_3D = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_3D,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE,
+
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_ARRAY_UNKNOWN,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE_ARRAY,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_ARRAY_UNKNOWN = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_ARRAY_UNKNOWN,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_1D_ARRAY = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_1D_ARRAY,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_2D_ARRAY = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D_ARRAY,
+		SHADER_PROPERTY_TYPE_RWTEXTURE_CUBE_ARRAY = SHADER_PROPERTY_TYPE_STORAGE_IMAGE_CUBE_ARRAY,
+
+
+		SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
+		SHADER_PROPERTY_TYPE_RWBUFFER = SHADER_PROPERTY_TYPE_STORAGE_BUFFER,
+
+		SHADER_PROPERTY_TYPE_STORAGE_BUFFER_DYNAMIC,
+		SHADER_PROPERTY_TYPE_RWBUFFER_DYNAMIC = SHADER_PROPERTY_TYPE_STORAGE_BUFFER_DYNAMIC,
+
+		// this can not be reflected yet
+		SHADER_PROPERTY_TYPE_STRUCTURE,
+	};
+
+	enum VertexTopology
+	{
+		VERTEX_TOPOLOGY_POINT		= 0,
+		VERTEX_TOPOLOGY_LINE		= 1,
+		VERTEX_TOPOLOGY_TRIANGLE	= 2
+	};
+
+	enum CullMode
+	{
+		CULL_MODE_NONE = 0,
+		CULL_MODE_FRONT = 1,
+		CULL_MODE_BACK = 2
+	};
+
+	enum BlendMode
+	{
+		BLEND_MODE_NONE = 0,
+		BLEND_MODE_ADD = 1,
+		BLEND_MODE_SUBSTRACT = 2,
+		BLEND_MODE_REVERSE_SUBSTRACT = 3,
+		BLEND_MODE_MIN = 4,
+		BLEND_MODE_MAX = 5,
+	};
+
+	enum CompareOperation
+	{
+		COMPARE_OP_LESS = 0,
+		COMPARE_OP_GREATER = 1,
+		COMPARE_OP_LESS_EQUAL = 2,
+		COMPARE_OP_GREATER_EQUAL = 3,
+		COMPARE_OP_EQUAL = 4,
+		COMPARE_OP_NOT_EQUAL = 5,
+		COMPARE_OP_ALWAYS = 6,
+	};
+
+	enum ColorMaskChannel
+	{
+		COLOR_MASK_CHANNEL_R = BIT(0),
+		COLOR_MASK_CHANNEL_G = BIT(1),
+		COLOR_MASK_CHANNEL_B = BIT(2),
+		COLOR_MASK_CHANNEL_A = BIT(3),
+	};
+
+	struct RenderState
+	{
+		bool				DepthWrite		= true;
+		CompareOperation	DepthTestOp		= COMPARE_OP_LESS_EQUAL;
+		uint32_t			ColorMask		= COLOR_MASK_CHANNEL_R | COLOR_MASK_CHANNEL_G | COLOR_MASK_CHANNEL_B | COLOR_MASK_CHANNEL_A;
+		BlendFactor			BlendColorSrc	= BLEND_FACTOR_ONE;
+		BlendFactor			BlendColorDst	= BLEND_FACTOR_ZERO;
+		BlendFactor			BlendAlphaSrc	= BLEND_FACTOR_ONE;
+		BlendFactor			BlendAlphaDst	= BLEND_FACTOR_ZERO;
+		BlendMode			BlendColor		= BLEND_MODE_NONE;
+		BlendMode			BlendAlpha		= BLEND_MODE_NONE;
+		CullMode			Cull			= CULL_MODE_BACK;
+		std::string			Tag				= "Default";
+
+		bool operator==(const RenderState& other) const
+		{
+			return DepthWrite == other.DepthWrite &&
+				DepthTestOp == other.DepthTestOp &&
+				ColorMask == other.ColorMask &&
+				BlendColorSrc == other.BlendColorSrc &&
+				BlendColorDst == other.BlendColorDst &&
+				BlendAlphaSrc == other.BlendAlphaSrc &&
+				BlendAlphaDst == other.BlendAlphaDst &&
+				BlendColor == other.BlendColor &&
+				BlendAlpha == other.BlendAlpha &&
+				Cull == other.Cull &&
+				Tag == other.Tag;
+		}
+	};
+
+	struct ShaderConstantProperty
+	{
+		uint32_t			CBufferBindPoint = 0;
+		uint32_t			PropertyOffset = 0;
+	};
+
+	struct ShaderCBufferProperty
+	{
+		uint32_t			BindPoint = 0;
+
+	};
+
+	struct ShaderResourceProperty
+	{
+		uint32_t			Location = 0;
+		void* Ptr			= nullptr;
+		Ref<void> Owner;
+	};
+
+	struct ShaderPass
+	{
+		RenderState													State;
+		std::unordered_map<std::string, ShaderConstantProperty>		ConstPropertiesDesc; // name : property
+		std::unordered_map<uint32_t, Buffer>						CBuffers;  // bind point : buffer
+		std::unordered_map<std::string, ShaderResourceProperty>		ResourceProperties; // name : property
+	};
+
+	struct ShaderReflectionPropertyInfo
+	{
+		std::string			Name;
+		ShaderPropertyType	Type;
+		uint32_t			Size;
+		uint32_t 			Offset;
+		uint32_t			ArraySize;
+
+		bool operator==(const ShaderReflectionPropertyInfo& other) const
+		{
+			return Name == other.Name &&
+				Type == other.Type &&
+				Size == other.Size &&
+				Offset == other.Offset &&
+				ArraySize == other.ArraySize;
+		}
+	};
+
+	struct ShaderReflectionCBufferInfo
+	{
+		std::string									Name;
+		uint32_t									BindPoint;
+		uint32_t									Size;
+		uint32_t									RegisterSpace;
+		bool										IsDynamic = false;
+		std::vector<ShaderReflectionPropertyInfo>	Properties;
+
+		bool operator==(const ShaderReflectionCBufferInfo& other) const
+		{
+			return Name == other.Name &&
+				BindPoint == other.BindPoint &&
+				Size == other.Size &&
+				RegisterSpace == other.RegisterSpace &&
+				Properties == other.Properties;
+		}
+	};
+
+	struct ShaderReflectionResourceInfo
+	{
+		std::string			Name;
+		ShaderPropertyType	Type;
+		uint32_t			BindPoint;
+		uint32_t			ArraySize;
+		uint32_t			RegisterSpace;
+
+		bool operator==(const ShaderReflectionResourceInfo& other) const
+		{
+			return Name == other.Name &&
+				Type == other.Type &&
+				BindPoint == other.BindPoint &&
+				ArraySize == other.ArraySize &&
+				RegisterSpace == other.RegisterSpace;
+		}
+	};
+
+	struct ShaderReflectionVertexInputInfo
+	{
+		ShaderInputDataType Type;
+		uint32_t			Offset;
+		bool				IsPerInstance = false;
+
+		//  for directX
+		std::string			SemanticName;
+		// for directX
+		uint32_t			SemanticIndex;
+		// for vulkan/opengl
+		uint32_t			Location;
+
+		bool operator==(const ShaderReflectionVertexInputInfo& other) const
+		{
+			return Type == other.Type &&
+				Offset == other.Offset &&
+				IsPerInstance == other.IsPerInstance &&
+				SemanticName == other.SemanticName &&
+				SemanticIndex == other.SemanticIndex &&
+				Location == other.Location;
+		}
+	};
+
+	struct ShaderCacheInfo
+	{
+		std::string Name;
+		std::string	SpirvHash = "null";
+		std::string DxilHash = "null";
+	};
+}
+
+namespace std
+{
+	template<>
+	struct hash<GEngine::SamplerSpecification>
+	{
+		size_t operator()(const GEngine::SamplerSpecification& key) const
+		{
+			size_t h1 = hash<int>()((int)key.MagFilter);
+			size_t h2 = hash<int>()((int)key.MinFilter);
+			size_t h3 = hash<int>()((int)key.MipmapFilter);
+			size_t h4 = hash<int>()((int)key.WrapU);
+			size_t h5 = hash<int>()((int)key.WrapV);
+			size_t h6 = hash<int>()((int)key.WrapW);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1) ^ (h6 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionResourceInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionResourceInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<int>()((int)key.Type);
+			size_t h3 = hash<uint32_t>()(key.BindPoint);
+			size_t h4 = hash<uint32_t>()(key.ArraySize);
+			size_t h5 = hash<uint32_t>()(key.RegisterSpace);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionPropertyInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionPropertyInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<int>()((int)key.Type);
+			size_t h3 = hash<uint32_t>()(key.Size);
+			size_t h4 = hash<uint32_t>()(key.Offset);
+			size_t h5 = hash<uint32_t>()(key.ArraySize);
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+
+	template<>
+	struct hash<GEngine::ShaderReflectionCBufferInfo>
+	{
+		size_t operator()(const GEngine::ShaderReflectionCBufferInfo& key) const
+		{
+			size_t h1 = hash<std::string>()(key.Name);
+			size_t h2 = hash<uint32_t>()(key.BindPoint);
+			size_t h3 = hash<uint32_t>()(key.Size);
+			size_t h4 = hash<uint32_t>()(key.RegisterSpace);
+			size_t h5 = 0;
+			for (const auto& property : key.Properties)
+			{
+				h5 ^= hash<GEngine::ShaderReflectionPropertyInfo>()(property) + 0x9e3779b9 + (h5 << 6) + (h5 >> 2);
+			}
+			return (((((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1)) >> 1) ^ (h4 << 1) ^ (h5 << 1));
+		}
+	};
+}
+
+namespace GEngine
+{
+	struct ShaderReflectionInfo
+	{
+		RenderState											State;
+		std::vector<ShaderReflectionVertexInputInfo>		VertexInputs;
+		uint32_t											VertexInputVertexStride = 0;
+		uint32_t											VertexInputInstanceStride = 0; // counting start from TEXCOORD8+
+		std::unordered_set<ShaderReflectionCBufferInfo>		CBuffers;
+		std::unordered_set<ShaderReflectionResourceInfo>	Resources;
+
+		bool operator==(const ShaderReflectionInfo& other) const
+		{
+			return State == other.State &&
+				VertexInputs == other.VertexInputs &&
+				CBuffers == other.CBuffers &&
+				Resources == other.Resources;
+		}
+	};
+}

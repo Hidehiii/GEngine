@@ -1,6 +1,7 @@
 #include "GEpch.h"
-#include "D3D12GraphicsPresent.h"
+#include "Platform/D3D12/D3D12GraphicsPresent.h"
 #include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12Utils.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
@@ -33,9 +34,30 @@ namespace GEngine
 		return true;
 	}
 
+	bool D3D12GraphicsPresent::AcquireFrame(FrameContext& frameContext)
+	{
+		if (!AquireImage())
+			return false;
+
+		frameContext.SetFrameIndex(static_cast<uint8_t>(m_FrameIndex));
+		frameContext.MarkAcquired(m_FrameIndex);
+		return true;
+	}
+
 	void D3D12GraphicsPresent::Begin()
 	{
 		std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(D3D12Context::Get()->GetRenderTarget(m_FrameIndex)));
+	}
+
+	void D3D12GraphicsPresent::BeginFrame(const FrameContext& frameContext)
+	{
+		GE_CORE_ASSERT(frameContext.GetPresentationImageIndex() == m_FrameIndex, "D3D12 presentation image changed between acquire and begin.");
+		auto commandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(s_CommandBuffers.at(m_FrameIndex));
+		// AcquireFrame waited for this back-buffer slot's fence.  Resetting the
+		// allocator here releases command memory accumulated by its previous use
+		// before the list records another frame.
+		D3D12_THROW_IF_FAILED(commandBuffer->GetCommandAllocator()->Reset());
+		D3D12_THROW_IF_FAILED(commandBuffer->GetCommandList()->Reset(commandBuffer->GetCommandAllocator().Get(), nullptr));
 	}
 
 	void D3D12GraphicsPresent::End()
@@ -45,19 +67,30 @@ namespace GEngine
 		{
 			UINT syncInterval = 1; // Enable VSync
 			UINT presentFlags = 0;
-			D3D12Context::Get()->GetSwapChain()->Present(syncInterval, presentFlags);
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetSwapChain()->Present(syncInterval, presentFlags));
 		}
 		else
 		{
 			UINT syncInterval = 0; // Disable VSync
 			UINT presentFlags = DXGI_PRESENT_ALLOW_TEARING;
-			D3D12Context::Get()->GetSwapChain()->Present(syncInterval, presentFlags);
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetSwapChain()->Present(syncInterval, presentFlags));
 		}
 		// signal and increment the fence value
 		D3D12Context::Get()->IncreaseFenceValue(COMMAND_BUFFER_TYPE_GRAPHICS);
 		auto f = D3D12Context::Get()->GetFence(COMMAND_BUFFER_TYPE_GRAPHICS);
 		D3D12Context::Get()->GetGraphicsQueue()->Signal(f.first.Get(), f.second);
 		m_FenceValues.at(m_FrameIndex) = f.second;
+	}
+
+	void D3D12GraphicsPresent::EndFrame(FrameContext& frameContext)
+	{
+		End();
+		frameContext.MarkSubmitted(m_FenceValues.at(m_FrameIndex));
+	}
+
+	void* D3D12GraphicsPresent::GetPresentationNativeResource() const
+	{
+		return D3D12Context::Get()->GetRenderTarget(m_FrameIndex)->GetNativeRenderTarget(0);
 	}
 
 }

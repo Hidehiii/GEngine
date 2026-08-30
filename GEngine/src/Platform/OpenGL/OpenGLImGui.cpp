@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLImGui.h"
+#include "Platform/OpenGL/OpenGLImGui.h"
 #include "GEngine/Application.h"
 #include <glad/glad.h>
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD

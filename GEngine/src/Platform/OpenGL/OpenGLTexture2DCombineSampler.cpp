@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLTexture2DCombineSampler.h"
+#include "Platform/OpenGL/OpenGLTexture2DCombineSampler.h"
 
 namespace GEngine
 {

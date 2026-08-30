@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "ShaderCompiler.h"
+#include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Graphics.h"
@@ -28,9 +28,9 @@ namespace GEngine
 
 		ShaderInputDataType ShaderInputDataTypeFromDxType(const D3D12_SIGNATURE_PARAMETER_DESC& desc)
 		{
-			// mask 指示哪些分量存在（X=1, Y=2, Z=4, W=8），用 bitcount 得到分量数
-			int comps = std::bitset<sizeof(BYTE)>(desc.Mask).count();
-			if (comps <= 0) comps = std::bitset<sizeof(BYTE)>(desc.ReadWriteMask).count(); // 保险回退
+			int comps = static_cast<int>(std::bitset<8>(desc.Mask).count());
+			if (comps <= 0)
+				comps = static_cast<int>(std::bitset<8>(desc.ReadWriteMask).count());
 
 			switch (desc.ComponentType)
 			{
@@ -544,6 +544,9 @@ namespace GEngine
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
 		}
+
+		machineCode.resize(compiledShaderBlob->GetBufferSize());
+		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
 		IDxcBlob* reflectionBlob;
 		hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);

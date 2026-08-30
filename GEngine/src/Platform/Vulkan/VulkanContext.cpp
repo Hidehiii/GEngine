@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "VulkanContext.h"
-#include "GEngine/Application.h"
+#include "Platform/Vulkan/VulkanContext.h"
+#include "GEngine/Core/Config.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Core/Thread.h"
@@ -467,7 +467,7 @@ namespace GEngine
     }
     void VulkanContext::CreateSurface()
     {
-        switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+        switch (Graphics::GetWindowManagerAPI())
         {
             case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
                 VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, (GLFWwindow*)m_WindowHandle, nullptr, &m_Surface));

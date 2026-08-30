@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Material.h"
+#include "GEngine/Graphics/Material.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLMaterial.h"

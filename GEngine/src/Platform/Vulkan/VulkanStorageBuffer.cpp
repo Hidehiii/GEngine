@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanStorageBuffer.h"
+#include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 

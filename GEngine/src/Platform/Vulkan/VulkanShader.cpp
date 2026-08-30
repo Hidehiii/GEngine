@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 #include "GEngine/Graphics/Material.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"

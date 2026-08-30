@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Physics3D.h"
+#include "GEngine/Physics/3D/Physics3D.h"
 
 namespace GEngine
 {

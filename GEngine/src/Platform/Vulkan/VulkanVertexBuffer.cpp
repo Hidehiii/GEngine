@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanVertexBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "NativeScript.h"
+#include "GEngine/Components/NativeScript/NativeScript.h"
 
 namespace GEngine
 {

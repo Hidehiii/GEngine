@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "GraphicsPipeline.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLGraphicsPipeline.h"
 #include "Platform/Vulkan/VulkanGraphicsPipeline.h"

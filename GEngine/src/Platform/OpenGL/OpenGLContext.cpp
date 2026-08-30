@@ -1,8 +1,8 @@
 #include "GEpch.h"
-#include "OpenGLContext.h"
-#include "OpenGLCommandBuffer.h"
+#include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/OpenGL/OpenGLCommandBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Application.h"
+#include "GEngine/Core/Config.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -21,7 +21,7 @@ namespace GEngine
 	}
 	void OpenGLContext::Init(const unsigned int width, const unsigned int height)
 	{
-		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		switch (Graphics::GetWindowManagerAPI())
 		{
 		case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
 			glfwMakeContextCurrent((GLFWwindow*)m_WindowHandle);

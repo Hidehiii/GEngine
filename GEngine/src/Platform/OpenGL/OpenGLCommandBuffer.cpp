@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "OpenGLCommandBuffer.h"
-#include "OpenGLGraphicsPipeline.h"
-#include "OpenGLComputePipeline.h"
+#include "Platform/OpenGL/OpenGLCommandBuffer.h"
+#include "Platform/OpenGL/OpenGLGraphicsPipeline.h"
+#include "Platform/OpenGL/OpenGLComputePipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Math/Math.h"
 

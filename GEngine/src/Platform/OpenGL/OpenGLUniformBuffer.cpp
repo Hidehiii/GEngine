@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLUniformBuffer.h"
+#include "Platform/OpenGL/OpenGLUniformBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 

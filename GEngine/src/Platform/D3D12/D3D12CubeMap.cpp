@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "D3D12CubeMap.h"
+#include "Platform/D3D12/D3D12CubeMap.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Texture2D.h"
 #include "Platform/D3D12/D3D12Utils.h"

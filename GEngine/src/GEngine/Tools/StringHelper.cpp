@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "StringHelper.h"
+#include "GEngine/Tools/StringHelper.h"
 
 
 namespace GEngine

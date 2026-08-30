@@ -1,2 +1,2 @@
 #include "GEpch.h"
-#include "CircleCollider2D.h"
+#include "GEngine/Components/2D/CircleCollider2D/CircleCollider2D.h"

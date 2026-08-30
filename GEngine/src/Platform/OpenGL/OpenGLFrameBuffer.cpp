@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "OpenGLFrameBuffer.h"
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLFrameBuffer.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 #include "GEngine/Graphics/Graphics.h"
 
 #include <glad/glad.h>

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Thread.h"
+#include "GEngine/Core/Thread.h"
 
 
 namespace GEngine

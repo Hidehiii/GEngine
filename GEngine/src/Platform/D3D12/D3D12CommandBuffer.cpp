@@ -1,9 +1,9 @@
 #include "GEpch.h"
-#include "D3D12CommandBuffer.h"
-#include "D3D12Context.h"
-#include "D3D12Utils.h"
-#include "D3D12ComputePipeline.h"
-#include "D3D12GraphicsPipeline.h"
+#include "Platform/D3D12/D3D12CommandBuffer.h"
+#include "Platform/D3D12/D3D12Context.h"
+#include "Platform/D3D12/D3D12Utils.h"
+#include "Platform/D3D12/D3D12ComputePipeline.h"
+#include "Platform/D3D12/D3D12GraphicsPipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
@@ -137,11 +137,12 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&m_Allocator)));
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, m_Allocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
         }
+		// CreateCommandList returns an open list. Close it so the first frame can
+		// legally reset and record the list with its frame-specific allocator.
+		D3D12_THROW_IF_FAILED(m_CommandList->Close());
     }
     D3D12CommandBuffer::~D3D12CommandBuffer()
     {
-        m_Allocator->Reset();
-        m_Allocator->Release();
     }
     void D3D12CommandBuffer::Begin(Ref<FrameBuffer>& buffer)
     {
@@ -208,8 +209,6 @@ namespace GEngine
     void D3D12CommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
     {
 		GE_CORE_ASSERT(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS, "Present render must be graphics command buffer");
-        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
-
 		m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
         m_FrameBuffer->BeginPresentRender(this);
     }

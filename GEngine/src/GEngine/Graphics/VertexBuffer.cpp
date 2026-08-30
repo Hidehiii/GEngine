@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "VertexBuffer.h"
+#include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Graphics/Shader.h"
-#include "Graphics.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {

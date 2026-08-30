@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "ImageRenderer.h"
+#include "GEngine/Components/Renderer/ImageRenderer/ImageRenderer.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine

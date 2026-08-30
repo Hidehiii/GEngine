@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLComputePipeline.h"
+#include "Platform/OpenGL/OpenGLComputePipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine

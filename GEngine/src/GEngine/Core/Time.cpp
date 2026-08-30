@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Time.h"
+#include "GEngine/Core/Time.h"
 
 namespace GEngine
 {

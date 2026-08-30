@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Physics2D.h"
+#include "GEngine/Physics/2D/Physics2D.h"
 #include "GEngine/Object/Scene/Scene.h"
 
 

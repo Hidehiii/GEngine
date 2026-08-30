@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "FrameBuffer.h"
+#include "GEngine/Graphics/FrameBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine

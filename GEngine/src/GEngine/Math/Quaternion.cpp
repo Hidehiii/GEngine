@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Quaternion.h"
+#include "GEngine/Math/Quaternion.h"
 
 
 namespace GEngine

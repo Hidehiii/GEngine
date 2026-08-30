@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "DirectionalLight.h"
+#include "GEngine/Components/Light/DirectionalLight.h"
 #include "GEngine/Components/Components.h"
 #include "GEngine/Graphics/Graphics.h"
 

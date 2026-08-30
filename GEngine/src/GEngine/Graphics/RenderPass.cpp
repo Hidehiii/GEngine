@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "RenderPass.h"
-#include "Graphics.h"
+#include "GEngine/Graphics/RenderPass.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {

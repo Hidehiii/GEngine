@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "GLFWWindow.h"
+#include "Surface/GLFW/GLFWWindow.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
@@ -47,11 +47,12 @@ namespace GEngine
 			s_GLFWInitialized	= true;
 		}	
 
-		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN || Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		GE_CORE_ASSERT(m_Window, "Could not create GLFW window!");
 
 		switch (Graphics::GetGraphicsAPI())
 		{

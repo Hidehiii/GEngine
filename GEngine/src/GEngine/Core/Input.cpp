@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Input.h"
+#include "GEngine/Core/Input.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Application.h"
 #include "Surface/GLFW/GLFWInput.h"

@@ -16,7 +16,7 @@ project "GEngine-Editor"
 	includedirs
 	{
 		"src",
-		"%{wks.location}/GEngine/src",
+		"%{wks.location}/GEngine/include",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",

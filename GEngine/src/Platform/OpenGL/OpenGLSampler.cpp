@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "OpenGLSampler.h"
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLSampler.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 #include <glad/glad.h>
 
 namespace GEngine

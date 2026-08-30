@@ -1,10 +1,10 @@
 #include "GEpch.h"
-#include "OpenGLGraphicsAPI.h"
+#include "Platform/OpenGL/OpenGLGraphicsAPI.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
-#include "OpenGLContext.h"
+#include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/OpenGL/OpenGLRenderPass.h"
 #include "Platform/OpenGL/OpenGLFrameBuffer.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"

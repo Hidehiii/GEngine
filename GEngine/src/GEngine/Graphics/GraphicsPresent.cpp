@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "GraphicsPresent.h"
+#include "GEngine/Graphics/GraphicsPresent.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
@@ -13,6 +13,26 @@ namespace GEngine
 	Ref<CommandBuffer> GraphicsPresent::GetCommandBuffer()
 	{
 		return s_CommandBuffers.at(Graphics::GetFrame());
+	}
+
+	bool GraphicsPresent::AcquireFrame(FrameContext& frameContext)
+	{
+		if (!AquireImage())
+			return false;
+
+		frameContext.MarkAcquired(Graphics::GetFrame());
+		return true;
+	}
+
+	void GraphicsPresent::BeginFrame(const FrameContext& frameContext)
+	{
+		GE_CORE_ASSERT(frameContext.IsAcquired(), "A presentation frame must be acquired before it begins.");
+	}
+
+	void GraphicsPresent::EndFrame(FrameContext& frameContext)
+	{
+		End();
+		frameContext.MarkSubmitted();
 	}
 
 	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, const int& pass, uint32_t instanceCount, uint32_t indexCount)

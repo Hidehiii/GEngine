@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Graphics.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/UniformBuffer.h"
 #include "GEngine/Components/Components.h"
@@ -14,6 +14,7 @@ namespace GEngine
 	uint8_t						Graphics::s_FrameCount				= 0;
 	uint8_t						Graphics::s_Frame					= 0;
 	uint32_t					Graphics::s_CommandBufferCount		= 1000;
+	uint8_t					Graphics::s_WindowManagerAPI		= 0;
 	uint32_t					Graphics::s_ViewportWidth			= 0;
 	uint32_t					Graphics::s_ViewportHeight			= 0;
 	bool						Graphics::s_ReverseDepth			= false;
@@ -41,6 +42,7 @@ namespace GEngine
 		s_Frame					= 0;
 		s_FrameCount			= spec.FramesInFlight;
 		s_CommandBufferCount	= spec.CommandBufferCount;
+		s_WindowManagerAPI		= spec.WindowManagerAPI;
 		s_ViewportWidth			= spec.ViewportWidth;
 		s_ViewportHeight		= spec.ViewportHeight;
 	}
@@ -52,6 +54,11 @@ namespace GEngine
 	void Graphics::FrameMove()
 	{
 		s_Frame = s_Frame + 1 < s_FrameCount ? s_Frame + 1 : 0;
+	}
+	void Graphics::SelectFrame(uint8_t frameIndex)
+	{
+		GE_CORE_ASSERT(frameIndex < s_FrameCount, "The selected frame slot is outside the configured frame count.");
+		s_Frame = frameIndex;
 	}
 	void Graphics::SetViewport(uint32_t width, uint32_t height)
 	{
@@ -81,6 +88,10 @@ namespace GEngine
 	uint32_t Graphics::GetCommandBufferCount()
 	{
 		return s_CommandBufferCount;
+	}
+	uint8_t Graphics::GetWindowManagerAPI()
+	{
+		return s_WindowManagerAPI;
 	}
 	bool Graphics::IsReverseDepth()
 	{

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "StreamReader.h"
+#include "GEngine/Tools/StreamReader.h"
 
 namespace GEngine
 {

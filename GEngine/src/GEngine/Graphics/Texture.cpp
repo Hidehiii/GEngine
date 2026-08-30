@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "Texture.h"
-#include "Graphics.h"
+#include "GEngine/Graphics/Texture.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLCubeMap.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/D3D12/D3D12CubeMap.h"

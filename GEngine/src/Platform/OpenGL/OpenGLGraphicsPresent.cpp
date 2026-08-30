@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "OpenGLGraphicsPresent.h"
-#include "OpenGLCommandBuffer.h"
+#include "Platform/OpenGL/OpenGLGraphicsPresent.h"
+#include "Platform/OpenGL/OpenGLCommandBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 

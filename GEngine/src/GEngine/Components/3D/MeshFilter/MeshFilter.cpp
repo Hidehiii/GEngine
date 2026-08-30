@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "MeshFilter.h"
+#include "GEngine/Components/3D/MeshFilter/MeshFilter.h"
 #include "GEngine/Components/Renderer/MeshRenderer/MeshRenderer.h"
 
 namespace GEngine

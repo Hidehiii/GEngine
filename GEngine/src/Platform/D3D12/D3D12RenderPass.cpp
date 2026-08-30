@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "D3D12RenderPass.h"
+#include "Platform/D3D12/D3D12RenderPass.h"
 
 namespace GEngine
 {

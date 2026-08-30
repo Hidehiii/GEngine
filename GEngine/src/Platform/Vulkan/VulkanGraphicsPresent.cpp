@@ -1,6 +1,5 @@
 #include "GEpch.h"
-#include "VulkanGraphicsPresent.h"
-#include "GEngine/Application.h"
+#include "Platform/Vulkan/VulkanGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
@@ -67,6 +66,15 @@ namespace GEngine
 			return false;
 		}
 
+		return true;
+	}
+
+	bool VulkanGraphicsPresent::AcquireFrame(FrameContext& frameContext)
+	{
+		if (!AquireImage())
+			return false;
+
+		frameContext.MarkAcquired(m_SwapChainImageIndex);
 		return true;
 	}
 	void VulkanGraphicsPresent::Begin()

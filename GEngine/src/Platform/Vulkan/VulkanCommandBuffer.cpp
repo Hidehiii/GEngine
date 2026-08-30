@@ -1,9 +1,9 @@
 #include "GEpch.h"
-#include "VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "VulkanGraphicsPipeline.h"
-#include "VulkanComputePipeline.h"
+#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
+#include "Platform/Vulkan/VulkanComputePipeline.h"
 #include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine

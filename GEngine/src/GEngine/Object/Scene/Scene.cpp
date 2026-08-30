@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Scene.h"
+#include "GEngine/Object/Scene/Scene.h"
 #include "GEngine/Core/Time.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Components/Components.h"

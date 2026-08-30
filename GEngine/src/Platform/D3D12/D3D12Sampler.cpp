@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "D3D12Sampler.h"
+#include "Platform/D3D12/D3D12Sampler.h"
 
 namespace GEngine
 {

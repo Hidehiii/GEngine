@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "D3D12GraphicsAPI.h"
-#include "D3D12Context.h"
+#include "Platform/D3D12/D3D12GraphicsAPI.h"
+#include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12RenderPass.h"
 #include "Platform/D3D12/D3D12FrameBuffer.h"
 #include "Platform/D3D12/D3D12Texture2D.h"

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLStorageBuffer.h"
+#include "Platform/OpenGL/OpenGLStorageBuffer.h"
 #include <glad/glad.h>
 
 namespace GEngine

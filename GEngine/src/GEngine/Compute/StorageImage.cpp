@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "StorageImage.h"
+#include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLStorageImage2D.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"

@@ -1,7 +1,7 @@
 #include "GEpch.h"
-#include "VulkanStorageImage2D.h"
+#include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#include "VulkanUtils.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 
 namespace GEngine
 {

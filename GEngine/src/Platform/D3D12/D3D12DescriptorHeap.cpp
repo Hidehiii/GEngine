@@ -1,13 +1,16 @@
 #include "GEpch.h"
-#include "D3D12DescriptorHeap.h"
+#include "Platform/D3D12/D3D12DescriptorHeap.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "Platform/D3D12/D3D12Context.h"
 
 namespace GEngine
 {
-	D3D12DescriptorHeap::D3D12DescriptorHeap(uint32_t rtvCount, uint32_t dsvCount, uint32_t cbvSrvUavCount, uint32_t samplerCount)
+	void D3D12DescriptorHeap::Initialize(uint32_t rtvCount, uint32_t dsvCount, uint32_t cbvSrvUavCount, uint32_t samplerCount)
 	{
+		GE_CORE_ASSERT(!m_Initialized, "Descriptor heap has already been initialized!");
+		m_Initialized = true;
+
 		// rtv
 		m_RtvHeapInfo.DescriptorCount = rtvCount;
 		m_RtvHeapInfo.DescriptorUsage = std::vector<uint8_t>(rtvCount, 0);
@@ -69,17 +72,8 @@ namespace GEngine
 
 	D3D12DescriptorHeap::~D3D12DescriptorHeap()
 	{
-		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
-		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
-		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
-
-		for(int i = 0; i < Graphics::GetFrameCount(); i++)
-		{
-			m_RtvHeapInfo.Heaps[i].Reset();
-			m_DsvHeapInfo.Heaps[i].Reset();
-			m_CbvSrvUavHeapInfo.Heaps[i].Reset();
-			m_SamplerHeapInfo.Heaps[i].Reset();
-		}
+		// D3D12Context::Uninit synchronizes GPU work before member destruction.
+		// Releasing ComPtr containers directly also keeps partially initialized contexts safe.
 	}
 
 	D3D12DescriptorHeap::D3D12DescriptorAllocationInfo D3D12DescriptorHeap::Allocate(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count)
@@ -163,7 +157,8 @@ namespace GEngine
 			for(int i = 0; i < Graphics::GetFrameCount(); i++)
 			{
 				allocationInfo.CpuHandles.push_back(CD3DX12_CPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetCPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, descriptorIncrement));
-				allocationInfo.GpuHandles.push_back(CD3DX12_GPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetGPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, descriptorIncrement));
+				if (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV || type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
+					allocationInfo.GpuHandles.push_back(CD3DX12_GPU_DESCRIPTOR_HANDLE(heapInfo.Heaps[i].Get()->GetGPUDescriptorHandleForHeapStart(), allocationInfo.StartIndex, descriptorIncrement));
 			}
 		}
 		else

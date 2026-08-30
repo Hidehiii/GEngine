@@ -1,2 +1,2 @@
 #include "GEpch.h"
-#include "D3D12TextureCombineSampler.h"
+#include "Platform/D3D12/D3D12TextureCombineSampler.h"

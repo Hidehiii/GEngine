@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLShader.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 #include "GEngine/Graphics/Material.h"
 #include <glad/glad.h>
 

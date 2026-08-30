@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Matrix2x2.h"
+#include "GEngine/Math/Matrix2x2.h"
 
 namespace GEngine
 {

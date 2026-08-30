@@ -1,6 +1,6 @@
 #include "GEpch.h"
-#include "D3D12ImGui.h"
-#include "D3D12Utils.h"
+#include "Platform/D3D12/D3D12ImGui.h"
+#include "Platform/D3D12/D3D12Utils.h"
 #include "GEngine/Application.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Context.h"
@@ -79,6 +79,9 @@ namespace GEngine
 		auto cmdList = s_CommandBuffers.at(Graphics::GetFrame())->GetCommandList();
 		auto cmdAllocator = s_CommandBuffers.at(Graphics::GetFrame())->GetCommandAllocator();
 
+		// The presentation acquire path waited for this frame slot's previous
+		// submission, so this allocator is safe to recycle before UI recording.
+		D3D12_THROW_IF_FAILED(cmdAllocator->Reset());
 		D3D12_THROW_IF_FAILED(cmdList->Reset(cmdAllocator.Get(), nullptr));
 		s_RenderTarget->Begin(s_CommandBuffers.at(Graphics::GetFrame()).get());
 

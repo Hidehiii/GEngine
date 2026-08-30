@@ -16,7 +16,7 @@ project "DeferredRender"
 
 	includedirs
 	{
-		"%{wks.location}/GEngine/src",
+		"%{wks.location}/GEngine/include",
 		"%{wks.location}/GEngine/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",

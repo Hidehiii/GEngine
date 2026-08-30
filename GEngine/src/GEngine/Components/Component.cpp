@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Component.h"
+#include "GEngine/Components/Component.h"
 
 namespace GEngine
 {

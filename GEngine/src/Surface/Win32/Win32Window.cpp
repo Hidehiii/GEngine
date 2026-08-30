@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Win32Window.h"
+#include "Surface/Win32/Win32Window.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "GEngine/Tools/StringHelper.h"

@@ -1,9 +1,9 @@
 #include "GEpch.h"
-#include "OpenGLCubeMap.h"
+#include "Platform/OpenGL/OpenGLCubeMap.h"
 #include "stb_image.h"
 #include <glad/glad.h>
-#include "OpenGLUtils.h"
-#include "OpenGLTexture2D.h"
+#include "Platform/OpenGL/OpenGLUtils.h"
+#include "Platform/OpenGL/OpenGLTexture2D.h"
 
 namespace GEngine
 {

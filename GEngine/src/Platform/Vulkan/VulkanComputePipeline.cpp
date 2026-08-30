@@ -1,12 +1,12 @@
 #include "GEpch.h"
-#include "VulkanComputePipeline.h"
+#include "Platform/Vulkan/VulkanComputePipeline.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/Vulkan/VulkanCubeMap.h"
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
-#include "VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace GEngine
 {

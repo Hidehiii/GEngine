@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "SubTexture2D.h"
+#include "GEngine/Graphics/SubTexture2D.h"
 
 namespace GEngine
 {

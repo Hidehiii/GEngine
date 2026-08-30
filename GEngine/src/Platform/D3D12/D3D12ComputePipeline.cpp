@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "D3D12ComputePipeline.h"
+#include "Platform/D3D12/D3D12ComputePipeline.h"
 #include "Platform/D3D12/D3D12CommandBuffer.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Shader.h"

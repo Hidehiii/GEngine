@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Math.h"
+#include "GEngine/Math/Math.h"
 
 
 namespace GEngine

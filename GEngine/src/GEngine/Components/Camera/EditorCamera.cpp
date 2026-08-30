@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "EditorCamera.h"
+#include "GEngine/Components/Camera/EditorCamera.h"
 #include "GEngine/Core/Time.h"
 #include "GEngine/Core/Input.h"
 

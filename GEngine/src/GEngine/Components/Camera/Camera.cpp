@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Camera.h"
+#include "GEngine/Components/Camera/Camera.h"
 #include "GEngine/Components/Components.h"
 
 #include "GEngine/Graphics/Graphics.h"

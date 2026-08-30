@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "ModelImporter.h"
+#include "GEngine/Tools/ModelImporter.h"
 
 namespace GEngine
 {

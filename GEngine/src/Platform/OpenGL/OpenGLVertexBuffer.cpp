@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLVertexBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexBuffer.h"
 #include "Platform/OpenGL/OpenGLUtils.h"
 #include <glad/glad.h>
 namespace GEngine

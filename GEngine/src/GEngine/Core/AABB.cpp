@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "AABB.h"
+#include "GEngine/Core/AABB.h"
 
 #include "GEngine/Components/Components.h"
 

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "VulkanTexture2DCombineSampler.h"
+#include "Platform/Vulkan/VulkanTexture2DCombineSampler.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace GEngine

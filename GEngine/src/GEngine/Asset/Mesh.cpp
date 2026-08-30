@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "Mesh.h"
+#include "GEngine/Asset/Mesh.h"
 
 namespace GEngine
 {

@@ -1,5 +1,5 @@
 #include "GEpch.h"
-#include "OpenGLCubeMapCombineSampler.h"
+#include "Platform/OpenGL/OpenGLCubeMapCombineSampler.h"
 #include <glad/glad.h>
 
 namespace GEngine
