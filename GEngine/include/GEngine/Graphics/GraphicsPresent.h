@@ -21,6 +21,9 @@ namespace GEngine
 		virtual bool AquireImage() { return true; }
 		virtual void Begin() {}
 		virtual void End() {}
+		// End only finishes command recording.  Submit performs the backend queue
+		// submission and presentation synchronization for the current frame.
+		virtual uint64_t Submit() { return 0; }
 		virtual bool AcquireFrame(FrameContext& frameContext);
 		virtual void BeginFrame(const FrameContext& frameContext);
 		virtual void EndFrame(FrameContext& frameContext);

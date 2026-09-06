@@ -55,7 +55,7 @@ namespace GEngine
 
 		// 默认白色纹理
 		static Ref<Texture2D> White();
-		// 在图形上下文销毁前调用，避免后端纹理对象留到静态析构阶段。
+		// 在图形上下文销毁前调用，避免后端纹理对象留到静态析构阶段.
 		static void ShutdownCache();
 	protected:
 		std::string				m_Path;

@@ -192,6 +192,7 @@ namespace GEngine
 		buildGBufferCommandBuffer->Render(m_SpherePipeline, "BuildGBuffer");
 		buildGBufferCommandBuffer->Render(m_MonkeyPipeline, "BuildGBuffer");
 		buildGBufferCommandBuffer->End();
+		Graphics::SubmitCommandBuffer(buildGBufferCommandBuffer);
 
 		m_LightingPipeline->GetMaterial()->SetTexture2D("_GBuffer_0", m_GBuffer->GetColorRT(0));
 		m_LightingPipeline->GetMaterial()->SetTexture2D("_GBuffer_1", m_GBuffer->GetColorRT(1));
@@ -204,6 +205,7 @@ namespace GEngine
 		Graphics::UpdateMainLightUniform(m_LightPosition, m_LightDirection,  m_LightColor);
 		lightingCommandBuffer->Render(m_LightingPipeline, "Lighting");
 		lightingCommandBuffer->End();
+		Graphics::SubmitCommandBuffer(lightingCommandBuffer);
     }
     void DeferredRender::OnUpdate()
     {

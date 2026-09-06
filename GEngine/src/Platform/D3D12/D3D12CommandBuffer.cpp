@@ -172,28 +172,6 @@ namespace GEngine
 		}
 
         D3D12_THROW_IF_FAILED(m_CommandList->Close());
-
-        Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
-        if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-            queue = D3D12Context::Get()->GetGraphicsQueue();
-        if (m_Type == COMMAND_BUFFER_TYPE_COMPUTE)
-            queue = D3D12Context::Get()->GetComputeQueue();
-        if (m_Type == COMMAND_BUFFER_TYPE_TRANSFER)
-            queue = D3D12Context::Get()->GetTransferQueue();
-
-        for (auto wait : m_WaitFences)
-        {
-           queue->Wait(wait.first.Get(), wait.second);
-        }
-           queue->ExecuteCommandLists(1, CommandListCast(m_CommandList.GetAddressOf()));
-
-        for (auto signal : m_SignalFences)
-        {
-            queue->Signal(signal.first.Get(), signal.second);
-        }
-
-        ClearWaitFences();
-        ClearSignalFences();
     }
     void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
     {
@@ -216,21 +194,5 @@ namespace GEngine
     {
 		m_FrameBuffer->EndPresentRender(this);
         D3D12_THROW_IF_FAILED(m_CommandList->Close());
-
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = D3D12Context::Get()->GetGraphicsQueue();
-
-        for (auto wait : m_WaitFences)
-        {
-            queue->Wait(wait.first.Get(), wait.second);
-        }
-        queue->ExecuteCommandLists(1, CommandListCast(m_CommandList.GetAddressOf()));
-
-        for (auto signal : m_SignalFences)
-        {
-            queue->Signal(signal.first.Get(), signal.second);
-        }
-
-        ClearWaitFences();
-        ClearSignalFences();
     }
 }

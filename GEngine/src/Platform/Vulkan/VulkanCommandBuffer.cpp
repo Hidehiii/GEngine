@@ -272,35 +272,6 @@ namespace GEngine
 			m_FrameBuffer->End(this);
 		}
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
-
-		std::vector<VkPipelineStageFlags> waitStages;
-		
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		if(m_Type == COMMAND_BUFFER_TYPE_COMPUTE)
-			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-		if(m_Type == COMMAND_BUFFER_TYPE_TRANSFER)
-			waitStages = std::vector<VkPipelineStageFlags>(m_WaitSemaphores.size(), VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-		VkSubmitInfo                    submitInfo{};
-		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount	= 1;
-		submitInfo.pCommandBuffers		= &m_CommandBuffer;
-		submitInfo.waitSemaphoreCount	= m_WaitSemaphores.size();
-		submitInfo.pWaitSemaphores		= m_WaitSemaphores.data();
-		submitInfo.pWaitDstStageMask	= waitStages.data();
-		submitInfo.signalSemaphoreCount = m_SignalSemaphores.size();
-		submitInfo.pSignalSemaphores	= m_SignalSemaphores.data();
-
-		if(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		if(m_Type == COMMAND_BUFFER_TYPE_COMPUTE)
-			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		if (m_Type == COMMAND_BUFFER_TYPE_TRANSFER)
-			VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetTransferQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		
-		ClearSignalSemaphores();
-		ClearWaitSemaphores();
 	}
 	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
 	{

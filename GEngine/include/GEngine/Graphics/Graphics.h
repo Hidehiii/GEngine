@@ -14,6 +14,7 @@ namespace GEngine
 	{
 	public:
 		static void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
+		static void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer);
 		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after);
 		static void SetReverseDepth(bool reverse);

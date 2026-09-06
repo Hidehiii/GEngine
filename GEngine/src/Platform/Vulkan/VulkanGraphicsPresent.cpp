@@ -124,18 +124,17 @@ namespace GEngine
 	void VulkanGraphicsPresent::Begin()
 	{
 		vkResetFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Graphics::GetFrame()));
-		VkCommandBufferBeginInfo    beginInfo{};
-		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags				= 0; // Optional
-		beginInfo.pInheritanceInfo	= nullptr; // Optional
-		vkResetCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->GetCommandBuffer(), &beginInfo));
+		// BeginPresentRender owns reset + begin for a presentation command buffer.
+		// Beginning it here first would attempt to reset an already-recording buffer.
 		std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->BeginPresentRender(std::static_pointer_cast<FrameBuffer>(VulkanContext::Get()->GetFrameBuffer(m_SwapChainImageIndex)));
 	}
 	void VulkanGraphicsPresent::End()
 	{
 		std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()))->EndPresentRender();
+	}
 
+	uint64_t VulkanGraphicsPresent::Submit()
+	{
 		Ref<VulkanCommandBuffer> cmd = std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()));
 
 		VkCommandBuffer commandBuffer = cmd->GetCommandBuffer();
@@ -170,6 +169,7 @@ namespace GEngine
 
 		cmd->ClearSignalSemaphores();
 		cmd->ClearWaitSemaphores();
+		return 0;
 	}
 
 }

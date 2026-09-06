@@ -37,6 +37,11 @@ namespace GEngine
 		ActiveRuntime().SetCommandsBarrier(first, second);
 	}
 
+	void Graphics::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
+	{
+		ActiveRuntime().SubmitCommandBuffer(commandBuffer);
+	}
+
 	void Graphics::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{

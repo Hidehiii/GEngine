@@ -209,6 +209,50 @@ namespace GEngine
         std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
     }
 
+	void VulkanGraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
+	{
+		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan submission requires a Vulkan command buffer.");
+
+		VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkQueue queue = VK_NULL_HANDLE;
+		switch (vulkanCommandBuffer->GetType())
+		{
+		case COMMAND_BUFFER_TYPE_GRAPHICS:
+			queue = VulkanContext::Get()->GetGraphicsQueue();
+			waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			break;
+		case COMMAND_BUFFER_TYPE_COMPUTE:
+			queue = VulkanContext::Get()->GetComputeQueue();
+			waitStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			break;
+		case COMMAND_BUFFER_TYPE_TRANSFER:
+			queue = VulkanContext::Get()->GetTransferQueue();
+			waitStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			break;
+		default:
+			GE_CORE_ASSERT(false, "Vulkan command buffer type is invalid.");
+			return;
+		}
+
+		const auto& waits = vulkanCommandBuffer->GetWaitSemaphores();
+		const auto& signals = vulkanCommandBuffer->GetSignalSemaphores();
+		std::vector<VkPipelineStageFlags> waitStages(waits.size(), waitStage);
+		VkCommandBuffer nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &nativeCommandBuffer;
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waits.size());
+		submitInfo.pWaitSemaphores = waits.data();
+		submitInfo.pWaitDstStageMask = waitStages.data();
+		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signals.size());
+		submitInfo.pSignalSemaphores = signals.data();
+		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+		vulkanCommandBuffer->ClearSignalSemaphores();
+		vulkanCommandBuffer->ClearWaitSemaphores();
+	}
+
 	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{

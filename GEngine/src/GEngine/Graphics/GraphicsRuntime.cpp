@@ -101,6 +101,11 @@ namespace GEngine
 		RequireDevice().SetCommandsBarrier(first, second);
 	}
 
+	void GraphicsRuntime::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
+	{
+		RequireDevice().SubmitCommandBuffer(commandBuffer);
+	}
+
 	void GraphicsRuntime::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{

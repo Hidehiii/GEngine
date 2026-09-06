@@ -103,6 +103,11 @@ namespace GEngine
 	void D3D12GraphicsPresent::End()
 	{
 		std::dynamic_pointer_cast<D3D12CommandBuffer>(m_CommandBuffers.at(m_FrameIndex))->EndPresentRender();
+	}
+
+	uint64_t D3D12GraphicsPresent::Submit()
+	{
+		Graphics::SubmitCommandBuffer(m_CommandBuffers.at(m_FrameIndex));
 		if (D3D12Context::Get()->IsVSync())
 		{
 			UINT syncInterval = 1; // Enable VSync
@@ -118,14 +123,9 @@ namespace GEngine
 		// signal and increment the fence value
 		D3D12Context::Get()->IncreaseFenceValue(COMMAND_BUFFER_TYPE_GRAPHICS);
 		auto f = D3D12Context::Get()->GetFence(COMMAND_BUFFER_TYPE_GRAPHICS);
-		D3D12Context::Get()->GetGraphicsQueue()->Signal(f.first.Get(), f.second);
+		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Signal(f.first.Get(), f.second));
 		m_FenceValues.at(m_FrameIndex) = f.second;
-	}
-
-	void D3D12GraphicsPresent::EndFrame(FrameContext& frameContext)
-	{
-		End();
-		frameContext.MarkSubmitted(m_FenceValues.at(m_FrameIndex));
+		return f.second;
 	}
 
 	Ref<GraphicsResource> D3D12GraphicsPresent::GetPresentationResource() const

@@ -15,4 +15,6 @@ LayerRender -> Present (triangle draw) -> ReleasePresentation
 Run the project after selecting the desired `GraphicsAPI` in `Config.ini`.
 Close it after several seconds as a quick check that command buffers, presenter
 fences/events, and cached render resources are released while the graphics
-context is still alive.
+context is still alive.  It also exercises the record-then-submit frame path:
+drawing ends command recording first, and the presenter submits it only after
+swapchain synchronization is assembled.

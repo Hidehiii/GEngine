@@ -23,6 +23,7 @@ namespace GEngine
 		void SetViewport(uint32_t width, uint32_t height);
 		void SetReverseDepth(bool reverse);
 		void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
+		void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer);
 		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after);
 

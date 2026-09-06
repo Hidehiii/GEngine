@@ -11,9 +11,9 @@ namespace GEngine
 		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
+		virtual uint64_t Submit() override;
 		virtual bool AcquireFrame(FrameContext& frameContext) override;
 		virtual void BeginFrame(const FrameContext& frameContext) override;
-		virtual void EndFrame(FrameContext& frameContext) override;
 		virtual Ref<GraphicsResource> GetPresentationResource() const override;
 
 	private:

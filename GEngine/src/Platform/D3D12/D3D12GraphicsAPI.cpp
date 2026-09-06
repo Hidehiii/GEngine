@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "Platform/D3D12/D3D12GraphicsAPI.h"
+#include "Platform/D3D12/D3D12Utils.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12RenderPass.h"
 #include "Platform/D3D12/D3D12FrameBuffer.h"
@@ -205,6 +206,30 @@ namespace GEngine
 		firstD3D->AddSignalFence(f);
 		secondD3D->AddWaitFence(f);
     }
+
+	void D3D12GraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
+	{
+		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 submission requires a D3D12 command buffer.");
+
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
+		switch (d3dCommandBuffer->GetType())
+		{
+		case COMMAND_BUFFER_TYPE_GRAPHICS: queue = D3D12Context::Get()->GetGraphicsQueue(); break;
+		case COMMAND_BUFFER_TYPE_COMPUTE: queue = D3D12Context::Get()->GetComputeQueue(); break;
+		case COMMAND_BUFFER_TYPE_TRANSFER: queue = D3D12Context::Get()->GetTransferQueue(); break;
+		default: GE_CORE_ASSERT(false, "D3D12 command buffer type is invalid."); return;
+		}
+
+		for (const auto& wait : d3dCommandBuffer->GetWaitFences())
+			D3D12_THROW_IF_FAILED(queue->Wait(wait.first.Get(), wait.second));
+		auto commandList = d3dCommandBuffer->GetCommandList();
+		queue->ExecuteCommandLists(1, CommandListCast(commandList.GetAddressOf()));
+		for (const auto& signal : d3dCommandBuffer->GetSignalFences())
+			D3D12_THROW_IF_FAILED(queue->Signal(signal.first.Get(), signal.second));
+		d3dCommandBuffer->ClearWaitFences();
+		d3dCommandBuffer->ClearSignalFences();
+	}
 
 	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)

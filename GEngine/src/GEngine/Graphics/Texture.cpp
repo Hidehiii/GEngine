@@ -65,6 +65,7 @@ namespace GEngine
 		}
 		return s_WhiteTexture2D;
 	}
+
 	void Texture2D::ShutdownCache()
 	{
 		s_Texture2Ds.clear();

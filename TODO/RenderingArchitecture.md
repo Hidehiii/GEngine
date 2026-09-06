@@ -44,8 +44,11 @@ all three APIs.
 - [x] Move backend ownership and per-runtime frame state into a
       `GraphicsRuntime` owned by `RenderSystem`.  `Graphics` is now a
       non-owning compatibility facade for the active runtime during migration.
-- [ ] Split command recording from queue submission.  `CommandEncoder::End()`
-      records only; `Queue::Submit()` performs synchronization and submission.
+- [x] Make `CommandBuffer::End()` record only.  Device submission now goes
+      through `Graphics::SubmitCommandBuffer`, while the presenter submits its
+      recorded command buffer with swapchain synchronization.
+- [ ] Promote device submission to public `Queue::Submit()` objects so callers
+      can choose queues without using the legacy `Graphics` facade.
 - [ ] Represent acquire/present semaphores or fences through the swapchain and
       queue interfaces instead of command-buffer side lists.
 

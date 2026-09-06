@@ -46,7 +46,7 @@ namespace GEngine
 	void GraphicsPresent::EndFrame(FrameContext& frameContext)
 	{
 		End();
-		frameContext.MarkSubmitted();
+		frameContext.MarkSubmitted(Submit());
 	}
 
 	void GraphicsPresent::Render(Ref<GraphicsPipeline>& pipeline, const int& pass, uint32_t instanceCount, uint32_t indexCount)
