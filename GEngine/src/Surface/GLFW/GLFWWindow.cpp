@@ -58,18 +58,18 @@ namespace GEngine
 		{
 		case GRAPHICS_API_OPENGL:
 		{
-			m_Context = new OpenGLContext(m_Window);
+			m_Context = CreateScope<OpenGLContext>(m_Window);
 			break;
 		}
 		case GRAPHICS_API_VULKAN:
 		{
-			m_Context = new VulkanContext(m_Window);
+			m_Context = CreateScope<VulkanContext>(m_Window);
 			m_Context->SetRequiredExtensions(GetRequiredExtensions());
 			break;
 		}
 		case GRAPHICS_API_DIRECT3DX12:
 		{
-			m_Context = new D3D12Context(m_Window);
+			m_Context = CreateScope<D3D12Context>(m_Window);
 			break;
 		}
 		default:
@@ -303,8 +303,16 @@ namespace GEngine
 
 	void GLFWWindow::Shutdown()
 	{
-		glfwDestroyWindow(m_Window);
-		m_Context->Uninit();
+		if (m_Context)
+		{
+			m_Context->Uninit();
+			m_Context.reset();
+		}
+		if (m_Window)
+		{
+			glfwDestroyWindow(m_Window);
+			m_Window = nullptr;
+		}
 	}
 
 	void GLFWWindow::MouseButtonPreessedCallback()

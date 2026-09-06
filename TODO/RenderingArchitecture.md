@@ -25,10 +25,12 @@ Application / render features
 - [x] Remove D3D12 headers, resource casts, and barrier translation from
       `RenderSystem`.
 - [x] Give every backend a common resource-transition entry point.
-- [ ] Make graph resources hold typed engine resources rather than `void*`.
-- [ ] Route the presentation target through the same graph-resource path.
-- [ ] Make OpenGL and Vulkan implement a deliberate transition policy; they
-      must not silently skip graph declarations.
+- [x] Make graph resources hold typed engine resources rather than `void*`.
+- [x] Route explicit presentation targets through the same graph-resource path.
+- [x] Make OpenGL and Vulkan implement a deliberate transition policy.  OpenGL
+      emits memory barriers; Vulkan emits image/buffer barriers for engine
+      resources, while its legacy swapchain render pass explicitly owns its
+      presentation-image layout transitions.
 
 Acceptance: `GEngine/src/GEngine/Renderer` contains no `D3D12`, `Vulkan`, or
 `OpenGL` symbols or includes.  The Triangle presentation path remains valid on
@@ -37,8 +39,11 @@ all three APIs.
 ## Phase 2 — explicit frame ownership
 
 - [x] Replace `GraphicsPresent::s_CommandBuffers` with per-presenter members.
-- [ ] Replace global `Graphics` backend ownership with an `EngineRuntime` owned
-      device instance and deterministic shutdown.
+- [x] Release presenter-owned fences/events and static render-resource caches
+      before their window-owned graphics context is destroyed.
+- [x] Move backend ownership and per-runtime frame state into a
+      `GraphicsRuntime` owned by `RenderSystem`.  `Graphics` is now a
+      non-owning compatibility facade for the active runtime during migration.
 - [ ] Split command recording from queue submission.  `CommandEncoder::End()`
       records only; `Queue::Submit()` performs synchronization and submission.
 - [ ] Represent acquire/present semaphores or fences through the swapchain and
@@ -46,6 +51,25 @@ all three APIs.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
+
+## Smoke-test example
+
+`Example/FrameGraphTriangle` is a visible, cross-API smoke test for the work
+completed in phases 1 and 2.  It draws an orange triangle through the public
+engine API, while `RenderSystem` owns the graph declaration and portable
+presentation resource transitions.  The example has no platform includes and
+no native handle access.
+
+Run it after selecting the backend in `Example/FrameGraphTriangle/Config.ini`:
+
+| Value | Backend |
+| --- | --- |
+| `1` | OpenGL |
+| `2` | Vulkan |
+| `3` | D3D12 |
+
+Keep it open for several seconds and close it to exercise both repeated frame
+submission and deterministic renderer shutdown.
 
 ## Phase 3 — real frame graph
 
@@ -83,3 +107,7 @@ For every phase, run the Triangle example on all available APIs and verify:
 | `float3` vertex input | pending | pending | pending |
 | Repeated-frame memory stability | pending | pending | pending |
 | Validation / debug output clean | pending | pending | pending |
+
+Current local build note: automated compilation must run from a clean Visual
+Studio developer environment.  The current host process exports both `PATH`
+and `Path`, which causes MSBuild to fail before `CL.exe` receives any source.

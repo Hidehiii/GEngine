@@ -25,7 +25,7 @@ namespace GEngine
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
-		virtual GraphicsContext* GetContext() const override { return m_Context; }
+		virtual GraphicsContext* GetContext() const override { return m_Context.get(); }
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; }
 
@@ -40,7 +40,7 @@ namespace GEngine
 		LARGE_INTEGER m_Frequency;
 		LARGE_INTEGER m_StartCounter;
 
-		GraphicsContext* m_Context;
+		Scope<GraphicsContext> m_Context;
 
 		WindowData m_Data;
 	};

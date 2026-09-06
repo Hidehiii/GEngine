@@ -3,6 +3,27 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Graphics/GraphicsResource.h"
+
+namespace
+{
+	class VulkanPresentationResource final : public GEngine::GraphicsResource
+	{
+	public:
+		explicit VulkanPresentationResource(VkImage image)
+			: m_Image(image)
+		{
+			GE_CORE_ASSERT(m_Image != VK_NULL_HANDLE, "Vulkan presentation image is invalid.");
+		}
+
+		GEngine::GraphicsResourceType GetResourceType() const override { return GEngine::GraphicsResourceType::Texture; }
+		bool RequiresExplicitStateTransition() const override { return false; }
+
+	private:
+		void* GetNativeResource() const override { return reinterpret_cast<void*>(m_Image); }
+		VkImage m_Image = VK_NULL_HANDLE;
+	};
+}
 
 namespace GEngine
 {
@@ -33,6 +54,20 @@ namespace GEngine
 		{
 			m_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
 		}
+	}
+
+	VulkanGraphicsPresent::~VulkanGraphicsPresent()
+	{
+		// m_CommandBuffers is owned by the base presenter and is destroyed next.
+		// Finish its work before releasing the fences and command-buffer wrappers.
+		const VkDevice device = VulkanContext::Get()->GetDevice();
+		if (device != VK_NULL_HANDLE)
+		{
+			vkDeviceWaitIdle(device);
+			for (const auto fence : m_Fences)
+				vkDestroyFence(device, fence, nullptr);
+		}
+		m_Fences.clear();
 	}
 	bool VulkanGraphicsPresent::AquireImage()
 	{
@@ -76,6 +111,15 @@ namespace GEngine
 
 		frameContext.MarkAcquired(m_SwapChainImageIndex);
 		return true;
+	}
+	Ref<GraphicsResource> VulkanGraphicsPresent::GetPresentationResource() const
+	{
+		const auto images = VulkanContext::Get()->GetSwapChainImage();
+		GE_CORE_ASSERT(m_SwapChainImageIndex < images.size(), "Vulkan presentation image index is invalid.");
+		// The legacy Vulkan render pass owns this image's layout transitions.  The
+		// graph still tracks the resource and ordering, but must not duplicate the
+		// render pass's Present <-> ColorAttachment layout work.
+		return CreateRef<VulkanPresentationResource>(images.at(m_SwapChainImageIndex));
 	}
 	void VulkanGraphicsPresent::Begin()
 	{

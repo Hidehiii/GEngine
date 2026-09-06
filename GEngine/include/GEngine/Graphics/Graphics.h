@@ -5,6 +5,7 @@
 namespace GEngine
 {
 	class CommandBuffer;
+	class GraphicsRuntime;
 
 	
 
@@ -13,8 +14,8 @@ namespace GEngine
 	{
 	public:
 		static void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
-		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
-			GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after);
+		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			GraphicsResourceState before, GraphicsResourceState after);
 		static void SetReverseDepth(bool reverse);
 
 		static Graphics_API			GetGraphicsAPI();
@@ -46,23 +47,15 @@ namespace GEngine
 		static uint32_t GetViewportHeight();
 
 	private:
-		static void Setup(const GraphicsSpecification& spec);
-		static void Init();
 		static void FrameMove();
 		static void SelectFrame(uint8_t frameIndex);
 		static void SetViewport(uint32_t width, uint32_t height);
+		static void SetActiveRuntime(GraphicsRuntime* runtime);
+		static GraphicsRuntime& ActiveRuntime();
 
-		friend class EngineRuntime;
 		friend class RenderSystem;
 	private:
-		static GraphicsAPI* s_GraphicsAPI;
-		static uint8_t		s_FrameCount;
-		static uint8_t		s_Frame;
-		static uint32_t		s_CommandBufferCount;
-		static uint8_t		s_WindowManagerAPI;
-		static uint32_t		s_ViewportWidth;
-		static uint32_t		s_ViewportHeight;
-		static bool			s_ReverseDepth;
+		static GraphicsRuntime* s_ActiveRuntime;
 	};
 }
 

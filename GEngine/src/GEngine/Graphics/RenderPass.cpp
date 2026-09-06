@@ -30,4 +30,8 @@ namespace GEngine
 		}
 		return nullptr;
 	}
+	void RenderPass::ShutdownCache()
+	{
+		s_RenderPasses.clear();
+	}
 }

@@ -47,4 +47,8 @@ namespace GEngine
 	{
 		return GetSampler(spec);
 	}
+	void Sampler::ShutdownCache()
+	{
+		s_Samplers.clear();
+	}
 }

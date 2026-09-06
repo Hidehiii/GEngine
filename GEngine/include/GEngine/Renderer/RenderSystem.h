@@ -8,6 +8,7 @@
 namespace GEngine
 {
 	class GraphicsPresent;
+	class GraphicsRuntime;
 	class LayerStack;
 	class ImGuiLayer;
 
@@ -26,6 +27,7 @@ namespace GEngine
 		const FrameContext& GetCurrentFrameContext() const { return m_FrameContext; }
 
 	private:
+		Scope<GraphicsRuntime> m_GraphicsRuntime;
 		Scope<GraphicsPresent> m_Present;
 		RenderGraph m_RenderGraph;
 		FrameContext m_FrameContext;

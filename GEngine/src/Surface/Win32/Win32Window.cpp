@@ -79,7 +79,7 @@ namespace GEngine
 		}
 		case GRAPHICS_API_DIRECT3DX12:
 		{
-			m_Context = new D3D12Context(m_Window);
+			m_Context = CreateScope<D3D12Context>(m_Window);
 			break;
 		}
 		default:
@@ -92,7 +92,11 @@ namespace GEngine
 	}
 	Win32Window::~Win32Window()
 	{
-		m_Context->Uninit();
+		if (m_Context)
+		{
+			m_Context->Uninit();
+			m_Context.reset();
+		}
 	}
 	void Win32Window::OnUpdate()
 	{

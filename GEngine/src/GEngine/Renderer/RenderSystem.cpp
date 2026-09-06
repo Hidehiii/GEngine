@@ -2,18 +2,23 @@
 #include "GEngine/Renderer/RenderSystem.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsPresent.h"
+#include "GEngine/Graphics/GraphicsRuntime.h"
 #include "GEngine/ImGui/ImGuiLayer.h"
 #include "GEngine/LayerStack.h"
 
 namespace GEngine
 {
 	RenderSystem::RenderSystem() = default;
-	RenderSystem::~RenderSystem() = default;
+	RenderSystem::~RenderSystem()
+	{
+		Shutdown();
+	}
 
 	void RenderSystem::Configure(const GraphicsSpecification& specification)
 	{
 		GE_CORE_ASSERT(!m_Configured, "RenderSystem can only be configured once.");
-		Graphics::Setup(specification);
+		m_GraphicsRuntime = CreateScope<GraphicsRuntime>(specification);
+		Graphics::SetActiveRuntime(m_GraphicsRuntime.get());
 		m_Configured = true;
 	}
 
@@ -22,20 +27,25 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Configured, "RenderSystem must be configured before it initializes.");
 		m_Present = GraphicsPresent::Create();
 		GraphicsPresent::SetActivePresenter(m_Present.get());
-		m_RenderGraph.SetTransitionCallback([this](const FrameContext&, RenderGraph::ResourceHandle resource, GraphicsResourceType resourceType, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
+		m_RenderGraph.SetTransitionCallback([](const FrameContext&, const Ref<GraphicsResource>& resource, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
 		{
-			void* nativeResource = m_RenderGraph.GetNativeResource(resource);
-			if (nativeResource == nullptr || before == after)
+			if (!resource || before == after || !resource->RequiresExplicitStateTransition())
 				return;
-			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), nativeResource, resourceType, before, after);
+			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), resource, before, after);
 		});
-		Graphics::Init();
+		m_GraphicsRuntime->Initialize();
 	}
 
 	void RenderSystem::Shutdown()
 	{
 		m_RenderGraph.Reset();
 		m_Present.reset();
+		if (m_GraphicsRuntime)
+		{
+			m_GraphicsRuntime->Shutdown();
+			Graphics::SetActiveRuntime(nullptr);
+			m_GraphicsRuntime.reset();
+		}
 		m_Configured = false;
 	}
 
@@ -77,10 +87,10 @@ namespace GEngine
 
 		m_RenderGraph.AddDependency(presentPass, lastPass);
 
-		if (void* nativeResource = m_Present->GetPresentationNativeResource())
+		if (auto presentationResource = m_Present->GetPresentationResource())
 		{
-			const auto backBuffer = m_RenderGraph.ImportExternalResource("PresentationBackBuffer", nativeResource,
-				RenderGraph::ResourceState::Present, GraphicsResourceType::Texture);
+			const auto backBuffer = m_RenderGraph.ImportExternalResource("PresentationBackBuffer", presentationResource,
+				RenderGraph::ResourceState::Present);
 			m_RenderGraph.Write(presentPass, backBuffer, RenderGraph::ResourceState::RenderTarget);
 			const auto releasePass = m_RenderGraph.AddPass("ReleasePresentation", []() {});
 			m_RenderGraph.Write(releasePass, backBuffer, RenderGraph::ResourceState::Present);

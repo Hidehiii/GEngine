@@ -13,6 +13,7 @@ namespace GEngine
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override;
 
 		const VkImageView					GetImageView() { return m_ImageView; }
+		virtual void*						GetNativeResource() const override { return reinterpret_cast<void*>(m_Image); }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 

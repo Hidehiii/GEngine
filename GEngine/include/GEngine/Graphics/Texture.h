@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/ImageFormat.h"
 #include "GEngine/Graphics/Sampler.h"
 
@@ -8,10 +9,11 @@ namespace GEngine
 {
 	class CommandBuffer;
 
-	class GENGINE_API Texture
+	class GENGINE_API Texture : public GraphicsResource
 	{
 	public:
 		virtual ~Texture() = default;
+		GraphicsResourceType GetResourceType() const override { return GraphicsResourceType::Texture; }
 		virtual uint32_t	GetWidth() const { return m_Width; }
 		virtual uint32_t	GetHeight() const { return m_Height; }
 		virtual std::string GetPath() const = 0;
@@ -21,9 +23,9 @@ namespace GEngine
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) = 0;
-		virtual void* GetNativeResource() const { return nullptr; }
 
 	protected:
+		void* GetNativeResource() const override { return nullptr; }
 		uint32_t m_Width = 0, m_Height = 0;
 		RenderImage2DFormat	m_Format;
 		bool m_GenerateMipmap = true;
@@ -53,6 +55,8 @@ namespace GEngine
 
 		// 默认白色纹理
 		static Ref<Texture2D> White();
+		// 在图形上下文销毁前调用，避免后端纹理对象留到静态析构阶段。
+		static void ShutdownCache();
 	protected:
 		std::string				m_Path;
 	private:
@@ -105,6 +109,7 @@ namespace GEngine
 
 		// 默认白色
 		static Ref<CubeMap> White();
+		static void ShutdownCache();
 	private:
 		static Ref<CubeMap> s_WhiteCubeMap;
 		// path, cubeMap

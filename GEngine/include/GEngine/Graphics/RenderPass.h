@@ -14,6 +14,7 @@ namespace GEngine
 		static Ref<RenderPass> GetRenderPass(const RenderPassSpecification& spec);
 
 		static Ref<RenderPass> Create(const RenderPassSpecification& spec);
+		static void ShutdownCache();
 	protected:
 		RenderPassSpecification					m_Specification;
 	protected:

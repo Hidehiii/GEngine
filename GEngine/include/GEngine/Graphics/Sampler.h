@@ -19,6 +19,7 @@ namespace GEngine
 		static Ref<Sampler> GetDefaultSampler();
 
 		static Ref<Sampler> Create(const SamplerSpecification& spec);
+		static void ShutdownCache();
 
 		virtual bool operator==(const Sampler& other) const = 0;
 	protected:

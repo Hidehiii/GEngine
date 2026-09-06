@@ -186,7 +186,7 @@ namespace GEngine
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, 0, &x);
 		return x;
 	}
-	void OpenGLGraphicsAPI::TransitionResource(const Ref<CommandBuffer>&, void*, GraphicsResourceType,
+	void OpenGLGraphicsAPI::TransitionResource(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{
 		if (before != GraphicsResourceState::ShaderWrite && before != GraphicsResourceState::CopyDestination &&

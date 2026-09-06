@@ -3,6 +3,26 @@
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Graphics/GraphicsResource.h"
+
+namespace
+{
+	class D3D12PresentationResource final : public GEngine::GraphicsResource
+	{
+	public:
+		explicit D3D12PresentationResource(ID3D12Resource* resource)
+			: m_Resource(resource)
+		{
+			GE_CORE_ASSERT(m_Resource != nullptr, "D3D12 presentation resource is invalid.");
+		}
+
+		GEngine::GraphicsResourceType GetResourceType() const override { return GEngine::GraphicsResourceType::Texture; }
+
+	private:
+		void* GetNativeResource() const override { return m_Resource; }
+		ID3D12Resource* m_Resource = nullptr;
+	};
+}
 
 namespace GEngine
 {
@@ -18,6 +38,26 @@ namespace GEngine
 		}
 
 		m_FrameIndex = D3D12Context::Get()->GetSwapChain()->GetCurrentBackBufferIndex();
+	}
+
+	D3D12GraphicsPresent::~D3D12GraphicsPresent()
+	{
+		// Command allocators and lists are released by the base class immediately
+		// after this destructor.  Wait for every submitted back-buffer slot before
+		// releasing them and close the per-slot Win32 events we own.
+		auto fence = D3D12Context::Get()->GetFence(COMMAND_BUFFER_TYPE_GRAPHICS).first;
+		for (size_t index = 0; index < m_FenceValues.size(); ++index)
+		{
+			const auto value = m_FenceValues[index];
+			if (value != 0 && fence->GetCompletedValue() < value)
+			{
+				D3D12_THROW_IF_FAILED(fence->SetEventOnCompletion(value, m_FenceEvents.at(index)));
+				WaitForSingleObject(m_FenceEvents.at(index), INFINITE);
+			}
+			if (m_FenceEvents[index] != nullptr)
+				CloseHandle(m_FenceEvents[index]);
+		}
+		m_FenceEvents.clear();
 	}
 
 	bool D3D12GraphicsPresent::AquireImage()
@@ -88,9 +128,10 @@ namespace GEngine
 		frameContext.MarkSubmitted(m_FenceValues.at(m_FrameIndex));
 	}
 
-	void* D3D12GraphicsPresent::GetPresentationNativeResource() const
+	Ref<GraphicsResource> D3D12GraphicsPresent::GetPresentationResource() const
 	{
-		return D3D12Context::Get()->GetRenderTarget(m_FrameIndex)->GetNativeRenderTarget(0);
+		return CreateRef<D3D12PresentationResource>(
+			D3D12Context::Get()->GetRenderTarget(m_FrameIndex)->GetNativeRenderTarget(0));
 	}
 
 }

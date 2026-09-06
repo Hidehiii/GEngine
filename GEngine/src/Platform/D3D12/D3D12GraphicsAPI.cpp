@@ -206,14 +206,20 @@ namespace GEngine
 		secondD3D->AddWaitFence(f);
     }
 
-	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
-		GraphicsResourceType, GraphicsResourceState before, GraphicsResourceState after)
+	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		GraphicsResourceState before, GraphicsResourceState after)
 	{
-		if (nativeResource == nullptr || before == after)
+		const auto nativeResource = GetNativeResource(resource);
+		if (!resource || nativeResource == nullptr || before == after)
 			return;
 
 		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
+		if (auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(resource))
+		{
+			texture->TransitionResourceState(d3dCommandBuffer->GetCommandList(), ToD3D12ResourceState(after));
+			return;
+		}
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(nativeResource),
 			ToD3D12ResourceState(before), ToD3D12ResourceState(after));
 		d3dCommandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);

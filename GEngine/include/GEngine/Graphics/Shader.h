@@ -102,6 +102,7 @@ namespace GEngine
 	public:
 		static Ref<Shader>									GetShader(const std::string& name);
 		static Ref<Shader>									Create(const std::string& path);
+		static void											ShutdownCache();
 	private:
 		// name, shader
 		static std::unordered_map<std::string, Ref<Shader>>	s_Shaders;

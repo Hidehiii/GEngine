@@ -7,13 +7,14 @@ namespace GEngine
 	{
 	public:
 		D3D12GraphicsPresent();
+		~D3D12GraphicsPresent() override;
 		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual bool AcquireFrame(FrameContext& frameContext) override;
 		virtual void BeginFrame(const FrameContext& frameContext) override;
 		virtual void EndFrame(FrameContext& frameContext) override;
-		virtual void* GetPresentationNativeResource() const override;
+		virtual Ref<GraphicsResource> GetPresentationResource() const override;
 
 	private:
 		std::vector<uint64_t>	m_FenceValues;

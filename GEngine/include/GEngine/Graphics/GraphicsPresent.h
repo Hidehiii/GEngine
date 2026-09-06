@@ -11,6 +11,7 @@ namespace GEngine
 	class Scene;
 	class GraphicsPipeline;
 	class ComputePipeline;
+	class GraphicsResource;
 
 	class GENGINE_API GraphicsPresent
 	{
@@ -23,7 +24,7 @@ namespace GEngine
 		virtual bool AcquireFrame(FrameContext& frameContext);
 		virtual void BeginFrame(const FrameContext& frameContext);
 		virtual void EndFrame(FrameContext& frameContext);
-		virtual void* GetPresentationNativeResource() const { return nullptr; }
+		virtual Ref<GraphicsResource> GetPresentationResource() const { return nullptr; }
 
 		static Ref<CommandBuffer> GetCommandBuffer();
 		static void Render(Ref<GraphicsPipeline>& pipeline, const int& pass, uint32_t instanceCount = 1, uint32_t indexCount = 0);

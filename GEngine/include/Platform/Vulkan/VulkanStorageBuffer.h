@@ -13,6 +13,7 @@ namespace GEngine
 		virtual void Bind(uint32_t slot) override;
 
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
+		virtual void* GetNativeResource() const override { return reinterpret_cast<void*>(m_StorageBuffer); }
 
 		bool operator==(const VulkanStorageBuffer& other) const
 		{

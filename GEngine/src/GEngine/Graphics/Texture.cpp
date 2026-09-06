@@ -16,7 +16,9 @@
 namespace GEngine
 {
 	Ref<Texture2D>	Texture2D::s_WhiteTexture2D = nullptr;
+	std::unordered_map<std::string, Ref<Texture2D>> Texture2D::s_Texture2Ds;
 	Ref<CubeMap> CubeMap::s_WhiteCubeMap = nullptr;
+	std::unordered_map<std::string, Ref<CubeMap>> CubeMap::s_CubeMaps;
 
 	Ref<Texture2DCombineSampler> Texture2DCombineSampler::Create(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
 	{
@@ -62,6 +64,11 @@ namespace GEngine
 			s_WhiteTexture2D = Texture2D::Create(1, 1, &whiteTexture2DData, sizeof(uint32_t));
 		}
 		return s_WhiteTexture2D;
+	}
+	void Texture2D::ShutdownCache()
+	{
+		s_Texture2Ds.clear();
+		s_WhiteTexture2D.reset();
 	}
 
 	Ref<CubeMapCombineSampler> CubeMapCombineSampler::Create(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler)
@@ -146,6 +153,11 @@ namespace GEngine
 			s_WhiteCubeMap->SetData(&whiteCubeMapData, sizeof(uint32_t), CUBE_MAP_FACE_FRONT);
 		}							
 		return s_WhiteCubeMap;
+	}
+	void CubeMap::ShutdownCache()
+	{
+		s_CubeMaps.clear();
+		s_WhiteCubeMap.reset();
 	}
 	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
 	{

@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/GraphicsCommon.h"
+#include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/RenderDevice.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/VertexBuffer.h"
@@ -52,12 +53,17 @@ namespace GEngine
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() = 0;
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) = 0;
-		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
-			GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after) = 0;
+		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			GraphicsResourceState before, GraphicsResourceState after) = 0;
 
 
 		inline static Graphics_API GetAPI() { return s_API; }
 	protected:
+		void* GetNativeResource(const Ref<GraphicsResource>& resource) const
+		{
+			return resource ? resource->GetNativeResource() : nullptr;
+		}
+
 		inline static Graphics_API s_API = GRAPHICS_API_NONE;
 	};
 

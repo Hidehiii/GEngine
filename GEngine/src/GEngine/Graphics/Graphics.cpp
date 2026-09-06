@@ -1,168 +1,72 @@
 #include "GEpch.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Math/Math.h"
-#include "GEngine/Graphics/UniformBuffer.h"
-#include "GEngine/Components/Components.h"
-#include "Platform/OpenGL/OpenGLGraphicsAPI.h"
-#include "Platform/Vulkan/VulkanGraphicsAPI.h"
-#include "Platform/D3D12/D3D12GraphicsAPI.h"
-#include "GEngine/Tools/ShaderCompiler.h"
+#include "GEngine/Graphics/GraphicsRuntime.h"
 
 namespace GEngine
 {
-	GraphicsAPI*				Graphics::s_GraphicsAPI				= nullptr;
-	uint8_t						Graphics::s_FrameCount				= 0;
-	uint8_t						Graphics::s_Frame					= 0;
-	uint32_t					Graphics::s_CommandBufferCount		= 1000;
-	uint8_t					Graphics::s_WindowManagerAPI		= 0;
-	uint32_t					Graphics::s_ViewportWidth			= 0;
-	uint32_t					Graphics::s_ViewportHeight			= 0;
-	bool						Graphics::s_ReverseDepth			= false;
+	GraphicsRuntime* Graphics::s_ActiveRuntime = nullptr;
 
-	void Graphics::Setup(const GraphicsSpecification& spec)
-	{
-		switch (spec.API)
-		{
-		case GRAPHICS_API_NONE:
-			GE_CORE_ASSERT(false, "Renderer api is not supported");
-			break;
-		case GRAPHICS_API_OPENGL:
-			s_GraphicsAPI = new OpenGLGraphicsAPI();
-			break;
-		case GRAPHICS_API_VULKAN:
-			s_GraphicsAPI = new VulkanGraphicsAPI();
-			break;
-		case GRAPHICS_API_DIRECT3DX12:
-			s_GraphicsAPI = new D3D12GraphicsAPI();
-			break;
-		default:
-			break;
-		}
-
-		s_Frame					= 0;
-		s_FrameCount			= spec.FramesInFlight;
-		s_CommandBufferCount	= spec.CommandBufferCount;
-		s_WindowManagerAPI		= spec.WindowManagerAPI;
-		s_ViewportWidth			= spec.ViewportWidth;
-		s_ViewportHeight		= spec.ViewportHeight;
-	}
-
-	void Graphics::Init()
-    {
-		ShaderCompiler::Create();
-    }
 	void Graphics::FrameMove()
 	{
-		s_Frame = s_Frame + 1 < s_FrameCount ? s_Frame + 1 : 0;
-	}
-	void Graphics::SelectFrame(uint8_t frameIndex)
-	{
-		GE_CORE_ASSERT(frameIndex < s_FrameCount, "The selected frame slot is outside the configured frame count.");
-		s_Frame = frameIndex;
-	}
-	void Graphics::SetViewport(uint32_t width, uint32_t height)
-	{
-		s_ViewportWidth = width;
-		s_ViewportHeight = height;
-	}
-	void Graphics::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
-	{
-		s_GraphicsAPI->SetCommandsBarrier(first, second);
-	}
-	void Graphics::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
-		GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after)
-	{
-		GE_CORE_ASSERT(s_GraphicsAPI != nullptr, "Graphics API has not been initialized");
-		s_GraphicsAPI->TransitionResource(commandBuffer, nativeResource, resourceType, before, after);
-	}
-	void Graphics::SetReverseDepth(bool reverse)
-	{
-		s_ReverseDepth = reverse;
-	}
-	Graphics_API Graphics::GetGraphicsAPI()
-	{
-		return s_GraphicsAPI->GetAPI();
-	}
-	uint8_t Graphics::GetFrameCount()
-	{
-		return s_FrameCount;
-	}
-	uint8_t Graphics::GetFrame()
-	{
-		return s_Frame;
-	}
-	uint32_t Graphics::GetCommandBufferCount()
-	{
-		return s_CommandBufferCount;
-	}
-	uint8_t Graphics::GetWindowManagerAPI()
-	{
-		return s_WindowManagerAPI;
-	}
-	bool Graphics::IsReverseDepth()
-	{
-		return s_ReverseDepth;
-	}
-	GraphicsCapabilities Graphics::GetCapabilities()
-	{
-		return s_GraphicsAPI->GetCapabilities();
-	}
-	RenderDevice& Graphics::GetRenderDevice()
-	{
-		GE_CORE_ASSERT(s_GraphicsAPI != nullptr, "Graphics API has not been initialized");
-		return *s_GraphicsAPI;
-	}
-	Ref<CommandBuffer> Graphics::GetGraphicsCommandBuffer()
-	{
-		return s_GraphicsAPI->GetGraphicsCommandBuffer();
-	}
-	Ref<CommandBuffer> Graphics::GetComputeCommandBuffer()
-	{
-		return s_GraphicsAPI->GetComputeCommandBuffer();
-	}
-	uint32_t Graphics::GetMaxTexture2DSize()
-	{
-		return s_GraphicsAPI->GetMaxTexture2DSize();
-	}
-	uint32_t Graphics::GetMaxCombinedTextureCount()
-	{
-		return s_GraphicsAPI->GetMaxCombinedTextureCount();
-	}
-	uint32_t Graphics::GetMaxPerStageTextureCount()
-	{
-		return s_GraphicsAPI->GetMaxPerStageTextureCount();
-	}
-	uint32_t Graphics::GetMaxTextureArrayLayers()
-	{
-		return s_GraphicsAPI->GetMaxTextureArrayLayers();
-	}
-	uint32_t Graphics::GetMinUniformBufferOffsetAlignment()
-	{
-		return s_GraphicsAPI->GetMinUniformBufferOffsetAlignment();
-	}
-	uint32_t Graphics::GetMaxUniformBufferSize()
-	{
-		return s_GraphicsAPI->GetMaxUniformBufferSize();
-	}
-	Vector3 Graphics::GetMaxComputeWorkGroupCount()
-	{
-		return s_GraphicsAPI->GetMaxComputeWorkGroupCount();
-	}
-	Vector3 Graphics::GetMaxComputeWorkGroupSize()
-	{
-		return s_GraphicsAPI->GetMaxComputeWorkGroupSize();
-	}
-	uint32_t Graphics::GetMaxComputeWorkGroupInvocations()
-	{
-		return s_GraphicsAPI->GetMaxComputeWorkGroupInvocations();
-	}
-	uint32_t Graphics::GetViewportWidth()
-	{
-		return s_ViewportWidth;
-	}
-	uint32_t Graphics::GetViewportHeight()
-	{
-		return s_ViewportHeight;
+		ActiveRuntime().AdvanceFrame();
 	}
 
+	void Graphics::SelectFrame(uint8_t frameIndex)
+	{
+		ActiveRuntime().SelectFrame(frameIndex);
+	}
+
+	void Graphics::SetViewport(uint32_t width, uint32_t height)
+	{
+		ActiveRuntime().SetViewport(width, height);
+	}
+
+	void Graphics::SetActiveRuntime(GraphicsRuntime* runtime)
+	{
+		s_ActiveRuntime = runtime;
+	}
+
+	GraphicsRuntime& Graphics::ActiveRuntime()
+	{
+		GE_CORE_ASSERT(s_ActiveRuntime != nullptr, "No active graphics runtime is available.");
+		return *s_ActiveRuntime;
+	}
+
+	void Graphics::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
+	{
+		ActiveRuntime().SetCommandsBarrier(first, second);
+	}
+
+	void Graphics::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		GraphicsResourceState before, GraphicsResourceState after)
+	{
+		ActiveRuntime().TransitionResource(commandBuffer, resource, before, after);
+	}
+
+	void Graphics::SetReverseDepth(bool reverse)
+	{
+		ActiveRuntime().SetReverseDepth(reverse);
+	}
+
+	Graphics_API Graphics::GetGraphicsAPI() { return ActiveRuntime().GetGraphicsAPI(); }
+	uint8_t Graphics::GetFrameCount() { return ActiveRuntime().GetFrameCount(); }
+	uint8_t Graphics::GetFrame() { return ActiveRuntime().GetFrame(); }
+	uint32_t Graphics::GetCommandBufferCount() { return ActiveRuntime().GetCommandBufferCount(); }
+	uint8_t Graphics::GetWindowManagerAPI() { return ActiveRuntime().GetWindowManagerAPI(); }
+	bool Graphics::IsReverseDepth() { return ActiveRuntime().IsReverseDepth(); }
+	GraphicsCapabilities Graphics::GetCapabilities() { return ActiveRuntime().GetCapabilities(); }
+	RenderDevice& Graphics::GetRenderDevice() { return ActiveRuntime().GetRenderDevice(); }
+	Ref<CommandBuffer> Graphics::GetGraphicsCommandBuffer() { return ActiveRuntime().GetGraphicsCommandBuffer(); }
+	Ref<CommandBuffer> Graphics::GetComputeCommandBuffer() { return ActiveRuntime().GetComputeCommandBuffer(); }
+	uint32_t Graphics::GetMaxTexture2DSize() { return ActiveRuntime().GetMaxTexture2DSize(); }
+	uint32_t Graphics::GetMaxCombinedTextureCount() { return ActiveRuntime().GetMaxCombinedTextureCount(); }
+	uint32_t Graphics::GetMaxPerStageTextureCount() { return ActiveRuntime().GetMaxPerStageTextureCount(); }
+	uint32_t Graphics::GetMaxTextureArrayLayers() { return ActiveRuntime().GetMaxTextureArrayLayers(); }
+	uint32_t Graphics::GetMinUniformBufferOffsetAlignment() { return ActiveRuntime().GetMinUniformBufferOffsetAlignment(); }
+	uint32_t Graphics::GetMaxUniformBufferSize() { return ActiveRuntime().GetMaxUniformBufferSize(); }
+	Vector3 Graphics::GetMaxComputeWorkGroupCount() { return ActiveRuntime().GetMaxComputeWorkGroupCount(); }
+	Vector3 Graphics::GetMaxComputeWorkGroupSize() { return ActiveRuntime().GetMaxComputeWorkGroupSize(); }
+	uint32_t Graphics::GetMaxComputeWorkGroupInvocations() { return ActiveRuntime().GetMaxComputeWorkGroupInvocations(); }
+	uint32_t Graphics::GetViewportWidth() { return ActiveRuntime().GetViewportWidth(); }
+	uint32_t Graphics::GetViewportHeight() { return ActiveRuntime().GetViewportHeight(); }
 }

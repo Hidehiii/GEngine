@@ -5,6 +5,7 @@
 #include "GEngine/Core/Input.h"
 #include "GEngine/Core/Time.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
+#include "GEngine/Graphics/Graphics.h"
 #include "GEngine/ImGui/ImGuiLayer.h"
 #include "GEngine/Physics/3D/Physics3D.h"
 #include "GEngine/Renderer/RenderSystem.h"
@@ -67,7 +68,15 @@ namespace GEngine
 			ScriptEngine::Shutdown();
 		if (m_Specification.EnablePhysics)
 			Physics3D::Shutdown();
-		m_RenderSystem->Shutdown();
+
+		m_LayerStack.Clear();
+		m_ImGuiLayer = nullptr;
+		if (m_RenderSystem)
+		{
+			m_RenderSystem->Shutdown();
+			m_RenderSystem.reset();
+		}
+		m_Window.reset();
 	}
 
 	void EngineRuntime::Run()

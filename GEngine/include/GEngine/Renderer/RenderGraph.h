@@ -13,6 +13,7 @@ namespace GEngine
 	class Texture;
 	class StorageBuffer;
 	class StorageImage2D;
+	class GraphicsResource;
 
 	class GENGINE_API RenderGraph
 	{
@@ -26,21 +27,20 @@ namespace GEngine
 		using ResourceState = GraphicsResourceState;
 
 		using ExecuteCallback = std::function<void(FrameContext&)>;
-		using TransitionCallback = std::function<void(const FrameContext&, ResourceHandle, GraphicsResourceType, ResourceState, ResourceState)>;
+		using TransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&, ResourceState, ResourceState)>;
 
 		PassHandle AddPass(std::string name, ExecuteCallback execute);
 		PassHandle AddPass(std::string name, std::function<void()> execute);
 		void AddDependency(PassHandle pass, PassHandle dependency);
 		ResourceHandle ImportResource(std::string name, ResourceState initialState = ResourceState::Undefined);
-		ResourceHandle ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState,
-			GraphicsResourceType resourceType = GraphicsResourceType::Unknown);
+		ResourceHandle ImportExternalResource(std::string name, const Ref<GraphicsResource>& resource, ResourceState initialState);
 		ResourceHandle ImportTexture(std::string name, const Ref<Texture>& texture, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle ImportStorageBuffer(std::string name, const Ref<StorageBuffer>& buffer, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle ImportStorageImage(std::string name, const Ref<StorageImage2D>& image, ResourceState initialState = ResourceState::Undefined);
 		void Read(PassHandle pass, ResourceHandle resource, ResourceState state = ResourceState::ShaderRead);
 		void Write(PassHandle pass, ResourceHandle resource, ResourceState state);
 		void SetTransitionCallback(TransitionCallback callback);
-		void* GetNativeResource(ResourceHandle resource) const;
+		Ref<GraphicsResource> GetResource(ResourceHandle resource) const;
 		bool Compile();
 		void Execute(FrameContext& frameContext);
 		void Execute();
@@ -58,8 +58,7 @@ namespace GEngine
 		{
 			std::string Name;
 			ResourceState InitialState;
-			void* NativeResource = nullptr;
-			GraphicsResourceType Type = GraphicsResourceType::Unknown;
+			Ref<GraphicsResource> Object;
 		};
 
 		struct ResourceTransition

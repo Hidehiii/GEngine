@@ -11,10 +11,12 @@ namespace GEngine
 	{
 	public:
 		VulkanGraphicsPresent();
+		~VulkanGraphicsPresent() override;
 		virtual bool AquireImage() override;
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual bool AcquireFrame(FrameContext& frameContext) override;
+		virtual Ref<GraphicsResource> GetPresentationResource() const override;
 
 	private:
 		uint32_t							m_SwapChainImageIndex = 0;

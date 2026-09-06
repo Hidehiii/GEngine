@@ -25,6 +25,7 @@ namespace GEngine
 		virtual bool operator==(const Texture2D& other) const override { return m_Image == ((VulkanTexture2D&)other).m_Image; };
 
 		const VkImage						GetImage() { return m_Image; }
+		virtual void*						GetNativeResource() const override { return reinterpret_cast<void*>(m_Image); }
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }

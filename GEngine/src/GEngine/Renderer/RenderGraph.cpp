@@ -2,6 +2,7 @@
 #include "GEngine/Renderer/RenderGraph.h"
 #include "GEngine/Compute/StorageBuffer.h"
 #include "GEngine/Compute/StorageImage.h"
+#include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/Texture.h"
 
 namespace GEngine
@@ -34,41 +35,34 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(!name.empty(), "Render-graph resources require a name.");
 		m_IsCompiled = false;
-		m_Resources.push_back({ std::move(name), initialState, nullptr, GraphicsResourceType::Unknown });
+		m_Resources.push_back({ std::move(name), initialState, nullptr });
 		return static_cast<ResourceHandle>(m_Resources.size() - 1);
 	}
 
-	RenderGraph::ResourceHandle RenderGraph::ImportExternalResource(std::string name, void* nativeResource, ResourceState initialState, GraphicsResourceType resourceType)
+	RenderGraph::ResourceHandle RenderGraph::ImportExternalResource(std::string name, const Ref<GraphicsResource>& resource, ResourceState initialState)
 	{
-		GE_CORE_ASSERT(nativeResource != nullptr, "External render-graph resources require a native resource.");
-		const auto resource = ImportResource(std::move(name), initialState);
-		m_Resources[resource].NativeResource = nativeResource;
-		m_Resources[resource].Type = resourceType;
-		return resource;
+		GE_CORE_ASSERT(resource, "External render-graph resources require an engine resource.");
+		const auto handle = ImportResource(std::move(name), initialState);
+		m_Resources[handle].Object = resource;
+		return handle;
 	}
 
 	RenderGraph::ResourceHandle RenderGraph::ImportTexture(std::string name, const Ref<Texture>& texture, ResourceState initialState)
 	{
 		GE_CORE_ASSERT(texture, "Render-graph texture imports require a texture.");
-		if (void* nativeResource = texture->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Texture);
-		return ImportResource(std::move(name), initialState);
+		return ImportExternalResource(std::move(name), std::static_pointer_cast<GraphicsResource>(texture), initialState);
 	}
 
 	RenderGraph::ResourceHandle RenderGraph::ImportStorageBuffer(std::string name, const Ref<StorageBuffer>& buffer, ResourceState initialState)
 	{
 		GE_CORE_ASSERT(buffer, "Render-graph storage-buffer imports require a buffer.");
-		if (void* nativeResource = buffer->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Buffer);
-		return ImportResource(std::move(name), initialState);
+		return ImportExternalResource(std::move(name), std::static_pointer_cast<GraphicsResource>(buffer), initialState);
 	}
 
 	RenderGraph::ResourceHandle RenderGraph::ImportStorageImage(std::string name, const Ref<StorageImage2D>& image, ResourceState initialState)
 	{
 		GE_CORE_ASSERT(image, "Render-graph storage-image imports require an image.");
-		if (void* nativeResource = image->GetNativeResource())
-			return ImportExternalResource(std::move(name), nativeResource, initialState, GraphicsResourceType::Texture);
-		return ImportResource(std::move(name), initialState);
+		return ImportExternalResource(std::move(name), std::static_pointer_cast<GraphicsResource>(image), initialState);
 	}
 
 	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state)
@@ -86,10 +80,10 @@ namespace GEngine
 		m_TransitionCallback = std::move(callback);
 	}
 
-	void* RenderGraph::GetNativeResource(ResourceHandle resource) const
+	Ref<GraphicsResource> RenderGraph::GetResource(ResourceHandle resource) const
 	{
 		GE_CORE_ASSERT(resource < m_Resources.size(), "Render-graph resource is invalid.");
-		return m_Resources[resource].NativeResource;
+		return m_Resources[resource].Object;
 	}
 
 	bool RenderGraph::Compile()
@@ -119,7 +113,7 @@ namespace GEngine
 			for (const auto& transition : m_Passes[pass].Transitions)
 			{
 				if (m_TransitionCallback)
-					m_TransitionCallback(frameContext, transition.Resource, m_Resources[transition.Resource].Type, transition.Before, transition.After);
+					m_TransitionCallback(frameContext, m_Resources[transition.Resource].Object, transition.Before, transition.After);
 			}
 			m_Passes[pass].Execute(frameContext);
 		}

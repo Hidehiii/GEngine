@@ -92,10 +92,7 @@ namespace GEngine
 		}
         m_Descriptor.Release();
         m_CommandBufferPool.Release();
-        for (auto frameBuffer : m_SwapChainFrameBuffers)
-        {
-            vkDestroyFramebuffer(m_Device, frameBuffer->GetVulkanFrameBuffer(), nullptr);
-        }
+		m_SwapChainFrameBuffers.clear();
         for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);

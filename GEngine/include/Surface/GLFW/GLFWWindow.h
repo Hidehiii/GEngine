@@ -27,7 +27,7 @@ namespace GEngine
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
-		virtual GraphicsContext* GetContext() const override { return m_Context; }
+		virtual GraphicsContext* GetContext() const override { return m_Context.get(); }
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; }
 	private:
@@ -37,7 +37,7 @@ namespace GEngine
 		virtual void MouseButtonPreessedCallback();
 	private:
 		GLFWwindow* m_Window;
-		GraphicsContext* m_Context;
+		Scope<GraphicsContext> m_Context;
 
 		WindowData m_Data;
 

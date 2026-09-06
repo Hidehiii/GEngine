@@ -7,6 +7,7 @@
 #include "Platform/Vulkan/VulkanRenderPass.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
+#include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include <set>
@@ -208,18 +209,29 @@ namespace GEngine
         std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
     }
 
-	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, void* nativeResource,
-		GraphicsResourceType resourceType, GraphicsResourceState before, GraphicsResourceState after)
+	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		GraphicsResourceState before, GraphicsResourceState after)
 	{
-		if (nativeResource == nullptr || before == after)
+		const auto nativeResource = GetNativeResource(resource);
+		if (!resource || nativeResource == nullptr || before == after)
 			return;
 
 		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan resource transitions require a Vulkan command buffer.");
 		const auto source = ToVulkanResourceState(before);
 		const auto destination = ToVulkanResourceState(after);
+		if (auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource))
+		{
+			texture->SetImageLayout(vulkanCommandBuffer->GetCommandBuffer(), destination.Layout);
+			return;
+		}
+		if (auto image = std::dynamic_pointer_cast<VulkanStorageImage2D>(resource))
+		{
+			image->SetImageLayout(vulkanCommandBuffer->GetCommandBuffer(), destination.Layout);
+			return;
+		}
 
-		if (resourceType == GraphicsResourceType::Buffer)
+		if (resource->GetResourceType() == GraphicsResourceType::Buffer)
 		{
 			VkBufferMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -235,7 +247,7 @@ namespace GEngine
 			return;
 		}
 
-		GE_CORE_ASSERT(resourceType == GraphicsResourceType::Texture, "Vulkan render-graph resources must declare their type.");
+		GE_CORE_ASSERT(resource->GetResourceType() == GraphicsResourceType::Texture, "Vulkan render-graph resources must declare their type.");
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.srcAccessMask = source.Access;
