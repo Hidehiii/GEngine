@@ -47,10 +47,16 @@ all three APIs.
 - [x] Make `CommandBuffer::End()` record only.  Device submission now goes
       through `Graphics::SubmitCommandBuffer`, while the presenter submits its
       recorded command buffer with swapchain synchronization.
+- [x] Wait for all queues before layer-owned resources are released during
+      runtime shutdown, then destroy Vulkan swapchain and ImGui render-pass
+      resources before the device.
 - [ ] Promote device submission to public `Queue::Submit()` objects so callers
       can choose queues without using the legacy `Graphics` facade.
 - [ ] Represent acquire/present semaphores or fences through the swapchain and
       queue interfaces instead of command-buffer side lists.
+- [ ] Add a Vulkan deferred-deletion queue keyed by completed frame fences.
+      Pipeline, buffer, texture, and descriptor replacements must be retired
+      only after the last command buffer that references them has completed.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.

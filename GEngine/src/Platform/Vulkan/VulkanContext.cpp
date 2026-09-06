@@ -80,24 +80,41 @@ namespace GEngine
 	}
     void VulkanContext::Uninit()
     {
-        vkDeviceWaitIdle(m_Device);
-        vkQueueWaitIdle(m_GraphicsQueue);
+		if (m_Device == VK_NULL_HANDLE)
+			return;
+
+		WaitForIdle();
+		m_GraphicsCommandBuffers.clear();
+		m_ComputeCommandBuffers.clear();
+		m_TransferCommandBuffers.clear();
+		m_SwapChainFrameBuffers.clear();
+		m_SwapChainRenderPass.reset();
+
         for(int i = 0;i < m_Semaphores.size();i++)
         {
             vkDestroySemaphore(m_Device, m_Semaphores[i], nullptr);
 		}
+		m_Semaphores.clear();
         for (int i = 0; i < m_Fences.size(); i++)
 		{
 			vkDestroyFence(m_Device, m_Fences[i], nullptr);
 		}
+		m_Fences.clear();
         m_Descriptor.Release();
         m_CommandBufferPool.Release();
-		m_SwapChainFrameBuffers.clear();
         for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
+		m_SwapChainImageViews.clear();
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+		m_SwapChain = VK_NULL_HANDLE;
+		m_SwapChainImages.clear();
+		if (m_VmaAllocator != VK_NULL_HANDLE)
+		{
+			vmaDestroyAllocator(m_VmaAllocator);
+			m_VmaAllocator = VK_NULL_HANDLE;
+		}
 #ifdef GE_DEBUG
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 #endif
@@ -107,7 +124,18 @@ namespace GEngine
 
         m_Device = nullptr;
         m_Instance = nullptr;
+		m_Surface = nullptr;
+		m_GraphicsQueue = VK_NULL_HANDLE;
+		m_PresentQueue = VK_NULL_HANDLE;
+		m_ComputeQueue = VK_NULL_HANDLE;
+		m_TransferQueue = VK_NULL_HANDLE;
     }
+
+	void VulkanContext::WaitForIdle()
+	{
+		if (m_Device != VK_NULL_HANDLE)
+			VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device));
+	}
 
     void VulkanContext::SetVSync(bool enable)
     {

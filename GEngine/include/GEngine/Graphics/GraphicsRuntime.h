@@ -24,6 +24,7 @@ namespace GEngine
 		void SetReverseDepth(bool reverse);
 		void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second);
 		void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer);
+		void WaitForIdle();
 		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after);
 

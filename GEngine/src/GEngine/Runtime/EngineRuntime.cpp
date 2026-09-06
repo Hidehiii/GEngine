@@ -69,6 +69,10 @@ namespace GEngine
 		if (m_Specification.EnablePhysics)
 			Physics3D::Shutdown();
 
+		// Layer-owned GPU resources must outlive the final device wait. Their
+		// destructors can safely release Vulkan objects after this point.
+		if (m_RenderSystem)
+			m_RenderSystem->WaitForIdle();
 		m_LayerStack.Clear();
 		m_ImGuiLayer = nullptr;
 		if (m_RenderSystem)

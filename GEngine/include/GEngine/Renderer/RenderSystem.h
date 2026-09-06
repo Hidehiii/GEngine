@@ -24,6 +24,7 @@ namespace GEngine
 		void RenderFrame(LayerStack& layers, ImGuiLayer* imGuiLayer);
 		void Resize(uint32_t width, uint32_t height);
 		void AdvanceFrame();
+		void WaitForIdle();
 		const FrameContext& GetCurrentFrameContext() const { return m_FrameContext; }
 
 	private:

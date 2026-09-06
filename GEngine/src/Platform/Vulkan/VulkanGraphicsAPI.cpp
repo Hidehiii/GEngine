@@ -253,6 +253,11 @@ namespace GEngine
 		vulkanCommandBuffer->ClearWaitSemaphores();
 	}
 
+	void VulkanGraphicsAPI::WaitForIdle()
+	{
+		VulkanContext::Get()->WaitForIdle();
+	}
+
 	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{

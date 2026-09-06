@@ -52,6 +52,11 @@ namespace GEngine
 	{
 	}
 
+	void OpenGLGraphicsAPI::WaitForIdle()
+	{
+		glFinish();
+	}
+
 
 	Ref<CommandBuffer> OpenGLGraphicsAPI::GetGraphicsCommandBuffer()
 	{

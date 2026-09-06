@@ -15,9 +15,18 @@ namespace GEngine {
 	static Ref<VulkanRenderPass>						s_RenderPass = nullptr;
 	static Ref<VulkanFrameBuffer>						s_FrameBuffer = nullptr;
 	static std::vector<Ref<VulkanCommandBuffer>>		s_CommandBuffers;
+	static VkDescriptorPool							s_DescriptorPool = VK_NULL_HANDLE;
 	VulkanImGui::~VulkanImGui()
 	{
 		ImGui_ImplVulkan_Shutdown();
+		s_CommandBuffers.clear();
+		s_FrameBuffer.reset();
+		s_RenderPass.reset();
+		if (VulkanContext::Get()->GetDevice() && s_DescriptorPool != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), s_DescriptorPool, nullptr);
+			s_DescriptorPool = VK_NULL_HANDLE;
+		}
 	}
 	void VulkanImGui::OnAttach(void* window)
 	{
@@ -47,8 +56,6 @@ namespace GEngine {
 			break;
 		}
 		
-		VkDescriptorPool descriptorPool;
-
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
 			{ VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
@@ -72,7 +79,7 @@ namespace GEngine {
 		poolInfo.maxSets			= 100 * poolSizes.size();
 		poolInfo.flags				= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &s_DescriptorPool));
 
 		ImGui_ImplVulkan_InitInfo		info{};
 		info.Instance					= VulkanContext::Get()->GetInstance();
@@ -83,7 +90,7 @@ namespace GEngine {
 		info.PipelineCache				= nullptr;
 		info.MinImageCount				= Graphics::GetFrameCount();
 		info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
-		info.DescriptorPool				= descriptorPool;
+		info.DescriptorPool				= s_DescriptorPool;
 		info.Subpass					= 0;
 		info.Allocator					= nullptr;
 		info.CheckVkResultFn			= nullptr;

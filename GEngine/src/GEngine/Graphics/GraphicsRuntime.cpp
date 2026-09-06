@@ -55,7 +55,9 @@ namespace GEngine
 		if (!m_GraphicsAPI)
 			return;
 
-		// Shared render objects own backend resources.  The RenderSystem destroys
+		WaitForIdle();
+
+		// Shared render objects own backend resources. The RenderSystem destroys
 		// this runtime before its Window, so the device/context remains valid here.
 		RenderPass::ShutdownCache();
 		Shader::ShutdownCache();
@@ -104,6 +106,11 @@ namespace GEngine
 	void GraphicsRuntime::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
 	{
 		RequireDevice().SubmitCommandBuffer(commandBuffer);
+	}
+
+	void GraphicsRuntime::WaitForIdle()
+	{
+		RequireDevice().WaitForIdle();
 	}
 
 	void GraphicsRuntime::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,

@@ -231,6 +231,13 @@ namespace GEngine
 		d3dCommandBuffer->ClearSignalFences();
 	}
 
+	void D3D12GraphicsAPI::WaitForIdle()
+	{
+		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
+		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
+		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
+	}
+
 	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{

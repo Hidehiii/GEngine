@@ -39,6 +39,7 @@ namespace GEngine
 		virtual void				SetVSync(bool enable) override;
 		virtual void				SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
+		void						WaitForIdle();
 		void						RecreateSwapChain(unsigned int width, unsigned int height);
 		static VulkanContext*		Get() { return s_ContextInstance; }
 		VmaAllocator				GetVmaAllocator() { return m_VmaAllocator; }

@@ -46,6 +46,7 @@ namespace GEngine
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) override;
 		virtual void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer) override;
+		virtual void WaitForIdle() override;
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after) override;
 	};

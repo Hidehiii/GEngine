@@ -38,6 +38,7 @@ namespace GEngine
 
 	void RenderSystem::Shutdown()
 	{
+		WaitForIdle();
 		m_RenderGraph.Reset();
 		m_Present.reset();
 		if (m_GraphicsRuntime)
@@ -110,5 +111,11 @@ namespace GEngine
 		Graphics::FrameMove();
 		++m_FrameNumber;
 		m_FrameOpen = false;
+	}
+
+	void RenderSystem::WaitForIdle()
+	{
+		if (m_GraphicsRuntime)
+			m_GraphicsRuntime->WaitForIdle();
 	}
 }
