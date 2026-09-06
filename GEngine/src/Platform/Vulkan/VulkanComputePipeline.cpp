@@ -93,10 +93,15 @@ namespace GEngine
 
 		if (m_RecreatePipeline)
 		{
+			// The previous pipeline can still be referenced by an earlier frame.
+			// Deferred deletion will replace this conservative wait in the future.
+			VulkanContext::Get()->WaitForIdle();
 			for (auto pipeline : m_ComputePipelines)
 			{
 				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
 			}
+			m_ComputePipelines.clear();
+			m_RecreatePipeline = false;
 		}
 
 

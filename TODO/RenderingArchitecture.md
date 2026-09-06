@@ -50,13 +50,18 @@ all three APIs.
 - [x] Wait for all queues before layer-owned resources are released during
       runtime shutdown, then destroy Vulkan swapchain and ImGui render-pass
       resources before the device.
-- [ ] Promote device submission to public `Queue::Submit()` objects so callers
-      can choose queues without using the legacy `Graphics` facade.
-- [ ] Represent acquire/present semaphores or fences through the swapchain and
-      queue interfaces instead of command-buffer side lists.
+- [x] Promote device submission to public `GraphicsQueue::Submit()` objects.
+      Callers can select a graphics, compute, or transfer queue through
+      `RenderDevice` without using the legacy `Graphics` facade.
+- [x] Keep Vulkan acquire/present semaphores and frame fences in the
+      swapchain presenter, and keep inter-command dependencies in the device
+      submission layer instead of storing synchronization lists in command
+      buffers.
 - [ ] Add a Vulkan deferred-deletion queue keyed by completed frame fences.
       Pipeline, buffer, texture, and descriptor replacements must be retired
       only after the last command buffer that references them has completed.
+      Until then, runtime pipeline replacement performs a conservative device
+      wait before releasing its previous Vulkan pipelines.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.

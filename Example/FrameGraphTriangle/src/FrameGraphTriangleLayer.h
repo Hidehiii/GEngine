@@ -11,9 +11,12 @@ namespace GEngine
 	public:
 		FrameGraphTriangleLayer();
 		void OnAttach() override;
+		void OnRender() override;
 		void OnPresent() override;
 
 	private:
 		Ref<GraphicsPipeline> m_Pipeline;
+		Ref<RenderPass> m_OffscreenRenderPass;
+		Ref<FrameBuffer> m_OffscreenFrameBuffer;
 	};
 }

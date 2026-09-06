@@ -58,6 +58,12 @@ On D3D12, the renderer converts these states to `D3D12_RESOURCE_STATES` and reco
 
 Layers normally should not manipulate that swap-chain state directly. Draw through `GraphicsPresent::Render` from `Layer::OnPresent`; the renderer owns target binding, clearing, transitions, command-list close and presentation.
 
+For Vulkan, the legacy swap-chain render pass currently owns the native
+`Present <-> ColorAttachment` image-layout transitions. The graph still tracks
+the presentation resource for ordering, but does not emit a duplicate native
+barrier for that image. This is an implementation boundary; layer code remains
+backend-neutral.
+
 ## Rules
 
 - Declare each resource read/write access in the graph instead of adding backend-only state transitions inside a layer.

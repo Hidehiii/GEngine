@@ -30,6 +30,12 @@ Window  Layers  RenderSystem
 
 During startup, `EngineRuntime` reads `Config.ini`, configures `Graphics`, creates the native window and graphics context, initializes `RenderSystem`, then attaches application layers. `Graphics` selects the render-device implementation from `Graphics_API`.
 
+During shutdown, the order is deliberately reversed for GPU safety: the render
+system waits for submitted work, layers and ImGui release their GPU resources,
+shared resource caches are cleared, and only then does the window destroy the
+native graphics context/device. This order is essential for Vulkan because an
+object cannot be destroyed while a submitted command buffer still references it.
+
 ## Per-frame flow
 
 `EngineRuntime::RunFrame` updates the layers and delegates rendering to `RenderSystem`.
@@ -48,6 +54,36 @@ OnUpdate
 ```
 
 The render graph expresses pass ordering and resource-state transitions. On D3D12, its transition callback records the matching `ID3D12GraphicsCommandList::ResourceBarrier` calls. Backends that do not need explicit resource-state barriers simply ignore that callback.
+
+## Device queues and command submission
+
+`RenderDevice` exposes portable `GraphicsQueue` instances for graphics,
+compute, and transfer command buffers. A command buffer records work with
+`Begin`/`End`; queue submission is a separate operation:
+
+```cpp
+auto commandBuffer = Graphics::GetGraphicsCommandBuffer();
+// Record work, then call commandBuffer->End().
+
+auto& queue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);
+queue.Submit(commandBuffer);
+```
+
+The old `Graphics::SubmitCommandBuffer` function remains as a migration facade.
+New renderer code should obtain a queue from `RenderDevice`, which keeps queue
+selection explicit and does not expose Vulkan, D3D12, or OpenGL native types.
+
+`GraphicsQueue::WaitForIdle` is intended for deterministic shutdown and
+exceptional synchronization, not normal per-frame rendering. Presentation owns
+its acquire, submit, fence, and present synchronization internally. On Vulkan,
+inter-command dependencies live in the device submission layer rather than in
+the command-buffer wrapper; the swapchain presenter directly consumes the
+acquire semaphore and produces the present semaphore for its frame.
+
+When a Vulkan window is resized, the presenter compares the requested viewport
+with the current swapchain extent before acquiring an image. If recreation is
+needed, it recreates the swapchain without acquiring first. This prevents an
+acquire semaphore from being signaled and then abandoned during recreation.
 
 ## Renderer layering
 

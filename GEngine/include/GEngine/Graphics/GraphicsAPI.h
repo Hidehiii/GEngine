@@ -32,6 +32,31 @@ namespace GEngine
 	class GENGINE_API GraphicsAPI : public RenderDevice
 	{
 	public:
+		GraphicsAPI()
+		{
+			m_GraphicsQueue = CreateScope<GraphicsQueue>(COMMAND_BUFFER_TYPE_GRAPHICS,
+				[this](const Ref<CommandBuffer>& commandBuffer) { SubmitCommandBuffer(commandBuffer); },
+				[this]() { WaitForIdle(); });
+			m_ComputeQueue = CreateScope<GraphicsQueue>(COMMAND_BUFFER_TYPE_COMPUTE,
+				[this](const Ref<CommandBuffer>& commandBuffer) { SubmitCommandBuffer(commandBuffer); },
+				[this]() { WaitForIdle(); });
+			m_TransferQueue = CreateScope<GraphicsQueue>(COMMAND_BUFFER_TYPE_TRANSFER,
+				[this](const Ref<CommandBuffer>& commandBuffer) { SubmitCommandBuffer(commandBuffer); },
+				[this]() { WaitForIdle(); });
+		}
+
+		GraphicsQueue& GetQueue(CommandBufferType type) override
+		{
+			switch (type)
+			{
+			case COMMAND_BUFFER_TYPE_GRAPHICS: return *m_GraphicsQueue;
+			case COMMAND_BUFFER_TYPE_COMPUTE: return *m_ComputeQueue;
+			case COMMAND_BUFFER_TYPE_TRANSFER: return *m_TransferQueue;
+			default:
+				GE_CORE_ASSERT(false, "A valid queue type is required.");
+				return *m_GraphicsQueue;
+			}
+		}
 
 		virtual std::vector<std::string> GetExtensions() = 0;
 		virtual GraphicsCapabilities GetCapabilities() const = 0;
@@ -67,6 +92,11 @@ namespace GEngine
 		}
 
 		inline static Graphics_API s_API = GRAPHICS_API_NONE;
+
+	private:
+		Scope<GraphicsQueue> m_GraphicsQueue;
+		Scope<GraphicsQueue> m_ComputeQueue;
+		Scope<GraphicsQueue> m_TransferQueue;
 	};
 
 }

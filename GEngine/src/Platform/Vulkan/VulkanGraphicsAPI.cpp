@@ -11,6 +11,7 @@
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include <set>
+#include <utility>
 
 namespace
 {
@@ -205,8 +206,10 @@ namespace GEngine
     void VulkanGraphicsAPI::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
     {
         VkSemaphore s = VulkanContext::Get()->GetSemaphore();
-        std::dynamic_pointer_cast<VulkanCommandBuffer>(first)->AddSignalSemaphore(s);
-        std::dynamic_pointer_cast<VulkanCommandBuffer>(second)->AddWaitSemaphore(s);
+		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanCommandBuffer>(first), "Vulkan barriers require Vulkan command buffers.");
+		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanCommandBuffer>(second), "Vulkan barriers require Vulkan command buffers.");
+		m_SubmissionSynchronizations[first.get()].SignalSemaphores.push_back(s);
+		m_SubmissionSynchronizations[second.get()].WaitSemaphores.push_back(s);
     }
 
 	void VulkanGraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
@@ -235,8 +238,9 @@ namespace GEngine
 			return;
 		}
 
-		const auto& waits = vulkanCommandBuffer->GetWaitSemaphores();
-		const auto& signals = vulkanCommandBuffer->GetSignalSemaphores();
+		auto synchronization = TakeSubmissionSynchronization(commandBuffer.get());
+		const auto& waits = synchronization.WaitSemaphores;
+		const auto& signals = synchronization.SignalSemaphores;
 		std::vector<VkPipelineStageFlags> waitStages(waits.size(), waitStage);
 		VkCommandBuffer nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
 		VkSubmitInfo submitInfo{};
@@ -249,8 +253,42 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signals.size());
 		submitInfo.pSignalSemaphores = signals.data();
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-		vulkanCommandBuffer->ClearSignalSemaphores();
-		vulkanCommandBuffer->ClearWaitSemaphores();
+	}
+
+	void VulkanGraphicsAPI::SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
+		VkSemaphore presentSemaphore, VkFence completionFence)
+	{
+		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan presentation submission requires a Vulkan command buffer.");
+		GE_CORE_ASSERT(acquireSemaphore != VK_NULL_HANDLE, "Vulkan presentation requires an acquire semaphore.");
+		GE_CORE_ASSERT(presentSemaphore != VK_NULL_HANDLE, "Vulkan presentation requires a present semaphore.");
+
+		auto synchronization = TakeSubmissionSynchronization(commandBuffer.get());
+		synchronization.WaitSemaphores.push_back(acquireSemaphore);
+		synchronization.SignalSemaphores.push_back(presentSemaphore);
+		std::vector<VkPipelineStageFlags> waitStages(synchronization.WaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkCommandBuffer nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &nativeCommandBuffer;
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(synchronization.WaitSemaphores.size());
+		submitInfo.pWaitSemaphores = synchronization.WaitSemaphores.data();
+		submitInfo.pWaitDstStageMask = waitStages.data();
+		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(synchronization.SignalSemaphores.size());
+		submitInfo.pSignalSemaphores = synchronization.SignalSemaphores.data();
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, completionFence));
+	}
+
+	VulkanGraphicsAPI::SubmissionSynchronization VulkanGraphicsAPI::TakeSubmissionSynchronization(const CommandBuffer* commandBuffer)
+	{
+		auto synchronization = m_SubmissionSynchronizations.find(commandBuffer);
+		if (synchronization == m_SubmissionSynchronizations.end())
+			return {};
+
+		auto result = std::move(synchronization->second);
+		m_SubmissionSynchronizations.erase(synchronization);
+		return result;
 	}
 
 	void VulkanGraphicsAPI::WaitForIdle()

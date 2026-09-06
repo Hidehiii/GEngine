@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "Platform/Vulkan/VulkanGraphicsPresent.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanGraphicsAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsResource.h"
@@ -71,35 +72,31 @@ namespace GEngine
 	}
 	bool VulkanGraphicsPresent::AquireImage()
 	{
-		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Graphics::GetFrame()), VK_TRUE, std::numeric_limits<uint64_t>::max()));
-		VkSemaphore s = VulkanContext::Get()->GetSemaphore();
-		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
-			VulkanContext::Get()->GetSwapChain(),
-			std::numeric_limits<uint64_t>::max(),
-			s,
-			VK_NULL_HANDLE,
-			&m_SwapChainImageIndex);
-		VkSemaphore submitWaitSemaphores[]	= { s };
-		VkPipelineStageFlags waitStages[]	= { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		VkSubmitInfo						submitInfo{};
-		submitInfo.sType					= VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount		= 0;
-		submitInfo.pCommandBuffers			= nullptr;
-		submitInfo.waitSemaphoreCount		= 1;
-		submitInfo.pWaitSemaphores			= submitWaitSemaphores;
-		submitInfo.pWaitDstStageMask		= waitStages;
-		submitInfo.signalSemaphoreCount		= 0;
-		submitInfo.pSignalSemaphores		= nullptr;
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-		if (result == VK_ERROR_OUT_OF_DATE_KHR ||
-			VulkanContext::Get()->GetSwapChainExtent().width != Graphics::GetViewportWidth() ||
-			VulkanContext::Get()->GetSwapChainExtent().height != Graphics::GetViewportHeight())
+		const VkExtent2D swapChainExtent = VulkanContext::Get()->GetSwapChainExtent();
+		if (swapChainExtent.width != Graphics::GetViewportWidth() ||
+			swapChainExtent.height != Graphics::GetViewportHeight())
 		{
 			VulkanContext::Get()->RecreateSwapChain(Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
-			
 			GE_CORE_INFO("Recreate swapChain");
 			return false;
 		}
+
+		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Graphics::GetFrame()), VK_TRUE, std::numeric_limits<uint64_t>::max()));
+		m_AcquireSemaphore = VulkanContext::Get()->GetSemaphore();
+		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
+			VulkanContext::Get()->GetSwapChain(),
+			std::numeric_limits<uint64_t>::max(),
+			m_AcquireSemaphore,
+			VK_NULL_HANDLE,
+			&m_SwapChainImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			m_AcquireSemaphore = VK_NULL_HANDLE;
+			VulkanContext::Get()->RecreateSwapChain(Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
+			GE_CORE_INFO("Recreate swapChain");
+			return false;
+		}
+		VK_CHECK_RESULT(result);
 
 		return true;
 	}
@@ -135,28 +132,13 @@ namespace GEngine
 
 	uint64_t VulkanGraphicsPresent::Submit()
 	{
-		Ref<VulkanCommandBuffer> cmd = std::dynamic_pointer_cast<VulkanCommandBuffer>(m_CommandBuffers.at(Graphics::GetFrame()));
-
-		VkCommandBuffer commandBuffer = cmd->GetCommandBuffer();
-		std::vector<VkSemaphore> submitWaitSemaphores = cmd->GetWaitSemaphores();
-		std::vector<VkPipelineStageFlags> waitStages(submitWaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		VkSemaphore s = VulkanContext::Get()->GetSemaphore();
-		VkSemaphore signalSemaphores[] = { s };
-
-		VkSubmitInfo					submitInfo{};
-		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount	= 1;
-		submitInfo.pCommandBuffers		= &commandBuffer;
-		submitInfo.waitSemaphoreCount	= submitWaitSemaphores.size();
-		submitInfo.pWaitSemaphores		= submitWaitSemaphores.data();
-		submitInfo.pWaitDstStageMask	= waitStages.data();
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores	= signalSemaphores;
-
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, m_Fences.at(Graphics::GetFrame())));
+		VkSemaphore presentSemaphore = VulkanContext::Get()->GetSemaphore();
+		auto& graphicsAPI = dynamic_cast<VulkanGraphicsAPI&>(Graphics::GetRenderDevice());
+		graphicsAPI.SubmitPresentationCommandBuffer(m_CommandBuffers.at(Graphics::GetFrame()), m_AcquireSemaphore,
+			presentSemaphore, m_Fences.at(Graphics::GetFrame()));
 		VkSwapchainKHR swapChains[] = { VulkanContext::Get()->GetSwapChain() };
 
-		VkSemaphore presentWaitSemaphores[] = { s };
+		VkSemaphore presentWaitSemaphores[] = { presentSemaphore };
 
 		VkPresentInfoKHR			presentInfo{};
 		presentInfo.sType			= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -167,8 +149,7 @@ namespace GEngine
 		presentInfo.pWaitSemaphores = presentWaitSemaphores;
 		VK_CHECK_RESULT(vkQueuePresentKHR(VulkanContext::Get()->GetPresentQueue(), &presentInfo));
 
-		cmd->ClearSignalSemaphores();
-		cmd->ClearWaitSemaphores();
+		m_AcquireSemaphore = VK_NULL_HANDLE;
 		return 0;
 	}
 

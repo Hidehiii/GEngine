@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/GraphicsCommon.h"
+#include "GEngine/Graphics/GraphicsQueue.h"
 
 namespace GEngine
 {
@@ -16,6 +17,7 @@ namespace GEngine
 	{
 	public:
 		virtual ~RenderDevice() = default;
+		virtual GraphicsQueue& GetQueue(CommandBufferType type) = 0;
 
 		virtual Ref<RenderPass> CreateRenderPass(const RenderPassSpecification& spec) = 0;
 		virtual Ref<FrameBuffer> CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height) = 0;

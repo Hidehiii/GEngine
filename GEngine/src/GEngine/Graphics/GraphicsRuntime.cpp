@@ -1,6 +1,8 @@
 #include "GEpch.h"
 #include "GEngine/Graphics/GraphicsRuntime.h"
 
+#include "GEngine/Graphics/CommandBuffer.h"
+
 #include "GEngine/Graphics/RenderPass.h"
 #include "GEngine/Graphics/Sampler.h"
 #include "GEngine/Graphics/Shader.h"
@@ -105,7 +107,7 @@ namespace GEngine
 
 	void GraphicsRuntime::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
 	{
-		RequireDevice().SubmitCommandBuffer(commandBuffer);
+		RequireDevice().GetQueue(commandBuffer->GetType()).Submit(commandBuffer);
 	}
 
 	void GraphicsRuntime::WaitForIdle()

@@ -107,7 +107,7 @@ namespace GEngine
 
 	uint64_t D3D12GraphicsPresent::Submit()
 	{
-		Graphics::SubmitCommandBuffer(m_CommandBuffers.at(m_FrameIndex));
+		Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS).Submit(m_CommandBuffers.at(m_FrameIndex));
 		if (D3D12Context::Get()->IsVSync())
 		{
 			UINT syncInterval = 1; // Enable VSync

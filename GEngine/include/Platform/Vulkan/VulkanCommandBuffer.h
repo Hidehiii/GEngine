@@ -75,15 +75,6 @@ namespace GEngine
 		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type);
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
-		
-		void AddWaitSemaphore(VkSemaphore s) { m_WaitSemaphores.push_back(s); }
-		void AddSignalSemaphore(VkSemaphore s) { m_SignalSemaphores.push_back(s); }
-
-		void ClearWaitSemaphores() { m_WaitSemaphores.clear(); }
-		void ClearSignalSemaphores() { m_SignalSemaphores.clear(); }
-
-		const std::vector<VkSemaphore>& GetSignalSemaphores() const { return m_SignalSemaphores; }
-		const std::vector<VkSemaphore>& GetWaitSemaphores() const { return m_WaitSemaphores; }
 
 		bool operator==(const VulkanCommandBuffer& other) const
 		{
@@ -95,8 +86,6 @@ namespace GEngine
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
-		std::vector<VkSemaphore>	m_WaitSemaphores;
-		std::vector<VkSemaphore>	m_SignalSemaphores;
 
 		friend class VulkanGraphicsPresent;
 	};

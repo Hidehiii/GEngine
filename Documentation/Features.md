@@ -13,7 +13,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 ## Engine subsystems
 
 - **Application/runtime:** application loop, layers, window events, time, input, configuration and logging.
-- **Rendering:** shaders, materials, pipeline state, vertex/index/uniform buffers, textures, samplers, framebuffers, render passes and render graph scheduling.
+- **Rendering:** shaders, materials, pipeline state, vertex/index/uniform buffers, textures, samplers, framebuffers, render passes, portable graphics/compute/transfer queues, and render graph scheduling.
 - **Compute:** compute pipelines, storage buffers and storage images.
 - **Scene and components:** game objects, scenes, transform and renderer components, cameras and serialization.
 - **Physics:** Box2D-backed 2D physics and PhysX-backed 3D physics.
@@ -25,6 +25,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 | Project | Demonstrates |
 | --- | --- |
 | `Example/Triangle` | Minimal shader, vertex buffer, graphics pipeline and presentation draw; configured for D3D12. |
+| `Example/FrameGraphTriangle` | Cross-API queue submission, presentation, render-graph, and shutdown smoke test; use it on OpenGL, Vulkan, or D3D12. |
 | `Example/ShaderCompile` | Shader compilation and shader asset workflow. |
 | `Example/DeferredRender` | Deferred-rendering path. |
 | `Example/GpuDriven` | GPU-driven rendering work. |

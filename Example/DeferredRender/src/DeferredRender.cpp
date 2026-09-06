@@ -176,8 +176,9 @@ namespace GEngine
 		Graphics::UpdateCameraUniform(m_EditorCamera);
 		GraphicsPresent::Render(m_PresentPipeline, "Present");
     }
-    void DeferredRender::OnRender()
-    {
+	void DeferredRender::OnRender()
+	{
+		auto& graphicsQueue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);
 		auto buildGBufferCommandBuffer = Graphics::GetGraphicsCommandBuffer();
 		auto lightingCommandBuffer = Graphics::GetGraphicsCommandBuffer();
 
@@ -192,7 +193,7 @@ namespace GEngine
 		buildGBufferCommandBuffer->Render(m_SpherePipeline, "BuildGBuffer");
 		buildGBufferCommandBuffer->Render(m_MonkeyPipeline, "BuildGBuffer");
 		buildGBufferCommandBuffer->End();
-		Graphics::SubmitCommandBuffer(buildGBufferCommandBuffer);
+		graphicsQueue.Submit(buildGBufferCommandBuffer);
 
 		m_LightingPipeline->GetMaterial()->SetTexture2D("_GBuffer_0", m_GBuffer->GetColorRT(0));
 		m_LightingPipeline->GetMaterial()->SetTexture2D("_GBuffer_1", m_GBuffer->GetColorRT(1));
@@ -205,8 +206,8 @@ namespace GEngine
 		Graphics::UpdateMainLightUniform(m_LightPosition, m_LightDirection,  m_LightColor);
 		lightingCommandBuffer->Render(m_LightingPipeline, "Lighting");
 		lightingCommandBuffer->End();
-		Graphics::SubmitCommandBuffer(lightingCommandBuffer);
-    }
+		graphicsQueue.Submit(lightingCommandBuffer);
+	}
     void DeferredRender::OnUpdate()
     {
 		m_EditorCamera.OnUpdate();

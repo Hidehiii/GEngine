@@ -3,6 +3,8 @@
 #include "GEngine/Graphics/GraphicsAPI.h"
 
 #include <optional>
+#include <unordered_map>
+#include <vector>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
@@ -46,9 +48,22 @@ namespace GEngine
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) override;
 		virtual void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer) override;
+		void SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
+			VkSemaphore presentSemaphore, VkFence completionFence);
 		virtual void WaitForIdle() override;
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after) override;
+
+	private:
+		struct SubmissionSynchronization
+		{
+			std::vector<VkSemaphore> WaitSemaphores;
+			std::vector<VkSemaphore> SignalSemaphores;
+		};
+
+		SubmissionSynchronization TakeSubmissionSynchronization(const CommandBuffer* commandBuffer);
+
+		std::unordered_map<const CommandBuffer*, SubmissionSynchronization> m_SubmissionSynchronizations;
 	};
 }
 

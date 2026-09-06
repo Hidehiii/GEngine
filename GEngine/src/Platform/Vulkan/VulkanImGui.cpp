@@ -136,24 +136,7 @@ namespace GEngine {
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
-		const std::vector<VkSemaphore> waitSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitSemaphores();
-		const std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		const std::vector<VkSemaphore> signalSemaphores = s_CommandBuffers.at(Graphics::GetFrame())->GetSignalSemaphores();
-
-		VkSubmitInfo                    submitInfo{};
-		submitInfo.sType				= VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount	= 1;
-		submitInfo.pCommandBuffers		= &cmd;
-		submitInfo.waitSemaphoreCount	= waitSemaphores.size();
-		submitInfo.pWaitSemaphores		= waitSemaphores.data();
-		submitInfo.pWaitDstStageMask	= waitStages.data();
-		submitInfo.signalSemaphoreCount = signalSemaphores.size();
-		submitInfo.pSignalSemaphores	= signalSemaphores.data();
-
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-
-		s_CommandBuffers.at(Graphics::GetFrame())->ClearWaitSemaphores();
-		s_CommandBuffers.at(Graphics::GetFrame())->ClearSignalSemaphores();
+		Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS).Submit(s_CommandBuffers.at(Graphics::GetFrame()));
 	}
 
 	Ref<Texture2D> VulkanImGui::GetImGuiTexture()

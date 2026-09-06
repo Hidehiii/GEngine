@@ -4,7 +4,7 @@ This directory documents the engine as it exists in the current source tree. It 
 
 ## Contents
 
-- [Architecture](Architecture.md): runtime ownership, frame flow, renderer, and backend boundaries.
+- [Architecture](Architecture.md): runtime ownership, frame flow, queues, shutdown ordering, renderer, and backend boundaries.
 - [Graphics API](GraphicsAPI.md): creating shaders, materials, buffers, pipelines, and a presentable draw.
 - [Features and samples](Features.md): implemented subsystems, backend status, configuration, and example projects.
 - [Build and run](BuildAndRun.md): prerequisites, solution generation, configuration selection, and common build failures.
