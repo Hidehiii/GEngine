@@ -56,17 +56,29 @@ namespace GEngine
     }
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
-        if (VulkanContext::Get()->GetDevice())
+        auto* context = VulkanContext::Get();
+        if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
         {
-			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_VertexBuffer, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_VertexBufferMemory, nullptr);
-            if (m_InstanceBuffer != nullptr)
-            {
-				vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_InstanceBuffer, nullptr);
-				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_InstanceBufferMemory, nullptr);
-            }
+			const VkBuffer vertexBuffer = m_VertexBuffer;
+			const VkDeviceMemory vertexMemory = m_VertexBufferMemory;
+			const VkBuffer instanceBuffer = m_InstanceBuffer;
+			const VkDeviceMemory instanceMemory = m_InstanceBufferMemory;
+			context->RetireResource([vertexBuffer, vertexMemory, instanceBuffer, instanceMemory](VkDevice device)
+			{
+				if (vertexBuffer != VK_NULL_HANDLE)
+					vkDestroyBuffer(device, vertexBuffer, nullptr);
+				if (vertexMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, vertexMemory, nullptr);
+				if (instanceBuffer != VK_NULL_HANDLE)
+					vkDestroyBuffer(device, instanceBuffer, nullptr);
+				if (instanceMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, instanceMemory, nullptr);
+			});
         }
-        
+		m_VertexBuffer = VK_NULL_HANDLE;
+		m_VertexBufferMemory = VK_NULL_HANDLE;
+		m_InstanceBuffer = VK_NULL_HANDLE;
+		m_InstanceBufferMemory = VK_NULL_HANDLE;
     }
     void VulkanVertexBuffer::SetVertexData(const void* data, uint32_t size)
     {
@@ -162,12 +174,21 @@ namespace GEngine
 
     VulkanIndexBuffer::~VulkanIndexBuffer()
     {
-        if (VulkanContext::Get()->GetDevice())
+        auto* context = VulkanContext::Get();
+        if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
         {
-			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_IndexBuffer, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_IndexBufferMemory, nullptr);
+			const VkBuffer indexBuffer = m_IndexBuffer;
+			const VkDeviceMemory indexMemory = m_IndexBufferMemory;
+			context->RetireResource([indexBuffer, indexMemory](VkDevice device)
+			{
+				if (indexBuffer != VK_NULL_HANDLE)
+					vkDestroyBuffer(device, indexBuffer, nullptr);
+				if (indexMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, indexMemory, nullptr);
+			});
         }
-        
+		m_IndexBuffer = VK_NULL_HANDLE;
+		m_IndexBufferMemory = VK_NULL_HANDLE;
     }
     void VulkanIndexBuffer::Bind(CommandBuffer* cmd) const
     {

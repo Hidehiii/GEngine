@@ -15,6 +15,7 @@ namespace GEngine
 		void OnPresent() override;
 
 	private:
+		uint64_t m_RenderCount = 0;
 		Ref<GraphicsPipeline> m_Pipeline;
 		Ref<RenderPass> m_OffscreenRenderPass;
 		Ref<FrameBuffer> m_OffscreenFrameBuffer;

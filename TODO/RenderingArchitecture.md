@@ -57,11 +57,15 @@ all three APIs.
       swapchain presenter, and keep inter-command dependencies in the device
       submission layer instead of storing synchronization lists in command
       buffers.
-- [ ] Add a Vulkan deferred-deletion queue keyed by completed frame fences.
-      Pipeline, buffer, texture, and descriptor replacements must be retired
-      only after the last command buffer that references them has completed.
-      Until then, runtime pipeline replacement performs a conservative device
-      wait before releasing its previous Vulkan pipelines.
+- [ ] Complete Vulkan deferred deletion for all replaceable GPU resources.
+      Submission-serial retirement is implemented and graphics/compute pipeline
+      replacements, core buffer/image/sampler objects, and framebuffers use
+      it. Descriptor pools, descriptor-set layouts, and less common resource
+      types still need to be migrated to the same lifetime path.
+      Queue submissions use dedicated completion fences and a contiguous
+      watermark. Resource owners must survive recording until submission.
+      FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
+      runtime validation on all three APIs remains pending.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
@@ -87,8 +91,14 @@ submission and deterministic renderer shutdown.
 
 ## Phase 3 — real frame graph
 
-- [ ] Add typed image/buffer descriptors and transient resource creation.
+- [~] Add typed image/buffer descriptors and transient resource creation.
+      `RenderGraph` can now create transient 2D textures, storage buffers, and
+      storage images from portable descriptors. Pooling and aliasing remain
+      intentionally deferred until lifetime analysis is in place.
 - [ ] Track resource versions, reads, writes, first/last use, and final state.
+      First/last use and final state are now recorded for every compiled
+      resource. Versioned handles and explicit read/write version propagation
+      are still required before aliasing can be enabled.
 - [ ] Add stage/access intent, subresource ranges, queue ownership, and
       per-backend barrier compilation.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
@@ -112,6 +122,10 @@ Acceptance: adding a backend requires a backend module and registration only;
 it does not require editing every common resource factory.
 
 ## Verification matrix
+
+- [ ] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
+      and `_DEBUG`; the current Release configuration fails with C1189.
+      Re-run the assertion-disabled FrameGraphTriangle startup check afterward.
 
 For every phase, run the Triangle example on all available APIs and verify:
 

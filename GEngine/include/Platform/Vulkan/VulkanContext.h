@@ -7,6 +7,7 @@
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <Platform/Vulkan/VMA/vk_mem_alloc.h>
+#include <functional>
 
 
 namespace GEngine
@@ -40,6 +41,13 @@ namespace GEngine
 		virtual void				SetRequiredExtensions(std::vector<const char*> extensions) override { m_Extensions = extensions; }
 
 		void						WaitForIdle();
+		using DeferredRelease = std::function<void(VkDevice)>;
+
+		// Render-thread only. Retain resource owners until recorded commands are
+		// submitted. Retirement covers submitted work on every tracked queue.
+		void SubmitTracked(VkQueue queue, const VkSubmitInfo& submission, VkFence presentationFence = VK_NULL_HANDLE);
+		void						RetireResource(DeferredRelease release);
+		void						CollectDeferredReleases();
 		void						RecreateSwapChain(unsigned int width, unsigned int height);
 		static VulkanContext*		Get() { return s_ContextInstance; }
 		VmaAllocator				GetVmaAllocator() { return m_VmaAllocator; }
@@ -97,6 +105,7 @@ namespace GEngine
 		void						CreateDescriptor();
 		void						CreateSyncObjects();
 		void						CleanUpSwapChain();
+		void						FlushDeferredReleases();
 		void						LoadFunctionEXT(std::vector<const char*> ext);
 		void						ConcatenateDeviceExtensions(void*& head, void**& pLastPNext, void* pExt, void** pPNext);
 		bool						IsEnabledInstanceExtension(const char* ext);
@@ -164,6 +173,16 @@ namespace GEngine
 		uint32_t							m_SemaphoreIndex = 0;
 		std::vector<VkFence>				m_Fences;
 		uint32_t							m_FenceIndex = 0;
+		struct DeferredReleaseEntry
+		{
+			uint64_t Submission;
+			DeferredRelease Release;
+		};
+		struct PendingSubmission { uint64_t Serial; VkFence Fence; };
+		std::vector<PendingSubmission> m_PendingSubmissions;
+		uint64_t m_LastSubmission = 0;
+		uint64_t m_CompletedSubmission = 0;
+		std::vector<DeferredReleaseEntry>	m_DeferredReleases;
 		VulkanFunctionEXT					m_Function;
 
 		std::vector<Ref<VulkanCommandBuffer>>	m_GraphicsCommandBuffers;

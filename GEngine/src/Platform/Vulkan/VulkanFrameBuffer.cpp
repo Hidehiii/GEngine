@@ -151,31 +151,40 @@ namespace GEngine
 	}
 	VulkanFrameBuffer::~VulkanFrameBuffer()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkQueueWaitIdle(VulkanContext::Get()->GetGraphicsQueue());
-			vkDestroyFramebuffer(VulkanContext::Get()->GetDevice(), m_FrameBuffer, nullptr);
-			for(int i = 0; i < m_Attachments.size(); i++)
+			const VkFramebuffer frameBuffer = m_FrameBuffer;
+			auto attachments = std::move(m_Attachments);
+			auto additionalAttachments = std::move(m_SwapChainAdditionalAttachments);
+			auto colorImages = std::move(m_ColorImages);
+			auto colorMemories = std::move(m_ColorImagesMemory);
+			auto depthImages = std::move(m_DepthStencilImages);
+			auto depthMemories = std::move(m_DepthStencilImagesMemory);
+
+			context->RetireResource([frameBuffer, attachments = std::move(attachments), additionalAttachments = std::move(additionalAttachments),
+				colorImages = std::move(colorImages), colorMemories = std::move(colorMemories),
+				depthImages = std::move(depthImages), depthMemories = std::move(depthMemories)](VkDevice device)
 			{
-				vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_Attachments.at(i), nullptr);
-			}
-			for (int i = 0; i < m_SwapChainAdditionalAttachments.size(); i++)
-			{
-				vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_SwapChainAdditionalAttachments.at(i), nullptr);
-			}
-			for(int i = 0; i < m_ColorImages.size(); i++)
-			{
-				vkDestroyImage(VulkanContext::Get()->GetDevice(), m_ColorImages.at(i), nullptr);
-				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ColorImagesMemory.at(i), nullptr);
-			}
-			for(int i = 0; i < m_DepthStencilImages.size(); i++)
-			{
-				vkDestroyImage(VulkanContext::Get()->GetDevice(), m_DepthStencilImages.at(i), nullptr);
-				vkFreeMemory(VulkanContext::Get()->GetDevice(), m_DepthStencilImagesMemory.at(i), nullptr);
-			}
-			
+				if (frameBuffer != VK_NULL_HANDLE)
+					vkDestroyFramebuffer(device, frameBuffer, nullptr);
+				for (VkImageView imageView : attachments)
+					vkDestroyImageView(device, imageView, nullptr);
+				for (VkImageView imageView : additionalAttachments)
+					vkDestroyImageView(device, imageView, nullptr);
+				for (size_t i = 0; i < colorImages.size(); ++i)
+				{
+					vkDestroyImage(device, colorImages[i], nullptr);
+					vkFreeMemory(device, colorMemories[i], nullptr);
+				}
+				for (size_t i = 0; i < depthImages.size(); ++i)
+				{
+					vkDestroyImage(device, depthImages[i], nullptr);
+					vkFreeMemory(device, depthMemories[i], nullptr);
+				}
+			});
 		}
-		
+		m_FrameBuffer = VK_NULL_HANDLE;
 	}
 	void VulkanFrameBuffer::SetRenderPassOperation(const RenderPassOperation& op)
 	{

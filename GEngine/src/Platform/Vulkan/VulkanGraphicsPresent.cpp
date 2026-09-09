@@ -64,7 +64,7 @@ namespace GEngine
 		const VkDevice device = VulkanContext::Get()->GetDevice();
 		if (device != VK_NULL_HANDLE)
 		{
-			vkDeviceWaitIdle(device);
+			VulkanContext::Get()->WaitForIdle();
 			for (const auto fence : m_Fences)
 				vkDestroyFence(device, fence, nullptr);
 		}
@@ -82,6 +82,7 @@ namespace GEngine
 		}
 
 		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Graphics::GetFrame()), VK_TRUE, std::numeric_limits<uint64_t>::max()));
+		VulkanContext::Get()->CollectDeferredReleases();
 		m_AcquireSemaphore = VulkanContext::Get()->GetSemaphore();
 		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
 			VulkanContext::Get()->GetSwapChain(),

@@ -39,10 +39,17 @@ namespace GEngine
     }
     VulkanSampler::~VulkanSampler()
     {
-        if (VulkanContext::Get()->GetDevice())
+        auto* context = VulkanContext::Get();
+        if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
         {
-            vkDestroySampler(VulkanContext::Get()->GetDevice(), m_Sampler, nullptr);
+            const VkSampler sampler = m_Sampler;
+            context->RetireResource([sampler](VkDevice device)
+            {
+                if (sampler != VK_NULL_HANDLE)
+                    vkDestroySampler(device, sampler, nullptr);
+            });
         }
+		m_Sampler = VK_NULL_HANDLE;
     }
     void VulkanSampler::Bind(uint32_t slot)
     {

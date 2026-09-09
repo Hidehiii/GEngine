@@ -252,7 +252,7 @@ namespace GEngine
 		submitInfo.pWaitDstStageMask = waitStages.data();
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signals.size());
 		submitInfo.pSignalSemaphores = signals.data();
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+		VulkanContext::Get()->SubmitTracked(queue, submitInfo);
 	}
 
 	void VulkanGraphicsAPI::SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
@@ -277,7 +277,7 @@ namespace GEngine
 		submitInfo.pWaitDstStageMask = waitStages.data();
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(synchronization.SignalSemaphores.size());
 		submitInfo.pSignalSemaphores = synchronization.SignalSemaphores.data();
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanContext::Get()->GetGraphicsQueue(), 1, &submitInfo, completionFence));
+		VulkanContext::Get()->SubmitTracked(VulkanContext::Get()->GetGraphicsQueue(), submitInfo, completionFence);
 	}
 
 	VulkanGraphicsAPI::SubmissionSynchronization VulkanGraphicsAPI::TakeSubmissionSynchronization(const CommandBuffer* commandBuffer)

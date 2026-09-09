@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Core/Thread.h"
+#include <algorithm>
 #include <set>
 #include <GLFW/glfw3.h>
 
@@ -134,17 +135,94 @@ namespace GEngine
 	void VulkanContext::WaitForIdle()
 	{
 		if (m_Device != VK_NULL_HANDLE)
+		{
 			VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device));
+			FlushDeferredReleases();
+		}
+	}
+
+	void VulkanContext::SubmitTracked(VkQueue queue, const VkSubmitInfo& submission, VkFence presentationFence)
+	{
+		CollectDeferredReleases();
+		VkFenceCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		VkFence fence = VK_NULL_HANDLE;
+		VK_CHECK_RESULT(vkCreateFence(m_Device, &info, nullptr, &fence));
+		// Presentation owns a reusable fence. A separate marker belongs to this
+		// submission and cannot be reset by a later frame.
+		if (presentationFence != VK_NULL_HANDLE)
+		{
+			VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submission, presentationFence));
+			VkSubmitInfo marker{};
+			marker.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &marker, fence));
+		}
+		else
+			VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submission, fence));
+		m_PendingSubmissions.push_back({ ++m_LastSubmission, fence });
+	}
+
+	void VulkanContext::RetireResource(DeferredRelease release)
+	{
+		if (!release || m_Device == VK_NULL_HANDLE)
+			return;
+
+		if (m_LastSubmission == m_CompletedSubmission)
+		{
+			release(m_Device);
+			return;
+		}
+
+		m_DeferredReleases.push_back({ m_LastSubmission, std::move(release) });
+	}
+
+	void VulkanContext::CollectDeferredReleases()
+	{
+		if (m_Device == VK_NULL_HANDLE)
+			return;
+
+		// Advance a contiguous watermark across all queues. Later completion
+		// never hides unfinished work on a different queue.
+		size_t completed = 0;
+		for (const auto& submission : m_PendingSubmissions)
+		{
+			const VkResult status = vkGetFenceStatus(m_Device, submission.Fence);
+			if (status == VK_NOT_READY) break;
+			VK_CHECK_RESULT(status);
+			m_CompletedSubmission = submission.Serial;
+			vkDestroyFence(m_Device, submission.Fence, nullptr);
+			++completed;
+		}
+		m_PendingSubmissions.erase(m_PendingSubmissions.begin(), m_PendingSubmissions.begin() + completed);
+
+		auto releaseEnd = std::remove_if(m_DeferredReleases.begin(), m_DeferredReleases.end(), [this](DeferredReleaseEntry& entry)
+		{
+			if (entry.Submission > m_CompletedSubmission) return false;
+
+			entry.Release(m_Device);
+			return true;
+		});
+
+		m_DeferredReleases.erase(releaseEnd, m_DeferredReleases.end());
+	}
+
+	void VulkanContext::FlushDeferredReleases()
+	{
+		for (const auto& submission : m_PendingSubmissions)
+			vkDestroyFence(m_Device, submission.Fence, nullptr);
+		m_PendingSubmissions.clear();
+		m_CompletedSubmission = m_LastSubmission;
+		auto pendingReleases = std::move(m_DeferredReleases);
+		m_DeferredReleases.clear();
+
+		for (DeferredReleaseEntry& entry : pendingReleases)
+			entry.Release(m_Device);
 	}
 
     void VulkanContext::SetVSync(bool enable)
     {
         m_VSync = enable;
-		CleanUpSwapChain();
-
-		CreateSwapChain(m_SwapChainExtent.width, m_SwapChainExtent.height);
-		CreateImageViews();
-		CreateFrameBuffer();
+		RecreateSwapChain(m_SwapChainExtent.width, m_SwapChainExtent.height);
     }
     VkSemaphore VulkanContext::GetSemaphore()
     {
@@ -751,14 +829,19 @@ namespace GEngine
 
     void VulkanContext::CleanUpSwapChain()
     {
-        vkDeviceWaitIdle(m_Device);
+        WaitForIdle();
         m_SwapChainFrameBuffers.clear();
-        // swap chain image will be destroyed 
+
 		for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
-		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+		m_SwapChainImageViews.clear();
+
+		if (m_SwapChain != VK_NULL_HANDLE)
+			vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+		m_SwapChain = VK_NULL_HANDLE;
+		m_SwapChainImages.clear();
     }
 
     void VulkanContext::LoadFunctionEXT(std::vector<const char*> ext)
@@ -811,10 +894,16 @@ namespace GEngine
 
     void VulkanContext::RecreateSwapChain(unsigned int width, unsigned int height)
     {
+        const VkFormat previousFormat = m_SwapChainImageFormat;
         CleanUpSwapChain();
 
         CreateSwapChain(width, height);
         CreateImageViews();
+		if (m_SwapChainRenderPass == nullptr || previousFormat != m_SwapChainImageFormat)
+		{
+			m_SwapChainRenderPass.reset();
+			CreateRenderPass();
+		}
         CreateFrameBuffer();
     }
 

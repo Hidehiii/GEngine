@@ -26,15 +26,27 @@ namespace GEngine
 
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
     {
-		if (VulkanContext::Get()->GetDevice())
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
-			for (auto pipeline : m_GraphicsPipelines)
+			std::vector<VkPipeline> pipelines;
+			pipelines.reserve(m_GraphicsPipelines.size());
+			for (const auto& pipeline : m_GraphicsPipelines)
 			{
-				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
+				pipelines.push_back(pipeline.GraphicsPipeline);
 			}
+
+			const VkPipelineCache pipelineCache = m_PipelineCache;
+			context->RetireResource([pipelines = std::move(pipelines), pipelineCache](VkDevice device)
+			{
+				for (VkPipeline pipeline : pipelines)
+					vkDestroyPipeline(device, pipeline, nullptr);
+				if (pipelineCache != VK_NULL_HANDLE)
+					vkDestroyPipelineCache(device, pipelineCache, nullptr);
+			});
 		}
-        
+		m_GraphicsPipelines.clear();
+		m_PipelineCache = VK_NULL_HANDLE;
     }
 
 	void VulkanGraphicsPipeline::PrepareRender(CommandBuffer* cmdBuffer, const Ref<FrameBuffer>& frameBuffer, const uint32_t& pass)
@@ -47,13 +59,17 @@ namespace GEngine
 
 		if (m_RecreatePipeline)
 		{
-			// The previous pipeline can still be referenced by an earlier frame.
-			// Deferred deletion will replace this conservative wait in the future.
-			VulkanContext::Get()->WaitForIdle();
-			for (auto pipeline : m_GraphicsPipelines)
+			std::vector<VkPipeline> pipelines;
+			pipelines.reserve(m_GraphicsPipelines.size());
+			for (const auto& pipeline : m_GraphicsPipelines)
 			{
-				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.GraphicsPipeline, nullptr);
+				pipelines.push_back(pipeline.GraphicsPipeline);
 			}
+			VulkanContext::Get()->RetireResource([pipelines = std::move(pipelines)](VkDevice device)
+			{
+				for (VkPipeline pipeline : pipelines)
+					vkDestroyPipeline(device, pipeline, nullptr);
+			});
 			m_RecreatePipeline = false;
 			m_GraphicsPipelines.clear();
 		}

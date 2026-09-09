@@ -39,10 +39,10 @@ namespace GEngine
 		virtual void SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass) override;
 	private:
 		
-		VkBuffer		m_VertexBuffer = nullptr;
-		VkBuffer		m_InstanceBuffer = nullptr;
-		VkDeviceMemory	m_VertexBufferMemory;
-		VkDeviceMemory	m_InstanceBufferMemory;
+		VkBuffer		m_VertexBuffer = VK_NULL_HANDLE;
+		VkBuffer		m_InstanceBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory	m_VertexBufferMemory = VK_NULL_HANDLE;
+		VkDeviceMemory	m_InstanceBufferMemory = VK_NULL_HANDLE;
 		
 		std::vector<VkVertexInputBindingDescription>	m_VertexInputBindingDescription;
 		std::vector<VkVertexInputAttributeDescription>	m_VertexInputAttributeDescriptions;
@@ -66,8 +66,8 @@ namespace GEngine
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
 		
-		VkBuffer		m_IndexBuffer;
-		VkDeviceMemory	m_IndexBufferMemory;
+		VkBuffer		m_IndexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory	m_IndexBufferMemory = VK_NULL_HANDLE;
 
 		friend class VulkanVertexBuffer;
 	};

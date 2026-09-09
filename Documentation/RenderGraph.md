@@ -23,6 +23,9 @@ graph.Execute(frameContext);
 
 `AddDependency(after, before)` means that `after` cannot run until `before` has completed.
 
+`Execute` compiles an uncompiled graph in both Debug and Release. A dependency
+cycle throws `std::runtime_error` before pass execution or transient allocation.
+
 ## Resources and states
 
 Import an external resource and declare every pass access:
@@ -38,6 +41,34 @@ graph.Read(postProcess, color, RenderGraph::ResourceState::ShaderRead);
 ```
 
 The graph adds ordering dependencies for conflicting accesses and inserts a transition whenever a resource's requested state differs from its previous state.
+
+## Transient resources
+
+Frame-local working resources can be declared without creating a backend object
+in feature code. The graph creates them when it compiles, and their lifetime
+ends when `Reset()` is called:
+
+```cpp
+const auto lighting = graph.CreateTransientTexture2D(
+    "Lighting",
+    { viewportWidth, viewportHeight, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
+
+graph.Write(lightingPass, lighting, RenderGraph::ResourceState::RenderTarget);
+graph.Read(postProcess, lighting, RenderGraph::ResourceState::ShaderRead);
+
+// Inside a pass callback after compilation:
+auto texture = graph.GetTexture2D(lighting);
+```
+
+`CreateTransientStorageBuffer` and `CreateTransientStorageImage` follow the
+same pattern. Transient resources are not pooled or aliased yet, so a feature
+must not retain them after the graph reset. Imported resources remain the right
+choice for application-owned or cross-frame assets.
+
+After `Compile`, `GetResourceLifetime` reports each resource's first pass,
+last pass, and final declared state. The graph uses these values as its stable
+allocation-lifetime record; versioned read/write handles will be added before
+transient memory reuse is enabled.
 
 Available states are:
 
@@ -69,4 +100,6 @@ backend-neutral.
 - Declare each resource read/write access in the graph instead of adding backend-only state transitions inside a layer.
 - Make write-after-read and write-after-write operations explicit through `Read`/`Write`; the graph derives ordering dependencies from them.
 - Reset the graph every frame before creating that frame's passes.
-- Keep pass callbacks focused on recording commands. Resource creation and long-lived ownership belong outside the graph.
+- Keep pass callbacks focused on recording commands. Long-lived ownership
+  belongs outside the graph; use transient descriptors only for frame-local
+  working resources.

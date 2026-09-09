@@ -22,12 +22,21 @@ namespace GEngine
 	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_StorageBuffer, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_StorageBufferMemory, nullptr);
+			const VkBuffer storageBuffer = m_StorageBuffer;
+			const VkDeviceMemory storageMemory = m_StorageBufferMemory;
+			context->RetireResource([storageBuffer, storageMemory](VkDevice device)
+			{
+				if (storageBuffer != VK_NULL_HANDLE)
+					vkDestroyBuffer(device, storageBuffer, nullptr);
+				if (storageMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, storageMemory, nullptr);
+			});
 		}
-		
+		m_StorageBuffer = VK_NULL_HANDLE;
+		m_StorageBufferMemory = VK_NULL_HANDLE;
 	}
 	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{

@@ -4,6 +4,7 @@
 #include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/Texture.h"
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -35,7 +36,7 @@ namespace GEngine
 	{
 		GE_CORE_ASSERT(!name.empty(), "Render-graph resources require a name.");
 		m_IsCompiled = false;
-		m_Resources.push_back({ std::move(name), initialState, nullptr });
+		m_Resources.push_back({ std::move(name), initialState, nullptr, {}, false });
 		return static_cast<ResourceHandle>(m_Resources.size() - 1);
 	}
 
@@ -65,6 +66,45 @@ namespace GEngine
 		return ImportExternalResource(std::move(name), std::static_pointer_cast<GraphicsResource>(image), initialState);
 	}
 
+	RenderGraph::ResourceHandle RenderGraph::CreateTransientTexture2D(std::string name, const Texture2DDesc& description, ResourceState initialState)
+	{
+		GE_CORE_ASSERT(description.Width > 0 && description.Height > 0, "Transient textures require a non-zero extent.");
+		const auto handle = ImportResource(std::move(name), initialState);
+		auto& resource = m_Resources[handle];
+		resource.IsTransient = true;
+		resource.Create = [description]()
+		{
+			return std::static_pointer_cast<GraphicsResource>(Texture2D::Create(description.Width, description.Height, description.Format));
+		};
+		return handle;
+	}
+
+	RenderGraph::ResourceHandle RenderGraph::CreateTransientStorageBuffer(std::string name, const StorageBufferDesc& description, ResourceState initialState)
+	{
+		GE_CORE_ASSERT(description.Size > 0, "Transient storage buffers require a non-zero size.");
+		const auto handle = ImportResource(std::move(name), initialState);
+		auto& resource = m_Resources[handle];
+		resource.IsTransient = true;
+		resource.Create = [description]()
+		{
+			return std::static_pointer_cast<GraphicsResource>(StorageBuffer::Create(description.Size));
+		};
+		return handle;
+	}
+
+	RenderGraph::ResourceHandle RenderGraph::CreateTransientStorageImage(std::string name, const StorageImage2DDesc& description, ResourceState initialState)
+	{
+		GE_CORE_ASSERT(description.Width > 0 && description.Height > 0, "Transient storage images require a non-zero extent.");
+		const auto handle = ImportResource(std::move(name), initialState);
+		auto& resource = m_Resources[handle];
+		resource.IsTransient = true;
+		resource.Create = [description]()
+		{
+			return std::static_pointer_cast<GraphicsResource>(StorageImage2D::Create(description.Width, description.Height, description.Format));
+		};
+		return handle;
+	}
+
 	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state)
 	{
 		AddAccess(pass, resource, state, false);
@@ -86,6 +126,28 @@ namespace GEngine
 		return m_Resources[resource].Object;
 	}
 
+	Ref<Texture2D> RenderGraph::GetTexture2D(ResourceHandle resource) const
+	{
+		return std::dynamic_pointer_cast<Texture2D>(GetResource(resource));
+	}
+
+	Ref<StorageBuffer> RenderGraph::GetStorageBuffer(ResourceHandle resource) const
+	{
+		return std::dynamic_pointer_cast<StorageBuffer>(GetResource(resource));
+	}
+
+	Ref<StorageImage2D> RenderGraph::GetStorageImage(ResourceHandle resource) const
+	{
+		return std::dynamic_pointer_cast<StorageImage2D>(GetResource(resource));
+	}
+
+	const RenderGraph::ResourceLifetime& RenderGraph::GetResourceLifetime(ResourceHandle resource) const
+	{
+		GE_CORE_ASSERT(resource < m_Resources.size(), "Render-graph resource is invalid.");
+		GE_CORE_ASSERT(m_IsCompiled, "Render-graph resource lifetime is available after compilation.");
+		return m_Resources[resource].Lifetime;
+	}
+
 	bool RenderGraph::Compile()
 	{
 		m_ExecutionOrder.clear();
@@ -100,6 +162,7 @@ namespace GEngine
 			}
 		}
 
+		CreateTransientResources();
 		BuildResourceTransitions();
 		m_IsCompiled = true;
 		return true;
@@ -107,7 +170,8 @@ namespace GEngine
 
 	void RenderGraph::Execute(FrameContext& frameContext)
 	{
-		GE_CORE_ASSERT(m_IsCompiled || Compile(), "Render graph contains a dependency cycle.");
+		if (!m_IsCompiled && !Compile())
+			throw std::runtime_error("Render graph contains a dependency cycle.");
 		for (const PassHandle pass : m_ExecutionOrder)
 		{
 			for (const auto& transition : m_Passes[pass].Transitions)
@@ -156,12 +220,28 @@ namespace GEngine
 		m_Passes[pass].ResourceAccesses.push_back({ resource, state, isWrite });
 	}
 
+	void RenderGraph::CreateTransientResources()
+	{
+		for (auto& resource : m_Resources)
+		{
+			if (!resource.IsTransient || resource.Object != nullptr)
+				continue;
+
+			GE_CORE_ASSERT(resource.Create, "Transient render-graph resource is missing a creation callback.");
+			resource.Object = resource.Create();
+			GE_CORE_ASSERT(resource.Object, "Transient render-graph resource creation failed.");
+		}
+	}
+
 	void RenderGraph::BuildResourceTransitions()
 	{
 		std::vector<ResourceState> states;
 		states.reserve(m_Resources.size());
-		for (const auto& resource : m_Resources)
+		for (auto& resource : m_Resources)
+		{
 			states.push_back(resource.InitialState);
+			resource.Lifetime = { InvalidPass, InvalidPass, resource.InitialState };
+		}
 
 		for (const PassHandle pass : m_ExecutionOrder)
 		{
@@ -169,12 +249,17 @@ namespace GEngine
 			transitions.clear();
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
 			{
+				auto& lifetime = m_Resources[access.Resource].Lifetime;
+				if (lifetime.FirstUse == InvalidPass)
+					lifetime.FirstUse = pass;
+				lifetime.LastUse = pass;
 				auto& currentState = states[access.Resource];
 				if (currentState != access.State)
 				{
 					transitions.push_back({ access.Resource, currentState, access.State });
 					currentState = access.State;
 				}
+				lifetime.FinalState = currentState;
 			}
 		}
 	}

@@ -41,13 +41,23 @@ namespace GEngine
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkUnmapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory);
-			vkDestroyBuffer(VulkanContext::Get()->GetDevice(), m_UniformBuffer, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, nullptr);
+			vkUnmapMemory(context->GetDevice(), m_UniformBufferMemory);
+			const VkBuffer uniformBuffer = m_UniformBuffer;
+			const VkDeviceMemory uniformMemory = m_UniformBufferMemory;
+			context->RetireResource([uniformBuffer, uniformMemory](VkDevice device)
+			{
+				if (uniformBuffer != VK_NULL_HANDLE)
+					vkDestroyBuffer(device, uniformBuffer, nullptr);
+				if (uniformMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, uniformMemory, nullptr);
+			});
 		}
-		
+		m_UniformBuffer = VK_NULL_HANDLE;
+		m_UniformBufferMemory = VK_NULL_HANDLE;
+		m_MapData = nullptr;
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size)
 	{

@@ -1,4 +1,6 @@
 #include "FrameGraphTriangleLayer.h"
+#include <GEngine/Renderer/RenderGraph.h>
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -9,6 +11,13 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnAttach()
 	{
+		// This must execute even when assertions are disabled.
+		RenderGraph graph;
+		int executions = 0;
+		graph.AddPass("ReleaseCompileCheck", [&executions]() { ++executions; });
+		graph.Execute();
+		if (executions != 1)
+			throw std::runtime_error("RenderGraph implicit compilation failed.");
 		const float vertices[] =
 		{
 			 0.0f,  0.65f, 0.0f,
@@ -30,6 +39,17 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnRender()
 	{
+		if (++m_RenderCount % 30 == 0)
+		{
+			const float offset = (m_RenderCount / 30) % 2 ? 0.15f : -0.15f;
+			const float vertices[] = {
+				offset, 0.65f, 0.0f,
+				0.65f + offset, -0.55f, 0.0f,
+				-0.65f + offset, -0.55f, 0.0f
+			};
+			auto buffer = VertexBuffer::Create(vertices, sizeof(vertices));
+			m_Pipeline = GraphicsPipeline::Create(m_Pipeline->GetMaterial(), buffer);
+		}
 		auto commandBuffer = Graphics::GetGraphicsCommandBuffer();
 		auto& graphicsQueue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);
 

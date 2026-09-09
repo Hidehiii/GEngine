@@ -85,6 +85,36 @@ with the current swapchain extent before acquiring an image. If recreation is
 needed, it recreates the swapchain without acquiring first. This prevents an
 acquire semaphore from being signaled and then abandoned during recreation.
 
+## Vulkan replacement lifetime
+
+Vulkan replacement uses a monotonically increasing submission serial. Graphics,
+compute, and transfer queue submissions receive dedicated completion fences;
+presentation receives an additional completion marker after its existing submit.
+A contiguous completion watermark retires resources without requiring reusable
+frame fences to be signaled simultaneously. Collection runs at submission and
+frame acquisition; device idle flushes all remaining entries. These operations
+run on the render thread. Callers must retain resource owners until recorded
+commands have been submitted; unsubmitted commands are not tracked.
+
+The same retirement queue now covers vertex, index, uniform, and storage
+buffers, sampled/storage images, samplers, and framebuffers. Short-lived upload
+commands remain synchronous by design; frame-recorded resources do not stall
+the whole device when their C++ owner is released.
+
+## Frame-graph transient resources
+
+`RenderGraph` supports portable descriptions for transient `Texture2D`, storage
+buffer, and storage-image resources. A transient resource is declared by name,
+created only when the graph compiles, exposed through a typed getter during pass
+execution, and released when the graph resets. This is the allocation baseline
+for future frame-local pooling and aliasing; it deliberately does not reuse
+memory before resource lifetime analysis exists.
+
+The same retirement queue now covers vertex, index, uniform, and storage
+buffers, sampled/storage images, samplers, and framebuffers. Short-lived upload
+commands remain synchronous by design; frame-recorded resources do not stall
+the whole device when their C++ owner is released.
+
 ## Renderer layering
 
 The renderer separates portable intent from backend implementation:

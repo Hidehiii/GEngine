@@ -32,3 +32,17 @@ portable device queue:
 auto& queue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);
 queue.Submit(commandBuffer);
 ```
+
+## Resource replacement check
+
+The triangle alternates left/right every 30 rendered frames while replacing its
+pipeline and vertex buffer. Run for several minutes, resize the window, then
+close it. Check for stable memory and clean backend validation output. Test each
+API independently. Startup also checks implicit RenderGraph compilation without
+assertions, so run both Debug and Release. Build success alone is not a runtime
+validation result.
+
+The non-instanced replacement path also checks optional Vulkan allocation
+lifetime: no instance buffer is allocated, and retiring the vertex buffer must
+not free an uninitialized instance-memory handle. Check that repeated movement
+and shutdown produce no `vkFreeMemory` validation errors.

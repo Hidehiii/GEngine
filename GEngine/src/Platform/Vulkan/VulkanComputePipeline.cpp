@@ -23,14 +23,27 @@ namespace GEngine
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkDestroyPipelineCache(VulkanContext::Get()->GetDevice(), m_PipelineCache, nullptr);
-			for (auto pipeline : m_ComputePipelines)
+			std::vector<VkPipeline> pipelines;
+			pipelines.reserve(m_ComputePipelines.size());
+			for (const auto& pipeline : m_ComputePipelines)
 			{
-				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
+				pipelines.push_back(pipeline.ComputePipeline);
 			}
+
+			const VkPipelineCache pipelineCache = m_PipelineCache;
+			context->RetireResource([pipelines = std::move(pipelines), pipelineCache](VkDevice device)
+			{
+				for (VkPipeline pipeline : pipelines)
+					vkDestroyPipeline(device, pipeline, nullptr);
+				if (pipelineCache != VK_NULL_HANDLE)
+					vkDestroyPipelineCache(device, pipelineCache, nullptr);
+			});
 		}
+		m_ComputePipelines.clear();
+		m_PipelineCache = VK_NULL_HANDLE;
 	}
 	Ref<Material> VulkanComputePipeline::GetMaterial()
 	{
@@ -93,13 +106,17 @@ namespace GEngine
 
 		if (m_RecreatePipeline)
 		{
-			// The previous pipeline can still be referenced by an earlier frame.
-			// Deferred deletion will replace this conservative wait in the future.
-			VulkanContext::Get()->WaitForIdle();
-			for (auto pipeline : m_ComputePipelines)
+			std::vector<VkPipeline> pipelines;
+			pipelines.reserve(m_ComputePipelines.size());
+			for (const auto& pipeline : m_ComputePipelines)
 			{
-				vkDestroyPipeline(VulkanContext::Get()->GetDevice(), pipeline.ComputePipeline, nullptr);
+				pipelines.push_back(pipeline.ComputePipeline);
 			}
+			VulkanContext::Get()->RetireResource([pipelines = std::move(pipelines)](VkDevice device)
+			{
+				for (VkPipeline pipeline : pipelines)
+					vkDestroyPipeline(device, pipeline, nullptr);
+			});
 			m_ComputePipelines.clear();
 			m_RecreatePipeline = false;
 		}

@@ -120,18 +120,26 @@ namespace GEngine
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-        // if the texture 2d is created by vulkan frame buffer,
-		// the image and image view will be destroyed by vulkan frame buffer, 
-        // so we need to check if the image and image view are valid before destroying them
-		// the image created by vk frame buffer would not have a valid width and height, so we can use this to check if the image is created by vk frame buffer
-		if (VulkanContext::Get()->GetDevice() && m_Width != 0 && m_Height != 0)
+		// Framebuffer-created wrapper textures do not own their native image.
+		auto* context = VulkanContext::Get();
+		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE && m_Width != 0 && m_Height != 0)
 		{
-			vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-			vkDestroyImageView(VulkanContext::Get()->GetDevice(), m_ImageView, nullptr);
-			vkDestroyImage(VulkanContext::Get()->GetDevice(), m_Image, nullptr);
-			vkFreeMemory(VulkanContext::Get()->GetDevice(), m_ImageMemory, nullptr);
+			const VkImageView imageView = m_ImageView;
+			const VkImage image = m_Image;
+			const VkDeviceMemory imageMemory = m_ImageMemory;
+			context->RetireResource([imageView, image, imageMemory](VkDevice device)
+			{
+				if (imageView != VK_NULL_HANDLE)
+					vkDestroyImageView(device, imageView, nullptr);
+				if (image != VK_NULL_HANDLE)
+					vkDestroyImage(device, image, nullptr);
+				if (imageMemory != VK_NULL_HANDLE)
+					vkFreeMemory(device, imageMemory, nullptr);
+			});
 		}
-      
+		m_ImageView = VK_NULL_HANDLE;
+		m_Image = VK_NULL_HANDLE;
+		m_ImageMemory = VK_NULL_HANDLE;
     }
 
     void VulkanTexture2D::SetData(const void* data, uint32_t size)
