@@ -21,7 +21,9 @@ graph.AddDependency(postProcess, geometry);
 graph.Execute(frameContext);
 ```
 
-`AddDependency(after, before)` means that `after` cannot run until `before` has completed.
+`AddDependency(after, before)` orders CPU pass callbacks: `before` is recorded
+before `after`. GPU completion between different queues still requires backend
+submission synchronization.
 
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
@@ -53,12 +55,24 @@ const auto lighting = graph.CreateTransientTexture2D(
     "Lighting",
     { viewportWidth, viewportHeight, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
 
-graph.Write(lightingPass, lighting, RenderGraph::ResourceState::RenderTarget);
+graph.Write(uploadPass, lighting, RenderGraph::ResourceState::CopyDestination);
 graph.Read(postProcess, lighting, RenderGraph::ResourceState::ShaderRead);
 
 // Inside a pass callback after compilation:
 auto texture = graph.GetTexture2D(lighting);
 ```
+
+This texture path supports sampling and copies, not attachment rendering.
+The upload pass must actually initialize the texture contents. Use an imported
+framebuffer attachment for render-target work until usage-aware creation exists.
+Transient resources start Undefined; compilation rejects unsupported states,
+read-only states declared as writes, and reads before a declared first write.
+Validation happens before transient GPU allocation.
+
+For unversioned resources, pass creation order defines conflicting access order.
+`Read`/`Write` declarations may be added in any order; inferred edges are rebuilt
+on every compile separately from explicit dependencies. Contradictory explicit
+ordering is a dependency cycle. This is CPU scheduling, not GPU queue completion.
 
 `CreateTransientStorageBuffer` and `CreateTransientStorageImage` follow the
 same pattern. Transient resources are not pooled or aliased yet, so a feature

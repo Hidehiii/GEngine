@@ -97,6 +97,7 @@ namespace GEngine
 			std::function<Ref<GraphicsResource>()> Create;
 			bool IsTransient = false;
 			ResourceLifetime Lifetime;
+			std::vector<ResourceState> AllowedStates;
 		};
 
 		struct ResourceTransition
@@ -113,11 +114,13 @@ namespace GEngine
 			std::vector<PassHandle> Dependencies;
 			std::vector<ResourceAccess> ResourceAccesses;
 			std::vector<ResourceTransition> Transitions;
+			std::vector<PassHandle> InferredDependencies;
 		};
 
 		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite);
 		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite);
 		void CreateTransientResources();
+		void ValidateResourceAccesses() const;
 		void BuildResourceTransitions();
 		bool Visit(PassHandle pass, std::vector<uint8_t>& states);
 

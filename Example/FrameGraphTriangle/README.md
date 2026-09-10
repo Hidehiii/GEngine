@@ -35,6 +35,11 @@ queue.Submit(commandBuffer);
 
 ## Resource replacement check
 
+Startup checks also cover reverse access declaration order, repeated graph
+compilation, dependency-cycle detection, transient read-before-write, and invalid
+render-target usage. One expected cycle diagnostic is printed by the negative
+test. Failure throws before drawing; these checks do not validate GPU barriers.
+
 The triangle alternates left/right every 30 rendered frames while replacing its
 pipeline and vertex buffer. Run for several minutes, resize the window, then
 close it. Check for stable memory and clean backend validation output. Test each

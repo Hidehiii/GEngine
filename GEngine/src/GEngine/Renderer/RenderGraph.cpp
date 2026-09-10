@@ -72,6 +72,7 @@ namespace GEngine
 		const auto handle = ImportResource(std::move(name), initialState);
 		auto& resource = m_Resources[handle];
 		resource.IsTransient = true;
+		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::CopySource, ResourceState::CopyDestination };
 		resource.Create = [description]()
 		{
 			return std::static_pointer_cast<GraphicsResource>(Texture2D::Create(description.Width, description.Height, description.Format));
@@ -85,6 +86,7 @@ namespace GEngine
 		const auto handle = ImportResource(std::move(name), initialState);
 		auto& resource = m_Resources[handle];
 		resource.IsTransient = true;
+		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::ShaderWrite, ResourceState::CopyDestination };
 		resource.Create = [description]()
 		{
 			return std::static_pointer_cast<GraphicsResource>(StorageBuffer::Create(description.Size));
@@ -98,6 +100,7 @@ namespace GEngine
 		const auto handle = ImportResource(std::move(name), initialState);
 		auto& resource = m_Resources[handle];
 		resource.IsTransient = true;
+		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::ShaderWrite, ResourceState::CopyDestination };
 		resource.Create = [description]()
 		{
 			return std::static_pointer_cast<GraphicsResource>(StorageImage2D::Create(description.Width, description.Height, description.Format));
@@ -150,7 +153,13 @@ namespace GEngine
 
 	bool RenderGraph::Compile()
 	{
+		m_IsCompiled = false;
 		m_ExecutionOrder.clear();
+		for (auto& pass : m_Passes)
+			pass.InferredDependencies.clear();
+		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
+			for (const auto& access : m_Passes[pass].ResourceAccesses)
+				AddResourceDependency(pass, access.Resource, access.IsWrite);
 		std::vector<uint8_t> states(m_Passes.size(), 0);
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
 		{
@@ -162,6 +171,7 @@ namespace GEngine
 			}
 		}
 
+		ValidateResourceAccesses();
 		CreateTransientResources();
 		BuildResourceTransitions();
 		m_IsCompiled = true;
@@ -204,7 +214,7 @@ namespace GEngine
 			for (const auto& access : m_Passes[previous].ResourceAccesses)
 			{
 				if (access.Resource == resource && (isWrite || access.IsWrite))
-					AddDependency(pass, previous);
+					m_Passes[pass].InferredDependencies.push_back(previous);
 			}
 		}
 	}
@@ -215,7 +225,8 @@ namespace GEngine
 		GE_CORE_ASSERT(resource < m_Resources.size(), "Render-graph resource is invalid.");
 		GE_CORE_ASSERT(state != ResourceState::Undefined, "Render-graph accesses require a concrete resource state.");
 
-		AddResourceDependency(pass, resource, isWrite);
+		if (pass >= m_Passes.size() || resource >= m_Resources.size() || state == ResourceState::Undefined)
+			throw std::invalid_argument("Invalid render-graph resource access.");
 		m_IsCompiled = false;
 		m_Passes[pass].ResourceAccesses.push_back({ resource, state, isWrite });
 	}
@@ -230,6 +241,35 @@ namespace GEngine
 			GE_CORE_ASSERT(resource.Create, "Transient render-graph resource is missing a creation callback.");
 			resource.Object = resource.Create();
 			GE_CORE_ASSERT(resource.Object, "Transient render-graph resource creation failed.");
+		}
+	}
+
+	void RenderGraph::ValidateResourceAccesses() const
+	{
+		std::vector<bool> initialized(m_Resources.size(), false);
+		for (ResourceHandle i = 0; i < m_Resources.size(); ++i)
+		{
+			const auto& resource = m_Resources[i];
+			if (resource.IsTransient && resource.InitialState != ResourceState::Undefined)
+				throw std::invalid_argument("Transient resource must start Undefined: " + resource.Name);
+			initialized[i] = !resource.IsTransient;
+		}
+		for (const auto pass : m_ExecutionOrder)
+		{
+			for (const auto& access : m_Passes[pass].ResourceAccesses)
+			{
+				const auto& resource = m_Resources[access.Resource];
+				if (!resource.IsTransient) continue;
+				if (std::find(resource.AllowedStates.begin(), resource.AllowedStates.end(), access.State) == resource.AllowedStates.end())
+					throw std::invalid_argument("Unsupported transient resource state: " + resource.Name);
+				if (access.IsWrite && (access.State == ResourceState::ShaderRead || access.State == ResourceState::CopySource))
+					throw std::invalid_argument("Write declared with a read-only state: " + resource.Name);
+				if (!access.IsWrite && (access.State == ResourceState::ShaderWrite || access.State == ResourceState::CopyDestination))
+					throw std::invalid_argument("Read declared with a write-only state: " + resource.Name);
+				if (!access.IsWrite && !initialized[access.Resource])
+					throw std::invalid_argument("Transient resource read before first write: " + resource.Name);
+				if (access.IsWrite) initialized[access.Resource] = true;
+			}
 		}
 	}
 
@@ -279,6 +319,11 @@ namespace GEngine
 		{
 			if (!Visit(dependency, states))
 				return false;
+		}
+
+		for (const PassHandle dependency : m_Passes[pass].InferredDependencies)
+		{
+			if (!Visit(dependency, states)) return false;
 		}
 
 		states[pass] = 2;

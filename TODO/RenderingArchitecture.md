@@ -91,6 +91,17 @@ submission and deterministic renderer shutdown.
 
 ## Phase 3 — real frame graph
 
+- [ ] Make graph validation deterministic before GPU allocation: rebuild inferred
+      dependencies at compile time independently of access declaration order,
+      reject incompatible transient resource states and read-before-write, and
+      exercise these rules in FrameGraphTriangle startup checks. Pass creation
+      order defines unversioned resource order. Full usage-aware attachment
+      creation and backend memory-barrier compilation remain separate work.
+      Implementation and startup regression scenarios are present; execution
+      of the scenarios and backend runtime verification remain pending.
+      Debug engine and FrameGraphTriangle build passed with zero errors on
+      2026-09-10. This does not count as executing the regression scenarios.
+
 - [~] Add typed image/buffer descriptors and transient resource creation.
       `RenderGraph` can now create transient 2D textures, storage buffers, and
       storage images from portable descriptors. Pooling and aliasing remain

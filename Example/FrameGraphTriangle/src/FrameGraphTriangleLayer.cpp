@@ -18,6 +18,33 @@ namespace GEngine
 		graph.Execute();
 		if (executions != 1)
 			throw std::runtime_error("RenderGraph implicit compilation failed.");
+
+		// Declare accesses backwards: inferred ordering must still find the cycle.
+		RenderGraph dependencyGraph;
+		const auto producer = dependencyGraph.AddPass("Producer", []() {});
+		const auto consumer = dependencyGraph.AddPass("Consumer", []() {});
+		const auto logical = dependencyGraph.ImportResource("Ordering");
+		dependencyGraph.Read(consumer, logical);
+		dependencyGraph.Write(producer, logical, RenderGraph::ResourceState::ShaderWrite);
+		if (!dependencyGraph.Compile() || !dependencyGraph.Compile())
+			throw std::runtime_error("RenderGraph dependency compilation failed.");
+		dependencyGraph.AddDependency(producer, consumer);
+		if (dependencyGraph.Compile())
+			throw std::runtime_error("RenderGraph missed an inferred dependency cycle.");
+
+		// Invalid transient graphs must fail before allocating GPU resources.
+		for (int scenario = 0; scenario < 2; ++scenario)
+		{
+			RenderGraph invalid;
+			const auto texture = invalid.CreateTransientTexture2D("InvalidTexture", { 16, 16 });
+			const auto pass = invalid.AddPass("InvalidAccess", []() {});
+			if (scenario == 0) invalid.Read(pass, texture);
+			else invalid.Write(pass, texture, RenderGraph::ResourceState::RenderTarget);
+			bool rejected = false;
+			try { invalid.Compile(); }
+			catch (const std::invalid_argument&) { rejected = true; }
+			if (!rejected) throw std::runtime_error("RenderGraph accepted an invalid transient access.");
+		}
 		const float vertices[] =
 		{
 			 0.0f,  0.65f, 0.0f,
