@@ -38,6 +38,70 @@ all three APIs.
 
 ## Phase 2 — explicit frame ownership
 
+- [~] Fix OpenGL state initialization before a current context/GLAD loader.
+      GraphicsRuntime constructs the backend during Configure, before window
+      creation. Move GL state setup from its constructor to the context init path
+      after successful loader initialization. Reject loader failure outside
+      assertions. Acceptance: OpenGL FrameGraphTriangle starts past glEnable and
+      exercises replacement without GL errors. Other failures stay separately tracked.
+      Follow-up found during verification: compiler emits Vulkan 1.3 SPIR-V,
+      but OpenGL passes it directly to glShaderBinary, which rejects it. Convert
+      that intermediate to desktop GLSL with existing SPIRV-Cross dependency,
+      compile per stage with useful errors, and clean up partial programs on
+      failure. Verify FrameGraphTriangle; complex resource bindings remain separate.
+      Next exposed path: data-backed OpenGL vertex buffers never create a VAO,
+      Bind dereferences a missing index buffer for non-indexed draws, attribute
+      size uses bytes instead of component count, and destruction leaks the VAO.
+      Fix these together; acceptance: float3 non-indexed replacement renders
+      without GL errors or access violations and VAOs are reclaimed.
+      Implemented 2026-09-12. Debug build passed. Final OpenGL 4.6 / NVIDIA
+      RTX 3060 Laptop GPU run lasted 30 seconds without GL_INVALID errors,
+      assertions or access violations; private bytes: 169664512 / 169664512 /
+      169684992. Driver emitted shader-recompilation performance warnings.
+      Earlier runs exposed and reproduced the SPIR-V and VAO failures above.
+      Process stopped at test limit: visible output, resize, normal shutdown,
+      long-duration memory and complex resource-binding cases remain unverified.
+      Release not rebuilt because the tracked PhysX configuration blocker remains.
+      User confirmed OpenGL runs without the reported problem on 2026-09-12.
+      The driver shader-recompilation performance warning was not a render failure;
+      this confirmation does not close the remaining stress/Release checks.
+
+- [~] Fix D3D12 in-flight pipeline release during FrameGraphTriangle replacement.
+      Reproduced with debug layer: final-release of ID3D12PipelineState while
+      referenced by GPU work; Present subsequently fails. Retain draw/dispatch
+      owners in command buffers, track completion using a per-buffer monotonic
+      fence, and wait only before allocator reuse/destruction. Cover offscreen
+      and presentation recording; retain transitioned resources as well.
+      Acceptance: Debug build and D3D12 debug-layer replacement run without
+      in-flight release diagnostics, bounded memory. In-place resource mutation
+      and multi-queue stress need separate coverage. Label expected cycle test.
+      Implemented 2026-09-12. Debug engine/example build passed (1586 warnings,
+      zero errors). D3D12 debug-layer 30-second run no longer reported the
+      previously reproduced PSO final-release corruption; no D3D12 warnings or
+      errors captured. Private bytes at 10/20/30 s: 184463360 / 185028608 /
+      185348096. This small increase is not proof of long-term bounded memory.
+      Agent-owned test stopped at its time limit; normal shutdown, resize,
+      prolonged runs, compute/transfer stress and Release remain unverified.
+      User confirmed D3D12 runs without the reported error on 2026-09-12;
+      this does not establish coverage of every pending scenario.
+
+- [~] Avoid backend shader construction on repeated factory cache hits.
+      Scope: pre-construction cache keyed by active API and normalized absolute
+      source path, shared by all three backends; clear it at runtime shutdown.
+      Preserve existing first-loaded shader-name lookup behavior. This is not
+      hot reload or concurrent loading. Acceptance: repeated and dot-segment
+      path calls reuse the shader without repeated load logs; Debug build and
+      bounded Vulkan run with memory samples. Other backend runtime checks remain
+      independent. Add the regression to FrameGraphTriangle and document semantics.
+      Implemented 2026-09-12. Debug engine/example build: zero errors. Vulkan
+      30-second run: exactly one initial shader-load log despite 64 startup
+      requests and periodic material replacement. Private bytes at 10/20/30 s:
+      401768448 / 401768448 / 401772544. No validation errors in captured output;
+      expected graph-cycle negative test logged. Agent-owned process stopped at
+      the time limit; shutdown, resize, long-run memory, cache-clear/reload and
+      OpenGL/D3D12 runtime checks remain pending. Release was not rebuilt; its
+      tracked PhysX configuration blocker is outside this change.
+
 - [x] Replace `GraphicsPresent::s_CommandBuffers` with per-presenter members.
 - [x] Release presenter-owned fences/events and static render-resource caches
       before their window-owned graphics context is destroyed.
@@ -58,13 +122,34 @@ all three APIs.
       submission layer instead of storing synchronization lists in command
       buffers.
 - [ ] Complete Vulkan deferred deletion for all replaceable GPU resources.
+        Current milestone: retire material descriptor sets and shader-owned
+        layouts/modules through submission completion; make shared-pool release
+        null-safe and keep it after the shutdown idle/retirement flush. Extend
+        FrameGraphTriangle to replace materials as well as pipelines/buffers.
+        Acceptance: Debug build, repeated replacement/resize/shutdown without
+        descriptor lifetime errors or unbounded growth. Runtime checks pending.
+        Inspection found Shader::Create constructs a backend shader before its
+        cache lookup. Use GetShader in the replacement example to isolate material
+        retirement; follow-up: avoid eager construction on cache hits and verify
+        repeated factory calls do not cause memory growth. The initial Vulkan
+        smoke run showed rising private bytes; the cause is not yet established.
+        Verification 2026-09-12: Debug engine/example build passed (zero errors).
+        Final Vulkan example ran for 30 seconds on RTX 3060 Laptop GPU; private
+        bytes at 10/20/30 seconds: 404291584 / 404422656 / 404422656. No validation
+        errors found in captured output; expected graph-cycle negative test logged.
+        Agent-owned process was stopped after the bounded run. An earlier normal
+        close request timed out, so shutdown and resize are NOT verified. Visible
+        output, long-duration memory, OpenGL/D3D12, and Release remain unverified;
+          the existing Release/PhysX configuration blocker remains open.
       Submission-serial retirement is implemented and graphics/compute pipeline
       replacements, core buffer/image/sampler objects, and framebuffers use
-      it. Descriptor pools, descriptor-set layouts, and less common resource
-      types still need to be migrated to the same lifetime path.
+        it. Material descriptor sets and shader layouts/modules now use it too.
+        The shared descriptor pool remains context-owned and is destroyed after
+        the shutdown flush; release now resets its initialized null handle.
+        Less common resource types and shader-replacement stress still need review.
       Queue submissions use dedicated completion fences and a contiguous
       watermark. Resource owners must survive recording until submission.
-      FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
+        FrameGraphTriangle now exercises repeated buffer/pipeline/material replacement;
       runtime validation on all three APIs remains pending.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend

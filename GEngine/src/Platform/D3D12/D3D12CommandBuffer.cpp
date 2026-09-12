@@ -140,13 +140,44 @@ namespace GEngine
 		// CreateCommandList returns an open list. Close it so the first frame can
 		// legally reset and record the list with its frame-specific allocator.
 		D3D12_THROW_IF_FAILED(m_CommandList->Close());
+        D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateFence(
+            0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_CompletionFence)));
+        m_CompletionEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        if (!m_CompletionEvent)
+            D3D12_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
     D3D12CommandBuffer::~D3D12CommandBuffer()
     {
+        WaitForCompletion();
+        if (m_CompletionEvent) CloseHandle(m_CompletionEvent);
+    }
+    void D3D12CommandBuffer::WaitForCompletion()
+    {
+        if (m_CompletionFence->GetCompletedValue() < m_SubmissionValue)
+        {
+            D3D12_THROW_IF_FAILED(m_CompletionFence->SetEventOnCompletion(m_SubmissionValue, m_CompletionEvent));
+            if (WaitForSingleObject(m_CompletionEvent, INFINITE) != WAIT_OBJECT_0)
+                D3D12_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+    }
+    void D3D12CommandBuffer::MarkSubmitted(ID3D12CommandQueue* queue)
+    {
+        const auto value = m_SubmissionValue + 1;
+        D3D12_THROW_IF_FAILED(queue->Signal(m_CompletionFence.Get(), value));
+        m_SubmissionValue = value;
+    }
+    void D3D12CommandBuffer::ResetRecording()
+    {
+        // Reuse only this allocator's completed submission, not the whole device.
+        WaitForCompletion();
+        D3D12_THROW_IF_FAILED(m_Allocator->Reset());
+        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+        m_RetainedOwners.clear();
+        m_FrameBuffer.reset();
     }
     void D3D12CommandBuffer::Begin(Ref<FrameBuffer>& buffer)
     {
-        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+        ResetRecording();
 
 
 		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
@@ -158,7 +189,7 @@ namespace GEngine
     }
     void D3D12CommandBuffer::Begin()
     {
-        D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
+        ResetRecording();
 
 		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
 
@@ -175,11 +206,13 @@ namespace GEngine
     }
     void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
     {
+		Retain(pipeline);
 		auto d3dPipeline = std::static_pointer_cast<D3D12GraphicsPipeline>(pipeline);
 		d3dPipeline->Render(this, m_FrameBuffer, pass, instanceCount, indexCount);
     }
     void D3D12CommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
     {
+		Retain(pipeline);
 		auto d3dPipeline = std::dynamic_pointer_cast<D3D12ComputePipeline>(pipeline);
 		GE_CORE_ASSERT(d3dPipeline, "D3D12 command buffers require D3D12 compute pipelines.");
 		d3dPipeline->Compute(this, pass, x, y, z);

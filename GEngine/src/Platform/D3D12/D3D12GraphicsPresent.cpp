@@ -96,8 +96,7 @@ namespace GEngine
 		// AcquireFrame waited for this back-buffer slot's fence.  Resetting the
 		// allocator here releases command memory accumulated by its previous use
 		// before the list records another frame.
-		D3D12_THROW_IF_FAILED(commandBuffer->GetCommandAllocator()->Reset());
-		D3D12_THROW_IF_FAILED(commandBuffer->GetCommandList()->Reset(commandBuffer->GetCommandAllocator().Get(), nullptr));
+		commandBuffer->ResetRecording();
 	}
 
 	void D3D12GraphicsPresent::End()

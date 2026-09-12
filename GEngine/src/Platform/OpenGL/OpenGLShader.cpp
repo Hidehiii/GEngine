@@ -2,6 +2,8 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "GEngine/Graphics/Material.h"
 #include <glad/glad.h>
+#include <SPIRVCross/spirv_glsl.hpp>
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -105,12 +107,36 @@ namespace GEngine
 		{
 			GLuint program = glCreateProgram();
 			std::vector<GLuint> shaderIDs;
-
+			try
+			{
 			for (auto&& [stage, byte] : shaders[i])
 			{
+				if (byte.empty() || byte.size() % sizeof(uint32_t) != 0)
+					throw std::runtime_error("Invalid SPIR-V intermediate: " + m_FilePath);
+				std::vector<uint32_t> words(byte.size() / sizeof(uint32_t));
+				memcpy(words.data(), byte.data(), byte.size());
+				spirv_cross::CompilerGLSL compiler(std::move(words));
+				auto options = compiler.get_common_options();
+				options.version = 450;
+				options.es = false;
+				options.vulkan_semantics = false;
+				compiler.set_common_options(options);
+				// DXC emits Vulkan SPIR-V, not an OpenGL-specializable binary.
+				const auto source = compiler.compile();
+				const auto* sourceText = source.c_str();
 				GLuint shaderID = shaderIDs.emplace_back(glCreateShader(Utils::ShaderStageToGL(stage)));
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, byte.data(), byte.size());
-				glSpecializeShader(shaderID, m_StageEntryPoints[i][stage].c_str(), 0, nullptr, nullptr);
+				glShaderSource(shaderID, 1, &sourceText, nullptr);
+				glCompileShader(shaderID);
+				GLint compiled = GL_FALSE;
+				glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compiled);
+				if (compiled != GL_TRUE)
+				{
+					GLint length = 0;
+					glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
+					std::vector<GLchar> log(std::max(length, 1), '\0');
+					glGetShaderInfoLog(shaderID, static_cast<GLsizei>(log.size()), nullptr, log.data());
+					throw std::runtime_error("OpenGL shader compile failed: " + m_FilePath + " / " + stage + ": " + log.data());
+				}
 				glAttachShader(program, shaderID);
 			}
 			glLinkProgram(program);
@@ -121,12 +147,18 @@ namespace GEngine
 			{
 				GLint maxLength;
 				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-				std::vector<GLchar> infoLog(maxLength);
-				glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-				GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
+				std::vector<GLchar> infoLog(std::max(maxLength, 1), '\0');
+				glGetProgramInfoLog(program, static_cast<GLsizei>(infoLog.size()), nullptr, infoLog.data());
+				throw std::runtime_error("OpenGL shader link failed: " + m_FilePath + ": " + infoLog.data());
+			}
+			}
+			catch (...)
+			{
+				for (auto id : shaderIDs) glDeleteShader(id);
 				glDeleteProgram(program);
-				for (auto id : shaderIDs)
-					glDeleteShader(id);
+				for (auto completed : m_Programs) if (completed) glDeleteProgram(completed);
+				m_Programs.clear();
+				throw;
 			}
 			for (auto id : shaderIDs)
 			{

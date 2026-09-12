@@ -1,6 +1,8 @@
 #include "GEpch.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/OpenGL/OpenGLCommandBuffer.h"
+#include "Platform/OpenGL/OpenGLGraphicsAPI.h"
+#include <stdexcept>
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Core/Config.h"
 #include <glad/glad.h>
@@ -35,7 +37,9 @@ namespace GEngine
 		}
 		
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		GE_CORE_ASSERT(status, "Failed to initialize Glad!");
+		if (!status)
+			throw std::runtime_error("Failed to initialize GLAD for the current OpenGL context.");
+		OpenGLGraphicsAPI::InitializeContextState();
 
 		GE_CORE_INFO("OpenGL Info:");
 		GE_CORE_INFO("    OpenGL Vender {0}:", (char*)glGetString(GL_VENDOR));

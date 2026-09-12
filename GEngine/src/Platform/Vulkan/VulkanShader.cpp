@@ -19,21 +19,19 @@ namespace GEngine
 	{
 		if(VulkanContext::Get()->GetDevice())
 		{
-			for (auto&& passModules : m_ShaderModules)
-			{
-				for (auto&& [stage, module] : passModules)
+			VulkanContext::Get()->RetireResource(
+				[modules = std::move(m_ShaderModules),
+				 pipelineLayouts = std::move(m_PipelineLayouts),
+				 setLayouts = std::move(m_DescriptorSetLayouts)](VkDevice device)
 				{
-					vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), module, nullptr);
-				}
-			}
-			for (auto& layout : m_PipelineLayouts)
-			{
-				vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), layout, nullptr);
-			}
-			for(auto& layout : m_DescriptorSetLayouts)
-			{
-				vkDestroyDescriptorSetLayout(VulkanContext::Get()->GetDevice(), layout, nullptr);
-			}
+					for (const auto& passModules : modules)
+						for (const auto& [stage, module] : passModules)
+							vkDestroyShaderModule(device, module, nullptr);
+					for (auto layout : pipelineLayouts)
+						vkDestroyPipelineLayout(device, layout, nullptr);
+					for (auto layout : setLayouts)
+						vkDestroyDescriptorSetLayout(device, layout, nullptr);
+				});
 		}
 	}
 

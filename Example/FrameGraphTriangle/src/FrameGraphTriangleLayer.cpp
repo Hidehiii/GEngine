@@ -29,6 +29,7 @@ namespace GEngine
 		if (!dependencyGraph.Compile() || !dependencyGraph.Compile())
 			throw std::runtime_error("RenderGraph dependency compilation failed.");
 		dependencyGraph.AddDependency(producer, consumer);
+		GE_INFO("Expected negative test: the next Producer cycle diagnostic is intentional.");
 		if (dependencyGraph.Compile())
 			throw std::runtime_error("RenderGraph missed an inferred dependency cycle.");
 
@@ -53,6 +54,14 @@ namespace GEngine
 		};
 
 		auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+		for (int request = 0; request < 64; ++request)
+		{
+			const auto cached = Shader::Create(request % 2
+				? "Assets/Shaders/./FrameGraphTriangle.shader"
+				: "Assets/Shaders/FrameGraphTriangle.shader");
+			if (cached != shader)
+				throw std::runtime_error("Shader factory cache identity check failed.");
+		}
 		auto material = Material::Create(shader, "FrameGraphTriangleMaterial");
 		auto vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 		m_Pipeline = GraphicsPipeline::Create(material, vertexBuffer);
@@ -75,7 +84,9 @@ namespace GEngine
 				-0.65f + offset, -0.55f, 0.0f
 			};
 			auto buffer = VertexBuffer::Create(vertices, sizeof(vertices));
-			m_Pipeline = GraphicsPipeline::Create(m_Pipeline->GetMaterial(), buffer);
+			auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+			auto material = Material::Create(shader, "ReplacementMaterial");
+			m_Pipeline = GraphicsPipeline::Create(material, buffer);
 		}
 		auto commandBuffer = Graphics::GetGraphicsCommandBuffer();
 		auto& graphicsQueue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);

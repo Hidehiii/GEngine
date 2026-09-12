@@ -23,6 +23,9 @@ namespace GEngine
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>	GetCommandList() { return m_CommandList; }
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>		GetCommandAllocator() { return m_Allocator; }
+		void ResetRecording();
+		void MarkSubmitted(ID3D12CommandQueue* queue);
+		void Retain(const Ref<void>& owner) { m_RetainedOwners.push_back(owner); }
 
 		void AddSignalFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_SignalFences.push_back(f); }
 		void AddWaitFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_WaitFences.push_back(f); }
@@ -41,6 +44,11 @@ namespace GEngine
 		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) override;
 		virtual void EndPresentRender() override;
 	private:
+		void WaitForCompletion();
+		Microsoft::WRL::ComPtr<ID3D12Fence> m_CompletionFence;
+		uint64_t m_SubmissionValue = 0;
+		HANDLE m_CompletionEvent = nullptr;
+		std::vector<Ref<void>> m_RetainedOwners;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;
 		Ref<D3D12FrameBuffer>													m_FrameBuffer;

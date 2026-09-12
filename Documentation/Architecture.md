@@ -101,6 +101,25 @@ buffers, sampled/storage images, samplers, and framebuffers. Short-lived upload
 commands remain synchronous by design; frame-recorded resources do not stall
 the whole device when their C++ owner is released.
 
+Material descriptor sets and shader-owned modules, pipeline layouts, and
+descriptor-set layouts use the same submission watermark. Retirement callbacks
+capture native handles by value, not the destroyed C++ owner. The shared
+descriptor pool is context-owned and is destroyed only after shutdown waits for
+the device and flushes retired sets. It is not a replaceable per-material pool.
+Shader cache ownership still controls when shader destruction begins.
+
+### Shader factory caching
+
+`Shader::Create(path)` first checks an in-memory cache keyed by the active API
+and lexically normalized absolute path, before constructing any backend shader.
+Relative paths are resolved against the current working directory; `.` and `..`
+segments are normalized. Symlink aliases and case variations are not canonicalized.
+`GetShader(name)` remains the compatibility lookup: distinct source files with
+the same declared name still resolve to the first loaded shader. Both caches are
+cleared by `ShutdownCache` while the graphics context is alive. Cache operations
+are render-thread-only and scoped to one active runtime, not a multi-device cache.
+Repeated creation is not hot reload; edits do not invalidate the cached object.
+
 ## Frame-graph transient resources
 
 `RenderGraph` supports portable descriptions for transient `Texture2D`, storage
@@ -117,6 +136,20 @@ the whole device when their C++ owner is released.
 
 ## Renderer layering
 
+OpenGL backend construction only selects the API; it must not issue GL calls.
+Window creation makes the context current, loads GLAD, then initializes debug
+output and default GL state through `OpenGLGraphicsAPI::InitializeContextState`.
+Loader failure throws before any GL state call, including in Release builds.
+
+OpenGL translates the compiler's Vulkan SPIR-V intermediate to desktop GLSL 450
+using SPIRV-Cross before driver compilation. It does not submit Vulkan binaries
+to `glShaderBinary`. Stage compilation and linking failures throw with a log and
+release partially created programs. Complex texture/sampler binding combinations
+still require dedicated regression coverage; the current test is non-textured.
+Both vertex-buffer constructors create a VAO and destruction deletes it.
+Attribute component counts are distinct from byte strides, and non-indexed
+draws do not require an index-buffer object.
+
 The renderer separates portable intent from backend implementation:
 
 | Portable API | D3D12 implementation example | Purpose |
@@ -130,6 +163,17 @@ The renderer separates portable intent from backend implementation:
 `Shader` owns reflection data. The reflected vertex inputs determine vertex-buffer format, offset and stride. D3D12 uses DXIL reflection; Vulkan uses SPIR-V reflection. A shader's compiled bytes are owned by the shader object, so D3D12 pipeline bytecode pointers remain valid for the pipeline lifetime.
 
 ## D3D12 frame lifetime
+
+D3D12 command buffers retain draw/dispatch pipeline owners and explicitly
+transitioned resources until their recording is reset after GPU completion.
+Each command buffer owns a fence/event with a monotonic submission value,
+signaled by the submitting queue. Allocator reuse waits for that value and then
+releases retained owners; destruction also waits. Presentation uses the same
+reset path as offscreen commands. This protects whole-object pipeline/material/
+buffer replacement without a device-wide per-frame wait. It does not make
+in-place mutation of a retained pipeline or material safe while in flight.
+Native command-list access still requires the caller to retain referenced
+resources; the synchronous single-time helpers keep their existing wait path.
 
 There is one presentation command buffer and fence value per swap-chain frame slot. Before reusing a slot, `D3D12GraphicsPresent` waits for that slot's fence and resets both its command allocator and command list. This is required: resetting only the list makes allocator memory grow for every submitted frame.
 

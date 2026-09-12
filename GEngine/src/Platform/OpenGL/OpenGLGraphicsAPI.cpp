@@ -16,6 +16,10 @@ namespace GEngine
 	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
 		s_API = GRAPHICS_API_OPENGL;
+	}
+
+	void OpenGLGraphicsAPI::InitializeContextState()
+	{
 
 #ifdef GE_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);

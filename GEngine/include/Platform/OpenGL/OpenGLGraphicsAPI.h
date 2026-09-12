@@ -11,6 +11,8 @@ namespace GEngine
 	public:
 		OpenGLGraphicsAPI();
 		virtual ~OpenGLGraphicsAPI();
+		// Called only after the window context is current and GLAD is loaded.
+		static void InitializeContextState();
 
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() override;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;

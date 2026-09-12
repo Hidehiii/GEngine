@@ -10,13 +10,21 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/D3D12/D3D12Shader.h"
+#include <filesystem>
 
 namespace GEngine
 {
+	namespace
+	{
+		// Runtime-scoped, render-thread-only cache. Names remain compatibility aliases.
+		std::unordered_map<std::string, Ref<Shader>> s_ShaderPaths;
+	}
+
 	std::unordered_map<std::string, Ref<Shader>> Shader::s_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
 	void Shader::ShutdownCache()
 	{
+		s_ShaderPaths.clear();
 		s_Shaders.clear();
 	}
 
@@ -672,43 +680,45 @@ namespace GEngine
 
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
-		switch (Graphics::GetGraphicsAPI())
+		const auto api = Graphics::GetGraphicsAPI();
+		const auto key = std::to_string(static_cast<int>(api)) + ":" +
+			std::filesystem::absolute(path).lexically_normal().generic_string();
+		const auto cached = s_ShaderPaths.find(key);
+		if (cached != s_ShaderPaths.end())
+			return cached->second;
+
+		Ref<Shader> shader;
+		switch (api)
 		{
 		case GRAPHICS_API_NONE: {
 			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
 			return nullptr;
 		}
 		case GRAPHICS_API_OPENGL: {
-			Ref<Shader> shader = CreateRef<OpenGLShader>(path);
-			if (GetShader(shader->GetShaderName()) != nullptr)
-			{
-				return GetShader(shader->GetShaderName());
-			}
-			s_Shaders[shader->GetShaderName()] = shader;
-			return shader;
+			shader = CreateRef<OpenGLShader>(path);
+			break;
 		}
 		case GRAPHICS_API_VULKAN: {
-			Ref<Shader> shader = CreateRef<VulkanShader>(path);
-			if (GetShader(shader->GetShaderName()) != nullptr)
-			{
-				return GetShader(shader->GetShaderName());
-			}
-			s_Shaders[shader->GetShaderName()] = shader;
-			return shader;
+			shader = CreateRef<VulkanShader>(path);
+			break;
 		}
 		case GRAPHICS_API_DIRECT3DX12: {
-			Ref<Shader> shader = CreateRef<D3D12Shader>(path);
-			if (GetShader(shader->GetShaderName()) != nullptr)
-			{
-				return GetShader(shader->GetShaderName());
-			}
-			s_Shaders[shader->GetShaderName()] = shader;
-			return shader;
+			shader = CreateRef<D3D12Shader>(path);
+			break;
 		}
 		}
 
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		if (!shader)
+		{
+			GE_CORE_ERROR("Cannot create shader: unsupported graphics API {}", static_cast<int>(api));
+			return nullptr;
+		}
+		// Preserve the existing first-loaded-name behavior for distinct source files.
+		auto named = GetShader(shader->GetShaderName());
+		if (named) shader = named;
+		else s_Shaders.emplace(shader->GetShaderName(), shader);
+		s_ShaderPaths.emplace(key, shader);
+		return shader;
 	}
 	Ref<Shader> Shader::GetShader(const std::string& name)
 	{

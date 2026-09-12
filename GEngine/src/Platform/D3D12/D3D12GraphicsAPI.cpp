@@ -225,6 +225,7 @@ namespace GEngine
 			D3D12_THROW_IF_FAILED(queue->Wait(wait.first.Get(), wait.second));
 		auto commandList = d3dCommandBuffer->GetCommandList();
 		queue->ExecuteCommandLists(1, CommandListCast(commandList.GetAddressOf()));
+		d3dCommandBuffer->MarkSubmitted(queue.Get());
 		for (const auto& signal : d3dCommandBuffer->GetSignalFences())
 			D3D12_THROW_IF_FAILED(queue->Signal(signal.first.Get(), signal.second));
 		d3dCommandBuffer->ClearWaitFences();
@@ -247,6 +248,7 @@ namespace GEngine
 
 		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
+		d3dCommandBuffer->Retain(resource);
 		if (auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(resource))
 		{
 			texture->TransitionResourceState(d3dCommandBuffer->GetCommandList(), ToD3D12ResourceState(after));
