@@ -4,7 +4,9 @@
 
 Development is currently Windows-first. Install the following before generating the solution:
 
-- Visual Studio 2022 with Desktop development with C++ and the Windows SDK.
+- Visual Studio 2026, 2022 or 2019 with Desktop development with C++ and the Windows SDK.
+- Premake 5.0.0-beta8 is bundled under `vender/bin/premake` and supports
+  VS2026, VS2022 and VS2019 project generation.
 - Vulkan SDK, including the headers, loader library and shader tools used by the project.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
@@ -15,8 +17,32 @@ The repository vendors most runtime libraries under `GEngine/vendor`; do not rep
 From the repository root, run:
 
 ```bat
-Scripts\GenerateProject.bat
+Scripts\GenerateProjects.bat
 ```
+
+Choose `1` for VS2022, `2` for VS2019, or `3` for VS2026. The script also
+accepts `vs2022`, `vs2019`, or `vs2026` as an argument for noninteractive use,
+and can be launched from any working directory.
+
+To generate for VS2026 using the bundled executable:
+
+```bat
+Scripts\GenerateProjects.bat vs2026
+```
+
+Optionally, set `PREMAKE_EXE` to the full path of another compatible executable.
+If an older override is already set, clear it with `set "PREMAKE_EXE="` in
+Command Prompt, or `Remove-Item Env:PREMAKE_EXE -ErrorAction SilentlyContinue`
+in PowerShell, to use the bundled version.
+
+Without `PREMAKE_EXE`, the script uses the bundled executable. Selecting VS2026
+with an unsupported executable fails explicitly; it does not fall back to
+VS2022. Missing executables and generation failures return a nonzero exit code.
+The menu pauses before returning; command-line invocation does not pause.
+
+Premake beta8 reports deprecation warnings for existing `flags` settings
+(`NoRuntimeChecks`, `NoIncrementalLink`, and `NoPCH`). These warnings are not
+generation failures; migrating those settings is outside this binary upgrade.
 
 This regenerates `GEngine.sln` and Visual Studio project files from the Premake scripts. Changes intended to survive regeneration belong in `premake5.lua` files, not only in `.vcxproj` files.
 
