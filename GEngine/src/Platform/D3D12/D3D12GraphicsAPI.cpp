@@ -221,12 +221,14 @@ namespace GEngine
 		default: GE_CORE_ASSERT(false, "D3D12 command buffer type is invalid."); return;
 		}
 
+		const uint64_t submission = D3D12Context::Get()->BeginTrackedSubmission(d3dCommandBuffer->GetType());
 		for (const auto& wait : d3dCommandBuffer->GetWaitFences())
 			D3D12_THROW_IF_FAILED(queue->Wait(wait.first.Get(), wait.second));
 		auto commandList = d3dCommandBuffer->GetCommandList();
 		queue->ExecuteCommandLists(1, CommandListCast(commandList.GetAddressOf()));
 		for (const auto& signal : d3dCommandBuffer->GetSignalFences())
 			D3D12_THROW_IF_FAILED(queue->Signal(signal.first.Get(), signal.second));
+		D3D12Context::Get()->EndTrackedSubmission(d3dCommandBuffer->GetType(), submission);
 		d3dCommandBuffer->ClearWaitFences();
 		d3dCommandBuffer->ClearSignalFences();
 	}
@@ -236,6 +238,7 @@ namespace GEngine
 		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
 		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
 		D3D12Context::Get()->WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
+		D3D12Context::Get()->WaitForTrackedSubmissions();
 	}
 
 	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,

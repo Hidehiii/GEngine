@@ -17,10 +17,18 @@ namespace GEngine
 
 	D3D12GraphicsPipeline::~D3D12GraphicsPipeline()
 	{
+		std::vector<Microsoft::WRL::ComPtr<ID3D12PipelineState>> pipelineStates;
+		pipelineStates.reserve(m_PipelineStates.size());
 		for (auto& info : m_PipelineStates)
+			pipelineStates.push_back(info.PipelineState);
+		if (D3D12Context::Get())
 		{
-			if (info.PipelineState)
-				info.PipelineState.Reset();
+			D3D12Context::Get()->RetireResource(
+				[pipelineStates = std::move(pipelineStates)]() mutable
+				{
+					for (auto& pipelineState : pipelineStates)
+						pipelineState.Reset();
+				});
 		}
 	}
 
@@ -56,11 +64,16 @@ namespace GEngine
 		// recreate flag: clear all cached pipelines, then lazy-create through GetPipelineState
 		if (m_RecreatePipelineState)
 		{
+			std::vector<Microsoft::WRL::ComPtr<ID3D12PipelineState>> pipelineStates;
+			pipelineStates.reserve(m_PipelineStates.size());
 			for (auto& info : m_PipelineStates)
-			{
-				if (info.PipelineState)
-					info.PipelineState.Reset();
-			}
+				pipelineStates.push_back(info.PipelineState);
+			D3D12Context::Get()->RetireResource(
+				[pipelineStates = std::move(pipelineStates)]() mutable
+				{
+					for (auto& pipelineState : pipelineStates)
+						pipelineState.Reset();
+				});
 			m_PipelineStates.clear();
 			m_RecreatePipelineState = false;
 		}

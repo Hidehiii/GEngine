@@ -72,6 +72,15 @@ all three APIs.
       the process then exited with `0xC0000409` during the 90th frame, after the
       third 30-frame buffer/pipeline replacement. This is a concrete repeated
       replacement lifetime failure, not a successful backend validation.
+      Follow-up D3D12 fix: submission-tracked deferred release now covers
+      vertex/index buffers and graphics pipeline states, including replacement
+      paths that clear cached pipeline states. Each tracked submission signals
+      a per-queue fence; completed resources are retired by a contiguous
+      submission watermark and flushed after all queues become idle.
+      Verified: FrameGraphTriangle Release/D3D12 ran well beyond frame 90,
+      accepted `WM_CLOSE` on its visible render window, exited without
+      forced termination or `0xC0000409`, and a `cmd /c start /wait` wrapper
+      reported exit code 0. OpenGL and Vulkan runtime checks remain pending.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
@@ -140,7 +149,7 @@ it does not require editing every common resource factory.
 
 ## Verification matrix
 
-- [ ] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
+- [x] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
       and `_DEBUG`; the current Release configuration fails with C1189.
       Scope: make every non-Debug C++ project configuration define `NDEBUG` in
       the Premake source, then generate and build the Release engine and
@@ -156,10 +165,10 @@ it does not require editing every common resource factory.
       FrameGraphTriangle Release/Dist; isolated Release builds of GEngine,
       its dependencies, and FrameGraphTriangle succeed and no longer hit
       PhysX C1189.
-      Runtime limitation: an instrumented assertion-disabled D3D12 startup run
-      reached frame 90 and then failed with `0xC0000409` during repeated buffer/
-      pipeline replacement, so this item remains open until that regression is
-      fixed and the startup check exits cleanly.
+      Runtime follow-up: after D3D12 submission-tracked retirement was added for
+      repeated buffer/pipeline replacement, the assertion-disabled
+      FrameGraphTriangle Release run survived beyond frame 90 and exited
+      normally with exit code 0.
       Remaining runtime/backend verification is tracked by the matrix below.
 
 For every phase, run the Triangle example on all available APIs and verify:
