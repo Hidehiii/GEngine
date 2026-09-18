@@ -41,9 +41,18 @@ namespace GEngine
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		auto descriptorSets = std::move(m_DescriptorSets);
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkFreeDescriptorSets(VulkanContext::Get()->GetDevice(), VulkanContext::Get()->GetDescriptorPool(), m_DescriptorSets.size(), m_DescriptorSets.data());
+			const VkDescriptorPool descriptorPool = context->GetDescriptorPool();
+			context->RetireResource([descriptorSets = std::move(descriptorSets), descriptorPool](VkDevice device) mutable
+				{
+					if (descriptorSets.empty())
+						return;
+					vkFreeDescriptorSets(device, descriptorPool,
+						static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data());
+				});
 		}
 	}
 

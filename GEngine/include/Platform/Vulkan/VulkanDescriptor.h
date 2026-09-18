@@ -17,7 +17,7 @@ namespace GEngine
 		void CreateDescriptorPool(uint32_t descriptorCount, uint32_t maxSets);
 
 	private:
-		VkDescriptorPool		m_DescriptorPool;
+		VkDescriptorPool		m_DescriptorPool = VK_NULL_HANDLE;
 	};
 }
 

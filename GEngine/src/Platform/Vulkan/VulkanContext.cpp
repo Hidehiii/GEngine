@@ -101,8 +101,8 @@ namespace GEngine
 			vkDestroyFence(m_Device, m_Fences[i], nullptr);
 		}
 		m_Fences.clear();
-        m_Descriptor.Release();
-        m_CommandBufferPool.Release();
+		m_Descriptor.Release();
+		m_CommandBufferPool.Release();
         for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);

@@ -59,9 +59,10 @@ all three APIs.
       buffers.
 - [ ] Complete Vulkan deferred deletion for all replaceable GPU resources.
       Submission-serial retirement is implemented and graphics/compute pipeline
-      replacements, core buffer/image/sampler objects, and framebuffers use
-      it. Descriptor pools, descriptor-set layouts, and less common resource
-      types still need to be migrated to the same lifetime path.
+      replacements, core buffer/image/sampler objects, framebuffers, material
+      descriptor sets, shader modules/layouts, and descriptor pools use it.
+      Other less common resource types still need to be migrated to the same
+      lifetime path.
       Queue submissions use dedicated completion fences and a contiguous
       watermark. Resource owners must survive recording until submission.
       FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
@@ -80,7 +81,19 @@ all three APIs.
       Verified: FrameGraphTriangle Release/D3D12 ran well beyond frame 90,
       accepted `WM_CLOSE` on its visible render window, exited without
       forced termination or `0xC0000409`, and a `cmd /c start /wait` wrapper
-      reported exit code 0. OpenGL and Vulkan runtime checks remain pending.
+      reported exit code 0. The OpenGL runtime check remains pending; the
+      Vulkan Release check below is now complete.
+      Follow-up Vulkan fix: material descriptor sets, shader-owned modules and
+      descriptor-set/pipeline layouts, and context/ImGui descriptor pools are
+      retired through the existing submission-serial path. `Material::GetShader`
+      now returns its shared pointer by value, fixing the dangling reference
+      previously produced by the OpenGL and Vulkan material overrides.
+      Verified: FrameGraphTriangle Release/Vulkan built successfully, rendered
+      for eight seconds through repeated replacement, accepted `WM_CLOSE`,
+      exited with code 0, and wrote no stderr. Validation-layer execution
+      remains blocked because the Debug GEngine build fails in vendored
+      spdlog/fmt with VS2026 `stdext::checked_array_iterator` errors before
+      this change is compiled.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.

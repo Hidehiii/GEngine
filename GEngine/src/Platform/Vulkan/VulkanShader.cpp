@@ -17,23 +17,27 @@ namespace GEngine
 	}
 	VulkanShader::~VulkanShader()
 	{
-		if(VulkanContext::Get()->GetDevice())
+		auto shaderModules = std::move(m_ShaderModules);
+		auto pipelineLayouts = std::move(m_PipelineLayouts);
+		auto descriptorSetLayouts = std::move(m_DescriptorSetLayouts);
+
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			for (auto&& passModules : m_ShaderModules)
-			{
-				for (auto&& [stage, module] : passModules)
+			context->RetireResource(
+				[shaderModules = std::move(shaderModules), pipelineLayouts = std::move(pipelineLayouts),
+					descriptorSetLayouts = std::move(descriptorSetLayouts)](VkDevice device) mutable
 				{
-					vkDestroyShaderModule(VulkanContext::Get()->GetDevice(), module, nullptr);
-				}
-			}
-			for (auto& layout : m_PipelineLayouts)
+					for (auto&& passModules : shaderModules)
 			{
-				vkDestroyPipelineLayout(VulkanContext::Get()->GetDevice(), layout, nullptr);
-			}
-			for(auto& layout : m_DescriptorSetLayouts)
-			{
-				vkDestroyDescriptorSetLayout(VulkanContext::Get()->GetDevice(), layout, nullptr);
-			}
+						for (auto&& [stage, module] : passModules)
+							vkDestroyShaderModule(device, module, nullptr);
+					}
+					for (auto layout : pipelineLayouts)
+						vkDestroyPipelineLayout(device, layout, nullptr);
+					for (auto layout : descriptorSetLayouts)
+						vkDestroyDescriptorSetLayout(device, layout, nullptr);
+				});
 		}
 	}
 
