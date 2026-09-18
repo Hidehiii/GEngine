@@ -12,6 +12,10 @@ workspace "GEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+filter { "language:C++", "configurations:Release or Dist" }
+	defines "NDEBUG"
+filter {}
+
 -- Include directories relative to root folder (solution directory)
 include "Dependencies.lua"
 

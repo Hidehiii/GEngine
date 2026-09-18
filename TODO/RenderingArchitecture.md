@@ -66,6 +66,12 @@ all three APIs.
       watermark. Resource owners must survive recording until submission.
       FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
       runtime validation on all three APIs remains pending.
+      Instrumented Release D3D12 diagnostic on 2026-09-18: startup checks,
+      shader, material, pipeline, offscreen-resource creation, and 89 rendered
+      frames succeeded;
+      the process then exited with `0xC0000409` during the 90th frame, after the
+      third 30-frame buffer/pipeline replacement. This is a concrete repeated
+      replacement lifetime failure, not a successful backend validation.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
@@ -136,7 +142,25 @@ it does not require editing every common resource factory.
 
 - [ ] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
       and `_DEBUG`; the current Release configuration fails with C1189.
-      Re-run the assertion-disabled FrameGraphTriangle startup check afterward.
+      Scope: make every non-Debug C++ project configuration define `NDEBUG` in
+      the Premake source, then generate and build the Release engine and
+      FrameGraphTriangle. Re-run the assertion-disabled FrameGraphTriangle
+      startup check afterward. Dist should use the same assertion-disabled
+      definition because it also selects the Release runtime.
+      Before implementation: `GEngine/premake5.lua` switches `runtime` and
+      optimization but does not define `NDEBUG`; PhysX's `PxPreprocessor.h`
+      rejects configurations where neither `NDEBUG` nor `_DEBUG` is defined.
+      Implemented: the workspace defines `NDEBUG` for C++ Release/Dist
+      configurations, without propagating it to the C# ScriptCore project.
+      Verified: VS2026 generation emits `NDEBUG` for GEngine and
+      FrameGraphTriangle Release/Dist; isolated Release builds of GEngine,
+      its dependencies, and FrameGraphTriangle succeed and no longer hit
+      PhysX C1189.
+      Runtime limitation: an instrumented assertion-disabled D3D12 startup run
+      reached frame 90 and then failed with `0xC0000409` during repeated buffer/
+      pipeline replacement, so this item remains open until that regression is
+      fixed and the startup check exits cleanly.
+      Remaining runtime/backend verification is tracked by the matrix below.
 
 For every phase, run the Triangle example on all available APIs and verify:
 

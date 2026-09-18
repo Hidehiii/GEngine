@@ -7,7 +7,9 @@ Development is currently Windows-first. Install the following before generating 
 - Visual Studio 2026, 2022 or 2019 with Desktop development with C++ and the Windows SDK.
 - Premake 5.0.0-beta8 is bundled under `vender/bin/premake` and supports
   VS2026, VS2022 and VS2019 project generation.
-- Vulkan SDK, including the headers, loader library and shader tools used by the project.
+- The repository includes the Vulkan headers, loader library and shader tools
+  under `GEngine/vendor/VulkanSDK`. Set `VULKAN_SDK` only to use another
+  installed SDK.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
 The repository vendors most runtime libraries under `GEngine/vendor`; do not replace those folders with global installations unless you also update `Dependencies.lua`.
@@ -44,11 +46,11 @@ Premake beta8 reports deprecation warnings for existing `flags` settings
 (`NoRuntimeChecks`, `NoIncrementalLink`, and `NoPCH`). These warnings are not
 generation failures; migrating those settings is outside this binary upgrade.
 
-This regenerates `GEngine.sln` and Visual Studio project files from the Premake scripts. Changes intended to survive regeneration belong in `premake5.lua` files, not only in `.vcxproj` files.
+This regenerates the Visual Studio solution and project files from the Premake scripts. VS2026 emits `GEngine.slnx`; VS2022 and VS2019 emit `GEngine.sln`. Changes intended to survive regeneration belong in `premake5.lua` files, not only in `.vcxproj` files.
 
 ## Build order
 
-1. Open `GEngine.sln`.
+1. Open `GEngine.slnx` for VS2026, or `GEngine.sln` for VS2022/VS2019.
 2. Select `Debug | x64` for development, or `Release | x64` for optimized testing.
 3. Build the desired example project, such as `Triangle`. Its project dependency builds `GEngine` first and copies the current DLL to the example output directory.
 4. Set the example as Startup Project and run it.
