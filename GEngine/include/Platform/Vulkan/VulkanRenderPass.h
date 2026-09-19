@@ -36,7 +36,7 @@ namespace GEngine
 		void CreateRenderPass();
 		
 	private:
-		VkRenderPass						m_RenderPass;
+		VkRenderPass						m_RenderPass = VK_NULL_HANDLE;
 	};
 }
 

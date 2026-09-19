@@ -76,6 +76,9 @@ namespace GEngine
 			};
 			auto buffer = VertexBuffer::Create(vertices, sizeof(vertices));
 			m_Pipeline = GraphicsPipeline::Create(m_Pipeline->GetMaterial(), buffer);
+			m_OffscreenFrameBuffer->SetRenderPassOperation(
+				m_OffscreenRenderPass->GetSpecification().Operation);
+			m_OffscreenRenderPass = m_OffscreenFrameBuffer->GetRenderPass();
 		}
 		auto commandBuffer = Graphics::GetGraphicsCommandBuffer();
 		auto& graphicsQueue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS);

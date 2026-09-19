@@ -175,10 +175,16 @@ namespace GEngine
 
 	VulkanRenderPass::~VulkanRenderPass()
 	{
-		if (VulkanContext::Get()->GetDevice())
+		const VkRenderPass renderPass = m_RenderPass;
+		auto* context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE && renderPass != VK_NULL_HANDLE)
 		{
-			vkDestroyRenderPass(VulkanContext::Get()->GetDevice(), m_RenderPass, nullptr);
+			context->RetireResource([renderPass](VkDevice device)
+			{
+				vkDestroyRenderPass(device, renderPass, nullptr);
+			});
 		}
+		m_RenderPass = VK_NULL_HANDLE;
 	}
 
 	Ref<VulkanRenderPass> VulkanRenderPass::Create(const RenderPassSpecificationForVulkan& spec)

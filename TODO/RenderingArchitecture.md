@@ -63,6 +63,16 @@ all three APIs.
       descriptor sets, shader modules/layouts, and descriptor pools use it.
       Other less common resource types still need to be migrated to the same
       lifetime path.
+      Bounded follow-up completed: `VulkanRenderPass` handles are retired through the same
+      submission-serial path, initialize the handle to `VK_NULL_HANDLE`, and
+      exercise `FrameBuffer::SetRenderPassOperation` replacement in
+      FrameGraphTriangle alongside the existing buffer/pipeline replacement.
+      Implemented: `VulkanFrameBuffer::SetRenderPassOperation` now creates a
+      backend render pass directly instead of reusing the static cache, so
+      each operation replacement actually retires the old native handle.
+      Verified: Release/Vulkan builds, renders through repeated render-pass
+      replacement, accepts `WM_CLOSE`, exits with code 0, and writes no
+      stderr.
       Queue submissions use dedicated completion fences and a contiguous
       watermark. Resource owners must survive recording until submission.
       FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
