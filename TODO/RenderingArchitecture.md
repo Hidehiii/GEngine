@@ -57,12 +57,17 @@ all three APIs.
       swapchain presenter, and keep inter-command dependencies in the device
       submission layer instead of storing synchronization lists in command
       buffers.
-- [ ] Complete Vulkan deferred deletion for all replaceable GPU resources.
+- [x] Complete Vulkan deferred deletion for all replaceable GPU resources.
       Submission-serial retirement is implemented and graphics/compute pipeline
       replacements, core buffer/image/sampler objects, framebuffers, material
       descriptor sets, shader modules/layouts, and descriptor pools use it.
-      Other less common resource types still need to be migrated to the same
-      lifetime path.
+      Source audit after the render-pass follow-up found no remaining
+      replaceable Vulkan resource that is destroyed without either
+      submission-serial retirement or an explicit completion wait. One-shot
+      staging buffers are released after their single-time submission fence
+      waits; context-owned command pools, sync objects, and swapchain state are
+      released after `WaitForIdle`; presentation fences are released after the
+      presenter's idle wait.
       Bounded follow-up completed: `VulkanRenderPass` handles are retired through the same
       submission-serial path, initialize the handle to `VK_NULL_HANDLE`, and
       exercise `FrameBuffer::SetRenderPassOperation` replacement in
