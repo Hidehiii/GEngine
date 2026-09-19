@@ -2,9 +2,32 @@
 #include "Platform/D3D12/D3D12StorageBuffer.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Utils.h"
+#include "GEngine/Graphics/Graphics.h"
 
 namespace GEngine
 {
+	void D3D12StorageBuffer::ReadData(uint32_t size, void* destination, uint32_t offset)
+	{
+		if (!destination || !size || offset > m_Size || size > m_Size - offset)
+			throw std::invalid_argument("Storage readback exceeds buffer bounds.");
+		Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS).WaitForIdle();
+		Microsoft::WRL::ComPtr<ID3D12Resource> staging;
+		Utils::CreateBuffer(size, D3D12_HEAP_TYPE_READBACK, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_COPY_DEST, staging);
+		auto command = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+		auto list = command->GetCommandList();
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		list->ResourceBarrier(1, &barrier);
+		list->CopyBufferRegion(staging.Get(), 0, m_Resource.Get(), offset, size);
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		list->ResourceBarrier(1, &barrier);
+		D3D12Context::Get()->EndSingleTimeGraphicsCommand(command);
+		void* mapped = nullptr;
+		D3D12_RANGE range{ 0, size };
+		D3D12_THROW_IF_FAILED(staging->Map(0, &range, &mapped));
+		memcpy(destination, mapped, size);
+		D3D12_RANGE written{ 0, 0 };
+		staging->Unmap(0, &written);
+	}
 	D3D12StorageBuffer::D3D12StorageBuffer(uint32_t size) : m_Size(size)
 	{
 		GE_CORE_ASSERT(size > 0, "Storage buffer size must be non-zero.");

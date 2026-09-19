@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GEngine.h>
+#include <GEngine/Renderer/RenderGraph.h>
 
 namespace GEngine
 {
@@ -17,7 +18,8 @@ namespace GEngine
 	private:
 		uint64_t m_RenderCount = 0;
 		Ref<GraphicsPipeline> m_Pipeline;
-		Ref<RenderPass> m_OffscreenRenderPass;
-		Ref<FrameBuffer> m_OffscreenFrameBuffer;
+		Ref<ComputePipeline> m_ComputePipeline;
+		Ref<StorageBuffer> m_Color;
+		RenderGraph m_Graph;
 	};
 }

@@ -1,21 +1,25 @@
 # FrameGraphTriangle
 
-This is a visual smoke test for the portable presentation path.  It renders an
-orange triangle through only public engine APIs; it does not include D3D12,
+This is a GPU graph and presentation regression example. It renders a triangle
+whose orange/green color is computed through public engine APIs; it does not include D3D12,
 Vulkan, or OpenGL headers and it does not access native handles.
 
-The layer submits one off-screen graphics command buffer through the public
-`GraphicsQueue`, then makes the presentation command buffer depend on it. The
+The graph records graphics -> compute -> graphics work, owns the offscreen
+attachments and joins every submission before presentation. The
 engine's `RenderSystem` builds the following per-frame graph around the layer
 draw:
 
 ```text
-LayerRender (off-screen triangle, queue submit)
+LayerRender (graph: read color -> compute color -> read updated color)
     -> Present (visible triangle draw) -> ReleasePresentation
                                       Present -> RenderTarget -> Present
 ```
 
 Run the project after selecting the desired `GraphicsAPI` in `Config.ini`.
+At frame 119 a one-time synchronous readback verifies the compute-written color
+against an expected value different from the original CPU value. Success logs
+`GPU graph compute readback passed after 119 frames.` A mismatch throws before
+the next frame. Use a frame limit of at least 120 to include this check.
 Close it after several seconds as a quick check that command buffers, presenter
 fences/events, and cached render resources are released while the graphics
 context is still alive.  It also exercises the record-then-submit frame path:
@@ -34,6 +38,50 @@ queue.Submit(commandBuffer);
 ```
 
 ## Resource replacement check
+
+Set `GENGINE_EXAMPLE_FRAME_LIMIT` to a positive frame count to request normal
+shutdown after that many rendered frames; omit it (or use zero) for interactive
+testing. The run logs its completed-frame count before calling Application::Close.
+Latest verification (2026-09-12): the final Debug and Release engine/example
+builds passed. All three backends completed 120 frames in Release with exit code
+0. With `GENGINE_EXAMPLE_SECONDS=20` and no frame limit, Debug completed 49,924
+OpenGL frames, 18,780 Vulkan frames and 12,172 D3D12 frames, each through normal
+application shutdown. D3D12 debug logging was enabled and joined at shutdown;
+no Vulkan validation errors or D3D12 errors were logged. OpenGL logged the known
+shader-recompilation performance warnings. These runs exercise startup graph
+regressions and repeated replacement, but do not establish visual correctness,
+interactive resize, long-run memory stability or GPU compute-chain correctness.
+See `TODO/RenderingArchitecture.md` for memory samples and outstanding work.
+
+The older verification entries below are historical; the latest runs supersede
+their outstanding normal-shutdown and Release smoke checks only.
+
+The current example additionally records a real graphics -> compute -> graphics
+chain through `ExecuteGpu`. Both graphics passes use a graph-created 512x512
+color/depth target and read a shared raw storage buffer. Between them a compute
+shader changes the buffer's red color component. Presentation reads that result
+after joining the graph. The triangle alternates orange/green rapidly and still
+moves left/right during pipeline replacement. No layer-side Begin/End/Submit or
+native synchronization calls are used for offscreen work.
+
+Set `GENGINE_EXAMPLE_NO_REPLACEMENT=1` to disable the 30-frame pipeline/material/
+vertex-buffer replacement while preserving the same rendering workload, for
+memory-growth isolation. Unset it to restore replacement. Combined with the
+seconds limit, both cases request normal shutdown.
+For D3D12, `GENGINE_D3D12_LIFETIME_TRACE=1` logs total-created and currently-live
+pipeline counts every 1,000 creations. Compare private bytes with
+`GENGINE_D3D12_DEBUG_LAYER=1` and `0`; live object counts alone do not prove that
+driver allocations are reclaimed.
+Set `GENGINE_VULKAN_DEDICATED_QUEUES=1` for independent-family testing. Check the
+selected-family log: a shared family is a compatibility run, not proof of
+cross-family synchronization. The same frame-119 readback must pass.
+
+Startup additionally checks versioned producer/consumer ordering and stale-version
+rejection after Reset, and creates the material/pipeline through RenderDevice.
+Alternatively set `GENGINE_EXAMPLE_SECONDS` to a positive duration for a timed
+replacement test that still exits normally. If both limits are set, the first
+limit reached ends the run. Startup also checks overwrite-after-read ordering,
+branching-write rejection and same-state shader-write dependency emission.
 
 OpenGL startup regression: select `GraphicsAPI: 1`; startup must reach the
 OpenGL vendor/version logs and the triangle instead of crashing at the first

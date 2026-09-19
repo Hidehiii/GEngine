@@ -8,6 +8,18 @@
 
 namespace GEngine
 {
+	void VulkanCommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer)
+	{
+		if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || m_FrameBuffer)
+			throw std::invalid_argument("Invalid render-pass begin.");
+		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
+		m_FrameBuffer->Begin(this);
+	}
+	void VulkanCommandBuffer::EndRenderPass()
+	{
+		if (m_FrameBuffer) m_FrameBuffer->End(this);
+		m_FrameBuffer.reset();
+	}
 	VulkanCommandBufferPool::VulkanCommandBufferPool(QueueFamilyIndices queueFamilyIndices, int count)
 	{
 		CreateCommandPool(queueFamilyIndices);
@@ -207,21 +219,8 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
-		VkCommandBufferBeginInfo    beginInfo{};
-		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags				= 0; // Optional
-		beginInfo.pInheritanceInfo	= nullptr; // Optional
-
-		vkResetCommandBuffer(m_CommandBuffer, 0);
-		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
-
-		
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-		{
-			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
-			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-			m_FrameBuffer->Begin(this);
-		}
+		Begin();
+		BeginRenderPass(buffer);
 	}
 	void VulkanCommandBuffer::BeginPresentRender(Ref<FrameBuffer>& buffer)
 	{
@@ -251,7 +250,7 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Begin()
 	{
-		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+		m_FrameBuffer.reset();
 
 		VkCommandBufferBeginInfo    beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -267,10 +266,7 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::End()
 	{
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
-		{
-			m_FrameBuffer->End(this);
-		}
+		EndRenderPass();
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
 	}
 	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)

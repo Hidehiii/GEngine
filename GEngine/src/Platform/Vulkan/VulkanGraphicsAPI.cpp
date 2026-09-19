@@ -1,4 +1,15 @@
 #include "GEpch.h"
+#include "Platform/Vulkan/VulkanTexture2DCombineSampler.h"
+#include "Platform/Vulkan/VulkanCubeMapCombineSampler.h"
+#include "Platform/Vulkan/VulkanCubeMap.h"
+#include "Platform/Vulkan/VulkanTexture2DArray.h"
+#include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/Vulkan/VulkanMaterial.h"
+#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
+#include "Platform/Vulkan/VulkanComputePipeline.h"
+#include "Platform/Vulkan/VulkanSampler.h"
+#include "Platform/Vulkan/VulkanStorageBuffer.h"
+#include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanGraphicsAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
@@ -42,6 +53,54 @@ namespace
 
 namespace GEngine
 {
+	Ref<Texture2DCombineSampler> VulkanGraphicsAPI::CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<VulkanTexture2DCombineSampler>(texture, sampler);
+	}
+	Ref<CubeMapCombineSampler> VulkanGraphicsAPI::CreateCubeMapCombineSampler(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<VulkanCubeMapCombineSampler>(cubemap, sampler);
+	}
+	Ref<CubeMap> VulkanGraphicsAPI::CreateCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
+	{
+		return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
+	}
+	Ref<CubeMap> VulkanGraphicsAPI::CreateCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
+	{
+		return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
+	}
+	Ref<Texture2DArray> VulkanGraphicsAPI::CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
+	{
+		return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
+	}
+	Ref<Shader> VulkanGraphicsAPI::CreateShader(const std::string& path)
+	{
+		return CreateRef<VulkanShader>(path);
+	}
+	Ref<Material> VulkanGraphicsAPI::CreateMaterial(const Ref<Shader>& shader, const std::string& name)
+	{
+		return CreateRef<VulkanMaterial>(shader, name);
+	}
+	Ref<GraphicsPipeline> VulkanGraphicsAPI::CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices)
+	{
+		return CreateRef<VulkanGraphicsPipeline>(material, vertices);
+	}
+	Ref<ComputePipeline> VulkanGraphicsAPI::CreateComputePipeline(const Ref<Material>& material)
+	{
+		return CreateRef<VulkanComputePipeline>(material);
+	}
+	Ref<Sampler> VulkanGraphicsAPI::CreateSampler(const SamplerSpecification& specification)
+	{
+		return CreateRef<VulkanSampler>(specification);
+	}
+	Ref<StorageBuffer> VulkanGraphicsAPI::CreateStorageBuffer(uint32_t size)
+	{
+		return CreateRef<VulkanStorageBuffer>(size);
+	}
+	Ref<StorageImage2D> VulkanGraphicsAPI::CreateStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format)
+	{
+		return CreateRef<VulkanStorageImage2D>(width, height, format);
+	}
     VulkanGraphicsAPI::VulkanGraphicsAPI()
     {
         s_API = GRAPHICS_API_VULKAN;
@@ -205,7 +264,14 @@ namespace GEngine
 
     void VulkanGraphicsAPI::SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second)
     {
-        VkSemaphore s = VulkanContext::Get()->GetSemaphore();
+		if (!std::dynamic_pointer_cast<VulkanCommandBuffer>(first) ||
+			!std::dynamic_pointer_cast<VulkanCommandBuffer>(second) || first == second)
+			throw std::invalid_argument("Vulkan dependencies require distinct Vulkan command buffers.");
+		VkSemaphore s = VK_NULL_HANDLE;
+		VkSemaphoreCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		if (vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &info, nullptr, &s) != VK_SUCCESS)
+			throw std::runtime_error("Failed to allocate a Vulkan dependency semaphore.");
 		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanCommandBuffer>(first), "Vulkan barriers require Vulkan command buffers.");
 		GE_CORE_ASSERT(std::dynamic_pointer_cast<VulkanCommandBuffer>(second), "Vulkan barriers require Vulkan command buffers.");
 		m_SubmissionSynchronizations[first.get()].SignalSemaphores.push_back(s);
@@ -241,7 +307,7 @@ namespace GEngine
 		auto synchronization = TakeSubmissionSynchronization(commandBuffer.get());
 		const auto& waits = synchronization.WaitSemaphores;
 		const auto& signals = synchronization.SignalSemaphores;
-		std::vector<VkPipelineStageFlags> waitStages(waits.size(), waitStage);
+		std::vector<VkPipelineStageFlags> waitStages(waits.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 		VkCommandBuffer nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -253,6 +319,8 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signals.size());
 		submitInfo.pSignalSemaphores = signals.data();
 		VulkanContext::Get()->SubmitTracked(queue, submitInfo);
+		for (auto semaphore : waits)
+			VulkanContext::Get()->RetireResource([semaphore](VkDevice device) { vkDestroySemaphore(device, semaphore, nullptr); });
 	}
 
 	void VulkanGraphicsAPI::SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
@@ -266,7 +334,7 @@ namespace GEngine
 		auto synchronization = TakeSubmissionSynchronization(commandBuffer.get());
 		synchronization.WaitSemaphores.push_back(acquireSemaphore);
 		synchronization.SignalSemaphores.push_back(presentSemaphore);
-		std::vector<VkPipelineStageFlags> waitStages(synchronization.WaitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		std::vector<VkPipelineStageFlags> waitStages(synchronization.WaitSemaphores.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 		VkCommandBuffer nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -278,6 +346,9 @@ namespace GEngine
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(synchronization.SignalSemaphores.size());
 		submitInfo.pSignalSemaphores = synchronization.SignalSemaphores.data();
 		VulkanContext::Get()->SubmitTracked(VulkanContext::Get()->GetGraphicsQueue(), submitInfo, completionFence);
+		for (auto semaphore : synchronization.WaitSemaphores)
+			if (semaphore != acquireSemaphore)
+				VulkanContext::Get()->RetireResource([semaphore](VkDevice device) { vkDestroySemaphore(device, semaphore, nullptr); });
 	}
 
 	VulkanGraphicsAPI::SubmissionSynchronization VulkanGraphicsAPI::TakeSubmissionSynchronization(const CommandBuffer* commandBuffer)
@@ -300,11 +371,24 @@ namespace GEngine
 		GraphicsResourceState before, GraphicsResourceState after)
 	{
 		const auto nativeResource = GetNativeResource(resource);
-		if (!resource || nativeResource == nullptr || before == after)
+		if (!resource || nativeResource == nullptr)
 			return;
 
 		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan resource transitions require a Vulkan command buffer.");
+		if (before == after)
+		{
+			if (before == GraphicsResourceState::ShaderWrite)
+			{
+				VkMemoryBarrier barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+				barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+				vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+					VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+			}
+			return;
+		}
 		const auto source = ToVulkanResourceState(before);
 		const auto destination = ToVulkanResourceState(after);
 		if (auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource))

@@ -175,11 +175,29 @@ namespace GEngine
 					}
 					else if (resource.Type >= SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN)
 					{
-						D3D12Context::Get()->GetDevice()->CreateUnorderedAccessView(nullptr, nullptr, nullptr, handle);
+						D3D12_UNORDERED_ACCESS_VIEW_DESC nullView{};
+						if (resource.Type == SHADER_PROPERTY_TYPE_STORAGE_BUFFER)
+						{
+							nullView.Format = DXGI_FORMAT_R32_TYPELESS;
+							nullView.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+							nullView.Buffer.NumElements = 1;
+							nullView.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+						}
+						else
+						{
+							nullView.Format = DXGI_FORMAT_R32_FLOAT;
+							nullView.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+						}
+						D3D12Context::Get()->GetDevice()->CreateUnorderedAccessView(nullptr, nullptr, &nullView, handle);
 					}
 					else
 					{
-						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(nullptr, nullptr, handle);
+						D3D12_SHADER_RESOURCE_VIEW_DESC nullView{};
+						nullView.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+						nullView.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+						nullView.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+						nullView.Texture2D.MipLevels = 1;
+						D3D12Context::Get()->GetDevice()->CreateShaderResourceView(nullptr, &nullView, handle);
 					}
 				}
 			}

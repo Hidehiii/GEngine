@@ -8,6 +8,19 @@
 
 namespace GEngine
 {
+	void D3D12CommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer)
+	{
+		if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || m_FrameBuffer)
+			throw std::invalid_argument("Invalid render-pass begin.");
+		m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
+		Retain(buffer);
+		m_FrameBuffer->Begin(this);
+	}
+	void D3D12CommandBuffer::EndRenderPass()
+	{
+		if (m_FrameBuffer) m_FrameBuffer->End(this);
+		m_FrameBuffer.reset();
+	}
     D3D12CommandPool::D3D12CommandPool(int count)
     {
 		m_GraphicsList.resize(count);
@@ -175,35 +188,24 @@ namespace GEngine
         m_RetainedOwners.clear();
         m_FrameBuffer.reset();
     }
-    void D3D12CommandBuffer::Begin(Ref<FrameBuffer>& buffer)
-    {
-        ResetRecording();
-
-
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-		{
-			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
-			m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
-			m_FrameBuffer->Begin(this);
-		}
-    }
+	void D3D12CommandBuffer::Begin(Ref<FrameBuffer>& buffer)
+	{
+		Begin();
+		BeginRenderPass(buffer);
+	}
     void D3D12CommandBuffer::Begin()
     {
         ResetRecording();
 
-		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+		m_FrameBuffer.reset();
 
 		m_FrameBuffer = nullptr;
     }
-    void D3D12CommandBuffer::End()
-    {
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
-		{
-			m_FrameBuffer->End(this);
-		}
-
-        D3D12_THROW_IF_FAILED(m_CommandList->Close());
-    }
+	void D3D12CommandBuffer::End()
+	{
+		EndRenderPass();
+		D3D12_THROW_IF_FAILED(m_CommandList->Close());
+	}
     void D3D12CommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
     {
 		Retain(pipeline);

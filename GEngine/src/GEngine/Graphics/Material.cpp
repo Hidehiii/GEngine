@@ -2,78 +2,21 @@
 #include "GEngine/Graphics/Material.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsAPI.h"
-#include "Platform/OpenGL/OpenGLMaterial.h"
-#include "Platform/Vulkan/VulkanMaterial.h"
-#include "Platform/D3D12/D3D12Material.h"
 
 namespace GEngine
 {
     Ref<Material> Material::Create(const Ref<Shader>& shader, const std::string& name)
     {
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLMaterial>(shader, name);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanMaterial>(shader, name);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12Material>(shader, name);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-        return nullptr;
-    }
+		return Graphics::GetRenderDevice().CreateMaterial(shader, name);
+	}
 	Ref<Material> Material::Create(const std::string& shaderPath, const std::string& name)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLMaterial>(Shader::Create(shaderPath), name);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanMaterial>(Shader::Create(shaderPath), name);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12Material>(Shader::Create(shaderPath), name);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Create(Shader::Create(shaderPath), name);
 	}
 	Ref<Material> Material::Copy(const Ref<Material>& other, const std::string& name)
     {
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanMaterial>(Shader::Create(other->GetShader()->GetShaderPath()), name);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12Material>(Shader::Create(other->GetShader()->GetShaderPath()), name);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
-    }
+		return Create(Shader::Create(other->GetShader()->GetShaderPath()), name);
+	}
 	void Material::SetEnableDepthWrite(bool enabled, const uint32_t& pass)
 	{
 		m_Passes.at(pass).State.DepthWrite = enabled;

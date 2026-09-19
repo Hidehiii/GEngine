@@ -27,6 +27,8 @@ namespace GEngine
 
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
 		virtual void Begin() = 0;
+		virtual void BeginRenderPass(Ref<FrameBuffer>& buffer) = 0;
+		virtual void EndRenderPass() = 0;
 		virtual void End() = 0;
 	protected:
 		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) = 0;

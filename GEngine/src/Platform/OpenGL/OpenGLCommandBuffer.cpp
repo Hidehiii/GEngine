@@ -7,6 +7,18 @@
 
 namespace GEngine
 {
+	void OpenGLCommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer)
+	{
+		if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || m_FrameBuffer)
+			throw std::invalid_argument("Invalid render-pass begin.");
+		m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
+		m_FrameBuffer->Begin(this);
+	}
+	void OpenGLCommandBuffer::EndRenderPass()
+	{
+		if (m_FrameBuffer) m_FrameBuffer->End(this);
+		m_FrameBuffer.reset();
+	}
 	OpenGLCommandBuffer::OpenGLCommandBuffer(CommandBufferType type)
 	{
 		m_Type = type;
@@ -33,26 +45,16 @@ namespace GEngine
 	}
 	void OpenGLCommandBuffer::Begin(Ref<FrameBuffer>& buffer)
 	{
-		
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS)
-		{
-			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
-			m_FrameBuffer = std::static_pointer_cast<OpenGLFrameBuffer>(buffer);
-			m_FrameBuffer->Begin(this);
-		}
-
+		Begin();
+		BeginRenderPass(buffer);
 	}
 	void OpenGLCommandBuffer::Begin()
 	{
-		GE_CORE_ASSERT(m_Type != COMMAND_BUFFER_TYPE_GRAPHICS, "graphics cmd must have frame buffer");
+		m_FrameBuffer.reset();
 	}
 	void OpenGLCommandBuffer::End()
 	{
-		if (m_Type == COMMAND_BUFFER_TYPE_GRAPHICS && m_FrameBuffer != nullptr)
-		{
-			m_FrameBuffer->End(this);
-		}
-		
+		EndRenderPass();
 	}
 	void OpenGLCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
 	{

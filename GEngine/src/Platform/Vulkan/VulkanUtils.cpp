@@ -6,6 +6,14 @@ namespace GEngine
 {
     namespace Utils
     {
+		static std::vector<uint32_t> SharedQueueFamilies()
+		{
+			const auto queues = VulkanContext::Get()->GetQueueFamily();
+			std::vector<uint32_t> families{ queues.GraphicsFamily.value(), queues.ComputeFamily.value(), queues.TransferFamily.value() };
+			std::sort(families.begin(), families.end());
+			families.erase(std::unique(families.begin(), families.end()), families.end());
+			return families;
+		}
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDvice)
         {
             VkPhysicalDeviceMemoryProperties    memProperties;
@@ -28,6 +36,13 @@ namespace GEngine
             bufferInfo.size         = size;
             bufferInfo.usage        = usage;
             bufferInfo.sharingMode  = VK_SHARING_MODE_EXCLUSIVE;
+			const auto families = SharedQueueFamilies();
+			if (families.size() > 1)
+			{
+				bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+				bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(families.size());
+				bufferInfo.pQueueFamilyIndices = families.data();
+			}
 
 			VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
@@ -61,6 +76,13 @@ namespace GEngine
 			imageInfo.usage			= usage;
 			imageInfo.samples		= sample;
 			imageInfo.sharingMode	= VK_SHARING_MODE_EXCLUSIVE;
+			const auto families = SharedQueueFamilies();
+			if (families.size() > 1)
+			{
+				imageInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+				imageInfo.queueFamilyIndexCount = static_cast<uint32_t>(families.size());
+				imageInfo.pQueueFamilyIndices = families.data();
+			}
 			imageInfo.flags			= flags; // Optional
 
             VK_CHECK_RESULT(vkCreateImage(device, &imageInfo, nullptr, &outImage));

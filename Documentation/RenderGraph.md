@@ -4,6 +4,31 @@
 
 ## Basic pattern
 
+### Explicit resource versions
+
+Use versions when dependencies must be independent of pass creation order:
+
+```cpp
+auto reader = graph.BuildPass("Reader", [](FrameContext&) { /* Record reads. */ });
+auto writer = graph.BuildPass("Writer", [](FrameContext&) { /* Record writes. */ });
+auto initial = graph.GetVersion(graph.ImportResource("Data"));
+auto produced = writer.Write(initial, RenderGraph::ResourceState::ShaderWrite);
+reader.Read(produced);
+```
+
+Each write extends the latest version. Reads depend on that version's producer;
+the next writer also waits for readers of the previous version because versions
+currently share physical storage. Branching writes and mixing versioned/legacy
+accesses on one resource are rejected. Reset invalidates previous versions.
+An initial transient version cannot be read before a producing write.
+`BuildPass` remains a CPU declaration helper. Use the GPU recording builders
+below when the graph should also own command recording and queue submission.
+
+Repeated `ShaderWrite` states generate a memory dependency even without a state
+change. D3D12 emits a UAV barrier, Vulkan a shader-memory barrier, and OpenGL
+uses its existing memory-barrier mapping. This is whole-resource synchronization;
+it does not provide subresource-level tracking.
+
 ```cpp
 RenderGraph graph;
 
@@ -21,9 +46,56 @@ graph.AddDependency(postProcess, geometry);
 graph.Execute(frameContext);
 ```
 
-`AddDependency(after, before)` orders CPU pass callbacks: `before` is recorded
-before `after`. GPU completion between different queues still requires backend
-submission synchronization.
+`AddDependency(after, before)` orders CPU callbacks with `Execute`, or GPU
+submissions with `ExecuteGpu`. Do not mix CPU and GPU passes in a GPU graph.
+
+## Graph-owned recording and attachments
+
+```cpp
+RenderPassSpecification spec{};
+spec.RenderTargets = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+spec.DepthStencil = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+auto target = graph.CreateRenderTarget("Scene", spec, 512, 512);
+auto draw = graph.BuildGraphicsPass("SceneDraw", target,
+    [&](const Ref<CommandBuffer>& command) { command->Render(pipeline, 0); });
+auto compute = graph.BuildComputePass("Update", [&](const Ref<CommandBuffer>& command) {
+    command->Compute(computePipeline, 0, 1, 1, 1);
+});
+compute.DependsOn(draw.GetHandle());
+// All graph work joins this still-unsubmitted presentation command buffer.
+graph.ExecuteGpu(GraphicsPresent::GetCommandBuffer());
+```
+
+The graph creates targets after dependency validation, begins command recording,
+emits resource barriers outside render passes, binds attachments, invokes the
+record callback, ends recording and submits to the declared queue. Callbacks
+must not begin/end or submit their command buffer. Color attachments are
+automatically declared as writes and end in ShaderRead, matching the native
+framebuffer contract. `GetColorAttachment` exposes their graph resource handle;
+`GetFrameBuffer` is available after successful compilation. Depth remains owned
+by the target. The current path uses framebuffer clear/store operations, not
+arbitrary per-pass load/store overrides or subpasses.
+
+Keep a compiled GPU graph alive across frames to reuse its target allocation;
+Reset invalidates handles and releases its owned targets. Rebuild it for a new
+size. Pass callbacks can reference current replacement pipelines through the
+owning layer. Command buffers are acquired afresh per execution. The configured
+command-buffer count bounds passes per queue (one graphics slot is reserved).
+
+Every dependency is registered before producer submission; completion joins
+all graph submissions. D3D12 waits for a producer command buffer's monotonic
+submission generation. Vulkan uses independently consumable binary semaphores
+with ALL_COMMANDS waits, retired after consumer completion. Vulkan engine
+buffers/images use concurrent sharing when graphics/compute/transfer families
+differ, so those allocations need no exclusive ownership transfer. OpenGL
+executes on its single context and uses memory barriers for visibility.
+
+Current GPU compute declarations accept storage/UAV (`ShaderWrite`) state for
+both read and write intent. ShaderWrite names the native state, not exclusively
+the access direction. Other compute states are explicitly rejected rather than
+emitting graphics-only stages on a compute queue. Barriers cover whole resources;
+fine-grained stage masks, subresource scheduling and dedicated transfer passes
+are not exposed by these builders yet.
 
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
@@ -81,8 +153,8 @@ choice for application-owned or cross-frame assets.
 
 After `Compile`, `GetResourceLifetime` reports each resource's first pass,
 last pass, and final declared state. The graph uses these values as its stable
-allocation-lifetime record; versioned read/write handles will be added before
-transient memory reuse is enabled.
+allocation-lifetime record. Versioned read/write handles are available; transient
+memory reuse is not enabled.
 
 Available states are:
 

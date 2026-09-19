@@ -116,6 +116,10 @@ namespace
 			CloseHandle(m_FenceEvents[i]);
 		}
 		m_Fences.clear();
+		m_FenceEvents.clear();
+#ifdef GE_DEBUG
+		StopD3D12DebugInfoQueueLogger();
+#endif
 
 	}
 	void D3D12Context::SetVSync(bool enable)
@@ -167,6 +171,17 @@ namespace
 	}
 	void D3D12Context::WaitForFence(CommandBufferType type, uint64_t timeout)
 	{
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
+		switch (type)
+		{
+		case COMMAND_BUFFER_TYPE_GRAPHICS: queue = m_GraphicsQueue; break;
+		case COMMAND_BUFFER_TYPE_COMPUTE: queue = m_ComputeQueue; break;
+		case COMMAND_BUFFER_TYPE_TRANSFER: queue = m_TransferQueue; break;
+		default: throw std::invalid_argument("Invalid queue idle request.");
+		}
+		IncreaseFenceValue(type);
+		auto completion = GetFence(type);
+		D3D12_THROW_IF_FAILED(queue->Signal(completion.first.Get(), completion.second));
 		if(m_Fences.at(UINT(type) - 1)->GetCompletedValue() < m_FenceValues.at(UINT(type) - 1))
 		{
 			m_Fences.at(UINT(type) - 1)->SetEventOnCompletion(m_FenceValues.at(UINT(type) - 1), m_FenceEvents.at(UINT(type) - 1));

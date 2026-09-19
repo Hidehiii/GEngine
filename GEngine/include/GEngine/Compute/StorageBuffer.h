@@ -11,6 +11,8 @@ namespace GEngine
 		virtual ~StorageBuffer() = default;
 		GraphicsResourceType GetResourceType() const override { return GraphicsResourceType::Buffer; }
 		virtual void SetData(uint32_t size, const void* data, uint32_t offset = 0) = 0;
+		// Synchronous diagnostic readback; the buffer must be in storage/UAV state.
+		virtual void ReadData(uint32_t size, void* destination, uint32_t offset = 0) = 0;
 		virtual void Bind(uint32_t slot) = 0;
 
 		static Ref<StorageBuffer> Create(uint32_t size);

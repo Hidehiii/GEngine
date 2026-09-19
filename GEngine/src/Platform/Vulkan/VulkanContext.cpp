@@ -6,6 +6,7 @@
 #include "GEngine/Core/Thread.h"
 #include <algorithm>
 #include <set>
+#include <cstdlib>
 #include <GLFW/glfw3.h>
 
 namespace GEngine
@@ -420,6 +421,20 @@ namespace GEngine
             }
             i++;
         }
+		const auto* dedicated = std::getenv("GENGINE_VULKAN_DEDICATED_QUEUES");
+		if (dedicated && dedicated[0] == '1')
+		{
+			for (uint32_t family = 0; family < queueFamilies.size(); ++family)
+			{
+				const auto flags = queueFamilies[family].queueFlags;
+				if (!queueFamilies[family].queueCount) continue;
+				if ((flags & VK_QUEUE_COMPUTE_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT)) indices.ComputeFamily = family;
+				if ((flags & VK_QUEUE_TRANSFER_BIT) && !(flags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))) indices.TransferFamily = family;
+			}
+			if (indices.IsComplete())
+				GE_CORE_INFO("Selected queue families: graphics={}, compute={}, transfer={}",
+					indices.GraphicsFamily.value(), indices.ComputeFamily.value(), indices.TransferFamily.value());
+		}
         return indices;
     }
     void VulkanContext::CreateLogicalDevice()

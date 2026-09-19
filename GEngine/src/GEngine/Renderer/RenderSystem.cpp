@@ -29,7 +29,7 @@ namespace GEngine
 		GraphicsPresent::SetActivePresenter(m_Present.get());
 		m_RenderGraph.SetTransitionCallback([](const FrameContext&, const Ref<GraphicsResource>& resource, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
 		{
-			if (!resource || before == after || !resource->RequiresExplicitStateTransition())
+			if (!resource || !resource->RequiresExplicitStateTransition())
 				return;
 			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), resource, before, after);
 		});

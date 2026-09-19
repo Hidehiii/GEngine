@@ -6,17 +6,28 @@
 #include "Platform/D3D12/D3D12FrameBuffer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Shader.h"
+#include <cstdlib>
 
 namespace GEngine
 {
+	namespace
+	{
+		uint64_t livePipelines = 0;
+		uint64_t createdPipelines = 0;
+	}
 	D3D12GraphicsPipeline::D3D12GraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertexBuffer)
 	{
 		m_Material = std::dynamic_pointer_cast<D3D12Material>(material);
 		m_VertexBuffer = std::dynamic_pointer_cast<D3D12VertexBuffer>(vertexBuffer);
+		++livePipelines;
+		++createdPipelines;
+		if (std::getenv("GENGINE_D3D12_LIFETIME_TRACE") && createdPipelines % 1000 == 0)
+			GE_CORE_INFO("D3D12 pipeline lifetime: created={}, live={}", createdPipelines, livePipelines);
 	}
 
 	D3D12GraphicsPipeline::~D3D12GraphicsPipeline()
 	{
+		--livePipelines;
 		for (auto& info : m_PipelineStates)
 		{
 			if (info.PipelineState)

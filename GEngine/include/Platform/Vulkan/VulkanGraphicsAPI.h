@@ -14,6 +14,18 @@ namespace GEngine
 	class GENGINE_API VulkanGraphicsAPI : public GraphicsAPI
 	{
 	public:
+		Ref<Texture2DCombineSampler> CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler) override;
+		Ref<CubeMapCombineSampler> CreateCubeMapCombineSampler(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler) override;
+		Ref<CubeMap> CreateCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format) override;
+		Ref<CubeMap> CreateCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap) override;
+		Ref<Texture2DArray> CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format) override;
+		Ref<Shader> CreateShader(const std::string& path) override;
+		Ref<Material> CreateMaterial(const Ref<Shader>& shader, const std::string& name) override;
+		Ref<GraphicsPipeline> CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices) override;
+		Ref<ComputePipeline> CreateComputePipeline(const Ref<Material>& material) override;
+		Ref<Sampler> CreateSampler(const SamplerSpecification& specification) override;
+		Ref<StorageBuffer> CreateStorageBuffer(uint32_t size) override;
+		Ref<StorageImage2D> CreateStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format) override;
 		VulkanGraphicsAPI();
 		virtual ~VulkanGraphicsAPI();
 

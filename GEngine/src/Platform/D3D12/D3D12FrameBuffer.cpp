@@ -149,20 +149,26 @@ namespace GEngine
 		}
 
 		auto rtvDescriptor = m_RtvHeap.CpuHandles.at(Graphics::GetFrame());
-		auto dsvDescriptor = m_DsvHeap.CpuHandles.at(Graphics::GetFrame());
+		const bool hasDepth = m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE;
+		D3D12_CPU_DESCRIPTOR_HANDLE dsvDescriptor{};
+		if (hasDepth) dsvDescriptor = m_DsvHeap.CpuHandles.at(Graphics::GetFrame());
 
 		if (m_Specification.Samples > 1)
 		{
 			rtvDescriptor = m_MultiSampleRtvHeap.CpuHandles.at(Graphics::GetFrame());
-			dsvDescriptor = m_MultiSampleDsvHeap.CpuHandles.at(Graphics::GetFrame());
+			if (hasDepth) dsvDescriptor = m_MultiSampleDsvHeap.CpuHandles.at(Graphics::GetFrame());
 		}
 
-		cmd->OMSetRenderTargets(1, &rtvDescriptor, TRUE, &dsvDescriptor);
+		cmd->OMSetRenderTargets(static_cast<UINT>(m_Specification.RenderTargets.size()), &rtvDescriptor, TRUE, hasDepth ? &dsvDescriptor : nullptr);
 		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
-			cmd->ClearRenderTargetView(rtvDescriptor, Math::ValuePtr(D3D12Context::Get()->GetClearColor()), 0, nullptr);
+			for (uint32_t index = 0; index < m_Specification.RenderTargets.size(); ++index)
+			{
+				CD3DX12_CPU_DESCRIPTOR_HANDLE handle(rtvDescriptor, index, D3D12Context::Get()->GetRtvDescriptorIncrementSize());
+				cmd->ClearRenderTargetView(handle, Math::ValuePtr(D3D12Context::Get()->GetClearColor()), 0, nullptr);
+			}
 		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
+		if (hasDepth && m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			cmd->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Graphics::IsReverseDepth() ? 0 : 1.0f, 0, 0, nullptr);
 		}

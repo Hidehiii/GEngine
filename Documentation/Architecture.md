@@ -53,7 +53,24 @@ OnUpdate
   -> window event processing
 ```
 
-The render graph expresses pass ordering and resource-state transitions. On D3D12, its transition callback records the matching `ID3D12GraphicsCommandList::ResourceBarrier` calls. Backends that do not need explicit resource-state barriers simply ignore that callback.
+The render graph expresses pass ordering and resource-state transitions. D3D12
+records resource/UAV barriers, Vulkan records image/buffer/memory barriers, and
+OpenGL emits memory barriers for visibility rather than tracking image layouts.
+
+Renderer features can use a persistent GPU graph with `BuildGraphicsPass`,
+`BuildComputePass`, graph-owned targets and `ExecuteGpu`. The graph owns
+Begin/End, attachment binding, dependency submission and the presentation join.
+Versioned resources order producers, readers and overwrites independently of
+declaration order. CPU-only `BuildPass`/`Execute` remains a compatibility path;
+it is not a substitute for cross-queue GPU synchronization.
+
+Vulkan engine allocations use concurrent sharing across distinct graphics,
+compute and transfer families; dependency semaphores provide memory ordering
+and are retired after their consumer completes. D3D12 dependencies identify a
+specific producer command-buffer submission generation, not a mutable shared
+fence value. OpenGL executes the same logical chain on its single context.
+See [RenderGraph.md](RenderGraph.md) for the supported whole-resource and
+storage-state contract and its current limitations.
 
 ## Device queues and command submission
 

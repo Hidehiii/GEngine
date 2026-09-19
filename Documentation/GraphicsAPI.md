@@ -1,5 +1,40 @@
 # Graphics API usage
 
+## Diagnostic storage-buffer readback
+
+`StorageBuffer::ReadData(size, destination, offset = 0)` copies bytes to CPU
+memory synchronously and validates bounds in Debug and Release. The buffer must
+be in storage/UAV state. D3D12 and Vulkan wait for submitted queues, stage a copy,
+and wait for that copy before reading; OpenGL uses its buffer-update barrier and
+synchronous readback. This is for diagnostics and infrequent results, not
+per-frame streaming. Call it after submitting producers, outside recording
+callbacks. FrameGraphTriangle checks an actual compute result once.
+
+## Device-owned creation
+
+`Graphics::GetRenderDevice()` now creates shaders, materials, graphics/compute
+pipelines, samplers, storage buffers/images, 2D/array/cube textures and combined
+texture/sampler wrappers, in addition to render passes, framebuffers and mesh
+buffers. Native backend selection lives in backend implementations, not these
+resources' static factory functions.
+
+```cpp
+auto& device = Graphics::GetRenderDevice();
+auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+auto material = device.CreateMaterial(shader, "Triangle");
+auto pipeline = device.CreateGraphicsPipeline(material, vertices);
+```
+
+`device.CreateShader(path)` creates an uncached backend object;
+`Shader::Create(path)` retains the existing runtime-scoped cache behavior.
+Similarly, `Sampler::Create` caches while `device.CreateSampler` allocates a new
+sampler. Other static factories remain compatibility adapters. This does not yet
+support multiple simultaneously active devices or cross-device resource mixing.
+
+`Material::GetShader()` now returns `Ref<Shader>` by value. The previous reference
+return exposed a temporary shared_ptr on OpenGL/Vulkan; callers should hold the
+returned shared_ptr rather than binding a mutable reference to it.
+
 This page describes the common immediate rendering path used by `Example/Triangle`. Include `<GEngine.h>` in an application project.
 
 ## Application and layer

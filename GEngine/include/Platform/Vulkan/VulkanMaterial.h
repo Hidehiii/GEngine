@@ -12,7 +12,7 @@ namespace GEngine
 		VulkanMaterial(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial() override;
 		
-		virtual Ref<Shader>& GetShader() override { return std::static_pointer_cast<Shader>(m_Shader); }
+		virtual Ref<Shader> GetShader() override { return m_Shader; }
 
 		virtual Buffer SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
 

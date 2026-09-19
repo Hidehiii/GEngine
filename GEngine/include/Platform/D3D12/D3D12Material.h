@@ -16,7 +16,7 @@ namespace GEngine
 		D3D12Material(const Ref<Shader>& shader, const std::string& name = "");
 		virtual ~D3D12Material() override;
 
-		virtual Ref<Shader>&		GetShader() override { return m_ShaderBase; }
+		virtual Ref<Shader>		GetShader() override { return m_ShaderBase; }
 		virtual Buffer				SetUniformBuffer(const uint32_t& pass, const uint32_t& bindPoint, const Buffer& buffer, const Ref<UniformBuffer>& buf) override;
 		virtual void				Update(CommandBuffer* cmdBuffer, const uint32_t& pass) override;
 		virtual void				ResourceUpdateNotify() override { CreateDescriptorHeap(); }

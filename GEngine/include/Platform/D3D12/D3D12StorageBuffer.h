@@ -13,6 +13,7 @@ namespace GEngine
 		virtual ~D3D12StorageBuffer() override = default;
 
 		virtual void SetData(uint32_t size, const void* data, uint32_t offset = 0) override;
+		virtual void ReadData(uint32_t size, void* destination, uint32_t offset = 0) override;
 		virtual void Bind(uint32_t slot) override {}
 
 		ID3D12Resource* GetResource() const { return m_Resource.Get(); }

@@ -1,4 +1,14 @@
 #include "GEpch.h"
+#include "Platform/D3D12/D3D12TextureCombineSampler.h"
+#include "Platform/D3D12/D3D12CubeMap.h"
+#include "Platform/D3D12/D3D12Texture2DArray.h"
+#include "Platform/D3D12/D3D12Shader.h"
+#include "Platform/D3D12/D3D12Material.h"
+#include "Platform/D3D12/D3D12GraphicsPipeline.h"
+#include "Platform/D3D12/D3D12ComputePipeline.h"
+#include "Platform/D3D12/D3D12Sampler.h"
+#include "Platform/D3D12/D3D12StorageBuffer.h"
+#include "Platform/D3D12/D3D12StorageImage2D.h"
 #include "Platform/D3D12/D3D12GraphicsAPI.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "Platform/D3D12/D3D12Context.h"
@@ -30,6 +40,54 @@ namespace
 
 namespace GEngine
 {
+	Ref<Texture2DCombineSampler> D3D12GraphicsAPI::CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<D3D12Texture2DCombineSampler>(texture, sampler);
+	}
+	Ref<CubeMapCombineSampler> D3D12GraphicsAPI::CreateCubeMapCombineSampler(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<D3D12CubeMapCombineSampler>(cubemap, sampler);
+	}
+	Ref<CubeMap> D3D12GraphicsAPI::CreateCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
+	{
+		return CreateRef<D3D12CubeMap>(width, height, generateMipmap, format);
+	}
+	Ref<CubeMap> D3D12GraphicsAPI::CreateCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
+	{
+		return CreateRef<D3D12CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
+	}
+	Ref<Texture2DArray> D3D12GraphicsAPI::CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
+	{
+		return CreateRef<D3D12Texture2DArray>(width, height, layers, format);
+	}
+	Ref<Shader> D3D12GraphicsAPI::CreateShader(const std::string& path)
+	{
+		return CreateRef<D3D12Shader>(path);
+	}
+	Ref<Material> D3D12GraphicsAPI::CreateMaterial(const Ref<Shader>& shader, const std::string& name)
+	{
+		return CreateRef<D3D12Material>(shader, name);
+	}
+	Ref<GraphicsPipeline> D3D12GraphicsAPI::CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices)
+	{
+		return CreateRef<D3D12GraphicsPipeline>(material, vertices);
+	}
+	Ref<ComputePipeline> D3D12GraphicsAPI::CreateComputePipeline(const Ref<Material>& material)
+	{
+		return CreateRef<D3D12ComputePipeline>(material);
+	}
+	Ref<Sampler> D3D12GraphicsAPI::CreateSampler(const SamplerSpecification& specification)
+	{
+		return CreateRef<D3D12Sampler>(specification);
+	}
+	Ref<StorageBuffer> D3D12GraphicsAPI::CreateStorageBuffer(uint32_t size)
+	{
+		return CreateRef<D3D12StorageBuffer>(size);
+	}
+	Ref<StorageImage2D> D3D12GraphicsAPI::CreateStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format)
+	{
+		return CreateRef<D3D12StorageImage2D>(width, height, format);
+	}
     D3D12GraphicsAPI::D3D12GraphicsAPI()
     {
         s_API = GRAPHICS_API_DIRECT3DX12;
@@ -201,10 +259,7 @@ namespace GEngine
 		auto firstD3D = std::dynamic_pointer_cast<D3D12CommandBuffer>(first);
 		auto secondD3D = std::dynamic_pointer_cast<D3D12CommandBuffer>(second);
 		GE_CORE_ASSERT(firstD3D && secondD3D, "D3D12 barriers require D3D12 command buffers.");
-        D3D12Context::Get()->IncreaseFenceValue(first->GetType());
-        auto f = D3D12Context::Get()->GetFence(first->GetType());
-		firstD3D->AddSignalFence(f);
-		secondD3D->AddWaitFence(f);
+		secondD3D->AddWaitFence(firstD3D->NextCompletion());
     }
 
 	void D3D12GraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
@@ -243,12 +298,21 @@ namespace GEngine
 		GraphicsResourceState before, GraphicsResourceState after)
 	{
 		const auto nativeResource = GetNativeResource(resource);
-		if (!resource || nativeResource == nullptr || before == after)
+		if (!resource || nativeResource == nullptr)
 			return;
 
 		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
 		d3dCommandBuffer->Retain(resource);
+		if (before == after)
+		{
+			if (before == GraphicsResourceState::ShaderWrite)
+			{
+				auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(nativeResource));
+				d3dCommandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);
+			}
+			return;
+		}
 		if (auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(resource))
 		{
 			texture->TransitionResourceState(d3dCommandBuffer->GetCommandList(), ToD3D12ResourceState(after));

@@ -1,17 +1,6 @@
 #include "GEpch.h"
 #include "GEngine/Graphics/Texture.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "Platform/OpenGL/OpenGLCubeMap.h"
-#include "Platform/Vulkan/VulkanCubeMap.h"
-#include "Platform/D3D12/D3D12CubeMap.h"
-#include "Platform/OpenGL/OpenGLTexture2DArray.h"
-#include "Platform/Vulkan/VulkanTexture2DArray.h"
-#include "Platform/D3D12/D3D12Texture2DArray.h"
-#include "Platform/OpenGL/OpenGLTexture2DCombineSampler.h"
-#include "Platform/Vulkan/VulkanTexture2DCombineSampler.h"
-#include "Platform/OpenGL/OpenGLCubeMapCombineSampler.h"
-#include "Platform/Vulkan/VulkanCubeMapCombineSampler.h"
-#include "Platform/D3D12/D3D12TextureCombineSampler.h"
 
 namespace GEngine
 {
@@ -22,26 +11,7 @@ namespace GEngine
 
 	Ref<Texture2DCombineSampler> Texture2DCombineSampler::Create(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-				GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-				return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLTexture2DCombineSampler>(texture, sampler);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanTexture2DCombineSampler>(texture, sampler);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12Texture2DCombineSampler>(texture, sampler);
-		}
-		default:
-			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-			break;
-		}
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateTexture2DCombineSampler(texture, sampler);
 	}
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, RenderImage2DFormat format)
@@ -74,71 +44,16 @@ namespace GEngine
 
 	Ref<CubeMapCombineSampler> CubeMapCombineSampler::Create(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLCubeMapCombineSampler>(cubemap, sampler);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanCubeMapCombineSampler>(cubemap, sampler);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12CubeMapCombineSampler>(cubemap, sampler);
-		}
-		default:
-			GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-			break;
-		}
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateCubeMapCombineSampler(cubemap, sampler);
 	}
 
 	Ref<CubeMap> CubeMap::Create(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLCubeMap>(width, height, generateMipmap, format);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanCubeMap>(width, height, generateMipmap, format);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12CubeMap>(width, height, generateMipmap, format);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateCubeMap(width, height, generateMipmap, format);
 	}
 	Ref<CubeMap> CubeMap::Create(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12CubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateCubeMap(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
 	}
 	Ref<CubeMap> CubeMap::White()
 	{
@@ -162,24 +77,6 @@ namespace GEngine
 	}
 	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
 	{
-		switch (Graphics::GetGraphicsAPI())
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
-		}
-		case GRAPHICS_API_VULKAN: {
-			return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			return CreateRef<D3D12Texture2DArray>(width, height, layers, format);
-		}
-		}
-
-		GE_CORE_ASSERT(false, "Unknown GraphicsAPI!");
-		return nullptr;
+		return Graphics::GetRenderDevice().CreateTexture2DArray(width, height, layers, format);
 	}
 }

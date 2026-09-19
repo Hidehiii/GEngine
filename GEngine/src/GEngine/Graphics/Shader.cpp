@@ -7,9 +7,6 @@
 #include "GEngine/Tools/OpenSSLTool.h"
 #include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Application.h"
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/D3D12/D3D12Shader.h"
 #include <filesystem>
 
 namespace GEngine
@@ -687,27 +684,7 @@ namespace GEngine
 		if (cached != s_ShaderPaths.end())
 			return cached->second;
 
-		Ref<Shader> shader;
-		switch (api)
-		{
-		case GRAPHICS_API_NONE: {
-			GE_CORE_ASSERT(false, "GraphicsAPI::None is currently not supported!");
-			return nullptr;
-		}
-		case GRAPHICS_API_OPENGL: {
-			shader = CreateRef<OpenGLShader>(path);
-			break;
-		}
-		case GRAPHICS_API_VULKAN: {
-			shader = CreateRef<VulkanShader>(path);
-			break;
-		}
-		case GRAPHICS_API_DIRECT3DX12: {
-			shader = CreateRef<D3D12Shader>(path);
-			break;
-		}
-		}
-
+		auto shader = Graphics::GetRenderDevice().CreateShader(path);
 		if (!shader)
 		{
 			GE_CORE_ERROR("Cannot create shader: unsupported graphics API {}", static_cast<int>(api));

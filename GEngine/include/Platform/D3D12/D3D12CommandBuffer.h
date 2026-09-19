@@ -13,6 +13,8 @@ namespace GEngine
 
 		virtual void Begin(Ref<FrameBuffer>& buffer) override;
 		virtual void Begin() override;
+		virtual void BeginRenderPass(Ref<FrameBuffer>& buffer) override;
+		virtual void EndRenderPass() override;
 		virtual void End() override;
 
 		virtual void Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount = 1, uint32_t indexCount = 0) override;
@@ -25,6 +27,8 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>		GetCommandAllocator() { return m_Allocator; }
 		void ResetRecording();
 		void MarkSubmitted(ID3D12CommandQueue* queue);
+		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> NextCompletion() const
+		{ return { m_CompletionFence, m_SubmissionValue + 1 }; }
 		void Retain(const Ref<void>& owner) { m_RetainedOwners.push_back(owner); }
 
 		void AddSignalFence(std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> f) { m_SignalFences.push_back(f); }

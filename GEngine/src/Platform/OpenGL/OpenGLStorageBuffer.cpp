@@ -4,7 +4,14 @@
 
 namespace GEngine
 {
-	OpenGLStorageBuffer::OpenGLStorageBuffer(uint32_t size)
+	void OpenGLStorageBuffer::ReadData(uint32_t size, void* destination, uint32_t offset)
+	{
+		if (!destination || !size || offset > m_Size || size > m_Size - offset)
+			throw std::invalid_argument("Storage readback exceeds buffer bounds.");
+		glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+		glGetNamedBufferSubData(m_Buffer, offset, size, destination);
+	}
+	OpenGLStorageBuffer::OpenGLStorageBuffer(uint32_t size) : m_Size(size)
 	{
 		glCreateBuffers(1, &m_Buffer);
 		glNamedBufferStorage(m_Buffer, size, nullptr, GL_DYNAMIC_STORAGE_BIT);

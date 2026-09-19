@@ -15,6 +15,7 @@ Shader "FrameGraphTriangle"
 
         Program
         {
+            RWByteAddressBuffer ColorData : register(u0);
             struct VsInput
             {
                 float3 position : POSITION;
@@ -34,7 +35,7 @@ Shader "FrameGraphTriangle"
 
             float4 frag(VsOutput input) : SV_Target
             {
-                return float4(0.95f, 0.45f, 0.12f, 1.0f);
+                return asfloat(ColorData.Load4(0));
             }
         }
     }

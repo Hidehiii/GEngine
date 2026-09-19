@@ -175,6 +175,7 @@ namespace GEngine
 			case D3D_SIT_SAMPLER:
 				return SHADER_PROPERTY_TYPE_SAMPLER;
 			case D3D_SIT_UAV_RWSTRUCTURED:
+			case D3D_SIT_UAV_RWBYTEADDRESS:
 				return SHADER_PROPERTY_TYPE_RWBUFFER;
 			case D3D_SIT_UAV_RWTYPED:
 			{
@@ -191,7 +192,7 @@ namespace GEngine
 				return SHADER_PROPERTY_TYPE_STORAGE_IMAGE_UNKNOWN;
 			}
 			default:
-				GE_CORE_ASSERT(false, "Unknown shader resource type!");
+				throw std::invalid_argument("Unsupported D3D12 shader resource type: " + std::to_string(inputDesc.Type));
 			}
 		}
 

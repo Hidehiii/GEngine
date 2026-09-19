@@ -1,4 +1,15 @@
 #include "GEpch.h"
+#include "Platform/OpenGL/OpenGLTexture2DCombineSampler.h"
+#include "Platform/OpenGL/OpenGLCubeMapCombineSampler.h"
+#include "Platform/OpenGL/OpenGLCubeMap.h"
+#include "Platform/OpenGL/OpenGLTexture2DArray.h"
+#include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/OpenGL/OpenGLMaterial.h"
+#include "Platform/OpenGL/OpenGLGraphicsPipeline.h"
+#include "Platform/OpenGL/OpenGLComputePipeline.h"
+#include "Platform/OpenGL/OpenGLSampler.h"
+#include "Platform/OpenGL/OpenGLStorageBuffer.h"
+#include "Platform/OpenGL/OpenGLStorageImage2D.h"
 #include "Platform/OpenGL/OpenGLGraphicsAPI.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -13,6 +24,54 @@
 
 namespace GEngine
 {
+	Ref<Texture2DCombineSampler> OpenGLGraphicsAPI::CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<OpenGLTexture2DCombineSampler>(texture, sampler);
+	}
+	Ref<CubeMapCombineSampler> OpenGLGraphicsAPI::CreateCubeMapCombineSampler(const Ref<CubeMap>& cubemap, const Ref<Sampler>& sampler)
+	{
+		return CreateRef<OpenGLCubeMapCombineSampler>(cubemap, sampler);
+	}
+	Ref<CubeMap> OpenGLGraphicsAPI::CreateCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format)
+	{
+		return CreateRef<OpenGLCubeMap>(width, height, generateMipmap, format);
+	}
+	Ref<CubeMap> OpenGLGraphicsAPI::CreateCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap)
+	{
+		return CreateRef<OpenGLCubeMap>(rightPath, leftPath, topPath, buttomPath, backPath, frontPath, generateMipmap);
+	}
+	Ref<Texture2DArray> OpenGLGraphicsAPI::CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
+	{
+		return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
+	}
+	Ref<Shader> OpenGLGraphicsAPI::CreateShader(const std::string& path)
+	{
+		return CreateRef<OpenGLShader>(path);
+	}
+	Ref<Material> OpenGLGraphicsAPI::CreateMaterial(const Ref<Shader>& shader, const std::string& name)
+	{
+		return CreateRef<OpenGLMaterial>(shader, name);
+	}
+	Ref<GraphicsPipeline> OpenGLGraphicsAPI::CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices)
+	{
+		return CreateRef<OpenGLGraphicsPipeline>(material, vertices);
+	}
+	Ref<ComputePipeline> OpenGLGraphicsAPI::CreateComputePipeline(const Ref<Material>& material)
+	{
+		return CreateRef<OpenGLComputePipeline>(material);
+	}
+	Ref<Sampler> OpenGLGraphicsAPI::CreateSampler(const SamplerSpecification& specification)
+	{
+		return CreateRef<OpenGLSampler>(specification);
+	}
+	Ref<StorageBuffer> OpenGLGraphicsAPI::CreateStorageBuffer(uint32_t size)
+	{
+		return CreateRef<OpenGLStorageBuffer>(size);
+	}
+	Ref<StorageImage2D> OpenGLGraphicsAPI::CreateStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format)
+	{
+		return CreateRef<OpenGLStorageImage2D>(width, height, format);
+	}
 	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
 		s_API = GRAPHICS_API_OPENGL;

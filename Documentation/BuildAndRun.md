@@ -15,10 +15,21 @@ The repository vendors most runtime libraries under `GEngine/vendor`; do not rep
 From the repository root, run:
 
 ```bat
-Scripts\GenerateProject.bat
+Scripts\GenerateProjects.bat
 ```
 
 This regenerates `GEngine.sln` and Visual Studio project files from the Premake scripts. Changes intended to survive regeneration belong in `premake5.lua` files, not only in `.vcxproj` files.
+
+Workspace Release and Dist configurations define `NDEBUG`; Debug defines
+`_DEBUG`. PhysX requires exactly one of these definitions. Regenerate existing
+projects after pulling this configuration change rather than editing generated
+project definitions individually.
+
+For a bounded FrameGraphTriangle run, set `GENGINE_EXAMPLE_FRAME_LIMIT=120`
+or `GENGINE_EXAMPLE_SECONDS=20` in its launch environment. Leave the other limit
+unset (or zero); if both are positive, the first reached requests normal
+application shutdown. Timed runs use a monotonic wall clock. Launch from
+`Example/FrameGraphTriangle` so configuration and shader paths resolve.
 
 ## Build order
 
@@ -53,6 +64,11 @@ CommandBufferCount: 8
 ShaderCacheDirectory: Assets/Cache/Shaders/
 WindowManagerAPI: 0
 ```
+
+For an independent-queue Vulkan diagnostic run, set
+`GENGINE_VULKAN_DEDICATED_QUEUES=1`. When supported, the backend selects
+non-graphics compute/transfer families and logs their indices. Defaults retain
+the existing shared-family policy. This is separate from `GraphicsAPI: 2`.
 
 `GraphicsAPI: 3` selects D3D12 in the current configuration. Keep shader assets and the cache directory relative to the executable's working directory, not the solution root.
 

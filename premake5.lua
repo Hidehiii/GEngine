@@ -10,6 +10,10 @@ workspace "GEngine"
 
 	startproject "Sandbox"
 
+	filter "configurations:Release or Dist"
+		defines { "NDEBUG" }
+	filter {}
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)

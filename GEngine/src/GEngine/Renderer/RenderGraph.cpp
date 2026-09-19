@@ -1,4 +1,7 @@
 #include "GEpch.h"
+#include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Graphics/FrameBuffer.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include "GEngine/Renderer/RenderGraph.h"
 #include "GEngine/Compute/StorageBuffer.h"
 #include "GEngine/Compute/StorageImage.h"
@@ -8,9 +11,164 @@
 
 namespace GEngine
 {
+	RenderGraph::TargetHandle RenderGraph::CreateRenderTarget(std::string name,
+		const RenderPassSpecification& specification, uint32_t width, uint32_t height)
+	{
+		if (!width || !height || specification.RenderTargets.empty())
+			throw std::invalid_argument("A graph target needs dimensions and color attachments.");
+		Target target{ specification, width, height, {}, {} };
+		for (size_t i = 0; i < specification.RenderTargets.size(); ++i)
+		{
+			const auto resource = ImportResource(name + ".Color" + std::to_string(i), ResourceState::ShaderRead);
+			m_Resources[resource].IsAttachment = true;
+			m_Resources[resource].AllowedStates = { ResourceState::RenderTarget, ResourceState::ShaderRead, ResourceState::CopySource };
+			target.Colors.push_back(resource);
+		}
+		m_Targets.push_back(std::move(target));
+		m_IsCompiled = false;
+		return static_cast<TargetHandle>(m_Targets.size() - 1);
+	}
+	RenderGraph::ResourceHandle RenderGraph::GetColorAttachment(TargetHandle target, uint32_t index) const
+	{
+		return m_Targets.at(target).Colors.at(index);
+	}
+	Ref<FrameBuffer> RenderGraph::GetFrameBuffer(TargetHandle target) const
+	{
+		if (!m_IsCompiled) throw std::logic_error("Compile the graph before retrieving attachments.");
+		return m_Targets.at(target).Object;
+	}
+	RenderGraph::PassBuilder RenderGraph::BuildGraphicsPass(std::string name, TargetHandle target, RecordCallback record)
+	{
+		if (target >= m_Targets.size() || !record) throw std::invalid_argument("Invalid graphics pass.");
+		const auto pass = AddPass(std::move(name), [] {});
+		m_Passes[pass].Record = std::move(record);
+		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_GRAPHICS;
+		m_Passes[pass].Target = target;
+		for (auto color : m_Targets[target].Colors) Write(pass, color, ResourceState::RenderTarget);
+		return PassBuilder(*this, pass);
+	}
+	RenderGraph::PassBuilder RenderGraph::BuildComputePass(std::string name, RecordCallback record)
+	{
+		if (!record) throw std::invalid_argument("Invalid compute pass.");
+		const auto pass = AddPass(std::move(name), [] {});
+		m_Passes[pass].Record = std::move(record);
+		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_COMPUTE;
+		return PassBuilder(*this, pass);
+	}
+	void RenderGraph::ExecuteGpu(const Ref<CommandBuffer>& completion)
+	{
+		if (!completion) throw std::invalid_argument("Graph execution requires a completion submission.");
+		if (!m_IsCompiled && !Compile()) throw std::runtime_error("Render graph contains a dependency cycle.");
+		std::vector<Ref<CommandBuffer>> commands(m_Passes.size());
+		uint32_t graphicsCount = 0, computeCount = 0;
+		for (auto handle : m_ExecutionOrder)
+		{
+			const auto& pass = m_Passes[handle];
+			if (!pass.Record) throw std::invalid_argument("ExecuteGpu requires recording passes only.");
+			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
+			else ++computeCount;
+			for (const auto& access : pass.ResourceAccesses)
+				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE && access.State != ResourceState::ShaderWrite)
+					throw std::invalid_argument("Compute graph accesses currently require storage/UAV state.");
+		}
+		if (graphicsCount + 1 > Graphics::GetCommandBufferCount() || computeCount > Graphics::GetCommandBufferCount())
+			throw std::invalid_argument("Graph exceeds the configured per-frame command-buffer capacity.");
+		for (auto handle : m_ExecutionOrder)
+			commands[handle] = m_Passes[handle].Queue == COMMAND_BUFFER_TYPE_GRAPHICS
+				? Graphics::GetGraphicsCommandBuffer() : Graphics::GetComputeCommandBuffer();
+		// Register every edge before submitting its producer. Binary semaphore
+		// backends require one independently consumable signal per edge.
+		for (auto handle : m_ExecutionOrder)
+		{
+			auto dependencies = m_Passes[handle].Dependencies;
+			dependencies.insert(dependencies.end(), m_Passes[handle].InferredDependencies.begin(), m_Passes[handle].InferredDependencies.end());
+			std::sort(dependencies.begin(), dependencies.end());
+			dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
+			for (auto dependency : dependencies) Graphics::SetCommandsBarrier(commands[dependency], commands[handle]);
+			auto finalSubmission = completion;
+			Graphics::SetCommandsBarrier(commands[handle], finalSubmission);
+		}
+		for (auto handle : m_ExecutionOrder)
+		{
+			auto& pass = m_Passes[handle];
+			auto& command = commands[handle];
+			command->Begin();
+			for (const auto& transition : pass.Transitions)
+			{
+				const bool attachment = pass.Target != InvalidTarget &&
+					std::find(m_Targets[pass.Target].Colors.begin(), m_Targets[pass.Target].Colors.end(), transition.Resource) != m_Targets[pass.Target].Colors.end();
+				if (!attachment) Graphics::TransitionResource(command, m_Resources[transition.Resource].Object, transition.Before, transition.After);
+			}
+			if (pass.Target != InvalidTarget) command->BeginRenderPass(m_Targets[pass.Target].Object);
+			pass.Record(command);
+			command->End();
+			Graphics::GetRenderDevice().GetQueue(pass.Queue).Submit(command);
+		}
+	}
+	void RenderGraph::ValidateVersion(ResourceVersion version) const
+	{
+		if (version.Owner != this || version.Generation != m_Generation ||
+			version.Resource >= m_Resources.size() ||
+			version.Version >= m_Resources[version.Resource].Versions.size())
+			throw std::invalid_argument("Invalid or stale render-graph resource version.");
+	}
+	RenderGraph::ResourceVersion RenderGraph::GetVersion(ResourceHandle resource)
+	{
+		if (resource >= m_Resources.size()) throw std::invalid_argument("Invalid resource.");
+		auto& entry = m_Resources[resource];
+		if (!entry.UsesVersions)
+		{
+			for (const auto& pass : m_Passes)
+				for (const auto& access : pass.ResourceAccesses)
+					if (access.Resource == resource)
+						throw std::invalid_argument("Cannot mix versioned and legacy resource accesses.");
+			entry.UsesVersions = true;
+			entry.Versions.push_back({});
+		}
+		return { resource, static_cast<uint32_t>(entry.Versions.size() - 1), this, m_Generation };
+	}
+	void RenderGraph::ReadVersion(PassHandle pass, ResourceVersion version, ResourceState state)
+	{
+		ValidateVersion(version);
+		AddAccess(pass, version.Resource, state, false, true);
+		m_Resources[version.Resource].Versions[version.Version].Readers.push_back(pass);
+	}
+	RenderGraph::ResourceVersion RenderGraph::WriteVersion(PassHandle pass, ResourceVersion previous, ResourceState state)
+	{
+		ValidateVersion(previous);
+		auto& resource = m_Resources[previous.Resource];
+		if (previous.Version + 1 != resource.Versions.size())
+			throw std::invalid_argument("Writes must extend the latest resource version.");
+		AddAccess(pass, previous.Resource, state, true, true);
+		resource.Versions.push_back({ pass, {} });
+		return { previous.Resource, previous.Version + 1, this, m_Generation };
+	}
+	void RenderGraph::BuildVersionDependencies()
+	{
+		auto depend = [this](PassHandle pass, PassHandle prior)
+		{
+			if (pass != InvalidPass && prior != InvalidPass && pass != prior)
+				m_Passes[pass].InferredDependencies.push_back(prior);
+		};
+		for (const auto& resource : m_Resources)
+		{
+			if (!resource.UsesVersions) continue;
+			if (resource.IsTransient && !resource.Versions.front().Readers.empty())
+				throw std::invalid_argument("Cannot read uninitialized transient version: " + resource.Name);
+			for (size_t index = 0; index < resource.Versions.size(); ++index)
+			{
+				const auto& version = resource.Versions[index];
+				for (auto reader : version.Readers) depend(reader, version.Writer);
+				if (index == 0) continue;
+				const auto& previous = resource.Versions[index - 1];
+				depend(version.Writer, previous.Writer);
+				for (auto reader : previous.Readers) depend(version.Writer, reader);
+			}
+		}
+	}
 	RenderGraph::PassHandle RenderGraph::AddPass(std::string name, ExecuteCallback execute)
 	{
-		GE_CORE_ASSERT(execute, "Render-graph pass requires an execute callback.");
+		if (!execute) throw std::invalid_argument("Render-graph pass requires an execute callback.");
 		m_IsCompiled = false;
 		m_Passes.push_back({ std::move(name), std::move(execute), {}, {}, {} });
 		return static_cast<PassHandle>(m_Passes.size() - 1);
@@ -18,14 +176,14 @@ namespace GEngine
 
 	RenderGraph::PassHandle RenderGraph::AddPass(std::string name, std::function<void()> execute)
 	{
-		GE_CORE_ASSERT(execute, "Render-graph pass requires an execute callback.");
+		if (!execute) throw std::invalid_argument("Render-graph pass requires an execute callback.");
 		return AddPass(std::move(name), [execute = std::move(execute)](FrameContext&) { execute(); });
 	}
 
 	void RenderGraph::AddDependency(PassHandle pass, PassHandle dependency)
 	{
-		GE_CORE_ASSERT(pass < m_Passes.size() && dependency < m_Passes.size(), "Render-graph dependency is invalid.");
-		GE_CORE_ASSERT(pass != dependency, "A render-graph pass cannot depend on itself.");
+		if (pass >= m_Passes.size() || dependency >= m_Passes.size() || pass == dependency)
+			throw std::invalid_argument("Invalid render-graph dependency.");
 		m_IsCompiled = false;
 		const auto& dependencies = m_Passes[pass].Dependencies;
 		if (std::find(dependencies.begin(), dependencies.end(), dependency) == dependencies.end())
@@ -159,7 +317,9 @@ namespace GEngine
 			pass.InferredDependencies.clear();
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
-				AddResourceDependency(pass, access.Resource, access.IsWrite);
+				if (!m_Resources[access.Resource].UsesVersions)
+					AddResourceDependency(pass, access.Resource, access.IsWrite);
+		BuildVersionDependencies();
 		std::vector<uint8_t> states(m_Passes.size(), 0);
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
 		{
@@ -173,6 +333,16 @@ namespace GEngine
 
 		ValidateResourceAccesses();
 		CreateTransientResources();
+		for (auto& target : m_Targets)
+		{
+			if (!target.Object)
+			{
+				auto& device = Graphics::GetRenderDevice();
+				target.Object = device.CreateFrameBuffer(device.CreateRenderPass(target.Specification), target.Width, target.Height);
+			}
+			for (uint32_t i = 0; i < target.Colors.size(); ++i)
+				m_Resources[target.Colors[i]].Object = target.Object->GetRenderTarget(i);
+		}
 		BuildResourceTransitions();
 		m_IsCompiled = true;
 		return true;
@@ -180,6 +350,8 @@ namespace GEngine
 
 	void RenderGraph::Execute(FrameContext& frameContext)
 	{
+		for (const auto& pass : m_Passes)
+			if (pass.Record) throw std::invalid_argument("Recording passes require ExecuteGpu.");
 		if (!m_IsCompiled && !Compile())
 			throw std::runtime_error("Render graph contains a dependency cycle.");
 		for (const PassHandle pass : m_ExecutionOrder)
@@ -201,8 +373,10 @@ namespace GEngine
 
 	void RenderGraph::Reset()
 	{
+		++m_Generation;
 		m_Passes.clear();
 		m_Resources.clear();
+		m_Targets.clear();
 		m_ExecutionOrder.clear();
 		m_IsCompiled = false;
 	}
@@ -219,14 +393,18 @@ namespace GEngine
 		}
 	}
 
-	void RenderGraph::AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite)
+	void RenderGraph::AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite, bool versioned)
 	{
-		GE_CORE_ASSERT(pass < m_Passes.size(), "Render-graph pass is invalid.");
-		GE_CORE_ASSERT(resource < m_Resources.size(), "Render-graph resource is invalid.");
-		GE_CORE_ASSERT(state != ResourceState::Undefined, "Render-graph accesses require a concrete resource state.");
-
 		if (pass >= m_Passes.size() || resource >= m_Resources.size() || state == ResourceState::Undefined)
 			throw std::invalid_argument("Invalid render-graph resource access.");
+		if (m_Resources[resource].UsesVersions != versioned)
+			throw std::invalid_argument("Cannot mix versioned and legacy resource accesses.");
+		if ((isWrite && (state == ResourceState::ShaderRead || state == ResourceState::CopySource)) ||
+			(!isWrite && state == ResourceState::CopyDestination))
+			throw std::invalid_argument("Resource state is incompatible with the declared access.");
+		for (const auto& access : m_Passes[pass].ResourceAccesses)
+			if (access.Resource == resource && access.State != state)
+				throw std::invalid_argument("Conflicting states for one resource within a pass.");
 		m_IsCompiled = false;
 		m_Passes[pass].ResourceAccesses.push_back({ resource, state, isWrite });
 	}
@@ -252,19 +430,19 @@ namespace GEngine
 			const auto& resource = m_Resources[i];
 			if (resource.IsTransient && resource.InitialState != ResourceState::Undefined)
 				throw std::invalid_argument("Transient resource must start Undefined: " + resource.Name);
-			initialized[i] = !resource.IsTransient;
+			initialized[i] = !resource.IsTransient && !resource.IsAttachment;
 		}
 		for (const auto pass : m_ExecutionOrder)
 		{
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
 			{
 				const auto& resource = m_Resources[access.Resource];
-				if (!resource.IsTransient) continue;
+				if (!resource.IsTransient && !resource.IsAttachment) continue;
 				if (std::find(resource.AllowedStates.begin(), resource.AllowedStates.end(), access.State) == resource.AllowedStates.end())
 					throw std::invalid_argument("Unsupported transient resource state: " + resource.Name);
 				if (access.IsWrite && (access.State == ResourceState::ShaderRead || access.State == ResourceState::CopySource))
 					throw std::invalid_argument("Write declared with a read-only state: " + resource.Name);
-				if (!access.IsWrite && (access.State == ResourceState::ShaderWrite || access.State == ResourceState::CopyDestination))
+				if (!access.IsWrite && access.State == ResourceState::CopyDestination)
 					throw std::invalid_argument("Read declared with a write-only state: " + resource.Name);
 				if (!access.IsWrite && !initialized[access.Resource])
 					throw std::invalid_argument("Transient resource read before first write: " + resource.Name);
@@ -294,13 +472,19 @@ namespace GEngine
 					lifetime.FirstUse = pass;
 				lifetime.LastUse = pass;
 				auto& currentState = states[access.Resource];
-				if (currentState != access.State)
+				if (currentState != access.State || currentState == ResourceState::ShaderWrite)
 				{
 					transitions.push_back({ access.Resource, currentState, access.State });
 					currentState = access.State;
 				}
 				lifetime.FinalState = currentState;
 			}
+			if (m_Passes[pass].Target != InvalidTarget)
+				for (auto color : m_Targets[m_Passes[pass].Target].Colors)
+				{
+					states[color] = ResourceState::ShaderRead;
+					m_Resources[color].Lifetime.FinalState = ResourceState::ShaderRead;
+				}
 		}
 	}
 
