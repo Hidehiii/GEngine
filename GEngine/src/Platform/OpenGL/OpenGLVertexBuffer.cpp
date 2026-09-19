@@ -8,11 +8,10 @@ namespace GEngine
 	{
 		m_TopologyType = type;
 		m_TotalSizeVertex = size;
+		glCreateVertexArrays(1, &m_VertexArray);
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-
-		glCreateVertexArrays(1, &m_VertexArray);
 
 		if (sizeInstance > 0)
 		{
@@ -27,6 +26,7 @@ namespace GEngine
 	{
 		m_TotalSizeVertex = size;
 		m_TopologyType = type;
+		glCreateVertexArrays(1, &m_VertexArray);
 		glCreateBuffers(1, &m_VertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
@@ -43,6 +43,7 @@ namespace GEngine
 	}
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
+		glDeleteVertexArrays(1, &m_VertexArray);
 		glDeleteBuffers(1, &m_VertexBuffer);
 		if (m_InstanceBuffer)
 		{
@@ -80,7 +81,8 @@ namespace GEngine
 	void OpenGLVertexBuffer::Bind(CommandBuffer* cmd) const
 	{
 		glBindVertexArray(m_VertexArray);
-		m_IndexBuffer->Bind(cmd);
+		if (m_IndexBuffer)
+			m_IndexBuffer->Bind(cmd);
 	}
 
 	void OpenGLVertexBuffer::SetShaderAndInputLayout(const Ref<Shader>& shader, uint32_t pass)
@@ -105,7 +107,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(e.Location);
-					glVertexAttribPointer(e.Location, Utils::ShaderInputDataSize(e.Type), 
+					glVertexAttribPointer(e.Location, Utils::ShaderInputDataComponentCount(e.Type),
 						Utils::ShaderInputDataTypeToGLDataType(e.Type), GL_FALSE, 
 						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride, (const void*)e.Offset);
 					glVertexAttribDivisor(e.Location, 1);
@@ -114,7 +116,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(e.Location);
-					glVertexAttribPointer(e.Location, Utils::ShaderInputDataSize(e.Type),
+					glVertexAttribPointer(e.Location, Utils::ShaderInputDataComponentCount(e.Type),
 						Utils::ShaderInputDataTypeToGLDataType(e.Type), GL_FALSE,
 						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride, (const void*)e.Offset);
 				}
@@ -133,7 +135,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_InstanceBuffer);
 					glEnableVertexAttribArray(e.Location);
-					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataSize(e.Type), 
+					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataComponentCount(e.Type),
 						Utils::ShaderInputDataTypeToGLDataType(e.Type),
 						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputInstanceStride, (const void*)e.Offset);
 					glVertexAttribDivisor(e.Location, 1);
@@ -142,7 +144,7 @@ namespace GEngine
 				{
 					glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 					glEnableVertexAttribArray(e.Location);
-					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataSize(e.Type),
+					glVertexAttribIPointer(e.Location, Utils::ShaderInputDataComponentCount(e.Type),
 						Utils::ShaderInputDataTypeToGLDataType(e.Type),
 						m_Shader->GetPassReflections().at(m_ShaderPass).VertexInputVertexStride, (const void*)e.Offset);
 				}

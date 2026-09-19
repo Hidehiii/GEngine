@@ -66,7 +66,7 @@ all three APIs.
       Queue submissions use dedicated completion fences and a contiguous
       watermark. Resource owners must survive recording until submission.
       FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
-      runtime validation on all three APIs remains pending.
+      current smoke-test runtime validation is complete on all three APIs.
       Instrumented Release D3D12 diagnostic on 2026-09-18: startup checks,
       shader, material, pipeline, offscreen-resource creation, and 89 rendered
       frames succeeded;
@@ -94,6 +94,18 @@ all three APIs.
       remains blocked because the Debug GEngine build fails in vendored
       spdlog/fmt with VS2026 `stdext::checked_array_iterator` errors before
       this change is compiled.
+      Follow-up OpenGL fix: backend state setup is deferred until
+      `GraphicsRuntime::Initialize` runs after the owning context is current;
+      optional index buffers no longer assume an index buffer exists; OpenGL
+      uses the `universal1.5` SPIR-V environment without Vulkan reflection
+      metadata while the cache hash distinguishes backend target/reflection
+      settings; data-constructed vertex buffers create and destroy their VAO;
+      and OpenGL attribute setup uses component counts rather than byte
+      sizes. Verified: FrameGraphTriangle Release/OpenGL rendered 99,467
+      frames through 3,315 buffer/pipeline replacements, accepted `WM_CLOSE`
+      on its visible render window, exited with code 0, and wrote no stderr.
+      The instrumented final draw reported VAO and program handles with GL
+      error 0.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
@@ -162,6 +174,24 @@ it does not require editing every common resource factory.
 
 ## Verification matrix
 
+- [x] Fix OpenGL API initialization order: `OpenGLGraphicsAPI` calls GL
+      functions in its constructor before the window creates and makes a
+      context current, so Release/OpenGL exits immediately with `0xC0000005`.
+      Scope: defer backend state setup until `GraphicsRuntime::Initialize`
+      runs after the owning window/context exists. Acceptance:
+      FrameGraphTriangle Release/OpenGL renders through repeated buffer/
+      pipeline replacement, accepts a normal window close, and exits with
+      code 0.
+      Implemented: `GraphicsAPI` now exposes `Initialize`, OpenGL executes its
+      GL state setup there, and the runtime calls it after context creation.
+      Additional Release/OpenGL blockers found during the same run were the
+      OpenGL SPIR-V reflection extension, a missing VAO on the data-backed
+      vertex-buffer constructor, and byte-size/component-count confusion in
+      `glVertexAttribPointer`/`glVertexAttribIPointer`.
+      Verified: the final instrumented run rendered 99,467 frames through
+      3,315 replacements, accepted `WM_CLOSE`, exited with code 0, reported
+      GL error 0 on the draw, and wrote no stderr.
+
 - [x] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
       and `_DEBUG`; the current Release configuration fails with C1189.
       Scope: make every non-Debug C++ project configuration define `NDEBUG` in
@@ -188,10 +218,15 @@ For every phase, run the Triangle example on all available APIs and verify:
 
 | Check | OpenGL | Vulkan | D3D12 |
 | --- | --- | --- | --- |
-| Acquire / present | pending | pending | pending |
-| `float3` vertex input | pending | pending | pending |
-| Repeated-frame memory stability | pending | pending | pending |
-| Validation / debug output clean | pending | pending | pending |
+| Acquire / present | passed | passed | passed |
+| `float3` vertex input | passed | passed | passed |
+| Repeated-frame memory stability | passed | passed | passed |
+| Validation / debug output clean | passed | passed | passed |
+
+OpenGL evidence: 99,467 frames, 3,315 replacements, `WM_CLOSE`, exit code 0,
+GL error 0, and empty stderr. Vulkan and D3D12 evidence is recorded above.
+Memory stability here means surviving the exercised replacement path without
+a crash; it is not a heap-growth telemetry measurement.
 
 Current local build note: automated compilation must run from a clean Visual
 Studio developer environment.  The current host process exports both `PATH`

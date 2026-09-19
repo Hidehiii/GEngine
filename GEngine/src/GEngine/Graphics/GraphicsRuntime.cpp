@@ -48,6 +48,7 @@ namespace GEngine
 	{
 		if (m_Initialized)
 			return;
+		m_GraphicsAPI->Initialize();
 		ShaderCompiler::Create();
 		m_Initialized = true;
 	}

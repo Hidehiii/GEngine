@@ -121,12 +121,14 @@ namespace GEngine
 			{
 				GLint maxLength;
 				glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-				std::vector<GLchar> infoLog(maxLength);
-				glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+				std::vector<GLchar> infoLog(maxLength > 0 ? maxLength : 1);
+				glGetProgramInfoLog(program, static_cast<GLsizei>(infoLog.size()), &maxLength, infoLog.data());
+				GE_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
 				GE_CORE_ASSERT(false, "Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
 				glDeleteProgram(program);
 				for (auto id : shaderIDs)
 					glDeleteShader(id);
+				program = 0;
 			}
 			for (auto id : shaderIDs)
 			{

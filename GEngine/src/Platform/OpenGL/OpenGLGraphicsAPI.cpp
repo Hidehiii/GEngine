@@ -16,7 +16,13 @@ namespace GEngine
 	OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 	{
 		s_API = GRAPHICS_API_OPENGL;
+	}
+	OpenGLGraphicsAPI::~OpenGLGraphicsAPI()
+	{
+	}
 
+	void OpenGLGraphicsAPI::Initialize()
+	{
 #ifdef GE_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -47,9 +53,6 @@ namespace GEngine
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_MULTISAMPLE);
-	}
-	OpenGLGraphicsAPI::~OpenGLGraphicsAPI()
-	{
 	}
 
 	void OpenGLGraphicsAPI::WaitForIdle()

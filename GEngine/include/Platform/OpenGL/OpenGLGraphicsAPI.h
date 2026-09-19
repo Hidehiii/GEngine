@@ -12,6 +12,7 @@ namespace GEngine
 		OpenGLGraphicsAPI();
 		virtual ~OpenGLGraphicsAPI();
 
+		virtual void Initialize() override;
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() override;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;
 

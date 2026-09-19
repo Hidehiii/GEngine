@@ -15,6 +15,16 @@ namespace GEngine
 {
 	std::unordered_map<std::string, Ref<Shader>> Shader::s_Shaders = std::unordered_map<std::string, Ref<Shader>>();
 
+	namespace
+	{
+		std::string GetSPIRVCacheSource(const std::string& source)
+		{
+			const bool isOpenGL = Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL;
+			const char* target = isOpenGL ? "universal1.5;reflect=false" : "vulkan1.3;reflect=true";
+			return source + "\nGEngine-SPIRV-Target:" + target;
+		}
+	}
+
 	void Shader::ShutdownCache()
 	{
 		s_Shaders.clear();
@@ -157,10 +167,13 @@ namespace GEngine
 
 	bool Shader::IdentifyShaderCache(const std::string& source, ShaderCacheInfo& cache)
 	{
-		std::string hashCode = OpenSSLTool::ComputeMD5(source);
 		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
 			Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
+		{
+			std::string hashCode = OpenSSLTool::ComputeMD5(GetSPIRVCacheSource(source));
 			return cache.Name == m_Name && cache.SpirvHash == hashCode;
+		}
+		std::string hashCode = OpenSSLTool::ComputeMD5(source);
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 			return cache.Name == m_Name && cache.DxilHash == hashCode;
 		// this should never happen, but just in case
@@ -420,7 +433,9 @@ namespace GEngine
 	{
 		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
 			Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
-			cache.SpirvHash = OpenSSLTool::ComputeMD5(source);
+		{
+			cache.SpirvHash = OpenSSLTool::ComputeMD5(GetSPIRVCacheSource(source));
+		}
 		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 			cache.DxilHash = OpenSSLTool::ComputeMD5(source);
 		cache.Name = m_Name;
