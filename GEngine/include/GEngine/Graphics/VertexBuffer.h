@@ -26,6 +26,30 @@ namespace GEngine
 			GE_CORE_ASSERT(false, "Unknown ShaderInputDataType!");
 			return 0;
 		}
+
+		inline uint32_t ShaderInputDataComponentCount(ShaderInputDataType type)
+		{
+			switch (type) {
+			case SHADER_INPUT_DATA_TYPE_FLOAT1:
+			case SHADER_INPUT_DATA_TYPE_INT1:
+			case SHADER_INPUT_DATA_TYPE_UINT1:
+				return 1;
+			case SHADER_INPUT_DATA_TYPE_FLOAT2:
+			case SHADER_INPUT_DATA_TYPE_INT2:
+			case SHADER_INPUT_DATA_TYPE_UINT2:
+				return 2;
+			case SHADER_INPUT_DATA_TYPE_FLOAT3:
+			case SHADER_INPUT_DATA_TYPE_INT3:
+			case SHADER_INPUT_DATA_TYPE_UINT3:
+				return 3;
+			case SHADER_INPUT_DATA_TYPE_FLOAT4:
+			case SHADER_INPUT_DATA_TYPE_INT4:
+			case SHADER_INPUT_DATA_TYPE_UINT4:
+				return 4;
+			}
+			GE_CORE_ASSERT(false, "Unknown ShaderInputDataType!");
+			return 0;
+		}
 	}
 
 

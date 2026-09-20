@@ -74,8 +74,17 @@ namespace GEngine
 
 	D3D12VertexBuffer::~D3D12VertexBuffer()
 	{
-		m_VertexBuffer.Reset();
-		m_InstanceBuffer.Reset();
+		auto vertexBuffer = std::move(m_VertexBuffer);
+		auto instanceBuffer = std::move(m_InstanceBuffer);
+		if (D3D12Context::Get())
+		{
+			D3D12Context::Get()->RetireResource(
+				[vertexBuffer = std::move(vertexBuffer), instanceBuffer = std::move(instanceBuffer)]() mutable
+				{
+					vertexBuffer.Reset();
+					instanceBuffer.Reset();
+				});
+		}
 	}
 
 	void D3D12VertexBuffer::SetVertexData(const void* data, uint32_t size)
@@ -179,7 +188,14 @@ namespace GEngine
 
 	D3D12IndexBuffer::~D3D12IndexBuffer()
 	{
-		m_IndexBuffer.Reset();
+		auto indexBuffer = std::move(m_IndexBuffer);
+		if (D3D12Context::Get())
+		{
+			D3D12Context::Get()->RetireResource([indexBuffer = std::move(indexBuffer)]() mutable
+				{
+					indexBuffer.Reset();
+				});
+		}
 	}
 
 	void D3D12IndexBuffer::Bind(CommandBuffer* cmd) const

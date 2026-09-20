@@ -5,6 +5,7 @@ This directory documents the engine as it exists in the current source tree. It 
 ## Contents
 
 - [Engineering workflow](../AGENTS.md): repository-wide implementation, GPU lifetime, verification, example, documentation, and Git standards for coding agents.
+- [Cross-computer workflow](CrossComputerWorkflow.md): preserving work, integrating branches and validating the merged renderer.
 - [Architecture](Architecture.md): runtime ownership, frame flow, queues, shutdown ordering, renderer, and backend boundaries.
 - [Graphics API](GraphicsAPI.md): creating shaders, materials, buffers, pipelines, and a presentable draw.
 - [Features and samples](Features.md): implemented subsystems, backend status, configuration, and example projects.
@@ -15,7 +16,7 @@ This directory documents the engine as it exists in the current source tree. It 
 
 ## Getting started
 
-1. Generate the Visual Studio solution with `Scripts/GenerateProject.bat`.
+1. Generate the Visual Studio solution with `Scripts/GenerateProjects.bat`; the bundled Premake supports VS2026, VS2022 and VS2019. See [Build and run](BuildAndRun.md) for usage.
 2. Build one configuration at a time. Do not start a second build for the same configuration and output directory: MSVC's shared precompiled-header file cannot be written concurrently.
 3. Build and run `Example/Triangle` to validate the basic graphics path.
 

@@ -17,19 +17,25 @@ namespace GEngine
 	}
 	VulkanShader::~VulkanShader()
 	{
-		if(VulkanContext::Get()->GetDevice())
+		auto shaderModules = std::move(m_ShaderModules);
+		auto pipelineLayouts = std::move(m_PipelineLayouts);
+		auto descriptorSetLayouts = std::move(m_DescriptorSetLayouts);
+
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			VulkanContext::Get()->RetireResource(
-				[modules = std::move(m_ShaderModules),
-				 pipelineLayouts = std::move(m_PipelineLayouts),
-				 setLayouts = std::move(m_DescriptorSetLayouts)](VkDevice device)
+			context->RetireResource(
+				[shaderModules = std::move(shaderModules), pipelineLayouts = std::move(pipelineLayouts),
+					descriptorSetLayouts = std::move(descriptorSetLayouts)](VkDevice device) mutable
 				{
-					for (const auto& passModules : modules)
-						for (const auto& [stage, module] : passModules)
+					for (auto&& passModules : shaderModules)
+					{
+						for (auto&& [stage, module] : passModules)
 							vkDestroyShaderModule(device, module, nullptr);
+					}
 					for (auto layout : pipelineLayouts)
 						vkDestroyPipelineLayout(device, layout, nullptr);
-					for (auto layout : setLayouts)
+					for (auto layout : descriptorSetLayouts)
 						vkDestroyDescriptorSetLayout(device, layout, nullptr);
 				});
 		}

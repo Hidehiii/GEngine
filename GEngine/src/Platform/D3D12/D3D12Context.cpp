@@ -110,6 +110,7 @@ namespace
 		WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
 		WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
 		WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
+		FlushDeferredReleases();
 
 		for(int i = 0; i < m_FenceEvents.size(); i++)
 		{
@@ -120,6 +121,13 @@ namespace
 #ifdef GE_DEBUG
 		StopD3D12DebugInfoQueueLogger();
 #endif
+		for (HANDLE eventHandle : m_TrackedFenceEvents)
+		{
+			if (eventHandle != nullptr)
+				CloseHandle(eventHandle);
+		}
+		m_TrackedFenceEvents.clear();
+		m_TrackedFences.clear();
 
 	}
 	void D3D12Context::SetVSync(bool enable)
@@ -187,6 +195,74 @@ namespace
 			m_Fences.at(UINT(type) - 1)->SetEventOnCompletion(m_FenceValues.at(UINT(type) - 1), m_FenceEvents.at(UINT(type) - 1));
 			WaitForSingleObject(m_FenceEvents.at(UINT(type) - 1), timeout);
 		}
+	}
+
+	uint64_t D3D12Context::BeginTrackedSubmission(CommandBufferType type)
+	{
+		CollectDeferredReleases();
+		const size_t queueIndex = static_cast<size_t>(type) - 1;
+		++m_LastSubmission;
+		++m_TrackedFenceValues.at(queueIndex);
+		return m_LastSubmission;
+	}
+
+	void D3D12Context::EndTrackedSubmission(CommandBufferType type, uint64_t submission)
+	{
+		const size_t queueIndex = static_cast<size_t>(type) - 1;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue;
+		switch (type)
+		{
+		case COMMAND_BUFFER_TYPE_GRAPHICS: queue = m_GraphicsQueue; break;
+		case COMMAND_BUFFER_TYPE_COMPUTE: queue = m_ComputeQueue; break;
+		case COMMAND_BUFFER_TYPE_TRANSFER: queue = m_TransferQueue; break;
+		default: GE_CORE_ASSERT(false, "D3D12 tracked submission type is invalid."); return;
+		}
+
+		const uint64_t fenceValue = m_TrackedFenceValues.at(queueIndex);
+		D3D12_THROW_IF_FAILED(queue->Signal(m_TrackedFences.at(queueIndex).Get(), fenceValue));
+		m_PendingSubmissions.push_back({ submission, type, m_TrackedFences.at(queueIndex), fenceValue });
+	}
+
+	void D3D12Context::RetireResource(DeferredRelease release)
+	{
+		if (!release)
+			return;
+		CollectDeferredReleases();
+		if (m_LastSubmission == m_CompletedSubmission)
+		{
+			release();
+			return;
+		}
+		m_DeferredReleases.push_back({ m_LastSubmission, std::move(release) });
+	}
+
+	void D3D12Context::CollectDeferredReleases()
+	{
+		size_t completedCount = 0;
+		while (completedCount < m_PendingSubmissions.size())
+		{
+			const auto& submission = m_PendingSubmissions[completedCount];
+			if (submission.Fence->GetCompletedValue() < submission.Value)
+				break;
+			m_CompletedSubmission = submission.Submission;
+			++completedCount;
+		}
+		if (completedCount != 0)
+			m_PendingSubmissions.erase(m_PendingSubmissions.begin(), m_PendingSubmissions.begin() + completedCount);
+
+		std::vector<DeferredRelease> completedReleases;
+		for (auto entry = m_DeferredReleases.begin(); entry != m_DeferredReleases.end();)
+		{
+			if (entry->Submission > m_CompletedSubmission)
+			{
+				++entry;
+				continue;
+			}
+			completedReleases.push_back(std::move(entry->Release));
+			entry = m_DeferredReleases.erase(entry);
+		}
+		for (auto& release : completedReleases)
+			release();
 	}
 	Ref<D3D12CommandBuffer> D3D12Context::GetCommandBuffer(CommandBufferType type)
 	{
@@ -413,10 +489,15 @@ namespace
 		m_Fences.resize(m_QueueCount);
 		m_FenceValues.resize(m_QueueCount, 0);
 		m_FenceEvents.resize(m_QueueCount);
+		m_TrackedFences.resize(m_QueueCount);
+		m_TrackedFenceValues.resize(m_QueueCount, 0);
+		m_TrackedFenceEvents.resize(m_QueueCount);
 		for (int i = 0; i < m_QueueCount; i++)
 		{
 			m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fences[i]));
 			m_FenceEvents[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+			m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_TrackedFences[i]));
+			m_TrackedFenceEvents[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		}
 	}
 	void D3D12Context::CreateDescriptorHeaps()
@@ -438,6 +519,35 @@ namespace
 				// for convenience, we use the graphics queue to signal the fence, but it doesn't matter which queue we use to signal the fence, as long as we use the same queue to wait for the fence.
 				m_GraphicsQueue->Signal(m_Fences.at(i).Get(), m_FenceValues.at(i));
 			}
+		}
+	}
+
+	void D3D12Context::WaitForTrackedSubmissions()
+	{
+		for (const auto& submission : m_PendingSubmissions)
+		{
+			const size_t queueIndex = static_cast<size_t>(submission.Type) - 1;
+			if (submission.Fence->GetCompletedValue() < submission.Value)
+			{
+				D3D12_THROW_IF_FAILED(submission.Fence->SetEventOnCompletion(
+					submission.Value, m_TrackedFenceEvents.at(queueIndex)));
+				WaitForSingleObject(m_TrackedFenceEvents.at(queueIndex), INFINITE);
+			}
+			m_CompletedSubmission = submission.Submission;
+		}
+		m_PendingSubmissions.clear();
+		CollectDeferredReleases();
+	}
+
+	void D3D12Context::FlushDeferredReleases()
+	{
+		WaitForTrackedSubmissions();
+		auto deferredReleases = std::move(m_DeferredReleases);
+		m_DeferredReleases.clear();
+		for (auto& entry : deferredReleases)
+		{
+			if (entry.Release)
+				entry.Release();
 		}
 	}
 }

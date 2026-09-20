@@ -463,8 +463,9 @@ namespace GEngine
 
 		std::vector<LPCWSTR> args;
 		args.push_back(L"-spirv");
-		args.push_back(L"-fspv-reflect");
 		args.push_back(L"-O0");
+		// OpenGL translates this intermediate to desktop GLSL before compilation.
+		args.push_back(L"-fspv-reflect");
 		args.push_back(L"-fspv-target-env=vulkan1.3");
 
 		args.push_back(L"-E");

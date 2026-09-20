@@ -1,5 +1,21 @@
 # Graphics API usage
 
+## Cross-computer integration notes
+
+OpenGL state initialization runs through `GraphicsRuntime::Initialize` after
+the context becomes current. Its shader path translates reflected Vulkan
+SPIR-V to desktop GLSL 450; it does not directly specialize Vulkan binaries.
+Shader cache hashes include the compilation target/translation path so caches
+from the former direct-SPIR-V implementation are not reused accidentally.
+
+D3D12 command buffers retain recording owners and use their own submission
+completion to guard allocator reuse. Context submission tracking separately
+retires native resources replaced in place; the mechanisms cover different
+lifetimes and neither replaces the other. Vulkan retains submission-serial
+retirement for descriptors, layouts and render passes as well as graph queue
+dependencies. See [integration tracking](../TODO/CrossComputerIntegration.md)
+for merged-build evidence.
+
 ## Diagnostic storage-buffer readback
 
 `StorageBuffer::ReadData(size, destination, offset = 0)` copies bytes to CPU

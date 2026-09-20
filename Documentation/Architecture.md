@@ -154,8 +154,9 @@ the whole device when their C++ owner is released.
 ## Renderer layering
 
 OpenGL backend construction only selects the API; it must not issue GL calls.
-Window creation makes the context current, loads GLAD, then initializes debug
-output and default GL state through `OpenGLGraphicsAPI::InitializeContextState`.
+Window creation makes the context current and loads GLAD. The subsequent
+`GraphicsRuntime::Initialize` calls `OpenGLGraphicsAPI::Initialize` once to set
+up debug output and default GL state.
 Loader failure throws before any GL state call, including in Release builds.
 
 OpenGL translates the compiler's Vulkan SPIR-V intermediate to desktop GLSL 450
@@ -180,6 +181,11 @@ The renderer separates portable intent from backend implementation:
 `Shader` owns reflection data. The reflected vertex inputs determine vertex-buffer format, offset and stride. D3D12 uses DXIL reflection; Vulkan uses SPIR-V reflection. A shader's compiled bytes are owned by the shader object, so D3D12 pipeline bytecode pointers remain valid for the pipeline lifetime.
 
 ## D3D12 frame lifetime
+
+Context-owned submission tracking also retires replaced native vertex/index
+buffers and graphics pipeline states across all queues. Its completion watermark
+is separate from the command-buffer completion used for allocator reuse below.
+Both mechanisms remain after cross-computer integration.
 
 D3D12 command buffers retain draw/dispatch pipeline owners and explicitly
 transitioned resources until their recording is reset after GPU completion.

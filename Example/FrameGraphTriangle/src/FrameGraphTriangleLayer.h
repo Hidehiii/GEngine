@@ -21,5 +21,6 @@ namespace GEngine
 		Ref<ComputePipeline> m_ComputePipeline;
 		Ref<StorageBuffer> m_Color;
 		RenderGraph m_Graph;
+		RenderGraph::TargetHandle m_Target = RenderGraph::InvalidTarget;
 	};
 }

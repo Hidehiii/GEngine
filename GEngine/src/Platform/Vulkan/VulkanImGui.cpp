@@ -22,10 +22,15 @@ namespace GEngine {
 		s_CommandBuffers.clear();
 		s_FrameBuffer.reset();
 		s_RenderPass.reset();
-		if (VulkanContext::Get()->GetDevice() && s_DescriptorPool != VK_NULL_HANDLE)
+		const VkDescriptorPool descriptorPool = s_DescriptorPool;
+		s_DescriptorPool = VK_NULL_HANDLE;
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE && descriptorPool != VK_NULL_HANDLE)
 		{
-			vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), s_DescriptorPool, nullptr);
-			s_DescriptorPool = VK_NULL_HANDLE;
+			context->RetireResource([descriptorPool](VkDevice device)
+				{
+					vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+				});
 		}
 	}
 	void VulkanImGui::OnAttach(void* window)

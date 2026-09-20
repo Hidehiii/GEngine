@@ -123,6 +123,7 @@ namespace GEngine
 		offscreenSpecification.RenderTargets = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
 		offscreenSpecification.DepthStencil = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 		const auto target = m_Graph.CreateRenderTarget("GraphColor", offscreenSpecification, 512, 512);
+		m_Target = target;
 		auto computeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "GraphCompute");
 		computeMaterial->SetResource("ColorData", m_Color);
 		m_ComputePipeline = device.CreateComputePipeline(computeMaterial);
@@ -151,6 +152,9 @@ namespace GEngine
 			auto material = Material::Create(shader, "ReplacementMaterial");
 			material->SetResource("ColorData", m_Color);
 			m_Pipeline = GraphicsPipeline::Create(material, buffer);
+			// Preserve the render-pass replacement regression from the other branch.
+			auto frameBuffer = m_Graph.GetFrameBuffer(m_Target);
+			frameBuffer->SetRenderPassOperation(frameBuffer->GetRenderPass()->GetSpecification().Operation);
 		}
 		m_Graph.ExecuteGpu(GraphicsPresent::GetCommandBuffer());
 		if (m_RenderCount == 119)

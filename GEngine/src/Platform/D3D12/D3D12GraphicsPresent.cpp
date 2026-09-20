@@ -62,6 +62,7 @@ namespace GEngine
 
 	bool D3D12GraphicsPresent::AquireImage()
 	{
+		D3D12Context::Get()->CollectDeferredReleases();
 		m_FrameIndex = D3D12Context::Get()->GetSwapChain()->GetCurrentBackBufferIndex();
 
 		// wait until the previous frame is finished

@@ -41,7 +41,8 @@ namespace GEngine
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
-		if (VulkanContext::Get()->GetDevice() && !m_DescriptorSets.empty())
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE && !m_DescriptorSets.empty())
 		{
 			const auto pool = VulkanContext::Get()->GetDescriptorPool();
 			VulkanContext::Get()->RetireResource(

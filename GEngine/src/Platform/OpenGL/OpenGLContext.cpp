@@ -39,7 +39,6 @@ namespace GEngine
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		if (!status)
 			throw std::runtime_error("Failed to initialize GLAD for the current OpenGL context.");
-		OpenGLGraphicsAPI::InitializeContextState();
 
 		GE_CORE_INFO("OpenGL Info:");
 		GE_CORE_INFO("    OpenGL Vender {0}:", (char*)glGetString(GL_VENDOR));

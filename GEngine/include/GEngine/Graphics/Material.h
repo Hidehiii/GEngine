@@ -74,7 +74,7 @@ namespace GEngine
 			return *(Ref<T>*)ReadResourceProperty(name);
 		}
 
-		virtual Ref<Shader>	GetShader() = 0;
+		virtual Ref<Shader>		GetShader() = 0;
 		virtual std::string		GetName() { return m_Name; };
 
 		virtual void SetName(const std::string& name) { m_Name = name; }

@@ -9,11 +9,15 @@
 #include "Platform/D3D12/D3D12DescriptorHeap.h"
 #include "GEngine/Math/Math.h"
 
+#include <functional>
+
 namespace GEngine
 {
 	class GENGINE_API D3D12Context : public  GraphicsContext
 	{
 	public:
+		using DeferredRelease = std::function<void()>;
+
 		D3D12Context(void* windowHandle);
 		virtual ~D3D12Context() override;
 
@@ -48,6 +52,10 @@ namespace GEngine
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t>	GetFence(CommandBufferType type);
 		void														IncreaseFenceValue(CommandBufferType type);
 		void														WaitForFence(CommandBufferType type, uint64_t timeout = INFINITE);
+		uint64_t													BeginTrackedSubmission(CommandBufferType type);
+		void														EndTrackedSubmission(CommandBufferType type, uint64_t submission);
+		void														RetireResource(DeferredRelease release);
+		void														CollectDeferredReleases();
 	public:
 		UINT GetSamplerDescriptorIncrementSize() const { return m_SamplerDescriptorIncrementSize; }
 		ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap(uint32_t frame) const { return m_HeapPool.GetCbvSrvUavDescriptorHeap(frame).Get(); }
@@ -70,6 +78,8 @@ namespace GEngine
 		void						CreateFences();
 		void						CreateDescriptorHeaps();
 		void						CheckAndResetFences();
+		void						WaitForTrackedSubmissions();
+		void						FlushDeferredReleases();
 	private:
 		void*											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
@@ -96,6 +106,25 @@ namespace GEngine
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_Fences; //  each queue has its own fence, and each fence has its own value
 		std::vector<uint64_t>								m_FenceValues;
 		std::vector<HANDLE>									m_FenceEvents;
+		struct PendingSubmission
+		{
+			uint64_t									Submission;
+			CommandBufferType							Type;
+			Microsoft::WRL::ComPtr<ID3D12Fence>			Fence;
+			uint64_t									Value;
+		};
+		struct DeferredReleaseEntry
+		{
+			uint64_t									Submission;
+			DeferredRelease								Release;
+		};
+		std::vector<PendingSubmission>					m_PendingSubmissions;
+		std::vector<DeferredReleaseEntry>				m_DeferredReleases;
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Fence>>	m_TrackedFences;
+		std::vector<uint64_t>							m_TrackedFenceValues;
+		std::vector<HANDLE>								m_TrackedFenceEvents;
+		uint64_t										m_LastSubmission = 0;
+		uint64_t										m_CompletedSubmission = 0;
 
 		Vector4											m_ClearColor = { 0, 0, 0, 0 };
 

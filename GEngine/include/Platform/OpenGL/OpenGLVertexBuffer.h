@@ -35,7 +35,7 @@ namespace GEngine
 	private:
 		uint32_t								m_VertexBuffer = 0;
 		uint32_t								m_InstanceBuffer = 0;
-		uint32_t								m_VertexArray;
+		uint32_t								m_VertexArray = 0;
 		Ref<OpenGLIndexBuffer>					m_IndexBuffer = nullptr;
 
 		friend class OpenGLGraphicsPipeline;
@@ -55,7 +55,7 @@ namespace GEngine
 	protected:
 		virtual void Bind(CommandBuffer* cmd) const override;
 	private:
-		uint32_t m_Buffer;
+		uint32_t m_Buffer = 0;
 		
 
 		friend class OpenGLVertexBuffer;

@@ -39,6 +39,20 @@ queue.Submit(commandBuffer);
 
 ## Resource replacement check
 
+The merged example replaces materials, vertex buffers and graphics pipelines
+every 30 frames. It also calls `SetRenderPassOperation` on the graph-owned
+offscreen framebuffer to preserve the remote Vulkan render-pass retirement
+regression. This runs alongside the graphics/compute graph and frame-119
+numeric readback. `GENGINE_EXAMPLE_NO_REPLACEMENT` disables all these replacements
+for baseline comparisons. Merged-version results are tracked separately in
+[cross-computer integration](../../TODO/CrossComputerIntegration.md).
+
+Merged-version verification (2026-09-19/20, VS2022): Debug and Release builds
+passed; OpenGL, Vulkan (shared and dedicated queues), and D3D12 each completed
+120 frames with successful compute readback and normal shutdown. A 65-second
+Debug replacement stress run on each API showed no sustained sampled memory
+growth. Manual visible output/resize/minimize and VS2026 Debug remain unverified.
+
 Set `GENGINE_EXAMPLE_FRAME_LIMIT` to a positive frame count to request normal
 shutdown after that many rendered frames; omit it (or use zero) for interactive
 testing. The run logs its completed-frame count before calling Application::Close.

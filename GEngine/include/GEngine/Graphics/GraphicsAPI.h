@@ -59,6 +59,7 @@ namespace GEngine
 		}
 
 		virtual std::vector<std::string> GetExtensions() = 0;
+		virtual void Initialize() {}
 		virtual GraphicsCapabilities GetCapabilities() const = 0;
 
 		virtual uint32_t GetMaxTexture2DSize() = 0;

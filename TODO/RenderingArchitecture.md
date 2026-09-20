@@ -1,5 +1,13 @@
 # Rendering architecture refactor
 
+## Integration status (2026-09-19)
+
+Local and remote milestone histories below are retained for traceability.
+Their old limitations and results describe the respective parent revisions.
+See [CrossComputerIntegration.md](CrossComputerIntegration.md) for the merged
+implementation decisions and fresh verification; historical checkboxes are not
+proof that the merged version passed on a particular backend or toolchain.
+
 ## Goal
 
 Provide one portable rendering API for OpenGL, Vulkan, and D3D12. Renderer
@@ -251,7 +259,10 @@ all three APIs.
       swapchain presenter, and keep inter-command dependencies in the device
       submission layer instead of storing synchronization lists in command
       buffers.
-- [ ] Complete Vulkan deferred deletion for all replaceable GPU resources.
+- [~] Complete Vulkan deferred deletion for all replaceable GPU resources.
+        Historical local-branch evidence follows. The remote follow-up below
+        completes render-pass retirement; merged-version verification is tracked
+        in `CrossComputerIntegration.md`, not inferred from either parent.
         Current milestone: retire material descriptor sets and shader-owned
         layouts/modules through submission completion; make shared-pool release
         null-safe and keep it after the shutdown idle/retirement flush. Extend
@@ -281,6 +292,70 @@ all three APIs.
       watermark. Resource owners must survive recording until submission.
         FrameGraphTriangle now exercises repeated buffer/pipeline/material replacement;
       runtime validation on all three APIs remains pending.
+- [x] Remote-branch Vulkan retirement follow-up (historical evidence).
+      Submission-serial retirement is implemented and graphics/compute pipeline
+      replacements, core buffer/image/sampler objects, framebuffers, material
+      descriptor sets, shader modules/layouts, and descriptor pools use it.
+      Source audit after the render-pass follow-up found no remaining
+      replaceable Vulkan resource that is destroyed without either
+      submission-serial retirement or an explicit completion wait. One-shot
+      staging buffers are released after their single-time submission fence
+      waits; context-owned command pools, sync objects, and swapchain state are
+      released after `WaitForIdle`; presentation fences are released after the
+      presenter's idle wait.
+      Bounded follow-up completed: `VulkanRenderPass` handles are retired through the same
+      submission-serial path, initialize the handle to `VK_NULL_HANDLE`, and
+      exercise `FrameBuffer::SetRenderPassOperation` replacement in
+      FrameGraphTriangle alongside the existing buffer/pipeline replacement.
+      Implemented: `VulkanFrameBuffer::SetRenderPassOperation` now creates a
+      backend render pass directly instead of reusing the static cache, so
+      each operation replacement actually retires the old native handle.
+      Verified: Release/Vulkan builds, renders through repeated render-pass
+      replacement, accepts `WM_CLOSE`, exits with code 0, and writes no
+      stderr.
+      Queue submissions use dedicated completion fences and a contiguous
+      watermark. Resource owners must survive recording until submission.
+      FrameGraphTriangle now exercises repeated buffer/pipeline replacement;
+      current smoke-test runtime validation is complete on all three APIs.
+      Instrumented Release D3D12 diagnostic on 2026-09-18: startup checks,
+      shader, material, pipeline, offscreen-resource creation, and 89 rendered
+      frames succeeded;
+      the process then exited with `0xC0000409` during the 90th frame, after the
+      third 30-frame buffer/pipeline replacement. This is a concrete repeated
+      replacement lifetime failure, not a successful backend validation.
+      Follow-up D3D12 fix: submission-tracked deferred release now covers
+      vertex/index buffers and graphics pipeline states, including replacement
+      paths that clear cached pipeline states. Each tracked submission signals
+      a per-queue fence; completed resources are retired by a contiguous
+      submission watermark and flushed after all queues become idle.
+      Verified: FrameGraphTriangle Release/D3D12 ran well beyond frame 90,
+      accepted `WM_CLOSE` on its visible render window, exited without
+      forced termination or `0xC0000409`, and a `cmd /c start /wait` wrapper
+      reported exit code 0. The OpenGL runtime check remains pending; the
+      Vulkan Release check below is now complete.
+      Follow-up Vulkan fix: material descriptor sets, shader-owned modules and
+      descriptor-set/pipeline layouts, and context/ImGui descriptor pools are
+      retired through the existing submission-serial path. `Material::GetShader`
+      now returns its shared pointer by value, fixing the dangling reference
+      previously produced by the OpenGL and Vulkan material overrides.
+      Verified: FrameGraphTriangle Release/Vulkan built successfully, rendered
+      for eight seconds through repeated replacement, accepted `WM_CLOSE`,
+      exited with code 0, and wrote no stderr. Validation-layer execution
+      remains blocked because the Debug GEngine build fails in vendored
+      spdlog/fmt with VS2026 `stdext::checked_array_iterator` errors before
+      this change is compiled.
+      Follow-up OpenGL fix: backend state setup is deferred until
+      `GraphicsRuntime::Initialize` runs after the owning context is current;
+      optional index buffers no longer assume an index buffer exists; OpenGL
+      used the `universal1.5` SPIR-V environment without Vulkan reflection
+      metadata while the cache hash distinguishes backend target/reflection
+      settings; data-constructed vertex buffers create and destroy their VAO;
+      and OpenGL attribute setup uses component counts rather than byte
+      sizes. Verified: FrameGraphTriangle Release/OpenGL rendered 99,467
+      frames through 3,315 buffer/pipeline replacements, accepted `WM_CLOSE`
+      on its visible render window, exited with code 0, and wrote no stderr.
+      The instrumented final draw reported VAO and program handles with GL
+      error 0.
 
 Acceptance: recreating a runtime does not reuse command buffers or backend
 state from the previous runtime.
@@ -314,6 +389,10 @@ submission and deterministic renderer shutdown.
       creation and backend memory-barrier compilation remain separate work.
       Startup regression scenarios passed in Debug and Release on all three
       backends on 2026-09-12, including normal application shutdown.
+      Verified: FrameGraphTriangle's startup checks executed on Release
+      D3D12, Vulkan, and OpenGL during the backend retirement and rendering
+      checks recorded above. Each run reached rendering after rejecting the
+      invalid transient graphs and detecting the inferred dependency cycle.
 
 - [~] Add typed image/buffer descriptors and transient resource creation.
       `RenderGraph` can now create transient 2D textures, storage buffers, and
@@ -367,15 +446,60 @@ it does not require editing every common resource factory.
       120 frames with normal exit code 0 on 2026-09-12, including versioned graph
       startup checks. Final overwrite and same-state dependency regressions were
       rebuilt and rerun successfully on all three backends afterward.
+- [x] Fix OpenGL API initialization order: `OpenGLGraphicsAPI` calls GL
+      functions in its constructor before the window creates and makes a
+      context current, so Release/OpenGL exits immediately with `0xC0000005`.
+      Scope: defer backend state setup until `GraphicsRuntime::Initialize`
+      runs after the owning window/context exists. Acceptance:
+      FrameGraphTriangle Release/OpenGL renders through repeated buffer/
+      pipeline replacement, accepts a normal window close, and exits with
+      code 0.
+      Implemented: `GraphicsAPI` now exposes `Initialize`, OpenGL executes its
+      GL state setup there, and the runtime calls it after context creation.
+      Additional Release/OpenGL blockers found during the same run were the
+      OpenGL SPIR-V reflection extension, a missing VAO on the data-backed
+      vertex-buffer constructor, and byte-size/component-count confusion in
+      `glVertexAttribPointer`/`glVertexAttribIPointer`.
+      Verified: the final instrumented run rendered 99,467 frames through
+      3,315 replacements, accepted `WM_CLOSE`, exited with code 0, reported
+      GL error 0 on the draw, and wrote no stderr.
 
-For every phase, run the Triangle example on all available APIs and verify:
+- [x] Fix Release build definitions: PhysX requires exactly one of `NDEBUG`
+      and `_DEBUG`; the current Release configuration fails with C1189.
+      Scope: make every non-Debug C++ project configuration define `NDEBUG` in
+      the Premake source, then generate and build the Release engine and
+      FrameGraphTriangle. Re-run the assertion-disabled FrameGraphTriangle
+      startup check afterward. Dist should use the same assertion-disabled
+      definition because it also selects the Release runtime.
+      Before implementation: `GEngine/premake5.lua` switches `runtime` and
+      optimization but does not define `NDEBUG`; PhysX's `PxPreprocessor.h`
+      rejects configurations where neither `NDEBUG` nor `_DEBUG` is defined.
+      Implemented: the workspace defines `NDEBUG` for C++ Release/Dist
+      configurations, without propagating it to the C# ScriptCore project.
+      Verified: VS2026 generation emits `NDEBUG` for GEngine and
+      FrameGraphTriangle Release/Dist; isolated Release builds of GEngine,
+      its dependencies, and FrameGraphTriangle succeed and no longer hit
+      PhysX C1189.
+      Runtime follow-up: after D3D12 submission-tracked retirement was added for
+      repeated buffer/pipeline replacement, the assertion-disabled
+      FrameGraphTriangle Release run survived beyond frame 90 and exited
+      normally with exit code 0.
+      Remaining runtime/backend verification is tracked by the matrix below.
+
+The following matrix is historical remote-branch evidence, not merged-version
+verification. Current integration results are tracked in `CrossComputerIntegration.md`.
 
 | Check | OpenGL | Vulkan | D3D12 |
 | --- | --- | --- | --- |
-| Acquire / present | pending | pending | pending |
-| `float3` vertex input | pending | pending | pending |
-| Repeated-frame memory stability | pending | pending | pending |
-| Validation / debug output clean | pending | pending | pending |
+| Acquire / present | passed | passed | passed |
+| `float3` vertex input | passed | passed | passed |
+| Replacement survival (not memory telemetry) | passed | passed | passed |
+| Captured runtime output | passed | passed | passed |
+
+OpenGL evidence: 99,467 frames, 3,315 replacements, `WM_CLOSE`, exit code 0,
+GL error 0, and empty stderr. Vulkan and D3D12 evidence is recorded above.
+Memory stability here means surviving the exercised replacement path without
+a crash; it is not a heap-growth telemetry measurement.
 
 Current local build note: automated compilation must run from a clean Visual
 Studio developer environment.  The current host process exports both `PATH`

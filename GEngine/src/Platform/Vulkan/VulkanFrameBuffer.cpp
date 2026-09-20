@@ -190,7 +190,7 @@ namespace GEngine
 	{
 		auto spec		= m_RenderPass->GetSpecification();
 		spec.Operation	= op;
-		m_RenderPass	= std::dynamic_pointer_cast<VulkanRenderPass>(RenderPass::Create(spec));
+		m_RenderPass	= std::dynamic_pointer_cast<VulkanRenderPass>(Graphics::GetRenderDevice().CreateRenderPass(spec));
 	}
 	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{

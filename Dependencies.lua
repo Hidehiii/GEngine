@@ -2,8 +2,11 @@
 
 -- GEngine Dep
 
--- VULKAN_SDK = "%{wks.location}/GEngine/vendor/VulkanSDK"
-VULKAN_SDK = os.getenv("VULKAN_SDK")
+local vulkanSdkOverride = os.getenv("VULKAN_SDK")
+if not vulkanSdkOverride or vulkanSdkOverride == "" then
+	vulkanSdkOverride = "%{wks.location}/GEngine/vendor/VulkanSDK"
+end
+VULKAN_SDK = vulkanSdkOverride
 FBX_SDK = "%{wks.location}/GEngine/vendor/FBXSDK"
 
 IncludeDir = {}

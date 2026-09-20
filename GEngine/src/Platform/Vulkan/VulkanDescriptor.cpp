@@ -39,12 +39,18 @@ namespace GEngine
 
 	void VulkanDescriptor::Release()
 	{
-		// The context flushes retired descriptor sets before releasing this pool.
-		if (VulkanContext::Get()->GetDevice() && m_DescriptorPool != VK_NULL_HANDLE)
-		{
-			vkDestroyDescriptorPool(VulkanContext::Get()->GetDevice(), m_DescriptorPool, nullptr);
-		}
+		const VkDescriptorPool descriptorPool = m_DescriptorPool;
 		m_DescriptorPool = VK_NULL_HANDLE;
-		
+		if (descriptorPool == VK_NULL_HANDLE)
+			return;
+
+		auto context = VulkanContext::Get();
+		if (context && context->GetDevice() != VK_NULL_HANDLE)
+		{
+			context->RetireResource([descriptorPool](VkDevice device)
+				{
+					vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+				});
+		}
 	}
 }
