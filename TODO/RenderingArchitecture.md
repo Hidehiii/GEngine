@@ -2,6 +2,10 @@
 
 ## Integration status (2026-09-19)
 
+Follow-up 2026-09-20: the integrated baseline 6562547a was pushed to origin/master.
+The next reliability milestone rechecks the VS2026 Debug logging build blocker;
+scope and evidence are recorded in [Workflow.md](Workflow.md).
+
 Local and remote milestone histories below are retained for traceability.
 Their old limitations and results describe the respective parent revisions.
 See [CrossComputerIntegration.md](CrossComputerIntegration.md) for the merged

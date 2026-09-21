@@ -76,3 +76,28 @@
   compatibility remain unverified. Existing `flags` deprecation warnings appear
   under beta8; unrelated vendor scripts were not changed. The binary
   replacement milestone is complete, not full build compatibility verification.
+
+## VS2026 Debug logging compatibility (2026-09-20)
+
+- [ ] Reproduce and fix the vendored spdlog/fmt checked_array_iterator build
+  failure without editing vendor sources or disabling Debug iterator checks.
+  Scope: inspect the installed STL and logging include boundary, add a focused
+  public-header compile regression, then build GEngine/FrameGraphTriangle with
+  VS2026 Debug and Release and run the existing three-backend GPU graph example.
+  Acceptance: logging works without a precompiled header, Debug checks remain
+  enabled, both configurations build, and backend readback/shutdown still pass.
+  Recheck VS2022 header compatibility; record toolchain/runtime limitations.
+  Initial evidence: the isolated no-PCH public-header probe passes under local
+  VS2026 Insiders MSVC 14.50.35717 with Debug iterator level 2. The installed
+  STL still defines checked_array_iterator; vendored fmt already includes
+  <iterator>. The historical missing-type failure is not reproduced here.
+  Add Tests/LoggingHeader.cpp and its launch documentation as a regression
+  check, without unnecessary include shims, vendor edits or safety-check changes.
+  Focused verification: VS2022 MSVC 14.44.35207 (v143) and VS2026 Insiders
+  MSVC 14.50.35717 (v145) Debug/Release all compile
+  and run the checked-in regression with exit code 0. Debug static_assert proves
+  iterator level 2. Existing fmt C4996 deprecation warnings remain visible.
+  Full VS2026 Debug rebuild passed (1596 warnings, zero errors). OpenGL, Vulkan
+  shared queues, Vulkan dedicated queues (families 0/2/5), and D3D12 each ran
+  120 frames, passed compute readback and exited with code 0. D3D12 debug layer
+  was enabled. Release rebuild/runtime checks are still in progress.

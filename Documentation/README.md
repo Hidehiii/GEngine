@@ -6,6 +6,7 @@ This directory documents the engine as it exists in the current source tree. It 
 
 - [Engineering workflow](../AGENTS.md): repository-wide implementation, GPU lifetime, verification, example, documentation, and Git standards for coding agents.
 - [Cross-computer workflow](CrossComputerWorkflow.md): preserving work, integrating branches and validating the merged renderer.
+- [Focused regression checks](../Tests/README.md): no-PCH public logging-header compilation and formatting checks.
 - [Architecture](Architecture.md): runtime ownership, frame flow, queues, shutdown ordering, renderer, and backend boundaries.
 - [Graphics API](GraphicsAPI.md): creating shaders, materials, buffers, pipelines, and a presentable draw.
 - [Features and samples](Features.md): implemented subsystems, backend status, configuration, and example projects.
