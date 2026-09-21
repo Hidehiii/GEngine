@@ -437,7 +437,7 @@ backend-specific barrier code in a layer or renderer feature.
       every cube/array/storage-image factory variant. The GPU graph example now
       also exercises raw storage-buffer and compute-pipeline creation/readback.
 - [ ] Build OpenGL, Vulkan, and D3D12 as separate backend modules.
-- [ ] Replace the Vulkan-only subpass public contract with portable graph pass
+- [~] Replace the Vulkan-only subpass public contract with portable graph pass
       attachments; retain a legacy adapter only where needed.
       Scope: introduce backend-neutral graph attachment descriptors for color,
       depth, load/store operation, sample count, and the attachment accesses a
@@ -450,6 +450,29 @@ backend-specific barrier code in a layer or renderer feature.
       portable descriptor on OpenGL, Vulkan, and D3D12; a subpass-enabled
       scenario works on Vulkan while the other backends report unsupported
       semantics without silently changing behavior.
+      Implemented 2026-09-21: `RenderGraph::AttachmentSpecification` and
+      `SubpassSpecification` provide the graph-facing color/depth/load/store/
+      sample/subpass contract without Vulkan masks. Invalid attachment and
+      subpass indices are rejected before target allocation. The existing
+      `RenderPassSpecification` overload remains the compatibility adapter.
+      Capability rejection happens before graph target creation. The example
+      uses the portable descriptor and exercises an explicit Vulkan subpass.
+      Verification found and fixed Vulkan explicit-subpass assembly indexing an
+      empty multisample-reference vector when `Samples == 1`. It also found
+      Debug Vulkan requesting an unavailable validation layer and then failing
+      `vkCreateInstance`; Vulkan now falls back to no validation layer, and the
+      debug messenger handle is initialized to null and destroyed only when
+      valid.
+      Final VS2026 Debug (MSVC 14.50.35717) and Release (MSVC 14.51.36231)
+      engine/example builds passed with warnings but zero errors. Debug and
+      Release each ran OpenGL, Vulkan shared queues, Vulkan dedicated queues
+      (graphics=0, compute=2, transfer=4), and D3D12 for 120 frames. Every run
+      passed frame-119 readback and exited with code 0. D3D12 Debug used the
+      debug layer and logged no errors. Vulkan validation layers were not
+      installed on this host; Debug Vulkan logged the fallback explicitly and
+      therefore had no validation-layer coverage. Full migration away from
+      `RenderPassSpecification` and data-driven capability reporting remain
+      open.
 - [ ] Make capabilities data-driven from queried device features, not hardcoded
       booleans or conservative constants.
       Scope: populate `GraphicsCapabilities` from actual backend/device queries,
@@ -461,10 +484,9 @@ backend-specific barrier code in a layer or renderer feature.
       those values, and the FrameGraphTriangle regression remains unchanged.
 
 Recommended implementation order for the remaining graph work:
-1. Portable graph attachment/subpass descriptors.
-2. Queried, per-device capability reporting.
-3. Fine-grained stage/access scopes, subresource ranges, and transfer builders.
-4. Pooling and aliasing only after lifetime and attachment semantics are
+1. Queried, per-device capability reporting.
+2. Fine-grained stage/access scopes, subresource ranges, and transfer builders.
+3. Pooling and aliasing only after lifetime and attachment semantics are
    verified across all three backends.
 
 Acceptance: adding a backend requires a backend module and registration only;

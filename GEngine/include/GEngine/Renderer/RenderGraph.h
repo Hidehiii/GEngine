@@ -31,7 +31,25 @@ namespace GEngine
 		static constexpr PassHandle InvalidPass = UINT32_MAX;
 		static constexpr ResourceHandle InvalidResource = UINT32_MAX;
 		static constexpr TargetHandle InvalidTarget = UINT32_MAX;
+
+		struct SubpassSpecification
+		{
+			std::vector<uint32_t> ColorAttachmentIndices;
+			std::vector<uint32_t> InputAttachmentIndices;
+			bool EnableDepthStencil = true;
+		};
+
+		struct AttachmentSpecification
+		{
+			std::vector<FrameBufferTextureFormat> ColorFormats;
+			FrameBufferTextureFormat DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_NONE;
+			uint32_t Samples = 1;
+			RenderPassOperation Operation{};
+			std::vector<SubpassSpecification> Subpasses;
+		};
+
 		TargetHandle CreateRenderTarget(std::string name, const RenderPassSpecification& specification, uint32_t width, uint32_t height);
+		TargetHandle CreateRenderTarget(std::string name, const AttachmentSpecification& specification, uint32_t width, uint32_t height);
 		ResourceHandle GetColorAttachment(TargetHandle target, uint32_t index = 0) const;
 		Ref<FrameBuffer> GetFrameBuffer(TargetHandle target) const;
 
@@ -188,6 +206,8 @@ namespace GEngine
 		void ValidateResourceAccesses() const;
 		void BuildResourceTransitions();
 		bool Visit(PassHandle pass, std::vector<uint8_t>& states);
+		static RenderPassSpecification CreateRenderPassSpecification(const AttachmentSpecification& specification);
+		static void ValidateAttachmentSpecification(const AttachmentSpecification& specification);
 
 	private:
 		std::vector<Pass> m_Passes;

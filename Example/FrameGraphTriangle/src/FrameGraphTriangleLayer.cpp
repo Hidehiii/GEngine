@@ -94,6 +94,34 @@ namespace GEngine
 		hazards.Execute();
 		if (memoryDependencies != 2) throw std::runtime_error("Same-state write dependency was omitted.");
 
+		RenderGraph subpassGraph;
+		RenderGraph::AttachmentSpecification subpassAttachment{};
+		subpassAttachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		subpassAttachment.DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		subpassAttachment.Subpasses.push_back({ { 0 }, {}, true });
+		const auto subpassTarget = subpassGraph.CreateRenderTarget(
+			"SubpassCapability", subpassAttachment, 16, 16);
+		subpassGraph.BuildGraphicsPass("SubpassCapability", subpassTarget,
+			[](const Ref<CommandBuffer>&) {});
+		const bool supportsSubpasses = Graphics::GetCapabilities().Subpasses;
+		bool subpassRejected = false;
+		try
+		{
+			if (!subpassGraph.Compile())
+				throw std::runtime_error("Render graph subpass capability compilation failed.");
+			if (supportsSubpasses)
+				subpassGraph.ExecuteGpu(GraphicsPresent::GetCommandBuffer());
+		}
+		catch (const std::invalid_argument&)
+		{
+			if (supportsSubpasses)
+				throw;
+			subpassRejected = true;
+		}
+		if (!supportsSubpasses && !subpassRejected)
+			throw std::runtime_error("A backend without graph subpass support accepted subpass semantics.");
+		subpassGraph.Reset();
+
 		const float vertices[] =
 		{
 			 0.0f,  0.65f, 0.0f,
@@ -119,10 +147,10 @@ namespace GEngine
 		auto vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 		m_Pipeline = device.CreateGraphicsPipeline(material, vertexBuffer);
 
-		RenderPassSpecification offscreenSpecification{};
-		offscreenSpecification.RenderTargets = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
-		offscreenSpecification.DepthStencil = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
-		const auto target = m_Graph.CreateRenderTarget("GraphColor", offscreenSpecification, 512, 512);
+		RenderGraph::AttachmentSpecification offscreenAttachment{};
+		offscreenAttachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		offscreenAttachment.DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		const auto target = m_Graph.CreateRenderTarget("GraphColor", offscreenAttachment, 512, 512);
 		m_Target = target;
 		auto computeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "GraphCompute");
 		computeMaterial->SetResource("ColorData", m_Color);

@@ -52,10 +52,10 @@ submissions with `ExecuteGpu`. Do not mix CPU and GPU passes in a GPU graph.
 ## Graph-owned recording and attachments
 
 ```cpp
-RenderPassSpecification spec{};
-spec.RenderTargets = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
-spec.DepthStencil = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
-auto target = graph.CreateRenderTarget("Scene", spec, 512, 512);
+RenderGraph::AttachmentSpecification attachment{};
+attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+attachment.DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+auto target = graph.CreateRenderTarget("Scene", attachment, 512, 512);
 auto draw = graph.BuildGraphicsPass("SceneDraw", target,
     [&](const Ref<CommandBuffer>& command) { command->Render(pipeline, 0); });
 auto compute = graph.BuildComputePass("Update", [&](const Ref<CommandBuffer>& command) {
@@ -74,7 +74,16 @@ automatically declared as writes and end in ShaderRead, matching the native
 framebuffer contract. `GetColorAttachment` exposes their graph resource handle;
 `GetFrameBuffer` is available after successful compilation. Depth remains owned
 by the target. The current path uses framebuffer clear/store operations, not
-arbitrary per-pass load/store overrides or subpasses.
+arbitrary per-pass load/store overrides.
+
+`AttachmentSpecification` is the graph-facing attachment contract. It describes
+color formats, depth format, sample count, load/store operations and optional
+subpass attachment indices without exposing Vulkan stage/access masks. A
+subpass-enabled descriptor is translated to the backend render-pass contract
+only when `GraphicsCapabilities::Subpasses` is available; otherwise compilation
+throws before target allocation. `CreateRenderTarget(RenderPassSpecification)`
+remains a compatibility adapter for existing callers, but new graph code should
+use the portable descriptor.
 
 Keep a compiled GPU graph alive across frames to reuse its target allocation;
 Reset invalidates handles and releases its owned targets. Rebuild it for a new

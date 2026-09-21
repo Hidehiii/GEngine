@@ -2,6 +2,7 @@
 #include "Platform/Vulkan/VulkanRenderPass.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -170,7 +171,12 @@ namespace GEngine
 		renderPassInfo.dependencyCount	= 1;
 		renderPassInfo.pDependencies	= &dependency;
 
-		VK_CHECK_RESULT(vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+		const VkResult result = vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass);
+		if (result != VK_SUCCESS)
+		{
+			GE_CORE_ERROR("Failed to create Vulkan render pass: VkResult {}.", static_cast<int32_t>(result));
+			throw std::runtime_error("Failed to create Vulkan render pass.");
+		}
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
@@ -324,8 +330,10 @@ namespace GEngine
 					if (colorAttachmentIndex < colorAttachmentRefs.size())
 					{
 						subpassColorAttachmentRefs.at(i).push_back(colorAttachmentRefs.at(colorAttachmentIndex));
-						// add multi sample color attachment reference for subpass info if multi sample is enabled
-						subpassMultiSampleColorAttachmentRefs.at(i).push_back(multiSampleColorAttachmentRefs.at(colorAttachmentIndex));
+						if (m_Specification.Samples > 1)
+						{
+							subpassMultiSampleColorAttachmentRefs.at(i).push_back(multiSampleColorAttachmentRefs.at(colorAttachmentIndex));
+						}
 					}
 				}
 				// create subpass description for this subpass
@@ -411,7 +419,12 @@ namespace GEngine
 		renderPassInfo.dependencyCount	= static_cast<uint32_t>(dependencies.size());
 		renderPassInfo.pDependencies	= dependencies.data();
 
-		VK_CHECK_RESULT(vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+		const VkResult result = vkCreateRenderPass2(VulkanContext::Get()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass);
+		if (result != VK_SUCCESS)
+		{
+			GE_CORE_ERROR("Failed to create portable Vulkan render pass: VkResult {}.", static_cast<int32_t>(result));
+			throw std::runtime_error("Failed to create portable Vulkan render pass.");
+		}
 	}
 
 }

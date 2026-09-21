@@ -28,6 +28,14 @@ namespace GEngine
 		m_IsCompiled = false;
 		return static_cast<TargetHandle>(m_Targets.size() - 1);
 	}
+
+	RenderGraph::TargetHandle RenderGraph::CreateRenderTarget(std::string name,
+		const AttachmentSpecification& specification, uint32_t width, uint32_t height)
+	{
+		ValidateAttachmentSpecification(specification);
+		return CreateRenderTarget(std::move(name), CreateRenderPassSpecification(specification), width, height);
+	}
+
 	RenderGraph::ResourceHandle RenderGraph::GetColorAttachment(TargetHandle target, uint32_t index) const
 	{
 		return m_Targets.at(target).Colors.at(index);
@@ -335,10 +343,13 @@ namespace GEngine
 		CreateTransientResources();
 		for (auto& target : m_Targets)
 		{
+			if (!target.Specification.Subpasses.empty() && !Graphics::GetCapabilities().Subpasses)
+				throw std::invalid_argument("Render-graph subpasses are not supported by the active backend.");
 			if (!target.Object)
 			{
 				auto& device = Graphics::GetRenderDevice();
-				target.Object = device.CreateFrameBuffer(device.CreateRenderPass(target.Specification), target.Width, target.Height);
+				const auto renderPass = device.CreateRenderPass(target.Specification);
+				target.Object = device.CreateFrameBuffer(renderPass, target.Width, target.Height);
 			}
 			for (uint32_t i = 0; i < target.Colors.size(); ++i)
 				m_Resources[target.Colors[i]].Object = target.Object->GetRenderTarget(i);
@@ -513,5 +524,51 @@ namespace GEngine
 		states[pass] = 2;
 		m_ExecutionOrder.push_back(pass);
 		return true;
+	}
+
+	RenderPassSpecification RenderGraph::CreateRenderPassSpecification(const AttachmentSpecification& specification)
+	{
+		RenderPassSpecification result{};
+		result.RenderTargets = specification.ColorFormats;
+		result.DepthStencil = specification.DepthStencilFormat;
+		result.Samples = specification.Samples;
+		result.Operation = specification.Operation;
+		result.Subpasses.reserve(specification.Subpasses.size());
+		for (const auto& subpass : specification.Subpasses)
+		{
+			result.Subpasses.push_back({ subpass.ColorAttachmentIndices,
+				subpass.InputAttachmentIndices, subpass.EnableDepthStencil });
+		}
+		return result;
+	}
+
+	void RenderGraph::ValidateAttachmentSpecification(const AttachmentSpecification& specification)
+	{
+		if (specification.ColorFormats.empty())
+			throw std::invalid_argument("A portable graph attachment needs at least one color format.");
+		if (std::find(specification.ColorFormats.begin(), specification.ColorFormats.end(),
+			FRAME_BUFFER_TEXTURE_FORMAT_NONE) != specification.ColorFormats.end())
+			throw std::invalid_argument("Portable graph color formats cannot be none.");
+		if (specification.Samples == 0)
+			throw std::invalid_argument("Portable graph attachments require a non-zero sample count.");
+		if (specification.DepthStencilFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE &&
+			!Utils::isDepthFormat(specification.DepthStencilFormat))
+			throw std::invalid_argument("Portable graph depth format must be a depth-stencil format.");
+
+		const uint32_t depthAttachmentIndex = static_cast<uint32_t>(specification.ColorFormats.size());
+		for (const auto& subpass : specification.Subpasses)
+		{
+			for (uint32_t index : subpass.ColorAttachmentIndices)
+				if (index >= specification.ColorFormats.size())
+					throw std::invalid_argument("Portable graph subpass color attachment index is out of range.");
+			for (uint32_t index : subpass.InputAttachmentIndices)
+				if (index >= depthAttachmentIndex ||
+					(index == depthAttachmentIndex && specification.DepthStencilFormat == FRAME_BUFFER_TEXTURE_FORMAT_NONE))
+					throw std::invalid_argument("Portable graph subpass input attachment index is out of range.");
+			if (subpass.EnableDepthStencil && specification.DepthStencilFormat == FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+				throw std::invalid_argument("Portable graph subpass cannot enable a missing depth attachment.");
+			if (subpass.ColorAttachmentIndices.empty() && subpass.InputAttachmentIndices.empty())
+				throw std::invalid_argument("Portable graph subpass needs an attachment.");
+		}
 	}
 }

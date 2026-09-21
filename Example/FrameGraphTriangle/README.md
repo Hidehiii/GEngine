@@ -37,6 +37,11 @@ auto& queue = Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS)
 queue.Submit(commandBuffer);
 ```
 
+Startup also declares a graph attachment through
+`RenderGraph::AttachmentSpecification`. On Vulkan it requests one explicit
+subpass and executes it; on OpenGL and D3D12 it verifies that subpass
+semantics are rejected through capability reporting before target allocation.
+
 ## Resource replacement check
 
 The merged example replaces materials, vertex buffers and graphics pipelines
@@ -54,7 +59,9 @@ Debug replacement stress run on each API showed no sustained sampled memory
 growth. VS2026 Debug and Release verification completed on 2026-09-21: all four
 of those 120-frame backend scenarios passed, and dedicated Vulkan selected
 separate graphics, compute, and transfer families. Manual visible output,
-resize, and minimize remain unverified.
+resize, and minimize remain unverified. The same Debug and Release runs
+exercised the portable attachment/subpass check; Vulkan validation layers were
+unavailable on this host, so those Vulkan runs fell back to no validation layer.
 
 Set `GENGINE_EXAMPLE_FRAME_LIMIT` to a positive frame count to request normal
 shutdown after that many rendered frames; omit it (or use zero) for interactive

@@ -66,7 +66,8 @@ namespace GEngine
 	void VulkanContext::Init(const unsigned int width, const unsigned int height)
 	{
         CreateInstance();
-        SetupDebugMessenger();
+        if (m_ValidationLayersSupported)
+            SetupDebugMessenger();
         CreateSurface();
         SetPhysicalDevice();
         CreateLogicalDevice();
@@ -118,7 +119,11 @@ namespace GEngine
 			m_VmaAllocator = VK_NULL_HANDLE;
 		}
 #ifdef GE_DEBUG
-        DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
+        if (m_DebugMessenger != VK_NULL_HANDLE)
+        {
+            DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
+            m_DebugMessenger = VK_NULL_HANDLE;
+        }
 #endif
         vkDestroyDevice(m_Device, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
@@ -242,9 +247,10 @@ namespace GEngine
     void VulkanContext::CreateInstance()
     {
 #ifdef GE_DEBUG
-        if (CheckValidationLayerSupport() == false)
+        m_ValidationLayersSupported = CheckValidationLayerSupport();
+        if (m_ValidationLayersSupported == false)
         {
-            GE_CORE_ERROR("Validation layers requested, but not available!");
+            GE_CORE_WARN("Validation layers are unavailable; continuing without them.");
         }
 #endif
         VkApplicationInfo                       appInfo = {};
@@ -266,12 +272,15 @@ namespace GEngine
         createInfo.enabledExtensionCount        = static_cast<uint32_t>(m_Extensions.size());
         createInfo.ppEnabledExtensionNames      = m_Extensions.data();
 #ifdef GE_DEBUG
-        createInfo.enabledLayerCount            = static_cast<uint32_t>(m_ValidationLayers.size());
-        createInfo.ppEnabledLayerNames          = m_ValidationLayers.data();
+        if (m_ValidationLayersSupported)
+        {
+            createInfo.enabledLayerCount        = static_cast<uint32_t>(m_ValidationLayers.size());
+            createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
 
-        VkDebugUtilsMessengerCreateInfoEXT       debugCreateInfo;
-        PopulateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext                        = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+            VkDebugUtilsMessengerCreateInfoEXT   debugCreateInfo;
+            PopulateDebugMessengerCreateInfo(debugCreateInfo);
+            createInfo.pNext                    = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        }
 #else 
         createInfo.ppEnabledLayerNames = nullptr;
         createInfo.enabledLayerCount            = 0;

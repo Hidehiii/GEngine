@@ -119,7 +119,8 @@ namespace GEngine
 		{ 
 			"VK_LAYER_KHRONOS_validation"
 		};
-		VkDebugUtilsMessengerEXT			m_DebugMessenger;
+		bool								m_ValidationLayersSupported = false;
+		VkDebugUtilsMessengerEXT			m_DebugMessenger = VK_NULL_HANDLE;
 		VkPhysicalDevice					m_PhysicalDevice;
 		VkDevice							m_Device;
 		VmaAllocator						m_VmaAllocator;
