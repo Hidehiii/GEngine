@@ -17,9 +17,40 @@
 #include "Platform/D3D12/D3D12Texture2D.h"
 #include "Platform/D3D12/D3D12UniformBuffer.h"
 #include "Platform/D3D12/D3D12VertexBuffer.h"
+#include <string>
 
 namespace
 {
+	std::string FeatureLevelToString(D3D_FEATURE_LEVEL featureLevel)
+	{
+		switch (featureLevel)
+		{
+		case D3D_FEATURE_LEVEL_11_0: return "11.0";
+		case D3D_FEATURE_LEVEL_11_1: return "11.1";
+		case D3D_FEATURE_LEVEL_12_0: return "12.0";
+		case D3D_FEATURE_LEVEL_12_1: return "12.1";
+		case D3D_FEATURE_LEVEL_12_2: return "12.2";
+		default: return "unknown";
+		}
+	}
+
+	std::string ShaderModelToString(D3D_SHADER_MODEL shaderModel)
+	{
+		switch (shaderModel)
+		{
+		case D3D_SHADER_MODEL_5_1: return "5.1";
+		case D3D_SHADER_MODEL_6_0: return "6.0";
+		case D3D_SHADER_MODEL_6_1: return "6.1";
+		case D3D_SHADER_MODEL_6_2: return "6.2";
+		case D3D_SHADER_MODEL_6_3: return "6.3";
+		case D3D_SHADER_MODEL_6_4: return "6.4";
+		case D3D_SHADER_MODEL_6_5: return "6.5";
+		case D3D_SHADER_MODEL_6_6: return "6.6";
+		case D3D_SHADER_MODEL_6_7: return "6.7";
+		default: return "unknown";
+		}
+	}
+
 	D3D12_RESOURCE_STATES ToD3D12ResourceState(GEngine::GraphicsResourceState state)
 	{
 		using State = GEngine::GraphicsResourceState;
@@ -125,16 +156,88 @@ namespace GEngine
     GraphicsCapabilities D3D12GraphicsAPI::GetCapabilities() const
     {
         GraphicsCapabilities capabilities;
-        capabilities.RenderPass = true;
-        capabilities.FrameBuffer = true;
-        capabilities.Texture2D = true;
-        capabilities.Texture2DArray = true;
-        capabilities.CubeMap = true;
-        capabilities.Sampler = true;
-        capabilities.UniformBuffer = true;
-        capabilities.StorageBuffer = true;
-        capabilities.StorageImage = true;
-        capabilities.Compute = true;
+        const auto device = D3D12Context::Get()->GetDevice();
+
+        const D3D_FEATURE_LEVEL requestedFeatureLevels[] =
+        {
+            D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_11_1,
+            D3D_FEATURE_LEVEL_12_0,
+            D3D_FEATURE_LEVEL_12_1,
+            D3D_FEATURE_LEVEL_12_2
+        };
+        D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevels{};
+        featureLevels.NumFeatureLevels = _countof(requestedFeatureLevels);
+        featureLevels.pFeatureLevelsRequested = requestedFeatureLevels;
+        const bool featureLevelQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_FEATURE_LEVELS, &featureLevels, sizeof(featureLevels)));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
+        const bool optionsQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options)));
+
+        D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSignature{};
+        rootSignature.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_2;
+        const bool rootSignatureQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_ROOT_SIGNATURE, &rootSignature, sizeof(rootSignature)));
+
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel{};
+        shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_7;
+        const bool shaderModelQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel)));
+
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT colorFormatSupport{};
+        colorFormatSupport.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        const bool colorFormatQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_FORMAT_SUPPORT, &colorFormatSupport, sizeof(colorFormatSupport)));
+
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT storageImageFormatSupport{};
+        storageImageFormatSupport.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        const bool storageImageFormatQueried = SUCCEEDED(device->CheckFeatureSupport(
+            D3D12_FEATURE_FORMAT_SUPPORT, &storageImageFormatSupport, sizeof(storageImageFormatSupport)));
+
+        const bool supportsColorTexture = colorFormatQueried &&
+            (colorFormatSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) != 0 &&
+            (colorFormatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE) != 0;
+        const bool supportsRenderTarget = colorFormatQueried &&
+            (colorFormatSupport.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
+        const bool supportsCubeTexture = colorFormatQueried &&
+            (colorFormatSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURECUBE) != 0;
+        const bool supportsStorageImage = storageImageFormatQueried &&
+            (storageImageFormatSupport.Support1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0 &&
+            (storageImageFormatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0 &&
+            (storageImageFormatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE) != 0;
+
+        capabilities.Backend = "D3D12";
+        capabilities.Version = FeatureLevelToString(featureLevels.MaxSupportedFeatureLevel);
+        capabilities.QuerySources = {
+            "D3D12_FEATURE_FEATURE_LEVELS=" + capabilities.Version,
+            "D3D12_FEATURE_D3D12_OPTIONS=" + std::to_string(optionsQueried),
+            "D3D12_FEATURE_ROOT_SIGNATURE=" + std::to_string(rootSignatureQueried),
+            "D3D12_FEATURE_SHADER_MODEL=" + ShaderModelToString(shaderModel.HighestShaderModel),
+            "DXGI_FORMAT_R8G8B8A8_UNORM TEXTURE2D/SHADER_SAMPLE=" + std::to_string(supportsColorTexture),
+            "DXGI_FORMAT_R8G8B8A8_UNORM RENDER_TARGET=" + std::to_string(supportsRenderTarget),
+            "DXGI_FORMAT_R32G32B32A32_FLOAT UAV typed load/store=" + std::to_string(supportsStorageImage)
+        };
+
+        const bool featureLevelSupported = featureLevelQueried &&
+            featureLevels.MaxSupportedFeatureLevel >= D3D_FEATURE_LEVEL_11_0;
+        const bool shaderModelSupported = shaderModelQueried &&
+            shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_5_1;
+        const bool rootSignatureSupported = rootSignatureQueried &&
+            rootSignature.HighestVersion >= D3D_ROOT_SIGNATURE_VERSION_1_0;
+
+        capabilities.RenderPass = featureLevelSupported && supportsRenderTarget;
+        capabilities.FrameBuffer = featureLevelSupported && supportsRenderTarget;
+        capabilities.Texture2D = featureLevelSupported && supportsColorTexture;
+        capabilities.Texture2DArray = capabilities.Texture2D;
+        capabilities.CubeMap = featureLevelSupported && supportsCubeTexture;
+        capabilities.Sampler = supportsColorTexture;
+        capabilities.UniformBuffer = rootSignatureSupported;
+        capabilities.StorageBuffer = rootSignatureSupported;
+        capabilities.StorageImage = supportsStorageImage;
+        capabilities.Compute = featureLevelSupported && shaderModelSupported;
+        capabilities.Subpasses = false;
         return capabilities;
     }
     Ref<RenderPass> D3D12GraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

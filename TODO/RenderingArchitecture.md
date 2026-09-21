@@ -473,7 +473,7 @@ backend-specific barrier code in a layer or renderer feature.
       therefore had no validation-layer coverage. Full migration away from
       `RenderPassSpecification` and data-driven capability reporting remain
       open.
-- [ ] Make capabilities data-driven from queried device features, not hardcoded
+- [~] Make capabilities data-driven from queried device features, not hardcoded
       booleans or conservative constants.
       Scope: populate `GraphicsCapabilities` from actual backend/device queries,
       extension/feature checks, and queried limits. Keep capability reporting
@@ -482,11 +482,27 @@ backend-specific barrier code in a layer or renderer feature.
       Acceptance: OpenGL, Vulkan (shared and dedicated queues), and D3D12
       expose queried values, unsupported graph operations are rejected against
       those values, and the FrameGraphTriangle regression remains unchanged.
+      Implemented 2026-09-21: `GraphicsCapabilities` now includes the backend
+      name, queried version and query-source snapshot. OpenGL derives feature
+      booleans from the GL core version and enumerated extensions. Vulkan
+      queries physical-device properties/features, extensions, format
+      properties and compute queue families. D3D12 queries feature levels,
+      options, root-signature and shader-model support plus color render-target
+      and storage-image format support. The example logs the complete snapshot.
+      Final VS2026 Debug (MSVC 14.50.35717) and Release (MSVC 14.51.36231)
+      engine/example builds passed with warnings but zero errors. Debug and
+      Release each ran OpenGL 4.6, Vulkan 1.4.341 shared queues, Vulkan 1.4.341
+      dedicated queues, and D3D12 feature level 12.2 for 120 frames; every run
+      logged its queried capability sources, passed frame-119 readback and
+      exited with code 0. Unsupported subpass semantics remained rejected on
+      OpenGL and D3D12. Vulkan validation layers were unavailable on this host;
+      Vulkan therefore had no validation-layer coverage. Full migration of
+      every remaining hardcoded limit accessor and capability coverage for
+      less common resource variants remains open.
 
 Recommended implementation order for the remaining graph work:
-1. Queried, per-device capability reporting.
-2. Fine-grained stage/access scopes, subresource ranges, and transfer builders.
-3. Pooling and aliasing only after lifetime and attachment semantics are
+1. Fine-grained stage/access scopes, subresource ranges, and transfer builders.
+2. Pooling and aliasing only after lifetime and attachment semantics are
    verified across all three backends.
 
 Acceptance: adding a backend requires a backend module and registration only;

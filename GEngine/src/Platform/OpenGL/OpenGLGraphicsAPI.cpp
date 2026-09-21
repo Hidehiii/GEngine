@@ -21,6 +21,7 @@
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/OpenGL/OpenGLUniformBuffer.h"
 #include "Platform/OpenGL/OpenGLVertexBuffer.h"
+#include <unordered_set>
 
 namespace GEngine
 {
@@ -143,16 +144,46 @@ namespace GEngine
 	GraphicsCapabilities OpenGLGraphicsAPI::GetCapabilities() const
 	{
 		GraphicsCapabilities capabilities;
-		capabilities.RenderPass = true;
-		capabilities.FrameBuffer = true;
-		capabilities.Texture2D = true;
-		capabilities.Texture2DArray = true;
-		capabilities.CubeMap = true;
-		capabilities.Sampler = true;
-		capabilities.UniformBuffer = true;
-		capabilities.StorageBuffer = true;
-		capabilities.StorageImage = true;
-		capabilities.Compute = true;
+		GLint majorVersion = 0;
+		GLint minorVersion = 0;
+		glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+		glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+		const GLint version = majorVersion * 100 + minorVersion;
+
+		GLint extensionCount = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &extensionCount);
+		std::unordered_set<std::string> extensions;
+		extensions.reserve(static_cast<size_t>(extensionCount));
+		for (GLint index = 0; index < extensionCount; ++index)
+		{
+			const char* extension = reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, index));
+			if (extension != nullptr)
+				extensions.insert(extension);
+		}
+		const auto hasExtension = [&extensions](const char* extension)
+		{
+			return extensions.find(extension) != extensions.end();
+		};
+
+		capabilities.Backend = "OpenGL";
+		capabilities.Version = std::to_string(majorVersion) + "." + std::to_string(minorVersion);
+		capabilities.QuerySources = {
+			"GL_MAJOR_VERSION/GL_MINOR_VERSION=" + capabilities.Version,
+			"GL_NUM_EXTENSIONS=" + std::to_string(extensionCount)
+		};
+
+		capabilities.RenderPass = version >= 300 || hasExtension("GL_ARB_framebuffer_object");
+		capabilities.FrameBuffer = capabilities.RenderPass;
+		capabilities.Texture2D = version >= 100;
+		capabilities.Texture2DArray = version >= 300 || hasExtension("GL_EXT_texture_array");
+		capabilities.CubeMap = version >= 100;
+		capabilities.Sampler = version >= 330 || hasExtension("GL_ARB_sampler_objects");
+		capabilities.UniformBuffer = version >= 310 || hasExtension("GL_ARB_uniform_buffer_object");
+		capabilities.StorageBuffer = version >= 430 || hasExtension("GL_ARB_shader_storage_buffer_object");
+		capabilities.StorageImage = version >= 420 || hasExtension("GL_ARB_shader_image_load_store");
+		capabilities.Compute = version >= 430 || hasExtension("GL_ARB_compute_shader");
+		capabilities.Subpasses = false;
+		capabilities.QuerySources.push_back("Subpasses=OpenGL has no subpass contract");
 		return capabilities;
 	}
 	Ref<RenderPass> OpenGLGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

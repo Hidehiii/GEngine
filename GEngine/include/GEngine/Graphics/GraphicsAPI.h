@@ -8,6 +8,8 @@
 #include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
 #include "Material.h"
+#include <string>
+#include <vector>
 
 namespace GEngine
 {
@@ -27,6 +29,10 @@ namespace GEngine
 		bool StorageImage = false;
 		bool Compute = false;
 		bool Subpasses = false;
+
+		std::string Backend;
+		std::string Version;
+		std::vector<std::string> QuerySources;
 	};
 
 	class GENGINE_API GraphicsAPI : public RenderDevice

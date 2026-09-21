@@ -21,6 +21,7 @@
 #include "Platform/Vulkan/VulkanStorageImage2D.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -139,17 +140,69 @@ namespace GEngine
     GraphicsCapabilities VulkanGraphicsAPI::GetCapabilities() const
     {
         GraphicsCapabilities capabilities;
-        capabilities.RenderPass = true;
-        capabilities.FrameBuffer = true;
-        capabilities.Texture2D = true;
-        capabilities.Texture2DArray = true;
-        capabilities.CubeMap = true;
+        const VkPhysicalDevice physicalDevice = VulkanContext::Get()->GetPhysicalDevice();
+        VkPhysicalDeviceProperties deviceProperties{};
+        vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+        VkPhysicalDeviceFeatures deviceFeatures{};
+        vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+
+        uint32_t extensionCount = 0;
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+        std::set<std::string> extensions;
+        for (const auto& extension : availableExtensions)
+            extensions.insert(extension.extensionName);
+
+        VkFormatProperties colorFormatProperties{};
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &colorFormatProperties);
+        const bool supportsSampledColor =
+            (colorFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+
+        VkFormatProperties storageImageFormatProperties{};
+        vkGetPhysicalDeviceFormatProperties(
+            physicalDevice, VK_FORMAT_R32G32B32A32_SFLOAT, &storageImageFormatProperties);
+        const bool supportsStorageImage =
+            (storageImageFormatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+        const bool supportsComputeQueue = std::any_of(queueFamilies.begin(), queueFamilies.end(),
+            [](const VkQueueFamilyProperties& queueFamily)
+            {
+                return (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) != 0;
+            });
+
+        const bool supportsRenderPass2 = deviceProperties.apiVersion >= VK_API_VERSION_1_2 ||
+            extensions.find(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME) != extensions.end();
+
+        capabilities.Backend = "Vulkan";
+        capabilities.Version = std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
+            std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
+            std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion));
+        capabilities.QuerySources = {
+            "VkPhysicalDeviceProperties.apiVersion=" + capabilities.Version,
+            "device extensions=" + std::to_string(extensionCount),
+            "VK_FORMAT_R8G8B8A8_UNORM SAMPLED_IMAGE_BIT=" + std::to_string(supportsSampledColor),
+            "VK_FORMAT_R32G32B32A32_SFLOAT STORAGE_IMAGE_BIT=" + std::to_string(supportsStorageImage),
+            "compute queue family=" + std::to_string(supportsComputeQueue),
+            "fragmentStoresAndAtomics=" + std::to_string(deviceFeatures.fragmentStoresAndAtomics != 0),
+            "render pass 2=Vulkan 1.2 core or VK_KHR_create_renderpass2"
+        };
+
+        capabilities.RenderPass = supportsRenderPass2;
+        capabilities.FrameBuffer = supportsRenderPass2;
+        capabilities.Texture2D = supportsSampledColor;
+        capabilities.Texture2DArray = supportsSampledColor && deviceProperties.limits.maxImageArrayLayers > 1;
+        capabilities.CubeMap = supportsSampledColor && deviceProperties.limits.maxImageArrayLayers >= 6;
         capabilities.Sampler = true;
         capabilities.UniformBuffer = true;
-        capabilities.StorageBuffer = true;
-        capabilities.StorageImage = true;
-        capabilities.Compute = true;
-        capabilities.Subpasses = true;
+        capabilities.StorageBuffer = deviceFeatures.fragmentStoresAndAtomics != 0;
+        capabilities.StorageImage = supportsStorageImage;
+        capabilities.Compute = supportsComputeQueue;
+        capabilities.Subpasses = supportsRenderPass2;
         return capabilities;
     }
     Ref<RenderPass> VulkanGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

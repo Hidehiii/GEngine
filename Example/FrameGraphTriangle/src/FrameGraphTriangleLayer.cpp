@@ -13,6 +13,11 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnAttach()
 	{
+		const auto capabilities = Graphics::GetCapabilities();
+		GE_INFO("Graphics capability snapshot: {} {}.", capabilities.Backend, capabilities.Version);
+		for (const auto& source : capabilities.QuerySources)
+			GE_INFO("Graphics capability source: {}.", source);
+
 		// This must execute even when assertions are disabled.
 		RenderGraph graph;
 		int executions = 0;
@@ -103,7 +108,7 @@ namespace GEngine
 			"SubpassCapability", subpassAttachment, 16, 16);
 		subpassGraph.BuildGraphicsPass("SubpassCapability", subpassTarget,
 			[](const Ref<CommandBuffer>&) {});
-		const bool supportsSubpasses = Graphics::GetCapabilities().Subpasses;
+		const bool supportsSubpasses = capabilities.Subpasses;
 		bool subpassRejected = false;
 		try
 		{

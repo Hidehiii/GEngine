@@ -41,6 +41,8 @@ Startup also declares a graph attachment through
 `RenderGraph::AttachmentSpecification`. On Vulkan it requests one explicit
 subpass and executes it; on OpenGL and D3D12 it verifies that subpass
 semantics are rejected through capability reporting before target allocation.
+Startup logs one device-derived capability snapshot and every queried source
+used to derive its feature booleans.
 
 ## Resource replacement check
 
@@ -62,6 +64,10 @@ separate graphics, compute, and transfer families. Manual visible output,
 resize, and minimize remain unverified. The same Debug and Release runs
 exercised the portable attachment/subpass check; Vulkan validation layers were
 unavailable on this host, so those Vulkan runs fell back to no validation layer.
+The capability reporting follow-up was also verified in Debug and Release on
+2026-09-21: OpenGL 4.6, Vulkan 1.4.341 with both queue-selection modes, and
+D3D12 feature level 12.2 each logged their queried sources and passed the
+120-frame readback/shutdown regression.
 
 Set `GENGINE_EXAMPLE_FRAME_LIMIT` to a positive frame count to request normal
 shutdown after that many rendered frames; omit it (or use zero) for interactive

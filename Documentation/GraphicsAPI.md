@@ -51,6 +51,27 @@ support multiple simultaneously active devices or cross-device resource mixing.
 return exposed a temporary shared_ptr on OpenGL/Vulkan; callers should hold the
 returned shared_ptr rather than binding a mutable reference to it.
 
+## Device capabilities
+
+`Graphics::GetCapabilities()` returns a backend-specific snapshot derived from
+device queries rather than API identity. The result includes the backend name,
+queried version and the concrete query sources used to derive the feature
+booleans.
+
+```cpp
+const auto capabilities = Graphics::GetCapabilities();
+GE_INFO("Backend {} version {}.", capabilities.Backend, capabilities.Version);
+for (const auto& source : capabilities.QuerySources)
+    GE_INFO("Capability source: {}.", source);
+```
+
+OpenGL uses its core version and enumerated extensions. Vulkan queries physical
+device properties/features, device extensions, format properties and queue
+families. D3D12 queries feature levels, options, root-signature and shader-model
+support plus the format support used by render targets and storage images.
+Capability reporting stays per-device; one backend never infers support from
+another.
+
 This page describes the common immediate rendering path used by `Example/Triangle`. Include `<GEngine.h>` in an application project.
 
 ## Application and layer
