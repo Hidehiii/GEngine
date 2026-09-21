@@ -79,7 +79,7 @@
 
 ## VS2026 Debug logging compatibility (2026-09-20)
 
-- [ ] Reproduce and fix the vendored spdlog/fmt checked_array_iterator build
+- [x] Reproduce and fix the vendored spdlog/fmt checked_array_iterator build
   failure without editing vendor sources or disabling Debug iterator checks.
   Scope: inspect the installed STL and logging include boundary, add a focused
   public-header compile regression, then build GEngine/FrameGraphTriangle with
@@ -100,4 +100,15 @@
   Full VS2026 Debug rebuild passed (1596 warnings, zero errors). OpenGL, Vulkan
   shared queues, Vulkan dedicated queues (families 0/2/5), and D3D12 each ran
   120 frames, passed compute readback and exited with code 0. D3D12 debug layer
-  was enabled. Release rebuild/runtime checks are still in progress.
+  was enabled.
+  Follow-up 2026-09-21: after the previously active compiler finished, the
+  VS2026 Release build of `GEngine` and `FrameGraphTriangle` completed with
+  MSBuild 18.10.1 / MSVC 14.50.35717. The focused no-PCH Release logging-header
+  regression also compiled and exited with code 0. An initial unconstrained
+  MSBuild invocation created excessive node-reuse processes and was cancelled
+  with user approval; the `/m:4` rerun produced updated Release artifacts.
+  OpenGL, Vulkan shared queues, Vulkan dedicated queues, and D3D12 then each
+  completed 120 frames, passed the frame-119 compute readback, exited with code
+  0, and wrote empty stderr logs. Dedicated Vulkan selected graphics=0,
+  compute=2, transfer=4. Release has no debug-layer validation coverage; manual
+  visible-output, resize, and minimize checks remain untested.

@@ -51,7 +51,10 @@ Merged-version verification (2026-09-19/20, VS2022): Debug and Release builds
 passed; OpenGL, Vulkan (shared and dedicated queues), and D3D12 each completed
 120 frames with successful compute readback and normal shutdown. A 65-second
 Debug replacement stress run on each API showed no sustained sampled memory
-growth. Manual visible output/resize/minimize and VS2026 Debug remain unverified.
+growth. VS2026 Debug and Release verification completed on 2026-09-21: all four
+of those 120-frame backend scenarios passed, and dedicated Vulkan selected
+separate graphics, compute, and transfer families. Manual visible output,
+resize, and minimize remain unverified.
 
 Set `GENGINE_EXAMPLE_FRAME_LIMIT` to a positive frame count to request normal
 shutdown after that many rendered frames; omit it (or use zero) for interactive
