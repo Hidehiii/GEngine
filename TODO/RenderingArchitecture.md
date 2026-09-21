@@ -414,6 +414,11 @@ submission and deterministic renderer shutdown.
       concurrent-family resources. Whole-resource storage barriers are tested.
       Fine-grained stage/subresource scopes and dedicated transfer builders remain.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
+      Prerequisite: complete the manual visible-output/resize/minimize checks
+      recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),
+      then add regression coverage for fine-grained resource lifetimes. Do not
+      start pooling until attachment semantics and capability reporting make
+      alias ownership explicit.
 - [x] Expose pass builders to renderer features so off-screen work is declared
       instead of hidden in `Layer::OnRender`.
       GPU builders own offscreen attachment recording and submission. The example
@@ -434,8 +439,33 @@ backend-specific barrier code in a layer or renderer feature.
 - [ ] Build OpenGL, Vulkan, and D3D12 as separate backend modules.
 - [ ] Replace the Vulkan-only subpass public contract with portable graph pass
       attachments; retain a legacy adapter only where needed.
+      Scope: introduce backend-neutral graph attachment descriptors for color,
+      depth, load/store operation, sample count, and the attachment accesses a
+      graph pass needs. Keep native subpass descriptions behind the backend
+      adapters; graph-facing APIs must not require Vulkan stage/access masks.
+      Preserve a compatibility adapter for existing `RenderPassSpecification`
+      callers while the graph API migrates. Unsupported combinations must fail
+      explicitly in Debug and Release rather than becoming backend no-ops.
+      Acceptance: FrameGraphTriangle declares the same attachment through the
+      portable descriptor on OpenGL, Vulkan, and D3D12; a subpass-enabled
+      scenario works on Vulkan while the other backends report unsupported
+      semantics without silently changing behavior.
 - [ ] Make capabilities data-driven from queried device features, not hardcoded
       booleans or conservative constants.
+      Scope: populate `GraphicsCapabilities` from actual backend/device queries,
+      extension/feature checks, and queried limits. Keep capability reporting
+      separate from API identity; do not infer one backend's support from
+      another. Record one capability snapshot per backend during verification.
+      Acceptance: OpenGL, Vulkan (shared and dedicated queues), and D3D12
+      expose queried values, unsupported graph operations are rejected against
+      those values, and the FrameGraphTriangle regression remains unchanged.
+
+Recommended implementation order for the remaining graph work:
+1. Portable graph attachment/subpass descriptors.
+2. Queried, per-device capability reporting.
+3. Fine-grained stage/access scopes, subresource ranges, and transfer builders.
+4. Pooling and aliasing only after lifetime and attachment semantics are
+   verified across all three backends.
 
 Acceptance: adding a backend requires a backend module and registration only;
 it does not require editing every common resource factory.
