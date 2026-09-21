@@ -89,6 +89,11 @@ namespace GEngine
 		virtual void WaitForIdle() = 0;
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after) = 0;
+		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after)
+		{
+			TransitionResource(commandBuffer, resource, before.State, after.State);
+		}
 
 
 		inline static Graphics_API GetAPI() { return s_API; }

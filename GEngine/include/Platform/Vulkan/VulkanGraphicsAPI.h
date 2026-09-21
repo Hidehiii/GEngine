@@ -65,6 +65,8 @@ namespace GEngine
 		virtual void WaitForIdle() override;
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after) override;
+		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after) override;
 
 	private:
 		struct SubmissionSynchronization

@@ -413,6 +413,21 @@ submission and deterministic renderer shutdown.
       D3D12 uses command-generation fences, Vulkan uses per-edge semaphores and
       concurrent-family resources. Whole-resource storage barriers are tested.
       Fine-grained stage/subresource scopes and dedicated transfer builders remain.
+      Current milestone 2026-09-21: add portable pipeline-stage and read/write
+      intent to RenderGraph access declarations, carry it through compiled
+      transitions, and make each backend preserve the synchronization semantics
+      (with conservative legacy barriers where native stage scoping is unavailable).
+      Acceptance: the existing GPU graph explicitly declares graphics and compute
+      storage usage; a focused declaration regression confirms the intent reaches
+      transition compilation; Debug build and the three-backend readback scenario
+      are rechecked. Subresource ranges and transfer builders remain open.
+      Verification 2026-09-21: static diff review and `git diff --check` passed.
+      The isolated VS2022 Debug example build reached compilation after removing
+      the host PATH/Path collision, but the shared Debug intermediate directory
+      then reported C1041 for `vc143.pdb`. No source diagnostic was emitted and
+      no compiler process remained afterward. Rebuild from an uncontended or
+      separately configured intermediate directory before claiming build or
+      backend-runtime verification.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
       Prerequisite: complete the manual visible-output/resize/minimize checks
       recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),

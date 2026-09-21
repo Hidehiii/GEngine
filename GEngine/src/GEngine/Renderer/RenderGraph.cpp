@@ -52,7 +52,7 @@ namespace GEngine
 		m_Passes[pass].Record = std::move(record);
 		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_GRAPHICS;
 		m_Passes[pass].Target = target;
-		for (auto color : m_Targets[target].Colors) Write(pass, color, ResourceState::RenderTarget);
+		for (auto color : m_Targets[target].Colors) Write(pass, color, ResourceState::RenderTarget, GraphicsPipelineStage::Graphics);
 		return PassBuilder(*this, pass);
 	}
 	RenderGraph::PassBuilder RenderGraph::BuildComputePass(std::string name, RecordCallback record)
@@ -76,7 +76,9 @@ namespace GEngine
 			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
 			else ++computeCount;
 			for (const auto& access : pass.ResourceAccesses)
-				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE && access.State != ResourceState::ShaderWrite)
+				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
+					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||
+						access.Usage.Stage == GraphicsPipelineStage::Transfer))
 					throw std::invalid_argument("Compute graph accesses currently require storage/UAV state.");
 		}
 		if (graphicsCount + 1 > Graphics::GetCommandBufferCount() || computeCount > Graphics::GetCommandBufferCount())
@@ -135,19 +137,19 @@ namespace GEngine
 		}
 		return { resource, static_cast<uint32_t>(entry.Versions.size() - 1), this, m_Generation };
 	}
-	void RenderGraph::ReadVersion(PassHandle pass, ResourceVersion version, ResourceState state)
+	void RenderGraph::ReadVersion(PassHandle pass, ResourceVersion version, ResourceState state, GraphicsPipelineStage stage)
 	{
 		ValidateVersion(version);
-		AddAccess(pass, version.Resource, state, false, true);
+		AddAccess(pass, version.Resource, state, false, stage, true);
 		m_Resources[version.Resource].Versions[version.Version].Readers.push_back(pass);
 	}
-	RenderGraph::ResourceVersion RenderGraph::WriteVersion(PassHandle pass, ResourceVersion previous, ResourceState state)
+	RenderGraph::ResourceVersion RenderGraph::WriteVersion(PassHandle pass, ResourceVersion previous, ResourceState state, GraphicsPipelineStage stage)
 	{
 		ValidateVersion(previous);
 		auto& resource = m_Resources[previous.Resource];
 		if (previous.Version + 1 != resource.Versions.size())
 			throw std::invalid_argument("Writes must extend the latest resource version.");
-		AddAccess(pass, previous.Resource, state, true, true);
+		AddAccess(pass, previous.Resource, state, true, stage, true);
 		resource.Versions.push_back({ pass, {} });
 		return { previous.Resource, previous.Version + 1, this, m_Generation };
 	}
@@ -274,19 +276,24 @@ namespace GEngine
 		return handle;
 	}
 
-	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state)
+	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage)
 	{
-		AddAccess(pass, resource, state, false);
+		AddAccess(pass, resource, state, false, stage);
 	}
 
-	void RenderGraph::Write(PassHandle pass, ResourceHandle resource, ResourceState state)
+	void RenderGraph::Write(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage)
 	{
-		AddAccess(pass, resource, state, true);
+		AddAccess(pass, resource, state, true, stage);
 	}
 
 	void RenderGraph::SetTransitionCallback(TransitionCallback callback)
 	{
 		m_TransitionCallback = std::move(callback);
+	}
+
+	void RenderGraph::SetTransitionUsageCallback(UsageTransitionCallback callback)
+	{
+		m_UsageTransitionCallback = std::move(callback);
 	}
 
 	Ref<GraphicsResource> RenderGraph::GetResource(ResourceHandle resource) const
@@ -369,8 +376,12 @@ namespace GEngine
 		{
 			for (const auto& transition : m_Passes[pass].Transitions)
 			{
+				if (m_UsageTransitionCallback)
+					m_UsageTransitionCallback(frameContext, m_Resources[transition.Resource].Object,
+						transition.Before, transition.After);
 				if (m_TransitionCallback)
-					m_TransitionCallback(frameContext, m_Resources[transition.Resource].Object, transition.Before, transition.After);
+					m_TransitionCallback(frameContext, m_Resources[transition.Resource].Object,
+						transition.Before.State, transition.After.State);
 			}
 			m_Passes[pass].Execute(frameContext);
 		}
@@ -404,7 +415,8 @@ namespace GEngine
 		}
 	}
 
-	void RenderGraph::AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite, bool versioned)
+	void RenderGraph::AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
+		GraphicsPipelineStage stage, bool versioned)
 	{
 		if (pass >= m_Passes.size() || resource >= m_Resources.size() || state == ResourceState::Undefined)
 			throw std::invalid_argument("Invalid render-graph resource access.");
@@ -414,10 +426,11 @@ namespace GEngine
 			(!isWrite && state == ResourceState::CopyDestination))
 			throw std::invalid_argument("Resource state is incompatible with the declared access.");
 		for (const auto& access : m_Passes[pass].ResourceAccesses)
-			if (access.Resource == resource && access.State != state)
+			if (access.Resource == resource && (access.Usage.State != state || access.Usage.Stage != stage))
 				throw std::invalid_argument("Conflicting states for one resource within a pass.");
 		m_IsCompiled = false;
-		m_Passes[pass].ResourceAccesses.push_back({ resource, state, isWrite });
+		m_Passes[pass].ResourceAccesses.push_back({ resource, { state, stage,
+			isWrite ? GraphicsResourceAccess::Write : GraphicsResourceAccess::Read }, isWrite });
 	}
 
 	void RenderGraph::CreateTransientResources()
@@ -449,11 +462,11 @@ namespace GEngine
 			{
 				const auto& resource = m_Resources[access.Resource];
 				if (!resource.IsTransient && !resource.IsAttachment) continue;
-				if (std::find(resource.AllowedStates.begin(), resource.AllowedStates.end(), access.State) == resource.AllowedStates.end())
+				if (std::find(resource.AllowedStates.begin(), resource.AllowedStates.end(), access.Usage.State) == resource.AllowedStates.end())
 					throw std::invalid_argument("Unsupported transient resource state: " + resource.Name);
-				if (access.IsWrite && (access.State == ResourceState::ShaderRead || access.State == ResourceState::CopySource))
+				if (access.IsWrite && (access.Usage.State == ResourceState::ShaderRead || access.Usage.State == ResourceState::CopySource))
 					throw std::invalid_argument("Write declared with a read-only state: " + resource.Name);
-				if (!access.IsWrite && access.State == ResourceState::CopyDestination)
+				if (!access.IsWrite && access.Usage.State == ResourceState::CopyDestination)
 					throw std::invalid_argument("Read declared with a write-only state: " + resource.Name);
 				if (!access.IsWrite && !initialized[access.Resource])
 					throw std::invalid_argument("Transient resource read before first write: " + resource.Name);
@@ -464,11 +477,11 @@ namespace GEngine
 
 	void RenderGraph::BuildResourceTransitions()
 	{
-		std::vector<ResourceState> states;
+		std::vector<GraphicsResourceUsage> states;
 		states.reserve(m_Resources.size());
 		for (auto& resource : m_Resources)
 		{
-			states.push_back(resource.InitialState);
+			states.push_back({ resource.InitialState, GraphicsPipelineStage::All, GraphicsResourceAccess::ReadWrite });
 			resource.Lifetime = { InvalidPass, InvalidPass, resource.InitialState };
 		}
 
@@ -483,17 +496,17 @@ namespace GEngine
 					lifetime.FirstUse = pass;
 				lifetime.LastUse = pass;
 				auto& currentState = states[access.Resource];
-				if (currentState != access.State || currentState == ResourceState::ShaderWrite)
+				if (currentState.State != access.Usage.State || currentState.State == ResourceState::ShaderWrite)
 				{
-					transitions.push_back({ access.Resource, currentState, access.State });
-					currentState = access.State;
+					transitions.push_back({ access.Resource, currentState, access.Usage });
+					currentState = access.Usage;
 				}
-				lifetime.FinalState = currentState;
+				lifetime.FinalState = currentState.State;
 			}
 			if (m_Passes[pass].Target != InvalidTarget)
 				for (auto color : m_Targets[m_Passes[pass].Target].Colors)
 				{
-					states[color] = ResourceState::ShaderRead;
+					states[color] = { ResourceState::ShaderRead, GraphicsPipelineStage::Graphics, GraphicsResourceAccess::Read };
 					m_Resources[color].Lifetime.FinalState = ResourceState::ShaderRead;
 				}
 		}

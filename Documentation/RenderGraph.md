@@ -102,9 +102,12 @@ executes on its single context and uses memory barriers for visibility.
 Current GPU compute declarations accept storage/UAV (`ShaderWrite`) state for
 both read and write intent. ShaderWrite names the native state, not exclusively
 the access direction. Other compute states are explicitly rejected rather than
-emitting graphics-only stages on a compute queue. Barriers cover whole resources;
-fine-grained stage masks, subresource scheduling and dedicated transfer passes
-are not exposed by these builders yet.
+emitting graphics-only stages on a compute queue. Barriers cover whole resources.
+Access declarations can identify graphics, compute, or transfer usage; omitted
+stage declarations remain conservative (`All`). Vulkan narrows its stage/access
+masks from that intent, while D3D12 legacy barriers and OpenGL memory barriers
+preserve the same ordering conservatively. Subresource ranges and dedicated
+transfer passes are not exposed by these builders yet.
 
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.

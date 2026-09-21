@@ -122,6 +122,12 @@ namespace GEngine
 		RequireDevice().TransitionResource(commandBuffer, resource, before, after);
 	}
 
+	void GraphicsRuntime::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		const GraphicsResourceUsage& before, const GraphicsResourceUsage& after)
+	{
+		RequireDevice().TransitionResource(commandBuffer, resource, before, after);
+	}
+
 	Graphics_API GraphicsRuntime::GetGraphicsAPI() const { return RequireDevice().GetAPI(); }
 	GraphicsCapabilities GraphicsRuntime::GetCapabilities() const { return RequireDevice().GetCapabilities(); }
 	RenderDevice& GraphicsRuntime::GetRenderDevice() { return RequireDevice(); }

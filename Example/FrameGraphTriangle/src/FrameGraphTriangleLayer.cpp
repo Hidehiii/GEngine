@@ -99,6 +99,22 @@ namespace GEngine
 		hazards.Execute();
 		if (memoryDependencies != 2) throw std::runtime_error("Same-state write dependency was omitted.");
 
+		RenderGraph usageGraph;
+		GraphicsPipelineStage observedStage = GraphicsPipelineStage::All;
+		GraphicsResourceAccess observedAccess = GraphicsResourceAccess::ReadWrite;
+		usageGraph.SetTransitionUsageCallback([&observedStage, &observedAccess](const FrameContext&,
+			const Ref<GraphicsResource>&, const GraphicsResourceUsage&, const GraphicsResourceUsage& after)
+		{
+			observedStage = after.Stage;
+			observedAccess = after.Access;
+		});
+		auto usageStorage = usageGraph.ImportResource("UsageIntent", RenderGraph::ResourceState::Undefined);
+		usageGraph.Write(usageGraph.AddPass("ComputeUsage", [] {}), usageStorage,
+			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
+		usageGraph.Execute();
+		if (observedStage != GraphicsPipelineStage::Compute || observedAccess != GraphicsResourceAccess::Write)
+			throw std::runtime_error("RenderGraph stage/access intent did not reach transition compilation.");
+
 		RenderGraph subpassGraph;
 		RenderGraph::AttachmentSpecification subpassAttachment{};
 		subpassAttachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
@@ -162,11 +178,11 @@ namespace GEngine
 		m_ComputePipeline = device.CreateComputePipeline(computeMaterial);
 		const auto initialVersion = m_Graph.GetVersion(m_Graph.ImportStorageBuffer("ColorData", m_Color, RenderGraph::ResourceState::ShaderWrite));
 		auto first = m_Graph.BuildGraphicsPass("ReadPreviousColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
-		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite);
+		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
 		auto compute = m_Graph.BuildComputePass("UpdateColor", [this](const Ref<CommandBuffer>& command) { command->Compute(m_ComputePipeline, 0, 1, 1, 1); });
-		auto updated = compute.Write(initialVersion, RenderGraph::ResourceState::ShaderWrite);
+		auto updated = compute.Write(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
 		auto final = m_Graph.BuildGraphicsPass("ReadUpdatedColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
-		final.Read(updated, RenderGraph::ResourceState::ShaderWrite);
+		final.Read(updated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
 	}
 
 	void FrameGraphTriangleLayer::OnRender()

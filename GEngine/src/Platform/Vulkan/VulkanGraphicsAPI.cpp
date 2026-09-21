@@ -50,6 +50,34 @@ namespace
 		}
 		return { VK_IMAGE_LAYOUT_UNDEFINED, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 	}
+
+	VkPipelineStageFlags ToVulkanStage(GEngine::GraphicsPipelineStage stage, VkPipelineStageFlags fallback)
+	{
+		using Stage = GEngine::GraphicsPipelineStage;
+		switch (stage)
+		{
+		case Stage::Graphics: return VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+		case Stage::Compute: return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		case Stage::Transfer: return VK_PIPELINE_STAGE_TRANSFER_BIT;
+		case Stage::All: return fallback;
+		}
+		return fallback;
+	}
+
+	VkAccessFlags ToVulkanAccess(GEngine::GraphicsResourceAccess access, VkAccessFlags fallback)
+	{
+		using Access = GEngine::GraphicsResourceAccess;
+		const auto reads = fallback & (VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT);
+		const auto writes = fallback & (VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT |
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+		switch (access)
+		{
+		case Access::Read: return reads ? reads : fallback;
+		case Access::Write: return writes ? writes : fallback;
+		case Access::ReadWrite: return fallback;
+		}
+		return fallback;
+	}
 }
 
 namespace GEngine
@@ -423,27 +451,38 @@ namespace GEngine
 	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 		GraphicsResourceState before, GraphicsResourceState after)
 	{
+		TransitionResource(commandBuffer, resource, { before }, { after });
+	}
+
+	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		const GraphicsResourceUsage& before, const GraphicsResourceUsage& after)
+	{
 		const auto nativeResource = GetNativeResource(resource);
 		if (!resource || nativeResource == nullptr)
 			return;
 
 		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(vulkanCommandBuffer, "Vulkan resource transitions require a Vulkan command buffer.");
-		if (before == after)
+		if (before.State == after.State)
 		{
-			if (before == GraphicsResourceState::ShaderWrite)
+			if (before.State == GraphicsResourceState::ShaderWrite)
 			{
 				VkMemoryBarrier barrier{};
 				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-				barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-				vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-					VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+				barrier.srcAccessMask = ToVulkanAccess(before.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+				barrier.dstAccessMask = ToVulkanAccess(after.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+				vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(),
+					ToVulkanStage(before.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT),
+					ToVulkanStage(after.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), 0, 1, &barrier, 0, nullptr, 0, nullptr);
 			}
 			return;
 		}
-		const auto source = ToVulkanResourceState(before);
-		const auto destination = ToVulkanResourceState(after);
+		auto source = ToVulkanResourceState(before.State);
+		auto destination = ToVulkanResourceState(after.State);
+		source.Stage = ToVulkanStage(before.Stage, source.Stage);
+		destination.Stage = ToVulkanStage(after.Stage, destination.Stage);
+		source.Access = ToVulkanAccess(before.Access, source.Access);
+		destination.Access = ToVulkanAccess(after.Access, destination.Access);
 		if (auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource))
 		{
 			texture->SetImageLayout(vulkanCommandBuffer->GetCommandBuffer(), destination.Layout);
@@ -481,7 +520,7 @@ namespace GEngine
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = reinterpret_cast<VkImage>(nativeResource);
-		barrier.subresourceRange.aspectMask = (before == GraphicsResourceState::DepthWrite || after == GraphicsResourceState::DepthWrite)
+		barrier.subresourceRange.aspectMask = (before.State == GraphicsResourceState::DepthWrite || after.State == GraphicsResourceState::DepthWrite)
 			? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;

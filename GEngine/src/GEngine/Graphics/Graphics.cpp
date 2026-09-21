@@ -48,6 +48,12 @@ namespace GEngine
 		ActiveRuntime().TransitionResource(commandBuffer, resource, before, after);
 	}
 
+	void Graphics::TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		const GraphicsResourceUsage& before, const GraphicsResourceUsage& after)
+	{
+		ActiveRuntime().TransitionResource(commandBuffer, resource, before, after);
+	}
+
 	void Graphics::SetReverseDepth(bool reverse)
 	{
 		ActiveRuntime().SetReverseDepth(reverse);

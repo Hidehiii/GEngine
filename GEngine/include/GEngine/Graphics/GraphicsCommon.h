@@ -201,6 +201,30 @@ namespace GEngine
 		Present
 	};
 
+	// A conservative declaration is All stages. RenderGraph carries the intent
+	// to backends so APIs with precise barriers can narrow their synchronization.
+	enum class GraphicsPipelineStage : uint8_t
+	{
+		All,
+		Graphics,
+		Compute,
+		Transfer
+	};
+
+	enum class GraphicsResourceAccess : uint8_t
+	{
+		Read,
+		Write,
+		ReadWrite
+	};
+
+	struct GraphicsResourceUsage
+	{
+		GraphicsResourceState State = GraphicsResourceState::Undefined;
+		GraphicsPipelineStage Stage = GraphicsPipelineStage::All;
+		GraphicsResourceAccess Access = GraphicsResourceAccess::ReadWrite;
+	};
+
 	enum class GraphicsResourceType : uint8_t
 	{
 		Unknown,

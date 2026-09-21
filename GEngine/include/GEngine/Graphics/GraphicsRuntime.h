@@ -27,6 +27,8 @@ namespace GEngine
 		void WaitForIdle();
 		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after);
+		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after);
 
 		Graphics_API GetGraphicsAPI() const;
 		uint8_t GetFrameCount() const { return m_FrameCount; }

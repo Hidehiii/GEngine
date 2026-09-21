@@ -62,18 +62,22 @@ namespace GEngine
 			uint64_t Generation = 0;
 		};
 		ResourceVersion GetVersion(ResourceHandle resource);
-		void ReadVersion(PassHandle pass, ResourceVersion resource, ResourceState state = ResourceState::ShaderRead);
-		ResourceVersion WriteVersion(PassHandle pass, ResourceVersion previous, ResourceState state);
+		void ReadVersion(PassHandle pass, ResourceVersion resource, ResourceState state = ResourceState::ShaderRead,
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
+		ResourceVersion WriteVersion(PassHandle pass, ResourceVersion previous, ResourceState state,
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
 
 		class PassBuilder
 		{
 		public:
 			PassBuilder(RenderGraph& graph, PassHandle pass) : m_Graph(graph), m_Pass(pass), m_Generation(graph.m_Generation) {}
 			PassBuilder& DependsOn(PassHandle pass) { m_Graph.AddDependency(GetHandle(), pass); return *this; }
-			PassBuilder& Read(ResourceVersion version, ResourceState state = ResourceState::ShaderRead)
-			{ m_Graph.ReadVersion(GetHandle(), version, state); return *this; }
-			ResourceVersion Write(ResourceVersion version, ResourceState state)
-			{ return m_Graph.WriteVersion(GetHandle(), version, state); }
+			PassBuilder& Read(ResourceVersion version, ResourceState state = ResourceState::ShaderRead,
+				GraphicsPipelineStage stage = GraphicsPipelineStage::All)
+			{ m_Graph.ReadVersion(GetHandle(), version, state, stage); return *this; }
+			ResourceVersion Write(ResourceVersion version, ResourceState state,
+				GraphicsPipelineStage stage = GraphicsPipelineStage::All)
+			{ return m_Graph.WriteVersion(GetHandle(), version, state, stage); }
 			PassHandle GetHandle() const
 			{
 				if (m_Generation != m_Graph.m_Generation || m_Pass >= m_Graph.m_Passes.size())
@@ -91,6 +95,8 @@ namespace GEngine
 		PassBuilder BuildComputePass(std::string name, RecordCallback record);
 		void ExecuteGpu(const Ref<CommandBuffer>& completion);
 		using TransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&, ResourceState, ResourceState)>;
+		using UsageTransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&,
+			const GraphicsResourceUsage&, const GraphicsResourceUsage&)>;
 
 		struct Texture2DDesc
 		{
@@ -131,9 +137,12 @@ namespace GEngine
 		ResourceHandle CreateTransientTexture2D(std::string name, const Texture2DDesc& description, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientStorageBuffer(std::string name, const StorageBufferDesc& description, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientStorageImage(std::string name, const StorageImage2DDesc& description, ResourceState initialState = ResourceState::Undefined);
-		void Read(PassHandle pass, ResourceHandle resource, ResourceState state = ResourceState::ShaderRead);
-		void Write(PassHandle pass, ResourceHandle resource, ResourceState state);
+		void Read(PassHandle pass, ResourceHandle resource, ResourceState state = ResourceState::ShaderRead,
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
+		void Write(PassHandle pass, ResourceHandle resource, ResourceState state,
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
 		void SetTransitionCallback(TransitionCallback callback);
+		void SetTransitionUsageCallback(UsageTransitionCallback callback);
 		Ref<GraphicsResource> GetResource(ResourceHandle resource) const;
 		Ref<Texture2D> GetTexture2D(ResourceHandle resource) const;
 		Ref<StorageBuffer> GetStorageBuffer(ResourceHandle resource) const;
@@ -148,7 +157,7 @@ namespace GEngine
 		struct ResourceAccess
 		{
 			ResourceHandle Resource;
-			ResourceState State;
+			GraphicsResourceUsage Usage;
 			bool IsWrite;
 		};
 
@@ -174,8 +183,8 @@ namespace GEngine
 		struct ResourceTransition
 		{
 			ResourceHandle Resource;
-			ResourceState Before;
-			ResourceState After;
+			GraphicsResourceUsage Before;
+			GraphicsResourceUsage After;
 		};
 
 		struct Pass
@@ -199,7 +208,8 @@ namespace GEngine
 		};
 
 		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite);
-		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite, bool versioned = false);
+		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All, bool versioned = false);
 		void ValidateVersion(ResourceVersion version) const;
 		void BuildVersionDependencies();
 		void CreateTransientResources();
@@ -215,6 +225,7 @@ namespace GEngine
 		std::vector<Target> m_Targets;
 		std::vector<PassHandle> m_ExecutionOrder;
 		TransitionCallback m_TransitionCallback;
+		UsageTransitionCallback m_UsageTransitionCallback;
 		bool m_IsCompiled = false;
 		uint64_t m_Generation = 1;
 	};

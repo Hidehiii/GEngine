@@ -25,7 +25,7 @@
 
 ## Visual Studio 2026 project generation
 
-- [ ] Add a VS2026 option to `Scripts/GenerateProjects.bat`, preserving the
+- [x] Add a VS2026 option to `Scripts/GenerateProjects.bat`, preserving the
   existing VS2022/VS2019 choices. Allow an external Premake executable without
   replacing vendored binaries, and resolve the repository relative to the script.
   Acceptance: `vs2026` is dispatched explicitly; unsupported Premake versions
