@@ -54,6 +54,7 @@ namespace GEngine
 		Ref<FrameBuffer> GetFrameBuffer(TargetHandle target) const;
 
 		using ResourceState = GraphicsResourceState;
+		using SubresourceRange = GraphicsSubresourceRange;
 		struct ResourceVersion
 		{
 			ResourceHandle Resource = InvalidResource;
@@ -138,9 +139,9 @@ namespace GEngine
 		ResourceHandle CreateTransientStorageBuffer(std::string name, const StorageBufferDesc& description, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientStorageImage(std::string name, const StorageImage2DDesc& description, ResourceState initialState = ResourceState::Undefined);
 		void Read(PassHandle pass, ResourceHandle resource, ResourceState state = ResourceState::ShaderRead,
-			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All, SubresourceRange range = {});
 		void Write(PassHandle pass, ResourceHandle resource, ResourceState state,
-			GraphicsPipelineStage stage = GraphicsPipelineStage::All);
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All, SubresourceRange range = {});
 		void SetTransitionCallback(TransitionCallback callback);
 		void SetTransitionUsageCallback(UsageTransitionCallback callback);
 		Ref<GraphicsResource> GetResource(ResourceHandle resource) const;
@@ -158,6 +159,7 @@ namespace GEngine
 		{
 			ResourceHandle Resource;
 			GraphicsResourceUsage Usage;
+			SubresourceRange Range;
 			bool IsWrite;
 		};
 
@@ -185,6 +187,7 @@ namespace GEngine
 			ResourceHandle Resource;
 			GraphicsResourceUsage Before;
 			GraphicsResourceUsage After;
+			SubresourceRange Range;
 		};
 
 		struct Pass
@@ -209,7 +212,7 @@ namespace GEngine
 
 		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite);
 		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
-			GraphicsPipelineStage stage = GraphicsPipelineStage::All, bool versioned = false);
+			GraphicsPipelineStage stage = GraphicsPipelineStage::All, bool versioned = false, SubresourceRange range = {});
 		void ValidateVersion(ResourceVersion version) const;
 		void BuildVersionDependencies();
 		void CreateTransientResources();

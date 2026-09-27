@@ -94,6 +94,11 @@ namespace GEngine
 		{
 			TransitionResource(commandBuffer, resource, before.State, after.State);
 		}
+		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+		{
+			TransitionResource(commandBuffer, resource, before, after);
+		}
 
 
 		inline static Graphics_API GetAPI() { return s_API; }

@@ -109,6 +109,12 @@ masks from that intent, while D3D12 legacy barriers and OpenGL memory barriers
 preserve the same ordering conservatively. Subresource ranges and dedicated
 transfer passes are not exposed by these builders yet.
 
+`SubresourceRange` is available on the legacy `Read` and `Write` declarations
+for validation and future scheduling. The default denotes the whole resource.
+Empty ranges are rejected. Current GPU builders reject any non-whole range
+before command recording because the three backends do not yet all compile
+per-range barriers; ranges are never silently widened.
+
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
 

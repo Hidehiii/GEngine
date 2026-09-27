@@ -76,6 +76,9 @@ namespace GEngine
 			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
 			else ++computeCount;
 			for (const auto& access : pass.ResourceAccesses)
+				if (!access.Range.IsWholeResource())
+					throw std::invalid_argument("GPU subresource ranges require native range barriers on every backend.");
+			for (const auto& access : pass.ResourceAccesses)
 				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
 					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||
 						access.Usage.Stage == GraphicsPipelineStage::Transfer))
@@ -107,7 +110,7 @@ namespace GEngine
 			{
 				const bool attachment = pass.Target != InvalidTarget &&
 					std::find(m_Targets[pass.Target].Colors.begin(), m_Targets[pass.Target].Colors.end(), transition.Resource) != m_Targets[pass.Target].Colors.end();
-				if (!attachment) Graphics::TransitionResource(command, m_Resources[transition.Resource].Object, transition.Before, transition.After);
+				if (!attachment) Graphics::TransitionResource(command, m_Resources[transition.Resource].Object, transition.Before, transition.After, transition.Range);
 			}
 			if (pass.Target != InvalidTarget) command->BeginRenderPass(m_Targets[pass.Target].Object);
 			pass.Record(command);
@@ -276,14 +279,14 @@ namespace GEngine
 		return handle;
 	}
 
-	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage)
+	void RenderGraph::Read(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage, SubresourceRange range)
 	{
-		AddAccess(pass, resource, state, false, stage);
+		AddAccess(pass, resource, state, false, stage, false, range);
 	}
 
-	void RenderGraph::Write(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage)
+	void RenderGraph::Write(PassHandle pass, ResourceHandle resource, ResourceState state, GraphicsPipelineStage stage, SubresourceRange range)
 	{
-		AddAccess(pass, resource, state, true, stage);
+		AddAccess(pass, resource, state, true, stage, false, range);
 	}
 
 	void RenderGraph::SetTransitionCallback(TransitionCallback callback)
@@ -416,7 +419,7 @@ namespace GEngine
 	}
 
 	void RenderGraph::AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
-		GraphicsPipelineStage stage, bool versioned)
+		GraphicsPipelineStage stage, bool versioned, SubresourceRange range)
 	{
 		if (pass >= m_Passes.size() || resource >= m_Resources.size() || state == ResourceState::Undefined)
 			throw std::invalid_argument("Invalid render-graph resource access.");
@@ -425,12 +428,14 @@ namespace GEngine
 		if ((isWrite && (state == ResourceState::ShaderRead || state == ResourceState::CopySource)) ||
 			(!isWrite && state == ResourceState::CopyDestination))
 			throw std::invalid_argument("Resource state is incompatible with the declared access.");
+		if (!range.MipLevelCount || !range.ArrayLayerCount)
+			throw std::invalid_argument("Render-graph subresource ranges must not be empty.");
 		for (const auto& access : m_Passes[pass].ResourceAccesses)
 			if (access.Resource == resource && (access.Usage.State != state || access.Usage.Stage != stage))
 				throw std::invalid_argument("Conflicting states for one resource within a pass.");
 		m_IsCompiled = false;
 		m_Passes[pass].ResourceAccesses.push_back({ resource, { state, stage,
-			isWrite ? GraphicsResourceAccess::Write : GraphicsResourceAccess::Read }, isWrite });
+			isWrite ? GraphicsResourceAccess::Write : GraphicsResourceAccess::Read }, range, isWrite });
 	}
 
 	void RenderGraph::CreateTransientResources()
@@ -498,7 +503,7 @@ namespace GEngine
 				auto& currentState = states[access.Resource];
 				if (currentState.State != access.Usage.State || currentState.State == ResourceState::ShaderWrite)
 				{
-					transitions.push_back({ access.Resource, currentState, access.Usage });
+					transitions.push_back({ access.Resource, currentState, access.Usage, access.Range });
 					currentState = access.Usage;
 				}
 				lifetime.FinalState = currentState.State;

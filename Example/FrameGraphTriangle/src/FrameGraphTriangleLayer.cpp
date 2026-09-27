@@ -99,6 +99,18 @@ namespace GEngine
 		hazards.Execute();
 		if (memoryDependencies != 2) throw std::runtime_error("Same-state write dependency was omitted.");
 
+		RenderGraph invalidRangeGraph;
+		auto rangeResource = invalidRangeGraph.ImportResource("InvalidRange");
+		bool invalidRangeRejected = false;
+		try
+		{
+			invalidRangeGraph.Read(invalidRangeGraph.AddPass("InvalidRange", [] {}), rangeResource,
+				RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+				{ 0, 0, 0, RenderGraph::SubresourceRange::All });
+		}
+		catch (const std::invalid_argument&) { invalidRangeRejected = true; }
+		if (!invalidRangeRejected) throw std::runtime_error("RenderGraph accepted an empty subresource range.");
+
 		RenderGraph usageGraph;
 		GraphicsPipelineStage observedStage = GraphicsPipelineStage::All;
 		GraphicsResourceAccess observedAccess = GraphicsResourceAccess::ReadWrite;

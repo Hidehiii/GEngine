@@ -225,6 +225,16 @@ namespace GEngine
 		GraphicsResourceAccess Access = GraphicsResourceAccess::ReadWrite;
 	};
 
+	struct GraphicsSubresourceRange
+	{
+		static constexpr uint32_t All = UINT32_MAX;
+		uint32_t BaseMipLevel = 0;
+		uint32_t MipLevelCount = All;
+		uint32_t BaseArrayLayer = 0;
+		uint32_t ArrayLayerCount = All;
+		bool IsWholeResource() const { return BaseMipLevel == 0 && MipLevelCount == All && BaseArrayLayer == 0 && ArrayLayerCount == All; }
+	};
+
 	enum class GraphicsResourceType : uint8_t
 	{
 		Unknown,

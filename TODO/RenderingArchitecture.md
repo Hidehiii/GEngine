@@ -428,6 +428,68 @@ submission and deterministic renderer shutdown.
       no compiler process remained afterward. Rebuild from an uncontended or
       separately configured intermediate directory before claiming build or
       backend-runtime verification.
+      Follow-up 2026-09-27: a serial VS2022 Debug build used a dedicated
+      `build-verify` intermediate/output directory after clearing the host
+      PATH/Path collision. It completed without leaving compiler processes but
+      did not produce `GEngine.dll`; the build host did not preserve its final
+      diagnostic. The temporary directory was removed. Build and runtime
+      verification therefore remain open; do not use this attempt as source
+      success or failure evidence.
+      Next milestone 2026-09-27: introduce a portable subresource-range
+      declaration with validation. Until native per-range barriers are present
+      on all backends, GPU execution must reject a non-whole range explicitly;
+      it must never silently widen it to a whole-resource barrier.
+      Implemented 2026-09-27: `SubresourceRange` defaults to the complete
+      resource, rejects empty declarations, and is retained in compiled graph
+      transitions. The FrameGraphTriangle startup regression checks empty-range
+      rejection. Non-whole GPU ranges fail before command recording. Per-range
+      native barrier compilation and GPU runtime verification remain open.
+      Full follow-up authorized 2026-09-27: extend common texture metadata and
+      graph imports for mip/layer bounds; thread valid ranges through the
+      graphics transition API; compile Vulkan image ranges and D3D12 subresource
+      transitions, and document OpenGL's conservative global memory-barrier
+      semantics. Add range validation regression coverage. Acceptance: invalid
+      ranges fail before recording; valid texture-array layer ranges reach each
+      backend without silent whole-resource fallback; build and available backend
+      runtime evidence are recorded separately.
+      Progress: the common `GraphicsSubresourceRange` and range-aware transition
+      overload now exist. GPU execution remains explicitly blocked for non-whole
+      ranges until all backend implementations consume that overload.
+      Detailed remaining requirements:
+      - Give graph resources explicit mip-level and array-layer counts (including
+        storage images and texture arrays); imported resources must expose their
+        actual dimensions, and transient descriptors must declare them.
+      - Resolve `All` counts against resource metadata during graph compilation.
+        Reject zero counts, out-of-bounds ranges, integer overflow, unsupported
+        resource types, and ranges that cannot be represented by the selected
+        backend before transient allocation or command recording.
+      - Preserve each access range in dependency analysis and compiled transitions.
+        Overlapping ranges conflict; disjoint ranges may proceed independently
+        only when that backend can track and synchronize them independently.
+      - Vulkan: use the declared mip/layer range in `VkImageMemoryBarrier`, and
+        track layout per subresource. The current texture classes store one layout
+        for the whole image, so updating only the barrier range without replacing
+        that state model is not correct. Keep buffer barriers whole-buffer unless
+        byte ranges are separately introduced.
+      - D3D12: compute mip/layer/plane subresource indices from the resource
+        description, transition only the declared subresources, and maintain
+        per-subresource state. Whole-resource transitions must remain compatible
+        with existing callers.
+      - OpenGL: issue the memory-barrier bits required by the access transition.
+        Since `glMemoryBarrier` is not layer-scoped, document and expose this as
+        conservative whole-resource synchronization; do not claim independent
+        per-layer scheduling on OpenGL. Reject range semantics requiring separate
+        image layouts or ownership that OpenGL cannot express.
+      - Update FrameGraphTriangle with valid layer-range transitions, disjoint
+        range ordering where supported, empty/out-of-bounds rejection, and
+        proof that rejected declarations fail before allocation/recording.
+        Keep the existing whole-resource graphics-compute-graphics readback.
+      - Update `Documentation/RenderGraph.md` with range defaults, `All` rules,
+        supported resource types, per-backend guarantees, and unsupported cases.
+      - Build Debug and Release engine/example. Run range regressions on OpenGL,
+        Vulkan shared and dedicated queues, and D3D12 separately. Record backend
+        diagnostics and explicitly list unavailable validation layers or runtime
+        scenarios; compilation alone does not close this item.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
       Prerequisite: complete the manual visible-output/resize/minimize checks
       recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),

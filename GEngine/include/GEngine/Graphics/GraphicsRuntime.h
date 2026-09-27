@@ -29,6 +29,8 @@ namespace GEngine
 			GraphicsResourceState before, GraphicsResourceState after);
 		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after);
+		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
 
 		Graphics_API GetGraphicsAPI() const;
 		uint8_t GetFrameCount() const { return m_FrameCount; }

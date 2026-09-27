@@ -19,6 +19,8 @@ namespace GEngine
 			GraphicsResourceState before, GraphicsResourceState after);
 		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after);
+		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
 		static void SetReverseDepth(bool reverse);
 
 		static Graphics_API			GetGraphicsAPI();
