@@ -455,14 +455,40 @@ submission and deterministic renderer shutdown.
       Progress: the common `GraphicsSubresourceRange` and range-aware transition
       overload now exist. GPU execution remains explicitly blocked for non-whole
       ranges until all backend implementations consume that overload.
+      Next bounded step 2026-09-29: graph resources carry explicit mip/layer
+      metadata, transient descriptors declare their subresource counts, and
+      compilation resolves and validates ranges before transient allocation.
+      Acceptance: imported textures and storage images expose actual counts;
+      texture arrays expose their layer count; `All` counts resolve against
+      metadata; empty, out-of-bounds, overflowing, and unsupported non-whole
+      ranges fail before allocation or recording. Native per-range barriers and
+      full three-backend runtime verification remain outside this step.
+      Implemented 2026-09-29: `GraphicsResource` exposes subresource metadata,
+      textures and texture arrays report their actual mip/layer counts, storage
+      images report one mip/layer, graph imports retain that metadata, and
+      transient texture/array/storage-image descriptors declare their counts.
+      Compilation resolves `All` and rejects empty, overflowing, out-of-bounds,
+      zero-count, and non-whole unsupported ranges before transient allocation.
+      The range-aware whole-resource GPU check uses resolved metadata.
+      FrameGraphTriangle checks the negative paths plus valid two-mip, imported
+      two-mip, transient two-layer-array, and imported two-layer-array ranges.
+      Verification: isolated VS2026 Debug and Release builds of GEngine and
+      FrameGraphTriangle passed with MSBuild 18.10.1 / MSVC 14.50.35717,
+      `/m:1 /nr:false`, warnings but zero errors. The final Debug and Release
+      code, including presentation metadata and the transient-array regression,
+      was rebuilt after all diagnostic-log removal. OpenGL 4.6 (NVIDIA driver
+      610.88) completed 120 frames, passed frame-119 compute readback, and
+      exited with code 0 in both configurations.
+      Backend runtime: OpenGL 4.6, D3D12 feature level 12.2, and Vulkan 1.4.341
+      shared queues each completed 120 frames, passed frame-119 compute
+      readback, and exited with code 0 in both Debug and Release. Vulkan
+      dedicated queues (graphics=0, compute=2, transfer=4) also passed in both
+      configurations. An initial D3D12/Vulkan pre-first-frame stop was traced
+      to presentation wrappers returning no subresource metadata; exposing
+      their one-mip/one-layer swap-chain images fixed the import path. Vulkan
+      validation layers were unavailable on this host, so those runs had no
+      validation-layer coverage.
       Detailed remaining requirements:
-      - Give graph resources explicit mip-level and array-layer counts (including
-        storage images and texture arrays); imported resources must expose their
-        actual dimensions, and transient descriptors must declare them.
-      - Resolve `All` counts against resource metadata during graph compilation.
-        Reject zero counts, out-of-bounds ranges, integer overflow, unsupported
-        resource types, and ranges that cannot be represented by the selected
-        backend before transient allocation or command recording.
       - Preserve each access range in dependency analysis and compiled transitions.
         Overlapping ranges conflict; disjoint ranges may proceed independently
         only when that backend can track and synchronize them independently.

@@ -249,6 +249,10 @@ namespace GEngine
     {
         return CreateRef<VulkanTexture2D>(width, height, format);
     }
+    Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
+    {
+        return CreateRef<VulkanTexture2D>(width, height, format, mipLevelCount);
+    }
     Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(const std::string& path)
     {
         return CreateRef<VulkanTexture2D>(path);

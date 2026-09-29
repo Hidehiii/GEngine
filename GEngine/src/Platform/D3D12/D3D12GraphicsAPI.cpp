@@ -256,6 +256,10 @@ namespace GEngine
     {
         return CreateRef<D3D12Texture2D>(width, height, format);
     }
+    Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
+    {
+        return CreateRef<D3D12Texture2D>(width, height, format, mipLevelCount);
+    }
     Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(const std::string& path)
     {
         return CreateRef<D3D12Texture2D>(path);

@@ -111,9 +111,16 @@ transfer passes are not exposed by these builders yet.
 
 `SubresourceRange` is available on the legacy `Read` and `Write` declarations
 for validation and future scheduling. The default denotes the whole resource.
-Empty ranges are rejected. Current GPU builders reject any non-whole range
-before command recording because the three backends do not yet all compile
-per-range barriers; ranges are never silently widened.
+Empty and overflowing ranges are rejected when the access is declared. During
+compilation, `All` counts are resolved against the imported or transient
+resource's mip/layer metadata before transient allocation. Out-of-bounds,
+zero-count, and non-whole ranges on resources without subresource metadata
+(including buffers and logical imports) are rejected before allocation or
+recording. Imported textures expose their actual mip count; texture arrays
+expose their layer count; 2D storage images currently expose one mip and one
+layer. Current GPU builders still reject any non-whole range before command
+recording because the three backends do not yet all compile per-range
+barriers; ranges are never silently widened.
 
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
@@ -143,7 +150,7 @@ ends when `Reset()` is called:
 ```cpp
 const auto lighting = graph.CreateTransientTexture2D(
     "Lighting",
-    { viewportWidth, viewportHeight, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
+    { viewportWidth, viewportHeight, 1, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
 
 graph.Write(uploadPass, lighting, RenderGraph::ResourceState::CopyDestination);
 graph.Read(postProcess, lighting, RenderGraph::ResourceState::ShaderRead);
@@ -153,6 +160,11 @@ auto texture = graph.GetTexture2D(lighting);
 ```
 
 This texture path supports sampling and copies, not attachment rendering.
+`Texture2DDesc` declares `MipLevelCount` and `ArrayLayerCount`; a 2D texture
+currently requires one array layer. `Texture2DArrayDesc` declares its layer
+count (with one mip level until backend support is expanded), and
+`StorageImage2DDesc` declares its subresource counts (currently one mip and
+one layer). Those counts are the compile-time source for resolving `All`.
 The upload pass must actually initialize the texture contents. Use an imported
 framebuffer attachment for render-target work until usage-aware creation exists.
 Transient resources start Undefined; compilation rejects unsupported states,

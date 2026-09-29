@@ -18,6 +18,7 @@ namespace
 		}
 
 		GEngine::GraphicsResourceType GetResourceType() const override { return GEngine::GraphicsResourceType::Texture; }
+		GEngine::GraphicsSubresourceMetadata GetSubresourceMetadata() const override { return { 1, 1 }; }
 		bool RequiresExplicitStateTransition() const override { return false; }
 
 	private:

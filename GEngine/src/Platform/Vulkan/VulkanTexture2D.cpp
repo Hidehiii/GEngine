@@ -53,12 +53,21 @@ namespace GEngine
         
     }
     VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+        : VulkanTexture2D(width, height, format, 0)
+    {
+    }
+    VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
     {
         m_Height    = height;
         m_Width     = width;
         m_Format = format;
 
-		if (m_GenerateMipmap)
+        if (mipLevelCount != 0)
+        {
+            m_GenerateMipmap = false;
+            m_MipLevels = mipLevelCount;
+        }
+        else if (m_GenerateMipmap)
 		{
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}

@@ -34,12 +34,16 @@ namespace GEngine
 		stbi_image_free(data);
 	}
 	D3D12Texture2D::D3D12Texture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+		: D3D12Texture2D(width, height, format, 0)
+	{
+	}
+	D3D12Texture2D::D3D12Texture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
 	{
 		m_Width		= width;
 		m_Height	= height;
 		m_Format	= format;
 		m_DxgiFormat = Utils::RenderImage2DFormatToDXGIFormat(m_Format);
-		m_MipLevels = 1;
+		m_MipLevels = mipLevelCount != 0 ? mipLevelCount : 1;
 		Utils::CreateTexture(width, height, 1, m_MipLevels,
 			m_DxgiFormat,
 			D3D12_RESOURCE_FLAG_NONE,

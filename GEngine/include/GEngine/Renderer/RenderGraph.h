@@ -103,6 +103,17 @@ namespace GEngine
 		{
 			uint32_t Width = 0;
 			uint32_t Height = 0;
+			uint32_t MipLevelCount = 1;
+			uint32_t ArrayLayerCount = 1;
+			RenderImage2DFormat Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
+		};
+
+		struct Texture2DArrayDesc
+		{
+			uint32_t Width = 0;
+			uint32_t Height = 0;
+			uint32_t ArrayLayerCount = 0;
+			uint32_t MipLevelCount = 1;
 			RenderImage2DFormat Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
 		};
 
@@ -115,6 +126,8 @@ namespace GEngine
 		{
 			uint32_t Width = 0;
 			uint32_t Height = 0;
+			uint32_t MipLevelCount = 1;
+			uint32_t ArrayLayerCount = 1;
 			ComputeImage2DFormat Format = COMPUTE_IMAGE_2D_FORMAT_RGBA32_SFLOAT;
 		};
 
@@ -136,6 +149,7 @@ namespace GEngine
 		ResourceHandle ImportStorageBuffer(std::string name, const Ref<StorageBuffer>& buffer, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle ImportStorageImage(std::string name, const Ref<StorageImage2D>& image, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientTexture2D(std::string name, const Texture2DDesc& description, ResourceState initialState = ResourceState::Undefined);
+		ResourceHandle CreateTransientTexture2DArray(std::string name, const Texture2DArrayDesc& description, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientStorageBuffer(std::string name, const StorageBufferDesc& description, ResourceState initialState = ResourceState::Undefined);
 		ResourceHandle CreateTransientStorageImage(std::string name, const StorageImage2DDesc& description, ResourceState initialState = ResourceState::Undefined);
 		void Read(PassHandle pass, ResourceHandle resource, ResourceState state = ResourceState::ShaderRead,
@@ -180,6 +194,8 @@ namespace GEngine
 			std::vector<ResourceState> AllowedStates;
 			bool UsesVersions = false;
 			std::vector<VersionInfo> Versions;
+			bool HasSubresourceMetadata = false;
+			GraphicsSubresourceMetadata SubresourceMetadata{};
 		};
 
 		struct ResourceTransition
@@ -213,6 +229,8 @@ namespace GEngine
 		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite);
 		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
 			GraphicsPipelineStage stage = GraphicsPipelineStage::All, bool versioned = false, SubresourceRange range = {});
+		void SetSubresourceMetadata(ResourceHandle resource, GraphicsSubresourceMetadata metadata);
+		void ValidateSubresourceRanges();
 		void ValidateVersion(ResourceVersion version) const;
 		void BuildVersionDependencies();
 		void CreateTransientResources();

@@ -7,6 +7,7 @@
 #include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/Texture.h"
+#include <limits>
 #include <stdexcept>
 
 namespace GEngine
@@ -22,6 +23,7 @@ namespace GEngine
 			const auto resource = ImportResource(name + ".Color" + std::to_string(i), ResourceState::ShaderRead);
 			m_Resources[resource].IsAttachment = true;
 			m_Resources[resource].AllowedStates = { ResourceState::RenderTarget, ResourceState::ShaderRead, ResourceState::CopySource };
+			SetSubresourceMetadata(resource, { 1, 1 });
 			target.Colors.push_back(resource);
 		}
 		m_Targets.push_back(std::move(target));
@@ -76,8 +78,14 @@ namespace GEngine
 			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
 			else ++computeCount;
 			for (const auto& access : pass.ResourceAccesses)
-				if (!access.Range.IsWholeResource())
+			{
+				const auto& resource = m_Resources[access.Resource];
+				const bool wholeRange = resource.HasSubresourceMetadata
+					? access.Range.IsWholeResource(resource.SubresourceMetadata.MipLevelCount, resource.SubresourceMetadata.ArrayLayerCount)
+					: access.Range.IsWholeResource();
+				if (!wholeRange)
 					throw std::invalid_argument("GPU subresource ranges require native range barriers on every backend.");
+			}
 			for (const auto& access : pass.ResourceAccesses)
 				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
 					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||
@@ -216,6 +224,13 @@ namespace GEngine
 		GE_CORE_ASSERT(resource, "External render-graph resources require an engine resource.");
 		const auto handle = ImportResource(std::move(name), initialState);
 		m_Resources[handle].Object = resource;
+		if (resource->GetResourceType() == GraphicsResourceType::Texture)
+		{
+			const auto metadata = resource->GetSubresourceMetadata();
+			if (!metadata.MipLevelCount || !metadata.ArrayLayerCount)
+				throw std::invalid_argument("Imported textures require valid subresource metadata: " + m_Resources[handle].Name);
+			SetSubresourceMetadata(handle, metadata);
+		}
 		return handle;
 	}
 
@@ -240,13 +255,35 @@ namespace GEngine
 	RenderGraph::ResourceHandle RenderGraph::CreateTransientTexture2D(std::string name, const Texture2DDesc& description, ResourceState initialState)
 	{
 		GE_CORE_ASSERT(description.Width > 0 && description.Height > 0, "Transient textures require a non-zero extent.");
+		GE_CORE_ASSERT(description.MipLevelCount > 0, "Transient textures require a non-zero mip count.");
+		GE_CORE_ASSERT(description.ArrayLayerCount == 1, "A transient 2D texture supports one array layer.");
 		const auto handle = ImportResource(std::move(name), initialState);
 		auto& resource = m_Resources[handle];
 		resource.IsTransient = true;
 		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::CopySource, ResourceState::CopyDestination };
+		SetSubresourceMetadata(handle, { description.MipLevelCount, description.ArrayLayerCount });
 		resource.Create = [description]()
 		{
-			return std::static_pointer_cast<GraphicsResource>(Texture2D::Create(description.Width, description.Height, description.Format));
+			return std::static_pointer_cast<GraphicsResource>(Texture2D::Create(
+				description.Width, description.Height, description.Format, description.MipLevelCount));
+		};
+		return handle;
+	}
+
+	RenderGraph::ResourceHandle RenderGraph::CreateTransientTexture2DArray(std::string name, const Texture2DArrayDesc& description, ResourceState initialState)
+	{
+		GE_CORE_ASSERT(description.Width > 0 && description.Height > 0, "Transient texture arrays require a non-zero extent.");
+		GE_CORE_ASSERT(description.ArrayLayerCount > 0, "Transient texture arrays require a non-zero layer count.");
+		GE_CORE_ASSERT(description.MipLevelCount == 1, "Transient texture arrays currently support one mip level.");
+		const auto handle = ImportResource(std::move(name), initialState);
+		auto& resource = m_Resources[handle];
+		resource.IsTransient = true;
+		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::CopySource, ResourceState::CopyDestination };
+		SetSubresourceMetadata(handle, { description.MipLevelCount, description.ArrayLayerCount });
+		resource.Create = [description]()
+		{
+			return std::static_pointer_cast<GraphicsResource>(Texture2DArray::Create(
+				description.Width, description.Height, description.ArrayLayerCount, description.Format));
 		};
 		return handle;
 	}
@@ -268,10 +305,13 @@ namespace GEngine
 	RenderGraph::ResourceHandle RenderGraph::CreateTransientStorageImage(std::string name, const StorageImage2DDesc& description, ResourceState initialState)
 	{
 		GE_CORE_ASSERT(description.Width > 0 && description.Height > 0, "Transient storage images require a non-zero extent.");
+		GE_CORE_ASSERT(description.MipLevelCount == 1, "Transient storage images currently support one mip level.");
+		GE_CORE_ASSERT(description.ArrayLayerCount == 1, "Transient storage images currently support one array layer.");
 		const auto handle = ImportResource(std::move(name), initialState);
 		auto& resource = m_Resources[handle];
 		resource.IsTransient = true;
 		resource.AllowedStates = { ResourceState::ShaderRead, ResourceState::ShaderWrite, ResourceState::CopyDestination };
+		SetSubresourceMetadata(handle, { description.MipLevelCount, description.ArrayLayerCount });
 		resource.Create = [description]()
 		{
 			return std::static_pointer_cast<GraphicsResource>(StorageImage2D::Create(description.Width, description.Height, description.Format));
@@ -333,6 +373,7 @@ namespace GEngine
 		m_ExecutionOrder.clear();
 		for (auto& pass : m_Passes)
 			pass.InferredDependencies.clear();
+		ValidateSubresourceRanges();
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
 				if (!m_Resources[access.Resource].UsesVersions)
@@ -430,12 +471,61 @@ namespace GEngine
 			throw std::invalid_argument("Resource state is incompatible with the declared access.");
 		if (!range.MipLevelCount || !range.ArrayLayerCount)
 			throw std::invalid_argument("Render-graph subresource ranges must not be empty.");
+		if ((range.MipLevelCount != SubresourceRange::All && range.BaseMipLevel > std::numeric_limits<uint32_t>::max() - range.MipLevelCount) ||
+			(range.ArrayLayerCount != SubresourceRange::All && range.BaseArrayLayer > std::numeric_limits<uint32_t>::max() - range.ArrayLayerCount))
+			throw std::invalid_argument("Render-graph subresource range overflows.");
 		for (const auto& access : m_Passes[pass].ResourceAccesses)
 			if (access.Resource == resource && (access.Usage.State != state || access.Usage.Stage != stage))
 				throw std::invalid_argument("Conflicting states for one resource within a pass.");
 		m_IsCompiled = false;
 		m_Passes[pass].ResourceAccesses.push_back({ resource, { state, stage,
 			isWrite ? GraphicsResourceAccess::Write : GraphicsResourceAccess::Read }, range, isWrite });
+	}
+
+	void RenderGraph::SetSubresourceMetadata(ResourceHandle resource, GraphicsSubresourceMetadata metadata)
+	{
+		if (resource >= m_Resources.size())
+			throw std::invalid_argument("Invalid render-graph resource.");
+		if (!metadata.MipLevelCount || !metadata.ArrayLayerCount)
+			throw std::invalid_argument("Render-graph subresource metadata must not be empty: " + m_Resources[resource].Name);
+		m_Resources[resource].HasSubresourceMetadata = true;
+		m_Resources[resource].SubresourceMetadata = metadata;
+	}
+
+	void RenderGraph::ValidateSubresourceRanges()
+	{
+		for (const auto& resource : m_Resources)
+			if (resource.HasSubresourceMetadata &&
+				(!resource.SubresourceMetadata.MipLevelCount || !resource.SubresourceMetadata.ArrayLayerCount))
+				throw std::invalid_argument("Render-graph subresource metadata must not be empty: " + resource.Name);
+
+		for (auto& pass : m_Passes)
+		{
+			for (auto& access : pass.ResourceAccesses)
+			{
+				const auto& resource = m_Resources[access.Resource];
+				if (!resource.HasSubresourceMetadata)
+				{
+					if (!access.Range.IsWholeResource())
+						throw std::invalid_argument("Render-graph resource lacks subresource metadata: " + resource.Name);
+					continue;
+				}
+
+				const auto metadata = resource.SubresourceMetadata;
+				if (access.Range.MipLevelCount == SubresourceRange::All)
+					access.Range.MipLevelCount = metadata.MipLevelCount;
+				if (access.Range.ArrayLayerCount == SubresourceRange::All)
+					access.Range.ArrayLayerCount = metadata.ArrayLayerCount;
+				if (access.Range.BaseMipLevel >= metadata.MipLevelCount ||
+					access.Range.BaseArrayLayer >= metadata.ArrayLayerCount)
+					throw std::invalid_argument("Render-graph subresource range is out of bounds: " + resource.Name);
+				if (!access.Range.MipLevelCount || !access.Range.ArrayLayerCount)
+					throw std::invalid_argument("Render-graph subresource range is empty: " + resource.Name);
+				if (access.Range.BaseMipLevel > std::numeric_limits<uint32_t>::max() - access.Range.MipLevelCount ||
+					access.Range.BaseArrayLayer > std::numeric_limits<uint32_t>::max() - access.Range.ArrayLayerCount)
+					throw std::invalid_argument("Render-graph subresource range overflows: " + resource.Name);
+			}
+		}
 	}
 
 	void RenderGraph::CreateTransientResources()

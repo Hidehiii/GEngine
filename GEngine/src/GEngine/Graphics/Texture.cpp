@@ -18,6 +18,10 @@ namespace GEngine
 	{
 		return Graphics::GetRenderDevice().CreateTexture2D(width, height, format);
 	}
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
+	{
+		return Graphics::GetRenderDevice().CreateTexture2D(width, height, format, mipLevelCount);
+	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
 		return Graphics::GetRenderDevice().CreateTexture2D(path);

@@ -13,6 +13,7 @@ namespace GEngine
 	public:
 		virtual ~StorageImage2D() = default;
 		GraphicsResourceType GetResourceType() const override { return GraphicsResourceType::Texture; }
+		GraphicsSubresourceMetadata GetSubresourceMetadata() const override { return { 1, 1 }; }
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) = 0;
 
 		static Ref<StorageImage2D> Create(uint32_t width, uint32_t height, ComputeImage2DFormat format);

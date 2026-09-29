@@ -113,6 +113,26 @@ replacement test that still exits normally. If both limits are set, the first
 limit reached ends the run. Startup also checks overwrite-after-read ordering,
 branching-write rejection and same-state shader-write dependency emission.
 
+Startup also verifies subresource metadata and rejection paths: an empty range,
+an overflowing range, an out-of-bounds transient texture range, and a non-whole
+range on a resource without metadata must fail before allocation; a transient
+two-mip texture must resolve `All`; a transient two-layer array, an imported
+two-mip texture, and an imported two-layer texture array must accept valid
+mip/layer ranges. Native per-range barriers are not claimed by this check:
+GPU execution still rejects non-whole ranges until
+all backends compile them.
+
+Range verification (2026-09-29): VS2026 Debug and Release builds passed with
+MSVC 14.50.35717. OpenGL 4.6 (NVIDIA driver 610.88) completed 120 frames,
+passed frame-119 compute readback, and exited with code 0 in both Debug and
+Release. D3D12 feature level 12.2 did the same in both configurations. Vulkan
+1.4.341 did the same with shared queues and dedicated queues (graphics=0,
+compute=2, transfer=4) in both configurations. An initial D3D12/Vulkan
+pre-first-frame stop was traced to presentation wrappers lacking subresource
+metadata; exposing their one-mip/one-layer swap-chain images fixed it. Vulkan
+validation layers were unavailable on this host, so those runs had no
+validation-layer coverage.
+
 OpenGL startup regression: select `GraphicsAPI: 1`; startup must reach the
 OpenGL vendor/version logs and the triangle instead of crashing at the first
 `glEnable`. Default GL state is initialized only after a current context and

@@ -44,11 +44,20 @@ namespace GEngine
 		stbi_image_free(data);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
+		: OpenGLTexture2D(width, height, format, 0)
+	{
+	}
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
 	{
 		m_Width = width;
 		m_Height = height;
 		m_Format = format;
-		if (m_GenerateMipmap)
+		if (mipLevelCount != 0)
+		{
+			m_GenerateMipmap = false;
+			m_MipLevels = mipLevelCount;
+		}
+		else if (m_GenerateMipmap)
 		{
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 		}

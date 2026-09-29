@@ -15,6 +15,7 @@ namespace GEngine
 	public:
 		virtual ~GraphicsResource() = default;
 		virtual GraphicsResourceType GetResourceType() const = 0;
+		virtual GraphicsSubresourceMetadata GetSubresourceMetadata() const { return {}; }
 		virtual bool RequiresExplicitStateTransition() const { return true; }
 
 	private:

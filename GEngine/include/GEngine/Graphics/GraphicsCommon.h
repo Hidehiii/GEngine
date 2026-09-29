@@ -233,6 +233,17 @@ namespace GEngine
 		uint32_t BaseArrayLayer = 0;
 		uint32_t ArrayLayerCount = All;
 		bool IsWholeResource() const { return BaseMipLevel == 0 && MipLevelCount == All && BaseArrayLayer == 0 && ArrayLayerCount == All; }
+		bool IsWholeResource(uint32_t mipLevelCount, uint32_t arrayLayerCount) const
+		{
+			return BaseMipLevel == 0 && MipLevelCount == mipLevelCount &&
+				BaseArrayLayer == 0 && ArrayLayerCount == arrayLayerCount;
+		}
+	};
+
+	struct GraphicsSubresourceMetadata
+	{
+		uint32_t MipLevelCount = 0;
+		uint32_t ArrayLayerCount = 0;
 	};
 
 	enum class GraphicsResourceType : uint8_t

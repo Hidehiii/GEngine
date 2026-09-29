@@ -1,5 +1,7 @@
 #include "FrameGraphTriangleLayer.h"
+#include <GEngine/Graphics/Texture.h>
 #include <GEngine/Renderer/RenderGraph.h>
+#include <limits>
 #include <stdexcept>
 #include <cstdlib>
 #include <chrono>
@@ -110,6 +112,83 @@ namespace GEngine
 		}
 		catch (const std::invalid_argument&) { invalidRangeRejected = true; }
 		if (!invalidRangeRejected) throw std::runtime_error("RenderGraph accepted an empty subresource range.");
+
+		RenderGraph overflowRangeGraph;
+		auto overflowResource = overflowRangeGraph.ImportResource("OverflowRange");
+		bool overflowRangeRejected = false;
+		try
+		{
+			overflowRangeGraph.Read(overflowRangeGraph.AddPass("OverflowRange", [] {}),
+				overflowResource, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+				{ std::numeric_limits<uint32_t>::max(), 1, 0, 1 });
+		}
+		catch (const std::invalid_argument&) { overflowRangeRejected = true; }
+		if (!overflowRangeRejected) throw std::runtime_error("RenderGraph accepted an overflowing subresource range.");
+
+		RenderGraph outOfBoundsRangeGraph;
+		auto outOfBoundsTexture = outOfBoundsRangeGraph.CreateTransientTexture2D(
+			"OutOfBoundsRange", { 16, 16, 2, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
+		outOfBoundsRangeGraph.Read(outOfBoundsRangeGraph.AddPass("OutOfBoundsRange", [] {}),
+			outOfBoundsTexture, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+			{ 2, 1, 0, 1 });
+		bool outOfBoundsRejected = false;
+		try { outOfBoundsRangeGraph.Compile(); }
+		catch (const std::invalid_argument&) { outOfBoundsRejected = true; }
+		if (!outOfBoundsRejected || outOfBoundsRangeGraph.GetResource(outOfBoundsTexture))
+			throw std::runtime_error("RenderGraph allocated a resource before rejecting an out-of-bounds range.");
+
+		RenderGraph unsupportedRangeGraph;
+		auto unsupportedResource = unsupportedRangeGraph.ImportResource("UnsupportedRange");
+		unsupportedRangeGraph.Read(unsupportedRangeGraph.AddPass("UnsupportedRange", [] {}),
+			unsupportedResource, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+			{ 0, 1, 0, 1 });
+		bool unsupportedRangeRejected = false;
+		try { unsupportedRangeGraph.Compile(); }
+		catch (const std::invalid_argument&) { unsupportedRangeRejected = true; }
+		if (!unsupportedRangeRejected) throw std::runtime_error("RenderGraph accepted a non-whole range without metadata.");
+
+		RenderGraph allRangeGraph;
+		auto allRangeTexture = allRangeGraph.CreateTransientTexture2D(
+			"AllRange", { 16, 16, 2, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
+		allRangeGraph.Write(allRangeGraph.AddPass("AllRangeWriter", [] {}),
+			allRangeTexture, RenderGraph::ResourceState::CopyDestination);
+		allRangeGraph.Read(allRangeGraph.AddPass("AllRangeReader", [] {}), allRangeTexture);
+		if (!allRangeGraph.Compile())
+			throw std::runtime_error("Render graph whole-resource range compilation failed.");
+		const auto createdRangeTexture = allRangeGraph.GetTexture2D(allRangeTexture);
+		if (!createdRangeTexture || createdRangeTexture->GetMipLevels() != 2)
+			throw std::runtime_error("Transient texture mip metadata was not applied.");
+
+		RenderGraph transientArrayGraph;
+		const auto transientArray = transientArrayGraph.CreateTransientTexture2DArray(
+			"TransientArray", { 16, 16, 2, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM });
+		transientArrayGraph.Write(transientArrayGraph.AddPass("TransientArrayWriter", [] {}),
+			transientArray, RenderGraph::ResourceState::CopyDestination);
+		transientArrayGraph.Read(transientArrayGraph.AddPass("TransientArrayReader", [] {}),
+			transientArray, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+			{ 0, 1, 1, 1 });
+		if (!transientArrayGraph.Compile() || !transientArrayGraph.GetResource(transientArray))
+			throw std::runtime_error("Transient texture-array metadata was not applied.");
+
+		RenderGraph importedRangeGraph;
+		const Ref<Texture> importedTexture = Texture2D::Create(
+			16, 16, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM, 2);
+		const auto importedRangeResource = importedRangeGraph.ImportTexture("ImportedRange", importedTexture);
+		importedRangeGraph.Read(importedRangeGraph.AddPass("ImportedRange", [] {}),
+			importedRangeResource, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+			{ 0, 1, 0, 1 });
+		if (!importedRangeGraph.Compile())
+			throw std::runtime_error("Imported texture range compilation failed.");
+
+		RenderGraph importedArrayGraph;
+		const Ref<Texture> importedArray = Texture2DArray::Create(
+			16, 16, 2, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		const auto importedArrayResource = importedArrayGraph.ImportTexture("ImportedArray", importedArray);
+		importedArrayGraph.Read(importedArrayGraph.AddPass("ImportedArray", [] {}),
+			importedArrayResource, RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All,
+			{ 0, 1, 1, 1 });
+		if (!importedArrayGraph.Compile())
+			throw std::runtime_error("Imported texture-array layer range compilation failed.");
 
 		RenderGraph usageGraph;
 		GraphicsPipelineStage observedStage = GraphicsPipelineStage::All;

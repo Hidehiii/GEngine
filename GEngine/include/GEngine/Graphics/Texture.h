@@ -14,8 +14,13 @@ namespace GEngine
 	public:
 		virtual ~Texture() = default;
 		GraphicsResourceType GetResourceType() const override { return GraphicsResourceType::Texture; }
+		GraphicsSubresourceMetadata GetSubresourceMetadata() const override
+		{
+			return { m_MipLevels, GetArrayLayerCount() };
+		}
 		virtual uint32_t	GetWidth() const { return m_Width; }
 		virtual uint32_t	GetHeight() const { return m_Height; }
+		virtual uint32_t	GetArrayLayerCount() const { return 1; }
 		virtual std::string GetPath() const = 0;
 		virtual uint32_t	GetMipLevels() { return m_MipLevels; }
 		virtual bool		IsGenerateMipmap() { return m_GenerateMipmap; }
@@ -46,6 +51,7 @@ namespace GEngine
 	{
 	public:
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount);
 		static Ref<Texture2D> Create(const std::string& path);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 
@@ -86,12 +92,13 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) = 0;
 
 		virtual uint32_t		GetLayerCount() { return m_Layers; }
+		virtual uint32_t		GetArrayLayerCount() const override { return m_Layers; }
 
 		virtual bool operator==(const Texture2DArray& other) const = 0;
 
 		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 	protected:
-		uint32_t m_Layers;
+		uint32_t m_Layers = 1;
 	};
 
 	class GENGINE_API CubeMap : public Texture
@@ -100,6 +107,7 @@ namespace GEngine
 		
 		virtual void SetData(const void* data, uint32_t size, CubeMapFace face) = 0;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, CubeMapFace face) = 0;
+		virtual uint32_t GetArrayLayerCount() const override { return 6; }
 
 		static Ref<CubeMap> Create(uint32_t width, uint32_t height, bool generateMipmap = false, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 		static Ref<CubeMap> Create(const std::string& rightPath, const std::string& leftPath,

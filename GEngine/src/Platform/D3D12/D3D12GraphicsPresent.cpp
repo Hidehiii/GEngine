@@ -17,6 +17,7 @@ namespace
 		}
 
 		GEngine::GraphicsResourceType GetResourceType() const override { return GEngine::GraphicsResourceType::Texture; }
+		GEngine::GraphicsSubresourceMetadata GetSubresourceMetadata() const override { return { 1, 1 }; }
 
 	private:
 		void* GetNativeResource() const override { return m_Resource; }
