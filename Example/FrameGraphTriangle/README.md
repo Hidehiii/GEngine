@@ -118,7 +118,9 @@ an overflowing range, an out-of-bounds transient texture range, and a non-whole
 range on a resource without metadata must fail before allocation; a transient
 two-mip texture must resolve `All`; a transient two-layer array, an imported
 two-mip texture, and an imported two-layer texture array must accept valid
-mip/layer ranges. Native per-range barriers are not claimed by this check:
+mip/layer ranges. It also checks that untouched mips do not consume another
+mip's transition state and that disjoint ranges remain conservatively ordered.
+Native per-range barriers are not claimed by this check:
 GPU execution still rejects non-whole ranges until
 all backends compile them.
 
@@ -132,6 +134,8 @@ pre-first-frame stop was traced to presentation wrappers lacking subresource
 metadata; exposing their one-mip/one-layer swap-chain images fixed it. Vulkan
 validation layers were unavailable on this host, so those runs had no
 validation-layer coverage.
+These runs include the exact-range transition, untouched-mip state, and
+conservative disjoint-range dependency regressions.
 
 OpenGL startup regression: select `GraphicsAPI: 1`; startup must reach the
 OpenGL vendor/version logs and the triangle instead of crashing at the first

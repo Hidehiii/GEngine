@@ -122,6 +122,15 @@ layer. Current GPU builders still reject any non-whole range before command
 recording because the three backends do not yet all compile per-range
 barriers; ranges are never silently widened.
 
+Dependency analysis compares declared ranges, but disjoint ranges remain
+conservatively ordered until every backend can track and synchronize
+subresources independently. Compiled transition state is split by touched
+mip/layer ranges, so an access to one mip does not consume the state of
+another. `SetTransitionUsageCallback` receives the transition range and
+`RenderSystem` forwards it to the range-aware `Graphics::TransitionResource`
+overload. Backend implementations still conservatively apply whole-resource
+barriers until native per-range support is complete.
+
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
 

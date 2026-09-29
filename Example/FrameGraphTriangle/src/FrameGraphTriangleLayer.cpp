@@ -1,6 +1,7 @@
 #include "FrameGraphTriangleLayer.h"
 #include <GEngine/Graphics/Texture.h>
 #include <GEngine/Renderer/RenderGraph.h>
+#include <array>
 #include <limits>
 #include <stdexcept>
 #include <cstdlib>
@@ -190,11 +191,60 @@ namespace GEngine
 		if (!importedArrayGraph.Compile())
 			throw std::runtime_error("Imported texture-array layer range compilation failed.");
 
+		RenderGraph rangeTransitionGraph;
+		std::vector<std::array<uint32_t, 4>> transitionRanges;
+		std::vector<int> rangeOrder;
+		rangeTransitionGraph.SetTransitionUsageCallback([&transitionRanges](const FrameContext&,
+			const Ref<GraphicsResource>&, const GraphicsResourceUsage&, const GraphicsResourceUsage&,
+			const RenderGraph::SubresourceRange& range)
+		{
+			transitionRanges.push_back({ range.BaseMipLevel, range.MipLevelCount,
+				range.BaseArrayLayer, range.ArrayLayerCount });
+		});
+		const Ref<Texture> rangeTransitionTexture = Texture2D::Create(
+			16, 16, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM, 2);
+		const auto rangeTransitionResource = rangeTransitionGraph.ImportTexture(
+			"RangeTransition", rangeTransitionTexture, RenderGraph::ResourceState::ShaderRead);
+		const auto rangeWriter = rangeTransitionGraph.AddPass("RangeWriter", [&rangeOrder]() { rangeOrder.push_back(1); });
+		rangeTransitionGraph.Write(rangeWriter, rangeTransitionResource,
+			RenderGraph::ResourceState::CopyDestination, GraphicsPipelineStage::All, { 0, 1, 0, 1 });
+		const auto untouchedReader = rangeTransitionGraph.AddPass(
+			"UntouchedRangeReader", [&rangeOrder]() { rangeOrder.push_back(2); });
+		rangeTransitionGraph.Read(untouchedReader, rangeTransitionResource,
+			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All, { 1, 1, 0, 1 });
+		const auto touchedReader = rangeTransitionGraph.AddPass(
+			"TouchedRangeReader", [&rangeOrder]() { rangeOrder.push_back(3); });
+		rangeTransitionGraph.Read(touchedReader, rangeTransitionResource,
+			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All, { 0, 1, 0, 1 });
+		rangeTransitionGraph.Execute();
+		const std::vector<std::array<uint32_t, 4>> expectedTransitionRanges = {
+			{ 0, 1, 0, 1 }, { 0, 1, 0, 1 }
+		};
+		if (rangeOrder != std::vector<int>({ 1, 2, 3 }) || transitionRanges != expectedTransitionRanges)
+			throw std::runtime_error("RenderGraph did not preserve subresource transition ranges.");
+
+		RenderGraph conservativeRangeGraph;
+		const Ref<Texture> conservativeRangeTexture = Texture2D::Create(
+			16, 16, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM, 2);
+		const auto conservativeRangeResource = conservativeRangeGraph.ImportTexture(
+			"ConservativeRange", conservativeRangeTexture, RenderGraph::ResourceState::Undefined);
+		const auto disjointWriter = conservativeRangeGraph.AddPass("DisjointRangeWriter", []() {});
+		conservativeRangeGraph.Write(disjointWriter, conservativeRangeResource,
+			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::All, { 1, 1, 0, 1 });
+		const auto disjointReader = conservativeRangeGraph.AddPass("DisjointRangeReader", []() {});
+		conservativeRangeGraph.Read(disjointReader, conservativeRangeResource,
+			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All, { 0, 1, 0, 1 });
+		conservativeRangeGraph.AddDependency(disjointWriter, disjointReader);
+		GE_INFO("Expected negative test: the next disjoint range cycle diagnostic is intentional.");
+		if (conservativeRangeGraph.Compile())
+			throw std::runtime_error("RenderGraph allowed independent disjoint subresource scheduling before backend support.");
+
 		RenderGraph usageGraph;
 		GraphicsPipelineStage observedStage = GraphicsPipelineStage::All;
 		GraphicsResourceAccess observedAccess = GraphicsResourceAccess::ReadWrite;
 		usageGraph.SetTransitionUsageCallback([&observedStage, &observedAccess](const FrameContext&,
-			const Ref<GraphicsResource>&, const GraphicsResourceUsage&, const GraphicsResourceUsage& after)
+			const Ref<GraphicsResource>&, const GraphicsResourceUsage&, const GraphicsResourceUsage& after,
+			const RenderGraph::SubresourceRange&)
 		{
 			observedStage = after.Stage;
 			observedAccess = after.Access;

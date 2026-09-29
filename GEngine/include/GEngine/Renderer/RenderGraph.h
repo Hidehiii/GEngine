@@ -97,7 +97,7 @@ namespace GEngine
 		void ExecuteGpu(const Ref<CommandBuffer>& completion);
 		using TransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&, ResourceState, ResourceState)>;
 		using UsageTransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&,
-			const GraphicsResourceUsage&, const GraphicsResourceUsage&)>;
+			const GraphicsResourceUsage&, const GraphicsResourceUsage&, const GraphicsSubresourceRange&)>;
 
 		struct Texture2DDesc
 		{
@@ -226,7 +226,7 @@ namespace GEngine
 			Ref<FrameBuffer> Object;
 		};
 
-		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite);
+		void AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite, const SubresourceRange& range);
 		void AddAccess(PassHandle pass, ResourceHandle resource, ResourceState state, bool isWrite,
 			GraphicsPipelineStage stage = GraphicsPipelineStage::All, bool versioned = false, SubresourceRange range = {});
 		void SetSubresourceMetadata(ResourceHandle resource, GraphicsSubresourceMetadata metadata);

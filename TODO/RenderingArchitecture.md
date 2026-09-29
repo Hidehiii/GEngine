@@ -488,10 +488,28 @@ submission and deterministic renderer shutdown.
       their one-mip/one-layer swap-chain images fixed the import path. Vulkan
       validation layers were unavailable on this host, so those runs had no
       validation-layer coverage.
+      Next bounded step 2026-09-29: range-aware dependency analysis and
+      compiled transition state. The common graph must compare declared access
+      ranges, retain exact ranges in transitions, and track state per touched
+      range instead of one whole-resource state. Because no backend yet tracks
+      or synchronizes independent subresources, disjoint ranges must remain
+      conservatively ordered; do not enable independent scheduling. Native
+      per-range barriers remain outside this step.
+      Implemented 2026-09-29: dependency inference compares declared ranges
+      while retaining conservative ordering for disjoint accesses, compiled
+      transition state is split and tracked by touched mip/layer rectangles,
+      and transition emission uses only the overlapping range fragments.
+      `UsageTransitionCallback` now receives the compiled range, and
+      `RenderSystem` forwards it through the range-aware transition overload.
+      FrameGraphTriangle checks exact transition ranges, untouched-mip state
+      isolation, and the expected conservative disjoint-range cycle.
+      Verification: isolated VS2026 Debug and Release builds passed with
+      MSBuild 18.10.1 / MSVC 14.50.35717, `/m:1 /nr:false`, warnings but zero
+      errors. OpenGL 4.6, D3D12 12.2, Vulkan 1.4.341 shared queues, and Vulkan
+      dedicated queues (graphics=0, compute=2, transfer=4) each completed 120
+      frames, passed frame-119 compute readback, and exited with code 0 in both
+      Debug and Release. Vulkan validation layers were unavailable on this host.
       Detailed remaining requirements:
-      - Preserve each access range in dependency analysis and compiled transitions.
-        Overlapping ranges conflict; disjoint ranges may proceed independently
-        only when that backend can track and synchronize them independently.
       - Vulkan: use the declared mip/layer range in `VkImageMemoryBarrier`, and
         track layout per subresource. The current texture classes store one layout
         for the whole image, so updating only the barrier range without replacing

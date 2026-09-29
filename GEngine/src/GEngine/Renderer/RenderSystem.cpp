@@ -27,11 +27,13 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Configured, "RenderSystem must be configured before it initializes.");
 		m_Present = GraphicsPresent::Create();
 		GraphicsPresent::SetActivePresenter(m_Present.get());
-		m_RenderGraph.SetTransitionCallback([](const FrameContext&, const Ref<GraphicsResource>& resource, RenderGraph::ResourceState before, RenderGraph::ResourceState after)
+		m_RenderGraph.SetTransitionUsageCallback([](const FrameContext&, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after,
+			const GraphicsSubresourceRange& range)
 		{
 			if (!resource || !resource->RequiresExplicitStateTransition())
 				return;
-			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), resource, before, after);
+			Graphics::TransitionResource(GraphicsPresent::GetCommandBuffer(), resource, before, after, range);
 		});
 		m_GraphicsRuntime->Initialize();
 	}

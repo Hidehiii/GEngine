@@ -7,11 +7,77 @@
 #include "GEngine/Compute/StorageImage.h"
 #include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/Texture.h"
+#include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <stdexcept>
 
 namespace GEngine
 {
+	namespace
+	{
+		uint64_t RangeEnd(uint32_t base, uint32_t count)
+		{
+			return count == RenderGraph::SubresourceRange::All
+				? std::numeric_limits<uint64_t>::max()
+				: static_cast<uint64_t>(base) + count;
+		}
+
+		bool RangesOverlap(const RenderGraph::SubresourceRange& first, const RenderGraph::SubresourceRange& second)
+		{
+			const uint64_t firstMipEnd = RangeEnd(first.BaseMipLevel, first.MipLevelCount);
+			const uint64_t secondMipEnd = RangeEnd(second.BaseMipLevel, second.MipLevelCount);
+			const uint64_t firstLayerEnd = RangeEnd(first.BaseArrayLayer, first.ArrayLayerCount);
+			const uint64_t secondLayerEnd = RangeEnd(second.BaseArrayLayer, second.ArrayLayerCount);
+			return first.BaseMipLevel < secondMipEnd && second.BaseMipLevel < firstMipEnd &&
+				first.BaseArrayLayer < secondLayerEnd && second.BaseArrayLayer < firstLayerEnd;
+		}
+
+		RenderGraph::SubresourceRange RangeIntersection(const RenderGraph::SubresourceRange& first, const RenderGraph::SubresourceRange& second)
+		{
+			const uint64_t mipStart = std::max(first.BaseMipLevel, second.BaseMipLevel);
+			const uint64_t mipEnd = std::min(RangeEnd(first.BaseMipLevel, first.MipLevelCount),
+				RangeEnd(second.BaseMipLevel, second.MipLevelCount));
+			const uint64_t layerStart = std::max(first.BaseArrayLayer, second.BaseArrayLayer);
+			const uint64_t layerEnd = std::min(RangeEnd(first.BaseArrayLayer, first.ArrayLayerCount),
+				RangeEnd(second.BaseArrayLayer, second.ArrayLayerCount));
+			return {
+				static_cast<uint32_t>(mipStart),
+				static_cast<uint32_t>(mipEnd - mipStart),
+				static_cast<uint32_t>(layerStart),
+				static_cast<uint32_t>(layerEnd - layerStart)
+			};
+		}
+
+		std::vector<RenderGraph::SubresourceRange> SubtractRange(
+			const RenderGraph::SubresourceRange& source, const RenderGraph::SubresourceRange& removal)
+		{
+			if (!RangesOverlap(source, removal))
+				return { source };
+
+			const auto intersection = RangeIntersection(source, removal);
+			const uint64_t sourceMipEnd = RangeEnd(source.BaseMipLevel, source.MipLevelCount);
+			const uint64_t sourceLayerEnd = RangeEnd(source.BaseArrayLayer, source.ArrayLayerCount);
+			std::vector<RenderGraph::SubresourceRange> result;
+
+			if (source.BaseMipLevel < intersection.BaseMipLevel)
+				result.push_back({ source.BaseMipLevel, intersection.BaseMipLevel - source.BaseMipLevel,
+					source.BaseArrayLayer, source.ArrayLayerCount });
+			const uint64_t intersectionMipEnd = static_cast<uint64_t>(intersection.BaseMipLevel) + intersection.MipLevelCount;
+			if (intersectionMipEnd < sourceMipEnd)
+				result.push_back({ intersection.BaseMipLevel, static_cast<uint32_t>(sourceMipEnd - intersectionMipEnd),
+					source.BaseArrayLayer, source.ArrayLayerCount });
+			if (source.BaseArrayLayer < intersection.BaseArrayLayer)
+				result.push_back({ intersection.BaseMipLevel, intersection.MipLevelCount,
+					source.BaseArrayLayer, intersection.BaseArrayLayer - source.BaseArrayLayer });
+			const uint64_t intersectionLayerEnd = static_cast<uint64_t>(intersection.BaseArrayLayer) + intersection.ArrayLayerCount;
+			if (intersectionLayerEnd < sourceLayerEnd)
+				result.push_back({ intersection.BaseMipLevel, intersection.MipLevelCount,
+					intersection.BaseArrayLayer, static_cast<uint32_t>(sourceLayerEnd - intersectionLayerEnd) });
+			return result;
+		}
+	}
+
 	RenderGraph::TargetHandle RenderGraph::CreateRenderTarget(std::string name,
 		const RenderPassSpecification& specification, uint32_t width, uint32_t height)
 	{
@@ -377,7 +443,7 @@ namespace GEngine
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
 				if (!m_Resources[access.Resource].UsesVersions)
-					AddResourceDependency(pass, access.Resource, access.IsWrite);
+					AddResourceDependency(pass, access.Resource, access.IsWrite, access.Range);
 		BuildVersionDependencies();
 		std::vector<uint8_t> states(m_Passes.size(), 0);
 		for (PassHandle pass = 0; pass < m_Passes.size(); ++pass)
@@ -422,7 +488,7 @@ namespace GEngine
 			{
 				if (m_UsageTransitionCallback)
 					m_UsageTransitionCallback(frameContext, m_Resources[transition.Resource].Object,
-						transition.Before, transition.After);
+						transition.Before, transition.After, transition.Range);
 				if (m_TransitionCallback)
 					m_TransitionCallback(frameContext, m_Resources[transition.Resource].Object,
 						transition.Before.State, transition.After.State);
@@ -447,13 +513,15 @@ namespace GEngine
 		m_IsCompiled = false;
 	}
 
-	void RenderGraph::AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite)
+	void RenderGraph::AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite, const SubresourceRange& range)
 	{
+		const bool supportsIndependentSubresourceScheduling = false;
 		for (PassHandle previous = 0; previous < pass; ++previous)
 		{
 			for (const auto& access : m_Passes[previous].ResourceAccesses)
 			{
-				if (access.Resource == resource && (isWrite || access.IsWrite))
+				if (access.Resource == resource && (isWrite || access.IsWrite) &&
+					(RangesOverlap(access.Range, range) || !supportsIndependentSubresourceScheduling))
 					m_Passes[pass].InferredDependencies.push_back(previous);
 			}
 		}
@@ -572,11 +640,36 @@ namespace GEngine
 
 	void RenderGraph::BuildResourceTransitions()
 	{
-		std::vector<GraphicsResourceUsage> states;
-		states.reserve(m_Resources.size());
-		for (auto& resource : m_Resources)
+		struct SubresourceUsage
 		{
-			states.push_back({ resource.InitialState, GraphicsPipelineStage::All, GraphicsResourceAccess::ReadWrite });
+			GraphicsResourceUsage Usage;
+			SubresourceRange Range;
+		};
+		auto fullRange = [](const Resource& resource)
+		{
+			return resource.HasSubresourceMetadata
+				? SubresourceRange{ 0, resource.SubresourceMetadata.MipLevelCount, 0, resource.SubresourceMetadata.ArrayLayerCount }
+				: SubresourceRange{};
+		};
+		auto replaceRangeState = [](std::vector<SubresourceUsage>& states, const SubresourceRange& range, GraphicsResourceUsage usage)
+		{
+			std::vector<SubresourceUsage> next;
+			next.reserve(states.size() + 1);
+			for (const auto& state : states)
+			{
+				for (const auto& remainder : SubtractRange(state.Range, range))
+					next.push_back({ state.Usage, remainder });
+			}
+			next.push_back({ usage, range });
+			states = std::move(next);
+		};
+
+		std::vector<std::vector<SubresourceUsage>> states(m_Resources.size());
+		for (size_t index = 0; index < m_Resources.size(); ++index)
+		{
+			auto& resource = m_Resources[index];
+			states[index].push_back({ { resource.InitialState, GraphicsPipelineStage::All,
+				GraphicsResourceAccess::ReadWrite }, fullRange(resource) });
 			resource.Lifetime = { InvalidPass, InvalidPass, resource.InitialState };
 		}
 
@@ -590,18 +683,30 @@ namespace GEngine
 				if (lifetime.FirstUse == InvalidPass)
 					lifetime.FirstUse = pass;
 				lifetime.LastUse = pass;
-				auto& currentState = states[access.Resource];
-				if (currentState.State != access.Usage.State || currentState.State == ResourceState::ShaderWrite)
+
+				std::vector<ResourceTransition> accessTransitions;
+				bool stateChanged = false;
+				for (const auto& state : states[access.Resource])
 				{
-					transitions.push_back({ access.Resource, currentState, access.Usage, access.Range });
-					currentState = access.Usage;
+					if (!RangesOverlap(state.Range, access.Range))
+						continue;
+					if (state.Usage.State != access.Usage.State || access.Usage.State == ResourceState::ShaderWrite)
+					{
+						accessTransitions.push_back({ access.Resource, state.Usage, access.Usage,
+							RangeIntersection(state.Range, access.Range) });
+						stateChanged = true;
+					}
 				}
-				lifetime.FinalState = currentState.State;
+				transitions.insert(transitions.end(), accessTransitions.begin(), accessTransitions.end());
+				if (stateChanged)
+					replaceRangeState(states[access.Resource], access.Range, access.Usage);
+				lifetime.FinalState = access.Usage.State;
 			}
 			if (m_Passes[pass].Target != InvalidTarget)
 				for (auto color : m_Targets[m_Passes[pass].Target].Colors)
 				{
-					states[color] = { ResourceState::ShaderRead, GraphicsPipelineStage::Graphics, GraphicsResourceAccess::Read };
+					replaceRangeState(states[color], fullRange(m_Resources[color]),
+						{ ResourceState::ShaderRead, GraphicsPipelineStage::Graphics, GraphicsResourceAccess::Read });
 					m_Resources[color].Lifetime.FinalState = ResourceState::ShaderRead;
 				}
 		}
