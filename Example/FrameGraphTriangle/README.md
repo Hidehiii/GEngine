@@ -118,11 +118,33 @@ an overflowing range, an out-of-bounds transient texture range, and a non-whole
 range on a resource without metadata must fail before allocation; a transient
 two-mip texture must resolve `All`; a transient two-layer array, an imported
 two-mip texture, and an imported two-layer texture array must accept valid
-mip/layer ranges. It also checks that untouched mips do not consume another
-mip's transition state and that disjoint ranges remain conservatively ordered.
-Native per-range barriers are not claimed by this check:
-GPU execution still rejects non-whole ranges until
-all backends compile them.
+mip/layer ranges. It also checks untouched-mip state isolation and conservative
+disjoint-range ordering.
+
+The live GPU graph copies a red pixel from a 2D texture into layer 0 of a
+two-layer RGBA8 texture array. A targetless graphics pass declares the source
+as `CopySource` and only layer 0 as `CopyDestination`; a later pass returns both
+layers to `ShaderRead`. At frame 119, `ReadLayerData` must report red for layer
+0 and the original green for layer 1, logging
+`GPU graph texture-array layer readback passed after 119 frames.` A mismatch
+throws. Every copy pass also checks that an invalid layer, mismatched size,
+and mismatched format are rejected before the valid copy. The triangle remains the expected alternating orange/green visible
+result; the copied pixel is checked numerically, not shown on screen. Run each
+backend with a frame limit of at least 120 and check this log, the compute
+readback log, normal shutdown, and backend validation/debug output. Repeat
+with resize, resource replacement enabled, and manual close for lifecycle
+checks; interactive resize and long-run memory behavior are not established by
+the bounded run. OpenGL uses whole-resource memory barriers and conservative
+graph ordering even though the copy addresses one layer.
+
+Texture-copy verification (2026-10-03, VS2022 x64): Debug and Release engine
+and example builds passed. OpenGL, D3D12 with the debug layer, Vulkan shared
+queues, and Vulkan dedicated queues each completed 120 frames, passed both
+frame-119 numerical readbacks, and exited normally in both configurations.
+The Vulkan dedicated run selected graphics=0, compute=2, transfer=5. No Vulkan
+validation errors or D3D12 debug errors/warnings appeared in those logs.
+Manual visible output, resize/minimize, and long-run memory stability were not
+checked in this bounded verification.
 
 Range verification (2026-09-29): VS2026 Debug and Release builds passed with
 MSVC 14.50.35717. OpenGL 4.6 (NVIDIA driver 610.88) completed 120 frames,
@@ -136,6 +158,15 @@ validation layers were unavailable on this host, so those runs had no
 validation-layer coverage.
 These runs include the exact-range transition, untouched-mip state, and
 conservative disjoint-range dependency regressions.
+
+Range GPU verification (2026-10-03): VS2022 Debug and Release x64 builds of
+GEngine and FrameGraphTriangle passed. The two-layer GPU transition passes ran
+for 120 frames on OpenGL 4.6, D3D12 12.2, and Vulkan 1.4.312 with shared and
+dedicated queues; all runs passed frame-119 readback and exited normally.
+Vulkan Debug validation initially reported an unsupported graphics source stage
+on the dedicated compute queue. After constraining barrier stages to the
+recording queue, Debug shared and dedicated runs reported zero validation
+errors. The dedicated run selected graphics=0, compute=2, transfer=5.
 
 OpenGL startup regression: select `GraphicsAPI: 1`; startup must reach the
 OpenGL vendor/version logs and the triangle instead of crashing at the first

@@ -118,9 +118,18 @@ zero-count, and non-whole ranges on resources without subresource metadata
 (including buffers and logical imports) are rejected before allocation or
 recording. Imported textures expose their actual mip count; texture arrays
 expose their layer count; 2D storage images currently expose one mip and one
-layer. Current GPU builders still reject any non-whole range before command
-recording because the three backends do not yet all compile per-range
-barriers; ranges are never silently widened.
+layer. `ExecuteGpu` asks the active backend to validate every compiled range
+before acquiring or recording command buffers. D3D12 tracks native state per
+texture mip/array layer; Vulkan tracks image layout per mip/layer and emits one
+`VkImageMemoryBarrier` per selected cell. OpenGL accepts valid texture ranges
+but uses its resource-global `glMemoryBarrier`, so those declarations never
+enable independent layer scheduling. Buffers remain whole-resource, and Vulkan
+image types without range tracking reject non-whole ranges. Ranges are never
+silently widened by a backend that cannot preserve their state.
+For Vulkan cross-queue edges, submission semaphores carry the prior queue's
+memory dependency. The barrier recorded on the receiving queue uses only stages
+supported there; an unsupported prior-queue source stage becomes a top-of-pipe
+scope with no source access mask. Unsupported destination stages are rejected.
 
 Dependency analysis compares declared ranges, but disjoint ranges remain
 conservatively ordered until every backend can track and synchronize
@@ -128,8 +137,8 @@ subresources independently. Compiled transition state is split by touched
 mip/layer ranges, so an access to one mip does not consume the state of
 another. `SetTransitionUsageCallback` receives the transition range and
 `RenderSystem` forwards it to the range-aware `Graphics::TransitionResource`
-overload. Backend implementations still conservatively apply whole-resource
-barriers until native per-range support is complete.
+overload. Unsupported backend/resource combinations fail in the graph's
+pre-recording validation pass.
 
 `Execute` compiles an uncompiled graph in both Debug and Release. A dependency
 cycle throws `std::runtime_error` before pass execution or transient allocation.
@@ -149,6 +158,20 @@ graph.Read(postProcess, color, RenderGraph::ResourceState::ShaderRead);
 ```
 
 The graph adds ordering dependencies for conflicting accesses and inserts a transition whenever a resource's requested state differs from its previous state.
+
+For a graphics-queue copy without a render target, use
+`BuildGraphicsCopyPass(name, callback)`. The callback receives a graphics
+command buffer but does not begin a render pass. Declare both sides of the
+copy before `ExecuteGpu`; for example, a `Texture2D` source can be read in
+`CopySource` and one `Texture2DArray` layer written in `CopyDestination` with
+`GraphicsPipelineStage::Transfer`. Call
+`Graphics::GetRenderDevice().CopyTexture2DToArrayLayer(command, source, array,
+layer)` inside the callback. Source and destination must have matching
+dimensions and format, and the layer must exist. Declare a later shader read
+to restore the resources to `ShaderRead`. `Texture2DArray::ReadLayerData` is a
+synchronous diagnostic readback for an exact-size RGBA8 layer, not a per-frame
+streaming path. The FrameGraphTriangle example checks that the copied layer
+changes while its neighboring layer remains intact.
 
 ## Transient resources
 

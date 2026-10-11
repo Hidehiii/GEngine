@@ -71,12 +71,12 @@ The Triangle executable is emitted under `bin/Debug-windows-x86_64/Triangle` for
 ## Logging-header compatibility checks
 
 For a no-PCH check of the public logging header, run
-[Tests/LoggingHeader.cpp](../Tests/LoggingHeader.cpp) using the commands in
-[Tests/README.md](../Tests/README.md). Use the developer prompt for the toolchain
+[Tests/LoggingHeader.cpp](../../Tests/LoggingHeader.cpp) using the commands in
+[Tests/README.md](../../Tests/README.md). Use the developer prompt for the toolchain
 being diagnosed. Preserve Debug iterator checks; do not set `_SECURE_SCL=0` or
 `_ITERATOR_DEBUG_LEVEL=0` to bypass a missing `checked_array_iterator` error.
 Record the exact MSVC version: a historical failure under a different STL does
-not prove the installed version still fails. See [workflow tracking](../TODO/Workflow.md).
+not prove the installed version still fails. See [workflow tracking](../../TODO/Workflow.md).
 
 ## Parallel build guidance
 

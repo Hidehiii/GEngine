@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Graphics/Texture.h"
 #include <vulkan/vulkan.h>
+#include <vector>
 
 namespace GEngine
 {
@@ -15,6 +16,7 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) override;
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) override;
+		virtual void ReadLayerData(uint32_t layer, uint32_t size, void* destination) override;
 
 		virtual std::string GetPath() const override { return "NULL"; }
 
@@ -24,19 +26,26 @@ namespace GEngine
 		const VkImageView					GetImageView() { return m_ImageView; }
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
+		const VkImage GetImage() const { return m_Image; }
+		VkImageAspectFlags GetAspectFlag() const { return m_AspectFlag; }
+		void* GetNativeResource() const override { return reinterpret_cast<void*>(m_Image); }
+		VkImageLayout GetSubresourceLayout(uint32_t mipLevel, uint32_t arrayLayer) const;
+		void SetSubresourceLayout(uint32_t mipLevel, uint32_t arrayLayer, VkImageLayout layout);
+		void SetAllSubresourceLayouts(VkImageLayout layout);
 
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout);
 	private:
 		void CreateSampler();
 	private:
-		VkImage							m_Image;
+		VkImage							m_Image = VK_NULL_HANDLE;
 		VkDeviceMemory					m_ImageMemory = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkSampler						m_Sampler = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
+		std::vector<VkImageLayout>		m_SubresourceLayouts;
 	};
 
 }

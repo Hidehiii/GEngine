@@ -3,6 +3,7 @@
 #include "GEngine/Graphics/Texture.h"
 #include <d3d12.h>
 #include <wrl.h>
+#include <vector>
 
 namespace GEngine
 {
@@ -16,10 +17,13 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) override;
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) override;
+		virtual void ReadLayerData(uint32_t layer, uint32_t size, void* destination) override;
 		virtual std::string GetPath() const override { return {}; }
 		virtual bool operator==(const Texture2DArray& other) const override;
 
 		ID3D12Resource* GetResource() const { return m_Texture.Get(); }
+		void TransitionResourceState(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList,
+			D3D12_RESOURCE_STATES destination, const GraphicsSubresourceRange& range);
 		const D3D12_SHADER_RESOURCE_VIEW_DESC& GetShaderResourceViewDesc() const { return m_SrvDesc; }
 
 	private:
@@ -28,5 +32,6 @@ namespace GEngine
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_Texture;
 		D3D12_SHADER_RESOURCE_VIEW_DESC m_SrvDesc{};
+		std::vector<D3D12_RESOURCE_STATES> m_SubresourceStates;
 	};
 }

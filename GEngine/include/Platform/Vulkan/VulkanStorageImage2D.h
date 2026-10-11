@@ -19,6 +19,7 @@ namespace GEngine
 
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout);
+		void SetTrackedImageLayout(VkImageLayout layout) { m_ImageLayout = layout; }
 
 		bool operator==(const VulkanStorageImage2D& other) const
 		{

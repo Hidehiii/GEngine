@@ -91,6 +91,29 @@ namespace GEngine
 	{
 		return CreateRef<D3D12Texture2DArray>(width, height, layers, format);
 	}
+	void D3D12GraphicsAPI::CopyTexture2DToArrayLayer(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<Texture2D>& source, const Ref<Texture2DArray>& destination, uint32_t layer)
+	{
+		auto command = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
+		auto nativeSource = std::dynamic_pointer_cast<D3D12Texture2D>(source);
+		auto nativeDestination = std::dynamic_pointer_cast<D3D12Texture2DArray>(destination);
+		if (!command || command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS || !nativeSource || !nativeDestination ||
+			layer >= destination->GetArrayLayerCount() || source->GetWidth() != destination->GetWidth() ||
+			source->GetHeight() != destination->GetHeight() || source->GetFormat() != destination->GetFormat())
+			throw std::invalid_argument("D3D12 texture-array copy requires matching textures, a valid layer, and a graphics command buffer.");
+		auto list = command->GetCommandList();
+		D3D12_TEXTURE_COPY_LOCATION sourceLocation{};
+		sourceLocation.pResource = nativeSource->GetResource().Get();
+		sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		sourceLocation.SubresourceIndex = 0;
+		D3D12_TEXTURE_COPY_LOCATION destinationLocation{};
+		destinationLocation.pResource = nativeDestination->GetResource();
+		destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		destinationLocation.SubresourceIndex = layer;
+		list->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
+		command->Retain(source);
+		command->Retain(destination);
+	}
 	Ref<Shader> D3D12GraphicsAPI::CreateShader(const std::string& path)
 	{
 		return CreateRef<D3D12Shader>(path);
@@ -431,5 +454,63 @@ namespace GEngine
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(static_cast<ID3D12Resource*>(nativeResource),
 			ToD3D12ResourceState(before), ToD3D12ResourceState(after));
 		d3dCommandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);
+	}
+
+	void D3D12GraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& before,
+		const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
+		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
+		d3dCommandBuffer->Retain(resource);
+		if (before.State == after.State && before.State == GraphicsResourceState::ShaderWrite)
+		{
+			auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(GetNativeResource(resource)));
+			d3dCommandBuffer->GetCommandList()->ResourceBarrier(1, &barrier);
+			return;
+		}
+		if (auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(resource))
+		{
+			texture->TransitionResourceState(d3dCommandBuffer->GetCommandList(),
+				ToD3D12ResourceState(after.State), range);
+			return;
+		}
+		if (auto textureArray = std::dynamic_pointer_cast<D3D12Texture2DArray>(resource))
+		{
+			textureArray->TransitionResourceState(d3dCommandBuffer->GetCommandList(),
+				ToD3D12ResourceState(after.State), range);
+			return;
+		}
+		TransitionResource(commandBuffer, resource, before.State, after.State);
+	}
+
+	void D3D12GraphicsAPI::ValidateSubresourceRange(const Ref<GraphicsResource>& resource,
+		const GraphicsSubresourceRange& range) const
+	{
+		if (!resource) throw std::invalid_argument("D3D12 subresource validation requires a resource.");
+		const auto metadata = resource->GetSubresourceMetadata();
+		if (metadata.MipLevelCount == 0 || metadata.ArrayLayerCount == 0)
+		{
+			if (!range.IsWholeResource()) throw std::invalid_argument("D3D12 buffers do not support subresource ranges.");
+			return;
+		}
+		const auto mipCount = metadata.MipLevelCount;
+		const auto layerCount = metadata.ArrayLayerCount;
+		const auto selectedMips = range.MipLevelCount == GraphicsSubresourceRange::All
+			? (range.BaseMipLevel < mipCount ? mipCount - range.BaseMipLevel : 0) : range.MipLevelCount;
+		const auto selectedLayers = range.ArrayLayerCount == GraphicsSubresourceRange::All
+			? (range.BaseArrayLayer < layerCount ? layerCount - range.BaseArrayLayer : 0) : range.ArrayLayerCount;
+		if (range.BaseMipLevel >= mipCount || range.BaseArrayLayer >= layerCount || selectedMips == 0 || selectedLayers == 0 ||
+			selectedMips > mipCount - range.BaseMipLevel || selectedLayers > layerCount - range.BaseArrayLayer)
+			throw std::invalid_argument("D3D12 subresource range is empty or out of bounds.");
+		if (range.IsWholeResource(mipCount, layerCount)) return;
+		if (!std::dynamic_pointer_cast<D3D12Texture2D>(resource) &&
+			!std::dynamic_pointer_cast<D3D12Texture2DArray>(resource))
+			throw std::invalid_argument("This D3D12 resource type does not support subresource ranges.");
+		if (std::dynamic_pointer_cast<D3D12Texture2D>(resource) &&
+			(range.BaseArrayLayer != 0 || selectedLayers != 1))
+			throw std::invalid_argument("D3D12 2D textures only support array layer zero.");
 	}
 }

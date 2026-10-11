@@ -2,6 +2,7 @@
 
 #include "GEngine/Graphics/Texture.h"
 #include <vulkan/vulkan.h>
+#include <vector>
 
 namespace GEngine
 {
@@ -31,6 +32,9 @@ namespace GEngine
 		const VkDescriptorImageInfo*		GetDescriptorImageInfo() { return &m_ImageInfo; }
 		const VkImageLayout					GetImageLayout() { return m_ImageLayout; }
 		const VkImageAspectFlags			GetAspectFlag() { return m_AspectFlag; }
+		VkImageLayout GetSubresourceLayout(uint32_t mipLevel) const;
+		void SetSubresourceLayout(uint32_t mipLevel, VkImageLayout layout);
+		void SetAllSubresourceLayouts(VkImageLayout layout);
 
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer,  VkImageLayout newLayout);
@@ -43,6 +47,7 @@ namespace GEngine
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
+		std::vector<VkImageLayout>		m_SubresourceLayouts;
 	};
 }
 

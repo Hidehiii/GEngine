@@ -78,6 +78,23 @@ namespace
 		}
 		return fallback;
 	}
+
+	VkPipelineStageFlags StageForCommandBuffer(VkPipelineStageFlags stage, VkAccessFlags& access,
+		GEngine::CommandBufferType type, bool source)
+	{
+		const VkPipelineStageFlags graphicsStages = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT |
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		if (type == GEngine::COMMAND_BUFFER_TYPE_COMPUTE || type == GEngine::COMMAND_BUFFER_TYPE_TRANSFER)
+			stage &= ~graphicsStages;
+		if (type == GEngine::COMMAND_BUFFER_TYPE_TRANSFER)
+			stage &= ~VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		if (stage != 0) return stage;
+		if (!source) throw std::invalid_argument("The destination pipeline stage is not supported by this Vulkan command queue.");
+		// A semaphore carries the prior queue's memory dependency into this queue.
+		access = 0;
+		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	}
 }
 
 namespace GEngine
@@ -101,6 +118,28 @@ namespace GEngine
 	Ref<Texture2DArray> VulkanGraphicsAPI::CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
 	{
 		return CreateRef<VulkanTexture2DArray>(width, height, layers, format);
+	}
+	void VulkanGraphicsAPI::CopyTexture2DToArrayLayer(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<Texture2D>& source, const Ref<Texture2DArray>& destination, uint32_t layer)
+	{
+		auto command = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
+		auto nativeSource = std::dynamic_pointer_cast<VulkanTexture2D>(source);
+		auto nativeDestination = std::dynamic_pointer_cast<VulkanTexture2DArray>(destination);
+		if (!command || command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS || !nativeSource || !nativeDestination ||
+			layer >= destination->GetArrayLayerCount() || source->GetWidth() != destination->GetWidth() ||
+			source->GetHeight() != destination->GetHeight() || source->GetFormat() != destination->GetFormat())
+			throw std::invalid_argument("Vulkan texture-array copy requires matching textures, a valid layer, and a graphics command buffer.");
+		if (nativeSource->GetSubresourceLayout(0) != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
+			nativeDestination->GetSubresourceLayout(0, layer) != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+			throw std::invalid_argument("Vulkan texture-array copy requires declared copy-source and copy-destination states.");
+		VkImageCopy region{};
+		region.srcSubresource = { nativeSource->GetAspectFlag(), 0, 0, 1 };
+		region.dstSubresource = { nativeDestination->GetAspectFlag(), 0, layer, 1 };
+		region.extent = { source->GetWidth(), source->GetHeight(), 1 };
+		vkCmdCopyImage(command->GetCommandBuffer(), nativeSource->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			nativeDestination->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		command->Retain(source);
+		command->Retain(destination);
 	}
 	Ref<Shader> VulkanGraphicsAPI::CreateShader(const std::string& path)
 	{
@@ -475,9 +514,14 @@ namespace GEngine
 				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 				barrier.srcAccessMask = ToVulkanAccess(before.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
 				barrier.dstAccessMask = ToVulkanAccess(after.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+				const auto sourceStage = StageForCommandBuffer(
+					ToVulkanStage(before.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), barrier.srcAccessMask,
+					vulkanCommandBuffer->GetType(), true);
+				const auto destinationStage = StageForCommandBuffer(
+					ToVulkanStage(after.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), barrier.dstAccessMask,
+					vulkanCommandBuffer->GetType(), false);
 				vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(),
-					ToVulkanStage(before.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT),
-					ToVulkanStage(after.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), 0, 1, &barrier, 0, nullptr, 0, nullptr);
+					sourceStage, destinationStage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 			}
 			return;
 		}
@@ -487,9 +531,16 @@ namespace GEngine
 		destination.Stage = ToVulkanStage(after.Stage, destination.Stage);
 		source.Access = ToVulkanAccess(before.Access, source.Access);
 		destination.Access = ToVulkanAccess(after.Access, destination.Access);
+		source.Stage = StageForCommandBuffer(source.Stage, source.Access, vulkanCommandBuffer->GetType(), true);
+		destination.Stage = StageForCommandBuffer(destination.Stage, destination.Access, vulkanCommandBuffer->GetType(), false);
 		if (auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource))
 		{
 			texture->SetImageLayout(vulkanCommandBuffer->GetCommandBuffer(), destination.Layout);
+			return;
+		}
+		if (auto textureArray = std::dynamic_pointer_cast<VulkanTexture2DArray>(resource))
+		{
+			textureArray->SetImageLayout(vulkanCommandBuffer->GetCommandBuffer(), destination.Layout);
 			return;
 		}
 		if (auto image = std::dynamic_pointer_cast<VulkanStorageImage2D>(resource))
@@ -532,6 +583,133 @@ namespace GEngine
 		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 		vkCmdPipelineBarrier(vulkanCommandBuffer->GetCommandBuffer(), source.Stage, destination.Stage, 0,
 			0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+	void VulkanGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& before,
+		const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		const auto metadata = resource->GetSubresourceMetadata();
+		const bool hasMetadata = metadata.MipLevelCount != 0 && metadata.ArrayLayerCount != 0;
+		const uint32_t mipCount = hasMetadata ? metadata.MipLevelCount : 1;
+		const uint32_t layerCount = hasMetadata ? metadata.ArrayLayerCount : 1;
+		const uint32_t selectedMipCount = range.MipLevelCount == GraphicsSubresourceRange::All
+			? mipCount - std::min(range.BaseMipLevel, mipCount) : range.MipLevelCount;
+		const uint32_t selectedLayerCount = range.ArrayLayerCount == GraphicsSubresourceRange::All
+			? layerCount - std::min(range.BaseArrayLayer, layerCount) : range.ArrayLayerCount;
+		if (selectedMipCount == 0 || selectedLayerCount == 0 || range.BaseMipLevel >= mipCount ||
+			range.BaseArrayLayer >= layerCount || selectedMipCount > mipCount - range.BaseMipLevel ||
+			selectedLayerCount > layerCount - range.BaseArrayLayer)
+			throw std::invalid_argument("Vulkan subresource range is empty or out of bounds.");
+		const bool wholeRange = hasMetadata ? range.IsWholeResource(mipCount, layerCount) : range.IsWholeResource();
+
+		auto vulkanCommandBuffer = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
+		if (!vulkanCommandBuffer) throw std::invalid_argument("Vulkan resource transitions require a Vulkan command buffer.");
+		if (resource->GetResourceType() == GraphicsResourceType::Buffer)
+		{
+			if (!wholeRange) throw std::invalid_argument("Vulkan buffer transitions do not support subresource ranges.");
+			TransitionResource(commandBuffer, resource, before, after);
+			return;
+		}
+
+		auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource);
+		auto textureArray = std::dynamic_pointer_cast<VulkanTexture2DArray>(resource);
+		auto storageImage = std::dynamic_pointer_cast<VulkanStorageImage2D>(resource);
+		if (!texture && !textureArray && !storageImage)
+		{
+			if (!wholeRange) throw std::invalid_argument("This Vulkan image type does not support subresource ranges.");
+			TransitionResource(commandBuffer, resource, before, after);
+			return;
+		}
+
+		const auto nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
+		if (before.State == after.State)
+		{
+			if (before.State != GraphicsResourceState::ShaderWrite) return;
+			VkMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+			barrier.srcAccessMask = ToVulkanAccess(before.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+			barrier.dstAccessMask = ToVulkanAccess(after.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+			const auto sourceStage = StageForCommandBuffer(
+				ToVulkanStage(before.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), barrier.srcAccessMask,
+				vulkanCommandBuffer->GetType(), true);
+			const auto destinationStage = StageForCommandBuffer(
+				ToVulkanStage(after.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), barrier.dstAccessMask,
+				vulkanCommandBuffer->GetType(), false);
+			vkCmdPipelineBarrier(nativeCommandBuffer, sourceStage,
+				destinationStage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+			return;
+		}
+
+		auto source = ToVulkanResourceState(before.State);
+		auto destination = ToVulkanResourceState(after.State);
+		source.Stage = ToVulkanStage(before.Stage, source.Stage);
+		destination.Stage = ToVulkanStage(after.Stage, destination.Stage);
+		source.Access = ToVulkanAccess(before.Access, source.Access);
+		destination.Access = ToVulkanAccess(after.Access, destination.Access);
+		source.Stage = StageForCommandBuffer(source.Stage, source.Access, vulkanCommandBuffer->GetType(), true);
+		destination.Stage = StageForCommandBuffer(destination.Stage, destination.Access, vulkanCommandBuffer->GetType(), false);
+		const VkImage image = reinterpret_cast<VkImage>(GetNativeResource(resource));
+		const VkImageAspectFlags aspect = texture ? texture->GetAspectFlag() :
+			textureArray ? textureArray->GetAspectFlag() : storageImage->GetImageLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+				? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		std::vector<VkImageMemoryBarrier> barriers;
+		barriers.reserve(static_cast<size_t>(selectedMipCount) * selectedLayerCount);
+		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + selectedLayerCount; ++layer)
+			for (uint32_t mip = range.BaseMipLevel; mip < range.BaseMipLevel + selectedMipCount; ++mip)
+			{
+				const VkImageLayout oldLayout = texture ? texture->GetSubresourceLayout(mip) :
+					textureArray ? textureArray->GetSubresourceLayout(mip, layer) : storageImage->GetImageLayout();
+				VkImageMemoryBarrier barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				barrier.srcAccessMask = oldLayout == VK_IMAGE_LAYOUT_UNDEFINED ? 0 : source.Access;
+				barrier.dstAccessMask = destination.Access;
+				barrier.oldLayout = oldLayout;
+				barrier.newLayout = destination.Layout;
+				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.image = image;
+				barrier.subresourceRange = { aspect, mip, 1, layer, 1 };
+				barriers.push_back(barrier);
+			}
+		const VkPipelineStageFlags sourceStage = before.State == GraphicsResourceState::Undefined
+			? VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT : source.Stage;
+		vkCmdPipelineBarrier(nativeCommandBuffer, sourceStage, destination.Stage, 0,
+			0, nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
+		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + selectedLayerCount; ++layer)
+			for (uint32_t mip = range.BaseMipLevel; mip < range.BaseMipLevel + selectedMipCount; ++mip)
+			{
+				if (texture) texture->SetSubresourceLayout(mip, destination.Layout);
+				else if (textureArray) textureArray->SetSubresourceLayout(mip, layer, destination.Layout);
+				else storageImage->SetTrackedImageLayout(destination.Layout);
+			}
+	}
+
+	void VulkanGraphicsAPI::ValidateSubresourceRange(const Ref<GraphicsResource>& resource,
+		const GraphicsSubresourceRange& range) const
+	{
+		if (!resource) throw std::invalid_argument("Vulkan subresource validation requires a resource.");
+		const auto metadata = resource->GetSubresourceMetadata();
+		if (metadata.MipLevelCount == 0 || metadata.ArrayLayerCount == 0)
+		{
+			if (!range.IsWholeResource()) throw std::invalid_argument("Vulkan buffers do not support subresource ranges.");
+			return;
+		}
+		const auto mipCount = metadata.MipLevelCount;
+		const auto layerCount = metadata.ArrayLayerCount;
+		const auto selectedMips = range.MipLevelCount == GraphicsSubresourceRange::All
+			? (range.BaseMipLevel < mipCount ? mipCount - range.BaseMipLevel : 0) : range.MipLevelCount;
+		const auto selectedLayers = range.ArrayLayerCount == GraphicsSubresourceRange::All
+			? (range.BaseArrayLayer < layerCount ? layerCount - range.BaseArrayLayer : 0) : range.ArrayLayerCount;
+		if (range.BaseMipLevel >= mipCount || range.BaseArrayLayer >= layerCount || selectedMips == 0 || selectedLayers == 0 ||
+			selectedMips > mipCount - range.BaseMipLevel || selectedLayers > layerCount - range.BaseArrayLayer)
+			throw std::invalid_argument("Vulkan subresource range is empty or out of bounds.");
+		if (range.IsWholeResource(mipCount, layerCount)) return;
+		if (!std::dynamic_pointer_cast<VulkanTexture2D>(resource) &&
+			!std::dynamic_pointer_cast<VulkanTexture2DArray>(resource))
+			throw std::invalid_argument("This Vulkan image type does not support subresource ranges.");
 	}
 
 }

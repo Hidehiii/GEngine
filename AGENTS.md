@@ -102,11 +102,17 @@ English only.
 - For the host's duplicate `PATH`/`Path` MSBuild error, use an isolated child
   environment and initialize the installed VS developer environment there.
   Do not alter global environment settings to work around it.
-- Consult `Documentation/BuildAndRun.md` and current TODO notes for build issues.
+- Consult `Documentation/Guides/BuildAndRun.md` and current TODO notes for build issues.
   Recheck their status instead of treating historical blockers as permanent.
 
 ## Documentation, review, and handoff
 
+- Follow `Documentation/Workflow/StandardWorkflow.md`: after every code or plan
+  update, update a relevant function page under both `Documentation/Architecture/`
+  and `Documentation/API/` in the same work item. Their index pages map topics
+  to files; update an index when coverage or paths change. Distinguish planned
+  from implemented behavior, and explicitly note an unaffected API or
+  architecture surface rather than silently skipping it.
 - Update the relevant files in `Documentation`, example README, and
   `TODO/RenderingArchitecture.md` with implementation changes. Keep API examples
   consistent with the signatures and resource capabilities that actually exist.

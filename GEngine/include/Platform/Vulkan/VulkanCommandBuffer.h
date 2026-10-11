@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <optional>
+#include <vector>
 namespace GEngine
 {
 	struct QueueFamilyIndices
@@ -77,6 +78,7 @@ namespace GEngine
 		static Ref<VulkanCommandBuffer>	Create(VkCommandBuffer buffer, CommandBufferType type);
 
 		VkCommandBuffer GetCommandBuffer() { return m_CommandBuffer; }
+		void Retain(const Ref<void>& owner) { m_RetainedOwners.push_back(owner); }
 
 		bool operator==(const VulkanCommandBuffer& other) const
 		{
@@ -88,6 +90,7 @@ namespace GEngine
 	private:
 		VkCommandBuffer				m_CommandBuffer;
 		Ref<VulkanFrameBuffer>		m_FrameBuffer;
+		std::vector<Ref<void>>		m_RetainedOwners;
 
 		friend class VulkanGraphicsPresent;
 	};

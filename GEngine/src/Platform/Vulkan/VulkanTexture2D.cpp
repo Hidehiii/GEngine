@@ -176,7 +176,7 @@ namespace GEngine
         if (m_GenerateMipmap)
         {
             Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
-			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			SetAllSubresourceLayouts(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		else
 		{
@@ -200,7 +200,7 @@ namespace GEngine
 		if (m_GenerateMipmap)
 		{
 			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, 1);
-			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			SetAllSubresourceLayouts(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		else
 		{
@@ -216,13 +216,41 @@ namespace GEngine
 
     void VulkanTexture2D::SetImageLayout(VkImageLayout newLayout)
     {
-        Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
-        m_ImageLayout = newLayout;
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
+		SetImageLayout(commandBuffer, newLayout);
+		VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
     }
     void VulkanTexture2D::SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout)
     {
-		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 1, m_AspectFlag, m_MipLevels);
-		m_ImageLayout = newLayout;
+		for (uint32_t mipLevel = 0; mipLevel < m_MipLevels; ++mipLevel)
+		{
+			const auto oldLayout = GetSubresourceLayout(mipLevel);
+			if (oldLayout == newLayout) continue;
+			Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format),
+				oldLayout, newLayout, 1, m_AspectFlag, 1, mipLevel, 0);
+			SetSubresourceLayout(mipLevel, newLayout);
+		}
     }
+
+	VkImageLayout VulkanTexture2D::GetSubresourceLayout(uint32_t mipLevel) const
+	{
+		if (mipLevel >= m_MipLevels) throw std::out_of_range("Vulkan texture mip level is out of bounds.");
+		return m_SubresourceLayouts.empty() ? m_ImageLayout : m_SubresourceLayouts[mipLevel];
+	}
+
+	void VulkanTexture2D::SetSubresourceLayout(uint32_t mipLevel, VkImageLayout layout)
+	{
+		if (mipLevel >= m_MipLevels) throw std::out_of_range("Vulkan texture mip level is out of bounds.");
+		if (m_SubresourceLayouts.empty()) m_SubresourceLayouts.assign(m_MipLevels, m_ImageLayout);
+		m_SubresourceLayouts[mipLevel] = layout;
+		m_ImageLayout = std::all_of(m_SubresourceLayouts.begin(), m_SubresourceLayouts.end(),
+			[layout](VkImageLayout current) { return current == layout; }) ? layout : VK_IMAGE_LAYOUT_UNDEFINED;
+	}
+
+	void VulkanTexture2D::SetAllSubresourceLayouts(VkImageLayout layout)
+	{
+		m_SubresourceLayouts.assign(m_MipLevels, layout);
+		m_ImageLayout = layout;
+	}
     
 }

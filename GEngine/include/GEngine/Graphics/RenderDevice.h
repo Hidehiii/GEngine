@@ -4,6 +4,8 @@
 #include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Graphics/GraphicsQueue.h"
 #include "GEngine/Graphics/ImageFormat.h"
+#include "GEngine/Graphics/GraphicsResource.h"
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -35,6 +37,8 @@ namespace GEngine
 		virtual Ref<CubeMap> CreateCubeMap(uint32_t width, uint32_t height, bool generateMipmap, RenderImage2DFormat format) = 0;
 		virtual Ref<CubeMap> CreateCubeMap(const std::string& rightPath, const std::string& leftPath, const std::string& topPath, const std::string& buttomPath, const std::string& backPath, const std::string& frontPath, bool generateMipmap) = 0;
 		virtual Ref<Texture2DArray> CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format) = 0;
+		virtual void CopyTexture2DToArrayLayer(const Ref<CommandBuffer>& commandBuffer,
+			const Ref<Texture2D>& source, const Ref<Texture2DArray>& destination, uint32_t layer) = 0;
 		virtual Ref<Shader> CreateShader(const std::string& path) = 0;
 		virtual Ref<Material> CreateMaterial(const Ref<Shader>& shader, const std::string& name) = 0;
 		virtual Ref<GraphicsPipeline> CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices) = 0;
@@ -42,6 +46,15 @@ namespace GEngine
 		virtual Ref<Sampler> CreateSampler(const SamplerSpecification& specification) = 0;
 		virtual Ref<StorageBuffer> CreateStorageBuffer(uint32_t size) = 0;
 		virtual Ref<StorageImage2D> CreateStorageImage2D(uint32_t width, uint32_t height, ComputeImage2DFormat format) = 0;
+		virtual void ValidateSubresourceRange(const Ref<GraphicsResource>& resource,
+			const GraphicsSubresourceRange& range) const
+		{
+			const auto metadata = resource ? resource->GetSubresourceMetadata() : GraphicsSubresourceMetadata{};
+			const bool wholeRange = metadata.MipLevelCount == 0 || metadata.ArrayLayerCount == 0
+				? range.IsWholeResource()
+				: range.IsWholeResource(metadata.MipLevelCount, metadata.ArrayLayerCount);
+			if (!wholeRange) throw std::invalid_argument("This backend does not support the requested subresource range.");
+		}
 
 		virtual Ref<RenderPass> CreateRenderPass(const RenderPassSpecification& spec) = 0;
 		virtual Ref<FrameBuffer> CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height) = 0;

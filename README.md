@@ -13,7 +13,7 @@ All components should be installed.
 Version: .Net Framewor 4.7.2 Developer Pack
 
 ### Start
-Run [Scripts/GenerateProjects.bat](Scripts/GenerateProjects.bat) and select VS2022, VS2019, or VS2026. The bundled Premake 5.0.0-beta8 supports all three options; see [Build and run](Documentation/BuildAndRun.md). Open the generated solution with Visual Studio and build the desired example.
+Run [Scripts/GenerateProjects.bat](Scripts/GenerateProjects.bat) and select VS2022, VS2019, or VS2026. The bundled Premake 5.0.0-beta8 supports all three options; see [Build and run](Documentation/Guides/BuildAndRun.md). Open the generated solution with Visual Studio and build the desired example.
 
 ### Example project
 You could find some example projects in the Example folder, and you could run them after building the engine core and example project.

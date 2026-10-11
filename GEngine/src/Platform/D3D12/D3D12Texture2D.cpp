@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "Platform/D3D12/D3D12Texture2D.h"
+#include "Platform/D3D12/D3D12Context.h"
 #include "stb_image.h"
 #include "Platform/D3D12/D3D12Utils.h"
 
@@ -112,12 +113,61 @@ namespace GEngine
 	}
 	void D3D12Texture2D::TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, D3D12_RESOURCE_STATES dst)
 	{
-		Utils::TransitionResourceState(commandList, m_Texture, m_State, dst);
+		EnsureSubresourceStates();
+		std::vector<D3D12_RESOURCE_BARRIER> barriers;
+		barriers.reserve(m_SubresourceStates.size());
+		for (uint32_t subresource = 0; subresource < m_SubresourceStates.size(); ++subresource)
+		{
+			if (m_SubresourceStates[subresource] == dst) continue;
+			barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_Texture.Get(), m_SubresourceStates[subresource], dst, subresource));
+			m_SubresourceStates[subresource] = dst;
+		}
+		if (!barriers.empty()) commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 		m_State = dst;
 	}
 	void D3D12Texture2D::TransitionResourceState(D3D12_RESOURCE_STATES dst)
 	{
-		Utils::TransitionResourceState(m_Texture, m_State, dst);
+		auto command = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+		TransitionResourceState(command->GetCommandList(), dst);
+		D3D12Context::Get()->EndSingleTimeGraphicsCommand(command);
+	}
+	void D3D12Texture2D::TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList,
+		D3D12_RESOURCE_STATES dst, const GraphicsSubresourceRange& range)
+	{
+		EnsureSubresourceStates();
+		const auto desc = m_Texture->GetDesc();
+		const uint32_t mipCount = desc.MipLevels;
+		const uint32_t firstMip = range.BaseMipLevel;
+		const uint32_t mipCountToTransition = range.MipLevelCount == GraphicsSubresourceRange::All
+			? mipCount - firstMip : range.MipLevelCount;
+		if (desc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || range.BaseArrayLayer != 0 ||
+			range.ArrayLayerCount != GraphicsSubresourceRange::All && range.ArrayLayerCount != 1 ||
+			firstMip >= mipCount || mipCountToTransition == 0 || firstMip + mipCountToTransition > mipCount)
+			throw std::invalid_argument("D3D12 texture transition range is unsupported or out of bounds.");
+
+		std::vector<D3D12_RESOURCE_BARRIER> barriers;
+		barriers.reserve(mipCountToTransition);
+		for (uint32_t mip = firstMip; mip < firstMip + mipCountToTransition; ++mip)
+		{
+			const uint32_t subresource = D3D12CalcSubresource(mip, 0, 0, desc.MipLevels, desc.DepthOrArraySize);
+			if (m_SubresourceStates[subresource] == dst) continue;
+			barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(m_Texture.Get(), m_SubresourceStates[subresource], dst, subresource));
+			m_SubresourceStates[subresource] = dst;
+		}
+		if (!barriers.empty()) commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 		m_State = dst;
+	}
+	void D3D12Texture2D::EnsureSubresourceStates()
+	{
+		if (!m_Texture || !m_SubresourceStates.empty()) return;
+		const auto desc = m_Texture->GetDesc();
+		D3D12_FEATURE_DATA_FORMAT_INFO formatInfo{};
+		formatInfo.Format = desc.Format;
+		uint32_t planeCount = 1;
+		if (SUCCEEDED(D3D12Context::Get()->GetDevice()->CheckFeatureSupport(D3D12_FEATURE_FORMAT_INFO,
+			&formatInfo, sizeof(formatInfo))))
+			planeCount = std::max(1u, static_cast<uint32_t>(formatInfo.PlaneCount));
+		const auto count = static_cast<size_t>(desc.MipLevels) * desc.DepthOrArraySize * planeCount;
+		m_SubresourceStates.assign(count, m_State);
 	}
 }

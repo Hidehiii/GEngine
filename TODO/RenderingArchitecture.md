@@ -1,5 +1,16 @@
 # Rendering architecture refactor
 
+## Component and helper rendering gaps found during documentation audit
+
+- [ ] Decide whether to implement or explicitly retire the scene component
+  render helpers. `ImageRenderer::OnRender` contains only a commented-out draw,
+  `MeshRenderer::OnRender` has its pipeline draw disabled, and
+  `GraphicsTool::Init/RenderPoint/RenderLine` have empty bodies. Acceptance for
+  implementation: a focused example visibly draws via each retained API on
+  supported backends, including resize/replacement and clean shutdown; if an
+  API is retired, remove or mark it unsupported in public headers and docs.
+  This is a documented gap, not authorization to implement it in this audit.
+
 ## Integration status (2026-09-19)
 
 Follow-up 2026-09-20: the integrated baseline 6562547a was pushed to origin/master.
@@ -509,31 +520,80 @@ submission and deterministic renderer shutdown.
       dedicated queues (graphics=0, compute=2, transfer=4) each completed 120
       frames, passed frame-119 compute readback, and exited with code 0 in both
       Debug and Release. Vulkan validation layers were unavailable on this host.
-      Detailed remaining requirements:
-      - Vulkan: use the declared mip/layer range in `VkImageMemoryBarrier`, and
-        track layout per subresource. The current texture classes store one layout
-        for the whole image, so updating only the barrier range without replacing
-        that state model is not correct. Keep buffer barriers whole-buffer unless
-        byte ranges are separately introduced.
-      - D3D12: compute mip/layer/plane subresource indices from the resource
-        description, transition only the declared subresources, and maintain
-        per-subresource state. Whole-resource transitions must remain compatible
-        with existing callers.
-      - OpenGL: issue the memory-barrier bits required by the access transition.
-        Since `glMemoryBarrier` is not layer-scoped, document and expose this as
-        conservative whole-resource synchronization; do not claim independent
-        per-layer scheduling on OpenGL. Reject range semantics requiring separate
-        image layouts or ownership that OpenGL cannot express.
-      - Update FrameGraphTriangle with valid layer-range transitions, disjoint
-        range ordering where supported, empty/out-of-bounds rejection, and
-        proof that rejected declarations fail before allocation/recording.
-        Keep the existing whole-resource graphics-compute-graphics readback.
-      - Update `Documentation/RenderGraph.md` with range defaults, `All` rules,
-        supported resource types, per-backend guarantees, and unsupported cases.
-      - Build Debug and Release engine/example. Run range regressions on OpenGL,
-        Vulkan shared and dedicated queues, and D3D12 separately. Record backend
-        diagnostics and explicitly list unavailable validation layers or runtime
-        scenarios; compilation alone does not close this item.
+      Implementation progress 2026-10-03: D3D12 tracks texture mip and array
+      layer states and emits transitions for selected subresources; upload paths
+      keep array-layer state coherent. Vulkan tracks layout per 2D texture mip
+      and array mip/layer, and emits ranged image barriers. Legacy full-image
+      layout changes walk the same state tables. OpenGL accepts valid ranges as
+      conservative whole-resource barriers. `ExecuteGpu` prevalidates backend
+      range support before command-buffer acquisition/recording. FrameGraphTriangle
+      now records a two-layer GPU transition exercise in addition to its compile
+      regressions. Debug/Release builds and backend runtime validation remain open;
+      do not treat source compilation alone as full acceptance.
+      Verification 2026-10-03: `git diff --check` passed. An isolated VS2022
+      Debug x64 GEngine and FrameGraphTriangle project builds passed, and the
+      full solution build compiled the changed RenderGraph, D3D12, OpenGL, Vulkan,
+      and FrameGraphTriangle translation units without source errors. The full
+      solution then encountered pre-existing API mismatches in Sandbox and
+      GEngine-Editor; those projects are outside this milestone. The Debug
+      FrameGraphTriangle executable ran 120 frames using the user's selected
+      OpenGL backend, passed the frame-119 compute readback and shut down with
+      exit code 0. Vulkan and D3D12 range runtime checks, Release builds, and
+      Vulkan validation-layer coverage remain open; preserve the user's local
+      OpenGL selection in `Config.ini` when scheduling those checks.
+      Follow-up 2026-10-03: isolated Debug D3D12 and Vulkan shared-queue runs
+      passed 120 frames and frame-119 readback. Dedicated Vulkan queues also
+      completed 120 frames, but validation reported
+      `VUID-vkCmdPipelineBarrier-srcStageMask-06461` on each compute submission:
+      a graphics-only source stage was recorded on the compute queue. Correct
+      the queue-local barrier stage/access scope, then require a dedicated-queue
+      run with zero validation errors as the acceptance check. Release builds
+      and per-backend runs are still required.
+      Resolution 2026-10-03: Vulkan now constrains barrier stages to the
+      recording queue. Unsupported prior-queue source stages use top-of-pipe
+      with no source access; graph submission semaphores provide the cross-queue
+      dependency. The Debug GEngine and FrameGraphTriangle projects rebuilt,
+      and Vulkan shared/dedicated 120-frame runs both passed frame-119 readback
+      with zero validation errors. The dedicated run selected graphics=0,
+      compute=2, transfer=5. VS2022 Release x64 GEngine and FrameGraphTriangle
+      builds passed; Release OpenGL 4.6, D3D12 12.2, Vulkan shared, and Vulkan
+      dedicated each completed 120 frames and passed frame-119 readback with
+      exit code 0. Debug OpenGL and D3D12 had already passed. Runtime testing
+      covered barrier recording and normal shutdown, not interactive visible
+      output, resize, or long-run memory stability. Queue ownership, dedicated
+      transfer builders, and pooling/aliasing remain separate open work.
+      Next milestone 2026-10-03: replace the empty array-layer transition
+      callbacks with an actual backend-neutral texture copy on the graphics
+      queue. Add a synchronous diagnostic readback for one RGBA8 array layer;
+      copy a known pixel into layer 0 and prove numerically that layer 0 changed
+      while layer 1 kept its distinct initial value. Keep the copy inside a
+      graph pass without a render target, declare source/destination ranges,
+      and restore both resources to shader-readable state across frames.
+      Acceptance: invalid dimensions/layers/formats are rejected, Debug and
+      Release engine/example builds pass, and OpenGL, D3D12, Vulkan shared,
+      and Vulkan dedicated runs pass the frame-119 pixel check and normal
+      shutdown. Record Vulkan validation output and D3D12 debug output.
+      Leave dedicated transfer-queue builders and exclusive ownership transfer
+      for a later milestone, then revisit pooling only after visible/resize and
+      lifetime checks.
+      Implemented in the working tree: targetless graphics copy pass, a common
+      2D-to-array-layer copy API with backend validation, RGBA8 layer diagnostic
+      readback, and a real two-layer pixel regression in FrameGraphTriangle.
+      The example checks invalid layer, dimensions, and format during recording
+      before the valid copy. Debug engine and example builds passed; an initial
+      example compile error from the Texture2D SetData overload was corrected.
+      With the negative-copy cases, Debug OpenGL, D3D12 debug layer, Vulkan
+      shared, and Vulkan dedicated all completed 120 frames, passed compute and
+      array-pixel frame-119 readbacks, and exited 0. Vulkan dedicated selected
+      graphics=0, compute=2, transfer=5; neither Vulkan run logged a validation
+      error, and D3D12 logged no debug error or warning. VS2022 Release x64
+      engine/example builds passed; Release OpenGL, D3D12, Vulkan shared, and
+      Vulkan dedicated each completed 120 frames, passed both readbacks, and
+      exited 0. Release logs likewise showed no D3D12 debug error/warning or
+      Vulkan validation error. The bounded runs do not verify manual visible
+      output, interactive resize, or longer-term memory stability; keep those
+      lifecycle checks open. Dedicated transfer work and ownership transfer
+      also remain separate follow-ups.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
       Prerequisite: complete the manual visible-output/resize/minimize checks
       recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),

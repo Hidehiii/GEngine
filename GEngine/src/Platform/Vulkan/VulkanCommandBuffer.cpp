@@ -230,6 +230,7 @@ namespace GEngine
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
 
 		vkResetCommandBuffer(m_CommandBuffer, 0);
+		m_RetainedOwners.clear();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
 
 
@@ -258,6 +259,7 @@ namespace GEngine
 		beginInfo.pInheritanceInfo	= nullptr; // Optional
 
 		vkResetCommandBuffer(m_CommandBuffer, 0);
+		m_RetainedOwners.clear();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
 	}
 	Ref<VulkanCommandBuffer> VulkanCommandBuffer::Create(VkCommandBuffer buffer, CommandBufferType type)

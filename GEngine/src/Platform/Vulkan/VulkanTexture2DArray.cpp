@@ -92,7 +92,7 @@ namespace GEngine
 		if (m_GenerateMipmap)
 		{
 			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, m_Layers);
-			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			SetAllSubresourceLayouts(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		else
 		{
@@ -124,22 +124,99 @@ namespace GEngine
 		if (m_GenerateMipmap)
 		{
 			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, m_Layers);
-			m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			SetAllSubresourceLayouts(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		else
 		{
 			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 	}
+	void VulkanTexture2DArray::ReadLayerData(uint32_t layer, uint32_t size, void* destination)
+	{
+		const uint32_t expectedSize = m_Width * m_Height * 4;
+		if (!destination || m_Format != RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM || layer >= m_Layers || size != expectedSize)
+			throw std::invalid_argument("Vulkan array readback requires an RGBA8 layer and its exact byte size.");
+		const VkImageLayout previousLayout = GetSubresourceLayout(0, layer);
+		if (previousLayout == VK_IMAGE_LAYOUT_UNDEFINED)
+			throw std::invalid_argument("Cannot read an uninitialized Vulkan texture-array layer.");
+		auto* context = VulkanContext::Get();
+		context->WaitForIdle();
+		VkBuffer staging = VK_NULL_HANDLE;
+		VkDeviceMemory memory = VK_NULL_HANDLE;
+		try
+		{
+			Utils::CreateBuffer(context->GetPhysicalDevice(), context->GetDevice(), size,
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging, memory);
+			const VkCommandBuffer command = context->BeginSingleTimeGraphicsCommand();
+			if (previousLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+				Utils::TransitionImageLayout(command, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format),
+					previousLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, m_AspectFlag, 1, 0, layer);
+			VkBufferImageCopy region{};
+			region.imageSubresource = { m_AspectFlag, 0, layer, 1 };
+			region.imageExtent = { m_Width, m_Height, 1 };
+			vkCmdCopyImageToBuffer(command, m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, staging, 1, &region);
+			if (previousLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+				Utils::TransitionImageLayout(command, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format),
+					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, previousLayout, 1, m_AspectFlag, 1, 0, layer);
+			context->EndSingleTimeGraphicsCommand(command);
+			void* mapped = nullptr;
+			if (vkMapMemory(context->GetDevice(), memory, 0, size, 0, &mapped) != VK_SUCCESS)
+				throw std::runtime_error("Failed to map Vulkan texture-array readback memory.");
+			memcpy(destination, mapped, size);
+			vkUnmapMemory(context->GetDevice(), memory);
+		}
+		catch (...)
+		{
+			if (staging != VK_NULL_HANDLE) vkDestroyBuffer(context->GetDevice(), staging, nullptr);
+			if (memory != VK_NULL_HANDLE) vkFreeMemory(context->GetDevice(), memory, nullptr);
+			throw;
+		}
+		vkDestroyBuffer(context->GetDevice(), staging, nullptr);
+		vkFreeMemory(context->GetDevice(), memory, nullptr);
+	}
 	void VulkanTexture2DArray::SetImageLayout(VkImageLayout newLayout)
 	{
-		Utils::TransitionImageLayout(m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 6, m_AspectFlag, m_MipLevels);
-		m_ImageLayout = newLayout;
+		VkCommandBuffer commandBuffer = VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
+		SetImageLayout(commandBuffer, newLayout);
+		VulkanContext::Get()->EndSingleTimeGraphicsCommand(commandBuffer);
 	}
 	void VulkanTexture2DArray::SetImageLayout(VkCommandBuffer cmdBuffer, VkImageLayout newLayout)
 	{
-		Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), m_ImageLayout, newLayout, 6, m_AspectFlag, m_MipLevels);
-		m_ImageLayout = newLayout;
+		for (uint32_t layer = 0; layer < m_Layers; ++layer)
+			for (uint32_t mip = 0; mip < m_MipLevels; ++mip)
+			{
+				const auto oldLayout = GetSubresourceLayout(mip, layer);
+				if (oldLayout == newLayout) continue;
+				Utils::TransitionImageLayout(cmdBuffer, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format),
+					oldLayout, newLayout, 1, m_AspectFlag, 1, mip, layer);
+				SetSubresourceLayout(mip, layer, newLayout);
+			}
+	}
+
+	VkImageLayout VulkanTexture2DArray::GetSubresourceLayout(uint32_t mipLevel, uint32_t arrayLayer) const
+	{
+		if (mipLevel >= m_MipLevels || arrayLayer >= m_Layers)
+			throw std::out_of_range("Vulkan texture-array subresource is out of bounds.");
+		const size_t index = static_cast<size_t>(arrayLayer) * m_MipLevels + mipLevel;
+		return m_SubresourceLayouts.empty() ? m_ImageLayout : m_SubresourceLayouts[index];
+	}
+
+	void VulkanTexture2DArray::SetSubresourceLayout(uint32_t mipLevel, uint32_t arrayLayer, VkImageLayout layout)
+	{
+		if (mipLevel >= m_MipLevels || arrayLayer >= m_Layers)
+			throw std::out_of_range("Vulkan texture-array subresource is out of bounds.");
+		const size_t count = static_cast<size_t>(m_MipLevels) * m_Layers;
+		if (m_SubresourceLayouts.empty()) m_SubresourceLayouts.assign(count, m_ImageLayout);
+		m_SubresourceLayouts[static_cast<size_t>(arrayLayer) * m_MipLevels + mipLevel] = layout;
+		m_ImageLayout = std::all_of(m_SubresourceLayouts.begin(), m_SubresourceLayouts.end(),
+			[layout](VkImageLayout current) { return current == layout; }) ? layout : VK_IMAGE_LAYOUT_UNDEFINED;
+	}
+
+	void VulkanTexture2DArray::SetAllSubresourceLayouts(VkImageLayout layout)
+	{
+		m_SubresourceLayouts.assign(static_cast<size_t>(m_MipLevels) * m_Layers, layout);
+		m_ImageLayout = layout;
 	}
 	void VulkanTexture2DArray::CreateSampler()
 	{

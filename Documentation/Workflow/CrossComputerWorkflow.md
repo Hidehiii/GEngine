@@ -25,5 +25,5 @@ generated projects and existing binaries do not update just because Git does.
 
 The 2026-09-19 integration preserves local backup `8cc72a72` and remote parent
 `66866fea`. Its decisions and verification are recorded in
-[CrossComputerIntegration](../TODO/CrossComputerIntegration.md). Creating a
+[CrossComputerIntegration](../../TODO/CrossComputerIntegration.md). Creating a
 local integration commit does not by itself publish it to the other computer.

@@ -1,11 +1,99 @@
 # Workflow tracking
 
+- [x] Split the architecture and API overviews into function-focused files
+  without losing the source-backed coverage added in the prior audit. Scope:
+  retain `Architecture/Architecture.md` and `API/GraphicsAPI.md` as stable
+  entry points, move runtime/scene/service/rendering architecture details and
+  non-graphics API guidance to sibling documents, and update navigation and
+  workflow links. Acceptance: each first-party subsystem remains represented,
+  moved detail is not duplicated or dropped, all relative Markdown links and
+  cited header/example paths resolve, and `git diff --check` passes. Preserve
+  existing uncommitted edits; this documentation-only change needs content/link
+  review, not an engine rebuild.
+  Implemented: `Architecture/Architecture.md` is the subsystem index linking
+  runtime, scene/services, and rendering/backend pages. `API/README.md` maps
+  runtime, scene/physics, assets/services, graphics/compute, render graph, and
+  shader authoring guides; `GraphicsAPI.md` remains the stable graphics path.
+  Updated the documentation index, AGENTS, and Standard workflow to require
+  corresponding function pages on both sides for future changes. Reviewed
+  moved content against the prior guides: ownership/lifetime, examples,
+  capabilities, resource rules, and explicit incomplete paths remain covered.
+  Verified all relative Markdown links, absence of documentation trailing
+  whitespace, and one architecture-index row for every first-party module
+  directory. No build was run because this is documentation-only.
+- [x] Expand the architecture and API guides to cover every first-party engine
+  subsystem represented under `GEngine/include/GEngine` and `GEngine/src/GEngine`
+  (plus backend/surface boundaries). Scope: inventory public headers, source
+  ownership, initialization/frame/shutdown flow, key API entry points, examples,
+  and current limitations; distinguish shipped behavior from open TODO plans.
+  Acceptance: each engine subsystem has an architecture location and an API
+  orientation or explicit internal-only designation; examples and signatures
+  match current headers; cross-document links resolve; the diff and
+  `git diff --check` pass. This documentation-only milestone needs link/content
+  review rather than a build. Preserve existing uncommitted source and docs.
+  Implemented: architecture subsystem map and cross-subsystem ownership/flow;
+  engine-wide API entry-point map and usage/limitation notes across runtime,
+  core/events, graphics/renderer/compute, scene/components, physics, scripting,
+  assets/tools, math, ImGui, debug, utilities, surface, and backends. Updated
+  the docs index and feature summary. Source inspection exposed three distinct
+  gaps: scene fixed update does not step 3D physics, component render draws are
+  disabled, and GraphicsTool drawing is empty; focused follow-ups are recorded
+  in `SceneAndPhysics.md` and `RenderingArchitecture.md` without implementing
+  them. Verified: all first-party module directories appear in the architecture
+  map, named APIs were checked against public headers/implementation/example,
+  and repository Markdown links resolve. This is content review, not a new
+  engine build or runtime validation; retain backend-specific verification
+  requirements for future code changes.
+- [x] Place the remaining documentation topics in folders while keeping
+  `Documentation/README.md` as the index. Scope: move StandardWorkflow and
+  CrossComputerWorkflow to `Documentation/Workflow/`, BuildAndRun and Features
+  to `Documentation/Guides/`, and D3D12Diagnostics to
+  `Documentation/Diagnostics/`. Update repository-wide paths and the required
+  architecture/API documentation status notes. Acceptance: every topic document
+  is in a folder, previous local edits survive, all relative Markdown links
+  resolve, no stale old paths remain, and `git diff --check` passes. This is a
+  documentation-only relocation; no engine rebuild is required.
+  Implemented: moved the five remaining topic files into Workflow, Guides,
+  and Diagnostics while retaining the root documentation index. Updated AGENTS,
+  the repository README, the index, intra-document links, and the architecture
+  and API status notes; existing local code and configuration changes remain
+  untouched. Verified: all relative Markdown links in the repository README,
+  AGENTS, and every Documentation file resolve; old location references were
+  reviewed, relocated files have no trailing whitespace, and `git diff --check`
+  passed. No engine build was run for this documentation-only move.
+- [x] Organize public API documentation under `Documentation/API/` and the
+  architecture guide under `Documentation/Architecture/`. Scope: relocate
+  GraphicsAPI, RenderGraph, and ShaderAuthoring without changing their content
+  beyond necessary path/status notes; relocate Architecture, then update the
+  documentation index, Standard workflow rule, AGENTS, and all affected links.
+  Acceptance: both folders exist, previous uncommitted document edits survive,
+  every affected relative Markdown link resolves, and `git diff --check` passes.
+  Documentation-only relocation does not require an engine rebuild.
+  Implemented: moved the three API guides and the architecture guide into
+  separate folders without discarding their local edits. Updated AGENTS,
+  Standard workflow, the documentation index, and links inside the moved files.
+  Verified: checked all relative Markdown links in the moved documents and
+  index, reviewed old-path references, and ran `git diff --check`. The example's
+  local backend selection and unrelated code changes remain untouched.
 - [x] Establish repository engineering standards in `AGENTS.md` and link them
   from the documentation index.
 - [x] Require every new work item to be registered in `TODO/` before implementation,
   then retain its scope, acceptance criteria, implementation and verification
   status through completion. Acceptance: the rule is documented in `AGENTS.md`.
   Verified by reviewing the written rule and this tracking entry.
+- [x] Make architecture and API documentation updates mandatory after every code
+  or plan update. Scope: add a Standard workflow file, link it from the existing
+  workflow and documentation index, and apply the rule to Architecture.md and
+  GraphicsAPI.md for this workflow change. Acceptance: the rule requires both
+  documents to be updated in the same work item, distinguishing planned from
+  implemented behavior; if one surface is unaffected, record that explicitly
+  rather than silently skipping it. Verify links, content, and `git diff --check`.
+  Implemented: added `Documentation/Workflow/StandardWorkflow.md`, linked it from
+  `AGENTS.md` and the documentation index, and updated both core documents for
+  this workflow-only change. Verified: reviewed the rule and planned/implemented
+  distinction, confirmed all referenced files exist, and `git diff --check`
+  reported no whitespace errors. No engine build is required for this
+  documentation-only change.
 
 ## Build configuration reproducibility
 

@@ -4,6 +4,7 @@
 #include "GEngine/Graphics/GraphicsCommon.h"
 #include "GEngine/Graphics/GraphicsResource.h"
 #include "GEngine/Graphics/RenderDevice.h"
+#include <stdexcept>
 #include "GEngine/Math/Math.h"
 #include "GEngine/Graphics/VertexBuffer.h"
 #include "GEngine/Components/Camera/EditorCamera.h"
@@ -97,6 +98,12 @@ namespace GEngine
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
 		{
+			const auto metadata = resource ? resource->GetSubresourceMetadata() : GraphicsSubresourceMetadata{};
+			const bool wholeRange = metadata.MipLevelCount == 0 || metadata.ArrayLayerCount == 0
+				? range.IsWholeResource()
+				: range.IsWholeResource(metadata.MipLevelCount, metadata.ArrayLayerCount);
+			if (!wholeRange)
+				throw std::invalid_argument("This graphics backend does not implement the requested subresource range.");
 			TransitionResource(commandBuffer, resource, before, after);
 		}
 

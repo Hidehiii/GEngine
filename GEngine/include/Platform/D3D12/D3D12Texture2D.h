@@ -29,14 +29,18 @@ namespace GEngine
 
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList, D3D12_RESOURCE_STATES dst);
 		void TransitionResourceState(D3D12_RESOURCE_STATES dst);
+		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList,
+			D3D12_RESOURCE_STATES dst, const GraphicsSubresourceRange& range);
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC GetShaderResourceViewDesc() const { return m_SRVDesc; }
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetResource() const { return m_Texture; }
 		virtual void* GetNativeResource() const override { return m_Texture.Get(); }
 	private:
 		void InitializeShaderResourceView();
+		void EnsureSubresourceStates();
 		Microsoft::WRL::ComPtr<ID3D12Resource>	m_Texture;
 		D3D12_RESOURCE_STATES					m_State = D3D12_RESOURCE_STATE_COPY_DEST;
+		std::vector<D3D12_RESOURCE_STATES>		m_SubresourceStates;
 		DXGI_FORMAT								m_DxgiFormat = DXGI_FORMAT_UNKNOWN;
 		D3D12_SHADER_RESOURCE_VIEW_DESC			m_SRVDesc{};
 	};

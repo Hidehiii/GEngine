@@ -123,6 +123,14 @@ namespace GEngine
 		for (auto color : m_Targets[target].Colors) Write(pass, color, ResourceState::RenderTarget, GraphicsPipelineStage::Graphics);
 		return PassBuilder(*this, pass);
 	}
+	RenderGraph::PassBuilder RenderGraph::BuildGraphicsCopyPass(std::string name, RecordCallback record)
+	{
+		if (!record) throw std::invalid_argument("Invalid graphics copy pass.");
+		const auto pass = AddPass(std::move(name), [] {});
+		m_Passes[pass].Record = std::move(record);
+		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_GRAPHICS;
+		return PassBuilder(*this, pass);
+	}
 	RenderGraph::PassBuilder RenderGraph::BuildComputePass(std::string name, RecordCallback record)
 	{
 		if (!record) throw std::invalid_argument("Invalid compute pass.");
@@ -141,17 +149,10 @@ namespace GEngine
 		{
 			const auto& pass = m_Passes[handle];
 			if (!pass.Record) throw std::invalid_argument("ExecuteGpu requires recording passes only.");
+			for (const auto& transition : pass.Transitions)
+				Graphics::GetRenderDevice().ValidateSubresourceRange(m_Resources[transition.Resource].Object, transition.Range);
 			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
 			else ++computeCount;
-			for (const auto& access : pass.ResourceAccesses)
-			{
-				const auto& resource = m_Resources[access.Resource];
-				const bool wholeRange = resource.HasSubresourceMetadata
-					? access.Range.IsWholeResource(resource.SubresourceMetadata.MipLevelCount, resource.SubresourceMetadata.ArrayLayerCount)
-					: access.Range.IsWholeResource();
-				if (!wholeRange)
-					throw std::invalid_argument("GPU subresource ranges require native range barriers on every backend.");
-			}
 			for (const auto& access : pass.ResourceAccesses)
 				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
 					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||

@@ -15,8 +15,8 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 - **Application/runtime:** application loop, layers, window events, time, input, configuration and logging.
 - **Rendering:** shaders, materials, pipeline state, vertex/index/uniform buffers, textures, samplers, framebuffers, render passes, portable graphics/compute/transfer queues, and render graph scheduling.
 - **Compute:** compute pipelines, storage buffers and storage images.
-- **Scene and components:** game objects, scenes, transform and renderer components, cameras and serialization.
-- **Physics:** Box2D-backed 2D physics and PhysX-backed 3D physics.
+- **Scene and components:** game objects, scenes, transform and renderer components, cameras and serialization. Component renderer draw paths are currently incomplete.
+- **Physics:** Box2D-backed 2D scene simulation and PhysX-backed 3D world/body wrappers. The scene does not currently step the 3D world.
 - **Tools/assets:** model importing, string/file helpers, serialization, shader compilation and asset meshes.
 - **Editor:** a separate editor application built on the core engine.
 

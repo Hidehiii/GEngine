@@ -93,6 +93,7 @@ namespace GEngine
 
 		using ExecuteCallback = std::function<void(FrameContext&)>;
 		PassBuilder BuildGraphicsPass(std::string name, TargetHandle target, RecordCallback record);
+		PassBuilder BuildGraphicsCopyPass(std::string name, RecordCallback record);
 		PassBuilder BuildComputePass(std::string name, RecordCallback record);
 		void ExecuteGpu(const Ref<CommandBuffer>& completion);
 		using TransitionCallback = std::function<void(const FrameContext&, const Ref<GraphicsResource>&, ResourceState, ResourceState)>;

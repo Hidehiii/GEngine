@@ -71,4 +71,14 @@ namespace GEngine
 			glGenerateTextureMipmap(m_TextureArray);
 		}
     }
+	void OpenGLTexture2DArray::ReadLayerData(uint32_t layer, uint32_t size, void* destination)
+	{
+		const uint32_t expectedSize = m_Width * m_Height * 4;
+		if (!destination || m_Format != RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM || layer >= m_Layers || size != expectedSize)
+			throw std::invalid_argument("OpenGL array readback requires an RGBA8 layer and its exact byte size.");
+		if (!glGetTextureSubImage) throw std::runtime_error("OpenGL texture readback is unavailable.");
+		glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+		glGetTextureSubImage(m_TextureArray, 0, 0, 0, layer, m_Width, m_Height, 1,
+			GL_RGBA, GL_UNSIGNED_BYTE, size, destination);
+	}
 }

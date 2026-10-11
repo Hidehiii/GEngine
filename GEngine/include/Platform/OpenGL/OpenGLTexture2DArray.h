@@ -14,6 +14,8 @@ namespace GEngine
 		virtual void SetData(const void* data, uint32_t size) override;
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) override;
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) override;
+		virtual void ReadLayerData(uint32_t layer, uint32_t size, void* destination) override;
+		uint32_t GetOpenGLID() const { return m_TextureArray; }
 		
 		virtual std::string GetPath() const override { return "NULL"; }
 

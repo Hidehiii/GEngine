@@ -20,6 +20,7 @@ namespace GEngine
 		Ref<GraphicsPipeline> m_Pipeline;
 		Ref<ComputePipeline> m_ComputePipeline;
 		Ref<StorageBuffer> m_Color;
+		Ref<Texture2DArray> m_RangeArray;
 		RenderGraph m_Graph;
 		RenderGraph::TargetHandle m_Target = RenderGraph::InvalidTarget;
 	};

@@ -324,6 +324,47 @@ namespace GEngine
 		auto updated = compute.Write(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
 		auto final = m_Graph.BuildGraphicsPass("ReadUpdatedColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
 		final.Read(updated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
+
+		std::array<uint8_t, 4> sourcePixel{ 255, 0, 0, 255 };
+		const std::array<uint8_t, 4> initialPixel{ 0, 0, 0, 255 };
+		const std::array<uint8_t, 4> untouchedPixel{ 0, 255, 0, 255 };
+		const Ref<Texture2D> rangeSource = Texture2D::Create(1, 1, sourcePixel.data(),
+			static_cast<uint32_t>(sourcePixel.size()), RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		const Ref<Texture2D> wrongSizeSource = Texture2D::Create(2, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		const Ref<Texture2D> wrongFormatSource = Texture2D::Create(1, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_SNORM);
+		m_RangeArray = Texture2DArray::Create(1, 1, 2, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+		m_RangeArray->SetData(initialPixel.data(), static_cast<uint32_t>(initialPixel.size()), 0);
+		m_RangeArray->SetData(untouchedPixel.data(), static_cast<uint32_t>(untouchedPixel.size()), 1);
+		const auto sourceResource = m_Graph.ImportTexture("SubresourceRangeSource", rangeSource,
+			RenderGraph::ResourceState::ShaderRead);
+		const auto rangeArrayResource = m_Graph.ImportTexture("SubresourceRangeArray", m_RangeArray,
+			RenderGraph::ResourceState::ShaderRead);
+		const auto copyLayerZero = m_Graph.BuildGraphicsCopyPass("CopyArrayLayerZero",
+			[rangeSource, wrongSizeSource, wrongFormatSource, rangeArray = m_RangeArray](const Ref<CommandBuffer>& command)
+			{
+				auto& device = Graphics::GetRenderDevice();
+				for (const auto& invalid : std::array<std::pair<Ref<Texture2D>, uint32_t>, 3>{
+					std::pair{ rangeSource, 2u }, { wrongSizeSource, 0u }, { wrongFormatSource, 0u } })
+				{
+					bool rejected = false;
+					try { device.CopyTexture2DToArrayLayer(command, invalid.first, rangeArray, invalid.second); }
+					catch (const std::invalid_argument&) { rejected = true; }
+					if (!rejected) throw std::runtime_error("Invalid texture-array copy was accepted.");
+				}
+				device.CopyTexture2DToArrayLayer(command, rangeSource, rangeArray, 0);
+			}).GetHandle();
+		m_Graph.Read(copyLayerZero, sourceResource, RenderGraph::ResourceState::CopySource,
+			GraphicsPipelineStage::Transfer);
+		m_Graph.Write(copyLayerZero, rangeArrayResource, RenderGraph::ResourceState::CopyDestination,
+			GraphicsPipelineStage::Transfer, { 0, 1, 0, 1 });
+		const auto layerReaders = m_Graph.BuildGraphicsPass("ArrayLayerReads", target,
+			[](const Ref<CommandBuffer>&) {}).GetHandle();
+		m_Graph.Read(layerReaders, rangeArrayResource, RenderGraph::ResourceState::ShaderRead,
+			GraphicsPipelineStage::Graphics, { 0, 1, 1, 1 });
+		m_Graph.Read(layerReaders, rangeArrayResource, RenderGraph::ResourceState::ShaderRead,
+			GraphicsPipelineStage::Graphics, { 0, 1, 0, 1 });
+		m_Graph.Read(layerReaders, sourceResource, RenderGraph::ResourceState::ShaderRead,
+			GraphicsPipelineStage::Graphics);
 	}
 
 	void FrameGraphTriangleLayer::OnRender()
@@ -355,6 +396,14 @@ namespace GEngine
 				std::abs(result[2] - 0.12f) > 0.001f || std::abs(result[3] - 1.0f) > 0.001f)
 				throw std::runtime_error("GPU graph compute readback mismatch.");
 			GE_INFO("GPU graph compute readback passed after 119 frames.");
+			std::array<uint8_t, 4> copiedPixel{};
+			std::array<uint8_t, 4> preservedPixel{};
+			m_RangeArray->ReadLayerData(0, static_cast<uint32_t>(copiedPixel.size()), copiedPixel.data());
+			m_RangeArray->ReadLayerData(1, static_cast<uint32_t>(preservedPixel.size()), preservedPixel.data());
+			if (copiedPixel != std::array<uint8_t, 4>{ 255, 0, 0, 255 } ||
+				preservedPixel != std::array<uint8_t, 4>{ 0, 255, 0, 255 })
+				throw std::runtime_error("GPU graph texture-array layer readback mismatch.");
+			GE_INFO("GPU graph texture-array layer readback passed after 119 frames.");
 		}
 	}
 

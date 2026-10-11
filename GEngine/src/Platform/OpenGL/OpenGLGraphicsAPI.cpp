@@ -45,6 +45,21 @@ namespace GEngine
 	{
 		return CreateRef<OpenGLTexture2DArray>(width, height, layers, format);
 	}
+	void OpenGLGraphicsAPI::CopyTexture2DToArrayLayer(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<Texture2D>& source, const Ref<Texture2DArray>& destination, uint32_t layer)
+	{
+		auto command = std::dynamic_pointer_cast<OpenGLCommandBuffer>(commandBuffer);
+		auto nativeSource = std::dynamic_pointer_cast<OpenGLTexture2D>(source);
+		auto nativeDestination = std::dynamic_pointer_cast<OpenGLTexture2DArray>(destination);
+		if (!command || command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS || !nativeSource || !nativeDestination ||
+			layer >= destination->GetArrayLayerCount() || source->GetWidth() != destination->GetWidth() ||
+			source->GetHeight() != destination->GetHeight() || source->GetFormat() != destination->GetFormat())
+			throw std::invalid_argument("OpenGL texture-array copy requires matching textures, a valid layer, and a graphics command buffer.");
+		if (!glCopyImageSubData) throw std::runtime_error("OpenGL image copy is unavailable.");
+		glCopyImageSubData(nativeSource->GetOpenGLID(), GL_TEXTURE_2D, 0, 0, 0, 0,
+			nativeDestination->GetOpenGLID(), GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer,
+			source->GetWidth(), source->GetHeight(), 1);
+	}
 	Ref<Shader> OpenGLGraphicsAPI::CreateShader(const std::string& path)
 	{
 		return CreateRef<OpenGLShader>(path);
@@ -317,5 +332,36 @@ namespace GEngine
 		}
 		if (barriers != 0)
 			glMemoryBarrier(barriers);
+	}
+
+	void OpenGLGraphicsAPI::TransitionResource(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& before,
+		const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		ValidateSubresourceRange(resource, range);
+		// OpenGL memory barriers are resource-global, so this conservatively
+		// synchronizes the whole resource while graph dependencies stay ordered.
+		TransitionResource(commandBuffer, resource, before.State, after.State);
+	}
+
+	void OpenGLGraphicsAPI::ValidateSubresourceRange(const Ref<GraphicsResource>& resource,
+		const GraphicsSubresourceRange& range) const
+	{
+		if (!resource) throw std::invalid_argument("OpenGL subresource validation requires a resource.");
+		const auto metadata = resource->GetSubresourceMetadata();
+		if (metadata.MipLevelCount == 0 || metadata.ArrayLayerCount == 0)
+		{
+			if (!range.IsWholeResource()) throw std::invalid_argument("OpenGL buffers do not support subresource ranges.");
+			return;
+		}
+		const auto mipCount = metadata.MipLevelCount;
+		const auto layerCount = metadata.ArrayLayerCount;
+		const auto selectedMips = range.MipLevelCount == GraphicsSubresourceRange::All
+			? (range.BaseMipLevel < mipCount ? mipCount - range.BaseMipLevel : 0) : range.MipLevelCount;
+		const auto selectedLayers = range.ArrayLayerCount == GraphicsSubresourceRange::All
+			? (range.BaseArrayLayer < layerCount ? layerCount - range.BaseArrayLayer : 0) : range.ArrayLayerCount;
+		if (range.BaseMipLevel >= mipCount || range.BaseArrayLayer >= layerCount || selectedMips == 0 || selectedLayers == 0 ||
+			selectedMips > mipCount - range.BaseMipLevel || selectedLayers > layerCount - range.BaseArrayLayer)
+			throw std::invalid_argument("OpenGL subresource range is empty or out of bounds.");
 	}
 }

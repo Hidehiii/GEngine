@@ -1,20 +1,14 @@
-# Graphics API usage
+# Graphics and compute API
 
-## Cross-computer integration notes
+[API index](README.md) · [Rendering architecture](../Architecture/Rendering.md) ·
+[Render graph API](RenderGraph.md)
 
-OpenGL state initialization runs through `GraphicsRuntime::Initialize` after
-the context becomes current. Its shader path translates reflected Vulkan
-SPIR-V to desktop GLSL 450; it does not directly specialize Vulkan binaries.
-Shader cache hashes include the compilation target/translation path so caches
-from the former direct-SPIR-V implementation are not reused accidentally.
-
-D3D12 command buffers retain recording owners and use their own submission
-completion to guard allocator reuse. Context submission tracking separately
-retires native resources replaced in place; the mechanisms cover different
-lifetimes and neither replaces the other. Vulkan retains submission-serial
-retirement for descriptors, layouts and render passes as well as graph queue
-dependencies. See [integration tracking](../TODO/CrossComputerIntegration.md)
-for merged-build evidence.
+This page covers the backend-neutral graphics/compute resource and command
+surface plus a minimal draw. Runtime, scene, and service entry points are in
+their own function guides. Public headers are authoritative for signatures;
+planned features remain in TODO and must not be described as implemented.
+Follow the [Standard workflow](../Workflow/StandardWorkflow.md) when changing
+this API or its architecture.
 
 ## Diagnostic storage-buffer readback
 
@@ -51,6 +45,25 @@ support multiple simultaneously active devices or cross-device resource mixing.
 return exposed a temporary shared_ptr on OpenGL/Vulkan; callers should hold the
 returned shared_ptr rather than binding a mutable reference to it.
 
+`RenderDevice` also owns creation of render passes/framebuffers and mesh
+buffers. `GraphicsQueue::Submit` accepts a completed command buffer of its
+queue type; `WaitForIdle` is for shutdown or exceptional diagnostics, not a
+normal per-frame dependency. `GraphicsPresent` owns swap-chain acquisition and
+submission; do not submit its command buffer yourself. OpenGL, Vulkan, and
+D3D12 are separate implementations of these common contracts, not three
+interchangeable native-handle types.
+
+For scheduled GPU work, `RenderGraph` imports resources or declares transient
+texture-array, 2D texture, storage-buffer, and storage-image descriptions.
+`BuildGraphicsPass` records into a target, `BuildGraphicsCopyPass` records a
+targetless graphics-queue copy, and `BuildComputePass` records dispatch.
+Declare `Read`/`Write` states and ranges before `ExecuteGpu`; use versioned
+resources to order producers and consumers. See the detailed
+[render-graph API](RenderGraph.md). The common device method
+`CopyTexture2DToArrayLayer(command, source, destination, layer)` validates
+matching size/format and the destination layer. `Texture2DArray::ReadLayerData`
+is an exact-size RGBA8 synchronous diagnostic readback, not streaming I/O.
+
 ## Device capabilities
 
 `Graphics::GetCapabilities()` returns a backend-specific snapshot derived from
@@ -72,7 +85,9 @@ support plus the format support used by render targets and storage images.
 Capability reporting stays per-device; one backend never infers support from
 another.
 
-This page describes the common immediate rendering path used by `Example/Triangle`. Include `<GEngine.h>` in an application project.
+The graphics sections below describe the common immediate rendering path used
+by `Example/Triangle`. Include `<GEngine.h>` in an application project, and add
+specific headers for APIs outside that umbrella.
 
 ## Application and layer
 

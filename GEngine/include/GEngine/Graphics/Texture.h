@@ -20,6 +20,7 @@ namespace GEngine
 		}
 		virtual uint32_t	GetWidth() const { return m_Width; }
 		virtual uint32_t	GetHeight() const { return m_Height; }
+		RenderImage2DFormat GetFormat() const { return m_Format; }
 		virtual uint32_t	GetArrayLayerCount() const { return 1; }
 		virtual std::string GetPath() const = 0;
 		virtual uint32_t	GetMipLevels() { return m_MipLevels; }
@@ -90,6 +91,7 @@ namespace GEngine
 
 		virtual void SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height, uint32_t layer) = 0;
 		virtual void SetData(const void* data, uint32_t size, uint32_t layer) = 0;
+		virtual void ReadLayerData(uint32_t layer, uint32_t size, void* destination) = 0;
 
 		virtual uint32_t		GetLayerCount() { return m_Layers; }
 		virtual uint32_t		GetArrayLayerCount() const override { return m_Layers; }
