@@ -221,6 +221,20 @@ namespace
 		const uint64_t fenceValue = m_TrackedFenceValues.at(queueIndex);
 		D3D12_THROW_IF_FAILED(queue->Signal(m_TrackedFences.at(queueIndex).Get(), fenceValue));
 		m_PendingSubmissions.push_back({ submission, type, m_TrackedFences.at(queueIndex), fenceValue });
+#ifdef GE_DEBUG
+		static const bool traceLifetime = []()
+		{
+			const char* value = std::getenv("GENGINE_D3D12_LIFETIME_TRACE");
+			return value != nullptr && value[0] == '1' && value[1] == '\0';
+		}();
+		if (traceLifetime && submission % 10000 == 0)
+		{
+			const UINT64 storedMessages = m_DebugInfoQueue ? m_DebugInfoQueue->GetNumStoredMessages() : 0;
+			const UINT64 discardedMessages = m_DebugInfoQueue ? m_DebugInfoQueue->GetNumMessagesDiscardedByMessageCountLimit() : 0;
+			GE_CORE_INFO("D3D12 lifetime: submitted={}, completed={}, pending={}, deferred={}, storedMessages={}, discardedMessages={}",
+				submission, m_CompletedSubmission, m_PendingSubmissions.size(), m_DeferredReleases.size(), storedMessages, discardedMessages);
+		}
+#endif
 	}
 
 	void D3D12Context::RetireResource(DeferredRelease release)
@@ -377,7 +391,11 @@ namespace
 		filter.DenyList.NumSeverities = _countof(suppressedSeverities);
 		filter.DenyList.pSeverityList = suppressedSeverities;
 		D3D12_THROW_IF_FAILED(m_DebugInfoQueue->AddStorageFilterEntries(&filter));
-		StartD3D12DebugInfoQueueLogger(m_DebugInfoQueue);
+		const char* loggerOverride = std::getenv("GENGINE_D3D12_INFO_QUEUE_LOGGER");
+		if (loggerOverride != nullptr && loggerOverride[0] == '0' && loggerOverride[1] == '\0')
+			GE_CORE_INFO("D3D12 debug info queue polling logger disabled for diagnostics.");
+		else
+			StartD3D12DebugInfoQueueLogger(m_DebugInfoQueue);
 
 		/*D3D12_MESSAGE_ID hide[] =
 		{

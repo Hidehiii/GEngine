@@ -53,6 +53,15 @@ submission; do not submit its command buffer yourself. OpenGL, Vulkan, and
 D3D12 are separate implementations of these common contracts, not three
 interchangeable native-handle types.
 
+No public graphics signature changes for D3D12 diagnostic isolation. In a
+Debug D3D12 process, `GENGINE_D3D12_DEBUG_LAYER=1` opts into validation;
+`GENGINE_D3D12_INFO_QUEUE_LOGGER=0` separately suppresses the polling logger
+for memory comparisons without disabling the layer. Keep the logger enabled
+for runs where warning/error output is required; see
+[D3D12 diagnostics](../Diagnostics/D3D12Diagnostics.md).
+`GENGINE_D3D12_LIFETIME_TRACE=1` is also diagnostic-only: it records pipeline
+and context-retirement counts without adding or changing a public API.
+
 For scheduled GPU work, `RenderGraph` imports resources or declares transient
 texture-array, 2D texture, storage-buffer, and storage-image descriptions.
 `BuildGraphicsPass` records into a target, `BuildGraphicsCopyPass` records a

@@ -54,6 +54,15 @@ numeric readback. `GENGINE_EXAMPLE_NO_REPLACEMENT` disables all these replacemen
 for baseline comparisons. Merged-version results are tracked separately in
 [cross-computer integration](../../TODO/CrossComputerIntegration.md).
 
+A subsequent matched 60,000-frame D3D12 Debug diagnosis used
+`GENGINE_D3D12_LIFETIME_TRACE=1` and compared the Debug Layer on/off, then
+kept the layer on while setting `GENGINE_D3D12_INFO_QUEUE_LOGGER=0`. All three
+runs passed both readbacks and normal shutdown. Private-byte growth persisted
+without the polling logger, with sampled GPU process memory and live pipeline
+count stable; see the TODO for measurements and remaining ownership work.
+The Debug and Release engine/example builds passed; a 120-frame Release D3D12
+smoke run also passed both readbacks and normal shutdown.
+
 Merged-version verification (2026-09-19/20, VS2022): Debug and Release builds
 passed; OpenGL, Vulkan (shared and dedicated queues), and D3D12 each completed
 120 frames with successful compute readback and normal shutdown. A 65-second
@@ -99,9 +108,15 @@ vertex-buffer replacement while preserving the same rendering workload, for
 memory-growth isolation. Unset it to restore replacement. Combined with the
 seconds limit, both cases request normal shutdown.
 For D3D12, `GENGINE_D3D12_LIFETIME_TRACE=1` logs total-created and currently-live
-pipeline counts every 1,000 creations. Compare private bytes with
+pipeline counts every 1,000 creations, plus pending submissions, deferred
+releases, and info-queue counts every 10,000 tracked submissions. Compare
+private bytes with
 `GENGINE_D3D12_DEBUG_LAYER=1` and `0`; live object counts alone do not prove that
 driver allocations are reclaimed.
+In a 60,000-frame Debug Layer-on isolated run with this trace, both readbacks
+and shutdown passed. Pending submissions stayed at 1-10, deferred releases
+at zero, and sampled GPU memory flat while process private bytes grew; see
+[D3D12 diagnostics](../../Documentation/Diagnostics/D3D12Diagnostics.md).
 Set `GENGINE_VULKAN_DEDICATED_QUEUES=1` for independent-family testing. Check the
 selected-family log: a shared family is a compatibility run, not proof of
 cross-family synchronization. The same frame-119 readback must pass.

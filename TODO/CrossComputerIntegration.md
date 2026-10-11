@@ -115,3 +115,61 @@ the VS2022 build. No claim is made for unexercised examples/resource variants.
   time runs, inspect live-object/debug-layer diagnostics and driver allocation
   behavior, then distinguish engine-owned growth from diagnostic or driver
   overhead. Do not label the current process-level observation a leak.
+  Next bounded diagnosis: run 60,000-frame D3D12 Debug comparisons with the
+  layer on/off from isolated configuration copies, sample private bytes at
+  start/end, and enable the existing pipeline lifetime trace. Inspect the
+  bounded info-queue and native resource-retirement paths, plus available GPU
+  memory counters. Acceptance for this step: attribute only what the evidence
+  supports, keep unresolved ownership open, and do not use desktop automation.
+  The 60,000-frame comparison passed on 2026-10-11: both modes exited 0 and
+  passed the two GPU readbacks; at 2,000 created pipelines the trace reported
+  only two live pipelines. With the layer off, private bytes stayed near
+  173.5 MB and GPU dedicated/shared usage stayed near 37.7/61.4 MB. With it
+  on, private bytes rose from 191.9 MB at 10 seconds to 207.8 MB at 110
+  seconds while GPU dedicated/shared usage stayed near 38.8/66.4 MB. The
+  existing logger polls and clears an info queue limited to 1,024 messages.
+  This excludes a growing pipeline count or sampled GPU allocation as the
+  observed process-memory cause, but does not separate engine logger behavior
+  from validation-layer CPU bookkeeping. Next isolate the logger with an
+  explicit opt-out for diagnostic runs; default diagnostics must stay on.
+  Acceptance: the opt-out affects only the polling logger, not Debug Layer
+  device creation or the bounded info queue; Debug engine/example build and a
+  matched 60,000-frame opt-out run pass, and its memory slope determines
+  whether further validation-layer/driver investigation remains necessary.
+  Implemented: `GENGINE_D3D12_INFO_QUEUE_LOGGER=0` skips only the polling
+  thread; validation setup, the 1,024-message queue limit, and filter still
+  run. The VS2022 Debug engine/example build passed in an isolated child
+  environment after a direct invocation hit the host's duplicate PATH/Path
+  MSBuild error. The logger-off, layer-on 60,000-frame run exited 0, passed
+  both readbacks, and again reported two live pipelines at 2,000 created.
+  Private bytes rose from 194060288 at 10 s to 209833984 at 114 s, while
+  sampled GPU dedicated/shared usage stayed at 38785024/66408448 bytes.
+  This closely matches the logger-on slope, so the polling thread is not the
+  primary cause. The growth is associated with enabling D3D12 validation or
+  its driver interaction, but exact CPU allocation ownership is unresolved;
+  keep this TODO open for a native live-object/allocation attribution pass
+  (for example, compare debug-device live-object summaries and a CPU allocation
+  trace with validation on/off). VS2022 Release engine/example also built in
+  the isolated environment; a 120-frame Release D3D12 run passed both
+  readbacks, exited 0, and had empty stderr. The logger opt-out is Debug-only.
+  Next bounded step: add an opt-in, sparse trace of tracked submissions,
+  pending submissions, deferred releases, and stored/discarded validation
+  messages. Run the Debug Layer-enabled example for 60,000 frames from an
+  isolated configuration without controlling the desktop; compare the trace
+  with private bytes and GPU process counters. Acceptance: Debug/Release
+  engine and example build, both GPU readbacks and normal shutdown pass, and
+  any remaining need for native CPU allocation attribution stays explicit.
+  Completed 2026-10-11: the opt-in trace logs every 10,000 submissions in
+  Debug. VS2022 Debug and Release engine/example builds passed. A Debug Layer-on
+  60,000-frame run from an isolated D3D12 configuration exited 0 after about
+  125 seconds, passed both frame-119 GPU readbacks, and had empty stderr.
+  Between 10,000 and 360,000 submissions, pending submissions sampled at
+  1-10, deferred releases at 0, and stored/discarded info-queue messages at
+  0. GPU dedicated/shared usage stayed around 38,785,024/66,408,448 bytes;
+  private bytes rose from 193,114,112 at 16 seconds to 207,142,912 at 115
+  seconds. The one known initial buffer-state warning remains. Thus sampled
+  engine retirement queues and the bounded message store did not grow with
+  process private bytes. This still does not identify CPU allocations inside
+  the D3D12 validation runtime, driver, or other engine components. Remaining:
+  use native CPU allocation stacks and a correctly timed live-object report
+  with layer on/off before assigning ownership or closing this TODO.

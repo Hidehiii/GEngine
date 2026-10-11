@@ -112,6 +112,25 @@ resources. The D3D12 debug layer is opt-in with
 `GENGINE_D3D12_DEBUG_LAYER=1`; see
 [D3D12 diagnostics](../Diagnostics/D3D12Diagnostics.md).
 
+For memory isolation, the optional polling info-queue logger can be disabled
+with `GENGINE_D3D12_INFO_QUEUE_LOGGER=0` while keeping the Debug Layer, bounded
+message queue, and storage filter active. The default logger remains enabled.
+This diagnostic switch does not change resource ownership or the public
+rendering interface.
+With `GENGINE_D3D12_LIFETIME_TRACE=1` in Debug, the context also samples
+submission completion, pending submissions, deferred releases, and bounded
+info-queue message counts every 10,000 tracked submissions. This is diagnostic
+observation only; the queue/fence ownership and retirement rules are unchanged.
+
+In a matched 60,000-frame comparison, process private bytes grew with the
+Debug Layer regardless of whether this logger ran, while GPU process memory
+and the example's live graphics-pipeline count stayed approximately constant.
+The evidence excludes this polling thread as the main source but does not yet
+identify the validation/runtime CPU allocation owner.
+The later opt-in context trace likewise showed bounded pending submissions
+and no deferred releases or retained info-queue messages over 60,000 frames;
+private bytes still rose. Native allocation attribution remains open.
+
 ## Extension points
 
 - Put cross-backend concepts in `GEngine/include/GEngine` and portable
