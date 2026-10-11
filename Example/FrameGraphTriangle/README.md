@@ -146,6 +146,21 @@ validation errors or D3D12 debug errors/warnings appeared in those logs.
 Manual visible output, resize/minimize, and long-run memory stability were not
 checked in this bounded verification.
 
+Noninteractive lifecycle verification (2026-10-11, existing VS2022 Debug
+binary): 120-second timed runs on OpenGL 4.6, D3D12 12.2 with and without its
+debug layer, and Vulkan 1.4.312 with dedicated queues all passed the frame-119
+compute and texture-array readbacks and exited normally. OpenGL private bytes
+were about 173 MB at 10 and 120 seconds; dedicated Vulkan rose from about
+415 MB to 420 MB near the end. D3D12 without the debug layer stayed near
+171 MB, whereas debug-layer runs rose from about 192 MB to 210-212 MB even
+with periodic resource replacement disabled. This is process memory, not
+proof of an engine leak or its absence. The D3D12 debug layer emitted only
+the known initial-UAV-state warning; no backend logged a validation error.
+Isolated configuration copies preserved the user's `Config.ini`. No desktop
+input was used, so visible output, real resize, and minimize/restore remain
+untested. Detailed samples and the D3D12 diagnosis TODO are in
+[cross-computer integration](../../TODO/CrossComputerIntegration.md).
+
 Range verification (2026-09-29): VS2026 Debug and Release builds passed with
 MSVC 14.50.35717. OpenGL 4.6 (NVIDIA driver 610.88) completed 120 frames,
 passed frame-119 compute readback, and exited with code 0 in both Debug and

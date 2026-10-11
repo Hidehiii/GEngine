@@ -46,6 +46,25 @@ and transfer families; dependency semaphores provide memory ordering. D3D12
 dependencies identify a producer submission generation rather than a mutable
 shared fence value. OpenGL executes the logical chain on one context.
 
+The runtime pauses rendering on a zero-size window event and updates its
+viewport on a nonzero event. OpenGL applies the viewport during presentation;
+Vulkan compares the swap-chain extent and recreates it before acquisition.
+The current D3D12 presenter has no explicit `ResizeBuffers`/back-buffer
+recreation path, so interactive D3D12 resize must not be treated as verified.
+The follow-up is tracked in
+[RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
+
+For lifecycle evidence, the example's timed normal-shutdown path can exercise
+frame submission and resource replacement without input automation. A
+2026-10-11 Debug run covered OpenGL, D3D12, and dedicated-queue Vulkan for
+120 seconds each; both numerical GPU readbacks and normal shutdown passed.
+This does not test visible pixels, a real window resize, or minimize/restore.
+Process private bytes were near-flat for OpenGL and D3D12 without its debug
+layer, but rose with the D3D12 debug layer even when replacement was disabled;
+ownership of that increase remains undetermined. See
+[CrossComputerIntegration.md](../../TODO/CrossComputerIntegration.md) for the
+samples and the open diagnosis.
+
 ## Backend layering and shader ownership
 
 Application and renderer code use `GEngine/include/GEngine` interfaces.

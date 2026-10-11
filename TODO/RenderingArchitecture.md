@@ -2,6 +2,16 @@
 
 ## Component and helper rendering gaps found during documentation audit
 
+- [ ] Implement and verify D3D12 swap-chain resize before claiming interactive
+  resize support. Source inspection on 2026-10-11 found that
+  `EngineRuntime::OnWindowResize` updates only the graphics viewport, while
+  the D3D12 presentation/context path has no `ResizeBuffers` call and keeps
+  its existing back-buffer targets. Acceptance: a nonzero size change
+  recreates dependent targets after GPU-safe retirement, rendering continues
+  at the new size, zero-size/minimize skips unsafe recreation, and restore plus
+  normal shutdown pass with the D3D12 debug layer. This is a discovered
+  limitation, not a verified runtime failure; no window interaction was run.
+
 - [ ] Decide whether to implement or explicitly retire the scene component
   render helpers. `ImageRenderer::OnRender` contains only a commented-out draw,
   `MeshRenderer::OnRender` has its pipeline draw disabled, and
@@ -594,6 +604,13 @@ submission and deterministic renderer shutdown.
       output, interactive resize, or longer-term memory stability; keep those
       lifecycle checks open. Dedicated transfer work and ownership transfer
       also remain separate follow-ups.
+      Noninteractive 120-second Debug replacement checks on 2026-10-11 are
+      recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md).
+      OpenGL was near-flat, Vulkan dedicated queues rose late by about 4.7 MB,
+      and D3D12 with its debug layer rose about 17.8 MB while a layer-off
+      control stayed near-flat. A no-replacement D3D12 debug-layer control
+      also grew. Memory ownership and interactive resize/visible output remain
+      open; do not use these runs to authorize pooling or aliasing.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
       Prerequisite: complete the manual visible-output/resize/minimize checks
       recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),

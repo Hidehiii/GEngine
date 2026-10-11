@@ -32,6 +32,25 @@ read state updated by the window adapter. `Time::GetDeltaTime`,
 [configuration guide](../Guides/Features.md) lists important keys, and
 [InputSystem](../../Example/InputSystem) is an example project.
 
+`Application::OnEvent(Event&)` forwards a `WindowResizeEvent` to the runtime:
+zero width or height pauses rendering, while a nonzero size updates the
+graphics viewport. This public event path is not a guarantee that every
+presenter has rebuilt its swap chain. Vulkan checks extent before acquire;
+OpenGL updates its presentation viewport; D3D12 currently lacks an explicit
+swap-chain resize path. See the
+[rendering architecture](../Architecture/Rendering.md) and its open TODO before
+relying on interactive D3D12 resize.
+
+For a noninteractive example run, `GENGINE_EXAMPLE_SECONDS` limits execution
+by elapsed time and `GENGINE_EXAMPLE_FRAME_LIMIT` limits rendered frames;
+positive limits request normal `Application::Close()`. Launch
+`FrameGraphTriangle` with `Example/FrameGraphTriangle` as its working directory
+so `Config.ini` and shader paths resolve. Its frame-119 compute and texture
+array readbacks check GPU data, not visible presentation, resize, or
+minimize/restore. `GENGINE_EXAMPLE_NO_REPLACEMENT=1` disables periodic example
+resource replacement for a memory comparison. These are example diagnostics,
+not general `Application` options.
+
 ## Core value and utility types
 
 `Ref<T>` and `Scope<T>` alias `shared_ptr` and `unique_ptr`. `UUID`
