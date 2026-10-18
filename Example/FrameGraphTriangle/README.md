@@ -149,6 +149,30 @@ releases, and info-queue counts every 10,000 tracked submissions. Compare
 private bytes with
 `GENGINE_D3D12_DEBUG_LAYER=1` and `0`; live object counts alone do not prove that
 driver allocations are reclaimed.
+For an opt-in Debug D3D12 shutdown count comparison, set both
+`GENGINE_D3D12_DEBUG_LAYER=1` and `GENGINE_D3D12_LIVE_OBJECTS=1`. The engine
+logs available live-device-object summary messages after this example and the
+renderer release their objects; context-owned objects are still live. Compare
+the same report after short and long bounded runs. This does not capture CPU
+allocation stacks or establish that process private-byte growth is a leak.
+In a Debug Layer-on comparison, the 120- and 60,000-frame shutdown summaries
+had identical object-category counts, while the long run's private bytes rose.
+The layer-off 60,000-frame and 80-second controls stayed near-flat. All runs
+passed the two GPU readbacks and normal shutdown. Native CPU allocation
+ownership remains unresolved.
+An approved 60-second WPR heap trace later found more range-end outstanding
+heap allocations with the D3D12 Debug Layer on. Identified growth paths pass
+through `d3d12SDKLayers.dll` and the NVIDIA user-mode driver; one is reached
+from `D3D12CommandBuffer::ResetRecording`. The 1,964.3-KiB group includes
+NVIDIA driver frames; a smaller 525.4-KiB `ntdll`-only group remains
+unattributed, so these traces do not establish a permanent leak. See
+[D3D12 diagnostics](../../Documentation/Diagnostics/D3D12Diagnostics.md).
+The D3D12 storage-buffer creation path now transitions COMMON to UAV before
+the graph imports the buffer as ShaderWrite. A 120-frame Debug Layer-on run
+must pass both frame-119 GPU readbacks, exit normally, and show no initial
+UAV-state warning. The corrected 60-second layer-on/off checks passed, but
+private-byte growth persisted only with validation on; this example does not
+prove a runtime/driver leak or its fix.
 In a 60,000-frame Debug Layer-on isolated run with this trace, both readbacks
 and shutdown passed. Pending submissions stayed at 1-10, deferred releases
 at zero, and sampled GPU memory flat while process private bytes grew; see

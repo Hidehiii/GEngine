@@ -34,7 +34,14 @@ namespace GEngine
 		D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &desc,
-			D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&m_Resource)));
+			D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_Resource)));
+		// Buffers are created in COMMON even when a different initial state is
+		// requested. Establish the state used by uploads and graph imports.
+		auto command = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
+			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		command->GetCommandList()->ResourceBarrier(1, &barrier);
+		D3D12Context::Get()->EndSingleTimeGraphicsCommand(command);
 
 		m_UavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		m_UavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;

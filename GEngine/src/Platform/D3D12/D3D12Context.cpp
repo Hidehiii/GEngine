@@ -7,6 +7,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
+#include <directx/d3d12sdklayers.h>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
@@ -20,6 +21,11 @@ namespace
 	bool IsD3D12DebugLayerRequested()
 	{
 		const char* value = std::getenv("GENGINE_D3D12_DEBUG_LAYER");
+		return value != nullptr && value[0] == '1' && value[1] == '\0';
+	}
+	bool IsD3D12LiveObjectReportRequested()
+	{
+		const char* value = std::getenv("GENGINE_D3D12_LIVE_OBJECTS");
 		return value != nullptr && value[0] == '1' && value[1] == '\0';
 	}
 }
@@ -128,6 +134,45 @@ namespace
 		}
 		m_TrackedFenceEvents.clear();
 		m_TrackedFences.clear();
+
+#ifdef GE_DEBUG
+		if (IsD3D12DebugLayerRequested() && IsD3D12LiveObjectReportRequested() && m_DebugInfoQueue)
+		{
+			// The application and presenter are gone, but context-owned objects remain.
+			m_DebugInfoQueue->ClearStoredMessages();
+			m_DebugInfoQueue->ClearStorageFilter();
+			Microsoft::WRL::ComPtr<ID3D12DebugDevice> debugDevice;
+			const HRESULT queryResult = m_Device->QueryInterface(IID_PPV_ARGS(&debugDevice));
+			if (SUCCEEDED(queryResult))
+			{
+				const HRESULT reportResult = debugDevice->ReportLiveDeviceObjects(
+					D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
+				if (SUCCEEDED(reportResult))
+				{
+					const UINT64 count = m_DebugInfoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
+					GE_CORE_INFO("D3D12 live-object summary: {} messages at context shutdown.", count);
+					for (UINT64 index = 0; index < count; ++index)
+					{
+						SIZE_T size = 0;
+						if (FAILED(m_DebugInfoQueue->GetMessage(index, nullptr, &size)) || size == 0)
+							continue;
+						std::vector<char> storage(size);
+						if (SUCCEEDED(m_DebugInfoQueue->GetMessage(index,
+							reinterpret_cast<D3D12_MESSAGE*>(storage.data()), &size)))
+						{
+							const auto* message = reinterpret_cast<const D3D12_MESSAGE*>(storage.data());
+							GE_CORE_INFO("D3D12 live-object report [{}]: {}", message->ID,
+								message->pDescription ? message->pDescription : "null");
+						}
+					}
+				}
+				else
+					GE_CORE_WARN("D3D12 live-object report failed: HRESULT 0x{:08X}.", static_cast<unsigned>(reportResult));
+			}
+			else
+				GE_CORE_WARN("D3D12 debug-device query failed: HRESULT 0x{:08X}.", static_cast<unsigned>(queryResult));
+		}
+#endif
 
 	}
 	void D3D12Context::SetVSync(bool enable)

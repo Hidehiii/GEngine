@@ -167,6 +167,11 @@ translate that description into synchronization and submission operations.
       had no validation errors. D3D12 had no errors, but the buffer-initial-state
       warning remains. OpenGL emitted shader recompilation and one-time readback
       buffer-migration performance warnings. Release verification follows.
+      Later D3D12 state follow-up (2026-10-18): the storage buffer now starts
+      in COMMON and completes a one-time COMMON-to-UAV transition. Debug
+      Layer-on and Release 120-frame runs passed both GPU readbacks without
+      the prior initial-state warning. The separate validation-enabled CPU
+      private-byte growth persists; see `TODO/CrossComputerIntegration.md`.
       Validation gap: default Vulkan selection uses family 0 for graphics,
       compute and transfer. Add opt-in GENGINE_VULKAN_DEDICATED_QUEUES=1 selection
       of available non-graphics compute/transfer families. Acceptance: logs prove

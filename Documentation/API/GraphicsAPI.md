@@ -20,6 +20,13 @@ synchronous readback. This is for diagnostics and infrequent results, not
 per-frame streaming. Call it after submitting producers, outside recording
 callbacks. FrameGraphTriangle checks an actual compute result once.
 
+D3D12 storage-buffer creation now transitions the buffer from its actual
+COMMON initial state to UAV before `SetData`, `ReadData`, or a graph import
+assumes ShaderWrite. No public signature changed. Debug Layer-on and Release
+120-frame FrameGraphTriangle runs passed both readbacks and no longer logged
+the initial-state warning. Validation-enabled private-byte growth remains a
+separate diagnostic issue.
+
 ## Device-owned creation
 
 `Graphics::GetRenderDevice()` now creates shaders, materials, graphics/compute
@@ -77,6 +84,27 @@ for runs where warning/error output is required; see
 [D3D12 diagnostics](../Diagnostics/D3D12Diagnostics.md).
 `GENGINE_D3D12_LIFETIME_TRACE=1` is also diagnostic-only: it records pipeline
 and context-retirement counts without adding or changing a public API.
+`GENGINE_D3D12_LIVE_OBJECTS=1` adds no public graphics signature. With
+`GENGINE_D3D12_DEBUG_LAYER=1` in a Debug build, it requests a live-device-object
+summary at context shutdown and copies available report messages into the
+engine log. Normal runs keep it disabled. The context still owns its own
+queues, swap chain, and heaps at this point, so compare counts across matched
+runs rather than expecting a zero-object report.
+The 120/60,000-frame Debug Layer-on checks produced identical shutdown
+category counts; layer-off controls stayed near-flat in process private bytes.
+This diagnostic is not a heap profiler and does not expose an application API
+for allocation ownership.
+WPR heap tracing is an external diagnostic, not a GEngine API or runtime
+option; it requires a separate privileged per-process tracing configuration.
+The current session could query but not enable that configuration
+(`0x80070005 Access is denied`), so no heap trace or allocation-stack result
+is implied by the live-object summary.
+The completed, user-authorized elevated WPR capture was an external tool
+workflow with no new GEngine public API. Its layer-on/off comparison found
+more outstanding heap allocations
+in the validation-enabled interval, including an SDK-layer stack called
+through command-buffer reset. It does not change `GraphicsPresent` or
+`CommandBuffer` API semantics and is not a reason to add per-frame waits.
 
 For scheduled GPU work, `RenderGraph` imports resources or declares transient
 texture-array, 2D texture, storage-buffer, and storage-image descriptions.
