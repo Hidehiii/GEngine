@@ -9,6 +9,7 @@ namespace GEngine
 	public:
 		GraphicsTool() = delete;
 
+		// Unsupported until a backend-neutral batching and resource lifetime contract exists.
 		static void Init();
 
 		static void RenderPoint(const Vector3& pos, const Vector4& color = Vector4(1.0f, 1.0f, 1.0f, 1.0f), const float& size = 1.0f);

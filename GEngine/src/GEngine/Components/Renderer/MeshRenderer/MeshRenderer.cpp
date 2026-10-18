@@ -3,54 +3,46 @@
 #include "GEngine/Components/3D/MeshFilter/MeshFilter.h"
 #include "GEngine/Components/Transform/Transform.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Graphics/GraphicsPresent.h"
+#include <stdexcept>
 
 namespace GEngine
 {
+	MeshRenderer::MeshRenderer(const MeshRenderer& other)
+		: Component(other), m_Material(other.m_Material)
+	{
+	}
+
 	void MeshRenderer::OnRender()
 	{
-		if (m_Pipeline)
-		{
-			m_Material->SetConstant<Matrix4x4>("GE_MATRIX_M", m_GameObject.GetComponent<Transform>().GetModelMatrix());
-			//m_Pipeline->Render();
-		}
-		else
-		{
+		if (!m_Material)
+			throw std::logic_error("MeshRenderer requires a material before rendering.");
+		if (!m_Pipeline)
 			UpdatePipeline();
-		}
+		if (!m_Pipeline)
+			throw std::logic_error("MeshRenderer requires a nonempty MeshFilter before rendering.");
+		m_Material->SetConstant<Matrix4x4>("GE_MATRIX_M", m_GameObject.GetComponent<Transform>().GetModelMatrix());
+		GraphicsPresent::Render(m_Pipeline, 0);
 	}
 	void MeshRenderer::SetMaterial(Ref<Material> material)
 	{
-		if(m_Pipeline)
-			m_Pipeline->SetMaterial(material);
+		if (!material)
+			throw std::invalid_argument("MeshRenderer requires a material.");
 		m_Material = material;
+		m_Pipeline.reset();
 	}
 	void MeshRenderer::UpdatePipeline()
 	{
-		if (m_GameObject.HasComponent<MeshFilter>() && m_GameObject.GetComponent<MeshFilter>().m_Mesh)
-		{
-			Mesh mesh = m_GameObject.GetComponent<MeshFilter>().m_Mesh;
-			if (m_Pipeline)
-			{
-				m_Pipeline = GraphicsPipeline::Create(
-					m_Pipeline->GetMaterial(),
-					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
-				);
-				m_Material = m_Pipeline->GetMaterial();
-			}
-			else
-			{
-				if (m_Material == nullptr)
-				{
-					m_Material = Material::Create(Shader::Create("Assets/Shaders/3D/Default.glsl"), "Default");
-				}
-				m_Pipeline = GraphicsPipeline::Create(
-					m_Material,
-					VertexBuffer::Create(mesh.m_Vertices.size() * sizeof(Vertex))
-				);
-			}
-			m_Pipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), mesh.m_Indices.size()));
-			m_Pipeline->GetVertexBuffer()->SetVertexData(mesh.m_Vertices.data(), mesh.m_Vertices.size() * sizeof(Vertex));
-		}
+		m_Pipeline.reset();
+		if (!m_Material || !m_GameObject.HasComponent<MeshFilter>())
+			return;
+		const Mesh& mesh = m_GameObject.GetComponent<MeshFilter>().m_Mesh;
+		if (!mesh)
+			return;
+		auto buffer = VertexBuffer::Create(mesh.m_Vertices.data(),
+			static_cast<uint32_t>(mesh.m_Vertices.size() * sizeof(Vertex)));
+		buffer->SetIndexBuffer(IndexBuffer::Create(mesh.m_Indices.data(), static_cast<uint32_t>(mesh.m_Indices.size())));
+		m_Pipeline = GraphicsPipeline::Create(m_Material, buffer);
 	}
 }
 

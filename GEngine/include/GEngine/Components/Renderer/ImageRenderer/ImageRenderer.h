@@ -3,6 +3,7 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/Texture.h"
 #include "GEngine/Graphics/SubTexture2D.h"
+#include "GEngine/Graphics/GraphicsPipeline.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Components/Component.h"
 
@@ -22,9 +23,11 @@ namespace GEngine
 		ImageRenderer(float value)
 			: m_Color({ value, value, value, value }) {}
 
-		ImageRenderer(const ImageRenderer&) = default;
+		ImageRenderer(const ImageRenderer& other);
 
 		void OnRender();
+		void SetMaterial(const Ref<Material>& material);
+		Ref<Material> GetMaterial() const { return m_Material; }
 
 		operator bool() { return this == NULL; }
 	public:
@@ -34,6 +37,9 @@ namespace GEngine
 		Ref<Texture2D> m_Texture;
 		// The tiling of the texture
 		Vector2 m_Tiling = { 1.0f, 1.0f };
+	private:
+		Ref<Material> m_Material;
+		Ref<GraphicsPipeline> m_Pipeline;
 	};
 }
 

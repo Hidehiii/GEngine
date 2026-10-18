@@ -62,7 +62,37 @@
   implementation: a focused example visibly draws via each retained API on
   supported backends, including resize/replacement and clean shutdown; if an
   API is retired, remove or mark it unsupported in public headers and docs.
-  This is a documented gap, not authorization to implement it in this audit.
+  Bounded implementation decision (2026-10-18): retain color-only quad
+  `ImageRenderer` and material-backed `MeshRenderer` through the portable
+  presentation command buffer; dispatch them from `GameObject::OnRender`.
+  Require an explicit material rather than an application-relative hidden
+  default shader. Reject textured images and `GraphicsTool` point/line calls
+  explicitly until a backend-neutral lifetime/batching contract exists.
+  Add `SceneRenderHelpers` as a new example with separate image/mesh shaders,
+  a visible color quad and mesh triangle, negative unsupported checks, and
+  bounded frame exit. Acceptance for this milestone: Debug/Release engine and
+  example builds, 120-frame noninteractive runs on each available backend,
+  useful logs and clean shutdown, plus documented manual visible and resize
+  checks. Component and `GameObject` draw paths and explicit unsupported
+  exceptions are implemented. New example project, shaders, render layer, and
+  launch/expected-output guide added. VS2022 Debug engine/example build passed.
+  A hidden D3D12 debug-layer run with both synthetic resizes completed 120
+  frames and exited 0, logging both replacements and both successful buffer
+  resizes; stderr was empty, and the mesh shader reflected all eight `Vertex`
+  inputs at offsets through 88 bytes. This is recording/compilation evidence,
+  not visual proof. Debug and Release default 120-frame runs on OpenGL and
+  Vulkan also exited 0 with replacement logs and empty stderr; Release D3D12
+  completed both synthetic resizes and exited 0. A follow-up synthetic
+  Vulkan run repeatedly requested 960x540 without changing the native window,
+  then stalled at frame 40; the agent stopped that run and narrowed the
+  diagnostic to D3D12 with one-shot guards. After that fix, Debug and Release
+  engine/example rebuilds passed. Six 120-frame noninteractive runs (D3D12,
+  OpenGL, Vulkan in both configurations) exited 0 with empty stderr and the
+  replacement/shutdown logs. D3D12 requested exactly two synthetic resizes
+  per configuration; OpenGL/Vulkan ignored that diagnostic as documented.
+  A scan found no validation errors in their captured stdout. Manual visible
+  color/geometry, real resize/minimize/restore, and longer-run memory behavior
+  remain unverified. Keep this item open until those checks are reported.
 
 ## Integration status (2026-09-19)
 

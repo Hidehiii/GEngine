@@ -36,8 +36,25 @@ enabled before scene 3D-world creation. See
 [scene/physics TODO](../../TODO/SceneAndPhysics.md).
 
 `NativeScript` holds C++ `ScriptableObject` instances with lifecycle and
-contact callbacks. Component rendering is incomplete:
-`ImageRenderer::OnRender` does not draw and `MeshRenderer::OnRender` does
-not issue its draw call. Use a layer and the
-[graphics API](GraphicsAPI.md) for an exercised rendering path; the gap is
-tracked in [rendering TODO](../../TODO/RenderingArchitecture.md).
+contact callbacks. Set a material on each `ImageRenderer` and `MeshRenderer`
+before drawing; `MeshRenderer` also needs a nonempty `MeshFilter`. Call
+`GameObject::OnRender()` during a layer's `OnPresent`: it dispatches both
+components through the portable presentation command buffer. ImageRenderer
+draws a color quad and writes `GE_MATRIX_M` and `GE_IMAGE_COLOR` material
+constants; MeshRenderer draws the indexed mesh and writes `GE_MATRIX_M`.
+Give each component its own material when it has per-object constants.
+`ImageRenderer::m_Texture` drawing and `GraphicsTool::Init/RenderPoint/RenderLine`
+currently throw `std::logic_error` as unsupported paths. Missing materials
+also fail explicitly. The [rendering TODO](../../TODO/RenderingArchitecture.md)
+tracks manual visual and backend validation still in progress.
+The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
+is the new sample application for the retained
+component paths. It selects a backend in `Config.ini`, supports
+`GENGINE_SCENE_HELPER_FRAME_LIMIT=120` and optional
+`GENGINE_SCENE_HELPER_SYNTHETIC_RESIZE=1` on D3D12 only, and documents manual
+visibility, resize, and shutdown checks. Vulkan/OpenGL ignore this diagnostic;
+real resize remains a manual check. The final Debug and Release runs on D3D12,
+OpenGL, and Vulkan each completed
+120 frames with empty stderr and replacement/exit logs. This confirms command
+recording and shutdown, not visible output, real window resize, or long-run
+memory stability.

@@ -13,7 +13,7 @@ namespace GEngine
 	{
 	public:
 		MeshRenderer() = default;
-		MeshRenderer(const MeshRenderer&) = default;
+		MeshRenderer(const MeshRenderer& other);
 
 		void OnRender();
 

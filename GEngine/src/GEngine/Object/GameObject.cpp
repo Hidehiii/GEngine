@@ -45,6 +45,10 @@ namespace GEngine
 
 	void GameObject::OnRender()
 	{
+		if (HasComponent<ImageRenderer>())
+			GetComponent<ImageRenderer>().OnRender();
+		if (HasComponent<MeshRenderer>())
+			GetComponent<MeshRenderer>().OnRender();
 	}
 }
 
