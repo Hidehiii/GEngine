@@ -104,7 +104,12 @@ namespace GEngine
 
 	void RenderSystem::Resize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0)
+			return;
 		Graphics::SetViewport(width, height);
+		m_RenderGraph.Reset();
+		if (m_Present)
+			m_Present->Resize(width, height);
 	}
 
 	void RenderSystem::AdvanceFrame()

@@ -459,6 +459,23 @@ namespace
 		}
 		D3D12_THROW_IF_FAILED(swapChain.As(&m_SwapChain));
 	}
+	void D3D12Context::ResizeSwapChain(uint32_t width, uint32_t height)
+	{
+		if (width == 0 || height == 0 ||
+			(width == m_SwapChainWidth && height == m_SwapChainHeight))
+			return;
+
+		DXGI_SWAP_CHAIN_DESC1 description{};
+		D3D12_THROW_IF_FAILED(m_SwapChain->GetDesc1(&description));
+		m_RenderTargets.clear();
+		D3D12_THROW_IF_FAILED(m_SwapChain->ResizeBuffers(
+			description.BufferCount, width, height, description.Format, description.Flags));
+		m_SwapChainWidth = width;
+		m_SwapChainHeight = height;
+		CreateRenderTargets();
+		GE_CORE_INFO("D3D12 swap chain resized to {}x{} with {} back buffers.",
+			width, height, description.BufferCount);
+	}
 	void D3D12Context::CreateCommandAllocator()
 	{
 		m_CommandPool = D3D12CommandPool(Graphics::GetCommandBufferCount());

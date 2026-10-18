@@ -367,6 +367,24 @@ namespace GEngine
 			GraphicsPipelineStage::Graphics);
 	}
 
+	void FrameGraphTriangleLayer::OnUpdate()
+	{
+		static const bool syntheticResize = []()
+		{
+			const char* value = std::getenv("GENGINE_EXAMPLE_SYNTHETIC_RESIZE");
+			return value != nullptr && value[0] == '1' && value[1] == '\0';
+		}();
+		if (!syntheticResize || Graphics::GetGraphicsAPI() != GRAPHICS_API_DIRECT3DX12 ||
+			(m_RenderCount != 30 && m_RenderCount != 60))
+			return;
+
+		const uint32_t width = m_RenderCount == 30 ? 960 : 1280;
+		const uint32_t height = m_RenderCount == 30 ? 540 : 720;
+		WindowResizeEvent resize(width, height);
+		Application::Get().OnEvent(resize);
+		GE_INFO("Synthetic D3D12 resize requested: {}x{} after {} frames.", width, height, m_RenderCount);
+	}
+
 	void FrameGraphTriangleLayer::OnRender()
 	{
 		static const bool replaceResources = std::getenv("GENGINE_EXAMPLE_NO_REPLACEMENT") == nullptr;

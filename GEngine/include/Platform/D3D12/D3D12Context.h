@@ -33,6 +33,7 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetComputeQueue() { return m_ComputeQueue; }
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>			GetTransferQueue() { return m_TransferQueue; }
 		Microsoft::WRL::ComPtr<IDXGISwapChain4>				GetSwapChain() { return m_SwapChain; }
+		void											ResizeSwapChain(uint32_t width, uint32_t height);
 		Ref<D3D12FrameBuffer>								GetRenderTarget(int index) { return m_RenderTargets.at(index); }
 		Ref<D3D12CommandBuffer>								BeginSingleTimeGraphicsCommand();
 		void												EndSingleTimeGraphicsCommand(Ref<D3D12CommandBuffer>& commandList);

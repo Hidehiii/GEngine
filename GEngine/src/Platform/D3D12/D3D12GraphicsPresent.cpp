@@ -101,6 +101,30 @@ namespace GEngine
 		commandBuffer->ResetRecording();
 	}
 
+	void D3D12GraphicsPresent::Resize(uint32_t width, uint32_t height)
+	{
+		if (width == 0 || height == 0)
+			return;
+
+		auto* context = D3D12Context::Get();
+		DXGI_SWAP_CHAIN_DESC1 description{};
+		D3D12_THROW_IF_FAILED(context->GetSwapChain()->GetDesc1(&description));
+		if (description.Width == width && description.Height == height)
+			return;
+
+		context->WaitForFence(COMMAND_BUFFER_TYPE_GRAPHICS);
+		context->WaitForFence(COMMAND_BUFFER_TYPE_COMPUTE);
+		context->WaitForFence(COMMAND_BUFFER_TYPE_TRANSFER);
+		context->CollectDeferredReleases();
+		m_CommandBuffers.clear();
+		context->ResizeSwapChain(width, height);
+		m_CommandBuffers.resize(Graphics::GetFrameCount());
+		for (auto& commandBuffer : m_CommandBuffers)
+			commandBuffer = CreateRef<D3D12CommandBuffer>(COMMAND_BUFFER_TYPE_GRAPHICS);
+		std::fill(m_FenceValues.begin(), m_FenceValues.end(), 0);
+		m_FrameIndex = context->GetBackBufferIndex();
+	}
+
 	void D3D12GraphicsPresent::End()
 	{
 		std::dynamic_pointer_cast<D3D12CommandBuffer>(m_CommandBuffers.at(m_FrameIndex))->EndPresentRender();

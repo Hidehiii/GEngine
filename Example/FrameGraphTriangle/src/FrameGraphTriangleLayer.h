@@ -12,6 +12,7 @@ namespace GEngine
 	public:
 		FrameGraphTriangleLayer();
 		void OnAttach() override;
+		void OnUpdate() override;
 		void OnRender() override;
 		void OnPresent() override;
 

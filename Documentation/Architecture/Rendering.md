@@ -49,10 +49,24 @@ shared fence value. OpenGL executes the logical chain on one context.
 The runtime pauses rendering on a zero-size window event and updates its
 viewport on a nonzero event. OpenGL applies the viewport during presentation;
 Vulkan compares the swap-chain extent and recreates it before acquisition.
-The current D3D12 presenter has no explicit `ResizeBuffers`/back-buffer
-recreation path, so interactive D3D12 resize must not be treated as verified.
-The follow-up is tracked in
+The D3D12 presenter now handles nonzero size changes after the presentation
+graph releases its borrowed back-buffer view. It signals and waits on each
+D3D12 graphics, compute, and transfer queue fence, collects completed
+retirements, then destroys its old command lists (which retain the
+old framebuffers), then has the context release old back-buffer targets and
+call `ResizeBuffers` before rebuilding targets and presenter command lists.
+Zero-size events remain paused by the runtime. This is an exceptional
+resize-time wait, not a per-frame synchronization change. On 2026-10-18 the
+user reported no problem with the manual D3D12 resize/minimize/restore check;
+the agent did not observe the window or capture those manual logs. Detailed
+debug-output and memory evidence remains open in
 [RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
+An opt-in example event sequence requests two nonzero presentation sizes
+between frames without manipulating the native window. It exercises buffer
+recreation but cannot certify OS window events or minimize/restore.
+Debug and Release D3D12 runs logged both successful buffer recreations and
+passed both GPU readbacks after 120 frames. OpenGL and Vulkan default runs
+remained healthy; their resize paths were not exercised in this check.
 
 For lifecycle evidence, the example's timed normal-shutdown path can exercise
 frame submission and resource replacement without input automation. A

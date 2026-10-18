@@ -14,6 +14,7 @@ namespace GEngine
 		virtual uint64_t Submit() override;
 		virtual bool AcquireFrame(FrameContext& frameContext) override;
 		virtual void BeginFrame(const FrameContext& frameContext) override;
+		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual Ref<GraphicsResource> GetPresentationResource() const override;
 
 	private:

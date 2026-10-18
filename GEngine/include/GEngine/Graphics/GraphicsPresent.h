@@ -27,6 +27,7 @@ namespace GEngine
 		virtual bool AcquireFrame(FrameContext& frameContext);
 		virtual void BeginFrame(const FrameContext& frameContext);
 		virtual void EndFrame(FrameContext& frameContext);
+		virtual void Resize(uint32_t width, uint32_t height) {}
 		virtual Ref<GraphicsResource> GetPresentationResource() const { return nullptr; }
 
 		static Ref<CommandBuffer> GetCommandBuffer();

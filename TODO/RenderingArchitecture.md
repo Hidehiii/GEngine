@@ -11,6 +11,49 @@
   at the new size, zero-size/minimize skips unsafe recreation, and restore plus
   normal shutdown pass with the D3D12 debug layer. This is a discovered
   limitation, not a verified runtime failure; no window interaction was run.
+  Bounded implementation milestone (2026-10-18): route nonzero runtime resize
+  through the presenter, wait for D3D12 graphics/compute/transfer submissions,
+  release presenter command lists and old back-buffer views/resources, call
+  `ResizeBuffers`, then recreate targets and presenter command lists. Skip
+  zero-size events and leave other backends' resize behavior unchanged.
+  Acceptance for this milestone: Debug and Release engine/example builds,
+  noninteractive D3D12 startup/readback/shutdown with the debug layer, and
+  source-level lifetime review. Interactive size/minimize/restore remains open
+  until manually checked without desktop automation.
+  Implemented: `RenderSystem` forwards nonzero resize to the presenter after
+  dropping the previous presentation graph. D3D12 waits for all queues,
+  releases presenter command lists and old context targets, resizes buffers,
+  then recreates targets and command lists. Zero sizes are ignored; other
+  backends keep their existing resize handling. Visible resize/minimize/restore
+  is not yet verified.
+  The first Debug build exposed an incorrect `RenderDevice::WaitForIdle` call;
+  it was replaced with explicit waits on the context's three queue fences
+  followed by deferred-release collection. The subsequent Debug build passed.
+  Noninteractive regression extension: add an opt-in FrameGraphTriangle
+  synthetic nonzero resize sequence at frame boundaries (without changing the
+  native window). Acceptance: D3D12 Debug Layer and Release runs rebuild
+  targets twice, reach frame 120 with both GPU readbacks and normal shutdown;
+  default example behavior remains unchanged. This tests `ResizeBuffers`, not
+  actual OS resize/minimize/restore.
+  Implemented: `GENGINE_EXAMPLE_SYNTHETIC_RESIZE=1` emits 960x540 and
+  1280x720 events after frames 30 and 60 on D3D12. The context logs only
+  after successful `ResizeBuffers` and target recreation. On 2026-10-18,
+  VS2022 Debug and Release engine/example builds passed. Debug and Release
+  D3D12 120-frame runs each logged both successful resizes, passed compute and
+  texture-array readbacks at frame 119, exited 0, and had empty stderr. Debug
+  used the D3D12 layer; only the existing initial UAV-state warning appeared.
+  Default-mode 120-frame D3D12 Debug/Release runs also passed both readbacks
+  and exited 0. OpenGL Debug/Release and Vulkan shared/dedicated-queue
+  Debug/Release default-mode 120-frame runs likewise passed both readbacks,
+  exited 0, and had empty stderr; these runs did not exercise resize.
+  Remaining: manually check a real D3D12 window size change, minimize/restore,
+  visible result, and repeated-resize memory/debug output. The internal event
+  test does not satisfy those interactive acceptance checks.
+  User report (2026-10-18): the manual interactive checklist ran without a
+  problem. This is user-observed evidence, separate from the agent's synthetic
+  resize and backend runs; no manual log or memory samples were provided here.
+  Keep the detailed debug-output/memory evidence open rather than treating
+  this report as an automated verification of those measurements.
 
 - [ ] Decide whether to implement or explicitly retire the scene component
   render helpers. `ImageRenderer::OnRender` contains only a commented-out draw,

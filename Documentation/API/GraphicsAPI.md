@@ -53,6 +53,22 @@ submission; do not submit its command buffer yourself. OpenGL, Vulkan, and
 D3D12 are separate implementations of these common contracts, not three
 interchangeable native-handle types.
 
+`RenderSystem::Resize(width, height)` forwards nonzero sizes to the presenter's
+`Resize` hook after updating the viewport. D3D12 rebuilds its swap-chain
+targets and presenter command lists when dimensions change; the default hook
+does nothing for OpenGL and Vulkan, which retain their existing resize paths.
+The runtime skips zero-size events. This is a lifecycle hook, not an
+application-level resize API; the user reported the interactive D3D12 check
+passed, while detailed debug/memory measurements remain open.
+The hook does not expose D3D12 fence handles to application code.
+Example-only diagnostic: `GENGINE_EXAMPLE_SYNTHETIC_RESIZE=1` makes
+FrameGraphTriangle inject 960x540 and 1280x720 resize events after frames 30
+and 60 on D3D12. It does not change the native window, add a production
+graphics API, or prove interactive resize behavior.
+Both diagnostic D3D12 resize events completed in Debug and Release with the
+same frame-119 readbacks. The real window resize/minimize check was reported
+successful by the user, not reproduced by the agent.
+
 No public graphics signature changes for D3D12 diagnostic isolation. In a
 Debug D3D12 process, `GENGINE_D3D12_DEBUG_LAYER=1` opts into validation;
 `GENGINE_D3D12_INFO_QUEUE_LOGGER=0` separately suppresses the polling logger

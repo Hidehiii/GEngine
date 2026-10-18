@@ -54,6 +54,26 @@ numeric readback. `GENGINE_EXAMPLE_NO_REPLACEMENT` disables all these replacemen
 for baseline comparisons. Merged-version results are tracked separately in
 [cross-computer integration](../../TODO/CrossComputerIntegration.md).
 
+The D3D12 presentation path now rebuilds back buffers after a nonzero window
+resize; zero-size/minimized windows skip rendering until restored. The example
+continues to draw the offscreen graphics/compute result and presentation
+triangle, so a manual resize check should see the triangle and color/motion
+resume at the new size. Check both frame-119 readbacks, D3D12 debug output,
+repeated resize, minimize/restore, and normal shutdown. These interactive
+checks were reported successful by the user on 2026-10-18; the agent did not
+control the desktop or capture manual debug/memory measurements.
+For a noninteractive D3D12 path check, set
+`GENGINE_EXAMPLE_SYNTHETIC_RESIZE=1` with `GENGINE_EXAMPLE_FRAME_LIMIT=120`.
+After frames 30 and 60 the example sends 960x540 then 1280x720 resize
+events without resizing the native window. Expect two `D3D12 swap chain
+resized` messages, both frame-119 GPU readbacks, and normal shutdown.
+Unset the switch for ordinary runs; this does not cover actual OS resize or
+minimize/restore.
+The 2026-10-18 Debug/Release 120-frame D3D12 checks logged both recreations,
+passed both GPU readbacks and exited normally. Debug logged only the existing
+initial UAV-state warning. OpenGL and Vulkan short runs passed without
+resize, so they provide regression evidence only.
+
 A subsequent matched 60,000-frame D3D12 Debug diagnosis used
 `GENGINE_D3D12_LIFETIME_TRACE=1` and compared the Debug Layer on/off, then
 kept the layer on while setting `GENGINE_D3D12_INFO_QUEUE_LOGGER=0`. All three
