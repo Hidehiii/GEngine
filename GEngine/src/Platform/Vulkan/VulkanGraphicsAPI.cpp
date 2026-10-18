@@ -125,10 +125,11 @@ namespace GEngine
 		auto command = std::dynamic_pointer_cast<VulkanCommandBuffer>(commandBuffer);
 		auto nativeSource = std::dynamic_pointer_cast<VulkanTexture2D>(source);
 		auto nativeDestination = std::dynamic_pointer_cast<VulkanTexture2DArray>(destination);
-		if (!command || command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS || !nativeSource || !nativeDestination ||
+		if (!command || (command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS &&
+			command->GetType() != COMMAND_BUFFER_TYPE_TRANSFER) || !nativeSource || !nativeDestination ||
 			layer >= destination->GetArrayLayerCount() || source->GetWidth() != destination->GetWidth() ||
 			source->GetHeight() != destination->GetHeight() || source->GetFormat() != destination->GetFormat())
-			throw std::invalid_argument("Vulkan texture-array copy requires matching textures, a valid layer, and a graphics command buffer.");
+			throw std::invalid_argument("Vulkan texture-array copy requires matching textures, a valid layer, and a graphics or transfer command buffer.");
 		if (nativeSource->GetSubresourceLayout(0) != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
 			nativeDestination->GetSubresourceLayout(0, layer) != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 			throw std::invalid_argument("Vulkan texture-array copy requires declared copy-source and copy-destination states.");
@@ -187,6 +188,10 @@ namespace GEngine
     {
         return VulkanContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
     }
+	Ref<CommandBuffer> VulkanGraphicsAPI::GetTransferCommandBuffer()
+	{
+		return VulkanContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_TRANSFER);
+	}
 
     std::vector<std::string> VulkanGraphicsAPI::GetExtensions()
     {

@@ -133,12 +133,18 @@ namespace GEngine
 	{
 		RequireDevice().TransitionResource(commandBuffer, resource, before, after, range);
 	}
+	void GraphicsRuntime::PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		RequireDevice().PrepareTransferResource(commandBuffer, resource, before, after, range);
+	}
 
 	Graphics_API GraphicsRuntime::GetGraphicsAPI() const { return RequireDevice().GetAPI(); }
 	GraphicsCapabilities GraphicsRuntime::GetCapabilities() const { return RequireDevice().GetCapabilities(); }
 	RenderDevice& GraphicsRuntime::GetRenderDevice() { return RequireDevice(); }
 	Ref<CommandBuffer> GraphicsRuntime::GetGraphicsCommandBuffer() { return RequireDevice().GetGraphicsCommandBuffer(); }
 	Ref<CommandBuffer> GraphicsRuntime::GetComputeCommandBuffer() { return RequireDevice().GetComputeCommandBuffer(); }
+	Ref<CommandBuffer> GraphicsRuntime::GetTransferCommandBuffer() { return RequireDevice().GetTransferCommandBuffer(); }
 	uint32_t GraphicsRuntime::GetMaxTexture2DSize() { return RequireDevice().GetMaxTexture2DSize(); }
 	uint32_t GraphicsRuntime::GetMaxCombinedTextureCount() { return RequireDevice().GetMaxCombinedTextureCount(); }
 	uint32_t GraphicsRuntime::GetMaxPerStageTextureCount() { return RequireDevice().GetMaxPerStageTextureCount(); }

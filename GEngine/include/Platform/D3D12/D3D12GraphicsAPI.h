@@ -26,6 +26,7 @@ namespace GEngine
 
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() override;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;
+		virtual Ref<CommandBuffer> GetTransferCommandBuffer() override;
 
 		virtual std::vector<std::string> GetExtensions() override;
 		virtual GraphicsCapabilities GetCapabilities() const override;
@@ -60,6 +61,8 @@ namespace GEngine
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			GraphicsResourceState before, GraphicsResourceState after) override;
 		virtual void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range) override;
+		virtual void PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range) override;
 		virtual void ValidateSubresourceRange(const Ref<GraphicsResource>& resource,
 			const GraphicsSubresourceRange& range) const override;

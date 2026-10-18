@@ -29,6 +29,23 @@ separate diagnostic issue.
 
 ## Device-owned creation
 
+`Graphics::GetTransferCommandBuffer()` now acquires a transfer command buffer
+from the active backend. D3D12/Vulkan return native copy/transfer recording;
+OpenGL returns a graphics command buffer on its single context. This is a
+low-level acquisition path. `Graphics::PrepareTransferResource` is the graph's
+backend-neutral handoff hook: D3D12 prepares 2D textures/arrays in COMMON
+before COPY-list use, while Vulkan/OpenGL use their ordinary transfer-state
+barriers. The graph transfer builder is verified for the documented
+texture-to-array copy path.
+The FrameGraphTriangle transfer-copy regression now passes Debug and Release
+on OpenGL, D3D12, and Vulkan shared/dedicated queues; this verifies the
+texture-to-array copy path, not arbitrary transfer operations.
+After a D3D12 transfer copy, native texture trackers treat the resource as
+COMMON before a later graphics transition or diagnostic readback; this does
+not add a public copy-method argument.
+Vulkan's transfer acquisition now returns a reusable wrapper for the native
+transfer command pool; previously only graphics/compute wrappers were created.
+
 `Graphics::GetRenderDevice()` now creates shaders, materials, graphics/compute
 pipelines, samplers, storage buffers/images, 2D/array/cube textures and combined
 texture/sampler wrappers, in addition to render passes, framebuffers and mesh
@@ -114,7 +131,9 @@ Declare `Read`/`Write` states and ranges before `ExecuteGpu`; use versioned
 resources to order producers and consumers. See the detailed
 [render-graph API](RenderGraph.md). The common device method
 `CopyTexture2DToArrayLayer(command, source, destination, layer)` validates
-matching size/format and the destination layer. `Texture2DArray::ReadLayerData`
+matching size/format and the destination layer. D3D12 and Vulkan accept
+graphics or transfer command buffers; OpenGL uses its graphics-context
+fallback. `Texture2DArray::ReadLayerData`
 is an exact-size RGBA8 synchronous diagnostic readback, not streaming I/O.
 
 ## Device capabilities

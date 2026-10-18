@@ -131,6 +131,14 @@ namespace GEngine
 		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_GRAPHICS;
 		return PassBuilder(*this, pass);
 	}
+	RenderGraph::PassBuilder RenderGraph::BuildTransferCopyPass(std::string name, RecordCallback record)
+	{
+		if (!record) throw std::invalid_argument("Invalid transfer copy pass.");
+		const auto pass = AddPass(std::move(name), [] {});
+		m_Passes[pass].Record = std::move(record);
+		m_Passes[pass].Queue = COMMAND_BUFFER_TYPE_TRANSFER;
+		return PassBuilder(*this, pass);
+	}
 	RenderGraph::PassBuilder RenderGraph::BuildComputePass(std::string name, RecordCallback record)
 	{
 		if (!record) throw std::invalid_argument("Invalid compute pass.");
@@ -144,7 +152,8 @@ namespace GEngine
 		if (!completion) throw std::invalid_argument("Graph execution requires a completion submission.");
 		if (!m_IsCompiled && !Compile()) throw std::runtime_error("Render graph contains a dependency cycle.");
 		std::vector<Ref<CommandBuffer>> commands(m_Passes.size());
-		uint32_t graphicsCount = 0, computeCount = 0;
+		std::vector<Ref<CommandBuffer>> transitionCommands(m_Passes.size());
+		uint32_t graphicsCount = 0, computeCount = 0, transferCount = 0;
 		for (auto handle : m_ExecutionOrder)
 		{
 			const auto& pass = m_Passes[handle];
@@ -152,18 +161,37 @@ namespace GEngine
 			for (const auto& transition : pass.Transitions)
 				Graphics::GetRenderDevice().ValidateSubresourceRange(m_Resources[transition.Resource].Object, transition.Range);
 			if (pass.Queue == COMMAND_BUFFER_TYPE_GRAPHICS) ++graphicsCount;
-			else ++computeCount;
+			else if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE) ++computeCount;
+			else if (pass.Queue == COMMAND_BUFFER_TYPE_TRANSFER) ++transferCount;
+			else throw std::invalid_argument("GPU graph pass has no supported command queue.");
 			for (const auto& access : pass.ResourceAccesses)
+			{
 				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
 					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||
 						access.Usage.Stage == GraphicsPipelineStage::Transfer))
 					throw std::invalid_argument("Compute graph accesses currently require storage/UAV state.");
+				if (pass.Queue == COMMAND_BUFFER_TYPE_TRANSFER &&
+					(access.Usage.Stage != GraphicsPipelineStage::Transfer ||
+						(access.IsWrite ? access.Usage.State != ResourceState::CopyDestination :
+							access.Usage.State != ResourceState::CopySource)))
+					throw std::invalid_argument("Transfer graph accesses require transfer-stage copy states.");
+			}
 		}
-		if (graphicsCount + 1 > Graphics::GetCommandBufferCount() || computeCount > Graphics::GetCommandBufferCount())
+		// Each dedicated transfer pass needs one graphics command to establish
+		// copy states before its copy queue submission. OpenGL uses that slot for
+		// the copy itself on the single graphics context.
+		if (graphicsCount + transferCount + 1 > Graphics::GetCommandBufferCount() ||
+			computeCount > Graphics::GetCommandBufferCount() || transferCount > Graphics::GetCommandBufferCount())
 			throw std::invalid_argument("Graph exceeds the configured per-frame command-buffer capacity.");
 		for (auto handle : m_ExecutionOrder)
-			commands[handle] = m_Passes[handle].Queue == COMMAND_BUFFER_TYPE_GRAPHICS
-				? Graphics::GetGraphicsCommandBuffer() : Graphics::GetComputeCommandBuffer();
+		{
+			const auto queue = m_Passes[handle].Queue;
+			commands[handle] = queue == COMMAND_BUFFER_TYPE_GRAPHICS ? Graphics::GetGraphicsCommandBuffer() :
+				queue == COMMAND_BUFFER_TYPE_COMPUTE ? Graphics::GetComputeCommandBuffer() : Graphics::GetTransferCommandBuffer();
+			if (!commands[handle]) throw std::runtime_error("Graph backend did not provide a command buffer.");
+			if (queue == COMMAND_BUFFER_TYPE_TRANSFER && commands[handle]->GetType() == COMMAND_BUFFER_TYPE_TRANSFER)
+				transitionCommands[handle] = Graphics::GetGraphicsCommandBuffer();
+		}
 		// Register every edge before submitting its producer. Binary semaphore
 		// backends require one independently consumable signal per edge.
 		for (auto handle : m_ExecutionOrder)
@@ -172,7 +200,9 @@ namespace GEngine
 			dependencies.insert(dependencies.end(), m_Passes[handle].InferredDependencies.begin(), m_Passes[handle].InferredDependencies.end());
 			std::sort(dependencies.begin(), dependencies.end());
 			dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
-			for (auto dependency : dependencies) Graphics::SetCommandsBarrier(commands[dependency], commands[handle]);
+			auto& firstCommand = transitionCommands[handle] ? transitionCommands[handle] : commands[handle];
+			for (auto dependency : dependencies) Graphics::SetCommandsBarrier(commands[dependency], firstCommand);
+			if (transitionCommands[handle]) Graphics::SetCommandsBarrier(transitionCommands[handle], commands[handle]);
 			auto finalSubmission = completion;
 			Graphics::SetCommandsBarrier(commands[handle], finalSubmission);
 		}
@@ -180,17 +210,36 @@ namespace GEngine
 		{
 			auto& pass = m_Passes[handle];
 			auto& command = commands[handle];
-			command->Begin();
+			auto transitionCommand = transitionCommands[handle] ? transitionCommands[handle] : command;
+			transitionCommand->Begin();
 			for (const auto& transition : pass.Transitions)
 			{
 				const bool attachment = pass.Target != InvalidTarget &&
 					std::find(m_Targets[pass.Target].Colors.begin(), m_Targets[pass.Target].Colors.end(), transition.Resource) != m_Targets[pass.Target].Colors.end();
-				if (!attachment) Graphics::TransitionResource(command, m_Resources[transition.Resource].Object, transition.Before, transition.After, transition.Range);
+				if (!attachment)
+				{
+					if (transitionCommands[handle])
+						Graphics::PrepareTransferResource(transitionCommand, m_Resources[transition.Resource].Object,
+							transition.Before, transition.After, transition.Range);
+					else
+						Graphics::TransitionResource(transitionCommand, m_Resources[transition.Resource].Object,
+							transition.Before, transition.After, transition.Range);
+				}
+			}
+			if (transitionCommands[handle])
+				for (const auto& access : pass.ResourceAccesses)
+					Graphics::PrepareTransferResource(transitionCommand, m_Resources[access.Resource].Object,
+						access.Usage, access.Usage, access.Range);
+			if (transitionCommands[handle])
+			{
+				transitionCommand->End();
+				Graphics::GetRenderDevice().GetQueue(transitionCommand->GetType()).Submit(transitionCommand);
+				command->Begin();
 			}
 			if (pass.Target != InvalidTarget) command->BeginRenderPass(m_Targets[pass.Target].Object);
 			pass.Record(command);
 			command->End();
-			Graphics::GetRenderDevice().GetQueue(pass.Queue).Submit(command);
+			Graphics::GetRenderDevice().GetQueue(command->GetType()).Submit(command);
 		}
 	}
 	void RenderGraph::ValidateVersion(ResourceVersion version) const

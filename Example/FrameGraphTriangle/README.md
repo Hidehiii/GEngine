@@ -180,6 +180,28 @@ at zero, and sampled GPU memory flat while process private bytes grew; see
 Set `GENGINE_VULKAN_DEDICATED_QUEUES=1` for independent-family testing. Check the
 selected-family log: a shared family is a compatibility run, not proof of
 cross-family synchronization. The same frame-119 readback must pass.
+The array-layer pixel copy now uses `BuildTransferCopyPass`: D3D12 and Vulkan
+record it on copy/transfer commands, while OpenGL executes it on the graphics
+context. A graphics preparatory submission establishes copy states before
+dedicated transfer work. On every backend, expect the same layer-0 changed
+pixel, untouched layer-1 pixel, and normal shutdown; on D3D12/Vulkan also
+check debug/validation output for queue and layout errors. Vulkan resources
+remain concurrently shared across distinct queue families, so this does not
+test exclusive queue-family ownership transfer.
+The 2026-10-18 final VS2022 Debug and Release runs completed 120 frames on
+OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues. Each passed the
+compute and array-layer pixel readbacks and exited normally with empty stderr;
+no D3D12 Debug Layer or captured Vulkan validation errors appeared. The
+dedicated Vulkan run selected graphics=0, compute=2, transfer=5. D3D12
+synthetic-resize runs in both configurations also logged 960x540 and
+1280x720 recreations with no Debug Layer issues. This is a bounded
+noninteractive check, not proof of long-run memory stability or visible
+window behavior.
+Debug D3D12 and Vulkan dedicated 10,000-frame follow-ups also passed both
+readbacks and normal shutdown without captured validation issues. A 30-second
+Vulkan dedicated run reached 21,139 frames; private bytes at 10/20/30 seconds
+were 414,900,224 / 414,900,224 / 414,826,496. This bounded sample does not
+close longer-term memory TODOs.
 
 Startup additionally checks versioned producer/consumer ordering and stale-version
 rejection after Reset, and creates the material/pipeline through RenderDevice.

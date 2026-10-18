@@ -340,7 +340,7 @@ namespace GEngine
 			RenderGraph::ResourceState::ShaderRead);
 		const auto rangeArrayResource = m_Graph.ImportTexture("SubresourceRangeArray", m_RangeArray,
 			RenderGraph::ResourceState::ShaderRead);
-		const auto copyLayerZero = m_Graph.BuildGraphicsCopyPass("CopyArrayLayerZero",
+		const auto copyLayerZero = m_Graph.BuildTransferCopyPass("CopyArrayLayerZero",
 			[rangeSource, wrongSizeSource, wrongFormatSource, rangeArray = m_RangeArray](const Ref<CommandBuffer>& command)
 			{
 				auto& device = Graphics::GetRenderDevice();

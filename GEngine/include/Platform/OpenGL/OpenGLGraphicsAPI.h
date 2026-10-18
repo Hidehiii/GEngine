@@ -30,6 +30,7 @@ namespace GEngine
 		virtual void Initialize() override;
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() override;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() override;
+		virtual Ref<CommandBuffer> GetTransferCommandBuffer() override;
 
 		virtual std::vector<std::string> GetExtensions() override;
 		virtual GraphicsCapabilities GetCapabilities() const override;

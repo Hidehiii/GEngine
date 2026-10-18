@@ -59,6 +59,11 @@ namespace GEngine
 	{
 		ActiveRuntime().TransitionResource(commandBuffer, resource, before, after, range);
 	}
+	void Graphics::PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+		const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		ActiveRuntime().PrepareTransferResource(commandBuffer, resource, before, after, range);
+	}
 
 	void Graphics::SetReverseDepth(bool reverse)
 	{
@@ -75,6 +80,7 @@ namespace GEngine
 	RenderDevice& Graphics::GetRenderDevice() { return ActiveRuntime().GetRenderDevice(); }
 	Ref<CommandBuffer> Graphics::GetGraphicsCommandBuffer() { return ActiveRuntime().GetGraphicsCommandBuffer(); }
 	Ref<CommandBuffer> Graphics::GetComputeCommandBuffer() { return ActiveRuntime().GetComputeCommandBuffer(); }
+	Ref<CommandBuffer> Graphics::GetTransferCommandBuffer() { return ActiveRuntime().GetTransferCommandBuffer(); }
 	uint32_t Graphics::GetMaxTexture2DSize() { return ActiveRuntime().GetMaxTexture2DSize(); }
 	uint32_t Graphics::GetMaxCombinedTextureCount() { return ActiveRuntime().GetMaxCombinedTextureCount(); }
 	uint32_t Graphics::GetMaxPerStageTextureCount() { return ActiveRuntime().GetMaxPerStageTextureCount(); }

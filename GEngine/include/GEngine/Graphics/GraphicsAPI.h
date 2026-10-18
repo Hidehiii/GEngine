@@ -79,6 +79,7 @@ namespace GEngine
 
 		virtual Ref<CommandBuffer> GetGraphicsCommandBuffer() = 0;
 		virtual Ref<CommandBuffer> GetComputeCommandBuffer() = 0;
+		virtual Ref<CommandBuffer> GetTransferCommandBuffer() = 0;
 
 		// compute
 		virtual Vector3 GetMaxComputeWorkGroupCount() = 0;
@@ -105,6 +106,11 @@ namespace GEngine
 			if (!wholeRange)
 				throw std::invalid_argument("This graphics backend does not implement the requested subresource range.");
 			TransitionResource(commandBuffer, resource, before, after);
+		}
+		virtual void PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+		{
+			TransitionResource(commandBuffer, resource, before, after, range);
 		}
 
 

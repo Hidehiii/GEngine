@@ -97,10 +97,11 @@ namespace GEngine
 		auto command = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		auto nativeSource = std::dynamic_pointer_cast<D3D12Texture2D>(source);
 		auto nativeDestination = std::dynamic_pointer_cast<D3D12Texture2DArray>(destination);
-		if (!command || command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS || !nativeSource || !nativeDestination ||
+		if (!command || (command->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS &&
+			command->GetType() != COMMAND_BUFFER_TYPE_TRANSFER) || !nativeSource || !nativeDestination ||
 			layer >= destination->GetArrayLayerCount() || source->GetWidth() != destination->GetWidth() ||
 			source->GetHeight() != destination->GetHeight() || source->GetFormat() != destination->GetFormat())
-			throw std::invalid_argument("D3D12 texture-array copy requires matching textures, a valid layer, and a graphics command buffer.");
+			throw std::invalid_argument("D3D12 texture-array copy requires matching textures, a valid layer, and a graphics or transfer command buffer.");
 		auto list = command->GetCommandList();
 		D3D12_TEXTURE_COPY_LOCATION sourceLocation{};
 		sourceLocation.pResource = nativeSource->GetResource().Get();
@@ -113,6 +114,11 @@ namespace GEngine
 		list->CopyTextureRegion(&destinationLocation, 0, 0, 0, &sourceLocation, nullptr);
 		command->Retain(source);
 		command->Retain(destination);
+		if (command->GetType() == COMMAND_BUFFER_TYPE_TRANSFER)
+		{
+			nativeSource->MarkCopyQueueDecay();
+			nativeDestination->MarkCopyQueueDecay();
+		}
 	}
 	Ref<Shader> D3D12GraphicsAPI::CreateShader(const std::string& path)
 	{
@@ -157,6 +163,10 @@ namespace GEngine
     {
         return D3D12Context::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
     }
+	Ref<CommandBuffer> D3D12GraphicsAPI::GetTransferCommandBuffer()
+	{
+		return D3D12Context::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_TRANSFER);
+	}
     std::vector<std::string> D3D12GraphicsAPI::GetExtensions()
     {
 		// incomplete, need to check for features and extensions
@@ -484,6 +494,24 @@ namespace GEngine
 			return;
 		}
 		TransitionResource(commandBuffer, resource, before.State, after.State);
+	}
+	void D3D12GraphicsAPI::PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& before,
+		const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
+	{
+		if (!commandBuffer || commandBuffer->GetType() != COMMAND_BUFFER_TYPE_GRAPHICS)
+			throw std::invalid_argument("D3D12 transfer preparation requires a graphics command buffer.");
+		if (after.State != GraphicsResourceState::CopySource &&
+			after.State != GraphicsResourceState::CopyDestination)
+			throw std::invalid_argument("D3D12 transfer preparation requires a copy state.");
+		if (!std::dynamic_pointer_cast<D3D12Texture2D>(resource) &&
+			!std::dynamic_pointer_cast<D3D12Texture2DArray>(resource))
+			throw std::invalid_argument("D3D12 transfer copy currently supports 2D textures and texture arrays.");
+		// COPY command lists require a COMMON handoff from DIRECT. The copy
+		// operation implicitly promotes and then decays this resource.
+		auto common = after;
+		common.State = GraphicsResourceState::Undefined;
+		TransitionResource(commandBuffer, resource, before, common, range);
 	}
 
 	void D3D12GraphicsAPI::ValidateSubresourceRange(const Ref<GraphicsResource>& resource,

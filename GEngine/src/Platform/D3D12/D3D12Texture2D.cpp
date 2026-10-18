@@ -157,6 +157,12 @@ namespace GEngine
 		if (!barriers.empty()) commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 		m_State = dst;
 	}
+	void D3D12Texture2D::MarkCopyQueueDecay()
+	{
+		EnsureSubresourceStates();
+		std::fill(m_SubresourceStates.begin(), m_SubresourceStates.end(), D3D12_RESOURCE_STATE_COMMON);
+		m_State = D3D12_RESOURCE_STATE_COMMON;
+	}
 	void D3D12Texture2D::EnsureSubresourceStates()
 	{
 		if (!m_Texture || !m_SubresourceStates.empty()) return;

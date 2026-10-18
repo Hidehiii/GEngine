@@ -31,6 +31,8 @@ namespace GEngine
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after);
 		void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
+		void PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
 
 		Graphics_API GetGraphicsAPI() const;
 		uint8_t GetFrameCount() const { return m_FrameCount; }
@@ -42,6 +44,7 @@ namespace GEngine
 		RenderDevice& GetRenderDevice();
 		Ref<CommandBuffer> GetGraphicsCommandBuffer();
 		Ref<CommandBuffer> GetComputeCommandBuffer();
+		Ref<CommandBuffer> GetTransferCommandBuffer();
 		uint32_t GetMaxTexture2DSize();
 		uint32_t GetMaxCombinedTextureCount();
 		uint32_t GetMaxPerStageTextureCount();

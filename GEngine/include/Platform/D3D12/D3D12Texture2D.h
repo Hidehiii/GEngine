@@ -31,6 +31,7 @@ namespace GEngine
 		void TransitionResourceState(D3D12_RESOURCE_STATES dst);
 		void TransitionResourceState(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList,
 			D3D12_RESOURCE_STATES dst, const GraphicsSubresourceRange& range);
+		void MarkCopyQueueDecay();
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC GetShaderResourceViewDesc() const { return m_SRVDesc; }
 		Microsoft::WRL::ComPtr<ID3D12Resource> GetResource() const { return m_Texture; }

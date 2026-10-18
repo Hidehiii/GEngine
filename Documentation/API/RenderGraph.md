@@ -23,6 +23,22 @@ accesses on one resource are rejected. Reset invalidates previous versions.
 An initial transient version cannot be read before a producing write.
 `BuildPass` remains a CPU declaration helper. Use the GPU recording builders
 below when the graph should also own command recording and queue submission.
+`BuildTransferCopyPass(name, record)` declares a transfer-stage pass. Declare
+its reads as `CopySource` and writes as `CopyDestination`, both with
+`GraphicsPipelineStage::Transfer`. D3D12/Vulkan record the copy on their
+copy/transfer queues after a graphics-side preparation submission; OpenGL
+executes on its single graphics context. Completion joins later consumers and
+presentation. Accesses with unchanged copy state are prepared as well.
+D3D12 currently supports 2D textures and texture arrays on this path and
+rejects other resource types before copy submission. Vulkan graph resources
+use concurrent queue-family sharing; this builder does not implement
+exclusive-family ownership transfer. `BuildGraphicsCopyPass` remains available.
+FrameGraphTriangle uses the transfer builder for a real array-layer pixel
+copy, retains invalid layer/size/format checks, and passed 120-frame Debug
+and Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues.
+Debug D3D12 and Vulkan dedicated additionally completed 10,000-frame runs;
+the existing array-layer readback still passed, with no captured validation
+issues. These checks do not cover arbitrary transfer resource types.
 
 Repeated `ShaderWrite` states generate a memory dependency even without a state
 change. D3D12 emits a UAV barrier, Vulkan a shader-memory barrier, and OpenGL

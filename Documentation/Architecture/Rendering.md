@@ -14,14 +14,34 @@ ranges. D3D12 records resource/UAV barriers, Vulkan records image/buffer/memory
 barriers, and OpenGL emits memory barriers without tracking image layouts.
 
 Renderer features can use a persistent GPU graph with `BuildGraphicsPass`,
-`BuildGraphicsCopyPass`, `BuildComputePass`, graph-owned targets, and
-`ExecuteGpu`. The graph owns command Begin/End, attachment binding, dependency
-submission, and the presentation join. Versioned resources order producers,
-readers, and overwrites independently of declaration order. CPU-only
+`BuildGraphicsCopyPass`, `BuildTransferCopyPass`, `BuildComputePass`, graph-owned
+targets, and `ExecuteGpu`. The graph owns command Begin/End, attachment binding,
+dependency submission, and the presentation join. Versioned resources order
+producers, readers, and overwrites independently of declaration order. CPU-only
 `BuildPass`/`Execute` remains a compatibility path, not cross-queue GPU
-synchronization. Disjoint ranges are still conservatively ordered; a dedicated
-transfer-queue builder and exclusive Vulkan queue-family ownership are not
-implied. See [RenderGraph.md](../API/RenderGraph.md) for the exact contract.
+synchronization. Disjoint ranges are still conservatively ordered. See
+[RenderGraph.md](../API/RenderGraph.md) for the exact contract.
+
+A transfer pass validates transfer-stage CopySource/CopyDestination accesses.
+The graph records state/layout preparation on a graphics command, submits it
+before a D3D12 COPY or Vulkan transfer command, then joins the copy submission
+to consumers and presentation. OpenGL uses a graphics command buffer on its
+single context. D3D12 hands 2D textures and arrays to COPY in COMMON and
+tracks COPY-queue decay back to COMMON, including untouched array layers.
+Vulkan keeps transfer image layouts and currently uses concurrent sharing
+when queue families differ; exclusive queue-family release/acquire is a
+separate unimplemented feature. Accesses with unchanged logical copy states
+still receive backend preparation/support checks. FrameGraphTriangle exercises
+the real graphics -> transfer -> graphics texture-to-array copy. Debug and
+Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues
+passed both GPU readbacks and normal shutdown; D3D12 Debug Layer emitted no
+issues, and the dedicated Vulkan run selected graphics=0, compute=2,
+transfer=5 with no captured validation messages. Other resource types and
+long-run/interactive behavior remain unverified.
+Debug D3D12 and Vulkan dedicated also completed 10,000-frame reuse checks
+without captured validation issues. A 30-second Vulkan dedicated run stayed
+near 414.9 MB private bytes from 10 to 30 seconds; this is bounded evidence,
+not a leak-freedom claim.
 
 Transient `Texture2D`, texture-array, storage-buffer, and storage-image
 descriptions are allocated at graph compilation, exposed during pass execution,

@@ -24,6 +24,7 @@ namespace GEngine
 		ID3D12Resource* GetResource() const { return m_Texture.Get(); }
 		void TransitionResourceState(const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& commandList,
 			D3D12_RESOURCE_STATES destination, const GraphicsSubresourceRange& range);
+		void MarkCopyQueueDecay();
 		const D3D12_SHADER_RESOURCE_VIEW_DESC& GetShaderResourceViewDesc() const { return m_SrvDesc; }
 
 	private:

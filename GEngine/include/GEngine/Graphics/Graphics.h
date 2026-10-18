@@ -21,6 +21,8 @@ namespace GEngine
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after);
 		static void TransitionResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
+		static void PrepareTransferResource(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& before, const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range);
 		static void SetReverseDepth(bool reverse);
 
 		static Graphics_API			GetGraphicsAPI();
@@ -35,6 +37,7 @@ namespace GEngine
 
 		static Ref<CommandBuffer>	GetGraphicsCommandBuffer();
 		static Ref<CommandBuffer>	GetComputeCommandBuffer();
+		static Ref<CommandBuffer>	GetTransferCommandBuffer();
 
 		static uint32_t GetMaxTexture2DSize();
 		static uint32_t GetMaxCombinedTextureCount();

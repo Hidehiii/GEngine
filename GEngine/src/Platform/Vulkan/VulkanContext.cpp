@@ -824,6 +824,8 @@ namespace GEngine
                 COMMAND_BUFFER_TYPE_GRAPHICS));
             m_ComputeCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetComputeCommandBuffer(i),
                 COMMAND_BUFFER_TYPE_COMPUTE));
+			m_TransferCommandBuffers.push_back(VulkanCommandBuffer::Create(m_CommandBufferPool.GetTransferCommandBuffer(i),
+				COMMAND_BUFFER_TYPE_TRANSFER));
         }
     }
 	void VulkanContext::CreateDescriptor()

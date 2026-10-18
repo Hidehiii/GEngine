@@ -144,6 +144,11 @@ namespace GEngine
 	{
 		return OpenGLContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_COMPUTE);
 	}
+	Ref<CommandBuffer> OpenGLGraphicsAPI::GetTransferCommandBuffer()
+	{
+		// OpenGL records and executes copies on its single graphics context.
+		return OpenGLContext::Get()->GetCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
+	}
 	std::vector<std::string> OpenGLGraphicsAPI::GetExtensions()
 	{
 		std::vector<std::string> ext;

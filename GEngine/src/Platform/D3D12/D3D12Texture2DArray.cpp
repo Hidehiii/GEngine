@@ -59,6 +59,10 @@ namespace GEngine
 		if (!barriers.empty()) commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 	}
 
+	void D3D12Texture2DArray::MarkCopyQueueDecay()
+	{
+		std::fill(m_SubresourceStates.begin(), m_SubresourceStates.end(), D3D12_RESOURCE_STATE_COMMON);
+	}
 	bool D3D12Texture2DArray::operator==(const Texture2DArray& other) const
 	{
 		auto d3dOther = dynamic_cast<const D3D12Texture2DArray*>(&other);
