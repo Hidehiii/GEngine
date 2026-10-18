@@ -8,12 +8,18 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/fmt/ostr.h"
 
+#ifndef GE_ENABLE_LOCAL_LOG_SAVE
+#define GE_ENABLE_LOCAL_LOG_SAVE 1
+#endif
+
 namespace GEngine
 {
 	class GENGINE_API Log
 	{
 	public:
 		static void Init();
+		static void InitFileLogging();
+		static void Shutdown();
 
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
@@ -21,6 +27,7 @@ namespace GEngine
 	private:
 		static std::shared_ptr<spdlog::logger> s_CoreLogger;
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
+		static bool s_FileLoggingInitialized;
 	};
 }
 

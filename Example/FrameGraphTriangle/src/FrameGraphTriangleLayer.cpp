@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <chrono>
+#include <thread>
 
 namespace GEngine
 {
@@ -369,6 +370,25 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnUpdate()
 	{
+		static const bool logStress = []()
+		{
+			const char* value = std::getenv("GENGINE_EXAMPLE_LOG_STRESS");
+			return value && value[0] == '1' && value[1] == '\0';
+		}();
+		if (logStress && m_RenderCount == 30)
+		{
+			GE_INFO("Runtime log stress begins after {} frames.", m_RenderCount);
+			auto writeRecords = [](int worker)
+			{
+				for (int record = 0; record < 40; ++record)
+					GE_CORE_INFO("Runtime log stress worker {} record {}.", worker, record);
+			};
+			std::thread first(writeRecords, 1);
+			std::thread second(writeRecords, 2);
+			first.join();
+			second.join();
+			GE_INFO("Runtime log stress finished.");
+		}
 		static const bool syntheticResize = []()
 		{
 			const char* value = std::getenv("GENGINE_EXAMPLE_SYNTHETIC_RESIZE");

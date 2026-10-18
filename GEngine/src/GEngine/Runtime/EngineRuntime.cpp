@@ -23,6 +23,7 @@ namespace GEngine
 		Log::Init();
 		if (!m_Specification.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
+		Log::InitFileLogging();
 
 		m_Config = CreateRef<Config>();
 		Serializer::Deserialize(m_ConfigPath, m_Config);
@@ -81,6 +82,7 @@ namespace GEngine
 			m_RenderSystem.reset();
 		}
 		m_Window.reset();
+		Log::Shutdown();
 	}
 
 	void EngineRuntime::Run()

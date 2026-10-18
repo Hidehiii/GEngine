@@ -16,6 +16,22 @@ LayerRender (graph: read color -> compute color -> read updated color)
 ```
 
 Run the project after selecting the desired `GraphicsAPI` in `Config.ini`.
+The runtime keeps stdout logging and writes core/application records to
+`Logs/GEngine.log` under this example's working directory. Set
+`GENGINE_LOG_LEVEL=info` to suppress trace/debug records or
+`GENGINE_LOG_FILE` to choose another path. File records contain timestamp,
+level, logger name, and message; the default rotates at 5 MiB and retains
+three old files. `GENGINE_LOG_MAX_BYTES` and `GENGINE_LOG_MAX_FILES` override
+those limits. To turn off local saving at compile time, build **GEngine** with
+`GE_ENABLE_LOCAL_LOG_SAVE=0`; this retains console messages and level filtering.
+Setting the macro only in this example cannot change an already-built engine.
+`GENGINE_EXAMPLE_LOG_STRESS=1` emits core records from two worker
+threads at frame 30, bracketed by application records. With
+`GENGINE_LOG_MAX_BYTES=1024`, a run of at least 31 frames exercises rotation;
+inspect the active and `.1.log` files while the process runs and after normal
+shutdown. This diagnostic is opt-in; ordinary frames do not generate it.
+An invalid or unwritable log path should warn on stdout without stopping the
+example. This check does not require Visual Studio or desktop interaction.
 At frame 119 a one-time synchronous readback verifies the compute-written color
 against an expected value different from the original CPU value. Success logs
 `GPU graph compute readback passed after 119 frames.` A mismatch throws before

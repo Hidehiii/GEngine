@@ -31,7 +31,8 @@ adapter owns the native window and feeds events/input into the portable
 
 On shutdown, the runtime saves configuration, shuts down enabled scripting and
 PhysX, waits for GPU work, clears layers (including ImGui), shuts down the
-render system and shared graphics caches, then destroys the window/context.
+render system and shared graphics caches, destroys the window/context, and
+flushes and closes its loggers.
 Layer-owned GPU resources must be destroyed before the graphics context. See
 [rendering architecture](Rendering.md) for submission and resource retirement.
 
@@ -54,3 +55,34 @@ layer or editor drives its scenes separately.
 deletes them on clear. `Core` supplies config, logging, input, time, UUID,
 CPU-buffer, AABB, and thread helpers; `Events` provides typed application,
 keyboard, and mouse events. These facilities do not own the graphics device.
+
+## Runtime logging
+
+`GE_ENABLE_LOCAL_LOG_SAVE` defaults to 1 in the public log header. When the
+engine is compiled with 0, `Log::InitFileLogging` skips directory creation and
+the rotating file sink. Console logging and level filtering remain active;
+shutdown still flushes both loggers. The value must be set for the engine
+compilation, not only for a separately compiled client application.
+`Tests/LocalLogSave.cpp` directly compiles the log implementation under each
+switch value to check this ownership boundary.
+Debug and Release focused runs passed for both values; the full example was
+rebuilt and run only with the default enabled value.
+
+`Log::Init` creates stdout-color spdlog loggers named `GEngine` and `APP`
+before the optional working-directory change, so early diagnostics reach
+stdout. `EngineRuntime` then calls `Log::InitFileLogging`: both loggers share
+one synchronous, thread-safe rotating sink. The default destination is
+`Logs/GEngine.log` relative to the resolved working directory, with 5 MiB per
+file and three rotated files. File records contain date/time, level, logger
+name, and message. Info and higher levels flush promptly; normal runtime
+shutdown flushes both loggers after graphics and window teardown. If opening
+the file fails, the sink reports a warning and stdout remains available.
+The example's optional `GENGINE_EXAMPLE_LOG_STRESS=1` workload writes from two
+CPU workers at frame 30, allowing rotation/concurrency checks without normal
+per-frame spam. Its verification status is tracked in
+[RuntimeLogging.md](../../TODO/RuntimeLogging.md). A live in-application
+viewer is still only a possible follow-up.
+Debug D3D12 confirmed the file was readable before process exit, concurrent
+writes, rotation, and console fallback. Release D3D12, OpenGL, and Vulkan
+completed 120-frame noninteractive runs with runtime logs and GPU readback;
+visible presentation and long-run memory stability remain untested.

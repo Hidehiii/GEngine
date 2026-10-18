@@ -21,3 +21,13 @@ For Release, replace `/MDd /D_DEBUG /DGE_DEBUG` with
 Expected result: compiler and executable exit code 0. Existing vendored fmt
 deprecation warnings are distinct from missing-type errors. This focused check
 does not replace an engine/example build or the three-backend rendering tests.
+
+## Local log save build switch
+
+`LocalLogSave.cpp` links the engine's `Log.cpp` directly and verifies that
+`GE_ENABLE_LOCAL_LOG_SAVE=1` creates the file and `=0` keeps console logging
+without creating it. Run each binary from a separate empty working directory;
+the test writes `Logs/GEngine.log` only in the enabled case. Compile with the
+same Debug/Release runtime flags as above, adding `GEngine/src/GEngine/Core/Log.cpp`,
+`/I GEngine/src`, `/DGE_BUILD_DLL`, and `/DGE_ENABLE_LOCAL_LOG_SAVE=0` or `=1`.
+This is a focused branch check, not a substitute for building the full engine.

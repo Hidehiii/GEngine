@@ -60,3 +60,4 @@ GEngine-Editor/GEngineProfile-StartUp.json
 *.compute.d3dx12
 
 **/cache/
+**/Logs/GEngine*.log
