@@ -9,6 +9,7 @@ Each function has a focused page:
   physics, scripting, assets, tools, ImGui, math, utilities, and diagnostics.
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
+- [Build system](BuildSystem.md): project generation and build output boundaries.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and

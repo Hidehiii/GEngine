@@ -57,4 +57,6 @@ real resize remains a manual check. The final Debug and Release runs on D3D12,
 OpenGL, and Vulkan each completed
 120 frames with empty stderr and replacement/exit logs. This confirms command
 recording and shutdown, not visible output, real window resize, or long-run
-memory stability.
+memory stability. The user subsequently reported no problem with the manual
+test; this is user-observed evidence, not an agent-captured per-backend log or
+long-run memory measurement.

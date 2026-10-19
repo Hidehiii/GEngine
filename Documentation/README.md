@@ -18,7 +18,7 @@ This directory documents the engine as it exists in the current source tree. It 
 
 ## Getting started
 
-1. Generate the Visual Studio solution with `Scripts/GenerateProjects.bat`; the bundled Premake supports VS2026, VS2022 and VS2019. See [Build and run](Guides/BuildAndRun.md) for usage.
+1. Generate a Visual Studio solution with `BuildScripts/GenerateProjectsPremake.bat` (VS2026, VS2022, VS2019) or `BuildScripts/GenerateProjectsCMake.bat` (VS2022, VS2019). See [Build and run](Guides/BuildAndRun.md) for usage and parity limits.
 2. Build one configuration at a time. Do not start a second build for the same configuration and output directory: MSVC's shared precompiled-header file cannot be written concurrently.
 3. Build and run `Example/Triangle` to validate the basic graphics path.
 

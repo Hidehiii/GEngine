@@ -14,6 +14,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | Graphics device, resources, queues, pipelines, compute, presentation | [Graphics and compute API](GraphicsAPI.md) |
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
+| Contributor-facing project generation | [Build entry points](BuildSystem.md) |
 
 `<GEngine.h>` aggregates common application, scene, math, graphics, and
 selected tool headers; include a specific public header for `RenderGraph`,

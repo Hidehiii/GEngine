@@ -93,6 +93,10 @@
   A scan found no validation errors in their captured stdout. Manual visible
   color/geometry, real resize/minimize/restore, and longer-run memory behavior
   remain unverified. Keep this item open until those checks are reported.
+  User report (2026-10-18): the requested manual test had no problem. This is
+  user-observed evidence for the visible/interactive checklist, without
+  per-backend logs or long-run memory measurements. Keep the item open for
+  those detailed backend and memory checks.
 
 ## Integration status (2026-09-19)
 

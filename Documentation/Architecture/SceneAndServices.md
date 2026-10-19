@@ -51,7 +51,9 @@ without a real window resize can keep acquisition from progressing. After the
 one-shot fix, Debug and Release runs on D3D12, OpenGL, and Vulkan
 each reached 120 frames and exited 0. D3D12 alone performed two synthetic
 resizes per run. Visible pixels, real resize, and long-run memory remain
-unverified in the [rendering TODO](../../TODO/RenderingArchitecture.md).
+unverified by the agent in the [rendering TODO](../../TODO/RenderingArchitecture.md).
+The user subsequently reported that the requested manual test had no problem;
+per-backend output and long-run memory measurements were not supplied.
 
 ## Assets, tools, UI, and diagnostics
 

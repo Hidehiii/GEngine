@@ -1,6 +1,6 @@
 # Runtime logging
 
-- [ ] Add a compile-time macro to control local log-file saving without
+- [x] Add a compile-time macro to control local log-file saving without
   disabling console logging. Scope: `GE_ENABLE_LOCAL_LOG_SAVE` defaults to 1
   in the public log header; engine builds with 0 skip file/directory creation
   but keep core/client console logging and runtime level filtering. Existing
@@ -18,10 +18,12 @@
   runs created `Logs/GEngine.log`. A hidden 120-frame Release D3D12 example
   run with the default macro exited 0, wrote the file, and logged frame-119
   GPU readback and normal shutdown. The disabled variant was verified by the
-  focused regression, not a full backend/example rebuild. Remaining acceptance
-  check: build and run the complete example with the engine itself compiled
-  with macro 0, in both Debug and Release. OpenGL and Vulkan were not rerun for
-  this macro change.
+  focused regression, not a full backend/example rebuild. User report
+  (2026-10-18): the requested follow-up test is done. This closes the item on
+  user acceptance; no per-configuration build logs, console captures, or
+  file-absence measurements were supplied to the agent, so the full macro-off
+  example run remains user-reported rather than agent-verified. OpenGL and
+  Vulkan were not rerun for this macro change.
 
 - [x] Make engine and application logs useful while an application is running,
   without depending on Visual Studio's Output window.

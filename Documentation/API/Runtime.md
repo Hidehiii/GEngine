@@ -82,7 +82,9 @@ The focused `Tests/LocalLogSave.cpp` check can confirm both build-switch
 branches without launching a graphics backend.
 Debug and Release checks passed for both macro values; the full D3D12 example
 was rebuilt and run with the default enabled value. A full backend build with
-the disabled value was not performed.
+the disabled value was not performed by the agent. The user later reported the
+follow-up test done; no per-configuration output was supplied. This is a
+verification-status update, not an API change.
 
 Optional process environment overrides: `GENGINE_LOG_FILE` sets the path
 (relative paths use the resolved working directory); `GENGINE_LOG_LEVEL` accepts

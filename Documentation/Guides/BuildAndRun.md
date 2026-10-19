@@ -5,8 +5,9 @@
 Development is currently Windows-first. Install the following before generating the solution:
 
 - Visual Studio 2026, 2022 or 2019 with Desktop development with C++ and the Windows SDK.
-- Premake 5.0.0-beta8 is bundled under `vender/bin/premake` and supports
+- Premake 5.0.0-beta8 is bundled as `BuildScripts/Premake/premake5.exe` and supports
   VS2026, VS2022 and VS2019 project generation.
+- CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
 - The repository includes the Vulkan headers, loader library and shader tools
   under `GEngine/vendor/VulkanSDK`. Set `VULKAN_SDK` only to use another
   installed SDK.
@@ -19,7 +20,7 @@ The repository vendors most runtime libraries under `GEngine/vendor`; do not rep
 From the repository root, run:
 
 ```bat
-Scripts\GenerateProjects.bat
+BuildScripts\GenerateProjectsPremake.bat
 ```
 
 Choose `1` for VS2022, `2` for VS2019, or `3` for VS2026. The script also
@@ -29,7 +30,7 @@ and can be launched from any working directory.
 To generate for VS2026 using the bundled executable:
 
 ```bat
-Scripts\GenerateProjects.bat vs2026
+BuildScripts\GenerateProjectsPremake.bat vs2026
 ```
 
 Optionally, set `PREMAKE_EXE` to the full path of another compatible executable.
@@ -47,6 +48,29 @@ Premake beta8 reports deprecation warnings for existing `flags` settings
 generation failures; migrating those settings is outside this binary upgrade.
 
 This regenerates the Visual Studio solution and project files from the Premake scripts. VS2026 emits `GEngine.slnx`; VS2022 and VS2019 emit `GEngine.sln`. Changes intended to survive regeneration belong in `premake5.lua` files, not only in `.vcxproj` files.
+
+For the alternative CMake project (VS2022 by default), run:
+
+```bat
+BuildScripts\GenerateProjectsCMake.bat vs2022
+cmake --build build\cmake-vs2022 --config Debug --target FrameGraphTriangle --parallel 1
+```
+
+`vs2019` is also accepted. Set `CMAKE_EXE` to an alternate CMake executable
+if needed. The source definitions are under `BuildScripts/CMake/`; generated
+projects and objects are under `build/cmake-<version>/`, separate from Premake
+outputs. CMake produces the engine DLL and example executables under that
+build tree's `bin/<configuration>/`. Run FrameGraphTriangle from
+`Example/FrameGraphTriangle` so its `Config.ini` and shader assets resolve.
+The CMake project covers the engine, vendored C++ libraries, seven C++ examples,
+Sandbox, and Editor. `GEngine-ScriptCore` (C#) remains Premake-only; a CMake
+build does not generate that assembly. CMake currently requires Windows/MSVC
+and does not offer a VS2026 generator entry in these launchers. Premake's
+`Dist` configuration is not exposed by the CMake launcher. The same
+`VULKAN_SDK` override or bundled SDK fallback is used by both systems.
+VS2022 CMake Debug/Release GEngine and FrameGraphTriangle builds passed on
+2026-10-19; D3D12 and dedicated Vulkan 120-frame runs passed all three graph
+readbacks. VS2019 and the other CMake application targets have not been built.
 
 Workspace Release and Dist configurations define `NDEBUG`; Debug defines
 `_DEBUG`. PhysX requires exactly one of these definitions. Regenerate existing

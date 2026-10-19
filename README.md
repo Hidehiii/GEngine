@@ -6,14 +6,13 @@ Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics 
 
 ### Dependencies
 ##### [VulkanSDK](https://www.lunarg.com/vulkan-sdk/)
-Version: windows x64 
-
-All components should be installed.
+The repository includes Windows x64 Vulkan headers, libraries, and shader
+tools. Set `VULKAN_SDK` only to override the bundled SDK.
 ##### [.Net Framework](https://dotnet.microsoft.com/zh-cn/download/visual-studio-sdks?cid=getdotnetsdk)
-Version: .Net Framewor 4.7.2 Developer Pack
+Version: .NET Framework 4.7.2 Developer Pack (for the C# ScriptCore project).
 
 ### Start
-Run [Scripts/GenerateProjects.bat](Scripts/GenerateProjects.bat) and select VS2022, VS2019, or VS2026. The bundled Premake 5.0.0-beta8 supports all three options; see [Build and run](Documentation/Guides/BuildAndRun.md). Open the generated solution with Visual Studio and build the desired example.
+Generate projects with [Premake](BuildScripts/GenerateProjectsPremake.bat) (VS2022, VS2019, or VS2026) or [CMake](BuildScripts/GenerateProjectsCMake.bat) (VS2022 or VS2019). See [Build and run](Documentation/Guides/BuildAndRun.md) for commands, target coverage, and output paths.
 
 ### Example project
 You could find some example projects in the Example folder, and you could run them after building the engine core and example project.

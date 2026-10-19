@@ -67,6 +67,9 @@ compilation, not only for a separately compiled client application.
 switch value to check this ownership boundary.
 Debug and Release focused runs passed for both values; the full example was
 rebuilt and run only with the default enabled value.
+The user subsequently reported completing the macro-off follow-up test; its
+per-configuration output was not captured by the agent. This changes the
+verification status, not the runtime architecture.
 
 `Log::Init` creates stdout-color spdlog loggers named `GEngine` and `APP`
 before the optional working-directory change, so early diagnostics reach
