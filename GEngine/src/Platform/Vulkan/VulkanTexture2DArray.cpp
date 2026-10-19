@@ -8,6 +8,7 @@ namespace GEngine
 {
     VulkanTexture2DArray::VulkanTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format)
     {
+		m_ExclusiveSharing = Utils::UseExclusiveTransferImageSharing();
 		m_Height    = height;
 		m_Width     = width;
 		m_Format    = format;
@@ -29,7 +30,7 @@ namespace GEngine
 			0,
 			m_MipLevels,
 			m_Image,
-			m_ImageMemory);
+			m_ImageMemory, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D_ARRAY, m_Layers, m_AspectFlag, m_MipLevels, m_ImageView);
 		CreateSampler();
     }
@@ -217,6 +218,21 @@ namespace GEngine
 	{
 		m_SubresourceLayouts.assign(static_cast<size_t>(m_MipLevels) * m_Layers, layout);
 		m_ImageLayout = layout;
+	}
+
+	uint8_t VulkanTexture2DArray::GetQueueOwnership(uint32_t mipLevel, uint32_t arrayLayer) const
+	{
+		if (mipLevel >= m_MipLevels || arrayLayer >= m_Layers)
+			throw std::out_of_range("Vulkan texture-array subresource is out of bounds.");
+		return m_QueueOwnership.empty() ? 0 : m_QueueOwnership[static_cast<size_t>(arrayLayer) * m_MipLevels + mipLevel];
+	}
+
+	void VulkanTexture2DArray::SetQueueOwnership(uint32_t mipLevel, uint32_t arrayLayer, uint8_t ownership)
+	{
+		if (mipLevel >= m_MipLevels || arrayLayer >= m_Layers)
+			throw std::out_of_range("Vulkan texture-array subresource is out of bounds.");
+		if (m_QueueOwnership.empty()) m_QueueOwnership.assign(static_cast<size_t>(m_MipLevels) * m_Layers, 0);
+		m_QueueOwnership[static_cast<size_t>(arrayLayer) * m_MipLevels + mipLevel] = ownership;
 	}
 	void VulkanTexture2DArray::CreateSampler()
 	{

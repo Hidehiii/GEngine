@@ -125,6 +125,14 @@ through command-buffer reset. It does not change `GraphicsPresent` or
 
 For scheduled GPU work, `RenderGraph` imports resources or declares transient
 texture-array, 2D texture, storage-buffer, and storage-image descriptions.
+`RenderDevice::ReleaseTransferOwnership` and `AcquireTransferOwnership` are
+graph-facing hooks for native queue-family ownership. Vulkan implements them
+for opt-in exclusive `Texture2D`/`Texture2DArray` subresource ranges;
+single-family and concurrent resources require no ownership barrier. Other
+backends have no Vulkan-style queue families, so these hooks do no extra work.
+Application code should declare graph accesses rather than call the hooks.
+`GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1` enables the opt-in image path;
+general exclusive buffers and compute handoffs remain unsupported.
 `BuildGraphicsPass` records into a target, `BuildGraphicsCopyPass` records a
 targetless graphics-queue copy, and `BuildComputePass` records dispatch.
 Declare `Read`/`Write` states and ranges before `ExecuteGpu`; use versioned

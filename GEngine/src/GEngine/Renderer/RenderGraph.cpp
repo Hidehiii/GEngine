@@ -212,6 +212,9 @@ namespace GEngine
 			auto& command = commands[handle];
 			auto transitionCommand = transitionCommands[handle] ? transitionCommands[handle] : command;
 			transitionCommand->Begin();
+			for (const auto& access : pass.ResourceAccesses)
+				Graphics::GetRenderDevice().AcquireTransferOwnership(transitionCommand,
+					m_Resources[access.Resource].Object, access.Usage, access.Range);
 			for (const auto& transition : pass.Transitions)
 			{
 				const bool attachment = pass.Target != InvalidTarget &&
@@ -232,12 +235,22 @@ namespace GEngine
 						access.Usage, access.Usage, access.Range);
 			if (transitionCommands[handle])
 			{
+				for (const auto& access : pass.ResourceAccesses)
+					Graphics::GetRenderDevice().ReleaseTransferOwnership(transitionCommand,
+						m_Resources[access.Resource].Object, access.Usage, access.Range);
 				transitionCommand->End();
 				Graphics::GetRenderDevice().GetQueue(transitionCommand->GetType()).Submit(transitionCommand);
 				command->Begin();
+				for (const auto& access : pass.ResourceAccesses)
+					Graphics::GetRenderDevice().AcquireTransferOwnership(command,
+						m_Resources[access.Resource].Object, access.Usage, access.Range);
 			}
 			if (pass.Target != InvalidTarget) command->BeginRenderPass(m_Targets[pass.Target].Object);
 			pass.Record(command);
+			if (transitionCommands[handle])
+				for (const auto& access : pass.ResourceAccesses)
+					Graphics::GetRenderDevice().ReleaseTransferOwnership(command,
+						m_Resources[access.Resource].Object, access.Usage, access.Range);
 			command->End();
 			Graphics::GetRenderDevice().GetQueue(command->GetType()).Submit(command);
 		}

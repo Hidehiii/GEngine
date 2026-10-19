@@ -750,6 +750,38 @@ submission and deterministic renderer shutdown.
       barriers on the correct queues around graph dependencies; reject
       unsupported sharing modes explicitly; exercise graphics -> transfer ->
       graphics on separate families with validation and pixel readback.
+      Current milestone (2026-10-19): implement an opt-in exclusive image
+      path for graph transfer copies while preserving concurrent sharing by
+      default. Acceptance: graphics-prepared copy ranges release to transfer,
+      transfer acquires before copying and releases afterward, and the next
+      graphics reader acquires them. Validate matching barriers and semaphores
+      with the existing array-layer readback on distinct queue families.
+      Buffers and general graphics/compute handoffs remain open until their
+      own ownership and lifetime paths are covered.
+      Implemented: `GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1` creates
+      Vulkan Texture2D/Texture2DArray images with exclusive sharing. The graph
+      tracks each mip/layer's graphics -> transfer -> graphics ownership,
+      records matching release/acquire barriers around existing semaphore
+      dependencies, and rejects unsupported exclusive-image compute access.
+      Normal Vulkan image sharing remains concurrent. Source uploads and
+      array initialization are graphics-queue work before graph execution.
+      Verification (2026-10-19): VS2022 Debug and Release engine/example
+      builds passed. OpenGL, D3D12, Vulkan shared (normal and opt-in), and
+      Vulkan dedicated (normal and opt-in) each completed 120 frames in both
+      configurations; compute and array-layer readbacks passed, exit was 0,
+      stderr empty, and no captured validation/Debug Layer issues appeared.
+      Dedicated Vulkan selected graphics=0, compute=2, transfer=5. Final
+      Debug dedicated opt-in run completed 10,000 frames with both readbacks,
+      normal shutdown, and zero captured validation issues.
+      A 32-second Debug dedicated opt-in run completed 19,603 frames; private
+      bytes at 10/20/30 seconds were 387,371,008 / 387,371,008 / 387,330,048,
+      with both readbacks, normal shutdown, and no captured validation issue.
+      This bounded sample does not prove indefinite memory stability.
+      These runs validate the example's texture-to-array ranges only, not
+      arbitrary exclusive resources, external queue users, visible output,
+      or indefinite memory
+      stability. Keep the overall TODO open for exclusive buffers and general
+      compute/graphics ownership, with further examples and validation.
 - [ ] Add resource pooling and aliasing only after lifetime tracking is tested.
       Prerequisite: complete the manual visible-output/resize/minimize checks
       recorded in [CrossComputerIntegration.md](CrossComputerIntegration.md),

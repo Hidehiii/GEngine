@@ -39,6 +39,11 @@ namespace GEngine
 		virtual Ref<Texture2DArray> CreateTexture2DArray(uint32_t width, uint32_t height, uint32_t layers, RenderImage2DFormat format) = 0;
 		virtual void CopyTexture2DToArrayLayer(const Ref<CommandBuffer>& commandBuffer,
 			const Ref<Texture2D>& source, const Ref<Texture2DArray>& destination, uint32_t layer) = 0;
+		// Queue-family ownership applies only to backends with distinct native families.
+		virtual void ReleaseTransferOwnership(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
+			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
+		virtual void AcquireTransferOwnership(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
+			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
 		virtual Ref<Shader> CreateShader(const std::string& path) = 0;
 		virtual Ref<Material> CreateMaterial(const Ref<Shader>& shader, const std::string& name) = 0;
 		virtual Ref<GraphicsPipeline> CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices) = 0;

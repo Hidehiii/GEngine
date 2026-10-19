@@ -63,6 +63,10 @@ namespace GEngine
 		virtual uint32_t GetMaxComputeWorkGroupInvocations() override;
 
 		virtual void SetCommandsBarrier(Ref<CommandBuffer>& first, Ref<CommandBuffer>& second) override;
+		void ReleaseTransferOwnership(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
+		void AcquireTransferOwnership(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
 		virtual void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer) override;
 		void SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
 			VkSemaphore presentSemaphore, VkFence completionFence);

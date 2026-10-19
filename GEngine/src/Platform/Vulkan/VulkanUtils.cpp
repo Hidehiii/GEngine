@@ -1,12 +1,18 @@
 #include "GEpch.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include <cstdlib>
 #include <utility>
 
 namespace GEngine
 {
     namespace Utils
     {
+		bool UseExclusiveTransferImageSharing()
+		{
+			const char* value = std::getenv("GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES");
+			return value != nullptr && value[0] == '1' && value[1] == '\0';
+		}
 		static std::vector<uint32_t> SharedQueueFamilies()
 		{
 			const auto queues = VulkanContext::Get()->GetQueueFamily();
@@ -61,7 +67,7 @@ namespace GEngine
 
 		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, 
 			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, 
-			uint32_t arrayLayers, VkImageCreateFlags flags, uint32_t mipLevel, VkImage& outImage, VkDeviceMemory& imageMemory)
+			uint32_t arrayLayers, VkImageCreateFlags flags, uint32_t mipLevel, VkImage& outImage, VkDeviceMemory& imageMemory, bool exclusiveSharing)
 		{
 			VkImageCreateInfo		imageInfo{};
 			imageInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -78,7 +84,7 @@ namespace GEngine
 			imageInfo.samples		= sample;
 			imageInfo.sharingMode	= VK_SHARING_MODE_EXCLUSIVE;
 			const auto families = SharedQueueFamilies();
-			if (families.size() > 1)
+			if (!exclusiveSharing && families.size() > 1)
 			{
 				imageInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
 				imageInfo.queueFamilyIndexCount = static_cast<uint32_t>(families.size());

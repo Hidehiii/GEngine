@@ -186,8 +186,19 @@ context. A graphics preparatory submission establishes copy states before
 dedicated transfer work. On every backend, expect the same layer-0 changed
 pixel, untouched layer-1 pixel, and normal shutdown; on D3D12/Vulkan also
 check debug/validation output for queue and layout errors. Vulkan resources
-remain concurrently shared across distinct queue families, so this does not
-test exclusive queue-family ownership transfer.
+remain concurrently shared by default across distinct queue families.
+To exercise the new opt-in Vulkan image ownership path, also set
+`GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1` with dedicated queues. The graph
+should release/acquire layer 0 and the source image around the transfer copy,
+then reacquire them on graphics before the readback. Expect both frame-119
+readbacks, normal shutdown, and no ownership/layout validation messages.
+The 2026-10-19 Debug and Release 120-frame dedicated-family runs passed both
+readbacks and exited normally with no captured validation issues; a final
+Debug 10,000-frame opt-in run did the same. Do not treat this as a general
+exclusive-sharing guarantee for buffers or compute image handoffs.
+A 32-second Debug opt-in run completed 19,603 frames; private bytes at
+10/20/30 seconds were 387,371,008 / 387,371,008 / 387,330,048. This bounded
+sample does not prove indefinite memory stability.
 The 2026-10-18 final VS2022 Debug and Release runs completed 120 frames on
 OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues. Each passed the
 compute and array-layer pixel readbacks and exited normally with empty stderr;

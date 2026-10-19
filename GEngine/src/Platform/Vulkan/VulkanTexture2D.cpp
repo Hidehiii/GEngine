@@ -18,6 +18,7 @@ namespace GEngine
             data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         }
         GE_CORE_ASSERT(data, "Failed to load image!");
+        m_ExclusiveSharing = Utils::UseExclusiveTransferImageSharing();
         m_Width         = width;
         m_Height        = height;
         if (channels == 4)
@@ -45,7 +46,7 @@ namespace GEngine
                             0,
                             m_MipLevels,
 			                m_Image,
-			                m_ImageMemory);
+		                m_ImageMemory, m_ExclusiveSharing);
         Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
 
@@ -58,6 +59,7 @@ namespace GEngine
     }
     VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount)
     {
+		m_ExclusiveSharing = Utils::UseExclusiveTransferImageSharing();
         m_Height    = height;
         m_Width     = width;
         m_Format = format;
@@ -84,12 +86,13 @@ namespace GEngine
                             0,
                             m_MipLevels,
 			                m_Image,
-			                m_ImageMemory);
+		                m_ImageMemory, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
     }
     VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format)
     {
+		m_ExclusiveSharing = Utils::UseExclusiveTransferImageSharing();
 		m_Height = height;
 		m_Width = width;
         m_Format = format;
@@ -111,7 +114,7 @@ namespace GEngine
             0,
             m_MipLevels,
 			m_Image,
-			m_ImageMemory);
+			m_ImageMemory, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
         SetData(data, size);
@@ -251,6 +254,19 @@ namespace GEngine
 	{
 		m_SubresourceLayouts.assign(m_MipLevels, layout);
 		m_ImageLayout = layout;
+	}
+
+	uint8_t VulkanTexture2D::GetQueueOwnership(uint32_t mipLevel) const
+	{
+		if (mipLevel >= m_MipLevels) throw std::out_of_range("Vulkan texture mip level is out of bounds.");
+		return m_QueueOwnership.empty() ? 0 : m_QueueOwnership[mipLevel];
+	}
+
+	void VulkanTexture2D::SetQueueOwnership(uint32_t mipLevel, uint8_t ownership)
+	{
+		if (mipLevel >= m_MipLevels) throw std::out_of_range("Vulkan texture mip level is out of bounds.");
+		if (m_QueueOwnership.empty()) m_QueueOwnership.assign(m_MipLevels, 0);
+		m_QueueOwnership[mipLevel] = ownership;
 	}
     
 }

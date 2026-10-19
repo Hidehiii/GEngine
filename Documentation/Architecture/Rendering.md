@@ -28,9 +28,9 @@ before a D3D12 COPY or Vulkan transfer command, then joins the copy submission
 to consumers and presentation. OpenGL uses a graphics command buffer on its
 single context. D3D12 hands 2D textures and arrays to COPY in COMMON and
 tracks COPY-queue decay back to COMMON, including untouched array layers.
-Vulkan keeps transfer image layouts and currently uses concurrent sharing
-when queue families differ; exclusive queue-family release/acquire is a
-separate unimplemented feature. Accesses with unchanged logical copy states
+Vulkan keeps transfer image layouts and uses concurrent sharing by default
+when queue families differ; opt-in exclusive 2D/array images use explicit
+graphics/transfer release-acquire barriers for this copy path. Accesses with unchanged logical copy states
 still receive backend preparation/support checks. FrameGraphTriangle exercises
 the real graphics -> transfer -> graphics texture-to-array copy. Debug and
 Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues
@@ -42,6 +42,19 @@ Debug D3D12 and Vulkan dedicated also completed 10,000-frame reuse checks
 without captured validation issues. A 30-second Vulkan dedicated run stayed
 near 414.9 MB private bytes from 10 to 30 seconds; this is bounded evidence,
 not a leak-freedom claim.
+
+An opt-in Vulkan implementation creates `Texture2D` and `Texture2DArray`
+images with exclusive sharing when `GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1`.
+The graph records graphics release after copy-layout preparation, transfer
+acquire/copy/release, and graphics acquire before a later reader. Ownership is
+tracked per mip/layer; the existing graph semaphore edges order submissions.
+Debug/Release 120-frame dedicated-family runs and a 10,000-frame Debug reuse
+run passed both readbacks with no captured validation issues. Concurrent
+sharing remains default; exclusive buffers and arbitrary compute/graphics
+handoffs remain outside this milestone.
+In a 32-second Debug dedicated-family opt-in run, private bytes sampled at
+10/20/30 seconds stayed near 387.4 MB; this is bounded, not a general leak
+guarantee.
 
 Transient `Texture2D`, texture-array, storage-buffer, and storage-image
 descriptions are allocated at graph compilation, exposed during pass execution,
@@ -61,8 +74,10 @@ Vulkan, inter-command dependencies live in the device submission layer;
 the presenter consumes the acquire semaphore and produces the present
 semaphore. Resize compares the requested viewport with swap-chain extent
 before acquisition, avoiding an abandoned signaled acquire semaphore.
-Vulkan allocations use concurrent sharing across distinct graphics, compute,
-and transfer families; dependency semaphores provide memory ordering. D3D12
+Vulkan allocations use concurrent sharing by default across distinct graphics,
+compute, and transfer families; opt-in exclusive 2D/array transfer images use
+ownership barriers as described above. Dependency semaphores provide queue
+ordering. D3D12
 dependencies identify a producer submission generation rather than a mutable
 shared fence value. OpenGL executes the logical chain on one context.
 

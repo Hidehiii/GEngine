@@ -95,6 +95,78 @@ namespace
 		access = 0;
 		return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	}
+
+	void RecordTransferOwnership(const GEngine::Ref<GEngine::CommandBuffer>& commandBuffer,
+		const GEngine::Ref<GEngine::GraphicsResource>& resource,
+		const GEngine::GraphicsResourceUsage& usage,
+		const GEngine::GraphicsSubresourceRange& range, bool release)
+	{
+		const auto texture = std::dynamic_pointer_cast<GEngine::VulkanTexture2D>(resource);
+		const auto array = std::dynamic_pointer_cast<GEngine::VulkanTexture2DArray>(resource);
+		if ((!texture || !texture->UsesExclusiveSharing()) && (!array || !array->UsesExclusiveSharing())) return;
+		const auto nativeCommand = std::dynamic_pointer_cast<GEngine::VulkanCommandBuffer>(commandBuffer);
+		if (!nativeCommand) throw std::invalid_argument("Exclusive Vulkan ownership requires a Vulkan command buffer.");
+		const auto type = nativeCommand->GetType();
+		const auto families = GEngine::VulkanContext::Get()->GetQueueFamily();
+		if (type != GEngine::COMMAND_BUFFER_TYPE_GRAPHICS && type != GEngine::COMMAND_BUFFER_TYPE_TRANSFER)
+			throw std::invalid_argument("Exclusive transfer images require graphics or transfer commands.");
+		if (families.GraphicsFamily == families.TransferFamily) return;
+		if (type == GEngine::COMMAND_BUFFER_TYPE_TRANSFER &&
+			usage.State != GEngine::GraphicsResourceState::CopySource &&
+			usage.State != GEngine::GraphicsResourceState::CopyDestination)
+			throw std::invalid_argument("Transfer queue ownership requires a copy state.");
+		const uint32_t mipCount = resource->GetSubresourceMetadata().MipLevelCount;
+		const uint32_t layerCount = resource->GetSubresourceMetadata().ArrayLayerCount;
+		const uint32_t selectedMips = range.MipLevelCount == GEngine::GraphicsSubresourceRange::All
+			? mipCount - range.BaseMipLevel : range.MipLevelCount;
+		const uint32_t selectedLayers = range.ArrayLayerCount == GEngine::GraphicsSubresourceRange::All
+			? layerCount - range.BaseArrayLayer : range.ArrayLayerCount;
+		const bool graphics = type == GEngine::COMMAND_BUFFER_TYPE_GRAPHICS;
+		const uint8_t expected = graphics ? (release ? 0 : 3) : (release ? 2 : 1);
+		const uint8_t next = graphics ? (release ? 1 : 0) : (release ? 3 : 2);
+		const bool graphicsToTransfer = graphics == release;
+		const uint32_t sourceFamily = graphicsToTransfer ? families.GraphicsFamily.value() : families.TransferFamily.value();
+		const uint32_t destinationFamily = graphicsToTransfer ? families.TransferFamily.value() : families.GraphicsFamily.value();
+		const VkPipelineStageFlags sourceStage = release
+			? (graphics ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TRANSFER_BIT)
+			: VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		const VkPipelineStageFlags destinationStage = release ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+			: (graphics ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TRANSFER_BIT);
+		const VkAccessFlags transferAccess = usage.State == GEngine::GraphicsResourceState::CopyDestination
+			? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_TRANSFER_READ_BIT;
+		const VkAccessFlags sourceAccess = release
+			? (graphics ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : transferAccess) : 0;
+		const VkAccessFlags destinationAccess = release ? 0
+			: (graphics ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : transferAccess);
+		std::vector<VkImageMemoryBarrier> barriers;
+		barriers.reserve(static_cast<size_t>(selectedMips) * selectedLayers);
+		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + selectedLayers; ++layer)
+			for (uint32_t mip = range.BaseMipLevel; mip < range.BaseMipLevel + selectedMips; ++mip)
+			{
+				const uint8_t current = texture ? texture->GetQueueOwnership(mip) : array->GetQueueOwnership(mip, layer);
+				if (graphics && !release && current == 0) continue;
+				if (current != expected) throw std::invalid_argument("Vulkan image queue ownership is not ready for this handoff.");
+				const VkImageLayout layout = texture ? texture->GetSubresourceLayout(mip) : array->GetSubresourceLayout(mip, layer);
+				if (layout == VK_IMAGE_LAYOUT_UNDEFINED)
+					throw std::invalid_argument("Exclusive transfer image must have a defined layout before handoff.");
+				VkImageMemoryBarrier barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				barrier.srcAccessMask = sourceAccess;
+				barrier.dstAccessMask = destinationAccess;
+				barrier.oldLayout = layout;
+				barrier.newLayout = layout;
+				barrier.srcQueueFamilyIndex = sourceFamily;
+				barrier.dstQueueFamilyIndex = destinationFamily;
+				barrier.image = texture ? texture->GetImage() : array->GetImage();
+				barrier.subresourceRange = { texture ? texture->GetAspectFlag() : array->GetAspectFlag(), mip, 1, layer, 1 };
+				barriers.push_back(barrier);
+				if (texture) texture->SetQueueOwnership(mip, next);
+				else array->SetQueueOwnership(mip, layer, next);
+			}
+		if (!barriers.empty())
+			vkCmdPipelineBarrier(nativeCommand->GetCommandBuffer(), sourceStage, destinationStage, 0,
+				0, nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
+	}
 }
 
 namespace GEngine
@@ -406,6 +478,24 @@ namespace GEngine
 		m_SubmissionSynchronizations[first.get()].SignalSemaphores.push_back(s);
 		m_SubmissionSynchronizations[second.get()].WaitSemaphores.push_back(s);
     }
+
+	void VulkanGraphicsAPI::ReleaseTransferOwnership(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& usage,
+		const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		RecordTransferOwnership(commandBuffer, resource, usage, range, true);
+	}
+
+	void VulkanGraphicsAPI::AcquireTransferOwnership(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& usage,
+		const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		RecordTransferOwnership(commandBuffer, resource, usage, range, false);
+	}
 
 	void VulkanGraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
 	{

@@ -35,6 +35,9 @@ namespace GEngine
 		VkImageLayout GetSubresourceLayout(uint32_t mipLevel) const;
 		void SetSubresourceLayout(uint32_t mipLevel, VkImageLayout layout);
 		void SetAllSubresourceLayouts(VkImageLayout layout);
+		bool UsesExclusiveSharing() const { return m_ExclusiveSharing; }
+		uint8_t GetQueueOwnership(uint32_t mipLevel) const;
+		void SetQueueOwnership(uint32_t mipLevel, uint8_t ownership);
 
 		void SetImageLayout(VkImageLayout newLayout);
 		void SetImageLayout(VkCommandBuffer cmdBuffer,  VkImageLayout newLayout);
@@ -48,6 +51,8 @@ namespace GEngine
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
 		std::vector<VkImageLayout>		m_SubresourceLayouts;
+		bool m_ExclusiveSharing = false;
+		std::vector<uint8_t> m_QueueOwnership;
 	};
 }
 

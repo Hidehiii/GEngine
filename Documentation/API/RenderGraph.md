@@ -30,9 +30,18 @@ copy/transfer queues after a graphics-side preparation submission; OpenGL
 executes on its single graphics context. Completion joins later consumers and
 presentation. Accesses with unchanged copy state are prepared as well.
 D3D12 currently supports 2D textures and texture arrays on this path and
-rejects other resource types before copy submission. Vulkan graph resources
-use concurrent queue-family sharing; this builder does not implement
-exclusive-family ownership transfer. `BuildGraphicsCopyPass` remains available.
+rejects other resource types before copy submission. Vulkan resources use
+concurrent queue-family sharing by default; opt-in exclusive 2D/array images
+use ownership barriers on this path. `BuildGraphicsCopyPass` remains available.
+`GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1` opts Vulkan `Texture2D` and
+`Texture2DArray` allocations into exclusive sharing for transfer-copy testing.
+`ExecuteGpu` records matching release/acquire barriers for their declared
+subresource ranges around the transfer queue submission. Debug/Release
+dedicated-family example runs passed both pixel readbacks with no captured
+validation issues; concurrent sharing is still the default. Exclusive
+buffers and general compute handoffs are not covered.
+An opt-in 10,000-frame Debug check and a 32-second memory sample also passed;
+neither proves arbitrary-resource or indefinite lifetime correctness.
 FrameGraphTriangle uses the transfer builder for a real array-layer pixel
 copy, retains invalid layer/size/format checks, and passed 120-frame Debug
 and Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues.
@@ -111,8 +120,9 @@ Every dependency is registered before producer submission; completion joins
 all graph submissions. D3D12 waits for a producer command buffer's monotonic
 submission generation. Vulkan uses independently consumable binary semaphores
 with ALL_COMMANDS waits, retired after consumer completion. Vulkan engine
-buffers/images use concurrent sharing when graphics/compute/transfer families
-differ, so those allocations need no exclusive ownership transfer. OpenGL
+buffers/images use concurrent sharing by default when graphics/compute/transfer
+families differ. Opt-in exclusive 2D/array images use the release/acquire path
+described above; other allocations remain concurrent. OpenGL
 executes on its single context and uses memory barriers for visibility.
 
 Current GPU compute declarations accept storage/UAV (`ShaderWrite`) state for
