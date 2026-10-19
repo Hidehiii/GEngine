@@ -24,7 +24,7 @@ echo Usage: %~nx0 [vs2022^|vs2019^|vs2026]
 exit /b 1
 
 :generate
-if not defined PREMAKE_EXE set "PREMAKE_EXE=%~dp0..\vender\bin\premake\premake5.exe"
+if not defined PREMAKE_EXE set "PREMAKE_EXE=%~dp0Premake\premake5.exe"
 if not exist "%PREMAKE_EXE%" (
     echo ERROR: Premake executable not found: "%PREMAKE_EXE%"
     goto finish

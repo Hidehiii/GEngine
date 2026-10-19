@@ -4,6 +4,7 @@
 /Assets
 /bin-int
 /bin
+/build/
 /Dep
 *.vcxproj
 *.user
