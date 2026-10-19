@@ -38,10 +38,23 @@ use ownership barriers on this path. `BuildGraphicsCopyPass` remains available.
 `ExecuteGpu` records matching release/acquire barriers for their declared
 subresource ranges around the transfer queue submission. Debug/Release
 dedicated-family example runs passed both pixel readbacks with no captured
-validation issues; concurrent sharing is still the default. Exclusive
-buffers and general compute handoffs are not covered.
+validation issues; concurrent sharing is still the default. That image-only
+milestone did not cover exclusive buffers or compute handoffs.
 An opt-in 10,000-frame Debug check and a 32-second memory sample also passed;
 neither proves arbitrary-resource or indefinite lifetime correctness.
+`GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS=1` opts Vulkan storage buffers into
+exclusive sharing. `ExecuteGpu` adds graphics preparation before an accessing
+compute pass, performs graphics/compute release-acquire, and acquires back on
+later graphics access. Unsupported exclusive image/compute or buffer/transfer
+combinations are rejected before submission. The example path is runtime-
+validated; a shared graphics/compute family needs no ownership preparation.
+No new application-facing pass builder is needed. Exclusive
+compute image ownership remains outside this step.
+The example now includes a compute-first buffer with a subsequent graphics
+draw and readback, in addition to its graphics-first storage buffer. Both
+readbacks passed in Debug/Release on Vulkan dedicated queues with the opt-in.
+OpenGL, D3D12, and Vulkan shared/default runs passed as regression controls.
+This is bounded example evidence, not arbitrary buffer or external-queue proof.
 FrameGraphTriangle uses the transfer builder for a real array-layer pixel
 copy, retains invalid layer/size/format checks, and passed 120-frame Debug
 and Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues.

@@ -199,6 +199,23 @@ exclusive-sharing guarantee for buffers or compute image handoffs.
 A 32-second Debug opt-in run completed 19,603 frames; private bytes at
 10/20/30 seconds were 387,371,008 / 387,371,008 / 387,330,048. This bounded
 sample does not prove indefinite memory stability.
+For the new storage-buffer handoff path, set
+`GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS=1` together with
+`GENGINE_VULKAN_DEDICATED_QUEUES=1`. The existing ColorData graph buffer is
+read on graphics, written on compute, then read on graphics. Expect the
+frame-119 numeric compute readback, no queue-family validation errors, and
+normal shutdown. A second buffer starts with compute as its first graph use,
+then drives a graphics draw and separate numeric readback; expect the
+`Compute-first GPU graph readback passed` message too.
+The 2026-10-19 VS2022 Debug/Release runs passed 120 frames and all three
+readbacks on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues. The
+dedicated mode selected graphics=0, compute=2, transfer=5; buffer-only and
+buffer-plus-image opt-ins passed without captured validation messages. A Debug
+10,000-frame both-opt-in run also passed. For a bounded memory control, disable
+replacements with `GENGINE_EXAMPLE_NO_REPLACEMENT=1`: the 32-second both-opt-in
+run stayed near 412.4 MB private bytes at 10/20/30 seconds. With replacement
+enabled, both opt-in and concurrent-sharing runs rose by about 4 MB over that
+interval; investigate the replacement path separately.
 The 2026-10-18 final VS2022 Debug and Release runs completed 120 frames on
 OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues. Each passed the
 compute and array-layer pixel readbacks and exited normally with empty stderr;

@@ -8,6 +8,11 @@ namespace GEngine
 {
     namespace Utils
     {
+		bool UseExclusiveComputeBufferSharing()
+		{
+			const char* value = std::getenv("GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS");
+			return value != nullptr && value[0] == '1' && value[1] == '\0';
+		}
 		bool UseExclusiveTransferImageSharing()
 		{
 			const char* value = std::getenv("GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES");
@@ -35,7 +40,7 @@ namespace GEngine
             return 0;
         }
 
-        void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) 
+        void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool exclusiveSharing)
         {
 
             VkBufferCreateInfo      bufferInfo{};
@@ -44,7 +49,7 @@ namespace GEngine
             bufferInfo.usage        = usage;
             bufferInfo.sharingMode  = VK_SHARING_MODE_EXCLUSIVE;
 			const auto families = SharedQueueFamilies();
-			if (families.size() > 1)
+			if (!exclusiveSharing && families.size() > 1)
 			{
 				bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
 				bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(families.size());

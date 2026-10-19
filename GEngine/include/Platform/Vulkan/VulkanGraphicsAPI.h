@@ -67,6 +67,11 @@ namespace GEngine
 			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
 		void AcquireTransferOwnership(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
 			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
+		void ReleaseComputeOwnership(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
+		void AcquireComputeOwnership(const Ref<CommandBuffer>& commandBuffer, const Ref<GraphicsResource>& resource,
+			const GraphicsResourceUsage& usage, const GraphicsSubresourceRange& range) override;
+		QueueOwnershipKind GetQueueOwnershipKind(const Ref<GraphicsResource>& resource) const override;
 		virtual void SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer) override;
 		void SubmitPresentationCommandBuffer(const Ref<CommandBuffer>& commandBuffer, VkSemaphore acquireSemaphore,
 			VkSemaphore presentSemaphore, VkFence completionFence);

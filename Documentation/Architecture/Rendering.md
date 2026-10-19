@@ -51,10 +51,27 @@ tracked per mip/layer; the existing graph semaphore edges order submissions.
 Debug/Release 120-frame dedicated-family runs and a 10,000-frame Debug reuse
 run passed both readbacks with no captured validation issues. Concurrent
 sharing remains default; exclusive buffers and arbitrary compute/graphics
-handoffs remain outside this milestone.
+handoffs were outside that image-only milestone.
 In a 32-second Debug dedicated-family opt-in run, private bytes sampled at
 10/20/30 seconds stayed near 387.4 MB; this is bounded, not a general leak
 guarantee.
+
+The new opt-in `GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS=1` path creates
+Vulkan storage buffers with exclusive sharing. A compute pass that accesses
+one receives a graphics preparation submission, then compute acquire/dispatch/
+release; later graphics access acquires the buffer. The graph preflights
+unsupported exclusive resource/queue combinations before submission. Buffer
+upload/readback require graphics ownership. When graphics and compute share a
+queue family, no ownership preparation or native handoff is needed. This path is implemented but not
+yet general-purpose; exclusive compute images remain out of scope.
+FrameGraphTriangle exercises both graphics-first and compute-first buffer
+handoffs with real draws and numeric readbacks. Debug/Release 120-frame runs
+passed on OpenGL, D3D12, Vulkan shared, and dedicated queues, with no captured
+validation errors. Debug dedicated Vulkan completed 10,000 frames with both
+opt-ins. In 32-second Debug runs, private bytes rose with replacement both
+with and without exclusive sharing, while no-replacement controls were near
+flat. This points to replacement interaction, not a proven ownership leak;
+its allocation origin and longer-term behavior remain open.
 
 Transient `Texture2D`, texture-array, storage-buffer, and storage-image
 descriptions are allocated at graph compilation, exposed during pass execution,

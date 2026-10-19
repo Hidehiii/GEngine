@@ -19,8 +19,11 @@ namespace GEngine
 	private:
 		uint64_t m_RenderCount = 0;
 		Ref<GraphicsPipeline> m_Pipeline;
+		Ref<GraphicsPipeline> m_ComputeFirstPipeline;
 		Ref<ComputePipeline> m_ComputePipeline;
+		Ref<ComputePipeline> m_ComputeFirstComputePipeline;
 		Ref<StorageBuffer> m_Color;
+		Ref<StorageBuffer> m_ComputeFirstColor;
 		Ref<Texture2DArray> m_RangeArray;
 		RenderGraph m_Graph;
 		RenderGraph::TargetHandle m_Target = RenderGraph::InvalidTarget;

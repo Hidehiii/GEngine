@@ -15,6 +15,9 @@ namespace GEngine
 
 		VkDescriptorBufferInfo* GetDescriptorBufferInfo() { return &m_BufferInfo; }
 		virtual void* GetNativeResource() const override { return reinterpret_cast<void*>(m_StorageBuffer); }
+		bool UsesExclusiveSharing() const { return m_ExclusiveSharing; }
+		uint8_t GetQueueOwnership() const { return m_QueueOwnership; }
+		void SetQueueOwnership(uint8_t ownership) { m_QueueOwnership = ownership; }
 
 		bool operator==(const VulkanStorageBuffer& other) const
 		{
@@ -26,6 +29,8 @@ namespace GEngine
 		VkDeviceMemory				m_StorageBufferMemory = VK_NULL_HANDLE;
 		uint32_t					m_Offset = 0;
 		VkDescriptorBufferInfo		m_BufferInfo{};
+		bool m_ExclusiveSharing = false;
+		uint8_t m_QueueOwnership = 0;
 	};
 }
 

@@ -309,6 +309,11 @@ namespace GEngine
 		material->SetResource("ColorData", m_Color);
 		auto vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 		m_Pipeline = device.CreateGraphicsPipeline(material, vertexBuffer);
+		m_ComputeFirstColor = device.CreateStorageBuffer(16);
+		m_ComputeFirstColor->SetData(sizeof(initialColor), initialColor);
+		auto computeFirstMaterial = device.CreateMaterial(shader, "ComputeFirstGraphics");
+		computeFirstMaterial->SetResource("ColorData", m_ComputeFirstColor);
+		m_ComputeFirstPipeline = device.CreateGraphicsPipeline(computeFirstMaterial, vertexBuffer);
 
 		RenderGraph::AttachmentSpecification offscreenAttachment{};
 		offscreenAttachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
@@ -318,13 +323,24 @@ namespace GEngine
 		auto computeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "GraphCompute");
 		computeMaterial->SetResource("ColorData", m_Color);
 		m_ComputePipeline = device.CreateComputePipeline(computeMaterial);
+		auto computeFirstComputeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "ComputeFirstCompute");
+		computeFirstComputeMaterial->SetResource("ColorData", m_ComputeFirstColor);
+		m_ComputeFirstComputePipeline = device.CreateComputePipeline(computeFirstComputeMaterial);
+		const auto computeFirstInitial = m_Graph.GetVersion(m_Graph.ImportStorageBuffer(
+			"ComputeFirstColor", m_ComputeFirstColor, RenderGraph::ResourceState::ShaderWrite));
+		auto computeFirst = m_Graph.BuildComputePass("ComputeFirstColor", [this](const Ref<CommandBuffer>& command)
+			{ command->Compute(m_ComputeFirstComputePipeline, 0, 1, 1, 1); });
+		const auto computeFirstUpdated = computeFirst.Write(computeFirstInitial,
+			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
 		const auto initialVersion = m_Graph.GetVersion(m_Graph.ImportStorageBuffer("ColorData", m_Color, RenderGraph::ResourceState::ShaderWrite));
 		auto first = m_Graph.BuildGraphicsPass("ReadPreviousColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
 		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
 		auto compute = m_Graph.BuildComputePass("UpdateColor", [this](const Ref<CommandBuffer>& command) { command->Compute(m_ComputePipeline, 0, 1, 1, 1); });
 		auto updated = compute.Write(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
-		auto final = m_Graph.BuildGraphicsPass("ReadUpdatedColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
+		auto final = m_Graph.BuildGraphicsPass("ReadUpdatedColor", target, [this](const Ref<CommandBuffer>& command)
+			{ command->Render(m_Pipeline, 0); command->Render(m_ComputeFirstPipeline, 0); });
 		final.Read(updated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
+		final.Read(computeFirstUpdated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
 
 		std::array<uint8_t, 4> sourcePixel{ 255, 0, 0, 255 };
 		const std::array<uint8_t, 4> initialPixel{ 0, 0, 0, 255 };
@@ -434,6 +450,14 @@ namespace GEngine
 				std::abs(result[2] - 0.12f) > 0.001f || std::abs(result[3] - 1.0f) > 0.001f)
 				throw std::runtime_error("GPU graph compute readback mismatch.");
 			GE_INFO("GPU graph compute readback passed after 119 frames.");
+			float computeFirstResult[4]{};
+			m_ComputeFirstColor->ReadData(sizeof(computeFirstResult), computeFirstResult);
+			if (std::abs(computeFirstResult[0] - 0.15f) > 0.001f ||
+				std::abs(computeFirstResult[1] - 0.45f) > 0.001f ||
+				std::abs(computeFirstResult[2] - 0.12f) > 0.001f ||
+				std::abs(computeFirstResult[3] - 1.0f) > 0.001f)
+				throw std::runtime_error("Compute-first GPU graph readback mismatch.");
+			GE_INFO("Compute-first GPU graph readback passed after 119 frames.");
 			std::array<uint8_t, 4> copiedPixel{};
 			std::array<uint8_t, 4> preservedPixel{};
 			m_RangeArray->ReadLayerData(0, static_cast<uint32_t>(copiedPixel.size()), copiedPixel.data());

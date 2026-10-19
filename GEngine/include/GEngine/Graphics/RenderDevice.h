@@ -30,6 +30,7 @@ namespace GEngine
 	class GENGINE_API RenderDevice
 	{
 	public:
+		enum class QueueOwnershipKind { None, TransferImage, ComputeBuffer };
 		virtual ~RenderDevice() = default;
 		virtual GraphicsQueue& GetQueue(CommandBufferType type) = 0;
 		virtual Ref<Texture2DCombineSampler> CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler) = 0;
@@ -44,6 +45,12 @@ namespace GEngine
 			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
 		virtual void AcquireTransferOwnership(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
 			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
+		virtual void ReleaseComputeOwnership(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
+			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
+		virtual void AcquireComputeOwnership(const Ref<CommandBuffer>&, const Ref<GraphicsResource>&,
+			const GraphicsResourceUsage&, const GraphicsSubresourceRange&) {}
+		virtual QueueOwnershipKind GetQueueOwnershipKind(const Ref<GraphicsResource>&) const
+		{ return QueueOwnershipKind::None; }
 		virtual Ref<Shader> CreateShader(const std::string& path) = 0;
 		virtual Ref<Material> CreateMaterial(const Ref<Shader>& shader, const std::string& name) = 0;
 		virtual Ref<GraphicsPipeline> CreateGraphicsPipeline(const Ref<Material>& material, const Ref<VertexBuffer>& vertices) = 0;

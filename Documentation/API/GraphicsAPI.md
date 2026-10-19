@@ -132,7 +132,13 @@ single-family and concurrent resources require no ownership barrier. Other
 backends have no Vulkan-style queue families, so these hooks do no extra work.
 Application code should declare graph accesses rather than call the hooks.
 `GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES=1` enables the opt-in image path;
-general exclusive buffers and compute handoffs remain unsupported.
+`GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS=1` also opts Vulkan storage buffers
+into exclusive sharing. The graph uses `ReleaseComputeOwnership` and
+`AcquireComputeOwnership` for graphics/compute handoff, and
+`GetQueueOwnershipKind` for preflight and command capacity. This path is
+validated for the FrameGraphTriangle buffer pattern on distinct graphics and
+compute families; compute images remain unsupported. The default
+buffer allocation continues using concurrent sharing across distinct families.
 `BuildGraphicsPass` records into a target, `BuildGraphicsCopyPass` records a
 targetless graphics-queue copy, and `BuildComputePass` records dispatch.
 Declare `Read`/`Write` states and ranges before `ExecuteGpu`; use versioned

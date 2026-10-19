@@ -7,6 +7,8 @@ namespace GEngine
 {
 	void VulkanStorageBuffer::ReadData(uint32_t size, void* destination, uint32_t offset)
 	{
+		if (m_ExclusiveSharing && m_QueueOwnership != 0)
+			throw std::invalid_argument("Exclusive Vulkan storage readback requires graphics ownership.");
 		if (!destination || !size || offset > m_Size || size > m_Size - offset)
 			throw std::invalid_argument("Storage readback exceeds buffer bounds.");
 		auto* context = VulkanContext::Get();
@@ -46,14 +48,14 @@ namespace GEngine
 	}
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size) : m_Size(size)
 	{
-
+		m_ExclusiveSharing = Utils::UseExclusiveComputeBufferSharing();
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			size,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_StorageBuffer,
-			m_StorageBufferMemory);
+			m_StorageBufferMemory, m_ExclusiveSharing);
 
 		m_BufferInfo.buffer = m_StorageBuffer;
 		m_BufferInfo.offset = m_Offset;
@@ -79,8 +81,10 @@ namespace GEngine
 	}
 	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
-		VkBuffer	stagingBuffer;
-		VkDeviceMemory	stagingBufferMemory;
+		if (m_ExclusiveSharing && m_QueueOwnership != 0)
+			throw std::invalid_argument("Exclusive Vulkan storage upload requires graphics ownership.");
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			size,

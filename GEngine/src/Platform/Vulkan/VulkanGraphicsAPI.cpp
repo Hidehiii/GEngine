@@ -167,6 +167,52 @@ namespace
 			vkCmdPipelineBarrier(nativeCommand->GetCommandBuffer(), sourceStage, destinationStage, 0,
 				0, nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
 	}
+
+	void RecordComputeOwnership(const GEngine::Ref<GEngine::CommandBuffer>& commandBuffer,
+		const GEngine::Ref<GEngine::GraphicsResource>& resource,
+		const GEngine::GraphicsResourceUsage& usage,
+		const GEngine::GraphicsSubresourceRange& range, bool release)
+	{
+		const auto buffer = std::dynamic_pointer_cast<GEngine::VulkanStorageBuffer>(resource);
+		if (!buffer || !buffer->UsesExclusiveSharing()) return;
+		if (!range.IsWholeResource() || usage.State != GEngine::GraphicsResourceState::ShaderWrite)
+			throw std::invalid_argument("Exclusive compute buffers require whole-buffer storage access.");
+		const auto nativeCommand = std::dynamic_pointer_cast<GEngine::VulkanCommandBuffer>(commandBuffer);
+		if (!nativeCommand) throw std::invalid_argument("Exclusive Vulkan ownership requires a Vulkan command buffer.");
+		const auto type = nativeCommand->GetType();
+		if (type != GEngine::COMMAND_BUFFER_TYPE_GRAPHICS && type != GEngine::COMMAND_BUFFER_TYPE_COMPUTE)
+			throw std::invalid_argument("Exclusive compute buffers require graphics or compute commands.");
+		const auto families = GEngine::VulkanContext::Get()->GetQueueFamily();
+		if (families.GraphicsFamily == families.ComputeFamily) return;
+		const bool graphics = type == GEngine::COMMAND_BUFFER_TYPE_GRAPHICS;
+		const uint8_t expected = graphics ? (release ? 0 : 3) : (release ? 2 : 1);
+		const uint8_t next = graphics ? (release ? 1 : 0) : (release ? 3 : 2);
+		const uint8_t current = buffer->GetQueueOwnership();
+		if (graphics && !release && current == 0) return;
+		if (current != expected)
+			throw std::invalid_argument("Vulkan buffer queue ownership is not ready for this handoff.");
+		const bool graphicsToCompute = graphics == release;
+		VkBufferMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.srcAccessMask = release
+			? (graphics ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT)
+			: 0;
+		barrier.dstAccessMask = release ? 0
+			: (graphics ? VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT : VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+		barrier.srcQueueFamilyIndex = graphicsToCompute ? families.GraphicsFamily.value() : families.ComputeFamily.value();
+		barrier.dstQueueFamilyIndex = graphicsToCompute ? families.ComputeFamily.value() : families.GraphicsFamily.value();
+		barrier.buffer = reinterpret_cast<VkBuffer>(buffer->GetNativeResource());
+		barrier.offset = 0;
+		barrier.size = VK_WHOLE_SIZE;
+		const VkPipelineStageFlags sourceStage = release
+			? (graphics ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+			: VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		const VkPipelineStageFlags destinationStage = release ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+			: (graphics ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+		vkCmdPipelineBarrier(nativeCommand->GetCommandBuffer(), sourceStage, destinationStage, 0,
+			0, nullptr, 1, &barrier, 0, nullptr);
+		buffer->SetQueueOwnership(next);
+	}
 }
 
 namespace GEngine
@@ -495,6 +541,38 @@ namespace GEngine
 		if (!resource) return;
 		ValidateSubresourceRange(resource, range);
 		RecordTransferOwnership(commandBuffer, resource, usage, range, false);
+	}
+
+	void VulkanGraphicsAPI::ReleaseComputeOwnership(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& usage,
+		const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		RecordComputeOwnership(commandBuffer, resource, usage, range, true);
+	}
+
+	void VulkanGraphicsAPI::AcquireComputeOwnership(const Ref<CommandBuffer>& commandBuffer,
+		const Ref<GraphicsResource>& resource, const GraphicsResourceUsage& usage,
+		const GraphicsSubresourceRange& range)
+	{
+		if (!resource) return;
+		ValidateSubresourceRange(resource, range);
+		RecordComputeOwnership(commandBuffer, resource, usage, range, false);
+	}
+
+	RenderDevice::QueueOwnershipKind VulkanGraphicsAPI::GetQueueOwnershipKind(const Ref<GraphicsResource>& resource) const
+	{
+		const auto families = VulkanContext::Get()->GetQueueFamily();
+		if (const auto buffer = std::dynamic_pointer_cast<VulkanStorageBuffer>(resource);
+			buffer && buffer->UsesExclusiveSharing() &&
+			families.GraphicsFamily != families.ComputeFamily)
+			return QueueOwnershipKind::ComputeBuffer;
+		if (const auto texture = std::dynamic_pointer_cast<VulkanTexture2D>(resource);
+			texture && texture->UsesExclusiveSharing()) return QueueOwnershipKind::TransferImage;
+		if (const auto array = std::dynamic_pointer_cast<VulkanTexture2DArray>(resource);
+			array && array->UsesExclusiveSharing()) return QueueOwnershipKind::TransferImage;
+		return QueueOwnershipKind::None;
 	}
 
 	void VulkanGraphicsAPI::SubmitCommandBuffer(const Ref<CommandBuffer>& commandBuffer)
