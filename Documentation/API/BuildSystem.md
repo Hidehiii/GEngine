@@ -31,3 +31,11 @@ VS2022 generation was checked from outside the repository directory for both
 launchers; CMake Debug/Release engine/example builds and 120-frame example
 readbacks were verified. VS2019 and other CMake application builds remain
 unverified.
+
+Planned, not implemented: the CMake build will eventually put engine and
+application binaries in the same `bin/<Configuration>-windows-x86_64/<Target>/`
+locations as Premake and align other target artifacts using an explicit path
+map. Current CMake paths above remain accurate until that work is
+implemented. This is a contributor-facing output contract, not a change to
+public engine C++ signatures. Do not run both generators concurrently against
+one shared final output directory.

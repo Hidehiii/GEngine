@@ -28,6 +28,28 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [ ] Unify Premake and CMake binary output paths. Rewrite the relevant build
+  scripts/configuration so both methods place Windows x64 engine/application
+  executables, DLLs, and required runtime DLLs at
+  `bin/<Configuration>-windows-x86_64/<Target>/`, matching today's Premake
+  layout. Inventory and align the output paths for static libraries, import
+  libraries, and PDBs as well; do not assume only runnable files matter.
+  Current evidence: Premake uses per-target paths, while CMake writes a flat
+  `build/cmake-<version>/bin/<Configuration>/` and keeps static libraries
+  under its build tree. Scope: define a consistent target-by-target layout for
+  Debug/Release (and document CMake's existing Dist limitation), update
+  post-build dependency copying and launch/debug working directories, and
+  retain separate generator/object/PCH directories. Acceptance: configure and
+  build GEngine and FrameGraphTriangle with each method in sequence; verify
+  their final artifacts and copied DLLs match the path map, then run bounded GPU
+  readbacks. Document that the two generators must not build the same
+  configuration concurrently into the shared final path; check switching
+  methods does not leave stale or mismatched binaries. C# ScriptCore's
+  `GEngine-Editor/Resources/Scripts` output remains a documented exception
+  unless the implementation explicitly adds CMake support. Record actual
+  verification and any remaining target/configuration gaps here. Status:
+  plan only; no build output path has changed yet.
+
 - [x] Flatten the bundled Premake layout from
   `BuildScripts/Premake/bin/premake/premake5.exe` to
   `BuildScripts/Premake/premake5.exe`. Scope: move the unchanged binary, remove

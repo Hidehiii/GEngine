@@ -37,6 +37,16 @@ using checked-in Vulkan headers and libraries. Other CMake application
 targets were generated but not individually built. The CMake option does not
 currently generate Premake's `Dist` or C# ScriptCore project.
 
+Planned, not implemented: converge the two C++ generators' engine/application
+artifacts on Premake's `bin/<Configuration>-windows-x86_64/<Target>/` layout,
+and map static libraries, import libraries, and PDBs target by target.
+Generated projects, object files, and PCHs must remain separate; final
+binaries would be shared, so builds targeting the same configuration must run
+sequentially.
+Post-build DLL copying and stale-artifact checks are part of that milestone.
+The C# ScriptCore output remains a separate exception unless CMake support is
+added explicitly.
+
 This build-only change does not alter runtime ownership or backend behavior.
 See the [build guide](../Guides/BuildAndRun.md) for supported generators,
 targets, toolchain requirements, and parity limits.
