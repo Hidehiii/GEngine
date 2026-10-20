@@ -1,5 +1,13 @@
 # Runtime logging
 
+- [ ] Add an optional in-application log viewer as a separate follow-up. Scope:
+  design the viewer only after consumers need live filtering while the engine
+  runs; it must consume the same logging stream without adding unbounded
+  per-frame memory or making file logging depend on the UI. Acceptance: a
+  focused example demonstrates live records, filtering, bounded retention, and
+  normal shutdown on available backends. Status: plan only; no viewer API or
+  UI work is authorized or implemented by this registration.
+
 - [x] Add a compile-time macro to control local log-file saving without
   disabling console logging. Scope: `GE_ENABLE_LOCAL_LOG_SAVE` defaults to 1
   in the public log header; engine builds with 0 skip file/directory creation

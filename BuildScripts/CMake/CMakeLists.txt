@@ -20,10 +20,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 add_compile_definitions(UNICODE _UNICODE)
-add_compile_definitions(UNICODE _UNICODE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<CONFIG>")
+set(GE_TOOL_ID "cmake" CACHE STRING "Build-tool identifier used in build/dist paths")
+set(GE_PLATFORM_ID "windows-x86_64" CACHE STRING "Platform identifier used in build/dist paths")
+set(GE_DIST_ROOT "${GE_ROOT}/dist/${GE_TOOL_ID}/${GE_PLATFORM_ID}")
+
+function(ge_set_output_directories target)
+    set_target_properties(${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/${target}"
+        LIBRARY_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/${target}"
+        ARCHIVE_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/${target}"
+        PDB_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/${target}"
+        COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/${target}"
+    )
+endfunction()
 
 set(GE_INCLUDE_DIRS
     "${GE_ROOT}/GEngine/include"
@@ -73,10 +82,12 @@ add_library(GLFW STATIC
     "${GE_VENDOR}/GLFW/src/egl_context.c"
     "${GE_VENDOR}/GLFW/src/osmesa_context.c"
 )
+ge_set_output_directories(GLFW)
 target_include_directories(GLFW PRIVATE "${GE_VENDOR}/GLFW/include" "${GE_VENDOR}/GLFW/src")
 target_compile_definitions(GLFW PRIVATE _GLFW_WIN32 _CRT_SECURE_NO_WARNINGS GLFW_EXPOSE_NATIVE_WIN32)
 
 add_library(GLAD STATIC "${GE_VENDOR}/GLAD/src/glad.c")
+ge_set_output_directories(GLAD)
 target_include_directories(GLAD PUBLIC "${GE_VENDOR}/GLAD/include")
 
 add_library(ImGui STATIC
@@ -90,19 +101,23 @@ add_library(ImGui STATIC
     "${GE_VENDOR}/ImGui/backends/imgui_impl_vulkan.cpp"
     "${GE_VENDOR}/ImGui/backends/imgui_impl_dx12.cpp"
 )
+ge_set_output_directories(ImGui)
 target_include_directories(ImGui PRIVATE "${GE_VENDOR}/ImGui" "${GE_VENDOR}/GLFW/include" "${GE_VULKAN_SDK}/Include")
 
 file(GLOB_RECURSE GE_BOX2D_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/box2d/src/*.cpp")
 add_library(Box2D STATIC ${GE_BOX2D_SOURCES})
+ge_set_output_directories(Box2D)
 target_include_directories(Box2D PRIVATE "${GE_VENDOR}/box2d/include" "${GE_VENDOR}/box2d/src")
 
 file(GLOB_RECURSE GE_YAML_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/yaml/src/*.cpp")
 add_library(yaml-cpp STATIC ${GE_YAML_SOURCES})
+ge_set_output_directories(yaml-cpp)
 target_include_directories(yaml-cpp PUBLIC "${GE_VENDOR}/yaml/include")
 target_compile_definitions(yaml-cpp PUBLIC YAML_CPP_STATIC_DEFINE)
 
 file(GLOB_RECURSE GE_ENGINE_SOURCES CONFIGURE_DEPENDS "${GE_ROOT}/GEngine/src/*.cpp")
 add_library(GEngine SHARED ${GE_ENGINE_SOURCES} "${GE_VENDOR}/ImGuizmo/ImGuizmo.cpp")
+ge_set_output_directories(GEngine)
 target_include_directories(GEngine PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
 target_compile_definitions(GEngine PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
 target_compile_definitions(GEngine PUBLIC
@@ -137,6 +152,7 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D
 function(ge_add_application name directory)
     file(GLOB_RECURSE app_sources CONFIGURE_DEPENDS "${GE_ROOT}/${directory}/src/*.cpp")
     add_executable(${name} ${app_sources})
+    ge_set_output_directories(${name})
     target_include_directories(${name} PRIVATE ${GE_INCLUDE_DIRS} "${GE_ROOT}/${directory}/src")
     target_compile_definitions(${name} PRIVATE GE_PROFILE FBX_SHARED)
     target_link_libraries(${name} PRIVATE GEngine ImGui

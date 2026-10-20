@@ -49,7 +49,8 @@ later graphics access. Unsupported exclusive image/compute or buffer/transfer
 combinations are rejected before submission. The example path is runtime-
 validated; a shared graphics/compute family needs no ownership preparation.
 No new application-facing pass builder is needed. Exclusive
-compute image ownership remains outside this step.
+compute image ownership remains outside this step and is tracked in
+[RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
 The example now includes a compute-first buffer with a subsequent graphics
 draw and readback, in addition to its graphics-first storage buffer. Both
 readbacks passed in Debug/Release on Vulkan dedicated queues with the opt-in.
@@ -146,10 +147,13 @@ Access declarations can identify graphics, compute, or transfer usage; omitted
 stage declarations remain conservative (`All`). Vulkan narrows its stage/access
 masks from that intent, while D3D12 legacy barriers and OpenGL memory barriers
 preserve the same ordering conservatively. Subresource ranges and dedicated
-transfer passes are not exposed by these builders yet.
+pass coverage is incomplete; remaining graph-access work is tracked in
+[RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
 
 `SubresourceRange` is available on the legacy `Read` and `Write` declarations
-for validation and future scheduling. The default denotes the whole resource.
+for validation and range-aware scheduling. Remaining independent-scheduling
+work is tracked in [RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
+The default denotes the whole resource.
 Empty and overflowing ranges are rejected when the access is declared. During
 compilation, `All` counts are resolved against the imported or transient
 resource's mip/layer metadata before transient allocation. Out-of-bounds,
@@ -237,7 +241,9 @@ count (with one mip level until backend support is expanded), and
 `StorageImage2DDesc` declares its subresource counts (currently one mip and
 one layer). Those counts are the compile-time source for resolving `All`.
 The upload pass must actually initialize the texture contents. Use an imported
-framebuffer attachment for render-target work until usage-aware creation exists.
+framebuffer attachment for render-target work. Usage-aware transient attachment
+creation remains open in
+[RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
 Transient resources start Undefined; compilation rejects unsupported states,
 read-only states declared as writes, and reads before a declared first write.
 Validation happens before transient GPU allocation.
@@ -255,7 +261,8 @@ choice for application-owned or cross-frame assets.
 After `Compile`, `GetResourceLifetime` reports each resource's first pass,
 last pass, and final declared state. The graph uses these values as its stable
 allocation-lifetime record. Versioned read/write handles are available; transient
-memory reuse is not enabled.
+memory reuse is not enabled. Pooling and aliasing are tracked only in
+[RenderingArchitecture.md](../../TODO/RenderingArchitecture.md).
 
 Available states are:
 

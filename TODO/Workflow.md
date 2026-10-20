@@ -1,5 +1,24 @@
 # Workflow tracking
 
+## Documentation plan tracking (2026-10-20)
+
+- [x] Keep documentation implementation-only and move plan ownership into
+  `TODO/`. Scope: replace the detailed planned-build paragraphs in the
+  architecture/API build pages with links to their existing workflow TODO
+  entries, register the optional live-log viewer as runtime-logging future
+  work, link remaining render-graph plan references to the rendering TODO, and
+  require every TODO or planned task to be recorded in `TODO/`.
+  Acceptance: no unregistered planned task remains in Documentation, each
+  affected page links to its owning TODO, the Standard workflow states the
+  mandatory rule, and `git diff --check` passes. This is a documentation-only
+  change; no engine build is required.
+  Implemented: build-system plans now live only in the workflow TODO and the
+  pages link there; the live-log viewer is registered as optional future work;
+  render-graph open scheduling/creation/pooling references link to the
+  rendering TODO; and the Standard workflow explicitly requires TODO and
+  planned tasks to be recorded in `TODO/`. Verified by link/content review and
+  `git diff --check`.
+
 ## Third-party dependency layout and submodules (planned)
 
 - [ ] Rename `GEngine/vendor/` to `GEngine/Third-Party/` and make the resulting
@@ -28,27 +47,53 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
-- [ ] Unify Premake and CMake binary output paths. Rewrite the relevant build
-  scripts/configuration so both methods place Windows x64 engine/application
-  executables, DLLs, and required runtime DLLs at
-  `bin/<Configuration>-windows-x86_64/<Target>/`, matching today's Premake
-  layout. Inventory and align the output paths for static libraries, import
-  libraries, and PDBs as well; do not assume only runnable files matter.
-  Current evidence: Premake uses per-target paths, while CMake writes a flat
-  `build/cmake-<version>/bin/<Configuration>/` and keeps static libraries
-  under its build tree. Scope: define a consistent target-by-target layout for
-  Debug/Release (and document CMake's existing Dist limitation), update
-  post-build dependency copying and launch/debug working directories, and
-  retain separate generator/object/PCH directories. Acceptance: configure and
-  build GEngine and FrameGraphTriangle with each method in sequence; verify
-  their final artifacts and copied DLLs match the path map, then run bounded GPU
-  readbacks. Document that the two generators must not build the same
-  configuration concurrently into the shared final path; check switching
-  methods does not leave stale or mismatched binaries. C# ScriptCore's
-  `GEngine-Editor/Resources/Scripts` output remains a documented exception
-  unless the implementation explicitly adds CMake support. Record actual
-  verification and any remaining target/configuration gaps here. Status:
-  plan only; no build output path has changed yet.
+- [x] Unify Premake and CMake output and intermediate paths. Rewrite the
+  relevant build scripts/configuration so intermediates live under
+  `build/<tool>/<system>-<architecture>/<configuration>/<target>/` and final
+  artifacts live under
+  `dist/<tool>/<system>-<architecture>/<configuration>/<target>/`. The tool
+  component identifies Premake or CMake (including its Visual Studio action),
+  while system, architecture, configuration, and target keep variants apart.
+  Scope: inventory every Premake/CMake output and intermediate path, update
+  target/debug/working directories and post-build copying, and keep CMake's
+  current C# ScriptCore and Dist exceptions explicit. Acceptance: configure and
+  build GEngine plus FrameGraphTriangle with each method in sequence; verify
+  final executables, DLLs, import/static libraries, and PDBs appear in their
+  `dist` target directories; verify objects/PCH/generated files remain under
+  generator-isolated `build` directories; run a bounded FrameGraphTriangle
+  readback; and document stale-artifact/concurrent-build guidance. Record
+  actual verification and remaining target/configuration gaps here.
+  Implemented: Premake's shared path component is now
+  `premake-<action>/<system>-<architecture>/<configuration>`, every C++/C#
+  project writes objects and PCH files under `build/` and final artifacts under
+  `dist/`, and GEngine's DLL/runtime copy loop targets the new `dist` tree. The
+  CMake launcher configures under `build/cmake-<action>/windows-x86_64/`; every
+  CMake target uses matching `dist/cmake-<action>/windows-x86_64/<Config>/<Target>/`
+  output properties, with compile PDBs kept under the CMake build tree. The
+  C# ScriptCore output follows the unified Premake layout, and the editor
+  post-build step copies it into its own `dist` target's `Resources/Scripts`
+  directory. `.gitignore` now excludes `/dist/`.
+  Verification (2026-10-20): Premake VS2022 generation passed and generated
+  project files contain the new `OutDir`/`IntDir` paths. CMake VS2022
+  configuration passed in an isolated VS developer child environment after the
+  host's duplicate `PATH/Path` keys were normalized; generated project files
+  contain the new `dist` output paths. Premake Debug/Release and CMake
+  Debug/Release GEngine plus FrameGraphTriangle builds completed with existing
+  warnings but zero errors. Premake Debug and CMake Release 120-frame D3D12
+  runs each passed all three GPU readbacks and exited normally. C# ScriptCore
+  Debug/Release builds passed and produced DLLs in their `dist` target paths.
+  A GEngine-Editor Debug build attempt failed on pre-existing editor/API
+  mismatches (`OnDetach` override and removed legacy renderer APIs), not on
+  output paths; this does not block the engine/example path contract.
+  Remaining limitations: VS2019/VS2026 and other application targets were not
+  rebuilt; CMake still does not generate C# ScriptCore or Premake's `Dist`
+  configuration. Legacy ignored `bin/` and `bin-int/` directories may remain
+  locally but are no longer selected; delete them separately when stale-output
+  cleanup is desired. The checked-in
+  `GEngine-Editor/Resources/Scripts/GEngine-ScriptCore.dll` remains a legacy
+  runtime payload rather than a new build output; removing it requires a
+  separate editor build/deployment migration after the existing editor API
+  mismatches are repaired.
 
 - [x] Flatten the bundled Premake layout from
   `BuildScripts/Premake/bin/premake/premake5.exe` to

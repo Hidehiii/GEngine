@@ -5,7 +5,7 @@ This directory documents the engine as it exists in the current source tree. It 
 ## Contents
 
 - [Engineering workflow](../AGENTS.md): repository-wide implementation, GPU lifetime, verification, example, documentation, and Git standards for coding agents.
-- [Standard workflow](Workflow/StandardWorkflow.md): required architecture and API documentation updates for every code or plan change.
+- [Standard workflow](Workflow/StandardWorkflow.md): required architecture and API documentation updates, with every TODO or planned task recorded in `TODO/`.
 - [Cross-computer workflow](Workflow/CrossComputerWorkflow.md): preserving work, integrating branches and validating the merged renderer.
 - [Focused regression checks](../Tests/README.md): no-PCH public logging-header compilation and formatting checks.
 - [Architecture index](Architecture/Architecture.md): function-focused runtime, scene/services, and rendering/backend architecture.

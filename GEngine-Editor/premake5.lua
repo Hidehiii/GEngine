@@ -4,8 +4,8 @@ project "GEngine-Editor"
 	language "C++"
 	
 
-	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -44,6 +44,11 @@ project "GEngine-Editor"
 	{
 		"GEngine",
 		"ImGui"
+	}
+
+	postbuildcommands
+	{
+		"{COPY} \"$(TargetDir)..\\GEngine-ScriptCore\\*.dll\" \"$(TargetDir)Resources\\Scripts\\\""
 	}
 
 	filter "system:windows"

@@ -4,8 +4,8 @@ project "FrameGraphTriangle"
 	cppdialect "C++17"
 	language "C++"
 
-	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{

@@ -11,5 +11,5 @@ if /i "%action%"=="vs2022" (
     exit /b 1
 )
 if not defined CMAKE_EXE set "CMAKE_EXE=cmake"
-"%CMAKE_EXE%" -S "%~dp0CMake" -B "%~dp0..\build\cmake-%action%" -G "%generator%" -A x64
+"%CMAKE_EXE%" -S "%~dp0CMake" -B "%~dp0..\build\cmake-%action%\windows-x86_64" -G "%generator%" -A x64 -DGE_TOOL_ID=cmake-%action% -DGE_PLATFORM_ID=windows-x86_64
 endlocal & exit /b %errorlevel%

@@ -53,24 +53,28 @@ For the alternative CMake project (VS2022 by default), run:
 
 ```bat
 BuildScripts\GenerateProjectsCMake.bat vs2022
-cmake --build build\cmake-vs2022 --config Debug --target FrameGraphTriangle --parallel 1
+cmake --build build\cmake-vs2022\windows-x86_64 --config Debug --target FrameGraphTriangle --parallel 1
 ```
 
 `vs2019` is also accepted. Set `CMAKE_EXE` to an alternate CMake executable
-if needed. The source definitions are under `BuildScripts/CMake/`; generated
-projects and objects are under `build/cmake-<version>/`, separate from Premake
-outputs. CMake produces the engine DLL and example executables under that
-build tree's `bin/<configuration>/`. Run FrameGraphTriangle from
-`Example/FrameGraphTriangle` so its `Config.ini` and shader assets resolve.
+if needed. The source definitions are under `BuildScripts/CMake/`. All
+generators use `build/<tool>/windows-x86_64/<Configuration>/<Target>/` for
+objects/PCH and `dist/<tool>/windows-x86_64/<Configuration>/<Target>/` for
+final artifacts. For example, the CMake VS2022 Debug executable is
+`dist\cmake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe`.
+Run FrameGraphTriangle from `Example/FrameGraphTriangle` so its `Config.ini`
+and shader assets resolve.
 The CMake project covers the engine, vendored C++ libraries, seven C++ examples,
 Sandbox, and Editor. `GEngine-ScriptCore` (C#) remains Premake-only; a CMake
 build does not generate that assembly. CMake currently requires Windows/MSVC
 and does not offer a VS2026 generator entry in these launchers. Premake's
 `Dist` configuration is not exposed by the CMake launcher. The same
 `VULKAN_SDK` override or bundled SDK fallback is used by both systems.
-VS2022 CMake Debug/Release GEngine and FrameGraphTriangle builds passed on
-2026-10-19; D3D12 and dedicated Vulkan 120-frame runs passed all three graph
-readbacks. VS2019 and the other CMake application targets have not been built.
+On 2026-10-20, Premake and CMake VS2022 Debug/Release GEngine plus
+FrameGraphTriangle builds passed in the unified layout. Premake Debug and
+CMake Release 120-frame D3D12 runs passed all three graph readbacks and exited
+normally. VS2019, VS2026, and the other CMake application targets have not
+been rebuilt for this path change.
 
 Workspace Release and Dist configurations define `NDEBUG`; Debug defines
 `_DEBUG`. PhysX requires exactly one of these definitions. Regenerate existing
@@ -90,7 +94,10 @@ application shutdown. Timed runs use a monotonic wall clock. Launch from
 3. Build the desired example project, such as `Triangle`. Its project dependency builds `GEngine` first and copies the current DLL to the example output directory.
 4. Set the example as Startup Project and run it.
 
-The Triangle executable is emitted under `bin/Debug-windows-x86_64/Triangle` for the Debug x64 configuration.
+The VS2022 Triangle executable is emitted under
+`dist\premake-vs2022\windows-x86_64\Debug\Triangle\Triangle.exe` for Debug x64.
+Legacy `bin\` and `bin-int\` directories are not selected by the current
+generators.
 
 ## Logging-header compatibility checks
 
@@ -104,7 +111,7 @@ not prove the installed version still fails. See [workflow tracking](../../TODO/
 
 ## Parallel build guidance
 
-Use one build invocation per configuration/output directory. Starting a Visual Studio build and a command-line build at the same time can contend for `GEngine.pch`.
+Use one build invocation per tool/configuration/target. Starting a Visual Studio build and a command-line build for the same path at the same time can contend for `GEngine.pch`. Generator-specific `build` and `dist` roots keep Premake and CMake intermediates separate.
 
 The Debug GEngine project uses `/FS` to serialize concurrent writes to its compiler PDB (`vc143.pdb`) when MSVC compiles source files in parallel. This addresses the internal PDB contention, but it cannot make two separate builds safely share one intermediate directory.
 

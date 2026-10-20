@@ -83,8 +83,8 @@ the file fails, the sink reports a warning and stdout remains available.
 The example's optional `GENGINE_EXAMPLE_LOG_STRESS=1` workload writes from two
 CPU workers at frame 30, allowing rotation/concurrency checks without normal
 per-frame spam. Its verification status is tracked in
-[RuntimeLogging.md](../../TODO/RuntimeLogging.md). A live in-application
-viewer is still only a possible follow-up.
+[RuntimeLogging.md](../../TODO/RuntimeLogging.md). An optional live
+in-application viewer is a plan-only follow-up in that TODO.
 Debug D3D12 confirmed the file was readable before process exit, concurrent
 writes, rotation, and console fallback. Release D3D12, OpenGL, and Vulkan
 completed 120-frame noninteractive runs with runtime logs and GPU readback;

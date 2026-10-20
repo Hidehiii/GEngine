@@ -14,7 +14,8 @@ Each function has a focused page:
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and
 API documents to stay synchronized with code and plans. These pages describe
-implemented behavior; open plans are explicitly labeled and tracked in TODO.
+implemented behavior; every TODO or planned task is recorded in `TODO/`, and
+these pages may link to but must not own that plan.
 
 ## Source layout
 

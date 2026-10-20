@@ -5,8 +5,8 @@ project "GEngine"
 	language "C++"
 	
 
-	targetdir ("%{wks.location}\\bin\\" .. outputdir .. "\\%{prj.name}")
-	objdir ("%{wks.location}\\bin-int\\" .. outputdir .. "\\%{prj.name}")
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "GEpch.h"
 	pchsource "src/GEpch.cpp"
@@ -109,11 +109,11 @@ project "GEngine"
 
 		postbuildcommands
 		{
-			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do IF \"%%d\\\" neq \"%{cfg.buildtarget.directory}\" (xcopy /Q /Y /I \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" \"%%d\\\" > nul) ELSE (echo Skipping copy \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" to \"%%d\")"),
-			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
-			("for /d %%d in (\"%{wks.location}/bin\\" .. outputdir .. "\\*\") do {COPY} \"%{LibraryDir.OpenSSL_dll}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do IF \"%%d\\\" neq \"%{cfg.buildtarget.directory}\" (xcopy /Q /Y /I \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" \"%%d\\\" > nul) ELSE (echo Skipping copy \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" to \"%%d\")"),
+			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.dxc_dll}*.dll\" \"%%d\\\""),
+			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.OpenSSL_dll}*.dll\" \"%%d\\\""),
 		}
 
 	filter "configurations:Debug"

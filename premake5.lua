@@ -10,7 +10,7 @@ workspace "GEngine"
 
 	startproject "Sandbox"
 
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "premake-%{_ACTION}/%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
 filter { "language:C++", "configurations:Release or Dist" }
 	defines "NDEBUG"

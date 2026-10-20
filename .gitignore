@@ -5,6 +5,7 @@
 /bin-int
 /bin
 /build/
+/dist/
 /Dep
 *.vcxproj
 *.user

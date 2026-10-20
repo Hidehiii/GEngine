@@ -7,6 +7,9 @@ repository-wide engineering rules in [AGENTS.md](../../AGENTS.md) as well.
 
 1. Register the work in the appropriate `TODO/` file before changing code or
    plans. Record scope, acceptance criteria, and the current status.
+   Every TODO task and planned task must be written in `TODO/`; a document
+   may link to the owning entry, but Documentation must not be the sole record
+   of planned work.
 2. Read the relevant architecture and public API descriptions alongside the
    code, headers, and examples before making the change.
 3. After each code or plan update, update **both** the relevant
@@ -27,3 +30,4 @@ repository-wide engineering rules in [AGENTS.md](../../AGENTS.md) as well.
 
 Documentation is part of the change, not a later cleanup task. A plan entry
 must remain visibly distinct from a supported API or verified implementation.
+Planned work without a TODO entry is a documentation defect.

@@ -3,8 +3,8 @@ project "GEngine-ScriptCore"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetdir ("%{wks.location}/GEngine-Editor/Resources/Scripts")
-	objdir ("%{wks.location}/GEngine-Editor/Resources/Scripts/Intermediates")
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
 
 	files 
 	{

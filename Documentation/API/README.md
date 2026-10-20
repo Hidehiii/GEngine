@@ -24,4 +24,6 @@ selected tool headers; include a specific public header for `RenderGraph`,
 Backend `Platform` and window `Surface` headers are implementation-facing.
 Use the portable `Graphics`/`RenderDevice` and `Window` interfaces in
 applications. Plans and limitations must be labeled separately from verified
-behavior, following the [Standard workflow](../Workflow/StandardWorkflow.md).
+behavior. Every TODO or planned task is recorded in `TODO/`; a guide may link
+to the owning entry but must not be its sole record, following the
+[Standard workflow](../Workflow/StandardWorkflow.md).
