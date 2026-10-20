@@ -15,7 +15,9 @@ working directory.
 The generators currently resolve engine dependencies from `GEngine/vendor/`.
 The proposed `GEngine/Third-Party/` submodule migration and recursive-clone
 setup requirements are owned by
-[Workflow.md](../../TODO/Workflow.md), not implemented by this page.
+[Workflow.md](../../TODO/Workflow.md), not implemented by this page. Its
+2026-10-20 dependency inventory identifies candidate upstream repositories,
+but no public engine build API or current path contract changes.
 For example, build the generated CMake target with
 `cmake --build build/cmake-vs2022/windows-x86_64 --config Debug --target FrameGraphTriangle`.
 

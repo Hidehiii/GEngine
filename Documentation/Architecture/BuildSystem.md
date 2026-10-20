@@ -29,7 +29,9 @@ All current build paths resolve the engine dependency tree from
 `GEngine/vendor/`. The migration proposal for an aggregate
 `GEngine/Third-Party/` submodule, including its provenance and preservation
 requirements, is owned by [Workflow.md](../../TODO/Workflow.md) and is not
-implemented.
+implemented. The 2026-10-20 upstream inventory and submodule priority
+recommendations are recorded there; this investigation changes no current
+build behavior.
 
 The bundled executable sits directly in `BuildScripts/Premake/`; the previous
 `bin/premake` nesting was removed. This only changes the launcher's lookup path.

@@ -1,0 +1,52 @@
+## Device queues and presentation
+
+`RenderDevice` exposes portable `GraphicsQueue` instances for graphics,
+compute, and transfer work. A `CommandBuffer` records with `Begin`/`End`;
+submission is a separate queue operation. `Graphics::SubmitCommandBuffer`
+remains a compatibility facade. `GraphicsQueue::WaitForIdle` is for shutdown
+and exceptional synchronization, not routine per-frame lifetime management.
+
+Presentation owns acquire, submit, fence, and present synchronization. On
+Vulkan, inter-command dependencies live in the device submission layer;
+the presenter consumes the acquire semaphore and produces the present
+semaphore. Resize compares the requested viewport with swap-chain extent
+before acquisition, avoiding an abandoned signaled acquire semaphore.
+Vulkan allocations use concurrent sharing by default across distinct graphics,
+compute, and transfer families; opt-in exclusive 2D/array transfer images use
+ownership barriers as described above. Dependency semaphores provide queue
+ordering. D3D12
+dependencies identify a producer submission generation rather than a mutable
+shared fence value. OpenGL executes the logical chain on one context.
+
+The runtime pauses rendering on a zero-size window event and updates its
+viewport on a nonzero event. OpenGL applies the viewport during presentation;
+Vulkan compares the swap-chain extent and recreates it before acquisition.
+The D3D12 presenter now handles nonzero size changes after the presentation
+graph releases its borrowed back-buffer view. It signals and waits on each
+D3D12 graphics, compute, and transfer queue fence, collects completed
+retirements, then destroys its old command lists (which retain the
+old framebuffers), then has the context release old back-buffer targets and
+call `ResizeBuffers` before rebuilding targets and presenter command lists.
+Zero-size events remain paused by the runtime. This is an exceptional
+resize-time wait, not a per-frame synchronization change. On 2026-10-18 the
+user reported no problem with the manual D3D12 resize/minimize/restore check;
+the agent did not observe the window or capture those manual logs. Detailed
+debug-output and memory evidence remains open in
+[RenderingArchitecture.md](../../../TODO/RenderingArchitecture.md).
+An opt-in example event sequence requests two nonzero presentation sizes
+between frames without manipulating the native window. It exercises buffer
+recreation but cannot certify OS window events or minimize/restore.
+Debug and Release D3D12 runs logged both successful buffer recreations and
+passed both GPU readbacks after 120 frames. OpenGL and Vulkan default runs
+remained healthy; their resize paths were not exercised in this check.
+
+For lifecycle evidence, the example's timed normal-shutdown path can exercise
+frame submission and resource replacement without input automation. A
+2026-10-11 Debug run covered OpenGL, D3D12, and dedicated-queue Vulkan for
+120 seconds each; both numerical GPU readbacks and normal shutdown passed.
+This does not test visible pixels, a real window resize, or minimize/restore.
+Process private bytes were near-flat for OpenGL and D3D12 without its debug
+layer, but rose with the D3D12 debug layer even when replacement was disabled;
+ownership of that increase remains undetermined. See
+[CrossComputerIntegration.md](../../../TODO/CrossComputerIntegration.md) for the
+samples and the open diagnosis.
