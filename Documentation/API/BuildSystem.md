@@ -17,9 +17,9 @@ aggregate submodule. Recursive submodule initialization and Git LFS are build
 prerequisites; the migration status and fresh-clone evidence are owned by
 [ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md). No
 public engine build API changes. The submodule is pinned at
-`4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`; application project files and
-runtime DLL copy commands consume the new path without new public C++
-signatures.
+`8942f70419de3981ad26ac3b747860e00da2b9be`; application project files and
+runtime DLL copy commands consume the same path without new public C++
+signatures. `DirectX-Headers` and `json` are aggregate-local submodules.
 For example, build the generated CMake target with
 `cmake --build build/cmake-vs2022/windows-x86_64 --config Debug --target FrameGraphTriangle`.
 

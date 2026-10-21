@@ -15,7 +15,8 @@ Development is currently Windows-first. Install the following before generating 
 
 The repository vendors most runtime libraries in the `GEngine/Third-Party`
 aggregate submodule. Clone recursively and enable Git LFS so the nested
-`SPIRV-Reflect` submodule and large binary objects are available. Do not
+`SPIRV-Reflect`, `DirectX-Headers`, and `json` submodules plus large binary
+objects are available. Do not
 replace those folders with global installations unless you also update
 `Dependencies.lua`.
 

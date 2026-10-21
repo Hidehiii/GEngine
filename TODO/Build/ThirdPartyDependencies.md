@@ -125,3 +125,37 @@
   Acceptance: the aggregate `INVENTORY.md` has no unresolved exact-commit or
   license-gap entry, and any added license/notice files are tracked without
   changing dependency binaries.
+
+- [~] Convert qualified source dependencies inside `GEngine/Third-Party` into
+  individual Git submodules. A dependency is qualified only after proving that
+  its current tracked tree maps to an exact upstream commit, or after moving
+  GEngine-specific project files/patches to a pinned fork or explicit overlay
+  mechanism so no local change is silently lost. Binary-only SDK packages stay
+  tracked as aggregate snapshot content unless their provider supplies a
+  reproducible pinned remote. Acceptance: each converted dependency has an
+  aggregate-local `.gitmodules` entry and gitlink, the main repository updates
+  the aggregate submodule pin, a fresh recursive Git LFS clone reproduces all
+  dependency files, and Debug/Release GEngine plus FrameGraphTriangle builds
+  and bounded backend runs still pass.
+  Qualified and converted (2026-10-21): `DirectX-Headers` is now an
+  aggregate-local submodule pinned at `27d63115c1037d0e4e119085f34345bd9ecf7ada`
+  (`v1.615.0`); `json` is pinned at
+  `89e2973c754a9c02a49974d839779b151e95afd6` (JsonCpp `1.9.6`). Every local
+  tracked file was compared against the target tag. `DirectX-Headers` differed
+  only by line endings, and `json` differed only by the executable mode of
+  `amalgamate.py`; both now use the authoritative upstream tree. `glm` was not
+  converted because its local tree is a substantially smaller, different
+  snapshot of upstream `1.0.0` rather than an exact match or overlay.
+  The aggregate commit containing these submodules is
+  `8942f70419de3981ad26ac3b747860e00da2b9be`, and the main repository pins it
+  through `GEngine/Third-Party`.
+  Verified: a fresh recursive Git LFS clone reproduced the aggregate at 8,037
+  tracked paths and checked out `DirectX-Headers`, `json`, `SPIRV-Reflect`, and
+  nested googletest at their pinned commits; `git lfs fsck` passed. CMake VS2022
+  Debug/Release builds of GEngine and FrameGraphTriangle passed, and 120-frame
+  D3D12 runs in both configurations exited 0 with all three graph readbacks.
+  Premake VS2022 Debug/Release builds and D3D12 runs likewise passed in both
+  configurations.
+  Remaining: after exact provenance comparisons, qualify or explicitly reject
+  the other source snapshots; binary-only packages remain aggregate snapshot
+  content unless a reproducible pinned remote exists.

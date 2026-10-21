@@ -34,9 +34,11 @@ local overlays, binary assets, and license gaps. Fresh recursive-clone
 verification is recorded with the migration work item in
 [ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md).
 The main repository pins aggregate commit
-`4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`; its final snapshot contains all
+`8942f70419de3981ad26ac3b747860e00da2b9be`; its snapshot contains the
 originally tracked vendor paths plus aggregate metadata, excludes generated
-local build outputs, and passed a fresh recursive Git LFS clone.
+local build outputs, and uses aggregate-local submodules for
+`DirectX-Headers`, `json`, and `SPIRV-Reflect`. It passed a fresh recursive
+Git LFS clone.
 
 The bundled executable sits directly in `BuildScripts/Premake/`; the previous
 `bin/premake` nesting was removed. This only changes the launcher's lookup path.
