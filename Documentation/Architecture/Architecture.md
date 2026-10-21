@@ -27,7 +27,7 @@ these pages may link to but must not own that plan.
 | `GEngine/include/Surface`, `GEngine/src/Surface` | GLFW and Win32 window/input implementations. |
 | `Example` | Focused runnable consumers of engine APIs. |
 | `GEngine-Editor` | Separate editor application built on the engine. |
-| `GEngine/Third-Party` | Pinned aggregate third-party dependency submodule. |
+| `GEngine/GEngine-ThirdParty` | Pinned aggregate third-party dependency submodule. |
 
 ## Subsystem directory
 

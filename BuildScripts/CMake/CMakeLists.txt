@@ -7,7 +7,7 @@ endif()
 
 set(GE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
 get_filename_component(GE_ROOT "${GE_ROOT}" ABSOLUTE)
-set(GE_VENDOR "${GE_ROOT}/GEngine/Third-Party")
+set(GE_VENDOR "${GE_ROOT}/GEngine/GEngine-ThirdParty")
 if(NOT DEFINED ENV{VULKAN_SDK} OR "$ENV{VULKAN_SDK}" STREQUAL "")
     set(GE_VULKAN_SDK "${GE_VENDOR}/VulkanSDK")
 else()
@@ -20,6 +20,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 add_compile_definitions(UNICODE _UNICODE)
+add_compile_options(/utf-8)
 set(GE_TOOL_ID "cmake" CACHE STRING "Build-tool identifier used in build/dist paths")
 set(GE_PLATFORM_ID "windows-x86_64" CACHE STRING "Platform identifier used in build/dist paths")
 set(GE_DIST_ROOT "${GE_ROOT}/dist/${GE_TOOL_ID}/${GE_PLATFORM_ID}")
@@ -38,13 +39,13 @@ set(GE_INCLUDE_DIRS
     "${GE_ROOT}/GEngine/include"
     "${GE_VENDOR}"
     "${GE_VENDOR}/spdlog/include"
-    "${GE_VENDOR}/GLFW/include"
+    "${GE_VENDOR}/glfw/include"
     "${GE_VENDOR}/GLAD/include"
     "${GE_VENDOR}/glm"
     "${GE_VENDOR}/stb"
-    "${GE_VENDOR}/entt/include"
+    "${GE_VENDOR}/entt/single_include/entt"
     "${GE_VENDOR}/ImGui"
-    "${GE_VENDOR}/yaml/include"
+    "${GE_VENDOR}/yaml-cpp/include"
     "${GE_VENDOR}/ImGuizmo"
     "${GE_VENDOR}/SPIRVCross"
     "${GE_VENDOR}/shaderc/include"
@@ -60,30 +61,30 @@ set(GE_INCLUDE_DIRS
 )
 
 add_library(GLFW STATIC
-    "${GE_VENDOR}/GLFW/src/context.c"
-    "${GE_VENDOR}/GLFW/src/init.c"
-    "${GE_VENDOR}/GLFW/src/input.c"
-    "${GE_VENDOR}/GLFW/src/monitor.c"
-    "${GE_VENDOR}/GLFW/src/null_init.c"
-    "${GE_VENDOR}/GLFW/src/null_joystick.c"
-    "${GE_VENDOR}/GLFW/src/null_monitor.c"
-    "${GE_VENDOR}/GLFW/src/null_window.c"
-    "${GE_VENDOR}/GLFW/src/platform.c"
-    "${GE_VENDOR}/GLFW/src/vulkan.c"
-    "${GE_VENDOR}/GLFW/src/window.c"
-    "${GE_VENDOR}/GLFW/src/win32_init.c"
-    "${GE_VENDOR}/GLFW/src/win32_joystick.c"
-    "${GE_VENDOR}/GLFW/src/win32_module.c"
-    "${GE_VENDOR}/GLFW/src/win32_monitor.c"
-    "${GE_VENDOR}/GLFW/src/win32_time.c"
-    "${GE_VENDOR}/GLFW/src/win32_thread.c"
-    "${GE_VENDOR}/GLFW/src/win32_window.c"
-    "${GE_VENDOR}/GLFW/src/wgl_context.c"
-    "${GE_VENDOR}/GLFW/src/egl_context.c"
-    "${GE_VENDOR}/GLFW/src/osmesa_context.c"
+    "${GE_VENDOR}/glfw/src/context.c"
+    "${GE_VENDOR}/glfw/src/init.c"
+    "${GE_VENDOR}/glfw/src/input.c"
+    "${GE_VENDOR}/glfw/src/monitor.c"
+    "${GE_VENDOR}/glfw/src/null_init.c"
+    "${GE_VENDOR}/glfw/src/null_joystick.c"
+    "${GE_VENDOR}/glfw/src/null_monitor.c"
+    "${GE_VENDOR}/glfw/src/null_window.c"
+    "${GE_VENDOR}/glfw/src/platform.c"
+    "${GE_VENDOR}/glfw/src/vulkan.c"
+    "${GE_VENDOR}/glfw/src/window.c"
+    "${GE_VENDOR}/glfw/src/win32_init.c"
+    "${GE_VENDOR}/glfw/src/win32_joystick.c"
+    "${GE_VENDOR}/glfw/src/win32_module.c"
+    "${GE_VENDOR}/glfw/src/win32_monitor.c"
+    "${GE_VENDOR}/glfw/src/win32_time.c"
+    "${GE_VENDOR}/glfw/src/win32_thread.c"
+    "${GE_VENDOR}/glfw/src/win32_window.c"
+    "${GE_VENDOR}/glfw/src/wgl_context.c"
+    "${GE_VENDOR}/glfw/src/egl_context.c"
+    "${GE_VENDOR}/glfw/src/osmesa_context.c"
 )
 ge_set_output_directories(GLFW)
-target_include_directories(GLFW PRIVATE "${GE_VENDOR}/GLFW/include" "${GE_VENDOR}/GLFW/src")
+target_include_directories(GLFW PRIVATE "${GE_VENDOR}/glfw/include" "${GE_VENDOR}/glfw/src")
 target_compile_definitions(GLFW PRIVATE _GLFW_WIN32 _CRT_SECURE_NO_WARNINGS GLFW_EXPOSE_NATIVE_WIN32)
 
 add_library(GLAD STATIC "${GE_VENDOR}/GLAD/src/glad.c")
@@ -102,17 +103,17 @@ add_library(ImGui STATIC
     "${GE_VENDOR}/ImGui/backends/imgui_impl_dx12.cpp"
 )
 ge_set_output_directories(ImGui)
-target_include_directories(ImGui PRIVATE "${GE_VENDOR}/ImGui" "${GE_VENDOR}/GLFW/include" "${GE_VULKAN_SDK}/Include")
+target_include_directories(ImGui PRIVATE "${GE_VENDOR}/ImGui" "${GE_VENDOR}/glfw/include" "${GE_VULKAN_SDK}/Include")
 
 file(GLOB_RECURSE GE_BOX2D_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/box2d/src/*.cpp")
 add_library(Box2D STATIC ${GE_BOX2D_SOURCES})
 ge_set_output_directories(Box2D)
 target_include_directories(Box2D PRIVATE "${GE_VENDOR}/box2d/include" "${GE_VENDOR}/box2d/src")
 
-file(GLOB_RECURSE GE_YAML_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/yaml/src/*.cpp")
+file(GLOB_RECURSE GE_YAML_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/yaml-cpp/src/*.cpp")
 add_library(yaml-cpp STATIC ${GE_YAML_SOURCES})
 ge_set_output_directories(yaml-cpp)
-target_include_directories(yaml-cpp PUBLIC "${GE_VENDOR}/yaml/include")
+target_include_directories(yaml-cpp PUBLIC "${GE_VENDOR}/yaml-cpp/include")
 target_compile_definitions(yaml-cpp PUBLIC YAML_CPP_STATIC_DEFINE)
 
 file(GLOB_RECURSE GE_ENGINE_SOURCES CONFIGURE_DEPENDS "${GE_ROOT}/GEngine/src/*.cpp")

@@ -9,16 +9,16 @@ Development is currently Windows-first. Install the following before generating 
   VS2026, VS2022 and VS2019 project generation.
 - CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
 - The repository includes the Vulkan headers, loader library and shader tools
-  under `GEngine/Third-Party/VulkanSDK`. Set `VULKAN_SDK` only to use another
+  under `GEngine/GEngine-ThirdParty/VulkanSDK`. Set `VULKAN_SDK` only to use another
   installed SDK.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
-The repository vendors most runtime libraries in the `GEngine/Third-Party`
+The repository vendors most runtime libraries in the `GEngine/GEngine-ThirdParty`
 aggregate submodule. Clone recursively and enable Git LFS so the nested
-`SPIRV-Reflect`, `DirectX-Headers`, and `json` submodules plus large binary
-objects are available. Do not
-replace those folders with global installations unless you also update
-`Dependencies.lua`.
+`SPIRV-Reflect`, `DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`, `glm`, `glfw`,
+`yaml-cpp`, `spdlog`, and `stb` submodules plus large binary objects are
+available. Do not replace those folders with global installations unless you
+also update `Dependencies.lua`.
 
 ## Generate the solution
 
@@ -81,13 +81,18 @@ CMake Release 120-frame D3D12 runs passed all three graph readbacks and exited
 normally. VS2019, VS2026, and the other CMake application targets have not
 been rebuilt for this path change.
 
-On 2026-10-21, after moving dependencies to the `GEngine/Third-Party`
+On 2026-10-21, after moving dependencies to the `GEngine/GEngine-ThirdParty`
 aggregate submodule, Premake VS2022 generation and Debug/Release
 FrameGraphTriangle builds, including GEngine, passed. CMake VS2022 Debug/Release
 GEngine plus FrameGraphTriangle builds also passed. Six bounded 120-frame CMake
 runs passed separately for D3D12, OpenGL, and Vulkan in Debug and Release,
 including all three graph readbacks and normal shutdown; Premake D3D12
 Debug/Release runs also passed.
+After adding aggregate-local `HLSLcc`, `entt`, `glm`, `glfw`, `yaml-cpp`,
+`spdlog`, and `stb` submodules and renaming the aggregate directory to the
+repository name, Premake and CMake VS2022 Debug/Release builds and bounded
+D3D12/OpenGL/Vulkan runs again passed in both configurations. A fresh recursive
+Git LFS clone also reproduced the pinned dependency tree.
 
 Workspace Release and Dist configurations define `NDEBUG`; Debug defines
 `_DEBUG`. PhysX requires exactly one of these definitions. Regenerate existing

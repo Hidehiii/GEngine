@@ -4,46 +4,46 @@
 
 local vulkanSdkOverride = os.getenv("VULKAN_SDK")
 if not vulkanSdkOverride or vulkanSdkOverride == "" then
-	vulkanSdkOverride = "%{wks.location}/GEngine/Third-Party/VulkanSDK"
+	vulkanSdkOverride = "%{wks.location}/GEngine/GEngine-ThirdParty/VulkanSDK"
 end
 VULKAN_SDK = vulkanSdkOverride
-FBX_SDK = "%{wks.location}/GEngine/Third-Party/FBXSDK"
+FBX_SDK = "%{wks.location}/GEngine/GEngine-ThirdParty/FBXSDK"
 
 IncludeDir = {}
 
-IncludeDir["vender"] = "%{wks.location}/GEngine/Third-Party"
-IncludeDir["spdlog"] = "%{wks.location}/GEngine/Third-Party/spdlog/include"
-IncludeDir["GLFW"] = "%{wks.location}/GEngine/Third-Party/GLFW/include"
-IncludeDir["GLAD"] = "%{wks.location}/GEngine/Third-Party/GLAD/include"
-IncludeDir["glm"] = "%{wks.location}/GEngine/Third-Party/glm"
-IncludeDir["stb"] = "%{wks.location}/GEngine/Third-Party/stb"
-IncludeDir["entt"] = "%{wks.location}/GEngine/Third-Party/entt/include"
-IncludeDir["ImGui"] = "%{wks.location}/GEngine/Third-Party/ImGui"
-IncludeDir["yaml"] = "%{wks.location}/GEngine/Third-Party/yaml/include"
-IncludeDir["ImGuizmo"] = "%{wks.location}/GEngine/Third-Party/ImGuizmo"
-IncludeDir["SPIRVCross"] = "%{wks.location}/GEngine/Third-Party/SPIRVCross"
-IncludeDir["shaderc"] = "%{wks.location}/GEngine/Third-Party/shaderc/include"
+IncludeDir["vender"] = "%{wks.location}/GEngine/GEngine-ThirdParty"
+IncludeDir["spdlog"] = "%{wks.location}/GEngine/GEngine-ThirdParty/spdlog/include"
+IncludeDir["GLFW"] = "%{wks.location}/GEngine/GEngine-ThirdParty/glfw/include"
+IncludeDir["GLAD"] = "%{wks.location}/GEngine/GEngine-ThirdParty/GLAD/include"
+IncludeDir["glm"] = "%{wks.location}/GEngine/GEngine-ThirdParty/glm"
+IncludeDir["stb"] = "%{wks.location}/GEngine/GEngine-ThirdParty/stb"
+IncludeDir["entt"] = "%{wks.location}/GEngine/GEngine-ThirdParty/entt/single_include/entt"
+IncludeDir["ImGui"] = "%{wks.location}/GEngine/GEngine-ThirdParty/ImGui"
+IncludeDir["yaml"] = "%{wks.location}/GEngine/GEngine-ThirdParty/yaml-cpp/include"
+IncludeDir["ImGuizmo"] = "%{wks.location}/GEngine/GEngine-ThirdParty/ImGuizmo"
+IncludeDir["SPIRVCross"] = "%{wks.location}/GEngine/GEngine-ThirdParty/SPIRVCross"
+IncludeDir["shaderc"] = "%{wks.location}/GEngine/GEngine-ThirdParty/shaderc/include"
 IncludeDir["vulkan"] = "%{VULKAN_SDK}/Include"
-IncludeDir["Box2D"] = "%{wks.location}/GEngine/Third-Party/box2d/include"
+IncludeDir["Box2D"] = "%{wks.location}/GEngine/GEngine-ThirdParty/box2d/include"
 IncludeDir["FBX"] = "%{FBX_SDK}/include"
-IncludeDir["mono"] = "%{wks.location}/GEngine/Third-Party/mono/include"
-IncludeDir["PhysX"] = "%{wks.location}/GEngine/Third-Party/PhysX/include"
-IncludeDir["DirectXHeaders"] = "%{wks.location}/GEngine/Third-Party/DirectX-Headers/include"
-IncludeDir["HLSLcc"] = "%{wks.location}/GEngine/Third-Party/HLSLcc/include"
-IncludeDir["dxc"] = "%{wks.location}/GEngine/Third-Party/dxc/inc"
-IncludeDir["OpenSSL"] = "%{wks.location}/GEngine/Third-Party/OpenSSL/include"
+IncludeDir["mono"] = "%{wks.location}/GEngine/GEngine-ThirdParty/mono/include"
+IncludeDir["PhysX"] = "%{wks.location}/GEngine/GEngine-ThirdParty/PhysX/include"
+IncludeDir["DirectXHeaders"] = "%{wks.location}/GEngine/GEngine-ThirdParty/DirectX-Headers/include"
+IncludeDir["HLSLcc"] = "%{wks.location}/GEngine/GEngine-ThirdParty/HLSLcc/include"
+IncludeDir["dxc"] = "%{wks.location}/GEngine/GEngine-ThirdParty/dxc/inc"
+IncludeDir["OpenSSL"] = "%{wks.location}/GEngine/GEngine-ThirdParty/OpenSSL/include"
 
 LibraryDir = {}
 
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_Bin"] = "%{VULKAN_SDK}/Bin/"   
 LibraryDir["FBX_SDK"] = "%{FBX_SDK}/lib"
-LibraryDir["mono"] = "%{wks.location}/GEngine/Third-Party/mono/lib/%{cfg.buildcfg}"
-LibraryDir["PhysX"] = "%{wks.location}/GEngine/Third-Party/PhysX/lib/%{cfg.buildcfg}/"
-LibraryDir["dxc"] = "%{wks.location}/GEngine/Third-Party/dxc/lib/x64"
-LibraryDir["dxc_dll"] = "%{wks.location}/GEngine/Third-Party/dxc/bin/x64/"
-LibraryDir["OpenSSL"] = "%{wks.location}/GEngine/Third-Party/OpenSSL/lib/VC/x64"
-LibraryDir["OpenSSL_dll"] = "%{wks.location}/GEngine/Third-Party/OpenSSL/bin/"
+LibraryDir["mono"] = "%{wks.location}/GEngine/GEngine-ThirdParty/mono/lib/%{cfg.buildcfg}"
+LibraryDir["PhysX"] = "%{wks.location}/GEngine/GEngine-ThirdParty/PhysX/lib/%{cfg.buildcfg}/"
+LibraryDir["dxc"] = "%{wks.location}/GEngine/GEngine-ThirdParty/dxc/lib/x64"
+LibraryDir["dxc_dll"] = "%{wks.location}/GEngine/GEngine-ThirdParty/dxc/bin/x64/"
+LibraryDir["OpenSSL"] = "%{wks.location}/GEngine/GEngine-ThirdParty/OpenSSL/lib/VC/x64"
+LibraryDir["OpenSSL_dll"] = "%{wks.location}/GEngine/GEngine-ThirdParty/OpenSSL/bin/"
 
 Library = {}
 

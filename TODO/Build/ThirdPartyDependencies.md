@@ -72,14 +72,14 @@
 
   Implemented (2026-10-21): the aggregate remote is
   `https://github.com/Hidehiii/GEngine-ThirdParty.git`, pinned by the main
-  repository at `GEngine/Third-Party` commit
+  repository at `GEngine/GEngine-ThirdParty` commit
   `4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`. The aggregate repository records
   provenance, local overlays, binary assets, consumers, and license gaps in
   `INVENTORY.md`; preserves `SPIRV-Reflect` at
   `74cd6a01f274d6cc7fc9f14c9e3608047b09c5af`; and tracks the four files over
   100 MiB with Git LFS. Premake, CMake, example projects, source includes,
   runtime DLL copy paths, tests, ignore rules, and documentation now resolve
-  `GEngine/Third-Party`. The root repository no longer tracks the old vendor
+  `GEngine/GEngine-ThirdParty`. The root repository no longer tracks the old vendor
   tree directly.
 
   The first aggregate snapshot commit was
@@ -94,7 +94,8 @@
   and `README.md`; the comparison reports no missing original tracked path.
   The first Premake build exposed an incorrect `../Third-Party` project-relative
   source path for `ImGuizmo`; `GEngine/premake5.lua` now uses the correct
-  in-project `Third-Party/...` paths.
+  in-project aggregate paths. The aggregate directory was subsequently renamed
+  from `Third-Party` to `GEngine-ThirdParty` to match its remote repository name.
 
   Verified (2026-10-21): a fresh `git clone --recurse-submodules` with Git LFS
   reproduced the final aggregate at 8,359 paths, checked out `SPIRV-Reflect`
@@ -126,36 +127,72 @@
   license-gap entry, and any added license/notice files are tracked without
   changing dependency binaries.
 
-- [~] Convert qualified source dependencies inside `GEngine/Third-Party` into
+- [~] Convert qualified source dependencies inside `GEngine/GEngine-ThirdParty` into
   individual Git submodules. A dependency is qualified only after proving that
   its current tracked tree maps to an exact upstream commit, or after moving
   GEngine-specific project files/patches to a pinned fork or explicit overlay
   mechanism so no local change is silently lost. Binary-only SDK packages stay
   tracked as aggregate snapshot content unless their provider supplies a
   reproducible pinned remote. Acceptance: each converted dependency has an
-  aggregate-local `.gitmodules` entry and gitlink, the main repository updates
+  aggregate-local `.gitmodules` entry and gitlink whose directory and submodule
+  name equal the remote repository name, the main repository updates
   the aggregate submodule pin, a fresh recursive Git LFS clone reproduces all
   dependency files, and Debug/Release GEngine plus FrameGraphTriangle builds
   and bounded backend runs still pass.
   Qualified and converted (2026-10-21): `DirectX-Headers` is now an
   aggregate-local submodule pinned at `27d63115c1037d0e4e119085f34345bd9ecf7ada`
-  (`v1.615.0`); `json` is pinned at
-  `89e2973c754a9c02a49974d839779b151e95afd6` (JsonCpp `1.9.6`). Every local
+  (`v1.615.0`); JsonCpp (`jsoncpp`) is pinned at
+  `89e2973c754a9c02a49974d839779b151e95afd6` (`1.9.6`); `HLSLcc` is
+  pinned at `3ea1fcd6bd0ac445bc078de0bf32f0950188577b` after an exact tracked-tree
+  match; `entt` is pinned at
+  `fedcb920ce0068c35ffbc66fd4e84864e6ef71ef` (`v3.13.0`). Every local
   tracked file was compared against the target tag. `DirectX-Headers` differed
   only by line endings, and `json` differed only by the executable mode of
-  `amalgamate.py`; both now use the authoritative upstream tree. `glm` was not
-  converted because its local tree is a substantially smaller, different
-  snapshot of upstream `1.0.0` rather than an exact match or overlay.
+  `amalgamate.py`; both now use the authoritative upstream tree. `HLSLcc`
+  matched its upstream tree exactly. `entt`'s local `include/entt.hpp` and
+  `LICENSE.txt` matched upstream `single_include/entt/entt.hpp` and `LICENSE`
+  exactly, so its include path now uses the upstream layout.
   The aggregate commit containing these submodules is
-  `8942f70419de3981ad26ac3b747860e00da2b9be`, and the main repository pins it
-  through `GEngine/Third-Party`.
-  Verified: a fresh recursive Git LFS clone reproduced the aggregate at 8,037
-  tracked paths and checked out `DirectX-Headers`, `json`, `SPIRV-Reflect`, and
-  nested googletest at their pinned commits; `git lfs fsck` passed. CMake VS2022
+  aggregate commit `91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a`, and the main repository pins it through
+  `GEngine/GEngine-ThirdParty`.
+  Verified: a fresh recursive Git LFS clone reproduced the aggregate at 7,971
+  tracked paths and checked out `DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`,
+  `SPIRV-Reflect`, and nested googletest at their pinned commits; `git lfs fsck`
+  passed. CMake VS2022
   Debug/Release builds of GEngine and FrameGraphTriangle passed, and 120-frame
   D3D12 runs in both configurations exited 0 with all three graph readbacks.
   Premake VS2022 Debug/Release builds and D3D12 runs likewise passed in both
-  configurations.
+  configurations. Submodule directories are required to use the remote
+  repository name: the engine-level aggregate is `GEngine-ThirdParty`, and the
+  JsonCpp aggregate-local submodule is `jsoncpp`.
+  Qualification audit for the remaining source snapshots: `glm` is a smaller,
+  different `1.0.0` snapshot; `box2d` contains a local `SetUserData` addition,
+  an updated doctest tree, and project overlays; `GLFW` has 82 modified common
+  files plus overlays; `ImGui` has 55 modified files and source-level changes;
+  `yaml` is a subset with 33 modified files and overlays; `spdlog` has local
+  patches in both its main and duplicate trees; `ImGuizmo` has 21 modified files
+  against tag `1.83`; `SPIRVCross` has 35 modified files and 26 missing files
+  against the closest API-0.59 commit; and `stb` mixes files from different
+  upstream dates. None are safe drop-in submodule replacements without a pinned
+  fork or explicit overlay mechanism. New submodule directories must use the
+  remote repository name exactly; if a historic local directory name differs,
+  rename it in the same change that introduces the submodule.
   Remaining: after exact provenance comparisons, qualify or explicitly reject
   the other source snapshots; binary-only packages remain aggregate snapshot
   content unless a reproducible pinned remote exists.
+  Implemented target upgrade set (2026-10-21): `glm` is pinned at
+  `8d1fd52e5ab5590e2c81768ace50c72bae28f2ed` (`1.0.3`); `glfw` at
+  `d9d6f0f1f967807ffade6598ea9a631ebaf37a56` (`3.5.1`); `yaml-cpp` at
+  `56e3bb550c91fd7005566f19c079cb7a503223cf` (`yaml-cpp-0.9.0`); `spdlog` at
+  `79524ddd08a4ec981b7fea76afd08ee05f83755d` (`v1.17.0`); and `stb` at
+  `a7d4c2175630e1ea5b6f8dd00ab96fed0b97b96d`. Their aggregate-local directories
+  use the remote repository names.
+  Verified after the upgrade: Premake and CMake VS2022 Debug/Release builds of
+  GEngine plus FrameGraphTriangle passed. Six bounded 120-frame runs on D3D12,
+  OpenGL, and Vulkan in both configurations exited 0 and passed all three graph
+  readbacks. D3D12 Debug Layer emitted two cross-queue UAV-barrier errors; that
+  diagnostic is tracked separately and does not alter the dependency pin.
+  A fresh recursive Git LFS clone of aggregate commit
+  `91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a` reproduced 6,845 tracked paths,
+  checked out all aggregate-local submodules at their pinned commits, passed
+  `git lfs fsck`, and matched the four expected LFS SHA-256 object hashes.

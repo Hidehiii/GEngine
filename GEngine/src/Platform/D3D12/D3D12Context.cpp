@@ -161,7 +161,7 @@ namespace
 							reinterpret_cast<D3D12_MESSAGE*>(storage.data()), &size)))
 						{
 							const auto* message = reinterpret_cast<const D3D12_MESSAGE*>(storage.data());
-							GE_CORE_INFO("D3D12 live-object report [{}]: {}", message->ID,
+							GE_CORE_INFO("D3D12 live-object report [{}]: {}", static_cast<int>(message->ID),
 								message->pDescription ? message->pDescription : "null");
 						}
 					}

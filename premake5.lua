@@ -12,6 +12,8 @@ workspace "GEngine"
 
 outputdir = "premake-%{_ACTION}/%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
+buildoptions { "/utf-8" }
+
 filter { "language:C++", "configurations:Release or Dist" }
 	defines "NDEBUG"
 filter {}
@@ -22,11 +24,11 @@ include "Dependencies.lua"
 
 
 group "Dependencies"
-	include "GEngine/Third-Party/box2d"
-	include "GEngine/Third-Party/GLFW"
-	include "GEngine/Third-Party/GLAD"
-	include "GEngine/Third-Party/ImGui"
-	include "GEngine/Third-Party/yaml"
+	include "GEngine/GEngine-ThirdParty/box2d"
+	include "BuildScripts/Premake/GLFW.lua"
+	include "GEngine/GEngine-ThirdParty/GLAD"
+	include "GEngine/GEngine-ThirdParty/ImGui"
+	include "BuildScripts/Premake/YamlCpp.lua"
 group ""
 
 

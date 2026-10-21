@@ -165,3 +165,13 @@
       exit code 0. Debug OpenGL and D3D12 had already passed. Runtime testing
       covered barrier recording and normal shutdown, not interactive visible
       output, resize, or long-run memory stability. Queue ownership, dedicated
+
+- [ ] Resolve D3D12 debug-layer cross-queue UAV-barrier diagnostics.
+      Scope: FrameGraphTriangle D3D12 Debug/Release runs with
+      `GENGINE_D3D12_DEBUG_LAYER=1` exit 0 and pass all three readbacks, but the
+      debug layer reports that a buffer is still referenced by an in-flight
+      UAV barrier on another command queue. Identify the exact producer and
+      consumer queues and buffer, then correct cross-queue synchronization or
+      resource ownership.
+      Acceptance: bounded 120-frame D3D12 runs in Debug and Release pass all
+      three graph readbacks with no D3D12 debug-layer errors.

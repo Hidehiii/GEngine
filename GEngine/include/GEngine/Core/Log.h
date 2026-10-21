@@ -7,6 +7,22 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/fmt/ostr.h"
+#include <type_traits>
+
+namespace fmt
+{
+	template <typename T, typename Char>
+	struct formatter<T, Char, std::enable_if_t<std::is_enum_v<T>>>
+		: formatter<std::underlying_type_t<T>, Char>
+	{
+		template <typename FormatContext>
+		auto format(T value, FormatContext& context) const
+		{
+			return formatter<std::underlying_type_t<T>, Char>::format(
+				static_cast<std::underlying_type_t<T>>(value), context);
+		}
+	};
+}
 
 #ifndef GE_ENABLE_LOCAL_LOG_SAVE
 #define GE_ENABLE_LOCAL_LOG_SAVE 1

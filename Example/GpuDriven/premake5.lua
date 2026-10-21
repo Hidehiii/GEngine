@@ -17,7 +17,7 @@ project "GpuDriven"
 	includedirs
 	{
 		"%{wks.location}/GEngine/include",
-		"%{wks.location}/GEngine/Third-Party/spdlog/include",
+		"%{wks.location}/GEngine/GEngine-ThirdParty/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",
 		"%{IncludeDir.glm}",

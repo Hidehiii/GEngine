@@ -11,7 +11,7 @@ From the repository root in the selected Visual Studio x64 developer prompt:
 
 ```bat
 if not exist .integration\logging-test mkdir .integration\logging-test
-cl /nologo /std:c++17 /EHsc /MDd /D_DEBUG /DGE_DEBUG /I GEngine\include /I GEngine\Third-Party\spdlog\include Tests\LoggingHeader.cpp /Fo.integration\logging-test\Debug.obj /Fe.integration\logging-test\Debug.exe
+cl /nologo /std:c++17 /EHsc /MDd /D_DEBUG /DGE_DEBUG /I GEngine\include /I GEngine\GEngine-ThirdParty\spdlog\include Tests\LoggingHeader.cpp /Fo.integration\logging-test\Debug.obj /Fe.integration\logging-test\Debug.exe
 if errorlevel 1 exit /b 1
 .integration\logging-test\Debug.exe
 ```

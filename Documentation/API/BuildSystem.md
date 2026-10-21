@@ -12,14 +12,19 @@ The launcher's bundled fallback is `BuildScripts/Premake/premake5.exe`;
 The fallback path was verified by generating VS2022 projects from a different
 working directory.
 
-The generators resolve engine dependencies from the `GEngine/Third-Party/`
+The generators resolve engine dependencies from the `GEngine/GEngine-ThirdParty/`
 aggregate submodule. Recursive submodule initialization and Git LFS are build
 prerequisites; the migration status and fresh-clone evidence are owned by
 [ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md). No
 public engine build API changes. The submodule is pinned at
-`8942f70419de3981ad26ac3b747860e00da2b9be`; application project files and
+`91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a`; application project files and
 runtime DLL copy commands consume the same path without new public C++
-signatures. `DirectX-Headers` and `json` are aggregate-local submodules.
+signatures. `DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`, `glm`, `glfw`,
+`yaml-cpp`, `spdlog`, and `stb` are aggregate-local
+submodules.
+Submodule directory names match their remote repository names; for example, the
+engine-level aggregate is `GEngine/GEngine-ThirdParty` and JsonCpp is checked out
+under `jsoncpp`.
 For example, build the generated CMake target with
 `cmake --build build/cmake-vs2022/windows-x86_64 --config Debug --target FrameGraphTriangle`.
 
@@ -48,6 +53,9 @@ and other application targets remain unverified for this path change.
 On 2026-10-21, Premake and CMake Debug/Release GEngine and FrameGraphTriangle
 builds and 120-frame D3D12/OpenGL/Vulkan runs passed in both configurations
 after the Third-Party submodule migration.
+The same verification passed after replacing the five newest source
+dependencies with aggregate-local upstream submodules, and a fresh recursive
+Git LFS clone reproduced the pinned tree.
 
 CMake and Premake both write final artifacts to the `dist` contract above;
 their generator-specific roots prevent object/PCH contention and stale

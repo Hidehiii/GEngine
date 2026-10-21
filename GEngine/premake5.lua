@@ -15,11 +15,11 @@ project "GEngine"
 	{
 		"include/**.h",
 		"src/**.cpp",
-		"Third-Party/glm/**.hpp",
-		"Third-Party/glm/**.inl",
-		"Third-Party/entt/include/**.hpp",
-		"Third-Party/ImGuizmo/ImGuizmo.h",
-		"Third-Party/ImGuizmo/ImGuizmo.cpp",
+		"GEngine-ThirdParty/glm/glm/**.hpp",
+		"GEngine-ThirdParty/glm/glm/**.inl",
+		"GEngine-ThirdParty/entt/single_include/entt/**.hpp",
+		"GEngine-ThirdParty/ImGuizmo/ImGuizmo.h",
+		"GEngine-ThirdParty/ImGuizmo/ImGuizmo.cpp",
 		
 	}
 
@@ -27,7 +27,8 @@ project "GEngine"
 	{
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
-		"FBX_SHARED"
+		"FBX_SHARED",
+		"YAML_CPP_STATIC_DEFINE"
 	}
 
 
@@ -74,7 +75,7 @@ project "GEngine"
 		"%{Library.Vulkan}",
 	}
 
-	filter "files:Third-Party/ImGuizmo/**.cpp"
+	filter "files:GEngine-ThirdParty/ImGuizmo/**.cpp"
 		flags
 		{
 			"NoPCH"

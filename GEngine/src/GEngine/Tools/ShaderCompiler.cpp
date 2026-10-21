@@ -599,8 +599,8 @@ namespace GEngine
 				vertexInputInfo.SemanticName,
 				vertexInputInfo.SemanticIndex,
 				inputDesc.Register, 
-				inputDesc.SystemValueType, 
-				vertexInputInfo.Type,
+				static_cast<int>(inputDesc.SystemValueType),
+				static_cast<int>(vertexInputInfo.Type),
 				vertexInputInfo.Offset);
 
 			vertexInputOffset += Utils::ShaderInputDataSize(vertexInputInfo.Type);
@@ -663,8 +663,8 @@ namespace GEngine
 					constantInfo.Size);
 				GE_CORE_TRACE("      Type name: {}, Class: {}, Type: {}, Rows: {}, Columns: {}, Elements: {}, Members: {}!", 
 					typeDesc.Name, 
-					typeDesc.Class, 
-					typeDesc.Type, typeDesc.Rows, 
+					static_cast<int>(typeDesc.Class),
+					static_cast<int>(typeDesc.Type), typeDesc.Rows,
 					typeDesc.Columns, 
 					typeDesc.Elements, 
 					typeDesc.Members);
@@ -691,7 +691,7 @@ namespace GEngine
 
 				GE_CORE_TRACE("Var name: {}, Type: {}, Bind point: {}, Bind count: {}, Register space: {}!", 
 					resourceInfo.Name, 
-					resourceInfo.Type, 
+					static_cast<int>(resourceInfo.Type),
 					resourceInfo.BindPoint, 
 					resourceInfo.ArraySize,
 					resourceInfo.RegisterSpace);
@@ -710,8 +710,8 @@ namespace GEngine
 				outputDesc.SemanticName,
 				outputDesc.SemanticIndex,
 				outputDesc.Register,
-				outputDesc.SystemValueType,
-				outputDesc.ComponentType);
+				static_cast<int>(outputDesc.SystemValueType),
+				static_cast<int>(outputDesc.ComponentType));
 		}
 	}
 	void ShaderCompiler::ReflectSpirv(const std::vector<std::byte>& spirvMachineCode, const std::vector<std::byte>& reflectionDxil,
@@ -794,7 +794,7 @@ namespace GEngine
 				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Width {}, Vec Size {}, Colums {}, Size {}, Array size {}", 
 					constantInfo.Name,
 					constantInfo.Offset,
-					constantInfo.Type,
+					static_cast<int>(constantInfo.Type),
 					compiler.get_type(type.member_types[i]).width,
 					compiler.get_type(type.member_types[i]).vecsize,
 					compiler.get_type(type.member_types[i]).columns,
@@ -820,10 +820,10 @@ namespace GEngine
 			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Dim: {}, Depth: {}, Format: {}, Array size: {}", 
 				imageInfo.Name,
 				imageInfo.BindPoint,
-				imageInfo.Type,
-				type.image.dim,
+				static_cast<int>(imageInfo.Type),
+				static_cast<int>(type.image.dim),
 				type.image.depth,
-				type.image.format,
+				static_cast<int>(type.image.format),
 				imageInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(imageInfo);
@@ -843,7 +843,7 @@ namespace GEngine
 			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Array size: {}", 
 				separateSampler.name,
 				samplerInfo.BindPoint,
-				samplerInfo.Type,
+				static_cast<int>(samplerInfo.Type),
 				samplerInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(samplerInfo);
@@ -863,10 +863,10 @@ namespace GEngine
 			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Dim: {}, Depth: {}, Format: {}, Array size: {}", 
 				storageImage.name,
 				storageImageInfo.BindPoint,
-				storageImageInfo.Type,
-				type.image.dim,
+				static_cast<int>(storageImageInfo.Type),
+				static_cast<int>(type.image.dim),
 				type.image.depth,
-				type.image.format,
+				static_cast<int>(type.image.format),
 				storageImageInfo.ArraySize);
 
 			reflectionOutput.Resources.insert(storageImageInfo);
@@ -887,7 +887,7 @@ namespace GEngine
 			GE_CORE_TRACE("Name: {}, Binding: {}, Type: {}, Size(not record): {}, Array size: {}", 
 				storageBuffer.name,
 				bufferInfo.BindPoint,
-				bufferInfo.Type,
+				static_cast<int>(bufferInfo.Type),
 				compiler.get_declared_struct_size(type),
 				bufferInfo.ArraySize);
 
@@ -898,7 +898,7 @@ namespace GEngine
 				GE_CORE_TRACE("  Member Name: {}, Offset: {}, Type: {}, Size {}", 
 					memberName,
 					compiler.get_member_decoration(storageBuffer.base_type_id, i, spv::DecorationOffset),
-					memberType.basetype,
+					static_cast<int>(memberType.basetype),
 					compiler.get_declared_struct_member_size(type, i));
 			}
 
@@ -911,7 +911,7 @@ namespace GEngine
 			GE_CORE_TRACE("Name: {}, Location: {}, Type: {}", 
 				output.name, 
 				compiler.get_decoration(output.id, spv::DecorationLocation), 
-				type.basetype);
+				static_cast<int>(type.basetype));
 		}
 
 	}
