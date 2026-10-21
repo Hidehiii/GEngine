@@ -15,11 +15,11 @@ project "GEngine"
 	{
 		"include/**.h",
 		"src/**.cpp",
-		"vendor/glm/**.hpp",
-		"vendor/glm/**.inl",
-		"vendor/entt/include/**.hpp",
-		"vendor/ImGuizmo/ImGuizmo.h",
-		"vendor/ImGuizmo/ImGuizmo.cpp",
+		"Third-Party/glm/**.hpp",
+		"Third-Party/glm/**.inl",
+		"Third-Party/entt/include/**.hpp",
+		"Third-Party/ImGuizmo/ImGuizmo.h",
+		"Third-Party/ImGuizmo/ImGuizmo.cpp",
 		
 	}
 
@@ -74,7 +74,7 @@ project "GEngine"
 		"%{Library.Vulkan}",
 	}
 
-	filter "files:vendor/ImGuizmo/**.cpp"
+	filter "files:Third-Party/ImGuizmo/**.cpp"
 		flags
 		{
 			"NoPCH"

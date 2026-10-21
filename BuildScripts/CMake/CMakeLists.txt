@@ -7,7 +7,7 @@ endif()
 
 set(GE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
 get_filename_component(GE_ROOT "${GE_ROOT}" ABSOLUTE)
-set(GE_VENDOR "${GE_ROOT}/GEngine/vendor")
+set(GE_VENDOR "${GE_ROOT}/GEngine/Third-Party")
 if(NOT DEFINED ENV{VULKAN_SDK} OR "$ENV{VULKAN_SDK}" STREQUAL "")
     set(GE_VULKAN_SDK "${GE_VENDOR}/VulkanSDK")
 else()

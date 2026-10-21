@@ -11,9 +11,9 @@
   planned tasks to be recorded in `TODO/`. Verified by link/content review and
   `git diff --check`.
 
-## Third-party dependency layout and submodules (planned)
+## Third-party dependency layout and submodules (implemented)
 
-- [ ] Rename `GEngine/vendor/` to `GEngine/Third-Party/` and make the resulting
+- [x] Rename `GEngine/vendor/` to `GEngine/Third-Party/` and make the resulting
   dependency tree a pinned Git submodule. Before implementation, identify or
   create the intended remote repository for that aggregate submodule and
   inventory each dependency's version, local patches, license, binary assets,
@@ -69,3 +69,59 @@
   single local version tag and require tree comparison against upstream to
   pin the exact commit. `SPIRV-Reflect` is already a submodule and should be
   preserved as-is.
+
+  Implemented (2026-10-21): the aggregate remote is
+  `https://github.com/Hidehiii/GEngine-ThirdParty.git`, pinned by the main
+  repository at `GEngine/Third-Party` commit
+  `4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`. The aggregate repository records
+  provenance, local overlays, binary assets, consumers, and license gaps in
+  `INVENTORY.md`; preserves `SPIRV-Reflect` at
+  `74cd6a01f274d6cc7fc9f14c9e3608047b09c5af`; and tracks the four files over
+  100 MiB with Git LFS. Premake, CMake, example projects, source includes,
+  runtime DLL copy paths, tests, ignore rules, and documentation now resolve
+  `GEngine/Third-Party`. The root repository no longer tracks the old vendor
+  tree directly.
+
+  The first aggregate snapshot commit was
+  `ef1b0a11b13c9d6bb23a2da9e96650faa554a1a5`. A tracked-tree comparison found
+  that it had accidentally included 209 local generated build outputs under
+  `box2d`, `GLAD`, and `GLFW` and omitted the source repository's tracked but
+  ignored `box2d/.idea/workspace.xml`. Correction commit
+  `4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e` removed those generated outputs,
+  restored the workspace file, and added explicit ignore rules. The final
+  aggregate has 8,359 tracked paths: all 8,353 originally tracked vendor paths
+  plus `.gitattributes`, `.gitignore`, `.gitmodules`, `INVENTORY.md`, `LICENSE`,
+  and `README.md`; the comparison reports no missing original tracked path.
+  The first Premake build exposed an incorrect `../Third-Party` project-relative
+  source path for `ImGuizmo`; `GEngine/premake5.lua` now uses the correct
+  in-project `Third-Party/...` paths.
+
+  Verified (2026-10-21): a fresh `git clone --recurse-submodules` with Git LFS
+  reproduced the final aggregate at 8,359 paths, checked out `SPIRV-Reflect`
+  and its nested googletest at the pinned commits, passed `git lfs fsck`,
+  contained zero tracked generated outputs, and matched the original SHA-256
+  hashes for all four LFS-tracked binaries. Premake VS2022 generation and
+  Debug/Release direct project builds of FrameGraphTriangle, including its
+  GEngine dependency, passed. CMake VS2022 configuration and Debug/Release
+  builds of GEngine plus FrameGraphTriangle passed in an isolated developer
+  environment after reproducing the known host duplicate `PATH/Path` MSBuild
+  issue. Six bounded 120-frame CMake FrameGraphTriangle runs passed separately
+  for D3D12, OpenGL, and Vulkan in Debug and Release; each exited 0 and passed
+  compute, compute-first, and texture-array readbacks at frame 119. Premake
+  D3D12 Debug/Release 120-frame runs also passed. The example configuration
+  was restored to D3D12 after the runs.
+
+  Remaining: exact upstream tree comparisons remain unverified for snapshots
+  marked as such in the aggregate inventory, and redistribution terms still
+  require confirmation for binary packages without local license/notice files.
+  Those provenance refinements are tracked below and do not alter the pinned
+  aggregate content.
+
+- [ ] Refine provenance for unverified dependency snapshots. Compare local
+  source trees against their candidate upstream commits, record the exact
+  commit or preserve the GEngine overlay/fork reason, and confirm/obtain
+  redistribution terms for `FBXSDK`, `GLAD`, `OpenSSL`, `PhysX`, `shaderc`, and
+  `VulkanSDK` where the current snapshot lacks a license or notice file.
+  Acceptance: the aggregate `INVENTORY.md` has no unresolved exact-commit or
+  license-gap entry, and any added license/notice files are tracked without
+  changing dependency binaries.

@@ -9,11 +9,15 @@ Development is currently Windows-first. Install the following before generating 
   VS2026, VS2022 and VS2019 project generation.
 - CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
 - The repository includes the Vulkan headers, loader library and shader tools
-  under `GEngine/vendor/VulkanSDK`. Set `VULKAN_SDK` only to use another
+  under `GEngine/Third-Party/VulkanSDK`. Set `VULKAN_SDK` only to use another
   installed SDK.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
-The repository vendors most runtime libraries under `GEngine/vendor`; do not replace those folders with global installations unless you also update `Dependencies.lua`.
+The repository vendors most runtime libraries in the `GEngine/Third-Party`
+aggregate submodule. Clone recursively and enable Git LFS so the nested
+`SPIRV-Reflect` submodule and large binary objects are available. Do not
+replace those folders with global installations unless you also update
+`Dependencies.lua`.
 
 ## Generate the solution
 
@@ -75,6 +79,14 @@ FrameGraphTriangle builds passed in the unified layout. Premake Debug and
 CMake Release 120-frame D3D12 runs passed all three graph readbacks and exited
 normally. VS2019, VS2026, and the other CMake application targets have not
 been rebuilt for this path change.
+
+On 2026-10-21, after moving dependencies to the `GEngine/Third-Party`
+aggregate submodule, Premake VS2022 generation and Debug/Release
+FrameGraphTriangle builds, including GEngine, passed. CMake VS2022 Debug/Release
+GEngine plus FrameGraphTriangle builds also passed. Six bounded 120-frame CMake
+runs passed separately for D3D12, OpenGL, and Vulkan in Debug and Release,
+including all three graph readbacks and normal shutdown; Premake D3D12
+Debug/Release runs also passed.
 
 Workspace Release and Dist configurations define `NDEBUG`; Debug defines
 `_DEBUG`. PhysX requires exactly one of these definitions. Regenerate existing

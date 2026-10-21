@@ -1,6 +1,7 @@
 
 /.vs
 /.integration/
+/.codex-build/
 /Assets
 /bin-int
 /bin
@@ -10,22 +11,21 @@
 *.vcxproj
 *.user
 *.cache
-/GEngine/vendor/GLFW/bin-int
+/GEngine/Third-Party/GLFW/bin-int
 *.filters
-/GEngine/vendor/JoltPhysics
-/GEngine/vendor/stb/tests
-/GEngine/vendor/yaml/test
+/GEngine/Third-Party/JoltPhysics
+/GEngine/Third-Party/stb/tests
+/GEngine/Third-Party/yaml/test
 GEngine-Editor/GEngineProfile-RunTime.json
 GEngine-Editor/GEngineProfile-ShutDown.json
 GEngine-Editor/GEngineProfile-StartUp.json
-/GEngine/vendor/box2d/bin-int
-/GEngine/vendor/box2d/bin
+/GEngine/Third-Party/box2d/bin-int
+/GEngine/Third-Party/box2d/bin
 *.csproj
-/GEngine/vendor/GLFW/bin
+/GEngine/Third-Party/GLFW/bin
 
-/GEngine/vendor/GLAD/bin-int
-/GEngine/vendor/GLAD/bin-int
-/GEngine/vendor/GLAD/bin
+/GEngine/Third-Party/GLAD/bin-int
+/GEngine/Third-Party/GLAD/bin
 *.sln
 *.slnx
 /Sandbox/GEngineProfile-RunTime.json

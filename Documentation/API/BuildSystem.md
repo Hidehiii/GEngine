@@ -12,12 +12,14 @@ The launcher's bundled fallback is `BuildScripts/Premake/premake5.exe`;
 The fallback path was verified by generating VS2022 projects from a different
 working directory.
 
-The generators currently resolve engine dependencies from `GEngine/vendor/`.
-The proposed `GEngine/Third-Party/` submodule migration and recursive-clone
-setup requirements are owned by
-[Workflow.md](../../TODO/Workflow.md), not implemented by this page. Its
-2026-10-20 dependency inventory identifies candidate upstream repositories,
-but no public engine build API or current path contract changes.
+The generators resolve engine dependencies from the `GEngine/Third-Party/`
+aggregate submodule. Recursive submodule initialization and Git LFS are build
+prerequisites; the migration status and fresh-clone evidence are owned by
+[ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md). No
+public engine build API changes. The submodule is pinned at
+`4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`; application project files and
+runtime DLL copy commands consume the new path without new public C++
+signatures.
 For example, build the generated CMake target with
 `cmake --build build/cmake-vs2022/windows-x86_64 --config Debug --target FrameGraphTriangle`.
 
@@ -43,6 +45,9 @@ FrameGraphTriangle builds passed in the unified layout, and 120-frame D3D12
 runs from Premake Debug and CMake Release passed all three GPU readbacks.
 C# ScriptCore Debug/Release output paths were also verified. VS2019, VS2026,
 and other application targets remain unverified for this path change.
+On 2026-10-21, Premake and CMake Debug/Release GEngine and FrameGraphTriangle
+builds and 120-frame D3D12/OpenGL/Vulkan runs passed in both configurations
+after the Third-Party submodule migration.
 
 CMake and Premake both write final artifacts to the `dist` contract above;
 their generator-specific roots prevent object/PCH contention and stale

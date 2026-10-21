@@ -2,10 +2,10 @@
 
 Premake remains the established Visual Studio generator. The separate CMake
 generator lives under `BuildScripts/CMake/`, uses the same first-party engine
-and vendored source tree. Two launchers under `BuildScripts/` select Premake
+and third-party source tree. Two launchers under `BuildScripts/` select Premake
 or CMake. The bundled Premake executable is in
-`BuildScripts/Premake/premake5.exe`; engine dependencies remain under
-`GEngine/vendor/`. The CMake graph has five vendored C++ libraries, the shared
+`BuildScripts/Premake/premake5.exe`; engine dependencies are pinned in the
+`GEngine/Third-Party` aggregate submodule. The CMake graph has five vendored C++ libraries, the shared
 GEngine library, seven C++ examples, Sandbox, and Editor. It copies the engine
 and required vendor runtime DLLs beside each built executable. Premake alone
 currently generates the C# ScriptCore project.
@@ -26,12 +26,17 @@ copies it into the editor target's `Resources/Scripts` directory. Legacy
 `bin/` and `bin-int/` directories are no longer selected by either generator.
 
 All current build paths resolve the engine dependency tree from
-`GEngine/vendor/`. The migration proposal for an aggregate
-`GEngine/Third-Party/` submodule, including its provenance and preservation
-requirements, is owned by [Workflow.md](../../TODO/Workflow.md) and is not
-implemented. The 2026-10-20 upstream inventory and submodule priority
-recommendations are recorded there; this investigation changes no current
-build behavior.
+`GEngine/Third-Party/`, which points at
+`https://github.com/Hidehiii/GEngine-ThirdParty.git` and preserves
+`SPIRV-Reflect` as a nested pinned submodule. The aggregate repository's
+[INVENTORY.md](../../GEngine/Third-Party/INVENTORY.md) records provenance,
+local overlays, binary assets, and license gaps. Fresh recursive-clone
+verification is recorded with the migration work item in
+[ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md).
+The main repository pins aggregate commit
+`4efd7cce435fb8a2ee173f17fb0e4c2b9ffe670e`; its final snapshot contains all
+originally tracked vendor paths plus aggregate metadata, excludes generated
+local build outputs, and passed a fresh recursive Git LFS clone.
 
 The bundled executable sits directly in `BuildScripts/Premake/`; the previous
 `bin/premake` nesting was removed. This only changes the launcher's lookup path.
@@ -51,6 +56,10 @@ Premake Debug/Release and CMake Debug/Release builds of GEngine and
 FrameGraphTriangle also passed on 2026-10-20 using the unified layout.
 Premake Debug and CMake Release 120-frame D3D12 runs passed all three GPU
 readbacks and exited normally. C# ScriptCore Debug/Release builds passed.
+On 2026-10-21, the same engine/example targets rebuilt successfully with both
+Premake and CMake after the Third-Party submodule migration. CMake 120-frame
+D3D12, OpenGL, and Vulkan runs passed in both Debug and Release, and Premake
+D3D12 runs also passed in both configurations.
 Other application targets, VS2019, and VS2026 were not rebuilt for this path
 change. The CMake option does not generate Premake's `Dist` or C# ScriptCore
 project. A GEngine-Editor Debug build attempt still fails on pre-existing

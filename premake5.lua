@@ -22,11 +22,11 @@ include "Dependencies.lua"
 
 
 group "Dependencies"
-	include "GEngine/vendor/box2d"
-	include "GEngine/vendor/GLFW"
-	include "GEngine/vendor/GLAD"
-	include "GEngine/vendor/ImGui"
-	include "GEngine/vendor/yaml"
+	include "GEngine/Third-Party/box2d"
+	include "GEngine/Third-Party/GLFW"
+	include "GEngine/Third-Party/GLAD"
+	include "GEngine/Third-Party/ImGui"
+	include "GEngine/Third-Party/yaml"
 group ""
 
 

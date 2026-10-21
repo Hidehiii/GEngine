@@ -16,7 +16,7 @@ project "Triangle"
 	includedirs
 	{
 		"%{wks.location}/GEngine/include",
-		"%{wks.location}/GEngine/vendor/spdlog/include",
+		"%{wks.location}/GEngine/Third-Party/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.GLAD}",
 		"%{IncludeDir.glm}",
@@ -39,9 +39,9 @@ project "Triangle"
 	postbuildcommands
 	{
 		"{COPYFILE} \"$(TargetDir)..\\GEngine\\GEngine.dll\" \"$(TargetDir)\"",
-		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\vendor\\PhysX\\lib\\$(Configuration)\\*.dll\" \"$(TargetDir)\"",
-		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\vendor\\dxc\\bin\\x64\\*.dll\" \"$(TargetDir)\"",
-		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\vendor\\OpenSSL\\bin\\*.dll\" \"$(TargetDir)\""
+		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\Third-Party\\PhysX\\lib\\$(Configuration)\\*.dll\" \"$(TargetDir)\"",
+		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\Third-Party\\dxc\\bin\\x64\\*.dll\" \"$(TargetDir)\"",
+		"{COPY} \"$(ProjectDir)..\\..\\GEngine\\Third-Party\\OpenSSL\\bin\\*.dll\" \"$(TargetDir)\""
 	}
 
 	filter "system:windows"

@@ -1,6 +1,6 @@
 ## Component and helper rendering gaps found during documentation audit
 
-- [ ] Implement and verify D3D12 swap-chain resize before claiming interactive
+- [x] Implement and verify D3D12 swap-chain resize before claiming interactive
   resize support. Source inspection on 2026-10-11 found that
   `EngineRuntime::OnWindowResize` updates only the graphics viewport, while
   the D3D12 presentation/context path has no `ResizeBuffers` call and keeps
@@ -52,6 +52,10 @@
   resize and backend runs; no manual log or memory samples were provided here.
   Keep the detailed debug-output/memory evidence open rather than treating
   this report as an automated verification of those measurements.
+  User report (2026-10-21): D3D12 swap-chain resize verification passed. This
+  closes the interactive resize milestone as user-observed evidence. Detailed
+  debug-output and long-run memory measurements remain tracked by the separate
+  D3D12 Debug Layer memory investigation rather than this resize milestone.
 
 - [ ] Decide whether to implement or explicitly retire the scene component
   render helpers. `ImageRenderer::OnRender` contains only a commented-out draw,
