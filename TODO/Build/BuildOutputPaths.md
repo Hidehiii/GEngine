@@ -13,6 +13,23 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+## Engine project split for compile throughput (planned)
+
+- [ ] Split the current single `GEngine` project into focused build projects
+      (for example, core/runtime, graphics, renderer, tools, each rendering
+      backend, and optional editor-only services) so unrelated sources are not
+      rebuilt together. Before implementation, inventory source coupling,
+      public/private include boundaries, PCH ownership, generated code, backend
+      dependencies, C# ScriptCore, and editor/application consumers. Preserve
+      both Premake and CMake generation and keep application code backend-neutral.
+      Acceptance: a baseline and post-split incremental build measurement shows
+      which changed files rebuild only the owning project; full GEngine plus
+      FrameGraphTriangle Debug/Release builds pass on Premake and CMake; bounded
+      D3D12, OpenGL, and Vulkan runs pass; generated projects remain under the
+      unified `build`/`dist` path contract; and public API/runtime behavior is
+      unchanged. Record target boundaries, dependency graph, measured build times,
+      and remaining coupling or deferred targets here.
+
 - [x] Unify Premake and CMake output and intermediate paths. Rewrite the
   relevant build scripts/configuration so intermediates live under
   `build/<tool>/<system>-<architecture>/<configuration>/<target>/` and final
