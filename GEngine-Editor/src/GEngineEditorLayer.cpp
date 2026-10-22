@@ -348,19 +348,19 @@ namespace GEngine
 			ImGui::Begin("##ToolBar",nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			float size = ImGui::GetWindowHeight() - 1.0f;
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f - 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
+			if (ImGui::ImageButton("Play", (ImTextureID)GUIUtils::GetTextureID(m_PlayButtonIcon_Display), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePlay);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
+			if (ImGui::ImageButton("Pause", (ImTextureID)GUIUtils::GetTextureID(m_PauseButtonIcon_DisPlay), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnScenePause);
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x * 0.5f + 1.5f * 1.5f * size);
-			if (ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
+			if (ImGui::ImageButton("Stop", (ImTextureID)GUIUtils::GetTextureID(m_StopButtonIcon), { 1.5f * size, size }, { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y }))
 			{
 				m_SceneStateFunction = GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnSceneStop);
 			}

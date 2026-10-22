@@ -7,12 +7,26 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#include <imgui.h>
 
 namespace GEngine
 {
 	FrameGraphTriangleLayer::FrameGraphTriangleLayer()
 		: Layer("FrameGraphTriangle")
 	{
+	}
+
+	void FrameGraphTriangleLayer::OnImGuiRender()
+	{
+		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
+		ImGui::Begin("Dependency upgrade smoke check");
+		ImGui::Text("ImGui %s", ImGui::GetVersion());
+		ImGui::TextUnformatted("Drag this window outside the main window to check viewports.");
+		static int clicks = 0;
+		if (ImGui::Button("Check input"))
+			++clicks;
+		ImGui::Text("Clicks: %d", clicks);
+		ImGui::End();
 	}
 
 	void FrameGraphTriangleLayer::OnAttach()

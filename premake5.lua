@@ -24,10 +24,11 @@ include "Dependencies.lua"
 
 
 group "Dependencies"
-	include "GEngine/GEngine-ThirdParty/box2d"
+	include "BuildScripts/Premake/Box2D.lua"
 	include "BuildScripts/Premake/GLFW.lua"
 	include "GEngine/GEngine-ThirdParty/GLAD"
-	include "GEngine/GEngine-ThirdParty/ImGui"
+	include "BuildScripts/Premake/ImGui.lua"
+	include "BuildScripts/Premake/SPIRVCross.lua"
 	include "BuildScripts/Premake/YamlCpp.lua"
 group ""
 

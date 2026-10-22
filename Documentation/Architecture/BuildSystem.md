@@ -1,5 +1,11 @@
 # Build system architecture
 
+Upgrade in progress: upstream `imgui`, `box2d`, and `SPIRV-Cross` submodules
+replace snapshots. Premake overlays live in `BuildScripts/Premake`. Both build
+systems compile SPIRV-Cross core/GLSL from the same tree as its headers, replacing
+SDK prebuilt libraries. Verification and aggregate publication remain tracked in
+the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
+
 Premake remains the established Visual Studio generator. The separate CMake
 generator lives under `BuildScripts/CMake/`, uses the same first-party engine
 and third-party source tree. Two launchers under `BuildScripts/` select Premake

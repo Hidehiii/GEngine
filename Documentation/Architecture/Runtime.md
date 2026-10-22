@@ -1,5 +1,9 @@
 # Runtime and window architecture
 
+UI dependency upgrade: Application publishes ownership of EngineRuntime before
+calling its idempotent InitializeImGui step. Backend attach can then safely use
+Application window/config getters. Runtime construction alone does not attach UI.
+
 [Architecture overview](Architecture.md) · [Runtime API](../API/Runtime.md)
 
 `Application` delegates to one `EngineRuntime`. The runtime owns the window,

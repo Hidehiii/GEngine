@@ -1,5 +1,5 @@
 #pragma once
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/Texture.h"
 
@@ -12,6 +12,7 @@ namespace GEngine
 	{
 	public:
 		PlatformImGui() = default;
+		virtual ~PlatformImGui() = default;
 		virtual void OnAttach(void* window) = 0;
 
 		virtual void Begin() = 0;

@@ -1,8 +1,8 @@
 #include "GEpch.h"
 #include "GEngine/ImGui/ImGuiLayer.h"
 #include "GEngine/Application.h"
-#include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_win32.h"
 #include "GEngine/Graphics/Graphics.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -31,7 +31,7 @@ namespace GEngine
 		delete m_PlatformImGui;
 		m_PlatformImGui = nullptr;
 
-		switch (Application::Get().GetConfig()->GetWindowManagerAPI())
+		switch (m_WindowManagerAPI)
 		{
 			case Config::CONFIG_WINDOW_MANAGER_API_GLFW:
 				ImGui_ImplGlfw_Shutdown();
@@ -48,6 +48,7 @@ namespace GEngine
 
 	void ImGuiLayer::OnAttach()
 	{
+		m_WindowManagerAPI = Application::Get().GetConfig()->GetWindowManagerAPI();
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		m_Context = ImGui::CreateContext();

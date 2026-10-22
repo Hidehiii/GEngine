@@ -13,6 +13,71 @@
 
 ## Third-party dependency layout and submodules (implemented)
 
+### In progress: ImGui, Box2D, and SPIRV-Cross upgrade (2026-10-22)
+
+- [ ] Upgrade ImGui to pinned v1.93.0-docking, replace Box2D with upstream
+  v2.4.1, and build pinned upstream SPIRV-Cross core/GLSL from the same source
+  tree as its headers. Preserve existing documentation edits. Move project
+  overlays into first-party build scripts and use upstream repository names.
+  Adapt engine UI backends, texture/font handling, and incompatible ImGuizmo
+  calls without silently disabling required functionality. Acceptance: both
+  Premake and CMake generate; Debug/Release engine, editor, and affected example
+  builds pass; available backend runs exercise shader reflection/conversion and
+  UI behavior. Record exact pins, checks, and blockers before marking complete.
+  Commit and push authorized on 2026-10-22: publish the aggregate first, then
+  commit its fixed gitlink with the engine adaptations in the parent repository.
+  UI smoke exposed a startup crash: backend attach accesses Application runtime
+  before its constructor assigns ownership. Defer UI initialization until that
+  assignment; verify startup and shutdown separately on each backend.
+  Implemented locally: imgui v1.93.0-docking at
+  b916186e66aa3c02b72c6ca17455516512ed8049; box2d v2.4.1 at
+  9ebbbcd960ad424e03e5de6e66a40764c16f51bc; SPIRV-Cross at
+  300681bbcb8365a8d1eacdacdbdd0249bbf1d6b1. Upstream trees are unmodified.
+  Premake overlays moved to BuildScripts/Premake; SPIRV-Cross core/GLSL are
+  source-built. Adapted ImGui backend initialization and image-button IDs,
+  font-size access, and uint64_t GUI texture IDs. A first-party translation unit
+  adapts legacy ImGuizmo capture/polyline calls; the Gizmo facade stays planned.
+  UI smoke also exposed and fixed nonvirtual PlatformImGui destruction, shutdown
+  access to an already-cleared Application runtime, missing D3D12 UI command
+  buffers, and a command-list object cast incorrectly as an array. D3D12 UI now
+  uses tracked submission rather than bypassing waits/signals/resource retention.
+  Verified: Premake and CMake VS2022 generation; CMake engine and
+  FrameGraphTriangle Debug/Release builds. Twelve 120-frame runs (graph and UI,
+  Debug/Release, D3D12/OpenGL/Vulkan) each exited 0 and passed all three graph
+  readbacks; captured logs contained no error/validation/assertion messages.
+  Evidence: parent workspace tmp/dependency-build-{Debug,Release}.log and
+  tmp/upgrade-*/output.log. FBX LFS libraries were restored after an initial
+  pointer-file linker failure. Full editor builds remain blocked by existing
+  OnDetach override, Material::Create, VertexBuffer::SetLayout/SetData, old
+  framebuffer/Renderer2D, and Input API usage; see editor compile logs in tmp.
+  Remaining: editor migration and visual interaction checks, Box2D physics runtime
+  checks, long-run memory/real resize checks, full Premake engine builds, fresh
+  recursive-clone verification. Aggregate e05958d was committed and pushed;
+  this parent change records that fixed dependency revision.
+  Existing backend selection is preserved. Publication is handled aggregate-first;
+  the parent gitlink records the dependency commit used by this implementation.
+
+### Planned: engine-owned Gizmo forwarding interface
+
+- [ ] Add an exported GEngine Gizmo interface that forwards to ImGuizmo internally,
+  and migrate editor calls to it before converting ImGuizmo to an upstream submodule.
+  Scope: engine-owned operation/space enums, viewport rectangle, camera and transform
+  matrices, snapping parameters, and hover/active results; public declarations must
+  not expose ImGuizmo enums or ImDrawList pointers. Map operations explicitly rather
+  than casting editor combo-box indices. Keep ImGuizmo implementation inside the
+  engine DLL, export only the engine wrapper, and remove the third-party header's
+  GENGINE_API/Core.h dependency when adopting the pinned upstream tree. Preserve
+  BeginFrame timing, the active ImGui context, and viewport draw-list selection.
+  Update Premake and CMake integration; keep graphics backend details internal.
+  Acceptance: the editor uses only the engine Gizmo interface for gizmo operations;
+  upstream ImGuizmo requires no engine-specific source patch; Debug/Release engine
+  and editor builds pass; editor checks cover translation, rotation, scaling,
+  snapping, local/world space, hover/active state, viewport resize, and shutdown.
+  Check D3D12, Vulkan, and OpenGL separately where available and record blockers.
+  Status: planned only; no interface or dependency conversion implemented.
+  Documentation registration verified by content/link review and git diff --check;
+  implementation, builds, and editor runtime verification remain open.
+
 - [x] Rename `GEngine/vendor/` to `GEngine/Third-Party/` and make the resulting
   dependency tree a pinned Git submodule. Before implementation, identify or
   create the intended remote repository for that aggregate submodule and

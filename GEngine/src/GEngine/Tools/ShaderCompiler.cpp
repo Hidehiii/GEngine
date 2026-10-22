@@ -5,7 +5,7 @@
 #include "GEngine/Graphics/Graphics.h"
 #include <bitset>
 #include <d3d12shader.h>
-#include <SPIRVCross/spirv_cross.hpp>
+#include <SPIRV-Cross/spirv_cross.hpp>
 namespace GEngine
 {
 	Ref<ShaderCompiler> ShaderCompiler::s_Instance = nullptr;

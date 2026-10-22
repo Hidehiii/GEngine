@@ -15,6 +15,7 @@ namespace GEngine
 		void OnUpdate() override;
 		void OnRender() override;
 		void OnPresent() override;
+		void OnImGuiRender() override;
 
 	private:
 		uint64_t m_RenderCount = 0;

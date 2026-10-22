@@ -22,6 +22,13 @@ also update `Dependencies.lua`.
 
 ## Generate the solution
 
+Local upgrade (2026-10-22): initialize nested `imgui`, `box2d`, and `SPIRV-Cross`
+as well. CMake VS2022 Debug/Release engine and FrameGraphTriangle builds and
+bounded graph/UI runs passed on all three backends. Editor remains blocked by
+older engine API usage; this is not evidence of a successful editor build.
+Use the aggregate revision pinned by the parent repository; remaining checks are
+recorded in the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
+
 From the repository root, run:
 
 ```bat

@@ -7,7 +7,7 @@ namespace GEngine
 	class GENGINE_API GUIUtils
 	{
 	public:
-		static void* GetTextureID(const Ref<Texture2D>& texture);
+		static uint64_t GetTextureID(const Ref<Texture2D>& texture);
 		static Vector2 GetUV0();
 		static Vector2 GetUV1();
 	};

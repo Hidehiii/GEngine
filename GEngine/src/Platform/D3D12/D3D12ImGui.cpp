@@ -5,9 +5,9 @@
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12FrameBuffer.h"
-#include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_win32.h"
-#include "ImGui/backends/imgui_impl_dx12.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_dx12.h"
 
 namespace GEngine
 {
@@ -15,16 +15,23 @@ namespace GEngine
 	static Ref<D3D12RenderPass>					s_RenderPass = nullptr;
 	static Ref<D3D12FrameBuffer>				s_RenderTarget = nullptr;
 	static ID3D12DescriptorHeap*				s_SrvHeap = nullptr;
+	static std::vector<UINT> s_FreeDescriptors;
 	static std::vector<Ref<D3D12CommandBuffer>>	s_CommandBuffers;
 
 	D3D12ImGui::~D3D12ImGui()
 	{
-		if(s_SrvHeap)
-			s_SrvHeap->Release();
 		ImGui_ImplDX12_Shutdown();
+		s_CommandBuffers.clear();
+		s_RenderTarget.reset();
+		s_RenderPass.reset();
+		if (s_SrvHeap)
+			s_SrvHeap->Release();
+		s_SrvHeap = nullptr;
+		s_FreeDescriptors.clear();
 	}
 	void D3D12ImGui::OnAttach(void* window)
 	{
+		CreateCommandBuffers();
 		s_Spec.RenderTargets				= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
 		s_Spec.DepthStencil					= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 		s_Spec.Samples						= 1;
@@ -59,11 +66,35 @@ namespace GEngine
 			break;
 		}
 
-		ImGui_ImplDX12_Init(D3D12Context::Get()->GetDevice().Get(),
-			Graphics::GetFrameCount(),
-			DXGI_FORMAT_R8G8B8A8_UNORM, s_SrvHeap,
-			s_SrvHeap->GetCPUDescriptorHandleForHeapStart(),
-			s_SrvHeap->GetGPUDescriptorHandleForHeapStart());
+		for (UINT i = srvHeapDesc.NumDescriptors; i > 0; --i)
+			s_FreeDescriptors.push_back(i - 1);
+		ImGui_ImplDX12_InitInfo info{};
+		info.Device = D3D12Context::Get()->GetDevice().Get();
+		info.CommandQueue = D3D12Context::Get()->GetGraphicsQueue().Get();
+		info.NumFramesInFlight = Graphics::GetFrameCount();
+		info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		info.SrvDescriptorHeap = s_SrvHeap;
+		info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo* info,
+			D3D12_CPU_DESCRIPTOR_HANDLE* cpu, D3D12_GPU_DESCRIPTOR_HANDLE* gpu)
+		{
+			if (s_FreeDescriptors.empty())
+				throw std::runtime_error("ImGui SRV descriptor heap exhausted");
+			const UINT index = s_FreeDescriptors.back();
+			s_FreeDescriptors.pop_back();
+			const auto stride = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			*cpu = s_SrvHeap->GetCPUDescriptorHandleForHeapStart();
+			*gpu = s_SrvHeap->GetGPUDescriptorHandleForHeapStart();
+			cpu->ptr += static_cast<SIZE_T>(index) * stride;
+			gpu->ptr += static_cast<UINT64>(index) * stride;
+		};
+		info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo* info,
+			D3D12_CPU_DESCRIPTOR_HANDLE cpu, D3D12_GPU_DESCRIPTOR_HANDLE)
+		{
+			const auto stride = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			s_FreeDescriptors.push_back(static_cast<UINT>((cpu.ptr - s_SrvHeap->GetCPUDescriptorHandleForHeapStart().ptr) / stride));
+		};
+		if (!ImGui_ImplDX12_Init(&info))
+			throw std::runtime_error("Failed to initialize ImGui D3D12 backend");
 	}
 	void D3D12ImGui::Begin()
 	{
@@ -90,16 +121,7 @@ namespace GEngine
 
 		s_RenderTarget->End(s_CommandBuffers.at(Graphics::GetFrame()).get());
 		D3D12_THROW_IF_FAILED(cmdList->Close());
-		D3D12Context::Get()->GetGraphicsQueue()->ExecuteCommandLists(1, (ID3D12CommandList* const*)cmdList.Get());
-
-		auto waitFences = s_CommandBuffers.at(Graphics::GetFrame())->GetWaitFences();
-		for (auto& [fence, value] : waitFences)
-		{
-			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Wait(fence.Get(), value));
-		}
-
-		s_CommandBuffers.at(Graphics::GetFrame())->ClearWaitFences();
-		s_CommandBuffers.at(Graphics::GetFrame())->ClearSignalFences();
+		Graphics::SubmitCommandBuffer(s_CommandBuffers.at(Graphics::GetFrame()));
 	}
 	Ref<Texture2D> D3D12ImGui::GetImGuiTexture()
 	{

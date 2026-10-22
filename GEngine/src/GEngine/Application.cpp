@@ -11,6 +11,7 @@ namespace GEngine
 		GE_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 		m_Runtime = CreateScope<EngineRuntime>(spec);
+		m_Runtime->InitializeImGui();
 	}
 
 	Application::~Application()

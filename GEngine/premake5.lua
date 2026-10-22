@@ -19,7 +19,6 @@ project "GEngine"
 		"GEngine-ThirdParty/glm/glm/**.inl",
 		"GEngine-ThirdParty/entt/single_include/entt/**.hpp",
 		"GEngine-ThirdParty/ImGuizmo/ImGuizmo.h",
-		"GEngine-ThirdParty/ImGuizmo/ImGuizmo.cpp",
 		
 	}
 
@@ -75,7 +74,7 @@ project "GEngine"
 		"%{Library.Vulkan}",
 	}
 
-	filter "files:GEngine-ThirdParty/ImGuizmo/**.cpp"
+	filter "files:src/GEngine/ImGui/ImGuizmoCompatibility.cpp"
 		flags
 		{
 			"NoPCH"

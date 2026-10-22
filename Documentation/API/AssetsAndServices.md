@@ -28,6 +28,18 @@ have empty implementations; do not rely on them for drawing.
 
 ## ImGui, scripting, utilities, and diagnostics
 
+The engine Gizmo forwarding interface is planned, not available. Its scope and
+acceptance checks are in the
+[Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
+It will use engine-owned types rather than expose ImGuizmo or draw-list types;
+existing public API signatures remain unchanged by this documentation update.
+
+The subsequent dependency upgrade changes `GUIUtils::GetTextureID` to return
+`uint64_t`, matching current ImGui texture identifiers. Image buttons require an
+explicit string ID. OpenGL and Vulkan texture IDs are supported; other backends
+report an unsupported operation. Upgrade verification remains tracked in the
+[dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
+
 When `EnableImGui` is true, the runtime pushes an `ImGuiLayer` overlay.
 Layers implement `OnImGuiRender`; `GUIUtils` supplies texture IDs and UVs
 for UI integration. `FileDialogs::OpenFile/SaveFile` return an empty string

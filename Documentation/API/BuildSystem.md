@@ -1,5 +1,10 @@
 # Build entry points
 
+The in-progress ImGui/Box2D/SPIRV-Cross upgrade retains existing generator
+commands. Regenerate projects: ImGui lives at `imgui`, SPIRV-Cross at
+`SPIRV-Cross`, and core/GLSL are source-built targets. Rendering-device APIs are
+unchanged. See [upgrade tracking](../../TODO/Build/ThirdPartyDependencies.md).
+
 `BuildScripts/GenerateProjectsPremake.bat [vs2022|vs2019|vs2026]` retains the
 Visual Studio selection and `PREMAKE_EXE` override. The sibling
 `BuildScripts/GenerateProjectsCMake.bat [vs2022|vs2019]` configures the CMake

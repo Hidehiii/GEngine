@@ -2,6 +2,7 @@
 #include <GEngine/EntryPoint.h>
 
 #include "FrameGraphTriangleLayer.h"
+#include <cstdlib>
 
 namespace GEngine
 {
@@ -24,7 +25,7 @@ namespace GEngine
 		specification.EnableScripting = false;
 		specification.EnablePhysics = false;
 		specification.EnableOpenSSL = false;
-		specification.EnableImGui = false;
+		specification.EnableImGui = std::getenv("GENGINE_EXAMPLE_IMGUI") != nullptr;
 		return new FrameGraphTriangleApplication(specification);
 	}
 }

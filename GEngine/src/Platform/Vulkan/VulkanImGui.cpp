@@ -1,9 +1,9 @@
 #include "GEpch.h"
 #include "Platform/Vulkan/VulkanImGui.h"
 #include "GEngine/Application.h"
-#include "ImGui/backends/imgui_impl_glfw.h"
-#include "ImGui/backends/imgui_impl_win32.h"
-#include "ImGui/backends/imgui_impl_vulkan.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanContext.h"
 #include "GEngine/Graphics/Graphics.h"
@@ -87,6 +87,7 @@ namespace GEngine {
 		VK_CHECK_RESULT(vkCreateDescriptorPool(VulkanContext::Get()->GetDevice(), &poolInfo, nullptr, &s_DescriptorPool));
 
 		ImGui_ImplVulkan_InitInfo		info{};
+		info.ApiVersion = VK_API_VERSION_1_3;
 		info.Instance					= VulkanContext::Get()->GetInstance();
 		info.PhysicalDevice				= VulkanContext::Get()->GetPhysicalDevice();
 		info.Device						= VulkanContext::Get()->GetDevice();
@@ -96,16 +97,12 @@ namespace GEngine {
 		info.MinImageCount				= Graphics::GetFrameCount();
 		info.ImageCount					= VulkanContext::Get()->GetSwapChainImage().size();
 		info.DescriptorPool				= s_DescriptorPool;
-		info.Subpass					= 0;
+		info.PipelineInfoMain.Subpass = 0;
+		info.PipelineInfoMain.RenderPass = s_RenderPass->GetRenderPass();
 		info.Allocator					= nullptr;
 		info.CheckVkResultFn			= nullptr;
-		ImGui_ImplVulkan_Init(&info, s_RenderPass->GetRenderPass());
-
-		VkCommandBuffer CmdBuffer		= VulkanContext::Get()->BeginSingleTimeGraphicsCommand();
-		ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
-		VulkanContext::Get()->EndSingleTimeGraphicsCommand(CmdBuffer);
-		vkDeviceWaitIdle(VulkanContext::Get()->GetDevice());
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		if (!ImGui_ImplVulkan_Init(&info))
+			throw std::runtime_error("Failed to initialize ImGui Vulkan backend");
 	}
 
 	void VulkanImGui::Begin()

@@ -1,5 +1,22 @@
 # FrameGraphTriangle
 
+Set `GENGINE_EXAMPLE_IMGUI=1` to enable the dependency-upgrade UI smoke window.
+Expected: readable version text, a working click counter, and a window that can
+be dragged outside the main viewport. Check resize and normal shutdown on each
+backend; missing text, assertions, validation errors, or crashes indicate failure.
+This checks fonts and backend UI submission, not editor image/gizmo behavior.
+
+The main UI pass renders to an offscreen target; this example still presents its
+triangle. A normal exit validates submission and teardown, not visible UI pixels.
+Visual inspection, actual detached-window interaction, and long-run memory remain
+separate manual checks. All twelve Debug/Release graph/UI backend runs exited 0
+after 120 frames during the local 2026-10-22 upgrade validation.
+
+Dependency upgrade validation: this example exercises SPIRV-Cross reflection and
+the OpenGL SPIR-V-to-GLSL path. Run Debug and Release on each backend using the
+bounded run instructions below. It does not validate editor docking, image
+buttons, fonts, or gizmo manipulation; those require separate editor checks.
+
 This is a GPU graph and presentation regression example. It renders a triangle
 whose orange/green color is computed through public engine APIs; it does not include D3D12,
 Vulkan, or OpenGL headers and it does not access native handles.

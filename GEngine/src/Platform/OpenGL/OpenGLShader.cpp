@@ -2,7 +2,7 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "GEngine/Graphics/Material.h"
 #include <glad/glad.h>
-#include <SPIRVCross/spirv_glsl.hpp>
+#include <SPIRV-Cross/spirv_glsl.hpp>
 #include <stdexcept>
 
 namespace GEngine

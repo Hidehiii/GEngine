@@ -32,7 +32,8 @@ namespace GEngine
 	private:
 		bool			m_BlockEvents = true;
 		float			m_Time = 0.0f;
-		ImGuiContext*	m_Context;
+		ImGuiContext*	m_Context = nullptr;
+		uint32_t m_WindowManagerAPI = 0;
 		PlatformImGui*	m_PlatformImGui = nullptr;
 	};
 }

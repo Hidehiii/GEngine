@@ -44,10 +44,10 @@ set(GE_INCLUDE_DIRS
     "${GE_VENDOR}/glm"
     "${GE_VENDOR}/stb"
     "${GE_VENDOR}/entt/single_include/entt"
-    "${GE_VENDOR}/ImGui"
+    "${GE_VENDOR}/imgui"
     "${GE_VENDOR}/yaml-cpp/include"
     "${GE_VENDOR}/ImGuizmo"
-    "${GE_VENDOR}/SPIRVCross"
+    "${GE_VENDOR}/SPIRV-Cross"
     "${GE_VENDOR}/shaderc/include"
     "${GE_VULKAN_SDK}/Include"
     "${GE_VENDOR}/box2d/include"
@@ -92,18 +92,18 @@ ge_set_output_directories(GLAD)
 target_include_directories(GLAD PUBLIC "${GE_VENDOR}/GLAD/include")
 
 add_library(ImGui STATIC
-    "${GE_VENDOR}/ImGui/imgui.cpp"
-    "${GE_VENDOR}/ImGui/imgui_draw.cpp"
-    "${GE_VENDOR}/ImGui/imgui_tables.cpp"
-    "${GE_VENDOR}/ImGui/imgui_widgets.cpp"
-    "${GE_VENDOR}/ImGui/backends/imgui_impl_glfw.cpp"
-    "${GE_VENDOR}/ImGui/backends/imgui_impl_win32.cpp"
-    "${GE_VENDOR}/ImGui/backends/imgui_impl_opengl3.cpp"
-    "${GE_VENDOR}/ImGui/backends/imgui_impl_vulkan.cpp"
-    "${GE_VENDOR}/ImGui/backends/imgui_impl_dx12.cpp"
+    "${GE_VENDOR}/imgui/imgui.cpp"
+    "${GE_VENDOR}/imgui/imgui_draw.cpp"
+    "${GE_VENDOR}/imgui/imgui_tables.cpp"
+    "${GE_VENDOR}/imgui/imgui_widgets.cpp"
+    "${GE_VENDOR}/imgui/backends/imgui_impl_glfw.cpp"
+    "${GE_VENDOR}/imgui/backends/imgui_impl_win32.cpp"
+    "${GE_VENDOR}/imgui/backends/imgui_impl_opengl3.cpp"
+    "${GE_VENDOR}/imgui/backends/imgui_impl_vulkan.cpp"
+    "${GE_VENDOR}/imgui/backends/imgui_impl_dx12.cpp"
 )
 ge_set_output_directories(ImGui)
-target_include_directories(ImGui PRIVATE "${GE_VENDOR}/ImGui" "${GE_VENDOR}/glfw/include" "${GE_VULKAN_SDK}/Include")
+target_include_directories(ImGui PRIVATE "${GE_VENDOR}/imgui" "${GE_VENDOR}/glfw/include" "${GE_VULKAN_SDK}/Include")
 
 file(GLOB_RECURSE GE_BOX2D_SOURCES CONFIGURE_DEPENDS "${GE_VENDOR}/box2d/src/*.cpp")
 add_library(Box2D STATIC ${GE_BOX2D_SOURCES})
@@ -117,7 +117,18 @@ target_include_directories(yaml-cpp PUBLIC "${GE_VENDOR}/yaml-cpp/include")
 target_compile_definitions(yaml-cpp PUBLIC YAML_CPP_STATIC_DEFINE)
 
 file(GLOB_RECURSE GE_ENGINE_SOURCES CONFIGURE_DEPENDS "${GE_ROOT}/GEngine/src/*.cpp")
-add_library(GEngine SHARED ${GE_ENGINE_SOURCES} "${GE_VENDOR}/ImGuizmo/ImGuizmo.cpp")
+add_library(spirv-cross-core STATIC
+    "${GE_VENDOR}/SPIRV-Cross/spirv_cross.cpp"
+    "${GE_VENDOR}/SPIRV-Cross/spirv_parser.cpp"
+    "${GE_VENDOR}/SPIRV-Cross/spirv_cross_parsed_ir.cpp"
+    "${GE_VENDOR}/SPIRV-Cross/spirv_cfg.cpp")
+add_library(spirv-cross-glsl STATIC "${GE_VENDOR}/SPIRV-Cross/spirv_glsl.cpp")
+foreach(target spirv-cross-core spirv-cross-glsl)
+    ge_set_output_directories(${target})
+    target_include_directories(${target} PUBLIC "${GE_VENDOR}/SPIRV-Cross")
+endforeach()
+target_link_libraries(spirv-cross-glsl PUBLIC spirv-cross-core)
+add_library(GEngine SHARED ${GE_ENGINE_SOURCES})
 ge_set_output_directories(GEngine)
 target_include_directories(GEngine PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
 target_compile_definitions(GEngine PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
@@ -129,8 +140,8 @@ target_compile_definitions(GEngine PUBLIC
 )
 target_compile_options(GEngine PRIVATE "$<$<CONFIG:Debug>:/FS>")
 target_precompile_headers(GEngine PRIVATE "${GE_ROOT}/GEngine/src/GEpch.h")
-set_source_files_properties("${GE_VENDOR}/ImGuizmo/ImGuizmo.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D
+set_source_files_properties("${GE_ROOT}/GEngine/src/GEngine/ImGui/ImGuizmoCompatibility.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross-core spirv-cross-glsl
     opengl32 d3dcompiler d3d12 dxgi dxguid Ws2_32 Winmm Version Bcrypt
     "${GE_VENDOR}/mono/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/libmono-static-sgen.lib"
     "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
@@ -141,8 +152,6 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D
     "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"
     "${GE_VENDOR}/dxc/lib/x64/dxil.lib"
     "${GE_VULKAN_SDK}/Lib/$<IF:$<CONFIG:Debug>,shaderc_sharedd.lib,shaderc_shared.lib>"
-    "${GE_VULKAN_SDK}/Lib/$<IF:$<CONFIG:Debug>,spirv-cross-cored.lib,spirv-cross-core.lib>"
-    "${GE_VULKAN_SDK}/Lib/$<IF:$<CONFIG:Debug>,spirv-cross-glsld.lib,spirv-cross-glsl.lib>"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libfbxsdk-md.lib"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libxml2-md.lib"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/$<IF:$<CONFIG:Debug>,zlib-md.lib,zlib-md.lib>"

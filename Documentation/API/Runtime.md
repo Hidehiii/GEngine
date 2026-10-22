@@ -1,5 +1,10 @@
 # Runtime, core, window, and event API
 
+`Application` initializes optional ImGui after assigning its runtime. Direct
+`EngineRuntime` consumers must call `InitializeImGui()` after publishing any
+Application facade needed by UI backends; repeated calls are harmless. UI backends
+currently require that facade. Non-UI construction behavior is unchanged.
+
 [API index](README.md) · [Runtime architecture](../Architecture/Runtime.md)
 
 ## Application and layers

@@ -70,3 +70,20 @@ Optional `ImGuiLayer` bridges to backend UI integration. `Debug` provides
 instrumentation/trace output, not frame ownership. The separate
 `GEngine-Editor` application consumes engine APIs and ImGui; backend allocation
 and synchronization remain within the engine.
+
+Planned only: an engine-owned Gizmo forwarding boundary will keep ImGuizmo
+implementation and draw-list/context handling internal, while the editor consumes
+engine types. The scope and acceptance checks are owned by the
+[Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
+No ownership, backend, or runtime behavior changes are implemented by this plan.
+
+Dependency upgrade in progress: ImGui v1.93.0-docking uses backend-managed font
+texture updates. D3D12 supplies reusable SRV allocation callbacks; Vulkan supplies
+its render pass through pipeline info. A first-party compatibility translation
+unit adapts the legacy ImGuizmo mouse-capture call. The forwarding interface
+above remains planned. See the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
+
+The UI backend base has a virtual destructor so renderer shutdown executes before
+context destruction. ImGuiLayer retains window-manager selection for shutdown
+without querying the Application runtime being destroyed. D3D12 UI command
+buffers use tracked queue submission and SRV descriptors are recycled by callbacks.

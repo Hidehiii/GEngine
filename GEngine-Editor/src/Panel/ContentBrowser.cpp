@@ -66,7 +66,7 @@ namespace GEngine
 				icon = m_FileIcon;
 			}
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			ImGui::ImageButton((ImTextureID)GUIUtils::GetTextureID(icon), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			ImGui::ImageButton("Thumbnail", (ImTextureID)GUIUtils::GetTextureID(icon), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 			if (ImGui::BeginDragDropSource())
 			{

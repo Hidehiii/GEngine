@@ -55,7 +55,11 @@ namespace GEngine
 		if (m_Specification.EnableOpenSSL)
 			OpenSSLTool::Init();
 
-		if (m_Specification.EnableImGui)
+	}
+
+	void EngineRuntime::InitializeImGui()
+	{
+		if (m_Specification.EnableImGui && !m_ImGuiLayer)
 		{
 			m_ImGuiLayer = new ImGuiLayer();
 			PushOverlay(m_ImGuiLayer);

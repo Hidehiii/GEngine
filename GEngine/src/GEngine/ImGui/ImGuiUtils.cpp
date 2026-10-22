@@ -1,7 +1,7 @@
 #include "GEpch.h"
 #include "GEngine/Utils/GUIUtils.h"
-#include "ImGui/imgui.h"
-#include "ImGui/backends/imgui_impl_vulkan.h"
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 #include "Platform/Vulkan/VulkanTexture2D.h"
@@ -13,12 +13,12 @@ namespace GEngine
 {
 	std::vector < Ref<Texture2D>> s_VulkanTexture2DUsed;
 	std::vector< VkDescriptorSet> s_VulkanTextureID;
-	void* GUIUtils::GetTextureID(const Ref<Texture2D>& texture)
+	uint64_t GUIUtils::GetTextureID(const Ref<Texture2D>& texture)
 	{
 		switch (Graphics::GetGraphicsAPI())
 		{
 		case GRAPHICS_API_OPENGL:
-			return (void*)std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
+			return std::dynamic_pointer_cast<OpenGLTexture2D>(texture)->GetOpenGLID();
 		case GRAPHICS_API_VULKAN:
 		{
 			for (int i = s_VulkanTexture2DUsed.size() - 1; i >= 0; i--)
@@ -34,23 +34,21 @@ namespace GEngine
 			{
 				if (s_VulkanTexture2DUsed.at(i) == texture)
 				{
-					return s_VulkanTextureID.at(i);
+					return reinterpret_cast<uint64_t>(s_VulkanTextureID.at(i));
 				}
 			}
-			VkDescriptorSet dst = ImGui_ImplVulkan_AddTexture(std::dynamic_pointer_cast<VulkanSampler>(Sampler::GetDefaultSampler())->GetVulkanSampler(),
-				std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImageView(),
+			VkDescriptorSet dst = ImGui_ImplVulkan_AddTexture(std::dynamic_pointer_cast<VulkanTexture2D>(texture)->GetImageView(),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			s_VulkanTexture2DUsed.push_back(texture);
 			s_VulkanTextureID.push_back(dst);
-			return dst;
+			return reinterpret_cast<uint64_t>(dst);
 		}
 			
 		default:
 			break;
 		}
 
-		GE_CORE_ASSERT(false, "GetTextureID not work");
-		return nullptr;
+		throw std::runtime_error("GUI texture IDs are unsupported by this graphics backend");
 	}
 
 	Vector2 GUIUtils::GetUV0()

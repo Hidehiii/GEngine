@@ -43,6 +43,7 @@ namespace GEngine
 		~EngineRuntime();
 
 		void Run();
+		void InitializeImGui();
 		void Close();
 		void OnEvent(Event& event);
 		void PushLayer(Layer* layer);

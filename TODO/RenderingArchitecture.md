@@ -2,6 +2,10 @@
 
 ## Topic index
 
+- [In-progress dependency upgrade](Build/ThirdPartyDependencies.md#in-progress-imgui-box2d-and-spirv-cross-upgrade-2026-10-22)
+
+- [Planned engine Gizmo forwarding interface](Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
+
 - [Component and helper rendering gaps](Rendering/ComponentRenderHelpers.md)
 - [Integration status](Rendering/Integration.md)
 - [Combined milestones](Rendering/Milestones.md)

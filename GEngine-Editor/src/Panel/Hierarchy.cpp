@@ -25,7 +25,7 @@ namespace GEngine
 		ImGui::NewLine();
 		ImVec2 contentRegionAvailable = ImGui::GetWindowContentRegionMax();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 20, 4 });
-		float lineMiddle = GImGui->Font->FontSize * 2 + GImGui->Style.FramePadding.x;
+		float lineMiddle = ImGui::GetFontSize() * 2 + GImGui->Style.FramePadding.x;
 		ImGui::SameLine(contentRegionAvailable.x * 0.5 - lineMiddle);
 		if (ImGui::Button("Add Component"))
 		{
@@ -55,7 +55,7 @@ namespace GEngine
 			auto& component					= gameObject.GetComponent<T>();
 			ImVec2 contentRegionAvailable	= ImGui::GetContentRegionAvail();
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4, 4 });
-			float lineHeight				= GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			float lineHeight				= ImGui::GetFontSize() + GImGui->Style.FramePadding.y * 2.0f;
 			ImGui::Separator();
 			bool open						= ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
