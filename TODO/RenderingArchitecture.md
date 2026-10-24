@@ -1,5 +1,9 @@
 # Rendering architecture refactor
 
+Qt dependency storage is now the shared aggregate's qtbase submodule (6.10.3),
+with editor-only consumption planned. No engine/backend rendering APIs or build
+links changed; Qt SDK and Host viewport integration remain in editor E0–E6.
+
 Planned ImGuizmo removal is tracked in editor E4-G: first verify Qt Host gizmo
 rendering/input and undo transactions, then remove the old adapter and submodule.
 No rendering interfaces or runtime dependencies change with this plan entry.

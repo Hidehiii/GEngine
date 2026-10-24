@@ -1,5 +1,12 @@
 # Build entry points
 
+Qt source location: `GEngine/GEngine-ThirdParty/qtbase` (v6.10.3,
+`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`). Initialize with
+`git submodule update --init --recursive` after the aggregate gitlink is published.
+This provides editor-only Core/Gui/Widgets source, not Qt6Config.cmake from an
+installed SDK. Current engine/game targets do not compile, link or deploy Qt;
+their public APIs and generator commands remain unchanged.
+
 Qt 6 Widgets is selected for the future EditorHost. Its planned CMake target
 uses find_package(Qt6 COMPONENTS Core Gui Widgets) and matching Qt6 imported
 targets; SDK paths, Premake generation and deployment will be documented when

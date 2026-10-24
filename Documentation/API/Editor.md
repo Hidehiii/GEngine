@@ -2,6 +2,10 @@
 
 ## 已选定：Qt 6 编辑器 / Dear ImGui 游戏 UI（待实现）
 
+编辑器所需 Qt Core/Gui/Widgets 源码已由第三方聚合仓库的 `qtbase` 子模块
+固定为 Qt 6.10.3（`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`）；当前没有
+Qt SDK/Host 目标或新增可调用接口，游戏与引擎 API 不引入 Qt 依赖。
+
 新 Host 使用 Qt 6 Widgets，协议与文档核心不依赖 Qt 控件或引擎头。
 Qt model/delegate 和 QAction 调用同一 CommandService；不额外维护一套
 QUndoStack 历史。QProcess 退出/错误和异步消息驱动 WorkerSupervisor，Qt UI

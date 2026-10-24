@@ -1,5 +1,11 @@
 # GEngine Editor
 
+Editor-only Qt source: `../GEngine/GEngine-ThirdParty/qtbase`, tag v6.10.3,
+commit `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. It contains Core/Gui/Widgets
+but is not a prebuilt SDK. The source is managed in the shared dependency
+repository; engine and game targets do not link Qt. Qt Host/build/deployment
+integration remains planned, so current launch commands still use the old editor.
+
 UI 选型已确定：新编辑器使用 **Qt 6 Widgets**，**Dear ImGui 用于游戏内 UI**。
 Qt Host/EngineWorker 迁移尚未实现；下述启动方式仍运行现有 ImGui 编辑器。
 现有 ImGuizmo 是过渡实现，Qt 视口工具需要独立迁移，不直接嵌入 ImGui 面板。

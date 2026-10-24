@@ -1,5 +1,11 @@
 # Build system architecture
 
+Qt 6 source is now stored as the editor-only `qtbase` nested submodule under
+`GEngine/GEngine-ThirdParty`, pinned to tag v6.10.3 / commit
+`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. Core/Gui/Widgets sources are
+present; neither build generator links Qt into GEngine or games. No Qt SDK is
+built or installed by this dependency addition. Host integration remains planned.
+
 Planned UI split: a separate Qt 6 Widgets EditorHost links Qt Core/Gui/Widgets;
 EngineWorker/game link GEngine and Dear ImGui, without Qt. Existing editor
 targets still build the transitional ImGui UI. Qt SDK/kit selection, CMake and

@@ -2,6 +2,11 @@
 
 ## UI 技术选型（2026-10-24 已确定，迁移尚未实现）
 
+源码依赖已加入第三方聚合目录 `GEngine/GEngine-ThirdParty/qtbase`，固定 Qt
+6.10.3 / `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`。此目录统一存放依赖，
+使用方仍仅限未来 EditorHost；引擎/游戏不链接 Qt。SDK 构建、Qt Host 和
+部署尚未实施，不能把源码存在视为编辑器迁移完成。
+
 新 EditorHost 使用 **Qt 6 Widgets**；Dear ImGui 用于 **游戏进程内 UI**。
 主窗口、菜单、工具栏、停靠面板、Hierarchy、Inspector、Assets 和 Console 均用
 Qt 构建，不再以 ImGui Docking 作为目标编辑器框架。现有 ImGui 编辑器仍可运行，

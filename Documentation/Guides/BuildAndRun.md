@@ -22,6 +22,13 @@ also update `Dependencies.lua`.
 
 ## Generate the solution
 
+Editor-only Qt source is in `GEngine/GEngine-ThirdParty/qtbase` at v6.10.3
+(`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`). Recursive submodule initialization
+fetches it once the updated aggregate revision is published. This is not an
+installed Qt SDK; existing engine/game builds do not need Qt and their commands
+are unchanged. The Qt editor target and SDK build instructions remain future work
+in [editor tracking](../../TODO/EditorArchitecture.md).
+
 Local upgrade: initialize nested `imgui`, `box2d`, `SPIRV-Cross`, and `ImGuizmo`
 as well. The editor API repair subsequently passed CMake VS2022 Debug/Release
 builds and bounded runs on all three backends. ImGuizmo now compiles in the editor
