@@ -1,5 +1,12 @@
 # GEngine Editor
 
+UI 选型已确定：新编辑器使用 **Qt 6 Widgets**，**Dear ImGui 用于游戏内 UI**。
+Qt Host/EngineWorker 迁移尚未实现；下述启动方式仍运行现有 ImGui 编辑器。
+现有 ImGuizmo 是过渡实现，Qt 视口工具需要独立迁移，不直接嵌入 ImGui 面板。
+Qt 面板、图像显示、输入路由及部署验收见[编辑器 TODO](../TODO/EditorArchitecture.md)。
+E4-G 另行跟踪：Qt 变换工具完成并验证后再移除 ImGuizmo 子模块及旧适配器；
+当前尚未删除，游戏内 Dear ImGui 不受该移除计划影响。
+
 ImGuizmo is now a pristine upstream submodule at
 `105e4fde45e4e74aae8973d98750820ef7aca7e2` (v1.92.5 WIP header).
 Only this executable compiles it, behind `UI/GizmoController`; initialize

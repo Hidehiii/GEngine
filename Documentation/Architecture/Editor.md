@@ -1,5 +1,47 @@
 # 编辑器架构设计
 
+## UI 技术选型（2026-10-24 已确定，迁移尚未实现）
+
+新 EditorHost 使用 **Qt 6 Widgets**；Dear ImGui 用于 **游戏进程内 UI**。
+主窗口、菜单、工具栏、停靠面板、Hierarchy、Inspector、Assets 和 Console 均用
+Qt 构建，不再以 ImGui Docking 作为目标编辑器框架。现有 ImGui 编辑器仍可运行，
+作为迁移基线保留；后续整体设计以本节选型为准。实施验收由
+[编辑器 TODO](../../TODO/EditorArchitecture.md) 管理。
+
+Host 使用 QApplication/QMainWindow、QDockWidget、QToolBar 和 QAction；树/列表
+采用 Qt Model/View，模型数据来自 SceneDocument，编辑 delegate 通过命令服务
+提交修改。Qt 组件只负责显示与输入，不能成为第二份权威文档或撤销历史。
+QAction 的启用状态、快捷键、菜单和工具栏绑定同一编辑命令。
+
+WorkerSupervisor 使用 QProcess 异步启动/观察 Worker，通过版本化 IPC 同步；
+不在 UI 线程调用阻塞式 waitForFinished/waitForReadyRead。跨线程结果经 queued
+信号送回 Host 主线程，在此更新模型和 QWidget。首版视口使用 QWidget 的
+QPainter 绘制已完成 QImage，保留与当前图像匹配的缓冲所有权，不借用会被
+Worker 覆盖的槽；不嵌入 Worker 原生窗口，不共享引擎设备或 fence。
+
+SceneViewport 的选择框、网格和变换工具由 Qt Host 绘制与命中测试，输出编辑
+命令后同步 Worker；这部分是待实施的 Qt Gizmo 工具，不能直接调用依赖 ImGui
+draw list 的 ImGuizmo。已子模块化的 ImGuizmo/GizmoController 保持为旧编辑器
+的过渡实现，Qt 迁移不撤销该依赖整理，也不在 Qt Host 隐藏嵌入 ImGui。
+替代工具验收通过后，计划移除旧 GizmoController 及 ImGuizmo 子模块/构建依赖，
+由[编辑器 TODO 的 E4-G](../../TODO/EditorArchitecture.md#e4-gqt-视口工具替代并移除-imguizmo计划)
+跟踪。当前仅登记计划，现有所有权及运行行为不变。
+
+Dear ImGui 的 context、NewFrame、绘制和 GPU 资源由游戏/Worker 的引擎运行时
+管理。GameViewport 接收包括游戏 UI 在内的完成图像，Host 不再用 ImGui 绘制
+周围面板。Qt 将聚焦 GameViewport 的鼠标、键盘、滚轮、文本提交和失焦通知
+转换为协议输入；Worker 按游戏 ImGui 的 capture 状态决定是否继续交给游戏逻辑。
+SceneViewport 工具输入与游戏输入分离，游戏 UI 不修改 Host 的选择与历史。
+
+构建计划：Host 单独依赖 Qt6::Core/Gui/Widgets，Worker/游戏依赖 GEngine/ImGui，
+两者只共用不含 Qt、ImGui、引擎头的协议 DTO。固定 Qt SDK 版本和 MSVC kit，
+同时补 CMake、Premake 的生成工具/链接与部署规则，部署版本匹配的运行库和
+平台插件。Qt SDK 环境尚未核验，也未添加构建目标；游戏/引擎独立构建不要求 Qt。
+
+官方参考：[Qt 主窗口](https://doc.qt.io/qt-6/qmainwindow.html)、
+[QProcess](https://doc.qt.io/qt-6/qprocess.html)、
+[Qt CMake 集成](https://doc.qt.io/qt-6/cmake-get-started.html)。
+
 ## 已实施的 Gizmo 边界（2026-10-24）
 
 `GEngine-Editor/src/UI/GizmoController` 已作为编辑器私有适配层实现；上游
@@ -37,14 +79,14 @@ ImGuizmo 只编译到编辑器，不再进入引擎 DLL。每次 OnImGuiRender �
 ## 模块与依赖
 
 采用 EditorHost 与 EngineWorker 两个进程；DLL 分层不能替代故障隔离。
-EditorCore 不包含 ImGui/ImGuizmo 或原生图形头；EditorUI 可以直接使用 ImGui，
-Gizmo 通过编辑器自己的 GizmoController 使用。运行时引擎不依赖编辑器。
+EditorCore 不包含 Qt 控件、ImGui/ImGuizmo 或原生图形头；EditorUI 使用 Qt 6
+Widgets，场景工具通过 Host 的 Qt 视口适配层使用。运行时引擎不依赖 Qt 编辑器。
 
 ```mermaid
 flowchart TD
-    App[Application / EditorLayer 生命周期适配] --> Session[EditorSession]
+    App[Qt QApplication / QMainWindow] --> Session[EditorSession]
     Session --> Core[文档 / 选择 / 命令 / 运行会话]
-    Session --> UI[PanelHost / 面板 / 输入路由]
+    Session --> UI[Qt Dock 面板 / 输入路由]
     UI --> Core
     Session --> Bridge[EditorRenderBridge]
     UI --> View[ViewportController]
@@ -54,6 +96,8 @@ flowchart TD
     Bridge --> IPC
     IPC --> Engine[EngineWorker: Scene / 引擎运行服务]
     Engine --> Render[SceneRenderer / RenderSystem / RenderDevice]
+    Engine --> GameUI[Dear ImGui 游戏内 UI]
+    GameUI --> Render
     Render --> Backends[OpenGL / Vulkan / D3D12]
 ```
 
@@ -81,7 +125,7 @@ flowchart TD
 继续运行。实现工作及故障注入归 [E0](../../TODO/EditorArchitecture.md)。
 
 EditorHost 拥有文档模型、选择、历史、项目路径和 UI；不链接/加载 GEngine
-DLL，不执行用户原生脚本，不创建引擎 Scene。它采用独立的轻量 UI/呈现适配器，
+DLL，不执行用户原生脚本，不创建引擎 Scene。它采用 Qt 6 Widgets UI 与图像呈现，
 不沿用当前依赖 GEngine Application/Layer 的启动和最终呈现路径。
 这需要单独构建目标与类型边界；Host 数据类型不从 `<GEngine.h>` 引入。
 EngineWorker 加载 GEngine，维护文档的可重建镜像，执行预览与运行；二者
@@ -106,8 +150,8 @@ Host 通过异步管道/本地 IPC 接收结果；不在 UI 线程同步等待 W
 标记 Disconnected；记录 exit code、最后操作及可获得的崩溃日志/dump 路径。
 进程启动失败或协议不兼容也保持编辑器可用。绝不终止外部用户进程。
 
-首版视口传输使用后端内异步 GPU 读回 → 有界 CPU 图像缓冲 → Host 独立纹理
-上传，接受额外延迟和带宽成本，以获得可跨后端验证的边界。图像携带尺寸、
+首版视口传输使用后端内异步 GPU 读回 → 有界 CPU 图像缓冲 → Host QImage/
+QPainter 显示，接受额外延迟和带宽成本，以获得可跨后端验证的边界。图像携带尺寸、
 格式、行跨度、色彩约定、方向、generation/revision/frame ID；读取前检查
 缓冲区边界，最多保留有限数量的最新完成帧，慢消费者丢旧帧。Host 只读取
 完成发布的槽，Worker 崩溃时不等待未完成槽；可保留最后一帧并覆盖失联提示。
@@ -141,9 +185,9 @@ generation 和查询接口是新增工作，不能假定已有。打开/替换/�
 generation；每次使用时解析与检查，删除后立即使 UI 选择失效。
 运行对象另带 PlaySession generation，禁止仅凭对象 UUID 将运行选择解析到编辑场景。
 
-CPU 所有权与 GPU 完成分开：RenderBridge 持有视口输出的逻辑引用；录制/提交
+CPU 所有权与 GPU 完成分开：Worker 内 RenderBridge 持有视口输出的逻辑引用；录制/提交
 持有真实 GPU 资源直到所涉及队列的提交 serial 完成。面板关闭不等于可立即
-释放纹理，UI 纹理 ID 仍按当前帧获得，不跨帧缓存。
+释放纹理，游戏 ImGui 纹理 ID 仍按当前帧获得，不跨帧缓存；Qt Host 只消费完成图像。
 
 ## 文档与编辑事务
 
@@ -211,22 +255,25 @@ SceneRenderer，编辑器只传场景只读数据、相机和可选调试输出�
 5. UI 采样场景颜色目标，最终呈现采样 UI 目标；依赖和布局转换由引擎处理。
 6. 帧末完成延迟删除、事务结束与资源退休；UI 产生的场景替换请求等到安全边界。
 
-GPU 依赖明确为：SceneColor 写 → UI 采样 → UITarget 写 → Present 采样。
+Worker 游戏图像的 GPU 依赖为：SceneColor 写 → 游戏 ImGui 合成 → 完成图像读回；
+SceneViewport 不含编辑器面板。Qt Host 收到完成图像后独立绘制，不加入 Worker
+的 GPU graph。此前 SceneColor → UITarget → Present 路径只描述旧编辑器。
 所有用途写入资源描述；跨队列提交需要等待相应 serial，不以 CPU 引用计数
 或可复用 fence 句柄推断完成。resize 先创建新目标，成功后切换，旧目标随
 GPU 完成退休；失败显示诊断并保留可用旧目标。零尺寸/最小化暂停该视图工作，
 恢复时重建；正常帧禁止用 device-wide wait 掩盖生命周期错误。
 
 坐标统一分为 UI 逻辑坐标、视口物理像素、相机裁剪坐标和纹理 UV。DPI 转换
-只发生一次；相机/世界坐标不为修正图片翻转而改变。UI 图片使用 GUIUtils
-后端 UV 约定，最终呈现也遵守同一附件方向。Gizmo 使用显示区域的逻辑矩形，
+只发生一次；相机/世界坐标不为修正图片翻转而改变。游戏 ImGui 使用 GUIUtils
+后端 UV 约定；Worker 图像传输约定统一为顶部起始行，Qt 按图像元数据呈现。
+Qt Gizmo 使用显示区域的逻辑矩形，
 拾取使用图像区域到物理像素的映射；非对称测试图形验证方向，中心方块不足以验证。
 首轮保留树选择；GPU 拾取仅在明确支持 ID 输出和异步读回时启用，未支持时
 明确显示能力限制，不通过同步 GPU 等待模拟可用。
 
 ## 输入、面板与资源服务
 
-输入按模态对话框 → 文本编辑/ImGui 捕获 → Gizmo 活跃交互 → 已捕获的视口
+Host 输入按 Qt 模态对话框 → 文本控件/输入法 → Gizmo 活跃交互 → 已捕获的视口
 相机/游戏输入 → 编辑器全局命令的优先级处理。点击视口建立焦点，鼠标离开
 后拖动捕获持续到释放；失焦必须清除捕获与按键状态。游戏输入仅投递给聚焦
 GameViewport，编辑相机只接收 SceneViewport 输入。快捷键绑定命令 ID，菜单
@@ -234,7 +281,9 @@ GameViewport，编辑相机只接收 SceneViewport 输入。快捷键绑定命�
 
 HierarchyPanel、InspectorPanel、ContentBrowserPanel、SceneViewportPanel、
 GameViewportPanel、ToolbarPanel、DiagnosticsPanel 经 PanelHost 获取窄接口。
-布局单独保存，保留用户 imgui.ini；布局恢复失败可重置，不改场景数据。
+Qt 布局通过 QMainWindow saveState/restoreState 与窗口 geometry 单独保存；
+保留旧 imgui.ini 供过渡编辑器使用，不直接转换为 Qt dock 状态。布局恢复失败
+可重置，不改场景数据。
 关闭视口只停止该视图请求，不销毁文档或运行会话。
 
 ProjectContext 区分引擎内置资源、项目 Assets、导入缓存和用户偏好路径；

@@ -1,5 +1,11 @@
 # Build entry points
 
+Qt 6 Widgets is selected for the future EditorHost. Its planned CMake target
+uses find_package(Qt6 COMPONENTS Core Gui Widgets) and matching Qt6 imported
+targets; SDK paths, Premake generation and deployment will be documented when
+implemented. Current build commands and required dependencies are unchanged;
+the runtime/game build must remain usable without a Qt installation.
+
 Initialize nested `ImGuizmo` with the other submodules. Both generators resolve
 headers from `ImGuizmo/src` and compile its main source only into GEngine-Editor.
 The old engine compatibility source is removed; no upstream engine export patch

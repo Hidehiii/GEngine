@@ -1,5 +1,11 @@
 # Build system architecture
 
+Planned UI split: a separate Qt 6 Widgets EditorHost links Qt Core/Gui/Widgets;
+EngineWorker/game link GEngine and Dear ImGui, without Qt. Existing editor
+targets still build the transitional ImGui UI. Qt SDK/kit selection, CMake and
+Premake integration, generated Qt sources and deployment remain work in
+[editor tracking](../../TODO/EditorArchitecture.md); no Qt target is implemented.
+
 ImGuizmo is a nested upstream submodule pinned to
 `105e4fde45e4e74aae8973d98750820ef7aca7e2` (header v1.92.5 WIP).
 CMake/Premake compile only its `src/ImGuizmo.cpp` in GEngine-Editor, using the

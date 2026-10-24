@@ -1,5 +1,9 @@
 # Assets, math, tools, and service API
 
+UI 选型修订：Qt 6 Widgets 用于未来 EditorHost，游戏/Worker 内继续使用
+EnableImGui、ImGuiLayer 和 OnImGuiRender；现有引擎接口不引入 Qt 类型。
+Qt 迁移尚未实现，现有编辑器 GizmoController 仅作过渡，见[接口设计](Editor.md)。
+
 编辑器 Worker 协议为计划接口：Host 不加载引擎，跨进程只传 DTO 与已完成
 图像，不传 Scene 指针或 GPU handle。当前 API 尚未提供该隔离能力。
 

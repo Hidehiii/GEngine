@@ -1,5 +1,10 @@
 # Scene, physics, assets, and services architecture
 
+UI 目标已选定：Qt 6 Widgets 构建独立 EditorHost，Dear ImGui 保留为游戏/
+Worker 内 UI；当前 ImGui 编辑器和 GizmoController 属于迁移基线。Qt Host 不
+加载引擎，接收完成图像并将游戏视口输入异步转发，详见[UI 决策](Editor.md)。
+本次为设计更新，运行时及公共 API 未改变。
+
 编辑器提案新增进程隔离：Host 拥有独立文档与 UI，Worker 拥有引擎 Scene、
 预览及运行实例，经有界异步协议同步；当前同进程引擎 API 未改变。
 

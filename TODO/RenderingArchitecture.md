@@ -1,5 +1,14 @@
 # Rendering architecture refactor
 
+Planned ImGuizmo removal is tracked in editor E4-G: first verify Qt Host gizmo
+rendering/input and undo transactions, then remove the old adapter and submodule.
+No rendering interfaces or runtime dependencies change with this plan entry.
+
+UI decision: Qt 6 Widgets owns the planned EditorHost panels and CPU-image
+viewport; Dear ImGui stays in the game/Worker rendering path. Qt gizmo overlays
+and input forwarding require migration under [editor E0–E6](EditorArchitecture.md).
+Current ImGui editor rendering remains a transitional implementation.
+
 ImGuizmo migration: editor-owned GizmoController now owns frame/context/viewport
 integration; no Gizmo export remains in the engine. Backend rendering interfaces
 are unchanged. Pin and verification are tracked in the dependency TODO.

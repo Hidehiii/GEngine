@@ -11,7 +11,7 @@ Each function has a focused page:
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
 - [Editor architecture](Editor.md): implemented editor-owned Gizmo boundary and
-  proposed document/command/session, viewport and process-isolation migration.
+  planned Qt 6 Widgets Host, ImGui game UI, document/command/session and process isolation.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and

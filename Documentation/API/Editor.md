@@ -1,5 +1,22 @@
 # Editor 接口契约设计
 
+## 已选定：Qt 6 编辑器 / Dear ImGui 游戏 UI（待实现）
+
+新 Host 使用 Qt 6 Widgets，协议与文档核心不依赖 Qt 控件或引擎头。
+Qt model/delegate 和 QAction 调用同一 CommandService；不额外维护一套
+QUndoStack 历史。QProcess 退出/错误和异步消息驱动 WorkerSupervisor，Qt UI
+线程不阻塞等待 Worker。QWidget 视口消费完成 QImage；图像存储在绘制期间
+必须有效，更新使用排队通知。Qt 对象/QImage 不直接作为 IPC payload 传输。
+
+游戏 UI 的 ImGui context 在 Worker/游戏内，捕获状态也在该端处理；Host
+只发送聚焦 GameViewport 的逻辑输入与文本提交、释放/失焦消息。DPI、图像
+letterbox 与像素坐标转换必须明确；失联时拒绝继续发送游戏输入。
+Qt SceneViewport 工具走独立命中测试和编辑事务，不借用 ImGuizmo 类型。
+下面已实现的 GizmoController 仅属于旧 ImGui 编辑器，不能直接用于 Qt 控件。
+计划在 Qt 变换工具通过命中测试、吸附、取消及撤销验收后删除该适配器和
+ImGuizmo 依赖；[E4-G TODO](../../TODO/EditorArchitecture.md#e4-gqt-视口工具替代并移除-imguizmo计划)
+记录验收与清理范围。本次不改变任何接口，游戏内 Dear ImGui 保留。
+
 ## 已实现：编辑器私有 GizmoController
 
 头文件：`GEngine-Editor/src/UI/GizmoController.h`，不属于引擎导出 API。
@@ -41,8 +58,8 @@ transform, size)` 使用同一视口。无 ImGuizmo/ImDrawList 类型泄漏或 D
 
 ViewportRequest（提案）描述视图 ID、场景 generation、相机、物理像素尺寸、
 所需输出和工具覆盖层选项。EditorRenderBridge 返回逻辑视图输出及能力/错误
-状态；UI 通过当帧纹理适配器显示输出，不获取 VkImage、D3D 描述符或 GL 名称。
-输出引用不能被当作永久 UI texture ID。尺寸为零时返回挂起状态，不创建无效目标。
+状态；Qt UI 消费 CPU 图像，不获取 VkImage、D3D 描述符或 GL 名称。
+Worker 内 ImGui texture ID 不跨进程/跨帧缓存。尺寸为零时返回挂起状态，不创建无效目标。
 
 场景数据在渲染提取时借用，异步/提交后仅保留独立快照和 GPU 资源强引用。
 共享 SceneRenderer 及目标无关组件渲染契约是 E4 的前置工作，当前尚不可直接
