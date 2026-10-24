@@ -18,7 +18,6 @@ project "GEngine"
 		"GEngine-ThirdParty/glm/glm/**.hpp",
 		"GEngine-ThirdParty/glm/glm/**.inl",
 		"GEngine-ThirdParty/entt/single_include/entt/**.hpp",
-		"GEngine-ThirdParty/ImGuizmo/ImGuizmo.h",
 		
 	}
 
@@ -44,7 +43,6 @@ project "GEngine"
 		"%{IncludeDir.vender}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.yaml}",
-		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.SPIRVCross}",
 		"%{IncludeDir.shaderc}",
 		"%{IncludeDir.vulkan}",
@@ -73,12 +71,6 @@ project "GEngine"
 		"%{Library.mono}",
 		"%{Library.Vulkan}",
 	}
-
-	filter "files:src/GEngine/ImGui/ImGuizmoCompatibility.cpp"
-		flags
-		{
-			"NoPCH"
-		}
 
 	filter "system:windows"
 		cppdialect "C++17"

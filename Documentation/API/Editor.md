@@ -1,6 +1,19 @@
 # Editor 接口契约设计
 
-状态：**提案，无新增可调用 C++ API**。模块名称与操作表达职责，不是现有
+## 已实现：编辑器私有 GizmoController
+
+头文件：`GEngine-Editor/src/UI/GizmoController.h`，不属于引擎导出 API。
+`BeginFrame()` 在编辑器 OnImGuiRender 开始调用一次，要求 ImGui 已 NewFrame。
+`SetViewport(Vector2 position, Vector2 size, bool orthographic)` 在目标面板内
+调用，使用 UI 逻辑坐标和当前 draw list。`Manipulate(view, projection,
+operation, space, transform, snap)` 使用 Matrix4x4、GizmoOperation（None/
+Translate/Rotate/Scale）与 GizmoSpace（Local/World），原位更新变换并返回
+GizmoResult 的 Changed/Hovered/Active。snap 为可选 Vector3 指针，仅本次
+调用借用；旋转单位为度，位移/缩放使用各轴数值。`DrawGrid(view, projection,
+transform, size)` 使用同一视口。无 ImGuizmo/ImDrawList 类型泄漏或 DLL 导出宏。
+以下其他模块仍为提案；命令事务尚未接入。
+
+状态：**除上节 GizmoController 外均为提案，无新增引擎导出 API**。后续模块名称与操作表达职责，不是现有
 函数签名；落地时以公共头为准。本页与[架构设计](../Architecture/Editor.md)
 配套，所有实现工作由[编辑器 TODO](../../TODO/EditorArchitecture.md) 跟踪。
 
@@ -36,8 +49,8 @@ ViewportRequest（提案）描述视图 ID、场景 generation、相机、物理
 按此调用。UI 逻辑尺寸、物理尺寸和后端 UV 各有明确边界，不通过修改相机
 投影来修复最终 UI 翻转。
 
-Gizmo 继续由[既有转发计划](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
-定义引擎类型和上下文契约；编辑器把其变换结果接入命令事务。不要把 ImGuizmo
+Gizmo 的[迁移记录](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
+已改为编辑器私有适配器；后续将其变换结果接入命令事务。不要把 ImGuizmo
 枚举、ImDrawList 指针或其导出宏放进新编辑器核心接口。
 
 ## 引擎 API 与兼容性

@@ -1,7 +1,16 @@
 # 编辑器架构设计
 
-状态：**提案，尚未实现**。基于 2026-10-24 工作区源码（包含未提交的编辑器修复）。
-本次只交付设计，不改变运行行为。所有实施阶段由
+## 已实施的 Gizmo 边界（2026-10-24）
+
+`GEngine-Editor/src/UI/GizmoController` 已作为编辑器私有适配层实现；上游
+ImGuizmo 只编译到编辑器，不再进入引擎 DLL。每次 OnImGuiRender 开始绑定
+当前共享 ImGui context 并 BeginFrame 一次，SceneViewport 内选择当前 draw list
+及图像区域。操作/空间显式映射，返回 Changed/Hovered/Active；仅 Changed
+时写回变换。Grid 也走同一适配器。现有编辑器仍直接更新 Transform，命令
+事务与独立 EditorHost 尚未实施。下文为整体提案，不能据此推断进程隔离已完成。
+
+状态：**整体架构仍为提案，上节 GizmoController 已单独实施**。设计基于
+2026-10-24 编辑器修复；本次子模块迁移不实施进程隔离。其他实施阶段由
 [编辑器 TODO](../../TODO/EditorArchitecture.md) 管理；接口约定见
 [Editor API 设计](../API/Editor.md)。
 
@@ -29,7 +38,7 @@
 
 采用 EditorHost 与 EngineWorker 两个进程；DLL 分层不能替代故障隔离。
 EditorCore 不包含 ImGui/ImGuizmo 或原生图形头；EditorUI 可以直接使用 ImGui，
-Gizmo 通过计划中的引擎转发接口使用。运行时引擎不依赖编辑器。
+Gizmo 通过编辑器自己的 GizmoController 使用。运行时引擎不依赖编辑器。
 
 ```mermaid
 flowchart TD
@@ -240,7 +249,8 @@ ProjectContext 区分引擎内置资源、项目 Assets、导入缓存和用户�
 建议编辑器目录：`src/App`（生命周期）、`src/Core`（Session/Document/Commands/
 Selection/Play）、`src/Panels`、`src/Viewport`、`src/Services`、`src/UI`。
 先按模块拆文件，只有复用/测试证据需要时再拆独立库。通用 SceneRenderer、
-Gizmo 转发等引擎设施保持 `GEngine/include` 与 `GEngine/src` 对应结构。
+共享渲染等引擎设施保持 `GEngine/include` 与 `GEngine/src` 对应结构；GizmoController
+保留在编辑器 UI 目录，不进入引擎公共头。
 CMake 与 Premake 的文件发现、链接和启动路径同步迁移。
 
 实施顺序与每阶段验收见 [E0–E6](../../TODO/EditorArchitecture.md)。推荐第一
@@ -264,4 +274,4 @@ Host 保持响应、未保存数据与 Undo 保留、Save 成功、Worker 可重
 编辑镜像；重复循环核对进程、句柄、图像缓冲和 GPU 资源无持续增长。
 
 当前没有新增公共引擎接口、格式迁移或运行时行为；以上名称均为设计模块。
-Gizmo 转发复用[已有计划](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)。
+Gizmo 子模块迁移与旧转发方案的替代记录见[依赖跟踪](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)。

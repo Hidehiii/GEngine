@@ -1,5 +1,16 @@
 # GEngine Editor
 
+ImGuizmo is now a pristine upstream submodule at
+`105e4fde45e4e74aae8973d98750820ef7aca7e2` (v1.92.5 WIP header).
+Only this executable compiles it, behind `UI/GizmoController`; initialize
+submodules recursively before building. Check translate/rotate/scale, Ctrl
+snapping, local/world modes, grid alignment and hover/capture after resizing.
+These interactive checks are separate from bounded startup/shutdown runs.
+Migration verification: CMake Debug/Release engine/editor builds and all six
+120-frame backend runs passed. A headless ImGui check covered operation/space
+drawing, translation dragging and snapping. Full Premake builds and remaining
+real-window interactions are still unverified; see the dependency TODO.
+
 架构新增硬性要求：引擎在独立 EngineWorker 进程运行，崩溃/挂起后 EditorHost
 仍能编辑、保存并重启 Worker。当前编辑器仍为同进程实现，尚不具备此隔离能力。
 详见架构的“故障隔离与恢复”与 TODO 的 E0。

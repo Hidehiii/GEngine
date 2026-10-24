@@ -123,7 +123,6 @@ namespace GEngine
 			break;
 		}
 		ImGui::NewFrame();
-		ImGuizmo::BeginFrame();
 	}
 	void ImGuiLayer::End()
 	{

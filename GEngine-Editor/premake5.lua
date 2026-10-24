@@ -11,7 +11,8 @@ project "GEngine-Editor"
 	files
 	{
 		"src/**.h",
-		"src/**.cpp"
+		"src/**.cpp",
+		"../GEngine/GEngine-ThirdParty/ImGuizmo/src/ImGuizmo.cpp"
 	}
 
 	includedirs

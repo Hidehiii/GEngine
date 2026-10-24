@@ -99,17 +99,20 @@ instrumentation/trace output, not frame ownership. The separate
 `GEngine-Editor` application consumes engine APIs and ImGui; backend allocation
 and synchronization remain within the engine.
 
-Planned only: an engine-owned Gizmo forwarding boundary will keep ImGuizmo
-implementation and draw-list/context handling internal, while the editor consumes
-engine types. The scope and acceptance checks are owned by the
+ImGuizmo submodule migration (2026-10-24): GizmoController in the editor owns
+context binding, viewport draw-list selection and explicit operation/space
+mapping. Upstream ImGuizmo is compiled only into the editor executable; engine
+public headers and ImGuiLayer no longer depend on it or call BeginFrame.
+The editor calls BeginFrame once after ImGui NewFrame in OnImGuiRender.
+This supersedes the earlier engine-DLL forwarding design. Tracking is in the
 [Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
-No ownership, backend, or runtime behavior changes are implemented by this plan.
+EditorHost/Worker process isolation remains planned, not implemented.
 
 Dependency upgrade in progress: ImGui v1.93.0-docking uses backend-managed font
 texture updates. D3D12 supplies reusable SRV allocation callbacks; Vulkan supplies
-its render pass through pipeline info. A first-party compatibility translation
-unit adapts the legacy ImGuizmo mouse-capture call. The forwarding interface
-above remains planned. See the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
+its render pass through pipeline info. ImGuizmo's former compatibility translation
+unit is removed: the pinned upstream revision handles current ImGui APIs without
+vendor patches. See the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
 
 The UI backend base has a virtual destructor so renderer shutdown executes before
 context destruction. ImGuiLayer retains window-manager selection for shutdown

@@ -54,6 +54,6 @@
   CMake/Premake 均构建，示例与手动验证矩阵记录完成/阻塞项后再删除旧路径。
 
 配套设计：[架构](../Documentation/Architecture/Editor.md)、
-[接口契约](../Documentation/API/Editor.md)。既有 Gizmo 引擎转发工作仍由
+[接口契约](../Documentation/API/Editor.md)。Gizmo 迁移已改为编辑器私有适配层，由
 [依赖 TODO](Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
 管理，不在此重复创建独立实现。

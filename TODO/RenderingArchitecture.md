@@ -1,5 +1,9 @@
 # Rendering architecture refactor
 
+ImGuizmo migration: editor-owned GizmoController now owns frame/context/viewport
+integration; no Gizmo export remains in the engine. Backend rendering interfaces
+are unchanged. Pin and verification are tracked in the dependency TODO.
+
 Editor E0 adds process isolation: engine viewports render in EngineWorker and
 send completed CPU images to an independent EditorHost UI; no cross-process
 GPU handles in the first milestone. See [scope and checks](EditorArchitecture.md).

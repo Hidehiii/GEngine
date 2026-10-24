@@ -112,7 +112,50 @@
 
 ### Planned: engine-owned Gizmo forwarding interface
 
-- [ ] Add an exported GEngine Gizmo interface that forwards to ImGuizmo internally,
+2026-10-24 superseding implementation scope (user authorized): convert ImGuizmo
+to a pinned upstream submodule now. Compile it in the editor executable behind
+an editor-owned GizmoController, remove engine public-header/export dependencies
+and the legacy compatibility translation unit. This replaces the engine-DLL
+forwarding proposal below, consistent with future EditorHost ownership. Preserve
+the current shared ImGui context and call BeginFrame once per editor UI frame.
+Acceptance: pristine upstream tree; CMake/Premake generation and Debug/Release
+engine/editor builds; bounded OpenGL/Vulkan/D3D12 runs; document exact pin,
+remaining interactive checks, and migration boundaries. Do not commit/push the
+parent or aggregate without separate authorization in this task.
+Publication authorized by the user on 2026-10-24: commit/push the aggregate
+first, then record its exact gitlink with the editor integration and docs in
+the parent. Exclude local Config.ini, imgui.ini and temporary verification files.
+
+- [x] Local conversion: added upstream ImGuizmo at
+  `105e4fde45e4e74aae8973d98750820ef7aca7e2` (v1.92.5 WIP header) under the
+  aggregate's `.gitmodules`. Replaced the modified v1.61 snapshot; upstream tree
+  is clean, MIT license retained, Git connectivity checked with no temporary
+  object-store dependency. Aggregate commit
+  `b512654cd9b05282d54828fbb16f315659a41074` records the conversion; the parent
+  gitlink is updated to that fixed revision for publication. Aggregate pushed
+  to origin/master on 2026-10-24 after retrying a transient GitHub TLS error.
+- [x] Editor-only integration: GizmoController maps operations/spaces explicitly,
+  binds the current context, sets the viewport draw list/rectangle and forwards
+  manipulation/grid drawing. Engine public include and BeginFrame coupling plus
+  ImGuizmoCompatibility.cpp are removed. Both generators compile only upstream
+  src/ImGuizmo.cpp in the editor using the project's existing ImGui.
+- [ ] Complete validation: CMake/Premake generation passed; CMake Debug engine
+  and editor builds passed, and three Debug 120-frame backend runs exited 0.
+  Focused headless ImGui/controller check emitted gizmo geometry for all three
+  operations in local/world space; synthetic translation drag and 0.5-unit
+  snapping passed (tmp/gizmo-smoke-runtime.log). Debug DLL export inspection
+  confirms no ImGuizmo symbols. Release engine/editor build and three Release
+  120-frame backend runs also exited 0; Release DLL has no ImGuizmo exports.
+  No captured validation/GL/assertion errors in the six final editor logs.
+  Evidence: tmp/dependency-build-{Debug,Release}.log, tmp/editor-layout-*/output.log
+  and tmp/gizmo-smoke-runtime.log. Both repository diff checks and document link
+  review passed. Existing compiler warnings remain; full Premake builds and a
+  fresh recursive clone after aggregate publication have not been verified.
+  Manual rotation/scale/snapping/hover/capture, resize and long-run resource
+  checks remain open; bounded runs alone do not verify these interactions.
+
+Historical proposal (superseded; do not implement as written):
+Add an exported GEngine Gizmo interface that forwards to ImGuizmo internally,
   and migrate editor calls to it before converting ImGuizmo to an upstream submodule.
   Scope: engine-owned operation/space enums, viewport rectangle, camera and transform
   matrices, snapping parameters, and hover/active results; public declarations must
@@ -127,7 +170,7 @@
   and editor builds pass; editor checks cover translation, rotation, scaling,
   snapping, local/world space, hover/active state, viewport resize, and shutdown.
   Check D3D12, Vulkan, and OpenGL separately where available and record blockers.
-  Status: planned only; no interface or dependency conversion implemented.
+  Historical status: planned only; replaced by the editor-owned scope above.
   Documentation registration verified by content/link review and git diff --check;
   implementation, builds, and editor runtime verification remain open.
 

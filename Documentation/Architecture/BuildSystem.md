@@ -1,5 +1,11 @@
 # Build system architecture
 
+ImGuizmo is a nested upstream submodule pinned to
+`105e4fde45e4e74aae8973d98750820ef7aca7e2` (header v1.92.5 WIP).
+CMake/Premake compile only its `src/ImGuizmo.cpp` in GEngine-Editor, using the
+existing shared ImGui dependency. GEngine no longer compiles or exports it;
+upstream examples, their ImGui copies and auxiliary widgets are not built.
+
 Upgrade in progress: upstream `imgui`, `box2d`, and `SPIRV-Cross` submodules
 replace snapshots. Premake overlays live in `BuildScripts/Premake`. Both build
 systems compile SPIRV-Cross core/GLSL from the same tree as its headers, replacing

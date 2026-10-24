@@ -1,5 +1,10 @@
 # Build entry points
 
+Initialize nested `ImGuizmo` with the other submodules. Both generators resolve
+headers from `ImGuizmo/src` and compile its main source only into GEngine-Editor.
+The old engine compatibility source is removed; no upstream engine export patch
+is required. Generator commands are unchanged.
+
 The in-progress ImGui/Box2D/SPIRV-Cross upgrade retains existing generator
 commands. Regenerate projects: ImGui lives at `imgui`, SPIRV-Cross at
 `SPIRV-Cross`, and core/GLSL are source-built targets. Rendering-device APIs are

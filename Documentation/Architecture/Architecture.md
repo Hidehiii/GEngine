@@ -10,8 +10,8 @@ Each function has a focused page:
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
-- [Editor architecture proposal](Editor.md): proposed document/command/session
-  boundaries, viewport rendering and staged migration; not implemented.
+- [Editor architecture](Editor.md): implemented editor-owned Gizmo boundary and
+  proposed document/command/session, viewport and process-isolation migration.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and

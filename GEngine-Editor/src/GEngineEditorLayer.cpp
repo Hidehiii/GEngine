@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <GEngine/Graphics/RenderDevice.h>
 #include <imgui_internal.h>
+#include "UI/GizmoController.h"
 
 
 namespace GEngine
@@ -128,6 +129,7 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnImGuiRender()
 	{
+        Editor::GizmoController::BeginFrame();
 
 		bool dockSpace = true;
 		// If you strip some features of, this demo is pretty much equivalent to calling DockSpaceOverViewport()!
@@ -312,9 +314,7 @@ namespace GEngine
 			GameObject selectedObj = m_Hierarchy.GetSelectedGameObject();
 			if (selectedObj && m_GizmoOperationType != -1)
 			{
-				ImGuizmo::SetOrthographic(false);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+                Editor::GizmoController::SetViewport(m_SceneViewportBounds[0], m_SceneViewportSize, false);
 
 				Matrix4x4 cameraProjection	= m_EditorCamera.GetProjectionMatrix();
 				Matrix4x4 cameraView		= m_EditorCamera.GetViewMatrix();
@@ -328,18 +328,20 @@ namespace GEngine
 				// for Scale and Position
 				float snapVal				= 0.5f;
 				// for Rotation
-				if (m_GizmoOperationType == ImGuizmo::OPERATION::ROTATE)
+				if (m_GizmoOperationType == static_cast<int>(Editor::GizmoOperation::Rotate))
 				{
 					snapVal = 15.0f;
 				}
-				float snapArr[3]			= { snapVal, snapVal , snapVal };
-
-				Matrix4x4 deltaMatrix		= objTransform;
+                Vector3 snap = { snapVal, snapVal, snapVal };
 
 
-				ImGuizmo::Manipulate(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoOperationType, (ImGuizmo::MODE)m_GizmoModeType, Math::ValuePtr(objTransform), Math::ValuePtr(deltaMatrix), isSnap ? snapArr : nullptr);
 
-				if (ImGuizmo::IsUsing())
+                auto gizmo = Editor::GizmoController::Manipulate(cameraView, cameraProjection,
+                    static_cast<Editor::GizmoOperation>(m_GizmoOperationType),
+                    m_GizmoModeType == 0 ? Editor::GizmoSpace::Local : Editor::GizmoSpace::World,
+                    objTransform, isSnap ? &snap : nullptr);
+
+				if (gizmo.Changed)
 				{
 					// obj mat
 					Vector3 position, rotation, scale;
@@ -663,13 +665,11 @@ namespace GEngine
 
     void GEngineEditorLayer::OnOverlayRender()
     {
-        ImGuizmo::SetDrawlist();
-        ImGuizmo::SetRect(m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
-            m_SceneViewportSize.x, m_SceneViewportSize.y);
+        Editor::GizmoController::SetViewport(m_SceneViewportBounds[0], m_SceneViewportSize, false);
         auto view = m_EditorCamera.GetViewMatrix();
         auto projection = m_EditorCamera.GetProjectionMatrix();
         Matrix4x4 identity(1.0f);
-        ImGuizmo::DrawGrid(Math::ValuePtr(view), Math::ValuePtr(projection), Math::ValuePtr(identity), 100.0f);
+        Editor::GizmoController::DrawGrid(view, projection, identity, 100.0f);
     }
 
 	void GEngineEditorLayer::OnScenePlay()

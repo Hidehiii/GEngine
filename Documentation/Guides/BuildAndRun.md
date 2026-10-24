@@ -22,10 +22,10 @@ also update `Dependencies.lua`.
 
 ## Generate the solution
 
-Local upgrade (2026-10-22): initialize nested `imgui`, `box2d`, and `SPIRV-Cross`
-as well. CMake VS2022 Debug/Release engine and FrameGraphTriangle builds and
-bounded graph/UI runs passed on all three backends. Editor remains blocked by
-older engine API usage; this is not evidence of a successful editor build.
+Local upgrade: initialize nested `imgui`, `box2d`, `SPIRV-Cross`, and `ImGuizmo`
+as well. The editor API repair subsequently passed CMake VS2022 Debug/Release
+builds and bounded runs on all three backends. ImGuizmo now compiles in the editor
+only; its new migration checks are recorded separately in the dependency TODO.
 Use the aggregate revision pinned by the parent repository; remaining checks are
 recorded in the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
 

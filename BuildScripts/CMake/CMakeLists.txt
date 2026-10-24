@@ -46,7 +46,6 @@ set(GE_INCLUDE_DIRS
     "${GE_VENDOR}/entt/single_include/entt"
     "${GE_VENDOR}/imgui"
     "${GE_VENDOR}/yaml-cpp/include"
-    "${GE_VENDOR}/ImGuizmo"
     "${GE_VENDOR}/SPIRV-Cross"
     "${GE_VENDOR}/shaderc/include"
     "${GE_VULKAN_SDK}/Include"
@@ -140,7 +139,6 @@ target_compile_definitions(GEngine PUBLIC
 )
 target_compile_options(GEngine PRIVATE "$<$<CONFIG:Debug>:/FS>")
 target_precompile_headers(GEngine PRIVATE "${GE_ROOT}/GEngine/src/GEpch.h")
-set_source_files_properties("${GE_ROOT}/GEngine/src/GEngine/ImGui/ImGuizmoCompatibility.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross-core spirv-cross-glsl
     opengl32 d3dcompiler d3d12 dxgi dxguid Ws2_32 Winmm Version Bcrypt
     "${GE_VENDOR}/mono/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/libmono-static-sgen.lib"
@@ -181,6 +179,8 @@ endfunction()
 
 ge_add_application(Sandbox Sandbox)
 ge_add_application(GEngine-Editor GEngine-Editor)
+target_sources(GEngine-Editor PRIVATE "${GE_VENDOR}/ImGuizmo/src/ImGuizmo.cpp")
+target_include_directories(GEngine-Editor PRIVATE "${GE_VENDOR}/ImGuizmo/src")
 foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle SceneRenderHelpers)
     ge_add_application(${example} "Example/${example}")
 endforeach()

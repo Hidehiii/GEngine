@@ -53,11 +53,12 @@ have empty implementations; do not rely on them for drawing.
 
 ## ImGui, scripting, utilities, and diagnostics
 
-The engine Gizmo forwarding interface is planned, not available. Its scope and
-acceptance checks are in the
+There is no engine-exported Gizmo API. The editor-owned GizmoController now
+wraps pristine upstream ImGuizmo, without exposing third-party types. Its
+operations and migration checks are described in the [editor API](Editor.md) and
 [Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
-It will use engine-owned types rather than expose ImGuizmo or draw-list types;
-existing public API signatures remain unchanged by this documentation update.
+ImGuiLayer no longer includes ImGuizmo.h or begins its frame; applications that
+use gizmos must own that integration explicitly. Other engine signatures are unchanged.
 
 The subsequent dependency upgrade changes `GUIUtils::GetTextureID` to return
 `uint64_t`, matching current ImGui texture identifiers. Image buttons require an
