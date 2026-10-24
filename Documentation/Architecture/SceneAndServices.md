@@ -1,5 +1,9 @@
 # Scene, physics, assets, and services architecture
 
+Qt 编辑器的 Host 文档所有权、Worker Scene 镜像与游戏 ImGui 边界统一见
+[新目标架构](QtEditor.md)。此设计不改变当前 Scene/服务实现；旧编辑器的
+事实与验证范围保留如下，新 Qt 行为仍待 E0–E6 实施。
+
 UI 目标已选定：Qt 6 Widgets 构建独立 EditorHost，Dear ImGui 保留为游戏/
 Worker 内 UI；当前 ImGui 编辑器和 GizmoController 属于迁移基线。Qt Host 不
 加载引擎，接收完成图像并将游戏视口输入异步转发，详见[UI 决策](Editor.md)。

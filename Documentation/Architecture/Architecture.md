@@ -10,8 +10,10 @@ Each function has a focused page:
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
-- [Editor architecture](Editor.md): implemented editor-owned Gizmo boundary and
-  planned Qt 6 Widgets Host, ImGui game UI, document/command/session and process isolation.
+- [Qt editor target architecture](QtEditor.md): planned Qt 6 Host, isolated
+  EngineWorker, document/command ownership, IPC, viewports and migration criteria.
+- [Editor history and transitional integration](Editor.md): existing ImGui
+  editor/GizmoController and superseded design history.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and

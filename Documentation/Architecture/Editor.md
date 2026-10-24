@@ -1,5 +1,10 @@
 # 编辑器架构设计
 
+**历史与过渡实现记录**：新的目标架构已整合到
+[Qt 6 编辑器目标架构](QtEditor.md)，后续实施以该文档和 owning TODO 为准。
+本文件保留旧 ImGui 编辑器/GizmoController 事实及此前方案演进，不再作为
+Qt Host、IPC 或帧流程的权威设计；不同阶段的描述不能混作已实现能力。
+
 ## UI 技术选型（2026-10-24 已确定，迁移尚未实现）
 
 源码依赖已加入第三方聚合目录 `GEngine/GEngine-ThirdParty/qtbase`，固定 Qt

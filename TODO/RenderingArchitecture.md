@@ -1,5 +1,9 @@
 # Rendering architecture refactor
 
+Canonical Qt editor target design: [architecture](../Documentation/Architecture/QtEditor.md)
+and [contracts](../Documentation/API/QtEditor.md). Editor E0–E6/E4-G owns the
+implementation; old Editor.md is history, not the new frame/IPC specification.
+
 Qt dependency storage is now the shared aggregate's qtbase submodule (6.10.3),
 with editor-only consumption planned. No engine/backend rendering APIs or build
 links changed; Qt SDK and Host viewport integration remain in editor E0–E6.

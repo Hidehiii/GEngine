@@ -1,5 +1,9 @@
 # Editor 接口契约设计
 
+新的 Qt Host/Worker 契约以 [Qt 编辑器接口设计](QtEditor.md) 为准，配套
+[目标架构](../Architecture/QtEditor.md)。本页保留旧 GizmoController 当前接口
+及此前提案历史，不作为新协议的实现声明；公共引擎 API 未因此改变。
+
 ## 已选定：Qt 6 编辑器 / Dear ImGui 游戏 UI（待实现）
 
 编辑器所需 Qt Core/Gui/Widgets 源码已由第三方聚合仓库的 `qtbase` 子模块

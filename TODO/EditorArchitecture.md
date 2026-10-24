@@ -2,6 +2,18 @@
 
 ## 设计文档（2026-10-24）
 
+- [x] 新建统一的 Qt 编辑器架构文档：整合 Qt Host/EngineWorker 依赖、文档与
+  事务、运行状态、协议/图像/输入、Qt Gizmo 替代、构建与 E0–E6 迁移验收。
+  验收：新文档成为目标架构入口；旧方案保留历史但明确被替代；API、索引、
+  README 和渲染跟踪同步，无同进程/ImGui 编辑器目标的矛盾表述。仅文档，
+  不实施 Qt UI、引擎接口或文件格式迁移；内容/链接检查及 diff --check 通过。
+  完成：Architecture/QtEditor.md 与 API/QtEditor.md 已创建并设为新方案入口，
+  旧 Editor.md 标记为历史，索引/服务页面/README/渲染跟踪已同步。相对链接、
+  当前/计划状态及设计依赖边界已复核；git diff --check 通过。仅文档，无需构建。
+  实施和故障/交互验证仍归 E0–E6/E4-G，不随文档完成而勾选。
+  2026-10-24 用户授权提交并推送统一架构、子进程/Pipe 契约和配套文档；
+  发布不包含功能实现、本地配置、窗口布局或临时测试文件。
+
 - [x] 添加编辑器专用 Qt 6 源码依赖（2026-10-24 用户授权）：将官方 qtbase
   以固定 Qt 6.10.3 提交的子模块放在 GEngine/GEngine-ThirdParty/qtbase，
   由聚合仓库统一管理，但不链接到 GEngine/游戏。验收：Core/Gui/Widgets
@@ -60,6 +72,8 @@
   QMainWindow/QDockWidget、QProcess 和异步消息；不加载 GEngine/ImGui。
   CMake/Premake 各有目标及 Qt 包路径/部署说明；游戏/引擎独立构建不要求 Qt。
   先完成 CPU 图像 QImage/QPainter 显示，不直接嵌入 Worker 原生窗口。
+  统一方案采用 QProcess 异步标准管道的版本化分帧协议，控制优先、有界二进制
+  图像分块及完整快照重同步；解析容量、旧会话/重复请求和半帧错误纳入验收。
 
 - [ ] E1：拆出 EditorSession、SceneDocument、SelectionService、PanelHost 和
   ProjectContext，先保持单文档与既有文件格式。验收：新建/打开/保存/取消、
@@ -110,7 +124,8 @@
   单独提供 ImGui 游戏内 UI 示例，验证 GameViewport 焦点、文本输入、DPI 与
   OpenGL/Vulkan/D3D12 的呈现/退出；不再使用 ImGui 构建编辑器主面板。
 
-配套设计：[架构](../Documentation/Architecture/Editor.md)、
-[接口契约](../Documentation/API/Editor.md)。Gizmo 迁移已改为编辑器私有适配层，由
+配套设计：[Qt 目标架构](../Documentation/Architecture/QtEditor.md)、
+[Qt 接口契约](../Documentation/API/QtEditor.md)；旧 Editor.md 保留过渡记录。
+Gizmo 已子模块化的当前实现由
 [依赖 TODO](Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
 管理，不在此重复创建独立实现。

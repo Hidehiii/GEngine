@@ -1,5 +1,8 @@
 # Assets, math, tools, and service API
 
+新编辑器的文档/命令/Worker 协议见 [Qt 编辑器契约](QtEditor.md)。本次仅
+同步设计入口，当前 Scene、Serializer、ImGuiLayer 及其他引擎签名不变。
+
 UI 选型修订：Qt 6 Widgets 用于未来 EditorHost，游戏/Worker 内继续使用
 EnableImGui、ImGuiLayer 和 OnImGuiRender；现有引擎接口不引入 Qt 类型。
 Qt 迁移尚未实现，现有编辑器 GizmoController 仅作过渡，见[接口设计](Editor.md)。

@@ -1,5 +1,9 @@
 # GEngine Editor
 
+新编辑器的统一设计入口：[Qt 6 编辑器目标架构](../Documentation/Architecture/QtEditor.md)
+与[模块/协议契约](../Documentation/API/QtEditor.md)。旧 Editor.md 保留历史；
+新文档是设计提案，当前启动命令仍运行同进程 ImGui 编辑器。
+
 Editor-only Qt source: `../GEngine/GEngine-ThirdParty/qtbase`, tag v6.10.3,
 commit `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. It contains Core/Gui/Widgets
 but is not a prebuilt SDK. The source is managed in the shared dependency
@@ -28,8 +32,8 @@ real-window interactions are still unverified; see the dependency TODO.
 仍能编辑、保存并重启 Worker。当前编辑器仍为同进程实现，尚不具备此隔离能力。
 详见架构的“故障隔离与恢复”与 TODO 的 E0。
 
-新的[编辑器架构设计](../Documentation/Architecture/Editor.md)与
-[接口契约](../Documentation/API/Editor.md)描述文档、命令、运行会话及视口边界。
+新的[编辑器架构设计](../Documentation/Architecture/QtEditor.md)与
+[接口契约](../Documentation/API/QtEditor.md)描述文档、命令、运行会话及视口边界。
 状态为提案；[阶段与验收](../TODO/EditorArchitecture.md)尚未实施，不代表下述
 编辑器已提供撤销、项目服务或完整材质预览能力。
 
