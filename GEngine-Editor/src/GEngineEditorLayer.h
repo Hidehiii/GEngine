@@ -26,7 +26,7 @@ namespace GEngine
 		virtual ~GEngineEditorLayer() = default;
 
 		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+		void OnDetach();
 
 		virtual void OnUpdate() override;
 		virtual void OnRender() override;
@@ -47,6 +47,8 @@ namespace GEngine
 		void SaveSceneAs();
 
 		void OnOverlayRender();
+		void RenderPreview(Ref<FrameBuffer>& target, const Matrix4x4& viewProjection);
+		Ref<Shader> m_PreviewShader;
 		void OnScenePlay();
 		void OnSceneStop();
 		void OnScenePause();

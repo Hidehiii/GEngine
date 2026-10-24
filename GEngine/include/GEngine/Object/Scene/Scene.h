@@ -48,7 +48,7 @@ namespace GEngine
 			std::vector<GameObject> entities;
 			for (auto it : view)
 			{
-				entities.push_back({ *it, this });
+				entities.emplace_back(it, this);
 			}
 			return entities;
 		}

@@ -13,6 +13,7 @@ namespace GEngine
 
 		virtual void Begin() override;
 		virtual void End() override;
+		static uint64_t RegisterTexture(const Ref<Texture2D>& texture);
 
 		virtual Ref<Texture2D> GetImGuiTexture() override;
 

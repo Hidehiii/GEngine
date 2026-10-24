@@ -10,12 +10,16 @@ Each function has a focused page:
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
+- [Editor architecture proposal](Editor.md): proposed document/command/session
+  boundaries, viewport rendering and staged migration; not implemented.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and
 API documents to stay synchronized with code and plans. These pages describe
 implemented behavior; every TODO or planned task is recorded in `TODO/`, and
-these pages may link to but must not own that plan.
+these pages may link to but must not own that plan. The editor proposal is
+explicitly a design document; its implementation work is owned by
+[editor tracking](../../TODO/EditorArchitecture.md).
 
 ## Source layout
 

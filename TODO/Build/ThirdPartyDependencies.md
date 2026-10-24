@@ -13,6 +13,59 @@
 
 ## Third-party dependency layout and submodules (implemented)
 
+### Editor compatibility repair (2026-10-23, in progress)
+
+- [ ] Repair reported vertically flipped editor presentation (2026-10-24).
+  Scope: use GUIUtils attachment UV endpoints for the final fullscreen quad;
+  preserve scene image UVs and backend configuration. Acceptance: quad top
+  samples texture top on OpenGL/Vulkan/D3D12, Debug/Release builds and bounded
+  backend runs pass; record visual verification separately.
+  Implemented: final quad top/bottom UVs now come from GUIUtils, preserving
+  OpenGL orientation and correcting Vulkan/D3D12 attachment presentation.
+  Verified: CMake VS2022 Debug/Release builds and all six 120-frame backend
+  runs exited 0 (tmp/editor-layout-*/output.log); no captured validation errors.
+  Source review confirms top V=1 for OpenGL and V=0 for Vulkan/D3D12.
+  Remaining: user/visual confirmation of upright panels and gizmo alignment.
+
+- [ ] Migrate editor build and rendering/input/camera calls to current engine
+  APIs without disabling scene editing. Acceptance: Debug/Release editor builds,
+  bounded startup/render/resize/shutdown checks on supported backends, explicit
+  unsupported capabilities, and synchronized API/architecture documentation.
+  Preserve backend configuration and unrelated local files. Initial failures:
+  obsolete layer hooks, material/vertex/framebuffer interfaces, camera MSAA,
+  Renderer2D overlays, and input names. Record runtime blockers separately.
+  Preview runs exposed invalid OpenGL sampler magnification and combined-texture
+  binding enums. Correct these calls and recheck textured presentation without
+  GL errors. Continue Debug/Release backend verification after interruption.
+  Vulkan preview exposed destruction of draw buffers/pipelines while recording:
+  VulkanCommandBuffer::Render did not retain its pipeline (unlike D3D12). Retain
+  graphics/compute pipelines through recording/submission and verify retirement.
+  Combined image samplers were absent from SPIR-V reflection, yielding an empty
+  presentation descriptor layout. Reflect sampled_images and validate the editor
+  texture-present shader using a fresh shader cache on all backends.
+  Implemented: portable preview command recording and UI-target presentation,
+  current input/config/event APIs, hierarchy selection, default docking layout,
+  optional managed runtime detection, and a working-directory-aware launcher.
+  Preview draws image colors and indexed mesh vertex colors; textured/lit/custom
+  materials and camera MSAA are explicitly unsupported, not silently ignored.
+  D3D12 UI descriptors retain textures per reusable completed frame slot; Vulkan
+  UI descriptors are recycled per frame and freed before pool shutdown. Vulkan
+  command buffers retain graphics/compute pipelines. Scene entity iteration and
+  combined-image-sampler reflection were repaired along with OpenGL native enums.
+  Verified 2026-10-24: CMake VS2022 Debug/Release engine/editor builds passed;
+  six fresh-layout 120-frame editor runs (D3D12/OpenGL/Vulkan in both configs)
+  exited 0 with no captured validation/GL/assertion errors. Release launcher run
+  from the real editor directory also reached frame 120 and exited 0, with the
+  existing managed runtime available. Premake VS2022 generation passed and its
+  editor debugger working directory is now set. git diff --check passed.
+  Evidence: tmp/editor-layout-*/output.log and tmp/editor-launcher-Release.log.
+  Remaining: full Premake builds, visual/gizmo/camera and scene save/load/play
+  interaction checks, real resize/minimize/restore, and measured long-run memory.
+  Computer-use window inspection timed out awaiting app access; do not count it
+  as a visual pass. The unbounded diagnostic process was explicitly stopped.
+  Final regression: FrameGraphTriangle Debug/Release builds and six 120-frame
+  D3D12/OpenGL/Vulkan runs also exited 0 after the common rendering fixes.
+
 ### In progress: ImGui, Box2D, and SPIRV-Cross upgrade (2026-10-22)
 
 - [ ] Upgrade ImGui to pinned v1.93.0-docking, replace Box2D with upstream

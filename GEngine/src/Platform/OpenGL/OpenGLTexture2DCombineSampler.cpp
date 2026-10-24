@@ -11,7 +11,7 @@ namespace GEngine
 
     void OpenGLTexture2DCombineSampler::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
     {
-		glBindTexture(GL_TEXTURE_2D + slot, m_Texture->GetOpenGLID());
+		glBindTextureUnit(slot, m_Texture->GetOpenGLID());
 		m_Sampler->Bind(slot);
     }
 

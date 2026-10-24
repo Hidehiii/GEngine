@@ -806,6 +806,16 @@ namespace GEngine
 			reflectionOutput.CBuffers.insert(cbufferInfo);
 		}
 		GE_CORE_INFO("Separate images:");
+		for (const auto& sampledImage : resources.sampled_images)
+		{
+			ShaderReflectionResourceInfo imageInfo;
+			imageInfo.Name = sampledImage.name;
+			imageInfo.Type = Utils::ShaderPropertyFromSpirvType(compiler.get_type(sampledImage.type_id), SHADER_PROPERTY_TYPE_TEXTURE_UNKNOWN);
+			imageInfo.BindPoint = compiler.get_decoration(sampledImage.id, spv::DecorationBinding);
+			imageInfo.RegisterSpace = compiler.get_decoration(sampledImage.id, spv::DecorationDescriptorSet);
+			imageInfo.ArraySize = Utils::GetSpirvPropertyTypeArraySize(compiler.get_type(sampledImage.type_id));
+			reflectionOutput.Resources.insert(imageInfo);
+		}
 		for (const auto& separateImage : resources.separate_images)
 		{
 			ShaderReflectionResourceInfo	imageInfo;

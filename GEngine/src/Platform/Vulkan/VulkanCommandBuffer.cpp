@@ -273,6 +273,7 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Render(Ref<GraphicsPipeline>& pipeline, uint32_t pass, uint32_t instanceCount, uint32_t indexCount)
 	{
+		Retain(pipeline);
 		std::static_pointer_cast<VulkanGraphicsPipeline>(pipeline)->Render(this, m_FrameBuffer, pass, instanceCount, indexCount);
 	}
 	void VulkanCommandBuffer::SwitchToNextSubpass()
@@ -282,6 +283,7 @@ namespace GEngine
 	}
 	void VulkanCommandBuffer::Compute(Ref<ComputePipeline>& pipeline, uint32_t pass, uint32_t x, uint32_t y, uint32_t z)
 	{
+		Retain(pipeline);
 		std::static_pointer_cast<VulkanComputePipeline>(pipeline)->Compute(this, pass, x, y, z);
 	}
 }

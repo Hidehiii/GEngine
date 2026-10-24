@@ -15,6 +15,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
 | Contributor-facing project generation | [Build entry points](BuildSystem.md) |
+| Proposed editor module contracts (not implemented) | [Editor design contracts](Editor.md) |
 
 `<GEngine.h>` aggregates common application, scene, math, graphics, and
 selected tool headers; include a specific public header for `RenderGraph`,

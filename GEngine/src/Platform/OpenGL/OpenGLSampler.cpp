@@ -10,7 +10,7 @@ namespace GEngine
         m_Specification = spec;
         glCreateSamplers(1, &m_Sampler);
         
-        glSamplerParameteri(m_Sampler, GL_TEXTURE_MAG_FILTER, Utils::SamplerFilterToGLSamplerFilter(m_Specification.MagFilter, m_Specification.MipmapFilter));
+        glSamplerParameteri(m_Sampler, GL_TEXTURE_MAG_FILTER, m_Specification.MagFilter == SAMPLER_FILTER_NEAREST ? GL_NEAREST : GL_LINEAR);
         glSamplerParameteri(m_Sampler, GL_TEXTURE_MIN_FILTER, Utils::SamplerFilterToGLSamplerFilter(m_Specification.MinFilter, m_Specification.MipmapFilter));
         glSamplerParameteri(m_Sampler, GL_TEXTURE_WRAP_S, Utils::SamplerAddressModeToGLWrapMode(m_Specification.WrapU));
         glSamplerParameteri(m_Sampler, GL_TEXTURE_WRAP_T, Utils::SamplerAddressModeToGLWrapMode(m_Specification.WrapV));

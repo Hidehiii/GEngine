@@ -14,6 +14,8 @@
 
 namespace GEngine
 {
+	void BeginImGuiTextureFrame();
+	void ShutdownImGuiTextures();
 	ImGuiLayer::ImGuiLayer()
 		: Layer("ImGuiLayer")
 	{
@@ -28,6 +30,7 @@ namespace GEngine
 
 	ImGuiLayer::~ImGuiLayer()
 	{
+		ShutdownImGuiTextures();
 		delete m_PlatformImGui;
 		m_PlatformImGui = nullptr;
 
@@ -104,6 +107,7 @@ namespace GEngine
 
 	void ImGuiLayer::Begin()
 	{
+		BeginImGuiTextureFrame();
 		
 		m_PlatformImGui->Begin();
 		switch (Application::Get().GetConfig()->GetWindowManagerAPI())

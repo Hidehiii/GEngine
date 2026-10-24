@@ -1,0 +1,69 @@
+# Editor 接口契约设计
+
+状态：**提案，无新增可调用 C++ API**。模块名称与操作表达职责，不是现有
+函数签名；落地时以公共头为准。本页与[架构设计](../Architecture/Editor.md)
+配套，所有实现工作由[编辑器 TODO](../../TODO/EditorArchitecture.md) 跟踪。
+
+## EditorCore 的调用边界
+
+硬性约束：EditorHost 不加载 GEngine；EngineWorker 承担预览、Play 和引擎
+资源操作。以下“场景视图”在 Host 指独立文档 DTO，非引擎 Scene 引用。
+跨进程操作全部异步，名称不代表直接 C++ 函数调用。
+
+| 提议接口 | 输入/输出契约 | 约束 |
+| --- | --- | --- |
+| SceneDocument 查询 | 只读场景视图、文档 ID/generation、修订/保存点 | 借用视图仅当前调用有效，不给面板持久裸 Scene 指针。 |
+| SelectionService | 文档/运行会话限定的对象 ID 或资源引用 | 每次解析验证 generation 与存在性；关闭/删除立即失效。 |
+| CommandService | 类型化编辑意图；成功、失败原因或不可用状态 | 统一用于菜单、面板、快捷键；模型修改在安全主线程边界执行。 |
+| CommandHistory | Undo/Redo、Begin/Commit/Cancel 事务 | 一次拖动一个记录；取消恢复原值；无效命令不进入历史。 |
+| DocumentService | New/Open/Save/Close；成功、取消、失败 | 失败保留旧场景/路径/保存点；统一处理未保存确认。 |
+| PlaySession | Play/Pause/Resume/Stop 请求与可用性 | 延迟到安全边界，失败回到 Edit；运行变化不写回编辑文档。 |
+| PanelContext | 查询、命令与选择的窄服务集合 | 不作为任意服务定位器；面板无原生后端或私有注册表访问。 |
+
+编辑命令的前后值必须可拥有、可验证，不能捕获跨帧的组件引用。删除与组件
+移除的撤销需要可恢复快照；不支持的组件明确阻止该操作。保存状态基于历史
+保存点与外部修改状态，不能简单在每次 Save 点击后清除 dirty。
+
+## 渲染和工具契约
+
+ViewportRequest（提案）描述视图 ID、场景 generation、相机、物理像素尺寸、
+所需输出和工具覆盖层选项。EditorRenderBridge 返回逻辑视图输出及能力/错误
+状态；UI 通过当帧纹理适配器显示输出，不获取 VkImage、D3D 描述符或 GL 名称。
+输出引用不能被当作永久 UI texture ID。尺寸为零时返回挂起状态，不创建无效目标。
+
+场景数据在渲染提取时借用，异步/提交后仅保留独立快照和 GPU 资源强引用。
+共享 SceneRenderer 及目标无关组件渲染契约是 E4 的前置工作，当前尚不可直接
+按此调用。UI 逻辑尺寸、物理尺寸和后端 UV 各有明确边界，不通过修改相机
+投影来修复最终 UI 翻转。
+
+Gizmo 继续由[既有转发计划](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface)
+定义引擎类型和上下文契约；编辑器把其变换结果接入命令事务。不要把 ImGuizmo
+枚举、ImDrawList 指针或其导出宏放进新编辑器核心接口。
+
+## 引擎 API 与兼容性
+
+### Worker 协议（计划）
+
+握手交换 protocol version、build ID、backend capabilities。消息包含 session
+generation、request ID、document revision 和有界 payload；支持 LoadSnapshot、
+ApplyEdits、Play/Pause/Resume/Stop、ViewportRequest、ACK、Error、FrameReady、
+Heartbeat、Shutdown。请求有截止时间，断连使未完成请求失败，旧会话回复直接丢弃。
+不传 Scene/GameObject 指针、ImGui ID、原生 GPU handle 或可跨进程解引用的地址。
+
+FrameReady 描述已完成 CPU 图像：尺寸、格式、stride、色彩/UV 方向、frame ID
+和文档 revision；有界槽与完成发布约定防止读取半帧。Host 只消费已完成帧，
+不等待 Worker GPU；Worker 崩溃后仍可绘制失联提示、编辑/保存与重启。
+运行 Inspector 读取带会话标识的快照，属性修改发请求，不能借用 Worker 内存。
+
+WorkerSupervisor 返回 Starting/Ready/Unresponsive/Disconnected/Stopped 及退出
+诊断。重启重发完整文档，不恢复失效的运行对象引用；Host 历史与保存点保持。
+首版采用 CPU 图像传输，跨进程共享 GPU 资源为未承诺的后续优化。
+
+当前 Application/Layer、Scene、GUIUtils、RenderDevice 与文件格式保持原样。
+设计不承诺 Scene 已有稳定 ID 查找、完整 Stop、步进、通用组件快照、项目数据库
+或共享离屏 SceneRenderer；这些能力在 E1–E6 中按需核实和增补。
+新通用引擎头放在 `GEngine/include/GEngine`，实现放在对应 `GEngine/src/GEngine`；
+编辑器专属头保留在编辑器目录，不进入 `<GEngine.h>`。
+
+第一阶段保留单文档、现有 `.GEScene` 和旧面板适配器。任何接口迁移同时更新
+调用方、Example、CMake/Premake 和后端能力说明；不以空实现维持编译通过。

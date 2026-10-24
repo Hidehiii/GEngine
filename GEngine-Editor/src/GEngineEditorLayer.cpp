@@ -1,4 +1,9 @@
 #include "GEngineEditorLayer.h"
+#include <GEngine/Graphics/GraphicsPresent.h>
+#include <GEngine/Utils/PlatformUtils.h>
+#include <cstdlib>
+#include <GEngine/Graphics/RenderDevice.h>
+#include <imgui_internal.h>
 
 
 namespace GEngine
@@ -18,25 +23,18 @@ namespace GEngine
 	{
 		ImGui::SetCurrentContext(Application::Get().GetImGuiLayer()->GetContext());
 
-		m_PresentPipeline			= GraphicsPipeline::Create(
-			Material::Create("Assets/Shaders/PresentImGui.glsl"),
-			VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertexData.size())
-		);
-		m_PresentPipeline->GetVertexBuffer()->SetLayout({
-			{ShaderDataType::float4,	"PositionOS"},
-			{ShaderDataType::float2,	"UV"}
-			});
-		uint32_t*					presentIndices = new uint32_t[6];
-		presentIndices[0]			= 0;
-		presentIndices[1]			= 1;
-		presentIndices[2]			= 2;
-
-		presentIndices[3]			= 2;
-		presentIndices[4]			= 3;
-		presentIndices[5]			= 0;
-		m_PresentPipeline->GetVertexBuffer()->SetIndexBuffer(IndexBuffer::Create(presentIndices, 6));
-		delete[] presentIndices;
-		m_PresentPipeline->GetVertexBuffer()->SetData(m_PresentVertexData.data(), sizeof(PresentVertex) * m_PresentVertexData.size());
+        const auto topLeftUV = GUIUtils::GetUV0();
+        const auto bottomRightUV = GUIUtils::GetUV1();
+        // Match the attachment origin without changing scene or camera coordinates.
+        m_PresentVertexData[0].UV = { topLeftUV.x, bottomRightUV.y };
+        m_PresentVertexData[1].UV = bottomRightUV;
+        m_PresentVertexData[2].UV = { bottomRightUV.x, topLeftUV.y };
+        m_PresentVertexData[3].UV = topLeftUV;
+        auto vertices = VertexBuffer::Create(m_PresentVertexData.data(), static_cast<uint32_t>(sizeof(PresentVertex) * m_PresentVertexData.size()));
+        const uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+        vertices->SetIndexBuffer(IndexBuffer::Create(indices, 6));
+        m_PresentPipeline = GraphicsPipeline::Create(Material::Create("Assets/Shaders/EditorPresent.shader", "EditorPresent"), vertices);
+        m_PreviewShader = Shader::Create("Assets/Shaders/EditorPreview.shader");
 
 		m_PlayButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playButtonIcon.png");
 		m_PlayingButtonIcon			= Texture2D::Create("Resources/Icons/ToolBar/playingButtonIcon.png");
@@ -48,8 +46,8 @@ namespace GEngine
 		m_PauseButtonIcon_DisPlay	= m_PauseButtonIcon;
 
 		RenderPassSpecification			spec;
-		spec.ColorAttachments			= { FrameBufferTextureFormat::RGBA8 };
-		spec.DepthAttachment			= FrameBufferTextureFormat::DEPTH;
+		spec.RenderTargets			= { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+		spec.DepthStencil			= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 		Ref<RenderPass> pass = RenderPass::Create(spec);
 
 		m_SceneViewportFrameBuffer		= FrameBuffer::Create(pass, 1080, 720);
@@ -60,177 +58,73 @@ namespace GEngine
 		m_Hierarchy.SetContext(m_ActiveScene);
 
 
-		// Read all the model files in the model directory when the editor is attached
-		{
-			for (auto& modelFile : std::filesystem::directory_iterator(s_ModelPath))
-			{
-				const auto& path = modelFile.path();
-				std::string filenameString = path.filename().string();
-				if (path.extension() == ".fbx" || path.extension() == ".FBX")
-				{
-					GE_TRACE("Model: {0} loading", path);
-					m_ModelImporter.LoadMesh(path.string());
-
-				}
-			}
-			GE_TRACE("Model Count: {0}", MeshLibrary::GetMeshNames().size());
-		}
-		// Read all shader files
-		{
-			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_2D))
-			{
-				const auto& path = shaderFile.path();
-				std::string filenameString = path.filename().string();
-				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
-				{
-					GE_TRACE("Shader: {0} loading", path);
-					Shader::Create(path.string());
-				}
-			}
-			for (auto& shaderFile : std::filesystem::directory_iterator(s_ShaderPath_3D))
-			{
-				const auto& path = shaderFile.path();
-				std::string filenameString = path.filename().string();
-				if (path.extension() == ".glsl" || path.extension() == ".GLSL")
-				{
-					GE_TRACE("Shader: {0} loading", path);
-					Shader::Create(path.string());
-				}
-			}
-		}
-
-
-		// test
-		{
-			class TestScript : public ScriptableObject
-			{
-			public:
-				void OnStart()
-				{
-					GE_TRACE("TestScript OnStart");
-					GE_TRACE(m_GameObject.GetComponent<Attribute>().m_Name);
-				}
-				void OnCollisionEnter2D(Ref<Physics2DContactInfo> info)
-				{
-					GE_TRACE("OnCollisionEnter2D: {0}", info->GetOtherGameObject().GetComponent<Attribute>().m_Name);
-				}
-				void OnPhysicsUpdate()
-				{
-					//GE_TRACE("OnPhysicsUpdate");
-				}
-				void OnUpdate()
-				{
-					//GE_TRACE("OnUpdate");
-				}
-				void OnRender()
-				{
-					Renderer2D::DrawQuad(Transform(), Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				}
-			};
-			class SubTestScript : public TestScript
-			{
-			public:
-				int i = 10;
-			};
-			class TestScript2 : public ScriptableObject
-			{
-			public:
-				void OnAwake()
-				{
-					AddComponent<SubTestScript>();
-				}
-				void OnStart()
-				{
-					GE_TRACE("TestScript2 OnStart");
-					GetComponent<SubTestScript>().i = 20;
-					GE_CRITICAL(GetComponent<SubTestScript>().i);
-				}
-			};
-			auto testObj = m_ActiveScene->CreateGameObject("Test");
-			
-			//testObj.AddComponent<NativeScript>().Bind<TestScript>();
-			//testObj.AddComponent<TestScript>();
-			//testObj.AddComponent<SubTestScript>();
-			testObj.AddComponent<TestScript2>();
-		}
-	}
+        auto preview = m_ActiveScene->CreateGameObject("Preview quad");
+        preview.AddComponent<ImageRenderer>(Vector4(0.2f, 0.65f, 0.95f, 1.0f));
+    }
 
 	void GEngineEditorLayer::OnDetach()
 	{
 	}
 
-	void GEngineEditorLayer::OnUpdate()
-	{
+    void GEngineEditorLayer::OnUpdate()
+    {
+        if (m_SceneState == EditorSceneState::Play)
+            m_ActiveScene->OnUpdate();
+        if (m_SceneViewportFocused && m_SceneViewportHovered)
+            m_EditorCamera.OnUpdate();
+        auto resize = [](Ref<FrameBuffer>& target, Vector2 size)
+        {
+            if (size.x > 0 && size.y > 0 &&
+                (target->GetWidth() != static_cast<uint32_t>(size.x) || target->GetHeight() != static_cast<uint32_t>(size.y)))
+                target = FrameBuffer::Create(target, static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
+        };
+        resize(m_SceneViewportFrameBuffer, m_SceneViewportSize);
+        resize(m_GameViewportFrameBuffer, m_GameViewportSize);
+        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(std::max(1.0f, m_GameViewportSize.x)), static_cast<uint32_t>(std::max(1.0f, m_GameViewportSize.y)));
+    }
 
-		// Scene update ( logic and physics )
-		if (m_SceneState == EditorSceneState::Play)
-		{
-			m_ActiveScene->OnUpdate();
-		}
+    void GEngineEditorLayer::OnRender()
+    {
+        RenderPreview(m_SceneViewportFrameBuffer, m_EditorCamera.GetViewProjection());
+        Matrix4x4 gameViewProjection(1.0f);
+        if (auto camera = m_ActiveScene->MainCamera())
+            gameViewProjection = camera->GetProjectionMatrix() * Math::Inverse(camera->m_GameObject.GetComponent<Transform>().GetModelMatrix());
+        RenderPreview(m_GameViewportFrameBuffer, gameViewProjection);
+    }
 
-		if (m_SceneViewportFocused && m_SceneViewportHovered)
-		{
-			m_EditorCamera.OnUpdate();
-		}
-
-
-		// Game Viewport
-		// If framebuffer is changed in OnGuiRender(), the screen will flash
-		FrameBufferSpecification fbspec = m_GameViewportFrameBuffer->GetSpecification();
-		auto camera = m_ActiveScene->MainCamera();
-		if (m_GameViewportSize.x > 0 && m_GameViewportSize.y > 0 && (fbspec.Width != m_GameViewportSize.x || fbspec.Height != m_GameViewportSize.y))
-		{
-			m_GameViewportFrameBuffer = FrameBuffer::Create(m_GameViewportFrameBuffer, m_GameViewportSize);
-		}
-		if ((camera && Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType) != fbspec.Samples))
-		{
-			RenderPassSpecification spec = m_GameViewportFrameBuffer->GetRenderPass()->GetSpecification();
-			spec.Samples = Camera::AntiAliasingTypeToInt(camera->m_AntiAliasingType);
-			m_GameViewportFrameBuffer = FrameBuffer::Create(RenderPass::Create(spec), fbspec.Width, fbspec.Height);
-		}
-
-		// Scene Viewport	
-		// If framebuffer is changed in OnGuiRender(), the screen will flash
-		 fbspec = m_SceneViewportFrameBuffer->GetSpecification();
-		if (m_SceneViewportSize.x > 0 && m_SceneViewportSize.y > 0 && (fbspec.Width != m_SceneViewportSize.x || fbspec.Height != m_SceneViewportSize.y))
-		{
-			m_SceneViewportFrameBuffer = FrameBuffer::Create(m_SceneViewportFrameBuffer, m_SceneViewportSize);
-		}
-		if (Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType) != fbspec.Samples)
-		{
-			RenderPassSpecification spec = m_SceneViewportFrameBuffer->GetRenderPass()->GetSpecification();
-			spec.Samples = Camera::AntiAliasingTypeToInt(m_EditorCamera.m_AntiAliasingType);
-			m_SceneViewportFrameBuffer = FrameBuffer::Create(RenderPass::Create(spec), fbspec.Width, fbspec.Height);
-		}
-	}
-
-	void GEngineEditorLayer::OnRender()
-	{
-		RenderCommand::BeginGraphicsCommand();
-		m_SceneViewportFrameBuffer->Begin();
-		{
-			Renderer::BeginScene(m_EditorCamera);
-			OnOverlayRender();
-			m_ActiveScene->OnRender();
-			Renderer::EndScene();
-		}
-		m_SceneViewportFrameBuffer->End();
-		RenderCommand::EndGraphicsCommand();
-
-		RenderCommand::BeginGraphicsCommand();
-		m_GameViewportFrameBuffer->Begin();
-		{
-			auto camera = m_ActiveScene->MainCamera();
-			if (camera)
-			{
-				Renderer::BeginScene(*camera);
-				m_ActiveScene->OnRender();
-				Renderer::EndScene();
-			}
-		}
-		m_GameViewportFrameBuffer->End();
-		RenderCommand::EndGraphicsCommand();
-	}
+    void GEngineEditorLayer::RenderPreview(Ref<FrameBuffer>& target, const Matrix4x4& viewProjection)
+    {
+        struct PreviewVertex { Vector4 Position; Vector4 Color; };
+        auto command = Graphics::GetGraphicsCommandBuffer();
+        command->Begin(target);
+        auto draw = [&](std::vector<PreviewVertex>& vertices, const std::vector<uint32_t>& indices)
+        {
+            if (vertices.empty() || indices.empty()) return;
+            auto buffer = VertexBuffer::Create(vertices.data(), static_cast<uint32_t>(vertices.size() * sizeof(PreviewVertex)));
+            buffer->SetIndexBuffer(IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size())));
+            auto pipeline = GraphicsPipeline::Create(Material::Create(m_PreviewShader, "EditorPreview"), buffer);
+            command->Render(pipeline, 0);
+        };
+        for (auto object : m_ActiveScene->GetGameObjects<Transform, ImageRenderer>())
+        {
+            auto& image = object.GetComponent<ImageRenderer>();
+            auto matrix = viewProjection * object.GetComponent<Transform>().GetModelMatrix();
+            std::vector<PreviewVertex> vertices;
+            for (auto position : { Vector4(-0.5f,-0.5f,0,1), Vector4(0.5f,-0.5f,0,1), Vector4(0.5f,0.5f,0,1), Vector4(-0.5f,0.5f,0,1) })
+                vertices.push_back({matrix * position, image.m_Color});
+            draw(vertices, {0,1,2,2,3,0});
+        }
+        for (auto object : m_ActiveScene->GetGameObjects<Transform, MeshFilter, MeshRenderer>())
+        {
+            auto& mesh = object.GetComponent<MeshFilter>().GetMesh();
+            auto matrix = viewProjection * object.GetComponent<Transform>().GetModelMatrix();
+            std::vector<PreviewVertex> vertices;
+            for (auto& vertex : mesh.m_Vertices) vertices.push_back({matrix * vertex.m_Position, vertex.m_Color});
+            draw(vertices, mesh.m_Indices);
+        }
+        command->End();
+        Graphics::SubmitCommandBuffer(command);
+    }
 
 	void GEngineEditorLayer::OnImGuiRender()
 	{
@@ -298,6 +192,23 @@ namespace GEngine
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			if (!ImGui::DockBuilderGetNode(dockspace_id))
+			{
+				ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+				ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
+				ImGuiID center = dockspace_id;
+				auto left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.18f, nullptr, &center);
+				auto right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
+				auto bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.25f, nullptr, &center);
+				auto toolbar = ImGui::DockBuilderSplitNode(center, ImGuiDir_Up, 0.08f, nullptr, &center);
+				ImGui::DockBuilderDockWindow("Scene Hierarchy", left);
+				for (auto name : { "Properties", "Setting", "Scene Viewport Properties" }) ImGui::DockBuilderDockWindow(name, right);
+				ImGui::DockBuilderDockWindow("Content Browser", bottom);
+				ImGui::DockBuilderDockWindow("##ToolBar", toolbar);
+				ImGui::DockBuilderDockWindow("Scene Viewport", center);
+				ImGui::DockBuilderDockWindow("Game Viewport", center);
+				ImGui::DockBuilderFinish(dockspace_id);
+			}
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
@@ -387,13 +298,14 @@ namespace GEngine
 				m_SceneViewportSize		= viewportPanelSize;
 				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 			}
-			ImGui::Image(GUIUtils::GetTextureID(m_SceneViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
+			ImGui::Image(GUIUtils::GetTextureID(m_SceneViewportFrameBuffer->GetRenderTarget(0)), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
 
 			Vector2 windowRegionMin		= { ImGui::GetWindowContentRegionMin().x, ImGui::GetWindowContentRegionMin().y };
 			Vector2 windowRegionMax		= { ImGui::GetWindowContentRegionMax().x, ImGui::GetWindowContentRegionMax().y };
 			Vector2 viewportOffset		= { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
 			m_SceneViewportBounds[0]	= windowRegionMin + viewportOffset;
 			m_SceneViewportBounds[1]	= windowRegionMax + viewportOffset;
+            OnOverlayRender();
 
 
 			// Gizmos
@@ -412,7 +324,7 @@ namespace GEngine
 				
 
 				// Snap
-				bool isSnap					= Input::IsKeyPressed(KeyCode::LeftControl);
+				bool isSnap					= Input::GetKeyPressed(KeyCode::KEY_LEFT_CONTROL);
 				// for Scale and Position
 				float snapVal				= 0.5f;
 				// for Rotation
@@ -475,8 +387,8 @@ namespace GEngine
 					m_ActiveScene->MainCamera()->SetViewportSize(m_GameViewportSize.x, m_GameViewportSize.y);
 				}
 			}
-			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetColorAttachment(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
-			//ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetDepthAttachment()), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
+			ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetRenderTarget(0)), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
+			//ImGui::Image(GUIUtils::GetTextureID(m_GameViewportFrameBuffer->GetDepthStencil()), ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), { GUIUtils::GetUV0().x, GUIUtils::GetUV0().y }, { GUIUtils::GetUV1().x, GUIUtils::GetUV1().y });
 
 			ImGui::End();
 			ImGui::PopStyleVar();
@@ -558,15 +470,7 @@ namespace GEngine
 
 			ImGui::NewLine();
 			ImGui::Separator();
-			ImGui::Text("2D Stats:");
-			ImGui::Text("Triangles: %d",	Renderer2D::GetStats().m_TriangleCount);
-			ImGui::Text("Lines: %d",		Renderer2D::GetStats().m_LineCount);
-			ImGui::Text("Points: %d",		Renderer2D::GetStats().m_PointCount);
-			ImGui::Text("Draw Calls: %d",	Renderer2D::GetStats().m_DrawCalls);
-			ImGui::Text("Vertex Count: %d", Renderer2D::GetStats().GetTotalVertexCount());
-			ImGui::Text("Index Count: %d",	Renderer2D::GetStats().GetTotalIndexCount());
-
-			
+            ImGui::TextUnformatted("Preview: vertex colors; textured and lit materials are not supported.");
 
 			ImGui::End();
 		}
@@ -575,27 +479,11 @@ namespace GEngine
 		{
 			ImGui::Begin("Setting");
 
-			const char* setRendererAPIString[] = { u8"OpenGL", u8"Vulkan" };
-			int currentRendererAPI = Application::Get().GetConfig()->m_RendererAPI - 1;
-			if (ImGui::Combo("Renderer API", &currentRendererAPI, setRendererAPIString, 2))
-			{
-				Application::Get().GetConfig()->m_RendererAPI = currentRendererAPI + 1;
-			}
-
-			const char* setFramesInFlightsString[] = { u8"1", u8"2", u8"3" };
-			int currentFramesInFlight = Application::Get().GetConfig()->m_FramesInFlight - 1;
-			if (ImGui::Combo("Frames in flight", &currentFramesInFlight, setFramesInFlightsString, 3))
-			{
-				Application::Get().GetConfig()->m_FramesInFlight = currentFramesInFlight + 1;
-			}
-
-			const char* setVSyncString[] = { u8"false", u8"true" };
-			int currentVSync = Application::Get().GetConfig()->m_VSync;
-			if (ImGui::Combo("VSync", &currentVSync, setVSyncString, 2))
-			{
-				Application::Get().GetConfig()->m_VSync = currentVSync;
-				Application::Get().GetWindow().SetVSync(currentVSync);
-			}
+            ImGui::Text("Graphics API: %u", Application::Get().GetConfig()->GetGraphicsAPI());
+            ImGui::Text("Frames in flight: %u", Application::Get().GetConfig()->GetFramesInFlight());
+            ImGui::TextUnformatted("Change GraphicsAPI and FramesInFlight in Config.ini, then restart.");
+            static bool vsync = Application::Get().GetConfig()->GetVSync();
+            if (ImGui::Checkbox("VSync", &vsync)) Application::Get().GetWindow().SetVSync(vsync);
 
 			ImGui::End();
 		}
@@ -612,8 +500,16 @@ namespace GEngine
 
 	void GEngineEditorLayer::OnPresent()
 	{
-		m_PresentPipeline->GetMaterial()->SetTexture2D("GE_PRESENT_IMGUI", Application::Get().GetImGuiLayer()->GetImGuiImage());
-		m_PresentPipeline->Render();
+		auto material = m_PresentPipeline->GetMaterial();
+		auto texture = Application::Get().GetImGuiLayer()->GetImGuiImage();
+		if (material->GetShader()->GetPropertyType("GE_PRESENT_IMGUI") == SHADER_PROPERTY_TYPE_SAMPLER_TEXTURE_2D)
+			material->SetResource("GE_PRESENT_IMGUI", Graphics::GetRenderDevice().CreateTexture2DCombineSampler(texture, Sampler::GetDefaultSampler()));
+		else
+		{
+			material->SetResource("GE_PRESENT_IMGUI", texture);
+			material->SetResource("GE_PRESENT_IMGUI_Sampler", Sampler::GetDefaultSampler());
+		}
+		GraphicsPresent::Render(m_PresentPipeline, 0);
 	}
 
 	void GEngineEditorLayer::OnEndFrame()
@@ -621,31 +517,39 @@ namespace GEngine
 		m_ActiveScene->OnEndFrame();
 		m_SceneStateFunction();
 		m_SceneStateFunction = []() {};
+		static uint64_t frames = 0;
+		++frames;
+		const char* limit = std::getenv("GENGINE_EDITOR_FRAME_LIMIT");
+		if (limit && std::strtoull(limit, nullptr, 10) > 0 && frames >= std::strtoull(limit, nullptr, 10))
+		{
+			GE_INFO("Editor completed {} frames; requesting normal shutdown.", frames);
+			Application::Get().Close();
+		}
+
 	}
 
 
 	void GEngineEditorLayer::OnEvent(Event& e)
 	{
 		m_EditorCamera.OnEvent(e);
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnMouseButtonPressed));
+		EventDispatcher::Dispatch<KeyPressedEvent>(e, GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnKeyPressed));
+		EventDispatcher::Dispatch<MouseButtonPressedEvent>(e, GE_BIND_CLASS_FUNCTION_LAMBDA(GEngineEditorLayer::OnMouseButtonPressed));
 	}
 
 	bool GEngineEditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		// Shortcut
-		if (e.IsRepeat())
+		if (!Input::GetKeyDown(e.GetKeyCode()))
 		{
 			return false;
 		}
 
-		bool controlPressed		= Input::IsKeyPressed(KeyCode::LeftControl) || Input::IsKeyPressed(KeyCode::RightControl);
-		bool shiftPressed		= Input::IsKeyPressed(KeyCode::LeftShift) || Input::IsKeyPressed(KeyCode::RightShift);
+		bool controlPressed		= Input::GetKeyPressed(KeyCode::KEY_LEFT_CONTROL) || Input::GetKeyPressed(KeyCode::KEY_RIGHT_CONTROL);
+		bool shiftPressed		= Input::GetKeyPressed(KeyCode::KEY_LEFT_SHIFT) || Input::GetKeyPressed(KeyCode::KEY_RIGHT_SHIFT);
 
 		switch (e.GetKeyCode())
 		{
-			case KeyCode::N:
+			case KeyCode::KEY_N:
 			{
 				if (controlPressed)
 				{
@@ -654,7 +558,7 @@ namespace GEngine
 				}
 				break;
 			}
-			case KeyCode::O:
+			case KeyCode::KEY_O:
 			{
 				if (controlPressed)
 				{
@@ -663,7 +567,7 @@ namespace GEngine
 				}
 				break;
 			}
-			case KeyCode::S:
+			case KeyCode::KEY_S:
 			{
 				if (controlPressed && shiftPressed)
 				{
@@ -677,7 +581,7 @@ namespace GEngine
 				}
 				break;
 			}
-			case KeyCode::D:
+			case KeyCode::KEY_D:
 			{
 				if (controlPressed)
 				{
@@ -748,7 +652,7 @@ namespace GEngine
 		std::string filePath	= FileDialogs::SaveFile("GEngine Scene (*.GEScene)\0*.GEScene\0");
 		if (filePath.empty() == false)
 		{
-			if(filePath.rfind(".GEScene") != 0)
+			if(std::filesystem::path(filePath).extension() != ".GEScene")
 			{ 
 				filePath += ".GEScene";
 			}
@@ -757,111 +661,16 @@ namespace GEngine
 		}
 	}
 
-	void GEngineEditorLayer::OnOverlayRender()
-	{
-		// Grid
-		{
-			float dis = 500.0f;
-			for(int i = -dis; i <= dis; i += 10)
-			{
-				Renderer2D::DrawLine(Vector3(-dis, 0.0f, i), Vector3(dis, 0.0f, i), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
-				Renderer2D::DrawLine(Vector3(i, 0.0f, -dis), Vector3(i, 0.0f, dis), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
-			}
-		}
-		// Camera View
-		{
-			auto camera = m_ActiveScene->MainCamera();
-			if (camera)
-			{
-				if (camera->GetCameraType() == CameraType::Perspective)
-				{
-					// order: NLB NLT NRT NRB FLB FLT FRT FRB
-					Vector3* coords = camera->GetPerspectiveClipCoord();
-
-					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[2], coords[3], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[3], coords[0], Vector4(1.0f));
-
-					Renderer2D::DrawLine(coords[4], coords[5], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[5], coords[6], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[6], coords[7], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[7], coords[4], Vector4(1.0f));
-
-					Renderer2D::DrawLine(coords[0], coords[4], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[1], coords[5], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[2], coords[6], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[3], coords[7], Vector4(1.0f));
-				}
-				else
-				{
-					// order: NLB NLT NRT NRB FLB FLT FRT FRB
-					Vector3* coords = camera->GetOrthoGraphicClipCoord();
-
-					Renderer2D::DrawLine(coords[0], coords[1], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[1], coords[2], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[2], coords[3], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[3], coords[0], Vector4(1.0f));
-
-					Renderer2D::DrawLine(coords[4], coords[5], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[5], coords[6], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[6], coords[7], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[7], coords[4], Vector4(1.0f));
-
-					Renderer2D::DrawLine(coords[0], coords[4], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[1], coords[5], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[2], coords[6], Vector4(1.0f));
-					Renderer2D::DrawLine(coords[3], coords[7], Vector4(1.0f));
-				}
-			}
-		}
-		// Main light direction
-		{
-			auto mainLight = m_ActiveScene->MainDirectionalLight();
-			if (mainLight)
-			{
-				auto transform = mainLight->m_GameObject.GetComponent<Transform>();
-				Vector3 position = transform.m_Position;
-				Vector3 direction = transform.Forward();
-				Renderer2D::DrawCircle(transform, 0.1f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position, direction , 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1f * transform.Right(),	direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1f * transform.Right(),	direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position + 0.1f * transform.Up(),		direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-				Renderer2D::DrawLine(position - 0.1f * transform.Up(),		direction, 1.0f, Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-			}
-		}
-		GameObject gameObject = m_Hierarchy.GetSelectedGameObject();
-		if (gameObject)
-		{
-			// visualize the circle collider 2D
-			if (gameObject.HasComponent<CircleCollider2D>())
-			{
-				auto circleCollider		= gameObject.GetComponent<CircleCollider2D>();
-				auto transform			= gameObject.GetComponent<Transform>();
-				Vector3 position		= transform.m_Position + Vector3(circleCollider.m_Offset, 0.0f);
-				Vector3 scale			= Vector3(circleCollider.m_Radius * 2.0f) * Math::Max(transform.m_Scale);
-				transform				= Transform(position, Vector3(0.0f), scale);
-				Renderer2D::DrawCircle(transform, 0.5f,  Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-			}
-			// visualize the box collider 2D
-			if (gameObject.HasComponent<BoxCollider2D>())
-			{
-				auto boxCollider	= gameObject.GetComponent<BoxCollider2D>();
-				auto transform		= gameObject.GetComponent<Transform>();
-				// This transform of the collider is should be multiplied by the scale transform of the game object
-				// Otherwise, the collider will not be scaled with the game object
-				auto t				= Math::Translate(Matrix4x4(1.0f), transform.m_Position)
-									* Math::Rotate(Matrix4x4(1.0f), Math::Degrees(transform.GetEulerAngle().z), Vector3(0.0f, 0.0f, 1.0f))
-									* Math::Translate(Matrix4x4(1.0f), Vector3(boxCollider.m_Offset, 0.0f))
-									* Math::Rotate(Matrix4x4(1.0f), boxCollider.m_Rotation, Vector3(0.0f, 0.0f, 1.0f))
-									* Math::Scale(Matrix4x4(1.0f), transform.m_Scale * 1.01f)
-									* Math::Scale(Matrix4x4(1.0f), Vector3(boxCollider.m_Size, 1.0f));
-				Renderer2D::SetLineWidth(0.065f);
-				Renderer2D::DrawRect(t, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-			}
-		}
-	}
+    void GEngineEditorLayer::OnOverlayRender()
+    {
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
+            m_SceneViewportSize.x, m_SceneViewportSize.y);
+        auto view = m_EditorCamera.GetViewMatrix();
+        auto projection = m_EditorCamera.GetProjectionMatrix();
+        Matrix4x4 identity(1.0f);
+        ImGuizmo::DrawGrid(Math::ValuePtr(view), Math::ValuePtr(projection), Math::ValuePtr(identity), 100.0f);
+    }
 
 	void GEngineEditorLayer::OnScenePlay()
 	{

@@ -49,7 +49,7 @@ namespace GEngine
 	template <typename T, typename UIFunc>
 	static void DrawComponent(const std::string& name, GameObject gameObject, bool removeAble, UIFunc uiFunction)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
 		if (gameObject.HasComponent<T>())
 		{
 			auto& component					= gameObject.GetComponent<T>();
@@ -150,13 +150,7 @@ namespace GEngine
 					GUI::FloatControl(u8"Near clip",	component.m_PerspectiveNear);
 					GUI::FloatControl(u8"Far clip",		component.m_PerspectiveFar);
 				}
-
-				int currentAntiAliasingType = (int)component.m_AntiAliasingType;
-				const char* antiAliasingTypes[] = { u8"None", u8"MSAA2x", u8"MSAA4x", u8"MSAA8x", u8"MSAA16x" };
-				if (ImGui::Combo(u8"Anti Aliasing", &currentAntiAliasingType, antiAliasingTypes, 5))
-				{
-					component.m_AntiAliasingType = (AntiAliasingType)currentAntiAliasingType;
-				}
+                ImGui::TextUnformatted("Preview uses single-sample rendering.");
 			}
 		);
 
@@ -307,79 +301,12 @@ namespace GEngine
 				ImGui::Columns(1);
 			}
 		);
-		// TODO; 没有shader library了
-		DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
-			{
-				auto shaderString = ShaderLibrary::GetShaderNames();
-				const char* currentShader = component.GetMaterial() ? component.GetMaterial()->GetShader()->GetShaderName().c_str() : "None";
-				if (ImGui::BeginCombo("##2", currentShader))
-				{
-					for (int i = 0; i < shaderString.size(); i++)
-					{
-						bool isSelected = currentShader == shaderString[i].c_str();
-						if (ImGui::Selectable(shaderString[i].c_str(), isSelected))
-						{
-							component.SetMaterial(Material::Create(ShaderLibrary::GetShader(shaderString[i])));
-						}
-						if (isSelected)
-						{
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				
-				if (component.GetMaterial())
-				{
-					ImGui::Text(component.GetMaterial()->GetName().c_str());
-					auto& uniforms = component.GetMaterial()->GetUniforms();
-					for (auto& uniform : uniforms)
-					{
-						switch (uniform.Type)
-						{
-						case ShaderUniformType::Float:
-						{
-							float f = component.GetMaterial()->GetFloat(uniform.Name);
-							GUI::FloatControl(uniform.Name.c_str(), f);
-							component.GetMaterial()->SetFloat(uniform.Name, f);
-							break;
-						}
-						case ShaderUniformType::Int:
-						{
-							int i = component.GetMaterial()->GetInt(uniform.Name);
-							GUI::IntControl(uniform.Name.c_str(), i);
-							component.GetMaterial()->SetInt(uniform.Name, i);
-							break;
-						}
-						case ShaderUniformType::Vector:
-						{
-							Vector4 v = component.GetMaterial()->GetVector(uniform.Name);
-							GUI::Vector4Control(uniform.Name.c_str(), v);
-							component.GetMaterial()->SetVector(uniform.Name, v);
-							break;
-						}
-						case ShaderUniformType::Color:
-						{
-							Vector4 v = component.GetMaterial()->GetVector(uniform.Name);
-							GUI::Color4Control(uniform.Name.c_str(), v);
-							component.GetMaterial()->SetVector(uniform.Name, v);
-							break;
-						}
-						case ShaderUniformType::Mat3:
-						{
-							break;
-						}
-						case ShaderUniformType::Mat4 :
-						{
-							break;
-						}
-						default:
-							break;
-						}
-					}
-				}
-			}
-		);
+        DrawComponent<MeshRenderer>("Mesh Renderer", gameObject, true, [](auto& component)
+        {
+            if (auto material = component.GetMaterial())
+                ImGui::Text("Shader: %s", material->GetShader()->GetShaderName().c_str());
+            ImGui::TextWrapped("Scene preview uses vertex colors. Lit/custom material preview is not supported.");
+        });
 
 	}
 	void Hierarchy::OnGuiRender()
@@ -423,7 +350,7 @@ namespace GEngine
 			}
 		}
 
-		if (Input::IsMouseButtonPressed(MouseCode::Button0) && ImGui::IsWindowHovered())
+		if (Input::GetMouseButtonDown(MouseCode::MOUSE_BUTTON_0) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
 		{
 			m_SelectionContext = {};
 		}

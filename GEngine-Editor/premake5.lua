@@ -5,6 +5,7 @@ project "GEngine-Editor"
 	
 
 	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	debugdir "%{wks.location}/GEngine-Editor"
 	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
 
 	files
