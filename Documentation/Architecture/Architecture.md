@@ -10,10 +10,9 @@ Each function has a focused page:
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
-- [Qt editor target architecture](QtEditor.md): planned Qt 6 Host, isolated
-  EngineWorker, document/command ownership, IPC, viewports and migration criteria.
-- [Editor history and transitional integration](Editor.md): existing ImGui
-  editor/GizmoController and superseded design history.
+- [Qt editor architecture](QtEditor.md): Qt Host, diagnostic IPC and E0.2 engine
+  preview/logs; planned scene ownership, interactive viewports and migration criteria.
+- [Legacy editor removal](Editor.md): removal scope and links to the Qt replacement.
 
 Caller-facing entry points are in the [API index](../API/README.md). The
 [Standard workflow](../Workflow/StandardWorkflow.md) requires architecture and

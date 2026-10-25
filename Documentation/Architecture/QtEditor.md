@@ -1,6 +1,63 @@
 # Qt 6 编辑器目标架构
 
-版本：2026-10-24。状态：**设计提案，尚未实现**。
+版本：2026-10-24 目标设计。状态：**E0.1/E0.2 Qt、子进程与引擎预览已实现，完整目标架构待实施**。
+
+## 当前实施：E0.1 基础原型
+
+2026-10-25 E0.2：新增 GEngine-EditorEngineWorker，链接 GEngine 而不链接 Qt。
+正常启动默认连接此子进程；诊断模式仍由 --self-test 或 --worker 显式选择。
+真实 Worker 通过 Application 兼容入口创建 EngineRuntime（Shader 缓存仍依赖
+Application 单例），创建离屏 RenderGraph 与持久管线，渲染青色三角形，
+复制到单层 RGBA8 纹理数组后复用 ReadLayerData，在子进程内同步等待 GPU。
+首版固定 160×90、约 2 FPS（每次 Ping 请求一帧），用于接通真实 GPU 输出；
+不是最终高分辨率视口或 Scene 编辑。同步读回是低频预览的临时路径，后续异步
+读回/共享内存仍在 E0；Qt 主线程不等待 GPU。原生表面在 Worker 内隐藏。
+协议 stdout 专用句柄与日志分离：引擎 stdout 转到 stderr，再由 Host Console
+异步接收；Host 不加载 GEngine。启动截止延长至 30 秒，给设备/着色器初始化留时间。
+图像附带明确 EngineFrame 类型并归一为顶部起始；诊断图案仍标记为 CPU 图像。
+首个引擎帧前心跳使用 10 秒宽限，允许首次原生管线创建；收到图像后恢复 2 秒。
+引擎公共 API 未改变，三后端验证与剩余工作见编辑器 TODO。
+当前预览已分别通过 OpenGL/Vulkan/D3D12 的 Debug/Release 像素、方向、日志与
+故障恢复检查；CMake/Premake 两配置均通过。D3D12 短时 101 帧工作集观察在
+预热后稳定约 128 MiB；长期 GPU 显存、场景操作和大帧性能不在此次验证范围。
+
+`Host`、`Core`、`Protocol`、`Worker`、`Tests` 目录已独立于旧 `src` 编辑器建立。
+GEngine-EditorHost 只链接 Qt6 Core/Gui/Widgets，不加载引擎；
+GEngine-EditorDiagnosticWorker 是无 Qt/无 GEngine 的协议诊断子进程，**不是
+EngineWorker 实现**。它提供握手、心跳和 CPU 方向图案，不能作为场景或任意
+图形后端的渲染验证。真正的 Scene 镜像、Play、场景渲染和 Qt Gizmo 仍未实现；
+上面的 E0.2 提供独立 GPU 三角形预览。
+
+布局中的 Hierarchy、Document、Console 与 Viewport 均为 QDockWidget，无固定
+中央视口。所有面板允许全区域停靠、浮动、关闭、分割和标签化；View 菜单
+提供显隐动作和 Reset layout，工具栏也可移动/浮动/隐藏。布局状态版本为 2，
+不兼容的旧布局回落到默认布局，geometry 仍独立保存；关闭面板不删除内容、
+文档或 Worker。此变更不影响引擎 API 和协议。
+
+Host 使用 QMainWindow/QDockWidget、Qt 主线程上的 QProcess 异步收发与定时
+截止时间；缺失/崩溃/协议错误使其断连，挂起显示 Unresponsive，用户可停止并
+重新启动。正常停止异步等待 1.5 秒后终止所属诊断进程；最终析构有 2 秒的
+kill/wait 回收兜底，正常帧无阻塞等待。心跳每 0.5 秒请求，2 秒无回复判超时，
+启动握手截止 30 秒。大帧解析线程、流量调度和完整资源预算仍属后续 E0/E4，
+不能把小图像诊断接收器用于无限日志/不可信流量。
+
+`DraftDocument` 提供 Host 独立草稿与最多 256 个历史状态。Qt 文本控件关闭
+自己的 Undo，核心历史管理保存点；原子写 `.gedraft`（格式名
+GEngine.EditorDraft、version 1、notes）。它是明确标识的实验性笔记文件，
+不解析/保存 `.GEScene`，不代替正式 SceneDocument。失败保存/打开保留当前
+内容和历史，草稿限制 64 KiB UTF-8，读取文件最大 1 MiB。UI 布局用独立的
+QtEditorHostPrototype 设置保存，不触碰旧 imgui.ini。
+
+诊断协议 v1 使用 32 字节小端头及最大 64 KiB payload；尚无文档 revision、
+镜像事务或大帧分块。诊断图像固定 128×80 RGBA8，Host 验证尺寸/stride 后
+复制 QImage 存储。实际字段和命令见 [E0.1 API](../API/QtEditor.md)。
+
+SDK 脚本在 build/qt6 与 dist/qt6 分别构建/安装 Debug/Release Qt。保留 Qt
+OpenGL 支持以满足当前 Windows 插件源码构建条件，但原型视口仍为 CPU 图像，
+不共享引擎设备。windeployqt 部署运行库，并携带 offscreen 测试插件及现有
+Noto 字体/OFL。启动命令见 [编辑器 README](../../GEngine-Editor/README.md)。
+
+以下为完整目标设计；与原型有差异处是后续工作，不是已提供的能力。
 
 本文件是新编辑器的目标架构入口，整合并替代 [旧方案](Editor.md) 中的目标
 设计；旧文件保留当前 ImGui 编辑器的事实与设计历史。实施任务统一由
@@ -19,15 +76,15 @@
 | 变换工具 | Qt Host 实现，功能验收后移除 ImGuizmo，不在 Qt Host 嵌入 ImGui。 |
 | 初始范围 | 单项目、单场景文档、一个所属 Worker；多文档、插件 ABI、协作编辑和零拷贝不在首轮范围。 |
 
-当前实际实现仍是 `GEngine-Editor/src/GEngineEditorApplication.cpp` 继承
-GEngine Application，并由 EditorLayer 管理面板、场景、Play 与渲染；它不具备
-进程隔离。现有 GizmoController 已隔离第三方调用，但依赖 ImGui 和引擎数学
-类型，不能直接作为新 Host 的接口。旧颜色预览也不是完整的材质渲染器。
+2026-10-25：旧 ImGui 编辑器及 GizmoController 已按用户要求移除，源码与
+资源可从 Git 历史查看。当前仅支持 Qt Host/Worker；完整 Scene/Play/Gizmo 尚未迁移。
+ImGuizmo 已无构建使用方，聚合仓库内源码指针暂保留。
 
 Qt `qtbase` 源码已固定在 `GEngine/GEngine-ThirdParty/qtbase`：v6.10.3，
 `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`，包含 Core/Gui/Widgets。
-源码统一存放在聚合仓库不意味着引擎依赖 Qt；Qt SDK 构建、Host 程序和部署
-仍未实现。已有 ImGui 编辑器构建/运行记录不能作为 Qt 编辑器的验证结果。
+源码统一存放在聚合仓库不意味着引擎依赖 Qt；Qt SDK 构建、Host 原型与基础
+部署及真实引擎预览 Worker 已提供，场景 UI 尚未实现。旧编辑器的历史构建/
+运行记录不能作为 Qt 编辑器的验证结果。
 
 ## 2. 进程、构建目标与依赖
 
@@ -219,8 +276,8 @@ Qt Host 的 Gizmo 支持移动、旋转、缩放，Local/World、轴/平面约�
 正交、DPI、resize、缩放退化和取消恢复。首版覆盖层若无深度数据，应明确
 采用可见覆盖方式，不宣称实现了按场景深度遮挡。
 
-E4-G 的工具交互与撤销验收通过后，再删除旧 GizmoController、构建 include/
-源码条目、Dependencies.lua 条目和 ImGuizmo 子模块。先发布聚合仓库，再更新
+旧 GizmoController 与构建/include/Dependencies.lua 条目已随旧编辑器删除。
+Qt 工具交互与撤销仍待 E4-G 验收；ImGuizmo 子模块后续清理需先发布聚合仓库，再更新
 主仓库指针；保留历史提交，Dear ImGui 游戏依赖不随之删除。
 
 ## 10. 故障处理与关闭
@@ -274,5 +331,5 @@ Example，记录启动、可见结果、resize/替换/退出和逐后端能力�
 Vulkan、D3D12 在 Debug/Release 分别记录可见结果、验证日志、进程/句柄/
 图像内存与 GPU 资源增长。编译或有界正常退出不能替代交互、故障与长期检查。
 
-此设计不改变当前公共引擎 API、文件格式或运行行为；任何实施都须同时更新
-契约、示例和验证记录。Qt SDK 构建与 Qt 编辑器均仍为待实施项。
+E0.1 不改变当前公共引擎 API 或 `.GEScene` 格式；后续实施须同步契约、示例
+和验证记录。真实 EngineWorker、场景编辑/运行与后端视口仍待实施。

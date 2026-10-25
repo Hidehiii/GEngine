@@ -5,32 +5,18 @@
 
 UI 选型修订：Qt 6 Widgets 用于未来 EditorHost，游戏/Worker 内继续使用
 EnableImGui、ImGuiLayer 和 OnImGuiRender；现有引擎接口不引入 Qt 类型。
-Qt 迁移尚未实现，现有编辑器 GizmoController 仅作过渡，见[接口设计](Editor.md)。
+Qt Host/诊断及真实引擎预览协议已实现，场景迁移未实现；旧编辑器与 GizmoController 已删除，见[当前 E0.1/E0.2 契约](QtEditor.md)。通用引擎导出签名保持不变。
 
-编辑器 Worker 协议为计划接口：Host 不加载引擎，跨进程只传 DTO 与已完成
-图像，不传 Scene 指针或 GPU handle。当前 API 尚未提供该隔离能力。
+编辑器 Worker 的完整场景协议仍为计划接口；当前预览 Host 不加载引擎，跨进程
+只传控制消息与已完成图像，不传 Scene 指针或 GPU handle。
 
 编辑器重设计的[接口契约提案](Editor.md)与[实施 TODO](../../TODO/EditorArchitecture.md)
 已单独记录。当前公共接口保持不变，文档/命令/运行会话等名称尚不是可调用 API。
 
-The editor final presentation quad uses GUIUtils::GetUV0() as its top-left
-attachment UV and GetUV1() as its bottom-right UV. No public API changes;
-scene/game ImGui image UVs continue using the same endpoints.
-
-Editor repair in progress: GUIUtils texture IDs now support D3D12 as well as
-OpenGL/Vulkan. Obtain IDs during OnImGuiRender and do not cache them between
-frames: descriptor ownership is tied to the current completed/reused frame slot.
-The editor uses Config getters; backend/frame-count changes require editing
-Config.ini and restarting. VSync can be changed for the active window. Managed
-scripting requires both the core assembly and Mono mscorlib runtime in the
-editor working directory; it is disabled when either is missing.
-See [editor tracking](../../TODO/Build/ThirdPartyDependencies.md).
-
-`GEngine-Editor/RunEditor.bat [Debug|Release]` locates a VS2022 CMake/Premake
-executable and launches from the editor resource directory. Set
-`GENGINE_EDITOR_FRAME_LIMIT=120` for bounded verification; zero/unset is unlimited.
-Preview color/vertex-color rendering is available, while textured/lit/custom
-material preview and camera MSAA are explicitly unsupported.
+GUIUtils texture IDs remain available for engine/game ImGui. Descriptor IDs are
+frame-scoped and must not be cached between frames. The legacy editor and its
+Mono deployment/launcher have been removed. Use `RunQtEditor.bat [Debug|Release]`
+for the Qt Host; its preview worker currently disables managed scripting.
 
 [API index](README.md) · [Service architecture](../Architecture/SceneAndServices.md)
 
@@ -60,12 +46,9 @@ have empty implementations; do not rely on them for drawing.
 
 ## ImGui, scripting, utilities, and diagnostics
 
-There is no engine-exported Gizmo API. The editor-owned GizmoController now
-wraps pristine upstream ImGuizmo, without exposing third-party types. Its
-operations and migration checks are described in the [editor API](Editor.md) and
-[Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
-ImGuiLayer no longer includes ImGuizmo.h or begins its frame; applications that
-use gizmos must own that integration explicitly. Other engine signatures are unchanged.
+There is no engine-exported Gizmo API. The legacy editor-owned GizmoController
+has been removed; Qt tools remain planned in the [Qt editor API](QtEditor.md).
+Engine/game ImGui and other engine signatures are unchanged.
 
 The subsequent dependency upgrade changes `GUIUtils::GetTextureID` to return
 `uint64_t`, matching current ImGui texture identifiers. Image buttons require an

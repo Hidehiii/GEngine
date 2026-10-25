@@ -13,7 +13,8 @@ namespace GEngine
 		VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 		VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
-		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag);
+		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag,
+			uint32_t width = 0, uint32_t height = 0);
 		virtual ~VulkanTexture2D();
 
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override;
@@ -52,6 +53,7 @@ namespace GEngine
 		VkFlags							m_AspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
 		std::vector<VkImageLayout>		m_SubresourceLayouts;
 		bool m_ExclusiveSharing = false;
+		bool m_OwnsImage = true;
 		std::vector<uint8_t> m_QueueOwnership;
 	};
 }

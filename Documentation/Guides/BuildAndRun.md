@@ -26,14 +26,17 @@ Editor-only Qt source is in `GEngine/GEngine-ThirdParty/qtbase` at v6.10.3
 (`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`). Recursive submodule initialization
 fetches it once the updated aggregate revision is published. This is not an
 installed Qt SDK; existing engine/game builds do not need Qt and their commands
-are unchanged. The Qt editor target and SDK build instructions remain future work
-in [editor tracking](../../TODO/EditorArchitecture.md).
+are unchanged. BuildScripts/BuildQt6.ps1 now builds matching Debug/Release SDKs;
+BuildScripts/BuildQtEditor.ps1 builds/tests the independent E0.1 Qt prototype.
+Commands, deployment and fixed-size GPU preview limitations are in the
+[editor README](../../GEngine-Editor/README.md). Full editor builds also build and
+deploy GEngine-EditorEngineWorker; Host starts it and receives frames and logs.
+Scene editing remains in [editor tracking](../../TODO/EditorArchitecture.md).
 
-Local upgrade: initialize nested `imgui`, `box2d`, `SPIRV-Cross`, and `ImGuizmo`
-as well. The editor API repair subsequently passed CMake VS2022 Debug/Release
-builds and bounded runs on all three backends. ImGuizmo now compiles in the editor
-only; its new migration checks are recorded separately in the dependency TODO.
-Use the aggregate revision pinned by the parent repository; remaining checks are
+Local upgrade: initialize nested `imgui`, `box2d` and `SPIRV-Cross` as well.
+The old GEngine-Editor target and RunEditor.bat have been removed; use the Qt
+editor README above. ImGuizmo has no build consumers; its source pin remains
+in the aggregate repository. Use the pinned aggregate revision; remaining checks are
 recorded in the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
 
 From the repository root, run:
@@ -84,7 +87,7 @@ final artifacts. For example, the CMake VS2022 Debug executable is
 Run FrameGraphTriangle from `Example/FrameGraphTriangle` so its `Config.ini`
 and shader assets resolve.
 The CMake project covers the engine, vendored C++ libraries, seven C++ examples,
-Sandbox, and Editor. `GEngine-ScriptCore` (C#) remains Premake-only; a CMake
+Sandbox and the standalone engine worker. Qt Host is opt-in. `GEngine-ScriptCore` (C#) remains Premake-only; a CMake
 build does not generate that assembly. CMake currently requires Windows/MSVC
 and does not offer a VS2026 generator entry in these launchers. Premake's
 `Dist` configuration is not exposed by the CMake launcher. The same

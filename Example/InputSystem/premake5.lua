@@ -26,7 +26,6 @@ project "InputSystem"
 		"%{IncludeDir.vender}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.FBX}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.PhysX}",

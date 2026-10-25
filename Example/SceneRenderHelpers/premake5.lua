@@ -15,7 +15,7 @@ project "SceneRenderHelpers"
 		"%{wks.location}/GEngine/GEngine-ThirdParty/spdlog/include",
 		"%{IncludeDir.GLFW}", "%{IncludeDir.GLAD}", "%{IncludeDir.glm}",
 		"%{IncludeDir.stb}", "%{IncludeDir.entt}", "%{IncludeDir.vender}",
-		"%{IncludeDir.yaml}", "%{IncludeDir.ImGui}", "%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.yaml}", "%{IncludeDir.ImGui}",
 		"%{IncludeDir.FBX}", "%{IncludeDir.mono}", "%{IncludeDir.PhysX}",
 		"%{IncludeDir.DirectXHeaders}", "%{IncludeDir.HLSLcc}", "%{IncludeDir.dxc}"
 	}

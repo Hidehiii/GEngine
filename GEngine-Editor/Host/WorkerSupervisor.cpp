@@ -1,0 +1,189 @@
+#include "WorkerSupervisor.h"
+#include <QFileInfo>
+#include <algorithm>
+
+namespace GEngineEditor
+{
+    using namespace Protocol;
+    WorkerSupervisor::WorkerSupervisor(QObject* parent) : QObject(parent)
+    {
+        m_Clock.start();
+        m_Timer.setInterval(100);
+        connect(&m_Timer, &QTimer::timeout, this, [this] { Tick(); });
+        m_Timer.start();
+        connect(&m_Process, &QProcess::started, this, [this]
+        {
+            Packet hello{Kind::Hello, m_Session, ++m_Request, Text(BuildId)};
+            m_HelloRequest = hello.Request;
+            const auto bytes = Encode(hello);
+            m_Process.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+        });
+        connect(&m_Process, &QProcess::readyReadStandardOutput, this, [this] { ReadOutput(); });
+        connect(&m_Process, &QProcess::readyReadStandardError, this, [this]
+        { ReadError(); });
+        connect(&m_Process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error)
+        {
+            Log(m_Process.errorString());
+            if (error == QProcess::FailedToStart) SetState(State::Disconnected);
+        });
+        connect(&m_Process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+            [this](int code, QProcess::ExitStatus)
+        {
+            ReadOutput();
+            if (m_Decoder.HasPartial()) Log("Discarded truncated protocol packet on exit.");
+            Log(QString("Worker exited with code %1.").arg(code));
+            m_Decoder.Reset();
+            SetState(m_ExpectedStop ? State::Stopped : State::Disconnected);
+        });
+    }
+    WorkerSupervisor::~WorkerSupervisor()
+    {
+        // Final shutdown fallback only; normal UI stop uses the asynchronous deadline.
+        if (Running()) { m_Process.kill(); m_Process.waitForFinished(2000); }
+    }
+    void WorkerSupervisor::Log(const QString& text) { if (OnLog) OnLog(text); }
+    void WorkerSupervisor::SetState(State state)
+    {
+        m_State = state;
+        if (OnState) OnState(state);
+    }
+    QString WorkerSupervisor::Description() const
+    {
+        switch (m_State)
+        {
+        case State::Stopped: return "Stopped";
+        case State::Starting: return "Starting";
+        case State::Ready: return m_IsEngine ? "Ready (GEngine GPU preview)" : "Ready (protocol diagnostic only)";
+        case State::Unresponsive: return "Unresponsive - stop/restart available";
+        case State::Stopping: return "Stopping";
+        case State::Disconnected: return "Disconnected - document remains editable";
+        }
+        return "Unknown";
+    }
+    void WorkerSupervisor::Start(const QString& executable)
+    {
+        if (Running()) return;
+        m_Decoder.Reset();
+        m_IsEngine = false;
+        m_ReceivedFrame = false;
+        m_ExpectedStop = false;
+        m_Request = m_PingRequest = 0;
+        if (++m_Session == 0) ++m_Session;
+        m_Deadline = m_Clock.elapsed() + 30000;
+        m_Process.setProgram(QFileInfo(executable).absoluteFilePath());
+        m_Process.setArguments({});
+        m_Process.setWorkingDirectory(QFileInfo(executable).absolutePath());
+        SetState(State::Starting);
+        m_Process.start();
+    }
+    void WorkerSupervisor::Send(Kind kind)
+    {
+        if (!Running()) return;
+        if (m_Process.bytesToWrite() > 2 * static_cast<qint64>(MaxPayload))
+        { Fail("Outgoing protocol queue limit exceeded."); return; }
+        Packet packet{kind, m_Session, ++m_Request, {}};
+        if (kind == Kind::Ping) m_PingRequest = packet.Request;
+        auto bytes = Encode(packet);
+        if (m_Process.write(reinterpret_cast<const char*>(bytes.data()), bytes.size()) < 0)
+            Fail("Protocol write failed.");
+    }
+    void WorkerSupervisor::Stop()
+    {
+        if (!Running()) { SetState(State::Stopped); return; }
+        m_ExpectedStop = true;
+        m_Deadline = m_Clock.elapsed() + 1500;
+        const auto previous = m_State;
+        SetState(State::Stopping);
+        if (previous == State::Ready) Send(Kind::Shutdown);
+        else m_Process.kill();
+    }
+    void WorkerSupervisor::Inject(Kind kind)
+    {
+        if (m_State != State::Ready) return;
+        if (kind == Kind::Crash || kind == Kind::Hang || kind == Kind::Malformed) Send(kind);
+    }
+    void WorkerSupervisor::Fail(const QString& reason)
+    {
+        Log(reason);
+        m_ExpectedStop = false;
+        SetState(State::Disconnected);
+        if (Running()) m_Process.kill();
+    }
+    void WorkerSupervisor::ReadOutput()
+    {
+        m_Process.setReadChannel(QProcess::StandardOutput);
+        if (!m_Process.bytesAvailable()) return;
+        const auto bytes = m_Process.read(MaxPayload);
+        std::vector<Packet> packets;
+        if (!m_Decoder.Feed(reinterpret_cast<const std::uint8_t*>(bytes.constData()), bytes.size(), packets))
+        { Fail(QString::fromStdString(m_Decoder.Error())); return; }
+        for (const auto& packet : packets)
+        {
+            Handle(packet);
+            if (m_State == State::Disconnected) return;
+        }
+        if (m_Process.bytesAvailable()) QTimer::singleShot(0, this, [this] { ReadOutput(); });
+    }
+    void WorkerSupervisor::ReadError()
+    {
+        m_Process.setReadChannel(QProcess::StandardError);
+        const auto bytes = m_Process.read(16 * 1024);
+        if (!bytes.isEmpty()) Log(QString::fromUtf8(bytes));
+        if (m_Process.bytesAvailable()) QTimer::singleShot(0, this, [this] { ReadError(); });
+    }
+    void WorkerSupervisor::Handle(const Packet& packet)
+    {
+        if (packet.Session != m_Session) { Log("Discarded old-session packet."); return; }
+        // Replies already in flight are harmless while the owned process is shutting down.
+        if (m_State == State::Stopping) return;
+        if (packet.Type == Kind::Ready && m_State == State::Starting &&
+            packet.Request == m_HelloRequest &&
+            (Text(packet.Payload) == BuildId || Text(packet.Payload) == EngineBuildId))
+        {
+            m_IsEngine = Text(packet.Payload) == EngineBuildId;
+            m_NextPing = m_Clock.elapsed();
+            SetState(State::Ready);
+            return;
+        }
+        if (packet.Type == Kind::Pong && m_State == State::Ready &&
+            packet.Request == m_PingRequest && m_PingRequest != 0 && packet.Payload.empty())
+        {
+            m_PingRequest = 0;
+            m_NextPing = m_Clock.elapsed() + 500;
+            return;
+        }
+        if (packet.Type == (m_IsEngine ? Kind::EngineFrame : Kind::DiagnosticFrame) &&
+            m_State == State::Ready && packet.Request == 0)
+        {
+            const auto& data = packet.Payload;
+            if (data.size() < 12) { Fail("Truncated diagnostic image."); return; }
+            const auto width = Read(data.data(), 4);
+            const auto height = Read(data.data() + 4, 4);
+            const auto stride = Read(data.data() + 8, 4);
+            if (!width || !height || width > 256 || height > 256 || stride != width * 4 ||
+                stride * height != data.size() - 12)
+            { Fail("Invalid diagnostic image dimensions."); return; }
+            QImage image(data.data() + 12, static_cast<int>(width), static_cast<int>(height),
+                static_cast<int>(stride), QImage::Format_RGBA8888);
+            const auto ownedImage = image.copy();
+            if (ownedImage.isNull()) { Fail("Could not allocate diagnostic image."); return; }
+            m_ReceivedFrame = true;
+            if (OnFrame) OnFrame(ownedImage);
+            return;
+        }
+        Fail("Unexpected diagnostic protocol response.");
+    }
+    void WorkerSupervisor::Tick()
+    {
+        const auto now = m_Clock.elapsed();
+        if (m_State == State::Starting && now > m_Deadline) Fail("Worker handshake timed out.");
+        else if (m_State == State::Stopping && now > m_Deadline && Running()) m_Process.kill();
+        else if (m_State == State::Ready)
+        {
+            if (m_PingRequest && now > m_Deadline)
+            { Log("Worker heartbeat timed out."); SetState(State::Unresponsive); }
+            else if (!m_PingRequest && now >= m_NextPing)
+            { m_Deadline = now + (m_IsEngine && !m_ReceivedFrame ? 10000 : 2000); Send(Kind::Ping); }
+        }
+    }
+}

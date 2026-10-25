@@ -54,7 +54,94 @@
   计划锚点已核对，git diff --check 通过。本次仅文档，无需引擎构建。
   剩余：下列实现阶段全部未开始，不把设计完成等同于运行功能完成。
 
-## 实现阶段（均为计划，须另行授权）
+## 分阶段实施与验收
+
+- [x] 2026-10-25 用户授权提交并推送：发布 Qt Host/停靠面板、独立引擎预览与
+  日志、必要的 OpenGL/Vulkan 修复及旧编辑器移除。验收：仅暂存对应源码、
+  构建、资源删除和文档；排除 tmp、本地备份与生成输出；检查暂存差异及格式，
+  提交后核对远端 master 与本地提交一致。构建/运行证据见下方 E0.1/E0.2。
+
+- [x] 2026-10-25 移除旧编辑器（用户授权）：删除旧 ImGui 编辑器源码、专用资源、
+  Mono 部署副本、旧启动器及项目生成入口；保留 Qt Host/Worker 与所需字体，
+  引擎/游戏 ImGui 和仍使用的 EditorCamera 不受影响。本地配置、布局先备份再
+  移出旧路径。移除旧文档入口的失效源码引用，保留 TODO 历史；验收两种生成器
+  不再生成旧目标，新 Qt Debug/Release 构建及协议/引擎恢复检查通过，diff 检查通过。
+  完成：移除旧源码/启动器/生成目标、专用资源与缓存、Mono/脚本副本、旧生成
+  项目和输出；字体只保留 Qt 使用的 Regular/OFL。历史文档替换为移除说明，
+  引用转到 Qt 文档。引擎/游戏 ImGui、EditorCamera 和新 Worker 均保留。
+  原本修改过的 Config.ini、imgui.ini 与 VS 用户配置备份到
+  tmp/legacy-editor-local-backup-20261025，再移除旧路径；其他 tmp 内容未清理。
+  CMake/Premake Debug/Release 构建、协议/诊断恢复/真实引擎恢复全部通过，
+  证据沿用各构建目录 tests.log、recovery-tests.log 与 engine-tests.log。
+  ImGuizmo 源码/include 构建引用均已删除；共享聚合仓库的子模块指针未修改，
+  依赖源码清理由 E4-G 剩余项跟踪。本次不提交或推送。
+
+### E0.1：Qt Host 与子进程/Pipe 基础（2026-10-24 用户授权）
+
+- [x] E0.2 真实引擎接入（2026-10-25 用户授权）：新增链接 GEngine 的独立
+  EngineWorker，Qt Host 显示真实 GPU 离屏预览并接收引擎日志；诊断 Worker
+  保留独立测试入口。首版使用有界低分辨率、请求驱动 CPU 读回，不新增引擎
+  公共渲染接口，不冒充完整 Scene 编辑。验收：Debug/Release 构建、真实帧和
+  日志到达 Host、停止/重启与崩溃后编辑器仍可操作；分别记录三后端结果。
+  同步 CMake/Premake、启动与文档；明确同步读回、固定尺寸及尚未接入的交互。
+  接入发现的修复：OpenGL framebuffer 包装纹理未初始化宽高/格式，导致合法
+  Texture2DToArrayLayer 被拒绝；初始化包装元数据，并以真实预览读回回归验证。
+  Vulkan 同样缺少 framebuffer 包装尺寸，且颜色附件缺 TRANSFER_SRC usage；
+  显式保留 borrowed 所有权、补齐尺寸和复制用途，验证正常停止/重复启动无双重释放。
+  Debug Vulkan 验证进一步定位：无深度附件仍传入空 depth reference，并将深度
+  access 配给 color stage（VUID 03077/02900/03088）；修正条件引用与颜色写入
+  access，通过同一无深度预览检查回归，不以 Release 空白帧充当成功。
+  完成：正常启动自动连接真实 Worker，显示 160×90 GPU 三角形并转发核心/应用
+  日志；约 2 FPS 请求驱动读回、顶部起始 RGBA8、重启保留草稿。Application
+  兼容入口满足 Shader 缓存单例依赖；Host 不链接引擎。部署保留已有 Worker 配置。
+  验证：CMake 和 Premake Debug/Release 构建、协议、诊断恢复、真实引擎恢复
+  全通过。CMake 六组 OpenGL/Vulkan/D3D12 × Debug/Release 分别通过两帧、
+  三角形颜色/方向、Console、崩溃/挂起/坏包/停止/重启与草稿保存检查；六份
+  日志未发现 GPU 错误，Vulkan Debug 无验证层错误。Windows 原生 Release
+  检查与截图复核通过；证据 tmp/qt-engine-*-verified.log、
+  tmp/qt-engine-native-Release.{log,png}，构建目录中的 engine-tests.log。
+  D3D12 Release 连续 101 帧/约 50 秒读回并正常退出；工作集从 124.67 MiB
+  预热到约 127.94 MiB，50/75/100 帧为 127.97/127.93/127.94 MiB，未见逐帧
+  增长趋势（短时 CPU 工作集，不代表长期 GPU 显存测量）。证据
+  tmp/qt-engine-memory-check.log；本轮启动的构建和子进程均已结束。
+  剩余：高分辨率异步读回/流控、Scene/输入/Play/Gizmo、GPU 显存及长时三后端
+  测量仍由 E0/E4 跟踪；首次接通预览不等于完整编辑器迁移完成。
+
+- [x] 2026-10-25 全面板停靠：将固定中央视口改为 QDockWidget；所有工作面板
+  支持停靠、浮动、关闭/重新打开、分割和标签化。增加 View 菜单与恢复默认布局，
+  保留版本化布局保存。验收：四个面板浮动/重停靠/隐藏恢复及布局往返，不影响
+  草稿和 Worker；Debug/Release 构建及 Qt 恢复检查，文档/API 同步。
+  已实现四个面板、View 开关、Reset layout 和版本 2 布局保存；工具栏也可移动/浮动。
+  CMake Debug/Release 的 EditorProtocol、EditorRecovery 均通过；恢复检查覆盖
+  浮动/重停靠/关闭重开/标签化/布局往返及草稿、子进程故障恢复。
+  Windows Release 原生窗口检查通过，默认布局截图见
+  tmp/qt-editor-docking-Release.png，日志见同名 .log；尚未人工逐项拖拽验收。
+  Premake Debug/Release 构建、协议和恢复检查同样通过，证据位于
+  build/premake-vs2022/windows-x86_64/{Debug,Release}/qt-editor-logs/。
+
+- [x] 本轮有界里程碑：构建编辑器专用 Qt SDK，新增独立 Qt Host 和 Worker
+  协议基础；Host 提供 dock 面板、独立可保存文档与子进程启动/停止/重启，
+  有界版本化 Pipe、心跳/超时、日志和故障注入。验收 Debug/Release 构建、
+  协议解析回归及子进程崩溃/挂起/重启后 Host 保留编辑/保存能力。
+  初期 Worker 可明确标记为协议诊断模式；真实 Scene/三后端图像接入不得用
+  诊断图案冒充。E0 全部验收（真实引擎渲染/故障矩阵）未完成时保持开放。
+  同步 CMake/Premake 入口、启动说明、架构/API、剩余工作；保留旧编辑器和
+  用户配置，不自动提交或推送。
+  已实现：独立 Qt Host、标准 C++ draft/history/32 字节分帧协议、诊断 Worker、
+  心跳/截止时间、CPU 诊断图像、原生崩溃/挂起/坏包注入、所属进程回收。
+  .gedraft 为实验性笔记而非 .GEScene；现有编辑器/引擎 API 不变。
+  验证：Qt SDK Debug/Release 已由固定源码构建并安装。CMake/Ninja 和
+  Premake/MSBuild 两配置均构建，并通过协议/历史与 Qt 恢复检查；原生 Windows
+  Release 检查也通过，子进程访问冲突退出码为 0xC0000005，Host 保持运行、
+  保存/撤销/重启正常。导入表确认 Host 无 GEngine/ImGui，诊断子进程无 Qt。
+  窗口图像检查后复用现有 Noto 字体及 OFL 并调整默认 dock 尺寸。
+  证据：build/qt-editor/windows-x86_64/{Debug,Release}/tests.log、
+  build/premake-vs2022/windows-x86_64/{Debug,Release}/qt-editor-logs/*tests.log、
+  tmp/qt-editor-native-Release.log 和 tmp/qt-editor-native-Release.png。
+  根 CMake Qt 选项已生成/构建验证；默认 CMake/Premake 生成无需 Qt。
+  剩余：真实 EngineWorker/Scene、三后端读回/故障矩阵、大帧线程/流控、正式
+  文档 codec、Qt Gizmo 与交互/长时间资源测量。上述 E0 全验收仍开放。
+  未将 Qt 内部 OpenGL 支持或 CPU 图案当作引擎后端验证；现有子模块保持干净。
 
 - [x] 2026-10-24 设计修订：将“引擎崩溃不带崩编辑器”纳入架构，替换原先
   同进程目标，补充 Host/Worker 所有权、异步协议、图像传输、故障恢复与限制。
@@ -93,7 +180,7 @@
   共享渲染能力不足时保留显式标记的现有颜色预览；不把它标成正式场景渲染。
   Qt SceneViewport 使用 Host 的绘制/命中测试 Gizmo 覆盖层，返回变换命令；
   不在 Host 引入隐藏 ImGui context，也不把工具绘制交给会崩溃的 Worker。
-  保留已子模块化的 ImGuizmo 供旧编辑器过渡使用，Qt 工具达到验收后再移除旧调用。
+  2026-10-25 更新：旧调用已随旧编辑器删除，ImGuizmo 子模块暂保留且无构建使用方。
 
 ### E4-G：Qt 视口工具替代并移除 ImGuizmo（计划）
 
@@ -109,6 +196,8 @@
   保留已发布提交作为历史；不为移除 ImGuizmo 删除游戏内 Dear ImGui。
   验收：源码/生成项目无残留引用，CMake/Premake 构建与 Qt 编辑器交互验证通过，
   游戏 ImGui 仍可正常运行。发布时先提交/推送聚合仓库，再更新主仓库指针。
+  2026-10-25 进度：用户已单独授权移除旧编辑器，旧调用、两种生成器与
+  Dependencies.lua 条目已删除并通过构建；Qt 工具与聚合子模块清理仍未完成。
 
 登记状态（2026-10-24）：仅记录替代/移除范围和验收；未实施，子模块与当前
 编辑器代码保持不变。架构/API/README 已同步，链接与格式检查通过，无需重建。

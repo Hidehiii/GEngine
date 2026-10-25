@@ -7,16 +7,18 @@ This provides editor-only Core/Gui/Widgets source, not Qt6Config.cmake from an
 installed SDK. Current engine/game targets do not compile, link or deploy Qt;
 their public APIs and generator commands remain unchanged.
 
-Qt 6 Widgets is selected for the future EditorHost. Its planned CMake target
-uses find_package(Qt6 COMPONENTS Core Gui Widgets) and matching Qt6 imported
-targets; SDK paths, Premake generation and deployment will be documented when
-implemented. Current build commands and required dependencies are unchanged;
-the runtime/game build must remain usable without a Qt installation.
+The E0.1 Qt Host now uses find_package(Qt6 6.10.3 EXACT COMPONENTS Core Gui
+Widgets) and matching imported targets. BuildScripts/BuildQt6.ps1 and
+BuildScripts/BuildQtEditor.ps1 provide opt-in SDK/build/test commands; the latter
+supports -Premake or -ProtocolOnly. See the editor README for arguments and
+outputs. Default runtime/game generation still works without Qt. The root CMake
+project provides GEngine-EditorEngineWorker without requiring Qt. Full editor
+builds deploy that real render child; -ProtocolOnly skips it. Premake's optional
+Qt target set includes the GEngine-linked worker and its runtime dependencies.
 
-Initialize nested `ImGuizmo` with the other submodules. Both generators resolve
-headers from `ImGuizmo/src` and compile its main source only into GEngine-Editor.
-The old engine compatibility source is removed; no upstream engine export patch
-is required. Generator commands are unchanged.
+The legacy GEngine-Editor target, launcher and ImGuizmo source/include entries
+have been removed from both generators. The unused ImGuizmo submodule remains
+in the aggregate repository; Qt Host/Worker and engine/game ImGui are unaffected.
 
 The in-progress ImGui/Box2D/SPIRV-Cross upgrade retains existing generator
 commands. Regenerate projects: ImGui lives at `imgui`, SPIRV-Cross at

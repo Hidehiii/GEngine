@@ -1,69 +1,83 @@
 # GEngine Editor
 
-新编辑器的统一设计入口：[Qt 6 编辑器目标架构](../Documentation/Architecture/QtEditor.md)
-与[模块/协议契约](../Documentation/API/QtEditor.md)。旧 Editor.md 保留历史；
-新文档是设计提案，当前启动命令仍运行同进程 ImGui 编辑器。
+## New Qt editor: engine preview prototype
 
-Editor-only Qt source: `../GEngine/GEngine-ThirdParty/qtbase`, tag v6.10.3,
-commit `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. It contains Core/Gui/Widgets
-but is not a prebuilt SDK. The source is managed in the shared dependency
-repository; engine and game targets do not link Qt. Qt Host/build/deployment
-integration remains planned, so current launch commands still use the old editor.
+The independent Qt Host now starts a GEngine render child automatically. It
+displays a real GPU-rendered cyan triangle and streams engine logs into Console.
+This first connection uses a fixed 160x90 RGBA8 preview at roughly 2 FPS, with
+synchronous GPU readback confined to the child. Scene/Play/Gizmo and `.GEScene`
+editing remain future work. The Host can edit/undo/redo and atomically save a
+separate `.gedraft` note document even after the child crashes.
 
-UI 选型已确定：新编辑器使用 **Qt 6 Widgets**，**Dear ImGui 用于游戏内 UI**。
-Qt Host/EngineWorker 迁移尚未实现；下述启动方式仍运行现有 ImGui 编辑器。
-现有 ImGuizmo 是过渡实现，Qt 视口工具需要独立迁移，不直接嵌入 ImGui 面板。
-Qt 面板、图像显示、输入路由及部署验收见[编辑器 TODO](../TODO/EditorArchitecture.md)。
-E4-G 另行跟踪：Qt 变换工具完成并验证后再移除 ImGuizmo 子模块及旧适配器；
-当前尚未删除，游戏内 Dear ImGui 不受该移除计划影响。
+From the repository root in PowerShell (VS C++ tools, CMake and Python required):
 
-ImGuizmo is now a pristine upstream submodule at
-`105e4fde45e4e74aae8973d98750820ef7aca7e2` (v1.92.5 WIP header).
-Only this executable compiles it, behind `UI/GizmoController`; initialize
-submodules recursively before building. Check translate/rotate/scale, Ctrl
-snapping, local/world modes, grid alignment and hover/capture after resizing.
-These interactive checks are separate from bounded startup/shutdown runs.
-Migration verification: CMake Debug/Release engine/editor builds and all six
-120-frame backend runs passed. A headless ImGui check covered operation/space
-drawing, translation dragging and snapping. Full Premake builds and remaining
-real-window interactions are still unverified; see the dependency TODO.
+```powershell
+.\BuildScripts\BuildQt6.ps1 -Configuration Release
+.\BuildScripts\BuildQtEditor.ps1 -Configuration Release -Test
+.\GEngine-Editor\RunQtEditor.bat Release
+```
 
-架构新增硬性要求：引擎在独立 EngineWorker 进程运行，崩溃/挂起后 EditorHost
-仍能编辑、保存并重启 Worker。当前编辑器仍为同进程实现，尚不具备此隔离能力。
-详见架构的“故障隔离与恢复”与 TODO 的 E0。
+If Python is not on PATH, pass `-Python` with its executable's absolute path to
+BuildQt6.ps1. The script initializes VS developer tools in an isolated child
+environment and uses bundled Ninja. SDK artifacts go to
+`build/qt6/windows-x86_64/Release` and `dist/qt6/windows-x86_64/Release`; upstream
+source stays clean. Repeat with Debug for its matching SDK/Host. Do not build
+the same configuration concurrently.
 
-新的[编辑器架构设计](../Documentation/Architecture/QtEditor.md)与
-[接口契约](../Documentation/API/QtEditor.md)描述文档、命令、运行会话及视口边界。
-状态为提案；[阶段与验收](../TODO/EditorArchitecture.md)尚未实施，不代表下述
-编辑器已提供撤销、项目服务或完整材质预览能力。
+For Premake, after building the SDK run
+`BuildQtEditor.ps1 -Configuration Release -Premake -Test` (or Debug). It generates
+optional Qt targets with `--qt6-sdk=<root-containing-Debug-and-Release>`, then
+builds/deploys them. `-QtSdk <configuration-prefix>` overrides the CMake SDK;
+Premake derives its paired SDK root from the prefix's parent. Default engine/game
+builds still need no Qt. Root CMake also has opt-in GE_BUILD_QT_EDITOR=ON.
 
-Presentation uses backend attachment UV origins. Check that panel text and scene
-objects are upright, and that moving an object upward agrees with its gizmo on
-each backend; a normal bounded exit alone does not verify orientation.
+CMake/Ninja output:
+`dist/qt-editor/windows-x86_64/<config>/GEngine-EditorHost/GEngine-EditorHost.exe`.
+Its EngineWorker is in the adjacent target directory; `--worker <exe>` can
+override that owned child executable. `--self-test` selects the separate CPU
+DiagnosticWorker unless overridden. Premake uses standard
+`dist/premake-vs2022/windows-x86_64/<config>/<target>` paths. Qt libraries,
+Windows/offscreen plugins and the existing Noto font/OFL deploy beside Host;
+the machine's matching MSVC runtime is required.
 
-Build `GEngine-Editor` with CMake or Premake and launch from this directory so
-`Assets` and `Resources` resolve. Select GraphicsAPI in a local Config.ini:
-1 = OpenGL, 2 = Vulkan, 3 = D3D12. Preserve your preferred backend selection.
+Expected: menus, docked hierarchy/draft/console, cyan GPU triangle in Viewport and
+engine startup/frame logs. Use Engine > Start / restart worker, then inject native crash, hang
+or malformed pipe data. Host remains responsive, retains draft/history, allows
+Save and can stop/restart its child. Engine Ready follows device and pipeline
+initialization. File > New/Open/Save handles `.gedraft`; `.GEScene` is unsupported.
+The worker's own presentation window is hidden. Change GraphicsAPI in its deployed
+Config.ini (1=OpenGL, 2=Vulkan, 3=D3D12), then restart; the legacy editor's local
+configuration is unaffected. Host resizing scales the fixed preview; it does not
+resize the child render target yet.
 
-The editor provides hierarchy/transform editing, scene save/load/duplicate,
-play/pause/stop, content browsing, camera navigation and transform gizmos.
-Scene/game previews currently show image colors and mesh vertex colors. Textured
-and lit/custom material preview and camera MSAA are explicitly unsupported.
-Managed scripting requires `Resources/Scripts/GEngine-ScriptCore.dll` and
-`mono/lib/mono/4.5/mscorlib.dll`; native logic and physics remain available
-without them. Missing managed runtime files no longer prevent startup.
+All four panels, including Viewport, can dock in any area, float, tab together
+and close without losing contents. Reopen panels from View; View > Reset layout
+restores the default arrangement. The worker toolbar can also move/float/hide.
+Layout state version 2 saves these positions; incompatible older states reset
+to defaults without touching the legacy editor's imgui.ini.
 
-Run `RunEditor.bat Debug` or `RunEditor.bat Release` from any directory. The
-launcher finds a VS2022 CMake/Premake build and sets the correct working directory.
+`BuildQtEditor.ps1 -ProtocolOnly -Configuration Debug -Test` checks protocol/history
+without Qt. Full `-Test` also runs the real engine check using the deployed worker's
+current backend configuration and writes engine-tests.log. It runs the diagnostic Host offscreen (CTest timeout 35 seconds),
+covering missing child, handshake/image, native crash, hang, corrupt pipe,
+restart, save failure and draft round trip. Tests use temporary files and do not
+overwrite user layout. To exercise the real engine, run Host with
+`--self-test --engine-check --worker <absolute-EngineWorker-exe>` from any directory.
+It checks at least two GPU frames, expected triangle pixels, engine logs and the
+same crash/hang/restart/save sequence (120-second internal deadline). Add
+`--self-test-image <absolute-png>` to capture the first working preview.
 
-Set `GENGINE_EDITOR_FRAME_LIMIT=120` for a bounded startup/render/shutdown check.
-Expected: editor panels, colored preview geometry, usable toolbar and no backend
-validation errors. Check viewport replacement on resize, minimize/restore,
-scene save/open, play/pause/stop, and gizmo translation/rotation/scaling manually.
-Do not treat a build or normal exit as proof of visible pixels or interaction.
-Verification progress is in the [editor TODO](../TODO/Build/ThirdPartyDependencies.md).
+Verification evidence for this milestone is recorded in TODO/EditorArchitecture.md:
+Debug/Release SDK and both generators' builds/tests, plus a native Windows Release
+recovery run. The normal Qt window image was reviewed for layout and readable text.
+The fixed preview has separate OpenGL/Vulkan/D3D12 Debug/Release checks. Full
+Scene/Play rendering and manual input/resize checks remain open.
 
-On 2026-10-24, CMake VS2022 Debug/Release builds and six backend runs reached
-120 frames and exited normally without captured validation errors. Release
-launch from this directory also passed. Pixel/interaction inspection was not
-completed because computer-use app access timed out; manual checks remain open.
+## Legacy editor removed
+
+The ImGui editor, its private panels/GizmoController, assets, Mono deployment,
+old launcher and build target were removed on 2026-10-25. Git history retains
+that implementation. Only the Qt Host/Worker editor above is supported now.
+Engine/game Dear ImGui and the engine EditorCamera remain available. The unused
+ImGuizmo source submodule is retained in the shared dependency repository but
+has no build consumers. Scene/Play/Qt Gizmo migration is still incomplete.

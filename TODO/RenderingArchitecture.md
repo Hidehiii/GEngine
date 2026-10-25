@@ -1,5 +1,21 @@
 # Rendering architecture refactor
 
+2026-10-25 legacy editor removal: the ImGui editor application, private panels/
+GizmoController, assets and build entries are removed. Qt Host/Worker is retained;
+engine/game ImGui and EditorCamera are unchanged. ImGuizmo has no build consumers,
+but its aggregate source pin remains pending separate dependency cleanup.
+
+E0.2 engine preview integration is tracked in TODO/EditorArchitecture.md:
+GEngine worker renders a 160x90 offscreen triangle through existing RenderGraph,
+copies to a texture-array layer and synchronously reads it inside the child at
+roughly 2 FPS. Qt receives RGBA8 frames and stderr logs; no engine public rendering
+API change. High-resolution asynchronous readback and Scene editing remain open.
+
+E0.1 now builds an independent Qt Host and protocol diagnostic child. Its
+128x80 CPU image is NOT an engine/backend render test. No engine rendering API
+changed in E0.1; full SceneRenderer/asynchronous worker readback and Qt gizmos
+remain open in E0/E4. E0.2 adds the limited real preview described above.
+
 Canonical Qt editor target design: [architecture](../Documentation/Architecture/QtEditor.md)
 and [contracts](../Documentation/API/QtEditor.md). Editor E0–E6/E4-G owns the
 implementation; old Editor.md is history, not the new frame/IPC specification.

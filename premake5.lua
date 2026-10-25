@@ -1,3 +1,9 @@
+newoption {
+    trigger = "qt6-sdk",
+    value = "PATH",
+    description = "Opt in to Qt editor targets using a root containing Debug/Release Qt SDKs"
+}
+
 workspace "GEngine"
 	architecture "x64"
 
@@ -39,7 +45,9 @@ group "Core"
 group ""
 
 group "Tools"
-	include "GEngine-Editor"
+    if _OPTIONS["qt6-sdk"] then
+        include "BuildScripts/Premake/QtEditor.lua"
+    end
 group ""
 
 include "Sandbox"

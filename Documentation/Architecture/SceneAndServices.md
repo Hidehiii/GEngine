@@ -1,44 +1,10 @@
 # Scene, physics, assets, and services architecture
 
-Qt 编辑器的 Host 文档所有权、Worker Scene 镜像与游戏 ImGui 边界统一见
-[新目标架构](QtEditor.md)。此设计不改变当前 Scene/服务实现；旧编辑器的
-事实与验证范围保留如下，新 Qt 行为仍待 E0–E6 实施。
-
-UI 目标已选定：Qt 6 Widgets 构建独立 EditorHost，Dear ImGui 保留为游戏/
-Worker 内 UI；当前 ImGui 编辑器和 GizmoController 属于迁移基线。Qt Host 不
-加载引擎，接收完成图像并将游戏视口输入异步转发，详见[UI 决策](Editor.md)。
-本次为设计更新，运行时及公共 API 未改变。
-
-编辑器提案新增进程隔离：Host 拥有独立文档与 UI，Worker 拥有引擎 Scene、
-预览及运行实例，经有界异步协议同步；当前同进程引擎 API 未改变。
-
-新的编辑器模块划分见[编辑器架构提案](Editor.md)，实施工作由
-[编辑器 TODO](../../TODO/EditorArchitecture.md) 管理。此设计未改变当前 Scene、
-服务所有权或运行行为；现有实现与验证范围仍以下文及修复 TODO 为准。
-
-Editor presentation maps fullscreen quad UVs through GUIUtils attachment-origin
-endpoints. OpenGL samples the top at V=1; Vulkan/D3D12 sample the top at V=0.
-This corrects final UI inversion without changing scene/camera coordinates or
-backend viewport policy. Visual confirmation remains open in the editor TODO.
-
-Editor repair in progress (2026-10-23): the editor records its scene/game preview
-targets using portable command buffers and presents the ImGui target with a modern
-shader. Mesh vertex colors and image colors are previewed; lit/custom materials
-are explicitly outside this preview. The grid uses ImGuizmo drawing. UI texture
-descriptors and retained resources are recycled per completed frame slot; D3D12
-has a native UI texture adapter and Vulkan releases descriptor sets before its
-UI pool shuts down. Scene::GetGameObjects uses entity values from EnTT iteration.
-Build/runtime evidence is owned by the [editor TODO](../../TODO/Build/ThirdPartyDependencies.md).
-
-The preview also exercises combined-image-sampler reflection and Vulkan command
-buffer ownership. Graphics/compute pipelines are retained while recording and
-submitted; their buffers/materials cannot disappear before GPU completion. The
-editor restores a default dock layout only when no saved dock node exists.
-Debug/Release editor builds and bounded runs passed on all three backends; visible
-interaction and measured long-run resource behavior remain unverified.
-
-[Architecture overview](Architecture.md) · [Scene API](../API/SceneAndPhysics.md) ·
-[Assets and services API](../API/AssetsAndServices.md)
+当前编辑器采用 [Qt Host/Worker 架构](QtEditor.md)。2026-10-25 已移除旧 ImGui
+编辑器、私有面板与 GizmoController；旧实现及验证记录保留在 Git/TODO 历史。
+Qt Host 负责 UI/草稿，独立 GEngine Worker 提供真实 GPU 预览和日志。
+完整 Scene 编辑、Play、输入与 Qt Gizmo 仍待实施。当前 Scene/Serializer、游戏
+ImGui 与引擎 EditorCamera 的接口和所有权不受本次删除影响。
 
 ## Scene and component ownership
 
@@ -103,21 +69,12 @@ throw an unsupported-operation error. `Utils` contains GUI texture/UV and
 file-dialog helpers,
 while `StbBuild.cpp` is an internal image-loader translation unit.
 
-Optional `ImGuiLayer` bridges to backend UI integration. `Debug` provides
-instrumentation/trace output, not frame ownership. The separate
-`GEngine-Editor` application consumes engine APIs and ImGui; backend allocation
-and synchronization remain within the engine.
+Optional `ImGuiLayer` bridges engine/game UI to backend integration. `Debug`
+provides instrumentation, not frame ownership. Qt Host does not link GEngine or
+ImGui; its owned engine worker handles rendering. The old editor/GizmoController
+has been removed, and ImGuizmo has no remaining build consumers.
 
-ImGuizmo submodule migration (2026-10-24): GizmoController in the editor owns
-context binding, viewport draw-list selection and explicit operation/space
-mapping. Upstream ImGuizmo is compiled only into the editor executable; engine
-public headers and ImGuiLayer no longer depend on it or call BeginFrame.
-The editor calls BeginFrame once after ImGui NewFrame in OnImGuiRender.
-This supersedes the earlier engine-DLL forwarding design. Tracking is in the
-[Gizmo forwarding TODO](../../TODO/Build/ThirdPartyDependencies.md#planned-engine-owned-gizmo-forwarding-interface).
-EditorHost/Worker process isolation remains planned, not implemented.
-
-Dependency upgrade in progress: ImGui v1.93.0-docking uses backend-managed font
+Dependency upgrade history: ImGui v1.93.0-docking uses backend-managed font
 texture updates. D3D12 supplies reusable SRV allocation callbacks; Vulkan supplies
 its render pass through pipeline info. ImGuizmo's former compatibility translation
 unit is removed: the pinned upstream revision handles current ImGui APIs without

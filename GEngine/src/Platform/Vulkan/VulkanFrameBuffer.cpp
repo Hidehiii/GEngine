@@ -333,7 +333,7 @@ namespace GEngine
 				m_Specification.Height,
 				imageFormat,
 				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				VK_SAMPLE_COUNT_1_BIT,
 				1,
@@ -348,7 +348,8 @@ namespace GEngine
 			m_ColorImages.push_back(image);
 			m_ColorImagesMemory.push_back(imageMemory);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT,
+                m_Specification.Width, m_Specification.Height);
 			m_RenderTargets.push_back(texture);
 		}
 		// create depth attachment
@@ -393,7 +394,8 @@ namespace GEngine
 			m_DepthStencilImages.push_back(image);
 			m_DepthStencilImagesMemory.push_back(imageMemory);
 
-			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag);
+			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag,
+                m_Specification.Width, m_Specification.Height);
 		}
 		// multi samples
 		// create multi sampled attachments

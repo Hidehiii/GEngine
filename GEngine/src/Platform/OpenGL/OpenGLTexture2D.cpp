@@ -89,6 +89,22 @@ namespace GEngine
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
 	{
 		m_Texture2D = rendererID;
+		GLint width = 0, height = 0, format = 0;
+		glGetTextureLevelParameteriv(rendererID, 0, GL_TEXTURE_WIDTH, &width);
+		glGetTextureLevelParameteriv(rendererID, 0, GL_TEXTURE_HEIGHT, &height);
+		glGetTextureLevelParameteriv(rendererID, 0, GL_TEXTURE_INTERNAL_FORMAT, &format);
+		m_Width = static_cast<uint32_t>(width);
+		m_Height = static_cast<uint32_t>(height);
+		m_Format = RENDER_IMAGE_2D_FORMAT_NONE;
+		switch (format)
+		{
+		case GL_RGBA8: m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM; break;
+		case GL_RGBA8_SNORM: m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_SNORM; break;
+		case GL_RGB8: m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_UNORM; break;
+		case GL_RGB8_SNORM: m_Format = RENDER_IMAGE_2D_FORMAT_RGB8_SNORM; break;
+		}
+		m_MipLevels = 1;
+		m_GenerateMipmap = false;
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{

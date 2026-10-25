@@ -151,8 +151,9 @@ namespace GEngine
 		subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 		subpass.pColorAttachments		= spec.Samples > 1 ? multiSampleColorAttachmentRefs.data() : colorAttachmentRefs.data();
 		subpass.pResolveAttachments		= spec.Samples > 1 ? colorAttachmentRefs.data() : nullptr;
-		subpass.pDepthStencilAttachment = spec.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef;
-		subpass.pNext					= spec.Samples > 1 ? &subpassDepthStencilResolve : nullptr;
+		subpass.pDepthStencilAttachment = spec.EnableDepthStencilAttachment ?
+            (spec.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef) : nullptr;
+		subpass.pNext = spec.EnableDepthStencilAttachment && spec.Samples > 1 ? &subpassDepthStencilResolve : nullptr;
 
 		dependency.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 		dependency.srcSubpass			= VK_SUBPASS_EXTERNAL;
@@ -345,8 +346,10 @@ namespace GEngine
 				subpass.colorAttachmentCount	= static_cast<uint32_t>(subpassColorAttachmentRefs.at(i).size());
 				subpass.pColorAttachments		= m_Specification.Samples > 1 ? subpassMultiSampleColorAttachmentRefs.at(i).data() : subpassColorAttachmentRefs.at(i).data();
 				subpass.pResolveAttachments		= m_Specification.Samples > 1 ? subpassColorAttachmentRefs.at(i).data() : VK_NULL_HANDLE;
-				subpass.pDepthStencilAttachment = m_Specification.Subpasses.at(i).EnableDepthStencil ? (m_Specification.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef) : VK_NULL_HANDLE;
-				subpass.pNext					= m_Specification.Subpasses.at(i).EnableDepthStencil && m_Specification.Samples > 1 ? &subpassDepthStencilResolve : VK_NULL_HANDLE;
+				const bool hasDepth = m_Specification.Subpasses.at(i).EnableDepthStencil &&
+                    m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE;
+				subpass.pDepthStencilAttachment = hasDepth ? (m_Specification.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef) : VK_NULL_HANDLE;
+				subpass.pNext = hasDepth && m_Specification.Samples > 1 ? &subpassDepthStencilResolve : VK_NULL_HANDLE;
 
 				subpasses.push_back(subpass);
 			}
@@ -361,8 +364,9 @@ namespace GEngine
 			subpass.colorAttachmentCount	= static_cast<uint32_t>(colorAttachmentRefs.size());
 			subpass.pColorAttachments		= m_Specification.Samples > 1 ? multiSampleColorAttachmentRefs.data() : colorAttachmentRefs.data();
 			subpass.pResolveAttachments		= m_Specification.Samples > 1 ? colorAttachmentRefs.data() : VK_NULL_HANDLE;
-			subpass.pDepthStencilAttachment = m_Specification.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef;
-			subpass.pNext					= m_Specification.Samples > 1 ? &subpassDepthStencilResolve : VK_NULL_HANDLE;
+			const bool hasDepth = m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE;
+			subpass.pDepthStencilAttachment = hasDepth ? (m_Specification.Samples > 1 ? &multiSampleDepthAttachmentRef : &depthAttachmentRef) : VK_NULL_HANDLE;
+			subpass.pNext = hasDepth && m_Specification.Samples > 1 ? &subpassDepthStencilResolve : VK_NULL_HANDLE;
 
 			subpasses.push_back(subpass);
 		}	
@@ -395,7 +399,7 @@ namespace GEngine
 			if (m_Specification.RenderTargets.size() > 0)
 			{
 				dependency.srcStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				dependency.srcAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 				dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 				dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			}

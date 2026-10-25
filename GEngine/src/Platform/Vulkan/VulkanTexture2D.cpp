@@ -119,10 +119,14 @@ namespace GEngine
 
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag)
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag,
+        uint32_t width, uint32_t height)
     {
-		// create from vulkan frame buffer, so we don't need to create image and image view, just use the existing ones
-		// leave the width and height to 0, because we don't know the width and height of the image created by vulkan frame buffer
+		// Borrowed framebuffer attachments keep metadata independently of ownership.
+        m_Width = width;
+        m_Height = height;
+        m_OwnsImage = false;
+        m_GenerateMipmap = false;
         m_Format = Utils::VulkanFormatToRenderImage2DFormat(format);
         m_Image         = image;
         m_ImageView     = imageView;
@@ -134,7 +138,7 @@ namespace GEngine
     {
 		// Framebuffer-created wrapper textures do not own their native image.
 		auto* context = VulkanContext::Get();
-		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE && m_Width != 0 && m_Height != 0)
+		if (m_OwnsImage && context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
 			const VkImageView imageView = m_ImageView;
 			const VkImage image = m_Image;

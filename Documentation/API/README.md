@@ -15,8 +15,8 @@ exposed declaration does not necessarily mean a complete runtime path.
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
 | Contributor-facing project generation | [Build entry points](BuildSystem.md) |
-| Planned Qt 6 Host/Worker module, IPC, image and input contracts | [Qt editor contracts](QtEditor.md) |
-| Transitional ImGui editor GizmoController and design history | [Existing editor integration](Editor.md) |
+| Qt Host diagnostic/engine preview IPC and planned scene contracts | [Qt editor contracts](QtEditor.md) |
+| Legacy editor removal and replacement | [Removed editor interfaces](Editor.md) |
 
 `<GEngine.h>` aggregates common application, scene, math, graphics, and
 selected tool headers; include a specific public header for `RenderGraph`,

@@ -3,20 +3,29 @@
 Qt 6 source is now stored as the editor-only `qtbase` nested submodule under
 `GEngine/GEngine-ThirdParty`, pinned to tag v6.10.3 / commit
 `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. Core/Gui/Widgets sources are
-present; neither build generator links Qt into GEngine or games. No Qt SDK is
-built or installed by this dependency addition. Host integration remains planned.
+present; neither build generator links Qt into GEngine or games. The original
+source-only addition is now followed by an opt-in Qt SDK/Host prototype build.
 
 Planned UI split: a separate Qt 6 Widgets EditorHost links Qt Core/Gui/Widgets;
-EngineWorker/game link GEngine and Dear ImGui, without Qt. Existing editor
-targets still build the transitional ImGui UI. Qt SDK/kit selection, CMake and
-Premake integration, generated Qt sources and deployment remain work in
-[editor tracking](../../TODO/EditorArchitecture.md); no Qt target is implemented.
+EngineWorker/game link GEngine and Dear ImGui, without Qt. The legacy ImGui editor target and launcher have been removed; Qt Host is the only editor. BuildQt6.ps1 installs
+matching Debug/Release SDKs out of source. BuildQtEditor.ps1 builds independent
+Host, DiagnosticWorker, EngineWorker and ProtocolTests targets using CMake or optional Premake.
+Only EngineWorker links GEngine; Host remains Qt-only. The standalone build script
+also builds EngineWorker through the root MSVC CMake project and deploys it beside
+the Host's sibling target directories; protocol-only builds skip the engine.
+SDK/target outputs are isolated under build/qt6, dist/qt6 and build/dist/qt-editor;
+Premake uses the standard premake-vs2022 paths. The root CMake option
+GE_BUILD_QT_EDITOR is OFF by default; Premake opts in with --qt6-sdk. Full engine
+integration remains in [editor tracking](../../TODO/EditorArchitecture.md).
+When opted into the root CMake project, editor outputs use that project's tool
+identifier; the standalone Ninja build uses qt-editor. SDK prefixes must match
+the requested configuration. Editor classes use lambda/callback connections,
+so the E0.1 application does not yet require custom QObject moc generation.
 
 ImGuizmo is a nested upstream submodule pinned to
 `105e4fde45e4e74aae8973d98750820ef7aca7e2` (header v1.92.5 WIP).
-CMake/Premake compile only its `src/ImGuizmo.cpp` in GEngine-Editor, using the
-existing shared ImGui dependency. GEngine no longer compiles or exports it;
-upstream examples, their ImGui copies and auxiliary widgets are not built.
+It has no build consumers after legacy editor removal; the source pin remains
+in the shared aggregate repository. Engine/game ImGui is retained.
 
 Upgrade in progress: upstream `imgui`, `box2d`, and `SPIRV-Cross` submodules
 replace snapshots. Premake overlays live in `BuildScripts/Premake`. Both build

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 project(GEngine LANGUAGES C CXX)
+option(GE_BUILD_QT_EDITOR "Build the independent Qt editor prototype (requires a Qt SDK)" OFF)
 
 if(NOT WIN32 OR NOT MSVC)
     message(FATAL_ERROR "This CMake build currently supports Windows/MSVC only.")
@@ -126,6 +127,12 @@ foreach(target spirv-cross-core spirv-cross-glsl)
     ge_set_output_directories(${target})
     target_include_directories(${target} PUBLIC "${GE_VENDOR}/SPIRV-Cross")
 endforeach()
+
+if(GE_BUILD_QT_EDITOR)
+    enable_testing()
+    set(GE_EDITOR_TOOL_ID "${GE_TOOL_ID}" CACHE STRING "Editor output tool identifier")
+    add_subdirectory("${GE_ROOT}/BuildScripts/Editor" "${CMAKE_BINARY_DIR}/qt-editor")
+endif()
 target_link_libraries(spirv-cross-glsl PUBLIC spirv-cross-core)
 add_library(GEngine SHARED ${GE_ENGINE_SOURCES})
 ge_set_output_directories(GEngine)
@@ -158,7 +165,11 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross
 )
 
 function(ge_add_application name directory)
-    file(GLOB_RECURSE app_sources CONFIGURE_DEPENDS "${GE_ROOT}/${directory}/src/*.cpp")
+    if(ARGN)
+        set(app_sources ${ARGN})
+    else()
+        file(GLOB_RECURSE app_sources CONFIGURE_DEPENDS "${GE_ROOT}/${directory}/src/*.cpp")
+    endif()
     add_executable(${name} ${app_sources})
     ge_set_output_directories(${name})
     target_include_directories(${name} PRIVATE ${GE_INCLUDE_DIRS} "${GE_ROOT}/${directory}/src")
@@ -178,9 +189,18 @@ function(ge_add_application name directory)
 endfunction()
 
 ge_add_application(Sandbox Sandbox)
-ge_add_application(GEngine-Editor GEngine-Editor)
-target_sources(GEngine-Editor PRIVATE "${GE_VENDOR}/ImGuizmo/src/ImGuizmo.cpp")
-target_include_directories(GEngine-Editor PRIVATE "${GE_VENDOR}/ImGuizmo/src")
+ge_add_application(GEngine-EditorEngineWorker GEngine-Editor
+    "${GE_ROOT}/GEngine-Editor/Worker/EngineWorker.cpp")
+target_include_directories(GEngine-EditorEngineWorker PRIVATE "${GE_ROOT}/GEngine-Editor")
+if(TARGET GEngine-EditorHost)
+    add_dependencies(GEngine-EditorHost GEngine-EditorEngineWorker)
+endif()
+add_custom_command(TARGET GEngine-EditorEngineWorker POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${GE_ROOT}/GEngine-Editor/Worker/Assets" "$<TARGET_FILE_DIR:GEngine-EditorEngineWorker>/Assets"
+    COMMAND "${CMAKE_COMMAND}" "-DGE_WORKER_SOURCE=${GE_ROOT}/GEngine-Editor/Worker"
+        "-DGE_WORKER_OUTPUT=$<TARGET_FILE_DIR:GEngine-EditorEngineWorker>"
+        -P "${GE_ROOT}/BuildScripts/Editor/DeployWorkerConfig.cmake")
 foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle SceneRenderHelpers)
     ge_add_application(${example} "Example/${example}")
 endforeach()
