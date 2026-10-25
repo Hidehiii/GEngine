@@ -1,5 +1,8 @@
 # Rendering architecture refactor
 
+Editor Console color preservation changes only worker log transport and Host text
+formatting. GPU APIs, backend behavior and binary frame protocol are unchanged.
+
 Compact dock tab height is a Host styling change; renderer APIs and backends are unaffected.
 
 Editor styles actual native dock group tabs as browser tabs, without a duplicate

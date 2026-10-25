@@ -1,4 +1,8 @@
 #include "MainWindow.h"
+#include "ConsoleOutput.h"
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextBlock>
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QFile>
@@ -92,6 +96,31 @@ namespace GEngineEditor
             {
             case 0:
                 timer->stop();
+                {
+                    ConsoleOutput console;
+                    const QByteArray colored = "\x1b[91mred <tag> \xe4\xb8\xad\xe6\x96\x87\x1b[0m\r\n"
+                        "\x1b[32minfo\x1b[0m\n\x1b[93mwarning\x1b[0m\n"
+                        "\x1b[97;41mcritical\x1b[0m\n";
+                    for (char byte : colored) console.AppendBytes(QByteArray(1, byte));
+                    if (console.toPlainText() != QString::fromUtf8("red <tag> \xe4\xb8\xad\xe6\x96\x87\ninfo\nwarning\ncritical\n") ||
+                        console.document()->find("red").charFormat().foreground().color() != QColor(255, 0, 0) ||
+                        console.document()->find("info").charFormat().foreground().color() != QColor(0, 128, 0) ||
+                        console.document()->find("warning").charFormat().foreground().color() != QColor(255, 255, 0) ||
+                        console.document()->find("critical").charFormat().background().color() != QColor(128, 0, 0))
+                    { finish(false, "console colors, fragmented UTF-8/SGR or literal text failed"); return; }
+                    console.AppendBytes("\x1b[91mold\x1b["); console.ResetStream(); console.AppendBytes("new\n");
+                    console.AppendMessage("host");
+                    if (console.document()->find("new").charFormat().foreground().style() != Qt::NoBrush ||
+                        console.document()->find("host").charFormat().foreground().style() != Qt::NoBrush)
+                    { finish(false, "console color escaped across worker restart or host message"); return; }
+                    console.clear(); console.ResetStream();
+                    console.AppendBytes(QByteArray(100000, 'x') + "\n\x1b[" + QByteArray(1000, '1') + "mend\n");
+                    if (console.document()->firstBlock().text().size() != 16 * 1024 || !console.toPlainText().endsWith("end\n"))
+                    { finish(false, "console line/control bounds failed"); return; }
+                    for (int line = 0; line < 400; ++line) console.AppendBytes("line\n");
+                    if (console.document()->blockCount() > 300)
+                    { finish(false, "console history was not bounded"); return; }
+                }
                 for (auto area : {Qt::LeftDockWidgetArea, Qt::RightDockWidgetArea,
                     Qt::TopDockWidgetArea, Qt::BottomDockWidgetArea})
                     if (window.tabPosition(area) != QTabWidget::North)
@@ -366,6 +395,9 @@ namespace GEngineEditor
                     if (window.FrameCount() < 2) break;
                     if (!window.HasEngineEvidence())
                     { finish(false, "engine triangle pixels/orientation or console log missing"); return; }
+                    auto* console = window.findChild<QPlainTextEdit*>("ConsoleOutput");
+                    if (!console || console->document()->find("Editor engine preview initialized").charFormat().foreground().color() != QColor(0, 128, 0))
+                    { finish(false, "real engine log color was not preserved through stderr"); return; }
                 }
                 if (!document.Dirty() || !document.CanUndo())
                 { finish(false, "document history missing before crash"); return; }

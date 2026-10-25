@@ -28,6 +28,7 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
     add_executable(GEngine-EditorHost
         "${GE_EDITOR_SOURCE}/Host/main.cpp"
         "${GE_EDITOR_SOURCE}/Host/MainWindow.cpp"
+        "${GE_EDITOR_SOURCE}/Host/ConsoleOutput.cpp"
         "${GE_EDITOR_SOURCE}/Host/ProjectWorkspace.cpp"
         "${GE_EDITOR_SOURCE}/Host/WorkerSupervisor.cpp"
         "${GE_EDITOR_SOURCE}/Host/RecoveryCheck.cpp")

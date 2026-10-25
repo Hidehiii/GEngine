@@ -1,5 +1,9 @@
 # Build entry points
 
+Console color preservation uses the existing BuildQtEditor commands and Qt SDK;
+no new flag is required. Full -Test also checks stream formatting and actual
+engine info-log color. Regenerate/build the Host and EngineWorker together.
+
 `GEngine-Editor/RunQtEditor.bat [Debug|Release] [Auto|CMake|Premake] [-PrintPath]`
 defaults to Release/Auto. Auto picks the newest Host executable by UTC file
 modification time across dist/qt-editor and dist/premake-vs2022 for that

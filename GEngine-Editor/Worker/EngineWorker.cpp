@@ -12,6 +12,7 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <spdlog/sinks/ansicolor_sink.h>
 
 namespace
 {
@@ -153,6 +154,18 @@ int main(int, char**)
         }
         if (hello.Type != Kind::Hello || Text(hello.Payload) != BuildId || !hello.Request) return 3;
         session = hello.Session; lastRequest = hello.Request;
+        // Windows console attributes are lost in a pipe; preserve the original level palette as SGR.
+        GEngine::Log::Init();
+        auto colors = std::make_shared<spdlog::sinks::ansicolor_stderr_sink_mt>(spdlog::color_mode::always);
+        colors->set_pattern("%^[%T] %n: %v%$");
+        colors->set_color(spdlog::level::trace, "\x1b[37m");
+        colors->set_color(spdlog::level::debug, "\x1b[36m");
+        colors->set_color(spdlog::level::info, "\x1b[32m");
+        colors->set_color(spdlog::level::warn, "\x1b[93m");
+        colors->set_color(spdlog::level::err, "\x1b[91m");
+        colors->set_color(spdlog::level::critical, "\x1b[97;41m");
+        GEngine::Log::GetCoreLogger()->sinks().front() = colors;
+        GEngine::Log::GetClientLogger()->sinks().front() = colors;
         GEngine::RuntimeSpecification spec;
         spec.Name = "GEngine editor render worker"; spec.Size = {640, 360};
         spec.EnableImGui = spec.EnableScripting = spec.EnablePhysics = spec.EnableOpenSSL = false;

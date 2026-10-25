@@ -7,6 +7,18 @@ C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设�
 
 ## 当前实施：E0.1 基础原型
 
+2026-10-26 Console 保留引擎日志颜色：EngineWorker 在创建 Runtime 前，仅将
+自己的两个 spdlog 控制台 sink 替换为始终输出 ANSI SGR 的 stderr sink，沿用
+原 Windows 级别配色（白/青/绿/亮黄/亮红/亮白红底）。引擎公共日志接口、
+游戏日志行为和文件 sink 不变，stdout 继续仅承载二进制协议。
+WorkerSupervisor 将原始 stderr 字节交给 ConsoleOutput，后者增量解码 UTF-8
+与 SGR，使用 QTextCursor/QTextCharFormat 插入纯文本；颜色序列不进入复制文本，
+日志中的 HTML 按字面显示。普通 Host 诊断使用默认颜色。Console 使用深色背景，
+上限 300 个文本块、每行 16 Ki 字符、SGR 参数 64 字符；超限文本截断但继续解析。
+退出时先排空 stderr，再重置流状态；新进程启动也重置，保留已有历史。
+支持 16 色前景/背景与粗体/复位，不执行光标移动等终端控制；不模拟完整终端，
+不读取或复现用户自定义 Windows 控制台调色板。日志流不改变 GPU 或场景所有权。
+
 2026-10-26 浏览器标签样式直接应用到 Qt 原生停靠组，不再提供重复的全局面板导航。
 默认使用多面板分割布局：左侧 Hierarchy/Assets，中间 Viewport/Console，右侧
 Documents/Inspector 标签组。各组顶部原生 QTabBar 使用深色圆角/活动高亮，

@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "ConsoleOutput.h"
 #include <QAction>
 #include <QCloseEvent>
 #include <QCoreApplication>
@@ -138,9 +139,7 @@ namespace GEngineEditor
         connect(m_DraftTabs, &QTabWidget::currentChanged, this, [this](int) { RefreshDocument(); });
         connect(m_DraftTabs, &QTabWidget::tabCloseRequested, this, [this](int index) { CloseDraft(index); });
         connect(m_DraftTabs->tabBar(), &QTabBar::tabMoved, this, [this](int, int) { RefreshDocument(); });
-        m_Console = new QPlainTextEdit(this);
-        m_Console->setReadOnly(true);
-        m_Console->setMaximumBlockCount(300);
+        m_Console = new ConsoleOutput(this);
         dock("Console", "ConsoleDock", m_Console, Qt::BottomDockWidgetArea);
         m_Viewport = new ViewportWidget(this);
         dock("Viewport", "ViewportDock", m_Viewport, Qt::LeftDockWidgetArea);
@@ -224,6 +223,12 @@ namespace GEngineEditor
         connect(m_Malformed, &QAction::triggered, this, [this] { m_Worker.Inject(Protocol::Kind::Malformed); });
         NewDraft();
         m_Worker.OnLog = [this](const QString& text) { Log(text); };
+        m_Worker.OnConsoleOutput = [this](const QByteArray& bytes)
+        {
+            m_Console->AppendBytes(bytes);
+            if (QCoreApplication::arguments().contains("--self-test")) std::cerr << bytes.toStdString();
+        };
+        m_Worker.OnConsoleReset = [this] { m_Console->ResetStream(); };
         m_Worker.OnState = [this](WorkerSupervisor::State)
         {
             RefreshWorker();
@@ -254,6 +259,7 @@ namespace GEngineEditor
         for (const auto& entry : m_Drafts) disconnect(entry.first, nullptr, this, nullptr);
         m_Workspace->OnInspector = {}; m_Workspace->OnLog = {};
         m_Worker.OnState = {}; m_Worker.OnLog = {}; m_Worker.OnFrame = {};
+        m_Worker.OnConsoleOutput = {}; m_Worker.OnConsoleReset = {};
     }
     void MainWindow::ResetLayout()
     {
@@ -393,7 +399,7 @@ namespace GEngineEditor
     void MainWindow::Log(const QString& text)
     {
         const auto bounded = text.left(16 * 1024).trimmed();
-        m_Console->appendPlainText(bounded);
+        m_Console->AppendMessage(bounded);
         if (QCoreApplication::arguments().contains("--self-test"))
             std::cerr << bounded.toStdString() << '\n';
     }

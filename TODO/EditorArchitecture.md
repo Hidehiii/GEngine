@@ -276,6 +276,20 @@
   Premake Debug/Release 构建、协议、停靠/文档/引擎恢复回归通过；Windows
   原生 Release 截图审阅通过，证据 tmp/qt-compact-dock-tabs-Release.{log,png}。
   文档与 README 同步；引擎 API 未变。CMake/额外 DPI 组合未重验，未提交/推送。
+- [x] E1.3 Console 原色日志（2026-10-26）：保留引擎原日志颜色，Worker 在
+  stderr 输出携带颜色的文本，Host 增量解析并用 Qt 文本格式显示，不能靠文本
+  关键字猜测级别。保留纯文本复制、UTF-8/颜色跨管道分块、换行、300 行上限，
+  单行和控制序列有界；进程退出/重启重置解析状态，stdout 二进制协议不变。
+  验收颜色/Unicode/截断/重启回归、真实引擎绿色信息日志、Debug/Release 构建
+  与 Windows 截图，架构/API/README 同步。
+  完成：EngineWorker 的 ANSI stderr sink 按现有 Windows spdlog 级别配色输出；
+  ConsoleOutput 增量解析 UTF-8/16 色 SGR，以 Qt 字符格式插入文字。Host 消息
+  默认色，复制不含控制码，HTML 字面显示，长行/序列/历史有界，退出排空后重置。
+  Premake Release 与 CMake Debug 构建、协议/停靠/文档/引擎恢复通过；回归覆盖
+  按字节切分中文/SGR、红/绿/黄/红底颜色、重启复位、长行/序列与 300 块上限。
+  实际 D3D12 Worker 信息日志绿色格式检查通过，原生 Windows Release 截图
+  审阅通过：tmp/qt-colored-console-Release.{log,png}。OpenGL/Vulkan 本轮未运行，
+  渲染 API 未变。未实现完整终端/扩展色/自定义系统调色板；未提交或推送。
 - [ ] E2：引入 EditorCommand、CommandHistory 和输入路由；属性编辑及 Gizmo
   拖动形成事务。验收：创建/删除/复制/组件/变换可撤销重做，一次拖动一个记录，
   保存后撤销仍准确标脏；文本输入、弹窗、相机与 Gizmo 不抢快捷键。

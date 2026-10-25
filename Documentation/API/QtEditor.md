@@ -7,6 +7,17 @@ C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedS
 
 ## 已实现的 E0.1 契约
 
+ConsoleOutput::AppendBytes(QByteArray) 接收原始 stderr 分块，跨调用保留 UTF-8
+与 ANSI SGR 状态；支持 0/1/22/30–37/39/40–47/49/90–97/100–107。
+AppendMessage(QString) 插入默认色 Host 文本，ResetStream() 结束未完成行并丢弃
+未完成编码/控制序列及颜色状态，不清空历史。UTF-8、SGR 可以跨任意管道分块；
+末尾不完整编码/序列在流重置时丢弃，CR 忽略、LF 保留，HTML 不解释。
+WorkerSupervisor 新增 OnConsoleOutput(QByteArray) 与 OnConsoleReset() 回调；
+OnLog(QString) 继续用于监督器诊断。退出排空 stderr 后、启动前发出 reset，
+MainWindow 析构先断开回调。Stdout 包格式与引擎公共 API 均未改变。
+Console 最多保留 300 文本块、单行 16 Ki UTF-16 单元，控制参数至多 64 字符。
+长行截断但继续扫描换行/复位，未知终端控制不执行；不支持终端光标操作和扩展色。
+
 Host 的六个面板使用稳定 objectName：HierarchyDock、DocumentDock、ConsoleDock、
 ViewportDock、AssetsDock、InspectorDock。QDockWidget 均设置 AllDockWidgetAreas 与 Closable/Movable/
 Floatable；View 菜单复用 toggleViewAction，ResetLayoutAction 恢复多面板分割布局。

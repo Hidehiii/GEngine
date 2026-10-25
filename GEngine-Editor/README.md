@@ -1,5 +1,12 @@
 # GEngine Editor
 
+Console preserves engine log colors (trace white, debug cyan, info green, warning
+bright yellow, error bright red, critical bright white on red). The editor worker
+sends color codes over stderr; the Qt Console renders them without adding codes
+to copied text. Host diagnostics stay neutral, HTML is literal, and restart resets
+partial/color state while retaining history. History is capped at 300 text blocks
+and each line at 16 Ki characters. This is a log viewer, not a terminal emulator.
+
 ## New Qt editor: engine preview prototype
 
 The independent Qt Host now starts a GEngine render child automatically. It

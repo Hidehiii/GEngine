@@ -24,12 +24,14 @@ namespace GEngineEditor
         bool IsEngine() const { return m_IsEngine; }
         std::function<void(State)> OnState;
         std::function<void(const QString&)> OnLog;
+        std::function<void(const QByteArray&)> OnConsoleOutput;
+        std::function<void()> OnConsoleReset;
         std::function<void(const QImage&)> OnFrame;
     private:
         void SetState(State state);
         void Send(Protocol::Kind kind);
         void ReadOutput();
-        void ReadError();
+        void ReadError(bool drain = false);
         void Handle(const Protocol::Packet& packet);
         void Fail(const QString& reason);
         void Tick();

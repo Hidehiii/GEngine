@@ -30,6 +30,8 @@ namespace GEngineEditor
             [this](int code, QProcess::ExitStatus)
         {
             ReadOutput();
+            ReadError(true);
+            if (OnConsoleReset) OnConsoleReset();
             if (m_Decoder.HasPartial()) Log("Discarded truncated protocol packet on exit.");
             Log(QString("Worker exited with code %1.").arg(code));
             m_Decoder.Reset();
@@ -63,6 +65,7 @@ namespace GEngineEditor
     void WorkerSupervisor::Start(const QString& executable)
     {
         if (Running()) return;
+        if (OnConsoleReset) OnConsoleReset();
         m_Decoder.Reset();
         m_IsEngine = false;
         m_ReceivedFrame = false;
@@ -124,11 +127,14 @@ namespace GEngineEditor
         }
         if (m_Process.bytesAvailable()) QTimer::singleShot(0, this, [this] { ReadOutput(); });
     }
-    void WorkerSupervisor::ReadError()
+    void WorkerSupervisor::ReadError(bool drain)
     {
         m_Process.setReadChannel(QProcess::StandardError);
-        const auto bytes = m_Process.read(16 * 1024);
-        if (!bytes.isEmpty()) Log(QString::fromUtf8(bytes));
+        do
+        {
+            const auto bytes = m_Process.read(16 * 1024);
+            if (!bytes.isEmpty() && OnConsoleOutput) OnConsoleOutput(bytes);
+        } while (drain && m_Process.bytesAvailable());
         if (m_Process.bytesAvailable()) QTimer::singleShot(0, this, [this] { ReadError(); });
     }
     void WorkerSupervisor::Handle(const Packet& packet)

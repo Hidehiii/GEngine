@@ -17,6 +17,7 @@ class QDockWidget;
 namespace GEngineEditor
 {
     class ViewportWidget;
+    class ConsoleOutput;
     class MainWindow : public QMainWindow
     {
     public:
@@ -69,7 +70,7 @@ namespace GEngineEditor
         WorkerSupervisor m_Worker;
         QString m_WorkerPath;
         QString m_Error;
-        QPlainTextEdit* m_Console = nullptr;
+        ConsoleOutput* m_Console = nullptr;
         QLabel* m_StateLabel = nullptr;
         ViewportWidget* m_Viewport = nullptr;
         QAction* m_Undo = nullptr;

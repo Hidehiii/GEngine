@@ -1,5 +1,9 @@
 # Build system architecture
 
+Editor ConsoleOutput is a Qt-only Host source, explicitly listed by the standalone
+CMake build and discovered by Premake's existing Host glob. The worker reuses its
+existing spdlog dependency for ANSI stderr; no new module or game dependency.
+
 GEngine-Editor/RunQtEditor.bat delegates to its sibling PowerShell launcher. Auto
 selects the newest Host executable in the requested configuration across the
 standalone CMake and Premake outputs, then runs from that executable's directory.
