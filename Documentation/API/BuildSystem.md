@@ -1,5 +1,16 @@
 # Build entry points
 
+`GEngine-Editor/RunQtEditor.bat [Debug|Release] [Auto|CMake|Premake] [-PrintPath]`
+defaults to Release/Auto. Auto picks the newest Host executable by UTC file
+modification time across dist/qt-editor and dist/premake-vs2022 for that
+configuration. Explicit generator selection never falls back. PrintPath prints
+the selected absolute path without launching; missing builds/invalid arguments
+return nonzero. Normal launch runs from the Host directory and returns its exit code.
+
+Editor E1.1 project/assets browsing uses the same BuildQtEditor commands and Qt
+SDK as E0.2. No new build flags or deployment dependencies are required; CMake and
+Premake both include ProjectWorkspace, and full -Test covers its project lifecycle.
+
 Shared Mono development paths and incremental export are documented as
 [planned contracts](ManagedScripting.md). No new build arguments or packaging
 commands exist yet; current commands and runtime copying remain unchanged.

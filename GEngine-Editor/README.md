@@ -17,6 +17,11 @@ From the repository root in PowerShell (VS C++ tools, CMake and Python required)
 .\GEngine-Editor\RunQtEditor.bat Release
 ```
 
+RunQtEditor selects the newest executable for the requested configuration across
+CMake and Premake outputs. Use `RunQtEditor.bat Release Premake` (or `CMake`)
+to select one explicitly; add `-PrintPath` to inspect the selection without launching.
+No arguments means Release/Auto. A missing selected build returns an error.
+
 If Python is not on PATH, pass `-Python` with its executable's absolute path to
 BuildQt6.ps1. The script initializes VS developer tools in an isolated child
 environment and uses bundled Ninja. SDK artifacts go to
@@ -50,7 +55,7 @@ Config.ini (1=OpenGL, 2=Vulkan, 3=D3D12), then restart; the legacy editor's loca
 configuration is unaffected. Host resizing scales the fixed preview; it does not
 resize the child render target yet.
 
-All four panels, including Viewport, can dock in any area, float, tab together
+All six panels, including Viewport, Assets and Inspector, can dock in any area, float, tab together
 and close without losing contents. Reopen panels from View; View > Reset layout
 restores the default arrangement. The worker toolbar can also move/float/hide.
 Layout state version 2 saves these positions; incompatible older states reset
@@ -72,6 +77,56 @@ Debug/Release SDK and both generators' builds/tests, plus a native Windows Relea
 recovery run. The normal Qt window image was reviewed for layout and readable text.
 The fixed preview has separate OpenGL/Vulkan/D3D12 Debug/Release checks. Full
 Scene/Play rendering and manual input/resize checks remain open.
+
+## Document tabs (E1.2)
+
+The default docking layout shows Hierarchy/Assets on the left, Viewport/Console
+in the middle and Documents/Inspector as a tab group on the right. Actual dock
+group tabs use dark browser-style rounded tabs, an active highlight, X to hide
+a panel and + at the end to add/reopen a panel in that group. There is no extra
+global navigation strip. Adding an existing panel moves it into the selected group.
+Drag dock titles or group tabs to float, split, group and redock panels;
+double-click a dock title to toggle floating. Single panels keep their dock title.
+Layout version 4 resets older saved layouts once; new dock arrangements persist.
+The native system title bar remains. Qt saves group tab order with its dock layout.
+Dock tabs use compact vertical spacing and 20x20 controls (about 26 logical pixels high).
+The separate document strip lives inside Documents.
+Use + / Ctrl+T / Ctrl+N to add a draft; File > Open draft opens a file. Documents
+shows the active document below its document strip. Dock panels are shared.
+Drag tabs to reorder; each keeps its own text, undo/redo history, path and `*`
+dirty marker. Save applies to the active tab. Opening an already-open path
+focuses its existing tab and preserves unsaved edits. Save As cannot overwrite
+a file belonging to another open tab. Up to 32 draft tabs can be open.
+
+Close a tab with its X or Ctrl+W. Save/Discard/Cancel is handled for that tab;
+closing the last one creates a fresh draft. Exiting confirms every dirty tab
+before stopping the worker. Cancel retains all tabs and restores the previous
+active tab; saves already completed during confirmation remain saved.
+Worker failure preserves inactive documents too. Documents can float as one
+dock; individual tabs cannot detach into separate windows yet. Tabs edit
+`.gedraft` notes, not `.GEScene`, and are not restored after restarting the editor.
+
+## Project workspace (E1.1)
+
+Use File > Open project folder to browse a directory in Assets. Select a file or
+folder to see its relative path, type, size and modification time in Inspector.
+Both panels dock/float/close and reopen through View; Reset layout places Assets
+on the left and tabs Inspector with the draft. This is read-only browsing: no
+resource execution, import, component editing or .GEScene loading occurs.
+
+An invalid project path preserves the current project and selection. Switching
+or closing projects clears selection while retaining the draft, undo history
+and independent engine preview. Deleted selections are cleared; a missing root
+closes the project. Symlinks are hidden and canonical outside-root selections
+are rejected. Project paths are not saved between editor runs yet.
+
+The recovery check creates temporary Unicode project folders and exercises open,
+failed open, model selection/metadata, sibling-root rejection, file/root removal,
+switch/close, six-panel docking and preservation through a worker crash. Symlink
+creation is checked when the host permits it, otherwise logged as skipped.
+Manual file-dialog interaction, large/network directories and long-run watcher
+memory still need separate checks. Opening a project does not render its assets;
+the viewport remains the independent GPU triangle preview.
 
 ## Legacy editor removed
 

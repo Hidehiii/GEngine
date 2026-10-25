@@ -1,5 +1,16 @@
 # Build system architecture
 
+GEngine-Editor/RunQtEditor.bat delegates to its sibling PowerShell launcher. Auto
+selects the newest Host executable in the requested configuration across the
+standalone CMake and Premake outputs, then runs from that executable's directory.
+Explicit generator selection and PrintPath support diagnosing stale outputs.
+No engine build interface or Qt deployment dependency changes.
+
+Editor E1.1 adds Core/ProjectContext and Host/ProjectWorkspace. CMake explicitly
+lists the new Host implementation; Premake's existing Host/Core discovery picks
+it up. The read-only filesystem model uses existing Qt modules, with no engine
+or vendor dependency changes.
+
 Planned C# deployment separates shared development Runtime SDKs from incremental
 game export; see [managed scripting design](ManagedScripting.md). No build/copy
 behavior changes in this documentation work item. CMake C# support remains pending.

@@ -3,15 +3,67 @@
 C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedScripting.md)。
 当前 Host/Worker IPC 不变，Worker 仍禁用脚本；此文档更新未实现脚本消息。
 
-状态：**E0.1 诊断与 E0.2 引擎预览契约已实现，其余完整场景契约为提案**。
+状态：**E0.1/E0.2 诊断与引擎预览、E1.1 项目浏览、E1.2 草稿多标签已实现，其余场景契约为提案**。
 
 ## 已实现的 E0.1 契约
 
-Host 的四个面板使用稳定 objectName：HierarchyDock、DocumentDock、ConsoleDock、
-ViewportDock。QDockWidget 均设置 AllDockWidgetAreas 与 Closable/Movable/
-Floatable；View 菜单复用 toggleViewAction，ResetLayoutAction 恢复默认分割。
-saveState/restoreState 使用版本 2；面板关闭只是隐藏，重新打开保留文档及
+Host 的六个面板使用稳定 objectName：HierarchyDock、DocumentDock、ConsoleDock、
+ViewportDock、AssetsDock、InspectorDock。QDockWidget 均设置 AllDockWidgetAreas 与 Closable/Movable/
+Floatable；View 菜单复用 toggleViewAction，ResetLayoutAction 恢复多面板分割布局。
+saveState/restoreState 使用版本 4；旧版本布局回退到新默认。面板关闭只是隐藏，重新打开保留文档及
 诊断连接。无新增公共引擎接口或 IPC 消息。
+
+## 已实现的 E1.2 文档多标签
+
+原生停靠组 QTabBar 标记为 BrowserDockTabs，直接使用浏览器式外观；已移除
+BrowserPanelTabs 全局导航。CloseDockTabButton 隐藏对应 dock，AddDockTabButton
+位于末标签按钮区，其 + 菜单将指定面板加入当前组、显示并激活（可能移动其他组的面板）。
+Qt 继续管理 tabData、标签数量、选择、排序及拖拽。Host 不修改内部 tabData，
+通过六个固定唯一标题匹配 dock，刷新中核对控件的 DockName/HasAdd 属性后更新按钮。
+草稿内外标签栏显式排除，避免 Console 等同名文档被误认为面板。
+重复面板标题/动态标题尚不支持；布局版本保持 4，分割/分组/浮动恢复契约不变。
+公共文档 API 与 Worker 协议未改变。
+停靠组标签采用上下 3 逻辑像素留白及 20×20 的 ×/+ 控件（默认约 26 高），
+此为 Host 样式调整，文档 API、停靠生命周期与布局版本均不变。
+
+MainWindow::NewDraft() 新增并激活草稿页，返回是否成功（最多 32 页）；
+DraftCount() 查询页数，Document() 返回当前页文档引用，该引用在对应页关闭后
+失效。SetDraftText/SaveDraft/SaveAs/Undo/Redo 操作当前页。QTabWidget 的稳定
+对象名为 DraftTabs，其内部标签栏隐藏。可见标签栏为 Documents 内的
+BrowserDocumentTabs（QTabBar），位于 Documents 内，提供重排/关闭/省略提示/溢出滚动。
+NewDocumentTabButton（+）、Ctrl+T 与 Ctrl+N 新建，Ctrl+W 关闭当前页。
+文档栏与页面容器双向同步索引/顺序，更新显示时阻断反馈信号，文档身份仍为页面。
+
+OpenDraft 成功解析文件后新增页；若规范化路径已打开则仅聚焦已有页，保留
+未保存内容。打开失败不新增页、不改变活动页；SaveDraft 拒绝另一个打开页
+已占用的路径，写入仍用 QSaveFile。每页独立路径、历史、保存点和脏标记。
+重排不移动文档所有权，非当前脏页也会让窗口标题显示未保存标记。
+
+CloseDraft(index) 对指定页执行保存确认，失败/取消返回 false，不删除文档；
+关闭后台页或取消后台页的关闭会恢复原活动页。
+最后一页关闭后创建干净草稿。关闭窗口确认全部页面，取消时不关闭任何页或
+Worker，已执行的成功保存保留。隐藏 Documents 面板不关闭文档；窗口布局
+不保存文档内容或自动重开列表。本轮没有新增引擎/IPC/场景格式契约。
+
+## 已实现的 E1.1 项目目录契约
+
+`Core/ProjectContext.h` 提供 Open(path)、Close()、Root()、Generation() 与
+Contains(path)。Open 使用 canonical 路径并要求目录存在；失败保留旧根与
+generation，成功/关闭推进非零 generation。Contains 对存在的目标执行
+canonical 与逐路径分量边界检查，不以字符串前缀代替目录归属。
+
+`Host/ProjectWorkspace` 提供 Open(QString)、Close()、Select(QString)、
+ValidateSelection() 与根/选择/generation 查询，以及 Inspector/日志回调。
+Select 拒绝根外、直接符号链接与缺失目标，失败清除旧选择；项目打开失败则
+保留当前项目与选择。250 ms 校验删除/失联时使选择失效，项目根丢失时关闭
+项目。只读 QFileSystemModel 隐藏符号链接，QTreeView 禁用编辑、拖放和执行。
+
+MainWindow::OpenProject/CloseProject 对接 File > Open project folder / Close
+project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspector 为
+只读资源信息而非组件编辑器。草稿/历史与 Worker 进程不随项目切换改变；没有
+隐式打开 .GEScene、加载 Mono、资产导入或打包。项目路径暂不持久保存。
+
+下面的协议契约与 E0.2 相同，不随项目浏览变化；引擎公共接口保持不变。
 
 头文件：`GEngine-Editor/Protocol/EditorProtocol.h`（标准 C++，无 Qt/引擎依赖）。
 所有整数显式小端编码，禁止按 C++ struct 内存布局发送。

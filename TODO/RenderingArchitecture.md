@@ -1,5 +1,20 @@
 # Rendering architecture refactor
 
+Compact dock tab height is a Host styling change; renderer APIs and backends are unaffected.
+
+Editor styles actual native dock group tabs as browser tabs, without a duplicate
+global navigation strip. Native docking remains; document tabs live within Documents. This Host-only layout adjustment
+does not change rendering APIs, backends or worker ownership.
+
+Editor E1.2 adds independent .gedraft document tabs and per-tab history/close
+confirmation in the Qt Host. It does not create additional engine workers,
+viewports or Scene documents, and changes no renderer/IPC interfaces.
+
+Editor E1.1 adds read-only project/asset browsing and metadata Inspector in the
+Qt Host. Rendering APIs and IPC are unchanged; selecting project assets does not
+replace the independent GPU triangle with a Scene renderer. New UI checks are
+tracked in TODO/EditorArchitecture.md, with full scene rendering still pending.
+
 2026-10-25 legacy editor removal: the ImGui editor application, private panels/
 GizmoController, assets and build entries are removed. Qt Host/Worker is retained;
 engine/game ImGui and EditorCamera are unchanged. ImGuizmo has no build consumers,

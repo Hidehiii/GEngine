@@ -167,6 +167,115 @@
   失败不覆盖旧文档、脏状态提示、选择在关闭/删除后失效；现有面板可用。
   面板迁移为 Qt Widgets：Hierarchy/Assets 使用 Model/View，Inspector 使用
   类型化编辑控件；Qt model/delegate 的修改仍必须走命令，不绕过文档。
+  - [x] E1.1（2026-10-25 继续实施授权）：项目目录上下文与只读资源工作区。
+    Core 保存规范化根目录/generation，失败打开保留旧项目；Qt Model/View
+    提供 Assets，Inspector 展示所选资源元数据，均可停靠/隐藏恢复。关闭/切换
+    项目及资源删除清除选择，拒绝根外/符号链接逃逸；浏览不执行或修改资源。
+    验收临时项目的打开/失败/切换/关闭、选择失效、六面板布局及原有草稿/Worker
+    恢复回归，CMake/Premake Debug/Release 构建。完整 SceneDocument/格式、
+    导入、组件编辑及资源打包仍待后续阶段，本轮不把目录浏览宣称为资产数据库。
+    发现并修复：Qt 树/header 在模型替换时保留 selection model；私有视图显式
+    回收未共享的旧/临时选择模型，重复切换保持有界。异步枚举会暂时清空索引，
+    选择以存在的项目内路径为准，目录加载完成后按 generation 恢复高亮，避免
+    将刷新误判为删除而丢失选择。
+    完成：File 打开/关闭项目目录、Assets 树、只读资源 Inspector 与六面板布局；
+    项目名显示于窗口/Assets，完整路径保留在提示和 Console。保留版本 2 布局，
+    四面板旧状态可恢复。Core/Host 生命周期、架构/API/README 与构建说明同步。
+    验证：CMake/Premake Debug/Release 构建及协议/诊断/真实引擎恢复均通过；
+    Unicode 目录、真实树选择、失败打开保留状态、同名前缀兄弟目录越界、
+    符号链接拒绝、文件/根删除、20 次切换及选择模型数量、故障后项目/草稿
+    保留均通过。Windows Release 原生检查与截图复核通过；本轮真实引擎检查
+    使用 D3D12，未重复 OpenGL/Vulkan 渲染矩阵（渲染接口与 Worker 未改）。
+    证据：各构建目录 tests/recovery-tests/engine-tests.log，
+    tmp/qt-project-workspace-Release.{log,png}。链接/差异检查通过。
+    未验证：手动文件选择对话框、超大/网络目录和长时 watcher 内存；完整 E1
+    场景文档/选择服务与 E2 命令仍开放。此轮实现未提交，文档提交 8a3526a5
+    已单独推送至 origin/master；临时文件/本地备份未纳入。
+  - [x] E1.2（2026-10-25 用户要求）：草稿文档多标签窗口。新建/打开新增标签，
+    同一路径聚焦已有标签；每页独立文档、历史、保存路径、脏状态和文本控件，
+    标签可重排/关闭，Ctrl+W 关闭当前页，退出逐页确认且 Cancel 保留所有页。
+    保存失败或另存为冲突不修改文档/保存点；最后一页关闭后保留一页新草稿。
+    验收多页编辑/撤销/保存/重排/关闭取消、重复打开、退出取消及 Worker 故障
+    后各页保留，Debug/Release 与两种生成器检查。只扩展 .gedraft，场景多文档
+    和多个引擎视口仍未实现；保留当前未提交的 E1.1 工作。
+    完成：Documents 内独立页面模型/编辑器/路径/保存点；稳定页面身份支持
+    重排，重复打开聚焦已打开页，路径冲突在写入前拒绝，最多 32 页。后台页
+    关闭/取消恢复原活动页；全窗口关闭逐页确认，取消不移除其他页，已经完成的
+    保存不回滚。页面删除/析构先断开回调，保存/撤销只作用于当前页。
+    验证：CMake/Premake Debug/Release 构建、协议/项目/标签/诊断恢复与真实
+    D3D12 Worker 恢复检查通过；原生 Windows Release 对话框与截图检查通过。
+    覆盖独立历史、Undo/Redo 保存点、拖动重排 API、重复打开保留未保存内容、
+    后台页关闭取消、Save/Discard/Cancel 退出分支、冲突不覆盖文件、最后一页
+    替补和后台页崩溃保留。证据为各构建日志与
+    tmp/qt-editor-document-tabs-Release.{log,png}；差异/文档链接检查通过。
+    未人工逐项验证鼠标拖拽/快捷键/文件对话框，未做 32 页满载长时内存检查；
+    标签会话恢复、逐页脱离窗口和 Scene 多文档仍未实施。此轮未提交或推送。
+  - [x] E1.2 UI 修订（2026-10-25）：用户要求浏览器式主窗口顶部文档标签栏，
+    不再把标签放在右侧 Documents 停靠面板内。保留独立文档、关闭确认与排序，
+    顶部提供新建按钮、溢出滚动和完整文件名提示；工具面板仍共享并可停靠。
+    验收顶部标签与内容同步、旧多文档回归、Debug/Release 构建及原生窗口检查。
+    完成：BrowserHeader 固定置于菜单/工具栏上方，BrowserDocumentTabs 提供
+    圆角活动标签、关闭/拖动/溢出滚动，+ 与 Ctrl+T/Ctrl+N 新建；内部标签隐藏。
+    顶部与页面双向同步并阻断更新反馈；原有保存、历史、取消和 Worker 保护保留。
+    CMake Release 使用独立 build/dist/browser-tabs 验证（原 Release 编辑器正
+    由用户运行并锁住 EXE，未关闭/终止该窗口）；CMake Debug 与 Premake
+    Debug/Release 均通过构建、协议/项目/多标签和 D3D12 引擎恢复检查。
+    Windows 原生 Release 截图/回归通过，证据 tmp/qt-browser-tabs-Release.{log,png}
+    与各构建目录日志。原用户进程保留；临时构建脚本未加入源码，不提交/推送。
+- [x] E1.2 面板标签位置修正（2026-10-25）：用户截图指的是 Viewport、Hierarchy、
+  Console、Assets、Documents 停靠组标签，而非草稿文档标签。所有停靠区域的
+  面板标签应位于内容上方，包含恢复旧布局后的行为；保留分割、浮动与文档标签。
+  验收：四个停靠区域均为 North，Debug/Release 构建与现有恢复回归通过。
+  完成：MainWindow 设置全区域 North；Premake Debug/Release 构建、协议、
+  布局/文档恢复及实际引擎恢复检查均通过（对应 qt-editor-logs）。本轮未单独
+  人工拖拽复查，也未重建 CMake；渲染接口无变化。尚未提交/推送。
+- [x] E1.2 浏览器面板主标签（2026-10-25）：按用户浏览器截图修正，窗口顶端
+  显示 Viewport/Hierarchy/Console/Assets/Documents/Inspector 主标签，切换面板、
+  重排、关闭隐藏、+ 重新打开。默认所有面板共享全窗口内容区；保留拖出/停靠。
+  草稿文档标签移入 Documents，避免与主面板标签混淆。升级布局版本以应用新默认。
+  验收：面板切换/隐藏重开/排序不丢文档和 Worker，Debug/Release 回归与截图检查。
+  完成：BrowserPanelTabs 使用稳定 dock 名称导航，关闭仅隐藏、+ 重开；默认六面板
+  tabify 为一个全窗口组，原生组标签隐藏并消除占位高度，保留 dock 标题拖动入口。
+  Documents 内持有草稿标签，布局持久化版本 3，旧版自动回退到新默认。
+  Premake Debug/Release 构建、协议、面板/多文档恢复及 D3D12 引擎恢复均通过；
+  Windows 原生 Release 回归与截图通过，证据 tmp/qt-browser-panel-tabs-Release.{log,png}。
+  CMake 本轮未重建；系统标题栏保留，主标签顺序未持久化，未人工遍历拖放手势。
+  文档/API/README 同步，未提交或推送。
+- [x] E1.2 停靠与启动入口修正（2026-10-25，2026-10-26 验证）：保留顶部浏览器导航，恢复可同时
+  显示的默认分割布局及 Qt 原生停靠组拖拽入口，允许浮动、重新停靠、标签分组。
+  RunQtEditor.bat 自动选取指定配置中最新的 CMake/Premake Host，支持显式指定
+  生成器与只打印路径。验收：布局/浮动/分组回归及 Debug/Release 构建通过；
+  启动选择检查涵盖新旧输出、缺失文件与参数错误；同步架构/API/README。
+  完成：恢复左/中/右分割默认布局，原生组标签可见且位于组顶部，移除隐藏标签
+  的事件过滤；顶部浏览器标签仅导航，不改变 dock 位置。布局版本升级到 4。
+  RunQtEditor.bat 调用同目录 RunQtEditor.ps1，按 UTC 修改时间选择同配置最新
+  Host；支持 Auto/CMake/Premake、-PrintPath，缺失显式生成器不静默回退。
+  Premake Debug/Release 构建、协议、布局/浮动/重新停靠/分组与 D3D12 引擎
+  恢复检查通过；Windows 原生 Release 图像审阅通过，证据
+  tmp/qt-docking-launcher-Release.{log,png}。启动脚本在隔离假输出中检查两种
+  时间顺序、显式覆盖、缺失回退/报错及非法参数，tmp/check-qt-launcher.ps1 通过。
+  CMake 本轮未重建；未人工遍历鼠标拖放手势。未提交或推送。
+- [x] E1.2 实际停靠标签样式替换（2026-10-26）：按两张截图，将原生停靠组
+  标签直接改成浏览器式圆角/活动高亮/×/+；移除重复全局面板导航。保留 Qt
+  自己管理的拖动、重排、分组、浮动与布局恢复，不替换为代理页面容器。
+  + 菜单将所选面板加入当前组，× 仅隐藏面板。验收多组/重排后按钮对象正确、
+  隐藏重开与分组恢复不丢文档/Worker、Debug/Release 构建和 Windows 截图检查。
+  完成：移除全局 BrowserPanelTabs；BrowserDockTabs 直接装饰实际 Qt 停靠组，
+  保留原生 tabData、拖拽、重排与布局；×/+ 控件随分组重排重新核对绑定，
+  + 将面板加入当前组。固定唯一标题映射明确排除草稿栏，未使用 Qt 私有数据。
+  Premake Debug/Release 构建、协议、停靠/多文档与 D3D12 引擎恢复通过；新增
+  三面板分组重排后 × 目标、+ 重开到当前组、同名 Console 文档隔离检查通过。
+  Windows 原生 Release 回归与截图审阅通过，证据 tmp/qt-native-browser-docks-Release.{log,png}。
+  RunQtEditor.bat Release Auto -PrintPath 已选中最新 Premake Release；本轮
+  无启动接口改动。CMake 未重建，未人工遍历拖拽/高 DPI/窄窗口溢出组合。
+  Architecture/API/README 已同步；未提交或推送。
+- [x] E1.2 停靠标签减薄（2026-10-26）：缩小实际停靠组标签的上下留白、
+  圆角与 ×/+ 控件，使默认高度由约 40 降到约 26 逻辑像素；保留文字与按钮可用。
+  验收 Debug/Release 构建、已有停靠恢复回归与 Windows 截图；同步文档。
+  完成：上下 padding 8→3，控件 24→20，图标字号 20→16，圆角 10→6。
+  Premake Debug/Release 构建、协议、停靠/文档/引擎恢复回归通过；Windows
+  原生 Release 截图审阅通过，证据 tmp/qt-compact-dock-tabs-Release.{log,png}。
+  文档与 README 同步；引擎 API 未变。CMake/额外 DPI 组合未重验，未提交/推送。
 - [ ] E2：引入 EditorCommand、CommandHistory 和输入路由；属性编辑及 Gizmo
   拖动形成事务。验收：创建/删除/复制/组件/变换可撤销重做，一次拖动一个记录，
   保存后撤销仍准确标脏；文本输入、弹窗、相机与 Gizmo 不抢快捷键。

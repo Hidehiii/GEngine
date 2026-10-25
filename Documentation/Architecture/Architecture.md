@@ -12,8 +12,8 @@ Each function has a focused page:
 - [Build system](BuildSystem.md): project generation and build output boundaries.
 - [C# runtime and packaging design](ManagedScripting.md): planned shared Mono SDK,
   script paths, worker reload, resource deployment and later .pak export; not implemented.
-- [Qt editor architecture](QtEditor.md): Qt Host, diagnostic IPC and E0.2 engine
-  preview/logs; planned scene ownership, interactive viewports and migration criteria.
+- [Qt editor architecture](QtEditor.md): Qt Host, draft document tabs, engine preview/
+  logs and asset browsing; planned scenes, interactive viewports and migration criteria.
 - [Legacy editor removal](Editor.md): removal scope and links to the Qt replacement.
 
 Caller-facing entry points are in the [API index](../API/README.md). The

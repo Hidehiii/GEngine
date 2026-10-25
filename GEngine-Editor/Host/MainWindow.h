@@ -1,12 +1,18 @@
 #pragma once
 #include "Core/DraftDocument.h"
 #include "WorkerSupervisor.h"
+#include "ProjectWorkspace.h"
 #include <QMainWindow>
 #include <QImage>
+#include <unordered_map>
+#include <memory>
 
 class QPlainTextEdit;
 class QLabel;
 class QAction;
+class QTabWidget;
+class QTabBar;
+class QDockWidget;
 
 namespace GEngineEditor
 {
@@ -17,7 +23,10 @@ namespace GEngineEditor
         explicit MainWindow(QString workerPath);
         ~MainWindow() override;
         WorkerSupervisor& Worker() { return m_Worker; }
-        DraftDocument& Document() { return m_Document; }
+        DraftDocument& Document();
+        bool NewDraft();
+        bool CloseDraft(int index);
+        int DraftCount() const;
         void SetDraftText(const QString& text);
         bool SaveDraft(const QString& path);
         bool OpenDraft(const QString& path);
@@ -26,21 +35,40 @@ namespace GEngineEditor
         bool HasEngineEvidence() const;
         QString LastError() const { return m_Error; }
         void StartWorker();
+        bool OpenProject(const QString& path);
+        void CloseProject();
+        ProjectWorkspace& Workspace() { return *m_Workspace; }
+        QString InspectorText() const;
     protected:
+        bool eventFilter(QObject* watched, QEvent* event) override;
         void closeEvent(QCloseEvent* event) override;
     private:
         void RefreshDocument();
         void RefreshWorker();
         bool ConfirmDiscard();
+        bool ConfirmAllDrafts();
         bool SaveAs();
         void Log(const QString& text);
         void ResetLayout();
-        DraftDocument m_Document;
+        void RefreshDockTabs();
+        QDockWidget* DockForTab(QTabBar* bar, int index) const;
+        struct DraftTab
+        {
+            DraftDocument Document;
+            QString Path;
+            QPlainTextEdit* Editor = nullptr;
+            unsigned Untitled = 0;
+        };
+        DraftTab& ActiveDraft();
+        std::unordered_map<QWidget*, std::unique_ptr<DraftTab>> m_Drafts;
+        QTabWidget* m_DraftTabs = nullptr;
+        QTabBar* m_BrowserTabs = nullptr;
+        bool m_DockTabsUpdating = false;
+        bool m_DockTabsUpdatePending = false;
+        unsigned m_NextUntitled = 0;
         WorkerSupervisor m_Worker;
         QString m_WorkerPath;
-        QString m_DraftPath;
         QString m_Error;
-        QPlainTextEdit* m_Notes = nullptr;
         QPlainTextEdit* m_Console = nullptr;
         QLabel* m_StateLabel = nullptr;
         ViewportWidget* m_Viewport = nullptr;
@@ -51,9 +79,13 @@ namespace GEngineEditor
         QAction* m_Crash = nullptr;
         QAction* m_Hang = nullptr;
         QAction* m_Malformed = nullptr;
+        ProjectWorkspace* m_Workspace = nullptr;
+        QPlainTextEdit* m_Inspector = nullptr;
+        QAction* m_CloseProject = nullptr;
         bool m_HasImage = false;
         unsigned m_FrameCount = 0;
         bool m_ClosePending = false;
+        bool m_ConfirmingClose = false;
     };
     void RunRecoveryCheck(MainWindow& window);
 }
