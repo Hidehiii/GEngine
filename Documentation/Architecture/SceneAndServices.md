@@ -23,6 +23,10 @@ transformation operations used across rendering and physics.
 
 ## Physics and scripting
 
+共享 Mono SDK、开发/发布路径、C# 编译与 Worker 重启的目标设计见
+[C# 与游戏发布架构](ManagedScripting.md)。当前 ScriptEngine 仍使用固定相对
+路径；本次仅补充设计，脚本执行和公共 API 未改变。
+
 `Scene::OnAwake` creates Box2D and PhysX worlds, attaches the 2D contact
 listener, and builds 2D bodies/fixtures for existing rigid-body/collider
 components. Its fixed-update loop steps the **2D** world and invokes physics

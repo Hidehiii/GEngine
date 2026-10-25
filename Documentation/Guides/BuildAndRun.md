@@ -2,6 +2,15 @@
 
 ## Prerequisites
 
+C# runtime deployment redesign is documented in the
+[Mono/shared SDK and packaging proposal](../Architecture/ManagedScripting.md).
+It is not implemented yet: existing scripting still depends on its current
+relative runtime/assembly paths. Do not use the proposal's layouts as working
+configuration or assume CMake builds ScriptCore today.
+The proposed first export includes resource dependency collection and Assets/
+directory deployment. Compressed .pak archives and their runtime reader are a
+later stage; neither deployment nor archive tooling is implemented yet.
+
 Development is currently Windows-first. Install the following before generating the solution:
 
 - Visual Studio 2026, 2022 or 2019 with Desktop development with C++ and the Windows SDK.

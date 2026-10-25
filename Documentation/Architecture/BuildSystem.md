@@ -1,5 +1,9 @@
 # Build system architecture
 
+Planned C# deployment separates shared development Runtime SDKs from incremental
+game export; see [managed scripting design](ManagedScripting.md). No build/copy
+behavior changes in this documentation work item. CMake C# support remains pending.
+
 Qt 6 source is now stored as the editor-only `qtbase` nested submodule under
 `GEngine/GEngine-ThirdParty`, pinned to tag v6.10.3 / commit
 `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`. Core/Gui/Widgets sources are

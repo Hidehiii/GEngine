@@ -46,6 +46,9 @@ have empty implementations; do not rely on them for drawing.
 
 ## ImGui, scripting, utilities, and diagnostics
 
+Mono 路径与增量打包的[拟议契约](ManagedScripting.md)已独立记录；当前
+ScriptEngine::Init/Shutdown 与 EnableScripting 不变，尚未提供新路径配置。
+
 There is no engine-exported Gizmo API. The legacy editor-owned GizmoController
 has been removed; Qt tools remain planned in the [Qt editor API](QtEditor.md).
 Engine/game ImGui and other engine signatures are unchanged.

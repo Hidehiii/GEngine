@@ -10,6 +10,8 @@ Each function has a focused page:
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
 - [Build system](BuildSystem.md): project generation and build output boundaries.
+- [C# runtime and packaging design](ManagedScripting.md): planned shared Mono SDK,
+  script paths, worker reload, resource deployment and later .pak export; not implemented.
 - [Qt editor architecture](QtEditor.md): Qt Host, diagnostic IPC and E0.2 engine
   preview/logs; planned scene ownership, interactive viewports and migration criteria.
 - [Legacy editor removal](Editor.md): removal scope and links to the Qt replacement.

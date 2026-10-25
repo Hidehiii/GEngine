@@ -1,5 +1,9 @@
 # Build entry points
 
+Shared Mono development paths and incremental export are documented as
+[planned contracts](ManagedScripting.md). No new build arguments or packaging
+commands exist yet; current commands and runtime copying remain unchanged.
+
 Qt source location: `GEngine/GEngine-ThirdParty/qtbase` (v6.10.3,
 `7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`). Initialize with
 `git submodule update --init --recursive` after the aggregate gitlink is published.
