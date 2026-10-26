@@ -1,5 +1,45 @@
 # 编辑器架构重设计
 
+- [x] E1.6 单输入自动打包（2026-10-26）：Project 打包只选输出目录；删除程序
+  路径、独立打包设置/预览入口，`.gproject` 不含任何打包字段。自动构建项目
+  src 与引擎并归档资源，取消终止自己启动的构建进程树，失败保留旧包。验证
+  单字段对话框、项目纯元数据、真实构建/打包/运行与 Debug/Release Host。
+  完成：schema 1 限定 name/schemaVersion，NewProject 生成最小 src/Game.cpp；
+  Package project 仅有输出字段，参数/源码构建自动推导。启动器变为原生
+  EntryPoint 资源包适配，输出根目录直接 EXE/.gpak/DLL，输出偏好留本机。
+  Windows Job 包含打包/编译后代，取消及关闭不留下自启构建进程树。
+  验证：CMake/Premake Debug/Release Host 四组构建与 PackagingCheck 通过，
+  覆盖实际单字段对话框、自动真实 Release 引擎/游戏构建、归档、增量重复、
+  编译失败保留旧输出、取消/重试、项目文件不变、本机偏好/关闭；原有诊断
+  RecoveryCheck 四组通过。截图 work/output-only-packaging-dialog.png 已审阅，
+  日志见本轮 Codex 工作目录 work/final-*-{packaging,recovery}.log。原生游戏
+  三后端运行及恶意包检查见 S2.4/S5.1；未宣称 Debug 游戏/C# 或人工全手势验证。
+  架构/API/指南/README 同步，未提交/推送。
+
+- [x] E1.5 项目文件与编辑器打包（历史，已由 E1.6 替代，2026-10-26）：新增 `.gproject` schema 1，
+  保存项目名称、原生游戏程序与脚本开关；打包输出只存本机设置，不写入项目文件。File 新建/打开
+  项目文件，Project 菜单配置/预览/打包/取消，异步子进程不阻塞 Host。保留旧
+  目录浏览和草稿/Worker；失败打开保留旧项目，失败保存不覆盖旧描述，打包
+  失败保留旧发布，关闭等待自己启动的打包进程退出。部署导出脚本不依赖仓库
+  绝对路径。验收项目往返/无效版本/保存失败、实际 GUI 动作与输出选择、异步
+  预览/导出/重复零复制/错误恢复及 Debug/Release Host 构建与既有恢复检查。
+  完成：ProjectFile/ProjectActions、项目新建/打开菜单与 --project 启动入口、
+  包设置对话框/异步预览/导出/取消，示例 FrameGraphTriangle.gproject。按照用户
+  更正，输出完全独立于项目文件：仅存 QSettings 本机偏好，通过 -Output 传给
+  导出器；仅改输出不重写项目文件。项目改名/移动后可重新选择本机目的目录。
+  验证：CMake/Premake Debug/Release Host 构建全部通过，四组 PackagingCheck
+  与诊断 RecoveryCheck 通过；实际对话框 Save/动作、项目往返/版本/失败保存、
+  本机输出持久化重开/项目无输出字段、异步/UI tick、目录排除、零复制、失败
+  发布保持、取消/重试与关闭均覆盖。Release 对话框截图已审阅。证据在本轮
+  Codex 工作目录 work/project-*.log、editor-project-build-*.log、
+  project-premake-*.log 和 project-packaging-dialog.png。
+  真实 Worker：已有 Premake Release Worker 与两个 CMake Host 配置的恢复检查
+  通过；默认 CMake Worker 和 Premake Debug Worker 是未更新颜色 sink 的旧
+  构建，其日志颜色回归失败。未为本项重建引擎/Worker，不宣称该旧构建通过。
+  CMake/Premake 部署脚本与配套架构/API/README 同步；引擎与 IPC 不变。
+  未人工遍历文件选择/鼠标操作、高 DPI 或长时目录/导出性能；未注册 OS
+  文件关联，不实现 .pak/C#。未提交/推送。
+
 ## 设计文档（2026-10-24）
 
 - [x] 新建统一的 Qt 编辑器架构文档：整合 Qt Host/EngineWorker 依赖、文档与

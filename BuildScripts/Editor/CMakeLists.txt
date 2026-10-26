@@ -30,15 +30,30 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
         "${GE_EDITOR_SOURCE}/Host/MainWindow.cpp"
         "${GE_EDITOR_SOURCE}/Host/ConsoleOutput.cpp"
         "${GE_EDITOR_SOURCE}/Host/ProjectWorkspace.cpp"
+        "${GE_EDITOR_SOURCE}/Host/ProjectFile.cpp"
+        "${GE_EDITOR_SOURCE}/Host/ProjectActions.cpp"
+        "${GE_EDITOR_SOURCE}/Host/PackagingCheck.cpp"
         "${GE_EDITOR_SOURCE}/Host/WorkerSupervisor.cpp"
         "${GE_EDITOR_SOURCE}/Host/RecoveryCheck.cpp")
     ge_editor_output(GEngine-EditorHost)
     target_link_libraries(GEngine-EditorHost PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
     add_dependencies(GEngine-EditorHost GEngine-EditorDiagnosticWorker)
+    set_property(TARGET GEngine-EditorHost APPEND PROPERTY LINK_DEPENDS
+        "${GE_EDITOR_ROOT}/BuildScripts/ExportProject.ps1"
+        "${GE_EDITOR_ROOT}/BuildScripts/BuildProject.ps1"
+        "${GE_EDITOR_ROOT}/BuildScripts/WriteResourcePack.ps1"
+        "${GE_EDITOR_ROOT}/BuildScripts/PublishProject.ps1")
     get_target_property(qt_qmake Qt6::qmake IMPORTED_LOCATION)
     get_filename_component(qt_bin "${qt_qmake}" DIRECTORY)
     find_program(GE_WINDEPLOYQT windeployqt HINTS "${qt_bin}" REQUIRED NO_DEFAULT_PATH)
     add_custom_command(TARGET GEngine-EditorHost POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:GEngine-EditorHost>/packaging"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${GE_EDITOR_ROOT}/BuildScripts/ExportProject.ps1"
+            "${GE_EDITOR_ROOT}/BuildScripts/BuildProject.ps1"
+            "${GE_EDITOR_ROOT}/BuildScripts/WriteResourcePack.ps1"
+            "${GE_EDITOR_ROOT}/BuildScripts/PublishProject.ps1"
+            "$<TARGET_FILE_DIR:GEngine-EditorHost>/packaging"
         COMMAND "${GE_WINDEPLOYQT}" "$<IF:$<CONFIG:Debug>,--debug,--release>"
             --no-translations --no-compiler-runtime "$<TARGET_FILE:GEngine-EditorHost>"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -53,5 +68,7 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
             "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts/OFL.txt"
         VERBATIM)
     add_test(NAME EditorRecovery COMMAND GEngine-EditorHost --self-test)
+    add_test(NAME EditorPackaging COMMAND GEngine-EditorHost --packaging-self-test)
+    set_tests_properties(EditorPackaging PROPERTIES TIMEOUT 1800 ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     set_tests_properties(EditorRecovery PROPERTIES TIMEOUT 35 ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()

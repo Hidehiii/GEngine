@@ -114,3 +114,13 @@ Git LFS clone reproduced the pinned tree.
 CMake and Premake both write final artifacts to the `dist` contract above;
 their generator-specific roots prevent object/PCH contention and stale
 cross-tool artifacts.
+
+## Native project builds
+
+The automatic project pipeline uses BuildScripts/Project/CMakeLists.txt, discovers
+src/*.cpp recursively, builds Release with GE_PACKAGED_GAME=1 and GE_WITH_MONO=OFF,
+and links/deploys the current GEngine and native runtime dependencies. It never
+asks for a prebuilt game EXE. General CMake GE_WITH_MONO defaults ON; OFF omits
+managed SDK linking and explicitly rejects script initialization. Premake supports
+the equivalent --without-mono opt-in. GE_DIST_ROOT is a cache PATH override for
+isolated output roots; its default retains the standard build/dist convention.

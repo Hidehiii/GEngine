@@ -31,6 +31,8 @@
 #include <QApplication>
 #include <QEvent>
 #include <QPointer>
+#include <QProcess>
+#include <QCryptographicHash>
 #include <iostream>
 
 namespace GEngineEditor
@@ -151,7 +153,11 @@ namespace GEngineEditor
         m_Workspace->OnInspector = [this](const QString& text)
         { if (m_Inspector->toPlainText() != text) m_Inspector->setPlainText(text); };
         m_Workspace->OnLog = [this](const QString& text)
-        { m_CloseProject->setEnabled(!m_Workspace->Root().isEmpty()); Log(text); RefreshDocument(); };
+        {
+            if (m_Workspace->Root().isEmpty()) { m_Project = {}; m_PackageOutputDirectory.clear(); }
+            m_CloseProject->setEnabled(!m_Workspace->Root().isEmpty());
+            RefreshPackagingActions(); Log(text); RefreshDocument();
+        };
         dock("Assets", "AssetsDock", m_Workspace, Qt::LeftDockWidgetArea);
         m_StateLabel = new QLabel(this);
         statusBar()->addWidget(m_StateLabel, 1);
@@ -167,6 +173,7 @@ namespace GEngineEditor
         m_CloseProject = file->addAction("Close project");
         m_CloseProject->setEnabled(false);
         connect(m_CloseProject, &QAction::triggered, this, [this] { CloseProject(); });
+        InitProjectActions(file, menus);
         file->addSeparator();
         auto* fresh = file->addAction("New draft");
         fresh->setShortcut(QKeySequence::New);
@@ -251,6 +258,11 @@ namespace GEngineEditor
     }
     MainWindow::~MainWindow()
     {
+        if (m_PackagingProcess)
+        {
+            disconnect(m_PackagingProcess, nullptr, this, nullptr);
+            if (PackagingRunning()) { m_PackagingProcess->kill(); m_PackagingProcess->waitForFinished(3000); }
+        }
         qApp->removeEventFilter(this);
         for (auto* panel : findChildren<QDockWidget*>()) disconnect(panel, nullptr, this, nullptr);
         disconnect(m_DraftTabs, nullptr, this, nullptr);
@@ -463,17 +475,34 @@ namespace GEngineEditor
     void MainWindow::SetDraftText(const QString& text) { ActiveDraft().Editor->setPlainText(text); }
     bool MainWindow::OpenProject(const QString& path)
     {
-        if (!m_Workspace->Open(path))
+        if (PackagingRunning()) { m_Error = "Wait for packaging to finish or cancel it before switching projects."; return false; }
+        ProjectFile project;
+        const bool directory = QFileInfo(path).isDir();
+        if (!directory && !ProjectFile::Load(path, project, m_Error)) { Log(m_Error); return false; }
+        if (!m_Workspace->Open(directory ? path : project.Root()))
         { m_Error = "Project folder is missing or unreadable."; Log(m_Error); return false; }
+        m_Project = project;
+        m_PackageOutputDirectory.clear();
+        if (!m_Project.Path.isEmpty())
+        {
+            const auto key = QCryptographicHash::hash(m_Project.Path.toCaseFolded().toUtf8(), QCryptographicHash::Sha256).toHex();
+            QSettings settings;
+            m_PackageOutputDirectory = settings.value("packagingOutputs/" + QString::fromLatin1(key)).toString();
+            if (m_PackageOutputDirectory.isEmpty())
+                m_PackageOutputDirectory = QDir(m_Project.Root()).absoluteFilePath("../" + m_Project.Name + "-Package");
+        }
         m_CloseProject->setEnabled(true);
-        m_Error.clear(); RefreshDocument();
-        Log("Opened project folder: " + m_Workspace->Root());
+        m_Error.clear(); RefreshDocument(); RefreshPackagingActions();
+        Log(directory ? "Opened project folder: " + m_Workspace->Root() : "Opened project: " + m_Project.Path);
         return true;
     }
     void MainWindow::CloseProject()
     {
+        if (PackagingRunning()) { Log("Cancel packaging before closing the project."); return; }
+        m_Project = {};
+        m_PackageOutputDirectory.clear();
         m_Workspace->Close(); m_CloseProject->setEnabled(false);
-        RefreshDocument(); Log("Project closed; draft and engine preview are preserved.");
+        RefreshDocument(); RefreshPackagingActions(); Log("Project closed; draft and engine preview are preserved.");
     }
     QString MainWindow::InspectorText() const { return m_Inspector->toPlainText(); }
     void MainWindow::RefreshDocument()
@@ -504,7 +533,8 @@ namespace GEngineEditor
             }
             m_BrowserTabs->setCurrentIndex(m_DraftTabs->currentIndex());
         }
-        const auto project = m_Workspace->Root().isEmpty() ? "No project" : QFileInfo(m_Workspace->Root()).fileName();
+        const auto project = !m_Project.Name.isEmpty() ? m_Project.Name :
+            m_Workspace->Root().isEmpty() ? "No project" : QFileInfo(m_Workspace->Root()).fileName();
         setWindowTitle(QString("GEngine Qt Editor - %1 - %2%3").arg(project,
             m_DraftTabs->tabText(m_DraftTabs->currentIndex()).remove(" *"), anyDirty ? " *" : ""));
     }
@@ -617,6 +647,7 @@ namespace GEngineEditor
         if (!m_ClosePending && !ConfirmAllDrafts()) { event->ignore(); return; }
         m_ClosePending = true;
         setEnabled(false);
+        if (PackagingRunning()) { event->ignore(); CancelPackaging(); return; }
         if (m_Worker.Running()) { event->ignore(); m_Worker.Stop(); return; }
         if (!QCoreApplication::arguments().contains("--self-test"))
         {

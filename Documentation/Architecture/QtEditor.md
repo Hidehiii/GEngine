@@ -7,6 +7,35 @@ C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设�
 
 ## 当前实施：E0.1 基础原型
 
+2026-10-26 E1.6/S2.4：`.gproject` 是 schema 1 JSON 项目描述，只记录版本和
+项目名称；**不记录任何打包信息**。整个 packaging 对象及 EXE 路径已移除。
+项目根是描述文件所在目录。Host 的 ProjectFile 负责有界读取/版本校验和
+QSaveFile 原子保存；打开失败保留旧项目，目录浏览仍作为兼容入口存在。
+File 提供 New/Open project，项目菜单提供一个打包入口与作业取消；打包窗口
+只有输出目录输入，自动 Release 构建 src 与引擎，再归档并发布 EXE/.gpak。
+
+输出目录由 Host 在打包对话框选择，单独保存至本机 QSettings，以 canonical
+项目路径摘要区分；更换机器/移动项目后重新选择或采用默认相邻输出目录。
+改输出不修改项目文件。命令行 ExportProject.ps1 的 -Output 为独立必填参数，
+不会从项目内容读取；项目不指定已有 EXE，不能靠复制旧构建代替编译。
+
+Host 用异步 QProcess 调用随编辑器部署的 PowerShell 工具，参数逐项传递，
+不通过 shell 拼接命令；Console 显示有界输出，重复打包/项目切换在作业期间
+禁用。退出先确认草稿，再终止自己启动的导出器，等进程退出后继续 Worker
+关闭。30 分钟期限和取消只影响该 Windows Job 中的打包/编译进程树；不会杀
+用户其他构建或游戏进程。
+导出器使用项目互斥与 DeleteOnClose 发布锁；进程退出后系统释放锁，未完成
+staging 可能保留。目标目录切换失败尝试恢复旧目录，变化的旧版本留在相邻
+备份目录；目录替换不宣称原子，切换瞬间终止可能需从备份恢复。编译/归档
+失败不丢弃旧包或草稿/项目状态。
+
+当前流程从源码编译 EXE/DLL，将 Config.ini/Assets（排除 Cache）/Licenses
+合为 .gpak，输出没有原始 Assets 或脚本启动器。原生入口校验并展开到独立
+会话目录再运行；源码 SDK 供编辑器编译使用，不是玩家依赖。原生资源包 API
+新增于 Runtime；GPU API/IPC 不变。当前不支持 C#/Mono、压缩/加密、资源
+格式转换、场景文档编辑或自动原生依赖解析。
+项目和 UI 打包验收见 TODO/EditorArchitecture.md 与 TODO/ScriptingAndPackaging.md。
+
 2026-10-26 Console 保留引擎日志颜色：EngineWorker 在创建 Runtime 前，仅将
 自己的两个 spdlog 控制台 sink 替换为始终输出 ANSI SGR 的 stderr sink，沿用
 原 Windows 级别配色（白/青/绿/亮黄/亮红/亮白红底）。引擎公共日志接口、

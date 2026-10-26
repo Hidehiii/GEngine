@@ -7,11 +7,13 @@ C# runtime deployment redesign is documented in the
 S0.1 is implemented: `RuntimeSpecification::ScriptRuntimeRoot` and
 `ScriptCoreAssembly` select the Mono BCL root and core assembly, and relative
 values resolve against `WorkingDirectory` before the runtime changes cwd.
-RuntimeId, packaging manifests, Development/Packaged modes, and ScriptCore
+RuntimeId, engine-consumed runtime manifests, Development/Packaged modes, and ScriptCore
 generation in CMake are still not implemented.
 The proposed first export includes resource dependency collection and Assets/
 directory deployment. Compressed .pak archives and their runtime reader are a
-later stage; neither deployment nor archive tooling is implemented yet.
+later stage. Explicit-manifest directory deployment and a FrameGraphTriangle
+package/launcher are implemented in [the PowerShell export guide](GameExport.md);
+automatic scene dependency discovery, script deployment and .pak tooling remain open.
 
 Development is currently Windows-first. Install the following before generating the solution:
 
@@ -210,3 +212,13 @@ the existing shared-family policy. This is separate from `GraphicsAPI: 2`.
 4. Regenerate the solution, then build the new project.
 
 Use `Example/Triangle` as the smallest reference application. It deliberately has no editor, ImGui or scene dependency.
+
+## Automatic project packaging
+
+The optional [game export guide](GameExport.md) documents the PowerShell 7.2+
+project build/archive/publish pipeline. In the editor choose Project > Package
+project and select only an output directory; it automatically builds Release and
+writes EXE/.gpak/DLLs directly there. The .gproject descriptor contains only name
+and schemaVersion. Player startup reads the pack natively without PowerShell.
+Native-only packaging uses GE_WITH_MONO=OFF; normal builds retain Mono by default.
+C# deployment and automatic scene/native dependency discovery remain open.

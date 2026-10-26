@@ -2,6 +2,11 @@
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "GEngine/Runtime/EngineRuntime.h"
 
+#ifndef GE_WITH_MONO
+#define GE_WITH_MONO 1
+#endif
+#if GE_WITH_MONO
+
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
@@ -275,3 +280,11 @@ namespace GEngine
 		s_Data->CoreAssembly = nullptr;
 	}
 }
+#else
+namespace GEngine
+{
+    bool ScriptEngine::Init(const RuntimeSpecification&)
+    { GE_CORE_ERROR("This engine was built without managed scripting support."); return false; }
+    void ScriptEngine::Shutdown() {}
+}
+#endif

@@ -1,5 +1,26 @@
 # Runtime, core, window, and event API
 
+## Native packaged resources
+
+`Runtime/ResourcePack.h` exports `std::filesystem::path PreparePackagedResources(bool required = false)`.
+The Windows implementation locates the EXE-adjacent same-stem `.gpak`, validates
+and extracts it into a new writable session, sets cwd and returns that directory.
+Absent optional pack returns empty; required/malformed/missing/truncated/unsafe/
+checksum-invalid packs throw before application construction. `EntryPoint.h`
+calls it with `GE_PACKAGED_GAME != 0`, catches archive errors and exits 1. Standard
+development targets default that macro to 0; automatic project targets set 1.
+Games must preserve the packaged session rather than overriding cwd to source.
+
+Format v1: 8 ASCII bytes `GEPAK001`, uint32 little-endian entry count; each entry
+has uint32 UTF-8 path length, uint64 payload length, 32 SHA-256 bytes, relative path
+bytes, then payload bytes. Limits are 100000 entries, 4096 path bytes, 8 GiB per
+file, 32 GiB total; zero entries/trailing data are rejected. Paths cannot traverse,
+be absolute, use reserved Windows names, alternate streams, or collide by case.
+Extraction is uncompressed, with bounded streaming buffers; session storage remains
+until manually cleaned. Checksums provide integrity, not cryptographic authenticity.
+GPU interfaces are unchanged. Native-only engines built with GE_WITH_MONO=0
+explicitly fail ScriptEngine::Init requests instead of silently enabling scripts.
+
 `Application` initializes optional ImGui after assigning its runtime. Direct
 `EngineRuntime` consumers must call `InitializeImGui()` after publishing any
 Application facade needed by UI backends; repeated calls are harmless. UI backends

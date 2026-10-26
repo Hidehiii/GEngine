@@ -1,5 +1,27 @@
 # Rendering architecture refactor
 
+E1.6/S2.4/S5.1 supersedes the editor's earlier manual deployment: metadata-only
+.gproject, output-only UI, automatic native Release compilation and .gpak output.
+EntryPoint validates/extracts resources through a Windows runtime adapter before
+Application construction. Renderer/GPU interfaces and ownership are unchanged.
+Fresh engine/game source compilation and three-backend archive runs are tracked
+in ScriptingAndPackaging; the older S2.1–S2.3 notes below remain history.
+
+E1.5/S2.3 adds `.gproject` descriptors and asynchronous Host packaging actions.
+Output paths stay in per-machine editor preferences or an explicit CLI argument,
+never the project file. GPU interfaces, frame protocol and backend ownership are
+unchanged; no .pak renderer/asset reader or scene-format conversion is introduced.
+
+S2.1 adds an explicit-manifest directory exporter only. Engine rendering APIs,
+backend synchronization and GPU resource ownership are unaffected; no game/backend
+runtime validation is claimed by the deployment regressions. Full game export
+and asset format integration remain in TODO/ScriptingAndPackaging.md.
+
+S2.2 migrates deployment to PowerShell and adds a FrameGraphTriangle adapter and
+package-local launcher with writable session state. C++/GPU interfaces remain
+unchanged. Existing CMake Release binaries passed packaged OpenGL/Vulkan/D3D12
+120-frame readbacks; this is deployment evidence, not a rebuild of current source.
+
 Editor Console color preservation changes only worker log transport and Host text
 formatting. GPU APIs, backend behavior and binary frame protocol are unchanged.
 

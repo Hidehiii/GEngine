@@ -68,9 +68,14 @@ project "GEngine"
 		"d3d12.lib",
 		"dxgi.lib",
 		"dxguid.lib",
-		"%{Library.mono}",
 		"%{Library.Vulkan}",
 	}
+
+	if _OPTIONS["without-mono"] then
+		defines { "GE_WITH_MONO=0" }
+	else
+		links { "%{Library.mono}" }
+	end
 
 	filter "system:windows"
 		cppdialect "C++17"

@@ -1,3 +1,4 @@
+newoption { trigger = "without-mono", description = "Build native-only games without managed scripting support" }
 newoption {
     trigger = "qt6-sdk",
     value = "PATH",

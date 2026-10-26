@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(GEngine LANGUAGES C CXX)
 option(GE_BUILD_QT_EDITOR "Build the independent Qt editor prototype (requires a Qt SDK)" OFF)
+option(GE_WITH_MONO "Build managed scripting support" ON)
 
 if(NOT WIN32 OR NOT MSVC)
     message(FATAL_ERROR "This CMake build currently supports Windows/MSVC only.")
@@ -24,7 +25,7 @@ add_compile_definitions(UNICODE _UNICODE)
 add_compile_options(/utf-8)
 set(GE_TOOL_ID "cmake" CACHE STRING "Build-tool identifier used in build/dist paths")
 set(GE_PLATFORM_ID "windows-x86_64" CACHE STRING "Platform identifier used in build/dist paths")
-set(GE_DIST_ROOT "${GE_ROOT}/dist/${GE_TOOL_ID}/${GE_PLATFORM_ID}")
+set(GE_DIST_ROOT "${GE_ROOT}/dist/${GE_TOOL_ID}/${GE_PLATFORM_ID}" CACHE PATH "Native artifact root")
 
 function(ge_set_output_directories target)
     set_target_properties(${target} PROPERTIES
@@ -138,6 +139,7 @@ add_library(GEngine SHARED ${GE_ENGINE_SOURCES})
 ge_set_output_directories(GEngine)
 target_include_directories(GEngine PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
 target_compile_definitions(GEngine PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
+target_compile_definitions(GEngine PRIVATE GE_WITH_MONO=$<BOOL:${GE_WITH_MONO}>)
 target_compile_definitions(GEngine PUBLIC
     "$<$<CONFIG:Debug>:GE_DEBUG>"
     "$<$<CONFIG:Release>:GE_RELEASE>"
@@ -148,7 +150,6 @@ target_compile_options(GEngine PRIVATE "$<$<CONFIG:Debug>:/FS>")
 target_precompile_headers(GEngine PRIVATE "${GE_ROOT}/GEngine/src/GEpch.h")
 target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross-core spirv-cross-glsl
     opengl32 d3dcompiler d3d12 dxgi dxguid Ws2_32 Winmm Version Bcrypt
-    "${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/lib/libmono-static-sgen.lib"
     "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysX_64.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCommon_64.lib"
@@ -163,6 +164,9 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross
     "${GE_VENDOR}/OpenSSL/lib/VC/x64/$<IF:$<CONFIG:Debug>,MDd,MD>/libssl.lib"
     "${GE_VENDOR}/OpenSSL/lib/VC/x64/$<IF:$<CONFIG:Debug>,MDd,MD>/libcrypto.lib"
 )
+if(GE_WITH_MONO)
+    target_link_libraries(GEngine PRIVATE "${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/lib/libmono-static-sgen.lib")
+endif()
 
 function(ge_add_application name directory)
     if(ARGN)

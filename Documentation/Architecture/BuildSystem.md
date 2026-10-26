@@ -149,3 +149,14 @@ configuration while either writes those directories.
 This build-only change does not alter runtime ownership or backend behavior.
 See the [build guide](../Guides/BuildAndRun.md) for supported generators,
 targets, toolchain requirements, and parity limits.
+
+## Automatic native project pipeline
+
+The editor's packaging operation discovers its source SDK and a per-project
+temporary CMake/Ninja cache, initializes the installed Visual Studio environment,
+and compiles engine/project source with an isolated native output root. A Windows
+job owns the compiler tree and a project mutex prevents concurrent shared-cache
+writes. User-controlled arguments are passed separately, not interpolated into
+a shell build command. Native-only packaging explicitly excludes Mono; standard
+builds retain the existing default. Assets/config are archived after compilation,
+verified in sibling staging, then published beside the EXE and required DLLs.

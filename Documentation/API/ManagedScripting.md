@@ -2,7 +2,7 @@
 
 日期：2026-10-25。状态：**部分契约已实现；2026-10-26 S1.0 审计未找到可验证
 匹配的 Runtime SDK，S1.1 已切换构建输入到官方 Mono 6.10.0.87 SDK，S0.1
-提供显式脚本路径与健壮初始化；RuntimeId/清单/打包仍未实施**。
+提供显式脚本路径与健壮初始化；S2.4/S5.1 已提供原生自动编译与 .gpak，完整托管打包仍未完成**。
 配套：[架构](../Architecture/ManagedScripting.md)、
 [实施与验收 TODO](../../TODO/ScriptingAndPackaging.md)。
 
@@ -14,6 +14,44 @@
 路径。下列名称表示尚未实现的 RuntimeId/清单/发布模式，不是已存在的
 C++ 类型、配置字段、环境变量或命令行参数。
 构建输入已切换到官方 Mono 6.10.0.87 SDK；这未改变脚本运行时路径或导出能力。
+
+## 已实现：S2.1 目录部署 CLI
+
+S2.4 当前项目入口为 `ExportProject.ps1 -Project <file.gproject> -Output <directory>`，
+自动编译并输出 EXE/.gpak/DLL。`.gproject` 无任何打包信息，Qt 窗口仅选输出路径，
+不选择程序或构建选项。Host 只把输出作为本机 QSettings 偏好。下述目录 CLI
+为仍保留的低层原型，编辑器不再调用它。当前接口见 [Qt 项目契约](QtEditor.md)。
+
+S2.2 已迁移至 PowerShell 7.2+，不再依赖 Python：
+
+`pwsh -File BuildScripts/ExportGame.ps1 -Manifest <json> -Output <directory> [-Preview]`
+
+输入 schema 1 包含 `enableScripting: false`、`roots` 路径映射、`entrypoint`
+文件 ID、`include` 动态根 ID 数组及 `files`。每个文件含唯一 `id`、`root`、
+相对 `source`、包内 `path`、可选 `dependencies` ID 数组，以及 `role`
+（native/asset/config/license，默认 asset）。entrypoint 必须为 native。
+显式依赖由调用方保证完整；工具不解析场景/原生 DLL 引用或转换资源格式。
+
+输出 PowerShell 对象（可转为 JSON）包含 releaseId、files、added/updated/reused/removed、copyFiles/
+copyBytes、逐文件 plan 和 removedPaths。退出 0 表示成功，错误退出 1 并写 stderr。
+Preview 不创建目录；copy 计数仅统计 payload，不含生成清单/指针。
+受管理输出使用 `releases/<releaseId>/package-manifest.json` 和 `current.json`。
+发布清单不含源机器绝对路径；版本 ID 为实际发布清单 UTF-8 字节的 SHA-256。
+重复导出校验已有文件，零 payload 复制；变更版本硬链接旧版本内未变文件，
+旧版本不可修改。历史版本/用户文件保留，当前版本通过原子指针切换。
+
+该 CLI 不提供 `game-runtime.json` 或引擎 Packaged 模式，不支持启用脚本的包。
+C++ 公共接口和后端行为无变化。完整示例、路径限制、lock/失败恢复及运行边界
+见 [导出指南](../Guides/GameExport.md)。下文其余契约仍为目标能力。
+
+S2.2 同时提供 `ExportFrameGraphTriangle.ps1`，参数为 `-Configuration <Debug|Release>`、
+`-Generator <CMake|Premake> -Output <directory> [-Preview]`，打印 JSON 计划/结果，
+收集现有构建目录的 EXE/DLL、配置、两个 shader 和包内 `LaunchGame.ps1`。
+包内启动器支持 `-StateRoot`、`-GraphicsAPI <Default|OpenGL|Vulkan|D3D12>`、
+`-FrameLimit` 与 `-TimeoutSeconds`；先校验完整性，再复制资源/配置到独立可写
+会话目录，从包内启动原生程序并记录退出码/日志。不改写发布版本，不依赖调用
+cwd 或开发 SDK PATH。运行依赖系统图形驱动/运行库与 PowerShell 7.2+；不是完整
+原生导入/许可证扫描器或通用引擎 Packaged API。构建配置及三后端公共接口不变。
 
 2026-10-26 审计结论：仓库内五份示例 BCL 副本彼此一致，但与本地静态库
 没有已验证配对，也与已比对的三个官方 Mono x64 包不同；静态库为 Hazel
@@ -45,7 +83,7 @@ Debug/Release 使用相同必要检查，不以断言代替错误处理。
 
 输入包括游戏原生构建清单、脚本 Build ID、运行库清单、资产/依赖、目标平台/
 配置和受管理输出根。源、SDK 与输出必须不重叠。首版先提供计划检查，再执行
-部署；具体 PowerShell/CLI 名称在 S2 实施时确定，本页不提供尚不可运行的命令。
+部署；S2.1 已实现上述显式清单 CLI，运行库/自动资产清单仍待实施。
 
 部署清单记录规范化包内路径、内容哈希、大小、角色及运行库来源/许可证身份，
 不记录机器绝对路径。游戏清单标识脚本开关、运行库身份和程序集入口。清单 schema
@@ -71,14 +109,13 @@ Debug/Release 使用相同必要检查，不以断言代替错误处理。
 目录模式先部署到 Assets/，使用与运行库相同的内容哈希增量及清单所有权规则。
 派生资源仅在输入或相关构建配置改变时更新，目标后端/平台不兼容时不得复用。
 
-.pak 属于后续 S5：共用逻辑身份与依赖清单，另增归档写入、版本化索引、压缩
-和运行时读取适配。读取契约需说明数据长度/完整性、缓冲区所有权和有效期，
-并逐步替换直接文件访问；目前没有上述可调用接口。文件级零复制验收只针对
-首版目录部署，不等于归档块级更新或增量补丁已实现。
+S5.1 已提供最小 .gpak 写入和原生启动展开接口，见 Runtime API。统一逻辑身份、
+随机访问索引、压缩与直接归档读取仍为后续 S5；不能据此宣称已有这些能力。
+文件级零复制不等于归档块级更新或增量补丁已实现。
 
 ## 编辑器与兼容边界
 
 Host 编译请求和日志展示不加载 Mono；只有 Worker/游戏执行 C#。第一版通过新
 Worker 进程加载新 Build ID，编译失败保留上一份完整产物；完整场景状态恢复待实施。
-引擎公共接口、C# 目标框架和现有构建命令本轮不改变；目前没有新路径覆盖或
-自动打包能力。验收按 TODO 的 S0–S5 分阶段提供构建、运行与部署证据。
+引擎公共接口、C# 目标框架和现有构建命令本轮不改变；自动资产/脚本打包尚未
+完成。验收按 TODO 的 S0–S5 分阶段提供构建、运行与部署证据。

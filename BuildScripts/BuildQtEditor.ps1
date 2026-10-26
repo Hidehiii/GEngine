@@ -69,6 +69,7 @@ if ($Premake) {
         $outputRoot = Join-Path $repoRoot "dist/premake-vs2022/windows-x86_64/$Configuration"
         Invoke-EditorCommand "$outputRoot/GEngine-EditorProtocolTests/GEngine-EditorProtocolTests.exe" @() 'protocol-tests.log'
         Invoke-EditorCommand "$outputRoot/GEngine-EditorHost/GEngine-EditorHost.exe" @('--self-test') 'recovery-tests.log' $true
+        Invoke-EditorCommand "$outputRoot/GEngine-EditorHost/GEngine-EditorHost.exe" @('--packaging-self-test') 'packaging-tests.log' $true
         Invoke-EditorCommand "$outputRoot/GEngine-EditorHost/GEngine-EditorHost.exe" @('--self-test', '--engine-check',
             '--worker', "$outputRoot/GEngine-EditorEngineWorker/GEngine-EditorEngineWorker.exe") 'engine-tests.log' $true
     }

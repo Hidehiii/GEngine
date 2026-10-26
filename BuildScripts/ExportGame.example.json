@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "enableScripting": false,
+  "roots": {
+    "build": "../dist/game/Release",
+    "project": "../MyGame"
+  },
+  "entrypoint": "game",
+  "include": ["dynamic-texture", "license"],
+  "files": [
+    {"id": "game", "root": "build", "source": "Game.exe", "path": "Game.exe", "role": "native", "dependencies": ["engine", "scene"]},
+    {"id": "engine", "root": "build", "source": "GEngine.dll", "path": "GEngine.dll", "role": "native"},
+    {"id": "scene", "root": "project", "source": "Assets/start.scene", "path": "Assets/start.scene", "role": "asset", "dependencies": ["texture"]},
+    {"id": "texture", "root": "project", "source": "Assets/texture.png", "path": "Assets/texture.png", "role": "asset"},
+    {"id": "dynamic-texture", "root": "project", "source": "Assets/dynamic.png", "path": "Assets/dynamic.png", "role": "asset"},
+    {"id": "license", "root": "project", "source": "Licenses/NOTICE.txt", "path": "Licenses/NOTICE.txt", "role": "license"}
+  ]
+}

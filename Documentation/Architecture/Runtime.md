@@ -1,5 +1,20 @@
 # Runtime and window architecture
 
+Packaged startup now has a pre-Application phase. EntryPoint calls the portable
+ResourcePack interface, implemented under Platform/Windows: resolve EXE, require
+its adjacent .gpak for packaged builds, validate metadata/paths and per-file SHA-256,
+stream into a unique writable temp session, then set cwd before configuration,
+logging, shader/asset reads and Application construction. Failure never proceeds
+with source-directory fallback. Development binaries without a required pack
+retain their existing startup behavior. Native DLL loading remains EXE-adjacent.
+
+The published archive is immutable. Runtime config rewrites, logs/caches and
+relative writes stay in the session; sessions are retained and no cleanup thread
+or new GPU ownership is introduced. This initial archive adapter extracts files
+for existing readers; it is not direct archive streaming, compression, encryption
+or a resource identity database. See the Runtime API for format/bounds and the
+game export guide for native-only build and publication limitations.
+
 UI dependency upgrade: Application publishes ownership of EngineRuntime before
 calling its idempotent InitializeImGui step. Backend attach can then safely use
 Application window/config getters. Runtime construction alone does not attach UI.

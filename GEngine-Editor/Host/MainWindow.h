@@ -2,6 +2,7 @@
 #include "Core/DraftDocument.h"
 #include "WorkerSupervisor.h"
 #include "ProjectWorkspace.h"
+#include "ProjectFile.h"
 #include <QMainWindow>
 #include <QImage>
 #include <unordered_map>
@@ -13,6 +14,10 @@ class QAction;
 class QTabWidget;
 class QTabBar;
 class QDockWidget;
+class QMenu;
+class QMenuBar;
+class QProcess;
+class QTimer;
 
 namespace GEngineEditor
 {
@@ -40,6 +45,13 @@ namespace GEngineEditor
         void CloseProject();
         ProjectWorkspace& Workspace() { return *m_Workspace; }
         QString InspectorText() const;
+        bool NewProject(const QString& path);
+        bool SavePackaging(const QString& output);
+        bool PackageProject();
+        void CancelPackaging();
+        bool PackagingRunning() const;
+        bool LastPackagingSucceeded() const { return m_PackagingSucceeded; }
+        QString ProjectPath() const { return m_Project.Path; }
     protected:
         bool eventFilter(QObject* watched, QEvent* event) override;
         void closeEvent(QCloseEvent* event) override;
@@ -52,6 +64,9 @@ namespace GEngineEditor
         void Log(const QString& text);
         void ResetLayout();
         void RefreshDockTabs();
+        void InitProjectActions(QMenu* file, QMenuBar* menus);
+        void RefreshPackagingActions();
+        bool ShowPackagingDialog();
         QDockWidget* DockForTab(QTabBar* bar, int index) const;
         struct DraftTab
         {
@@ -83,10 +98,20 @@ namespace GEngineEditor
         ProjectWorkspace* m_Workspace = nullptr;
         QPlainTextEdit* m_Inspector = nullptr;
         QAction* m_CloseProject = nullptr;
+        ProjectFile m_Project;
+        QString m_PackageOutputDirectory;
+        QProcess* m_PackagingProcess = nullptr;
+        QTimer* m_PackagingDeadline = nullptr;
+        QAction* m_Package = nullptr;
+        QAction* m_CancelPackaging = nullptr;
+        bool m_PackagingSucceeded = false;
+        bool m_PackagingCancelled = false;
+        QByteArray m_PackagingOutput;
         bool m_HasImage = false;
         unsigned m_FrameCount = 0;
         bool m_ClosePending = false;
         bool m_ConfirmingClose = false;
     };
     void RunRecoveryCheck(MainWindow& window);
+    void RunPackagingCheck(MainWindow& window);
 }

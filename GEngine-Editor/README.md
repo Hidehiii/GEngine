@@ -148,3 +148,23 @@ that implementation. Only the Qt Host/Worker editor above is supported now.
 Engine/game Dear ImGui and the engine EditorCamera remain available. The unused
 ImGuizmo source submodule is retained in the shared dependency repository but
 has no build consumers. Scene/Play/Qt Gizmo migration is still incomplete.
+
+## Project files and packaging
+
+Use File > New project or Open project for `.gproject` files. The descriptor has
+only schemaVersion and name, **no packaging information**. Project > Package project
+has exactly one input: output directory. It automatically builds engine/game C++
+sources in Release, creates a .gpak and publishes EXE/pack/runtime DLLs directly
+to that folder. Console reports build progress/errors; Cancel stops the owned
+compiler tree. Output is a local preference and never rewrites the project file.
+Opening a plain folder remains a read-only browsing operation.
+
+Open `Example/FrameGraphTriangle/FrameGraphTriangle.gproject` for a ready project
+description; no prebuilt EXE is required. New projects receive a minimal src/Game.cpp.
+`--project <file>`
+or a first `.gproject` argument opens one at startup; no OS file association is
+installed. Assets/Config.ini/Licenses are merged into an uncompressed, unencrypted
+.gpak, excluding Assets/Cache. The native EXE validates/extracts it into a private
+session and runs without a PowerShell launcher. C#, direct archive streaming,
+asset conversion and automatic native dependency discovery remain open.
+See [the export guide](../Documentation/Guides/GameExport.md).

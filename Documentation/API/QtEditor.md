@@ -7,6 +7,39 @@ C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedS
 
 ## 已实现的 E0.1 契约
 
+### E1.5 项目文件与导出操作
+
+`.gproject` schema 1 示例：
+
+```json
+{
+  "schemaVersion": 1,
+  "name": "MyGame"
+}
+```
+
+项目文件不含任何打包信息，schema 1 只接受 name/schemaVersion 两个字段。
+`ProjectFile::Load/Save` 限制 1 MiB、校验版本/字段，Save 使用 QSaveFile；Root
+为文件父目录，src/Assets/Config.ini/Licenses 均按项目根约定查找。
+MainWindow::NewProject/OpenProject/CloseProject 管理此描述与只读 Assets 工作区；
+无效打开不覆盖旧状态，新建不覆盖既有文件。目录浏览兼容入口不提供打包能力。
+命令行 `--project <file.gproject>` 或首个 `.gproject` 参数打开项目，未注册系统关联。
+
+MainWindow::SavePackaging(output) 仅保存本机输出偏好，绝不改写项目文件。
+输出须与项目输入目录不重叠。PackageProject() 异步自动编译/归档/发布；PackagingRunning/
+LastPackagingSucceeded 查询状态；CancelPackaging 终止该作业。QSettings 输出
+键为 `packagingOutputs/<canonical-project-path SHA256>`，不进版本控制。
+
+Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
+打包对话框对象名 PackagingSettingsDialog，唯一输入控件为 PackageOutput。
+缺少 pwsh 7.2+、编译工具、引擎 SDK 或部署工具、
+输入错误、保存失败、子进程非零退出均为可恢复失败，Console 提供细节。
+作业期间不允许替换项目，草稿和预览仍可操作；成功/失败均恢复菜单状态。
+导出命令为 `ExportProject.ps1 -Project <file.gproject> -Output <directory>`。
+自动 Release 编译后，在目标根目录生成 EXE/.gpak/原生 DLL。资源不散放在输出
+目录；原生入口负责包校验/展开，玩家不需要 PowerShell。格式/运行限制见
+[打包指南](../Guides/GameExport.md)。不提供 Mono 或资源格式转换；图形 API/IPC 不变。
+
 ConsoleOutput::AppendBytes(QByteArray) 接收原始 stderr 分块，跨调用保留 UTF-8
 与 ANSI SGR 状态；支持 0/1/22/30–37/39/40–47/49/90–97/100–107。
 AppendMessage(QString) 插入默认色 Host 文本，ResetStream() 结束未完成行并丢弃
@@ -80,7 +113,8 @@ Qt 树控件只是选择状态与 Inspector 元数据的投影。只读 QFileSys
 MainWindow::OpenProject/CloseProject 对接 File > Open project folder / Close
 project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspector 为
 只读资源信息而非组件编辑器。草稿/历史与 Worker 进程不随项目切换改变；没有
-隐式打开 .GEScene、加载 Mono、资产导入或打包。项目路径暂不持久保存。
+隐式打开 .GEScene、加载 Mono 或资产导入。该目录浏览入口不执行打包；上面的
+`.gproject` 入口提供显式打包操作。本机输出偏好与项目文件分开保存。
 
 下面的协议契约与 E0.2 相同，不随项目浏览变化；引擎公共接口保持不变。
 

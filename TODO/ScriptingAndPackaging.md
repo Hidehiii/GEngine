@@ -1,5 +1,104 @@
 # C#、Mono 与游戏打包
 
+- [x] 2026-10-27 用户授权提交并推送：发布本次项目文件、编辑器单输出路径
+  自动编译、原生 .gpak 与相关工具/回归/文档。范围包含前置目录导出原型历史，
+  不包含 tmp、生成的工程/构建产物、本机输出或配置；子模块指针不变。
+  已复核本轮构建/运行证据与工作区差异，提交前检查暂存清单及 diff --check；
+  推送后核对本地 HEAD 与 origin/master 一致。
+
+- [x] S2.4/S5.1 自动编译与原生资源包（2026-10-26 用户更正）：`.gproject`
+  仅存名称/版本，移除整个 packaging 对象及 EXE 输入；项目约定 src/Assets。
+  编辑器仅保留输出路径这一打包输入，自动 Release 编译引擎/游戏，生成 EXE、
+  运行 DLL 和 .gpak 资源归档，发布目录无原始 Assets。原生入口校验/展开资源包
+  到独立会话目录再启动，不要求玩家安装 PowerShell。首次为未压缩、SHA-256
+  校验的版本化包，非加密。验收真实自动编译、三后端读回、包损坏/路径穿越、
+  构建失败旧输出保护与单输入 UI；不把缺失编译产物当作可复制的已有 EXE。
+  完成：schema 1 只含 name/schemaVersion；编辑器只有输出路径输入，移除
+  EXE/设置/预览。BuildProject 自动初始化 VS 环境、CMake/Ninja Release 构建
+  当前引擎和 src 项目；WriteResourcePack 生成 .gpak；PublishProject 直接发布
+  EXE/.gpak/DLL，保留旧目录备份。源码不硬链接进输出，不覆盖用户新增/修改
+  文件；重复运行仍调用编译器但可增量，未变输出 0 复制。Windows Job 负责
+  编译子进程树，取消/退出一起回收。失败切换尝试回滚，不宣称目录替换原子。
+  原生 EntryPoint 必须读取同名 .gpak，校验后展开到独立临时会话；无需玩家
+  安装 PowerShell。路径、版本、条目/总长度和 SHA-256 校验覆盖；无压缩、
+  加密或直接随机访问。默认 Config.ini 完整生成，Assets/Cache 排除。
+  验证：从当前源码完整编译引擎与 FrameGraphTriangle（275 个构建步骤，
+  GE_WITH_MONO=OFF）；原生 EXE 在 OpenGL/Vulkan/D3D12 各 120 帧、三项 GPU
+  读回、退出 0/空 stderr 通过，无源码 cwd/开发 SDK PATH/脚本启动器。Unicode
+  资源、缺 Config 默认配置、缺包、坏版本、损坏哈希、大小写重名、穿越与截断
+  均覆盖。TestProjectPublishing 通过单文件增量/零复制/时间戳、备份和用户
+  文件/损坏输出保护。四组 CMake/Premake Debug/Release Host 构建、真实单字段
+  GUI 自动编译/归档/发布、错误/取消/重试及原有恢复均通过；截图已审阅。
+  证据：本轮 Codex 工作目录 work/final-*-packaging.log、final-*-recovery.log、
+  final-resource-pack-test.log、final-native-package-build.log，及构建缓存的
+  configure/build.log；可审阅产物在 outputs/FrameGraphTrianglePacked。
+  当前自动模式为原生 C++，GE_WITH_MONO=OFF 显式拒绝脚本初始化；标准构建
+  仍默认 Mono，Premake 提供 --without-mono。Mono SDK 下载在本机 TLS 握手
+  失败，未使用旧未验证副本替代。C#、通用场景依赖重写、压缩/流式读取、
+  稳定资产身份、干净机器和长期 GPU 内存验证仍开放；Native Release 通过
+  不代表 Debug 游戏或完整托管游戏已验证。文档/API/示例同步；未提交/推送。
+
+- [x] S2.3 项目驱动导出与 Qt 操作入口（历史，已由 S2.4 替代，2026-10-26）：读取 `.gproject` 的
+  原生程序，输出路径由 Host 本机设置或独立 CLI -Output 指定，绝不写入项目文件；收集程序目录 DLL、项目 Assets（排除 Cache）、Config.ini、
+  Licenses 与启动器。Host 提供文件选择/设置保存和异步预览/导出/取消，复用
+  ExportGame.ps1，CMake/Premake 部署脚本。验收真实编辑器项目测试、隔离导出
+  与失败/重试；资产仍为原始目录文件，不实现 .pak、自动编译、C# 或场景解析。
+  完成：ExportProject.ps1、Host ProjectFile/ProjectActions 和两种生成器的脚本
+  部署；源目录/输出重叠在 UI 和导出器均拒绝。用户指定输出不得进入项目文件，
+  已实现本机 QSettings 偏好和独立必填 CLI -Output，附带 .gproject 示例。
+  导出锁改为系统 DeleteOnClose，取消/进程退出后释放，旧指针保持完整；异常
+  staging/临时输入清单可能保留，不自动删除历史/用户文件。测试使用独立临时
+  QSettings，不修改用户设置。
+  验证：CMake/Premake Debug/Release Host 的实际设置对话框/菜单、异步导出、
+  预览、零复制、失败/取消/重试与本机输出重开均通过，既有诊断恢复均通过。
+  显式 ExportGame 回归通过。用示例 .gproject 导出实际已有 CMake Release
+  二进制，重复 0 复制；OpenGL/Vulkan/D3D12 分别 120 帧、全部三项读回通过，
+  正常退出 0。证据在本轮 Codex 工作目录 work/editor-project-*.json 和
+  editor-project-state 内的运行日志；未重建引擎，不代表源码/Debug 游戏验证。
+  输出仍是原始资源目录，S2/S4 总项、Mono、资源格式转换、.pak 和完整许可/
+  原生依赖扫描保持开放。未提交/推送。
+
+- [x] S2.2 PowerShell 导出与真实示例闭环（2026-10-26）：将独立导出工具迁移至
+  仓库现有 PowerShell 工具链，移除 Python 运行依赖；提供 FrameGraphTriangle
+  文件清单生成和包启动器，启动器不依赖调用 cwd，运行配置/缓存写入独立用户
+  工作目录，避免引擎退出重写 Config.ini 破坏不可变版本。验收保留 S2.1 回归、
+  实际示例完整/重复导出、从仓库外启动的有界 GPU 读回与正常退出，逐后端记录。
+  脚本/通用场景导出与许可证自动审计仍待后续实现，不在本子项宣称完成。
+  完成：ExportGame.ps1 替换初版 Python 工具/测试；ExportFrameGraphTriangle.ps1
+  收集现有构建文件，包内 LaunchGame.ps1 验证所有哈希并创建独立可写会话。
+  子进程只使用包/系统 PATH，清除继承的 GENGINE/VK/MONO 覆盖；Config.ini、
+  Assets/cache 和日志均位于会话目录，发布版本保持不变。每次会话使用包默认
+  配置，不保留跨会话设置/缓存；会话目录/旧版本保留供检查，不自动清理。
+  验证：TestExportGame.ps1 通过预览/依赖环/单资源增量/零复制/时间戳、发布
+  指针失败与重试、锁、路径/冲突/依赖/重叠/脚本拒绝、junction、资源移除、
+  用户文件/历史保留和损坏检测。TestExportedFrameGraphTriangle.ps1 使用已有
+  CMake Release 二进制，在本轮 Codex 工作目录 work/package-final-verification
+  创建包（39 文件，首次 201334674 字节），重复和运行后导出均 0 复制。
+  OpenGL/Vulkan/D3D12 分别完成 120 帧、全部三项 GPU 读回、正常退出 0，
+  stderr 为空，捕获 stdout 无 error/VUID/assertion。证据 verification.json
+  与各后端会话 stdout/stderr.log。脚本改变后已重新导出并运行全部三后端。
+  未重建引擎，本项验证已有二进制的部署，不宣称当前源码重新构建或验证。
+  未覆盖 Debug/Premake 包、干净机器/长期内存、Mono、通用场景/原生依赖
+  发现和厂商许可审计；示例包仅用于本地验证，不作为完整可再分发产品。
+  架构/API/指南/示例 README 已同步；未提交/推送。
+
+- [x] S2.1 显式清单目录导出器（2026-10-26，历史初版，已由 S2.2 迁移至 PowerShell）：新增标准库 Python CLI，支持
+  文件/资源显式依赖闭包、预览、SHA-256 增量、隔离版本发布与原子 current 指针。
+  拒绝路径逃逸、链接、输入输出重叠、缺失依赖及大小写冲突；失败保留上一版本，
+  不删除历史版本或用户文件。验收隔离回归覆盖首次/重复/单文件变更、资源环、
+  无效输入和发布失败。此项仅提供部署基础，不宣称自动场景解析、Mono 兼容
+  验证或可运行完整游戏；S0/S1/S2/S4 总项保持开放。
+  初版完成（对应 Python 文件现已由 S2.2 替换）：导出工具、示例 JSON 与 GameExport 指南；显式动态根、
+  依赖环去重、逐文件计划、内容寻址版本及不可变旧版本硬链接复用。首次复制、
+  重复零复制且时间戳不变、单资源更新仅复制一项；不硬链接可变源文件。
+  历史验证：初版 Python 的 8 项隔离回归通过，
+  包括复制/指针发布故障保护、历史/用户文件保留、输入链接拒绝、路径/依赖/
+  冲突/重叠校验、损坏检测及并发锁拒绝。源/输出路径为可信目录，外部进程竞态
+  不在安全边界内；要求输出文件系统支持硬链接，发布文件必须不可变。
+  仅新增独立部署工具，未修改引擎或构建配置，无需重建引擎；未验证实际游戏
+  启动、脚本包或三后端。剩余：运行时清单接入、原生依赖发现、资源格式引用
+  适配及脚本 SDK 部署；S2/S4 保持开放。未提交/推送。
+
 - [x] 2026-10-25 资源打包范围补充（用户要求，仅文档）：明确首版包括游戏资源
   的依赖收集与目录部署；.pak 索引/压缩/读取为后续独立阶段。验收：架构/API
   一致描述资源身份、启动场景与动态依赖、缺失资源、增量更新及包外依赖检查，
@@ -96,9 +195,10 @@
 - [ ] S5 可选 .pak 归档（后续）：沿用同一资源清单/身份，设计版本化索引、
   压缩与运行时读取适配，验证目录与归档加载等价、损坏检测及资源生命周期。
   首版不承诺加密、增量补丁包、流式加载或任意格式的自动资源转换。
+  S5.1 最小 .gpak 已完成，格式/原生展开/完整性及路径验证见上方 S2.4。
+  此总项继续跟踪稳定身份、压缩、直接读取适配等，不能再将所有归档能力视为未实现。
 
-当前证据：ScriptEngine 写死 mono/lib 与 Resources/Scripts 路径，加载固定
-GEngine.Main 测试类；Mono 原生库静态链接。第三方 mono/lib 只有 Debug/Release
-原生库目录，未发现 mscorlib.dll；示例下存在旧托管运行库副本。当前 Qt Worker
-禁用脚本。S1.0 已确认示例 BCL 彼此一致但无法追溯到匹配的官方包；静态库
-来自 Hazel 二进制快照。以上不是路径/打包新能力的实现或运行验证。
+当前证据：ScriptEngine 使用显式 ScriptRuntimeRoot/ScriptCoreAssembly 路径，
+仍加载固定 GEngine.Main 测试类；Mono 原生库静态链接，构建已切换到官方 SDK。
+旧示例 BCL 无法追溯到匹配官方包，不可作为已验证 SDK；当前 Qt Worker 禁用脚本。
+S2.1/S2.2 已验证显式清单部署和关闭脚本的三角形示例包；完整游戏/脚本包仍未完成。
