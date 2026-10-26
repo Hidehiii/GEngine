@@ -1,5 +1,6 @@
 #include "Protocol/EditorProtocol.h"
 #include "Core/DraftDocument.h"
+#include "Core/SelectionService.h"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
@@ -59,7 +60,20 @@ int main()
         for (int i = 0; i < 300; ++i) draft.Edit(std::to_string(i));
         int undoCount = 0; while (draft.CanUndo()) { draft.Undo(); ++undoCount; }
         Require(undoCount == 255 && draft.Dirty(), "bounded history retains correct dirty state");
-        std::cout << "PASS: fragmented/coalesced pipes, invalid headers, limits, EOF and draft history\n";
+        SelectionService selection;
+        Require(!selection.Select(0, "Assets/texture.png"), "empty scope rejected");
+        Require(!selection.Select(9, {}), "empty selection id rejected");
+        Require(selection.Select(9, "Assets/texture.png"), "valid selection accepted");
+        Require(selection.Validate(9, true), "current project selection remains valid");
+        Require(!selection.Validate(10, true) && selection.Empty(), "project switch clears selection");
+        Require(selection.Select(11, "Assets/scene.txt"), "selection restored");
+        selection.ClearScope(12);
+        Require(!selection.Empty(), "unrelated scope does not clear selection");
+        selection.ClearScope(11);
+        Require(selection.Empty(), "matching scope clears selection");
+        Require(selection.Select(13, "Assets/image.png"), "selection after clear accepted");
+        Require(!selection.Validate(13, false) && selection.Empty(), "deleted resource clears selection");
+        std::cout << "PASS: fragmented/coalesced pipes, invalid headers, limits, EOF, draft history and selection scope\n";
         return 0;
     }
     catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return 1; }

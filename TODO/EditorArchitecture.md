@@ -39,9 +39,11 @@
   2026-10-24 用户授权提交并推送本次 Qt 选型及 E4-G 文档修订；发布范围仅为
   设计、TODO 和 README，本地配置、布局及临时文件保留，不包含功能实现。
 
-- [ ] 2026-10-24 提交并推送：发布已完成的编辑器兼容修复、视口方向修复及
+- [x] 2026-10-24 提交并推送：发布已完成的编辑器兼容修复、视口方向修复及
   架构/故障隔离提案。验收：仅暂存对应源码/资源/文档，不包含本地配置、
   imgui.ini 或 tmp；检查暂存差异及格式，核对提交与远端分支一致。
+  完成：`b977adde` 已包含对应源码、资源与 TODO/文档更新，并已在
+  `origin/master` 上；本轮重新核对本地 `master` 与远端同步。
 
 - [x] 编写基于当前源码的编辑器架构方案。本次范围仅限文档；不授权实现。
   验收：记录现状、依赖与所有权、文档编辑和撤销、运行状态机、视口与 GPU
@@ -290,6 +292,22 @@
   实际 D3D12 Worker 信息日志绿色格式检查通过，原生 Windows Release 截图
   审阅通过：tmp/qt-colored-console-Release.{log,png}。OpenGL/Vulkan 本轮未运行，
   渲染 API 未变。未实现完整终端/扩展色/自定义系统调色板；未提交或推送。
+- [x] E1.4 SelectionService 抽取（2026-10-26 跟进）：把资源选择状态从 Qt
+  控件移入无 Qt 的 EditorCore 服务，使用项目 generation 和项目内相对资源
+  ID 作为权威状态；Assets 面板只保留 UI 投影。验收：选择、同项目重验、
+  切换/关闭项目与资源删除使选择失效；空 ID/空 generation 拒绝；协议测试
+  增加无 GUI 回归，现有项目工作区与 Worker 恢复回归不回退。
+  完成：Core/SelectionService 保存 generation+相对资源 ID，提供 Select/Validate/
+  Clear/ClearScope；ProjectWorkspace 不再持有私有 m_Selected/m_SelectionGeneration，
+  Qt 树与 Inspector 仅投影权威选择。选择删除、项目切换/关闭、空 ID/scope
+  和无关 scope 不清除的行为进入 ProtocolTests。
+  验证：CMake ProtocolOnly Debug 通过；重新构建 Debug Qt SDK 后，
+  CMake 完整 Debug Host/EngineWorker 构建与协议/恢复/真实引擎检查通过，
+  证据 build/qt-editor/windows-x86_64/Debug/{tests.log,engine-tests.log}。
+  Premake Debug 的四个编辑器目标构建及协议/恢复/真实引擎检查也通过，证据
+  build/premake-vs2022/windows-x86_64/Debug/qt-editor-logs/。
+  Architecture/API/BuildSystem 文档、README 与本 TODO 已同步。Release
+  本轮未重跑；对象选择、E2 命令事务和 Worker 文档同步仍开放。
 - [ ] E2：引入 EditorCommand、CommandHistory 和输入路由；属性编辑及 Gizmo
   拖动形成事务。验收：创建/删除/复制/组件/变换可撤销重做，一次拖动一个记录，
   保存后撤销仍准确标脏；文本输入、弹窗、相机与 Gizmo 不抢快捷键。

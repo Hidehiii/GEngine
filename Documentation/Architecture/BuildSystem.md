@@ -14,6 +14,9 @@ Editor E1.1 adds Core/ProjectContext and Host/ProjectWorkspace. CMake explicitly
 lists the new Host implementation; Premake's existing Host/Core discovery picks
 it up. The read-only filesystem model uses existing Qt modules, with no engine
 or vendor dependency changes.
+E1.4 adds the header-only Core/SelectionService used by ProjectWorkspace and
+ProtocolTests. Existing CMake source includes and Premake Core discovery cover it
+without a new target, Qt module, engine dependency or deployment artifact.
 
 Planned C# deployment separates shared development Runtime SDKs from incremental
 game export; see [managed scripting design](ManagedScripting.md). No build/copy

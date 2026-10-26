@@ -124,7 +124,9 @@ resource execution, import, component editing or .GEScene loading occurs.
 An invalid project path preserves the current project and selection. Switching
 or closing projects clears selection while retaining the draft, undo history
 and independent engine preview. Deleted selections are cleared; a missing root
-closes the project. Symlinks are hidden and canonical outside-root selections
+closes the project. The authoritative selection is a Core SelectionService entry
+containing the project generation and a project-relative resource ID; Qt controls
+only project that state. Symlinks are hidden and canonical outside-root selections
 are rejected. Project paths are not saved between editor runs yet.
 
 The recovery check creates temporary Unicode project folders and exercises open,

@@ -45,6 +45,11 @@ namespace GEngineEditor
         return QString::fromStdString(m_Context.Root().native());
 #endif
     }
+    QString ProjectWorkspace::SelectedPath() const
+    {
+        if (m_Selection.Empty() || m_Context.Root().empty()) return {};
+        return QDir(Root()).filePath(QString::fromStdString(m_Selection.Id()));
+    }
     bool ProjectWorkspace::Open(const QString& directory)
     {
         // Validate before replacing either the authoritative root or its UI projection.
@@ -73,9 +78,10 @@ namespace GEngineEditor
         const auto generation = m_Context.Generation();
         connect(m_Model, &QFileSystemModel::directoryLoaded, this, [this, generation](const QString&)
         {
-            if (generation != m_Context.Generation() || !m_Model || m_Selected.isEmpty()) return;
+            const auto selected = SelectedPath();
+            if (generation != m_Context.Generation() || !m_Model || selected.isEmpty()) return;
             ValidateSelection();
-            if (!m_Selected.isEmpty()) m_Tree->setCurrentIndex(m_Model->index(m_Selected));
+            if (!SelectedPath().isEmpty()) m_Tree->setCurrentIndex(m_Model->index(SelectedPath()));
         });
         return true;
     }
@@ -93,7 +99,7 @@ namespace GEngineEditor
     }
     void ProjectWorkspace::ClearSelection()
     {
-        m_Selected.clear(); m_SelectionGeneration = 0;
+        m_Selection.Clear();
         if (m_Tree->selectionModel()) m_Tree->selectionModel()->clear();
         if (OnInspector) OnInspector("Select a file or folder in Assets.\nRead-only project browsing; scene editing is not connected yet.");
     }
@@ -109,11 +115,12 @@ namespace GEngineEditor
     bool ProjectWorkspace::Select(const QString& path)
     {
         const QFileInfo file(path);
-        if (file.isSymLink() || !m_Context.Contains(NativePath(path)))
+        const auto selectedPath = file.canonicalFilePath();
+        if (file.isSymLink() || selectedPath.isEmpty() || !m_Context.Contains(NativePath(selectedPath)))
         { ClearSelection(); return false; }
-        m_Selected = file.canonicalFilePath();
-        m_SelectionGeneration = m_Context.Generation();
-        const auto relative = QDir(Root()).relativeFilePath(m_Selected);
+        const auto relative = QDir(Root()).relativeFilePath(selectedPath);
+        if (!m_Selection.Select(m_Context.Generation(), relative.toStdString()))
+        { ClearSelection(); return false; }
         if (OnInspector) OnInspector(QString("%1\n\nPath: %2\nType: %3\nSize: %4\nModified: %5\n\nRead-only metadata; file contents are not loaded or executed.")
             .arg(file.fileName(), relative, file.isDir() ? "Folder" : file.suffix().isEmpty() ? "File" : file.suffix(),
                 file.isDir() ? "-" : QString::number(file.size()) + " bytes", file.lastModified().toString(Qt::ISODate)));
@@ -127,10 +134,13 @@ namespace GEngineEditor
             if (OnLog) OnLog("Project directory is unavailable; project closed. Draft and worker are preserved.");
             return;
         }
-        if (!m_Selected.isEmpty())
+        const auto selected = SelectedPath();
+        if (!selected.isEmpty())
         {
-            if (m_SelectionGeneration != m_Context.Generation() || !m_Context.Contains(NativePath(m_Selected))) ClearSelection();
-            else Select(m_Selected);
+            const QFileInfo file(selected);
+            const bool valid = !file.isSymLink() && file.exists() && m_Context.Contains(NativePath(file.canonicalFilePath()));
+            if (!m_Selection.Validate(m_Context.Generation(), valid)) ClearSelection();
+            else Select(selected);
         }
     }
 }

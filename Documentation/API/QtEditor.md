@@ -3,7 +3,7 @@
 C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedScripting.md)。
 当前 Host/Worker IPC 不变，Worker 仍禁用脚本；此文档更新未实现脚本消息。
 
-状态：**E0.1/E0.2 诊断与引擎预览、E1.1 项目浏览、E1.2 草稿多标签已实现，其余场景契约为提案**。
+状态：**E0.1/E0.2 诊断与引擎预览、E1.1 项目浏览、E1.2 草稿多标签、E1.4 选择服务已实现，其余场景契约为提案**。
 
 ## 已实现的 E0.1 契约
 
@@ -63,11 +63,19 @@ Contains(path)。Open 使用 canonical 路径并要求目录存在；失败保�
 generation，成功/关闭推进非零 generation。Contains 对存在的目标执行
 canonical 与逐路径分量边界检查，不以字符串前缀代替目录归属。
 
+`Core/SelectionService.h` 提供 Select(scope, id)、Validate(scope, exists)、
+Clear()、ClearScope(scope) 与 Id/Scope/Empty 查询。资源选择的 scope 是
+ProjectContext generation，id 是项目内相对路径；空 scope 或空 id 被拒绝。
+Validate 遇到 scope 不匹配或资源不存在时立即清空选择。该类型只使用标准
+C++ 数据类型，不依赖 Qt、引擎或文件系统枚举。
+
 `Host/ProjectWorkspace` 提供 Open(QString)、Close()、Select(QString)、
 ValidateSelection() 与根/选择/generation 查询，以及 Inspector/日志回调。
 Select 拒绝根外、直接符号链接与缺失目标，失败清除旧选择；项目打开失败则
 保留当前项目与选择。250 ms 校验删除/失联时使选择失效，项目根丢失时关闭
-项目。只读 QFileSystemModel 隐藏符号链接，QTreeView 禁用编辑、拖放和执行。
+项目。ProjectWorkspace 把 SelectionService 的相对 ID 映射回项目内路径，
+Qt 树控件只是选择状态与 Inspector 元数据的投影。只读 QFileSystemModel
+隐藏符号链接，QTreeView 禁用编辑、拖放和执行。
 
 MainWindow::OpenProject/CloseProject 对接 File > Open project folder / Close
 project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspector 为

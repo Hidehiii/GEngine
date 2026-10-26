@@ -14,6 +14,9 @@ return nonzero. Normal launch runs from the Host directory and returns its exit 
 Editor E1.1 project/assets browsing uses the same BuildQtEditor commands and Qt
 SDK as E0.2. No new build flags or deployment dependencies are required; CMake and
 Premake both include ProjectWorkspace, and full -Test covers its project lifecycle.
+E1.4 SelectionService is a header-only Core type. ProtocolTests include it directly,
+while the Qt Host consumes it through ProjectWorkspace; no generator source list,
+Qt module or engine dependency changes.
 
 Shared Mono development paths and incremental export are documented as
 [planned contracts](ManagedScripting.md). No new build arguments or packaging

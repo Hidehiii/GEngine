@@ -3,7 +3,7 @@
 C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设计](ManagedScripting.md)。
 该脚本方案尚未实施；当前 Worker 仍禁用脚本，Host 不加载 Mono。
 
-版本：2026-10-24 目标设计。状态：**E0.1–E1.2 Qt、引擎预览、项目浏览和草稿多标签已实现，完整目标架构待实施**。
+版本：2026-10-24 目标设计。状态：**E0.1–E1.2 Qt、引擎预览、项目浏览、草稿多标签与 E1.4 选择服务已实现，完整目标架构待实施**。
 
 ## 当前实施：E0.1 基础原型
 
@@ -62,6 +62,14 @@ Documents 内容容器仍是可关闭、重排页面的 QTabWidget，
 选择按 canonical 路径检查根目录边界，浏览器隐藏符号链接，不读取/执行资源内容。
 250 ms 定时校验处理资源删除与项目目录丢失；新模型/selection model 在切换时
 释放。Qt 自带文件系统枚举/监视由模型管理，未建立全项目导入或文件哈希服务。
+
+2026-10-26 E1.4：Core/SelectionService 成为资源选择的权威状态。它保存
+ProjectContext generation 与项目内相对资源 ID，不保存 QWidget、模型索引或
+canonical 绝对路径；Assets 树和 Inspector 只做投影与元数据展示。切换/关闭
+项目通过 generation 失效，资源删除通过 Validate 失效，空 scope/id 拒绝。
+ProjectWorkspace 在边界检查通过后写入服务，并把相对 ID 映射回项目内路径
+用于模型恢复与 250 ms 校验。该拆分为后续 SceneDocument/对象选择服务保留
+同一 generation + ID 失效规则，但尚未实现对象选择、命令事务或 Worker 同步。
 
 Assets/Inspector 是可停靠面板，View 或停靠组 + 菜单可重新打开。
 布局版本升级到 4，旧版本布局不自动恢复，首次采用多面板分割默认布局。
