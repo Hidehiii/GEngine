@@ -11,8 +11,10 @@ currently require that facade. Non-UI construction behavior is unchanged.
 
 Implement `CreateApplication(ApplicationCommandLineArgs)` in the client and
 construct `Application` with `ApplicationSpecification`. Its fields include
-name, window size, working directory, command-line arguments, and switches for
-scripting, physics, OpenSSL, and ImGui. `PushLayer` and `PushOverlay` transfer
+name, window size, working directory, command-line arguments, script runtime
+root, script core assembly, and switches for scripting, physics, OpenSSL, and
+ImGui. Relative script paths resolve against `WorkingDirectory` before the
+runtime changes the process working directory. `PushLayer` and `PushOverlay` transfer
 layer lifetime to the runtime's `LayerStack`; `Close()` requests loop exit.
 Layer hooks include `OnAttach`, `OnUpdate`, `OnRender`, `OnImGuiRender`,
 `OnPresent`, `OnLateUpdate`, `OnEndFrame`, and `OnEvent`. `OnPresent` draws to

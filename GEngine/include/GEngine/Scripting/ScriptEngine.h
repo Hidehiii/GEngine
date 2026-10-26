@@ -4,14 +4,16 @@
 
 namespace GEngine
 {
+	struct RuntimeSpecification;
+
 	class GENGINE_API ScriptEngine
 	{
 	public:
 
-		static void Init();
+		static bool Init(const RuntimeSpecification& specification);
 		static void Shutdown();
 	private:
-		static void InitMono();
+		static bool InitMono(const RuntimeSpecification& specification);
 		static void ShutdownMono();
 	};
 }

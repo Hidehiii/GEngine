@@ -4,9 +4,11 @@
 
 C# runtime deployment redesign is documented in the
 [Mono/shared SDK and packaging proposal](../Architecture/ManagedScripting.md).
-It is not implemented yet: existing scripting still depends on its current
-relative runtime/assembly paths. Do not use the proposal's layouts as working
-configuration or assume CMake builds ScriptCore today.
+S0.1 is implemented: `RuntimeSpecification::ScriptRuntimeRoot` and
+`ScriptCoreAssembly` select the Mono BCL root and core assembly, and relative
+values resolve against `WorkingDirectory` before the runtime changes cwd.
+RuntimeId, packaging manifests, Development/Packaged modes, and ScriptCore
+generation in CMake are still not implemented.
 The proposed first export includes resource dependency collection and Assets/
 directory deployment. Compressed .pak archives and their runtime reader are a
 later stage; neither deployment nor archive tooling is implemented yet.
@@ -32,7 +34,8 @@ Premake now consume that SDK’s `include/mono-2.0` and
 BuildQtEditor.ps1 invokes BuildMonoSdk.ps1 automatically for full builds;
 ProtocolOnly remains dependency-free.
 Runtime BCL path configuration is still the legacy `mono/lib` behavior and
-remains part of S0; this command does not enable packaging or script export.
+defaults to `mono/lib`; explicit path fields are available, but this command
+does not enable packaging or script export.
 Debug editor/engine and Release engine builds have been verified with this
 SDK. No script-enabled GUI runtime check is claimed yet.
 

@@ -1,8 +1,8 @@
 # C#、Mono 与游戏发布架构
 
-日期：2026-10-25。状态：**设计文档，尚未实现；2026-10-26 S1.0 已完成
-运行库审计，S1.1 已将构建输入切换到官方 Mono 6.10.0.87 SDK，但运行时
-路径/打包仍未实施**。
+日期：2026-10-25。状态：**设计文档，尚未完整实现；2026-10-26 S1.0 已完成
+运行库审计，S1.1 已将构建输入切换到官方 Mono 6.10.0.87 SDK，S0.1 已提供
+显式脚本路径与健壮初始化；RuntimeId/清单/打包仍未实施**。
 实施登记：[S0–S3 TODO](../../TODO/ScriptingAndPackaging.md)。
 接口配套：[脚本路径与打包契约](../API/ManagedScripting.md)。
 
@@ -21,9 +21,9 @@ S1 SDK/程序集、S2 增量导出、S3 编辑器编译与 Worker 重启。
 
 | 位置 | 当前行为 |
 | --- | --- |
-| ScriptEngine.cpp | mono_set_assemblies_path("mono/lib")，依赖工作目录。 |
-| ScriptEngine.cpp | 固定加载 Resources/Scripts/GEngine-ScriptCore.dll，创建 GEngine.Main 并调用测试方法。 |
-| RuntimeSpecification | 只有 EnableScripting 开关，没有运行库/程序集路径配置。 |
+| ScriptEngine.cpp | 使用 RuntimeSpecification 的 ScriptRuntimeRoot / ScriptCoreAssembly。 |
+| ScriptEngine.cpp | 加载配置的 ScriptCore 程序集，创建 GEngine.Main 并调用测试方法。 |
+| RuntimeSpecification | 提供 EnableScripting、ScriptRuntimeRoot 与 ScriptCoreAssembly。 |
 | GEngine 链接 | Debug/Release 静态链接 libmono-static-sgen.lib。 |
 | 构建输入 | CMake/Premake 现在消费官方 Mono 6.10.0.87 SDK。 |
 | GEngine-ScriptCore | Premake C# 项目，目标框架 4.7.2；CMake 当前不生成该程序集。 |

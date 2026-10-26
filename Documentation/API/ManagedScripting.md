@@ -1,16 +1,17 @@
 # C# 路径与增量打包契约
 
-日期：2026-10-25。状态：**拟议契约，尚未新增可调用 API/CLI；2026-10-26
-S1.0 审计未找到可验证匹配的 Runtime SDK，S1.1 已切换构建输入到官方
-Mono 6.10.0.87 SDK**。
+日期：2026-10-25。状态：**部分契约已实现；2026-10-26 S1.0 审计未找到可验证
+匹配的 Runtime SDK，S1.1 已切换构建输入到官方 Mono 6.10.0.87 SDK，S0.1
+提供显式脚本路径与健壮初始化；RuntimeId/清单/打包仍未实施**。
 配套：[架构](../Architecture/ManagedScripting.md)、
 [实施与验收 TODO](../../TODO/ScriptingAndPackaging.md)。
 
 ## 当前可调用接口
 
-`ScriptEngine::Init()` / `Shutdown()` 和 `RuntimeSpecification::EnableScripting`
-仍为现有接口。Init 当前无路径参数，内部依赖 cwd 下 mono/lib 以及固定的
-Resources/Scripts/GEngine-ScriptCore.dll。下列名称表示设计职责，不是已存在的
+`ScriptEngine::Init(const RuntimeSpecification&)` / `Shutdown()` 和
+`RuntimeSpecification::EnableScripting` 为现有接口。`ScriptRuntimeRoot` 与
+`ScriptCoreAssembly` 是显式路径字段；`EngineRuntime` 在切换 cwd 前解析相对
+路径。下列名称表示尚未实现的 RuntimeId/清单/发布模式，不是已存在的
 C++ 类型、配置字段、环境变量或命令行参数。
 构建输入已切换到官方 Mono 6.10.0.87 SDK；这未改变脚本运行时路径或导出能力。
 

@@ -30,6 +30,8 @@ namespace GEngine
 		Vector2 Size = { 1920.0f, 1080.0f };
 		RuntimeCommandLineArgs CommandLineArgs;
 		std::filesystem::path WorkingDirectory;
+		std::filesystem::path ScriptRuntimeRoot = "mono/lib";
+		std::filesystem::path ScriptCoreAssembly = "Resources/Scripts/GEngine-ScriptCore.dll";
 		bool EnableScripting = true;
 		bool EnablePhysics = true;
 		bool EnableOpenSSL = true;

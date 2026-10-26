@@ -21,6 +21,25 @@
 - [ ] S0 路径与初始化：建立显式的脚本启动配置和路径解析，开发共享固定版本
   Runtime SDK，发布只使用包内清单。初始化预检、异常传播和部分失败清理覆盖
   Debug/Release，不依赖工作目录，不在断言中执行必要操作；关闭脚本时不查找 Mono。
+- [x] S0.1 显式脚本路径与健壮初始化（2026-10-26 跟进）：在
+  RuntimeSpecification 中加入 ScriptRuntimeRoot / ScriptCoreAssembly，EngineRuntime
+  构造时将相对路径解析为绝对路径并把结果传给 ScriptEngine；ScriptEngine
+  校验路径、处理域/程序集/方法为空、记录失败并清理半初始化状态。验收：
+  Debug/Release 构建；显式路径与默认路径均可编译；路径或程序集失败不继续
+  解引用；关闭脚本时不调用 Mono 查找。清单、RuntimeId、Development/Packaged
+  模式和 Worker 重载不在本项实现。
+  完成：RuntimeSpecification 新增 ScriptRuntimeRoot 与 ScriptCoreAssembly；
+  EngineRuntime 在切换 cwd 前按 WorkingDirectory 解析相对脚本路径并记录最终
+  路径。ScriptEngine::Init 改为接收 RuntimeSpecification 并返回 bool，校验
+  runtime root/core assembly，处理 root/app domain、assembly image、class、
+  method、instance、Mono string 为空及托管调用异常；失败时清理已创建的
+  domain/runtime，避免半初始化状态和断言-only 检查。
+  验证：CMake Debug 完整编辑器/引擎构建、协议/恢复/真实引擎检查通过；
+  CMake Release GEngine 构建通过。证据：
+  build/qt-editor/windows-x86_64/Debug/{engine-build.log,tests.log,engine-tests.log}
+  与 build/cmake-vs2022/windows-x86_64/Release/GEngine/GEngine.dll。
+  未验证：启用脚本的真实 GUI 运行与故意路径/程序集失败进程退出码；S0 的
+  RuntimeId/清单/Development/Packaged 模式仍开放。
 - [ ] S1 运行库与编译：核实当前静态 Mono 与托管 BCL 的兼容版本及许可证，
   建立单一 SDK 清单；构建 ScriptCore/游戏程序集，CMake/Premake 消费相同产物。
   不将“所有 Mono DLL”或任意另一个项目的 mscorlib 当作经过验证的运行库。

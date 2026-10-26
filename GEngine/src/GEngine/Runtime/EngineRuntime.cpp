@@ -21,8 +21,21 @@ namespace GEngine
 		: m_Specification(specification)
 	{
 		Log::Init();
+		std::filesystem::path workingDirectory = m_Specification.WorkingDirectory;
+		if (!workingDirectory.empty() && workingDirectory.is_relative())
+			workingDirectory = std::filesystem::absolute(workingDirectory);
+		const std::filesystem::path scriptBase = workingDirectory.empty()
+			? std::filesystem::current_path()
+			: workingDirectory;
+		auto ResolveScriptPath = [&scriptBase](std::filesystem::path path)
+		{
+			if (path.empty() || path.is_absolute()) return path;
+			return scriptBase / path;
+		};
+		m_Specification.ScriptRuntimeRoot = ResolveScriptPath(m_Specification.ScriptRuntimeRoot);
+		m_Specification.ScriptCoreAssembly = ResolveScriptPath(m_Specification.ScriptCoreAssembly);
 		if (!m_Specification.WorkingDirectory.empty())
-			std::filesystem::current_path(m_Specification.WorkingDirectory);
+			std::filesystem::current_path(workingDirectory);
 		Log::InitFileLogging();
 
 		m_Config = CreateRef<Config>();
@@ -49,7 +62,12 @@ namespace GEngine
 
 		Input::Init();
 		if (m_Specification.EnableScripting)
-			ScriptEngine::Init();
+		{
+			GE_CORE_INFO("Script runtime root: {0}", m_Specification.ScriptRuntimeRoot.string());
+			GE_CORE_INFO("Script core assembly: {0}", m_Specification.ScriptCoreAssembly.string());
+			if (!ScriptEngine::Init(m_Specification))
+				throw std::runtime_error("Failed to initialize the script runtime.");
+		}
 		if (m_Specification.EnablePhysics)
 			Physics3D::Init();
 		if (m_Specification.EnableOpenSSL)

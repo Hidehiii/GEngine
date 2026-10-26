@@ -29,6 +29,9 @@ deserializes `Config.ini`, configures the graphics runtime, creates a GLFW or
 Win32 `Window`, initializes the render system, and then initializes input and
 enabled services. `RuntimeSpecification` controls Mono scripting, PhysX,
 OpenSSL, and ImGui; the ImGui layer is pushed as an overlay when enabled.
+`ScriptRuntimeRoot` and `ScriptCoreAssembly` are resolved against
+`WorkingDirectory` before the runtime changes the process working directory,
+then passed to `ScriptEngine` as absolute paths.
 `Graphics_API` from configuration selects the backend. The window/surface
 adapter owns the native window and feeds events/input into the portable
 `Window` interface.

@@ -46,8 +46,9 @@ have empty implementations; do not rely on them for drawing.
 
 ## ImGui, scripting, utilities, and diagnostics
 
-Mono 路径与增量打包的[拟议契约](ManagedScripting.md)已独立记录；当前
-ScriptEngine::Init/Shutdown 与 EnableScripting 不变，尚未提供新路径配置。
+Mono 路径与增量打包的[拟议契约](ManagedScripting.md)已独立记录。
+`RuntimeSpecification::ScriptRuntimeRoot/ScriptCoreAssembly` 提供显式路径，
+`ScriptEngine::Init` 返回初始化是否成功；RuntimeId/清单/发布模式仍未实施。
 
 There is no engine-exported Gizmo API. The legacy editor-owned GizmoController
 has been removed; Qt tools remain planned in the [Qt editor API](QtEditor.md).
@@ -63,7 +64,7 @@ When `EnableImGui` is true, the runtime pushes an `ImGuiLayer` overlay.
 Layers implement `OnImGuiRender`; `GUIUtils` supplies texture IDs and UVs
 for UI integration. `FileDialogs::OpenFile/SaveFile` return an empty string
 on cancel. `ScriptEngine::Init/Shutdown` bootstrap Mono when scripting is
-enabled, but the current implementation loads a fixed script-core assembly
+enabled, but the current implementation loads the configured script-core assembly
 rather than exposing general managed-component registration. For the exposed
 scene scripting path, use C++ `NativeScript` (see
 [Scene and physics API](SceneAndPhysics.md)).

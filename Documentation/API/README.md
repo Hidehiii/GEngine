@@ -15,7 +15,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
 | Contributor-facing project generation | [Build entry points](BuildSystem.md) |
-| Planned C# runtime paths, resource deployment and archive boundaries | [Managed scripting contracts](ManagedScripting.md) |
+| C# runtime paths, resource deployment and archive boundaries | [Managed scripting contracts](ManagedScripting.md) |
 | Qt document tabs, project/assets browsing, engine preview IPC and planned scenes | [Qt editor contracts](QtEditor.md) |
 | Legacy editor removal and replacement | [Removed editor interfaces](Editor.md) |
 

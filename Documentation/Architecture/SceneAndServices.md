@@ -24,8 +24,9 @@ transformation operations used across rendering and physics.
 ## Physics and scripting
 
 共享 Mono SDK、开发/发布路径、C# 编译与 Worker 重启的目标设计见
-[C# 与游戏发布架构](ManagedScripting.md)。当前 ScriptEngine 仍使用固定相对
-路径；本次仅补充设计，脚本执行和公共 API 未改变。
+[C# 与游戏发布架构](ManagedScripting.md)。`RuntimeSpecification` 现在提供
+`ScriptRuntimeRoot` 与 `ScriptCoreAssembly`，`EngineRuntime` 在切换 cwd 前解析
+相对路径并传给 `ScriptEngine`；RuntimeId/清单/发布模式仍未实施。
 
 `Scene::OnAwake` creates Box2D and PhysX worlds, attaches the 2D contact
 listener, and builds 2D bodies/fixtures for existing rigid-body/collider
@@ -36,7 +37,7 @@ exist, but automatic scene-driven 3D simulation remains an open follow-up in
 [scene and physics tracking](../../TODO/SceneAndPhysics.md).
 
 `NativeScript` owns C++ `ScriptableObject` instances with lifecycle and contact
-callbacks. Separately, `ScriptEngine` bootstraps a Mono domain and a fixed
+callbacks. Separately, `ScriptEngine` bootstraps a Mono domain and the configured
 script-core assembly when `EnableScripting` is true; it is not yet a general
 managed-component attachment interface.
 
