@@ -24,6 +24,9 @@ From the repository root in PowerShell (VS C++ tools, CMake and Python required)
 .\GEngine-Editor\RunQtEditor.bat Release
 ```
 
+BuildQtEditor.ps1 automatically installs the official Mono 6.10.0.87 SDK before
+building the full editor/engine targets. `-ProtocolOnly` does not download it.
+
 RunQtEditor selects the newest executable for the requested configuration across
 CMake and Premake outputs. Use `RunQtEditor.bat Release Premake` (or `CMake`)
 to select one explicitly; add `-PrintPath` to inspect the selection without launching.

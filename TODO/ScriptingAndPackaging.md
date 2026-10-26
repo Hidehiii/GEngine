@@ -24,6 +24,44 @@
 - [ ] S1 运行库与编译：核实当前静态 Mono 与托管 BCL 的兼容版本及许可证，
   建立单一 SDK 清单；构建 ScriptCore/游戏程序集，CMake/Premake 消费相同产物。
   不将“所有 Mono DLL”或任意另一个项目的 mscorlib 当作经过验证的运行库。
+- [x] S1.0 Runtime SDK 审计（2026-10-26 跟进）：盘点当前静态 Mono 库、
+  示例中的托管 BCL 副本与许可证/来源信息，比较主要程序集版本和内容哈希。
+  验收：明确是否存在可复现、可再分发且与静态库匹配的 BCL 集合；记录差异、
+  证据与阻塞项，不得据此实现路径切换或宣称 SDK 已经验证。
+  完成：Sandbox 与四个示例的 mono/lib/mono/4.5 是同一 445 文件副本，
+  每份 80,109,965 字节；mscorlib/System 等程序集版本为 4.6.57.0，
+  mscorlib SHA256 为
+  C7512C133808ACB42E48B6C1B879AB6F3C988A9E7A83B6A80E75A9FF38B6E5CF。
+  Debug/Release 静态
+  libmono-static-sgen.lib 与 Hazel 提交 b22a7550 的同名文件逐字节一致，
+  但示例 BCL 与 Hazel 当前 Hazelnut 副本不同。本地 BCL 最早由主仓库提交
+  94835394（2024-07-23，update:all）引入，提交未记录上游来源。
+  官方 Mono 6.8.0.105、6.10.0.69、6.10.0.87 x64 MSI 已下载/管理解包比对；
+  三者的静态库与本地 Debug/Release 均不同，4.5 mscorlib 也没有本地哈希。
+  第三方 LICENSE 与 Hazel 提交一致，说明运行时/类库主要为 MIT 与若干
+  BSD/Apache/MPL/GPL-with-exception 组件；LICENSE 引用的 PATENTS.TXT
+  未随快照提供。
+  结论：当前不存在可复现、可再分发且与静态库已验证匹配的 BCL SDK。
+  S1 仍阻塞在确定可再分发来源/许可证与构建配对；不得把示例目录直接提升
+  为正式 Runtime SDK。Architecture/API 文档与本 TODO 已同步；本轮仅文档，
+  无需引擎构建。
+- [x] S1.1 官方 Mono SDK 替换（2026-10-26 用户要求）：新增可重复脚本下载
+  官方 Mono 6.10.0.87 x64 MSI 并管理解包到 dist/mono；CMake/Premake 的
+  include/lib 输入改为该官方 SDK，不再消费 Hazel 静态库快照。验收：脚本
+  校验 MSI 哈希并输出 SDK 路径；GEngine Debug/Release 至少一配置完成链接；
+  文档明确运行时 BCL 路径仍属 S0，未宣称脚本路径/打包已完成。
+  完成：BuildScripts/BuildMonoSdk.ps1 下载/复用 MSI，校验 SHA-256
+  8853A0F1…9D0FE4，管理解包到
+  dist/mono/windows-x86_64/6.10.0.87/Mono，并从官方 mono-6.10.0.87
+  标签获取 LICENSE/PATENTS.TXT 与 mono-sdk.json 清单。CMake/Premake 已改用
+  include/mono-2.0 与官方 libmono-static-sgen.lib；BuildQtEditor.ps1 的完整
+  构建会自动准备该 SDK，-ProtocolOnly 不下载。
+  验证：CMake Debug 完整编辑器/引擎构建、协议/恢复/真实引擎检查通过；
+  CMake Release GEngine 构建通过。证据：
+  build/qt-editor/windows-x86_64/Debug/{engine-build.log,tests.log,engine-tests.log}
+  与 build/cmake-vs2022/windows-x86_64/Release/GEngine/GEngine.dll。
+  边界：运行时仍使用 cwd 下 mono/lib 与 Resources/Scripts/GEngine-ScriptCore.dll；
+  未运行启用脚本的 GUI 程序，未验证 BCL/程序集兼容，S0/S2 保持开放。
 - [ ] S2 增量导出：预检输入与依赖闭包、预览清单；按内容哈希跳过不变文件，
   隔离 staging 后发布，限制清理为旧清单拥有的路径，校验包外路径/缺失依赖。
   导出到新目录后脱离开发 SDK、改变工作目录仍可运行；第二次无变化导出零复制。
@@ -43,4 +81,5 @@
 当前证据：ScriptEngine 写死 mono/lib 与 Resources/Scripts 路径，加载固定
 GEngine.Main 测试类；Mono 原生库静态链接。第三方 mono/lib 只有 Debug/Release
 原生库目录，未发现 mscorlib.dll；示例下存在旧托管运行库副本。当前 Qt Worker
-禁用脚本。以上不是路径/打包新能力的实现或运行验证。
+禁用脚本。S1.0 已确认示例 BCL 彼此一致但无法追溯到匹配的官方包；静态库
+来自 Hazel 二进制快照。以上不是路径/打包新能力的实现或运行验证。

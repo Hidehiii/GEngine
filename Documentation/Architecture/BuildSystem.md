@@ -18,6 +18,15 @@ E1.4 adds the header-only Core/SelectionService used by ProjectWorkspace and
 ProtocolTests. Existing CMake source includes and Premake Core discovery cover it
 without a new target, Qt module, engine dependency or deployment artifact.
 
+2026-10-26 S1.1: BuildScripts/BuildMonoSdk.ps1 installs the official Mono
+6.10.0.87 x64 SDK under `dist/mono/windows-x86_64/6.10.0.87/Mono`. CMake and
+Premake now consume that SDK’s headers and `libmono-static-sgen.lib`; the
+Hazel-derived static library snapshot is no longer referenced by generated
+builds. The script also records the MSI SHA-256 and fetches the matching
+LICENSE/PATENTS.TXT from the official tag. Runtime BCL path resolution and
+packaging remain unchanged and are still tracked by S0/S2.
+Debug editor/engine and Release engine CMake builds pass with this input.
+
 Planned C# deployment separates shared development Runtime SDKs from incremental
 game export; see [managed scripting design](ManagedScripting.md). No build/copy
 behavior changes in this documentation work item. CMake C# support remains pending.

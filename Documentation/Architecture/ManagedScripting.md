@@ -1,6 +1,8 @@
 # C#、Mono 与游戏发布架构
 
-日期：2026-10-25。状态：**设计文档，尚未实现**。
+日期：2026-10-25。状态：**设计文档，尚未实现；2026-10-26 S1.0 已完成
+运行库审计，S1.1 已将构建输入切换到官方 Mono 6.10.0.87 SDK，但运行时
+路径/打包仍未实施**。
 实施登记：[S0–S3 TODO](../../TODO/ScriptingAndPackaging.md)。
 接口配套：[脚本路径与打包契约](../API/ManagedScripting.md)。
 
@@ -23,10 +25,22 @@ S1 SDK/程序集、S2 增量导出、S3 编辑器编译与 Worker 重启。
 | ScriptEngine.cpp | 固定加载 Resources/Scripts/GEngine-ScriptCore.dll，创建 GEngine.Main 并调用测试方法。 |
 | RuntimeSpecification | 只有 EnableScripting 开关，没有运行库/程序集路径配置。 |
 | GEngine 链接 | Debug/Release 静态链接 libmono-static-sgen.lib。 |
+| 构建输入 | CMake/Premake 现在消费官方 Mono 6.10.0.87 SDK。 |
 | GEngine-ScriptCore | Premake C# 项目，目标框架 4.7.2；CMake 当前不生成该程序集。 |
-| 第三方 mono/lib | 本次检查只有 Debug/Release 原生库目录，未发现 mscorlib.dll。 |
-| Sandbox/部分 Example | 存在各自的旧 mono/lib/mono/4.5 副本，版本配对尚未验证。 |
+| 第三方 mono/lib | 只有 Debug/Release 原生库目录，未提供托管 BCL。 |
+| Sandbox/部分 Example | 存在五份相同的旧 mono/lib/mono/4.5 副本；见下方审计。 |
 | Qt EngineWorker | 当前关闭脚本；Host 不加载 Mono。 |
+
+2026-10-26 S1.0 审计：Sandbox、DeferredRender、GpuDriven、InputSystem、
+ShaderCompile 的 4.5 BCL 目录均为同一 445 文件副本，每份 80,109,965 字节；
+mscorlib/System 的文件版本为 4.6.57.0。Debug/Release
+libmono-static-sgen.lib 与公开 Hazel 仓库提交 b22a7550 的同名二进制完全
+一致，静态库对象路径也指向 `C:\Dev\Hazel\2D\libs\mono\msvc`。本地 BCL
+与 Hazel 当前 Hazelnut 副本不同，最早由本仓库 2024-07-23 提交 94835394
+引入且无来源说明。官方 Mono 6.8.0.105、6.10.0.69、6.10.0.87 x64 MSI
+的管理解包结果均不匹配本地静态库或 4.5 mscorlib。随附 LICENSE 与 Hazel
+一致，主体为 MIT，另有 BSD/Apache/MPL/GPL-with-exception 等组件；其引用
+的 PATENTS.TXT 未随快照提供。
 
 静态链接原生 Mono 不等于已包含托管基础类库。mscorlib 等程序集仍需从匹配的
 运行库目录加载。关闭脚本后可以省去托管运行库部署，但现有引擎仍链接原生
@@ -64,9 +78,10 @@ runtime.json 固定原生 Mono 来源/版本与内容摘要、架构、托管库
 哈希、配置、许可证以及已验证组合。Runtime ID 由经验证的组合产生，不能只用
 “Mono”或“4.7.2”作为兼容性标识；项目目标框架不是运行库版本。
 
-首先审计当前原生库与示例 BCL 的实际版本/来源，确定可复现取得方式及再分发
-许可证。现有第三方 LICENSE 文件不能代替对全部托管依赖的核验。未经验证不得
-直接把某个 Example 的目录提升为正式 SDK；首次引入供应文件也不在文档轮实施。
+S1.0 审计已确认：当前静态库来自 Hazel 二进制快照，示例 BCL 无法追溯到
+匹配官方包，且 LICENSE 不是完整再分发合规证明。S1 必须先选定可复现来源、
+取得所需许可/专利文件并验证原生库与 BCL 配对。未经验证不得直接把某个
+Example 的目录提升为正式 SDK；首次引入供应文件也不在文档轮实施。
 
 首版采用经过验证的运行库文件集合，不做自动 tree-shaking。静态引用分析不能
 证明反射、动态加载、配置选择和区域数据不需要某个文件。项目动态依赖应显式

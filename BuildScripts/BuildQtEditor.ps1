@@ -8,6 +8,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+if (-not $ProtocolOnly) {
+    & (Join-Path $PSScriptRoot 'BuildMonoSdk.ps1')
+}
 if (-not $QtSdk) { $QtSdk = Join-Path $repoRoot "dist/qt6/windows-x86_64/$Configuration" }
 $buildPath = Join-Path $repoRoot "build/qt-editor/windows-x86_64/$Configuration"
 if ($Premake) { $buildPath = Join-Path $repoRoot "build/premake-vs2022/windows-x86_64/$Configuration/qt-editor-logs" }

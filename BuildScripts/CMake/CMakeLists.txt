@@ -52,7 +52,7 @@ set(GE_INCLUDE_DIRS
     "${GE_VULKAN_SDK}/Include"
     "${GE_VENDOR}/box2d/include"
     "${GE_FBX_SDK}/include"
-    "${GE_VENDOR}/mono/include"
+    "${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/include/mono-2.0"
     "${GE_VENDOR}/PhysX/include"
     "${GE_VENDOR}/DirectX-Headers/include"
     "${GE_VENDOR}/HLSLcc/include"
@@ -148,7 +148,7 @@ target_compile_options(GEngine PRIVATE "$<$<CONFIG:Debug>:/FS>")
 target_precompile_headers(GEngine PRIVATE "${GE_ROOT}/GEngine/src/GEpch.h")
 target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross-core spirv-cross-glsl
     opengl32 d3dcompiler d3d12 dxgi dxguid Ws2_32 Winmm Version Bcrypt
-    "${GE_VENDOR}/mono/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/libmono-static-sgen.lib"
+    "${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/lib/libmono-static-sgen.lib"
     "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysX_64.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCommon_64.lib"

@@ -18,6 +18,13 @@ E1.4 SelectionService is a header-only Core type. ProtocolTests include it direc
 while the Qt Host consumes it through ProjectWorkspace; no generator source list,
 Qt module or engine dependency changes.
 
+`BuildScripts/BuildMonoSdk.ps1` installs the official Mono 6.10.0.87 x64 SDK
+under `dist/mono/windows-x86_64/6.10.0.87/Mono`. CMake and Premake reference
+that SDK’s `include/mono-2.0` directory and static library. The command does
+not add a
+public engine API, alter runtime BCL resolution, or implement export/packaging.
+Debug editor/engine and Release engine builds have passed.
+
 Shared Mono development paths and incremental export are documented as
 [planned contracts](ManagedScripting.md). No new build arguments or packaging
 commands exist yet; current commands and runtime copying remain unchanged.

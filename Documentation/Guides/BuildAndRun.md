@@ -22,6 +22,20 @@ Development is currently Windows-first. Install the following before generating 
   installed SDK.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
+Run `BuildScripts\BuildMonoSdk.ps1` once from the repository root before
+generating engine/game projects. The script downloads the official Mono
+`6.10.0.87` x64 MSI, verifies its SHA-256, extracts it under
+`dist/mono/windows-x86_64/6.10.0.87/Mono`, and copies the matching
+`LICENSE`/`PATENTS.TXT` files from the official `mono/mono` tag. CMake and
+Premake now consume that SDK’s `include/mono-2.0` and
+`lib/libmono-static-sgen.lib`.
+BuildQtEditor.ps1 invokes BuildMonoSdk.ps1 automatically for full builds;
+ProtocolOnly remains dependency-free.
+Runtime BCL path configuration is still the legacy `mono/lib` behavior and
+remains part of S0; this command does not enable packaging or script export.
+Debug editor/engine and Release engine builds have been verified with this
+SDK. No script-enabled GUI runtime check is claimed yet.
+
 The repository vendors most runtime libraries in the `GEngine/GEngine-ThirdParty`
 aggregate submodule. Clone recursively and enable Git LFS so the nested
 `SPIRV-Reflect`, `DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`, `glm`, `glfw`,
