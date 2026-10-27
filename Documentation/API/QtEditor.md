@@ -25,19 +25,24 @@ MainWindow::NewProject/OpenProject/CloseProject 管理此描述与只读 Assets 
 无效打开不覆盖旧状态，新建不覆盖既有文件。目录浏览兼容入口不提供打包能力。
 命令行 `--project <file.gproject>` 或首个 `.gproject` 参数打开项目，未注册系统关联。
 
-MainWindow::SavePackaging(output) 仅保存本机输出偏好，绝不改写项目文件。
-输出须与项目输入目录不重叠。PackageProject() 异步自动编译/归档/发布；PackagingRunning/
-LastPackagingSucceeded 查询状态；CancelPackaging 终止该作业。QSettings 输出
-键为 `packagingOutputs/<canonical-project-path SHA256>`，不进版本控制。
+MainWindow::SavePackaging(output, executableName, logoPath) 仅保存本机打包偏好，
+绝不改写项目文件。输出须与项目输入目录不重叠；可执行名沿用项目名或输入合法自定义名；
+Logo 可为空或本机可读图像，Host 会在打包前转换为多尺寸 Windows `.ico`。PackageProject()
+异步自动编译/归档/发布；PackagingRunning/LastPackagingSucceeded 查询状态；CancelPackaging
+终止该作业。QSettings 分别保存 `packagingOutputs/`、`packagingExecutableNames/`、
+`packagingLogos/<canonical-project-path SHA256>`，均不进版本控制。
 
 Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
-打包对话框对象名 PackagingSettingsDialog，唯一输入控件为 PackageOutput。
+打包对话框对象名 PackagingSettingsDialog，三个输入控件分别为 PackageOutput、
+PackageExecutableName 与 PackageLogoPath。
 缺少 GEngineTools.exe、编译工具、引擎 SDK、
 输入错误、保存失败、子进程非零退出均为可恢复失败，Console 提供细节。
 作业期间不允许替换项目，草稿和预览仍可操作；成功/失败均恢复菜单状态。
-导出命令为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>`。
+导出命令为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>
+--executable-name <name> [--icon <file.ico>]`。
 自动 Release 编译后，目标根目录仅包含入口 EXE 与 Runtime/、Data/、Metadata/
-分类文件夹。资源不散放在输出根目录；原生入口负责包校验/展开，玩家不需要
+分类文件夹。自定义名同时用于根 EXE、Runtime/ 内真实游戏 EXE、`.gpak`
+文件名和输出 manifest 身份；图标嵌入根启动器。资源不散放在输出根目录；原生入口负责包校验/展开，玩家不需要
 PowerShell。格式/运行限制见
 [打包指南](../Guides/GameExport.md)。不提供 Mono 或资源格式转换；图形 API/IPC 不变。
 

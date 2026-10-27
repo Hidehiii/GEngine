@@ -15,10 +15,12 @@ File 提供 New/Open project，项目菜单提供一个打包入口与作业取�
 只有输出目录输入，自动 Release 构建 src 与引擎，再归档并发布单入口分类
 布局。
 
-输出目录由 Host 在打包对话框选择，单独保存至本机 QSettings，以 canonical
-项目路径摘要区分；更换机器/移动项目后重新选择或采用默认相邻输出目录。
-改输出不修改项目文件。命令行 `GEngineTools.exe export-project` 的 --output 为独立必填参数，
-不会从项目内容读取；项目不指定已有 EXE，不能靠复制旧构建代替编译。
+输出目录、可执行名与 Logo 由 Host 在打包对话框选择，单独保存至本机 QSettings，
+以 canonical 项目路径摘要区分；更换机器/移动项目后重新选择或采用默认相邻输出目录和项目名。
+这些偏好不修改项目文件。命令行 `GEngineTools.exe export-project` 的 --output 为独立必填参数，
+--executable-name 与 --icon 为可选部署参数，不会从项目内容读取；项目不指定已有 EXE，
+不能靠复制旧构建代替编译。Host 将支持的图像 Logo 渲染为多尺寸 `.ico` 临时文件，
+仅把该资源交给原生导出器。
 
 Host 用异步 QProcess 调用随编辑器部署的原生 GEngineTools 工具，参数逐项传递，
 不通过 shell 拼接命令；Console 显示有界输出，重复打包/项目切换在作业期间

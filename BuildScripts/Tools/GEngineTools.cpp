@@ -50,6 +50,12 @@ namespace
         Path Root;
     };
 
+    struct ExportOptions
+    {
+        std::wstring ExecutableName;
+        Path Icon;
+    };
+
     std::wstring Trim(std::wstring value)
     {
         const auto first = value.find_first_not_of(L" \t\r\n");
@@ -667,7 +673,7 @@ namespace
         return {*name, std::filesystem::absolute(project), std::filesystem::absolute(project.parent_path())};
     }
 
-    Path BuildProject(const Path& repoRoot, const ProjectSpec& project)
+    Path BuildProject(const Path& repoRoot, const ProjectSpec& project, const ExportOptions& options)
     {
         if (!std::filesystem::exists(project.Root / L"src"))
         {
@@ -688,16 +694,20 @@ namespace
         const auto nativeRoot = (cache / L"native").generic_wstring();
         const auto buildRoot = cache.generic_wstring();
         const auto makeProgram = Path(ninja).generic_wstring();
-        RunVcLogged(visualStudio, cmake, {L"-S", source, L"-B", buildRoot, L"-G", L"Ninja",
+        std::vector<std::wstring> configureArguments{L"-S", source, L"-B", buildRoot, L"-G", L"Ninja",
             L"-DCMAKE_MAKE_PROGRAM=" + makeProgram, L"-DCMAKE_BUILD_TYPE=Release",
             L"-DGE_ENGINE_ROOT=" + engine, L"-DGE_PROJECT_ROOT=" + projectRoot,
-            L"-DGE_PROJECT_NAME=" + project.Name, L"-DGE_DIST_ROOT=" + nativeRoot},
-            repoRoot, cache / L"configure.log");
+            L"-DGE_PROJECT_NAME=" + options.ExecutableName, L"-DGE_DIST_ROOT=" + nativeRoot};
+        if (!options.Icon.empty())
+        {
+            configureArguments.push_back(L"-DGE_PROJECT_ICON=" + options.Icon.wstring());
+        }
+        RunVcLogged(visualStudio, cmake, configureArguments, repoRoot, cache / L"configure.log");
         RunVcLogged(visualStudio, cmake, {L"--build", buildRoot, L"--target", L"GProjectPackage",
             L"--parallel", L"2"}, repoRoot, cache / L"build.log");
         const auto output = cache / L"native" / L"Release" / L"Game";
-        if (!std::filesystem::exists(output / (project.Name + L".exe")) ||
-            !std::filesystem::exists(output / L"Runtime" / (project.Name + L".exe")))
+        if (!std::filesystem::exists(output / (options.ExecutableName + L".exe")) ||
+            !std::filesystem::exists(output / L"Runtime" / (options.ExecutableName + L".exe")))
         {
             throw std::runtime_error("Compilation did not produce the launcher and game executable.");
         }
@@ -928,7 +938,7 @@ namespace
                 {
                     throw std::runtime_error("Output contains unmanaged directories; refusing replacement.");
                 }
-                if (item.is_regular_file() && filename != WideToUtf8(name + L".exe"))
+                if (item.is_regular_file() && _wcsicmp(Path(item.path()).extension().c_str(), L".exe") != 0)
                 {
                     throw std::runtime_error("Output contains unmanaged files; refusing replacement.");
                 }
@@ -1244,9 +1254,28 @@ namespace
         return result.ExitCode;
     }
 
-    void ExportProject(const Path& projectPath, const Path& outputPath)
+    void ExportProject(const Path& projectPath, const Path& outputPath,
+        const std::wstring& executableName, const std::wstring& iconPath)
     {
         const auto project = LoadProject(projectPath);
+        ExportOptions options;
+        options.ExecutableName = Trim(executableName);
+        if (options.ExecutableName.empty()) options.ExecutableName = project.Name;
+        if (!ValidProjectName(options.ExecutableName))
+        {
+            throw std::runtime_error("Invalid executable name.");
+        }
+        if (!iconPath.empty())
+        {
+            options.Icon = std::filesystem::absolute(Path(iconPath));
+            AssertNoLinks(options.Icon);
+            if (!std::filesystem::is_regular_file(options.Icon) ||
+                _wcsicmp(options.Icon.extension().c_str(), L".ico") != 0 ||
+                std::filesystem::file_size(options.Icon) > 64ull * 1024 * 1024)
+            {
+                throw std::runtime_error("Choose a readable .ico icon.");
+            }
+        }
         const auto output = std::filesystem::absolute(outputPath);
         if (Within(output, project.Root) || Within(project.Root, output))
         {
@@ -1256,14 +1285,14 @@ namespace
         ProjectMutex mutex(project.Project);
         mutex.RequireOwned();
         std::cout << "Compiling project and engine (Release)...\n";
-        const auto nativeRoot = BuildProject(RepoRoot(), project);
+        const auto nativeRoot = BuildProject(RepoRoot(), project, options);
         const auto staging = TemporaryPath() / (L"gengine-package-" + RandomId());
         std::filesystem::create_directories(staging);
-        const auto pack = staging / (project.Name + L".gpak");
+        const auto pack = staging / (options.ExecutableName + L".gpak");
         std::cout << "Creating resource pack...\n";
         WriteResourcePack(project, pack);
         std::cout << "Publishing executable and resource pack...\n";
-        const auto result = PublishProject(nativeRoot, pack, project.Name, output);
+        const auto result = PublishProject(nativeRoot, pack, options.ExecutableName, output);
         RemoveTree(staging, TemporaryPath(), L"gengine-package-");
         std::cout << result;
     }
@@ -1319,6 +1348,12 @@ namespace
         return found->second;
     }
 
+    std::wstring OptionalValue(const Options& options, const std::wstring& key)
+    {
+        const auto found = options.Values.find(key);
+        return found == options.Values.end() ? std::wstring{} : found->second;
+    }
+
     int Dispatch(const std::vector<std::wstring>& arguments)
     {
         if (arguments.empty())
@@ -1360,7 +1395,8 @@ namespace
         }
         if (command == L"export-project")
         {
-            ExportProject(Path(RequiredValue(options, L"project")), Path(RequiredValue(options, L"output")));
+            ExportProject(Path(RequiredValue(options, L"project")), Path(RequiredValue(options, L"output")),
+                OptionalValue(options, L"executable-name"), OptionalValue(options, L"icon"));
             return 0;
         }
         std::cerr << "Unknown command: " << WideToUtf8(command) << '\n';

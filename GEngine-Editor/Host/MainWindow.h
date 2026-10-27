@@ -18,6 +18,7 @@ class QMenu;
 class QMenuBar;
 class QProcess;
 class QTimer;
+class QTemporaryFile;
 
 namespace GEngineEditor
 {
@@ -46,7 +47,8 @@ namespace GEngineEditor
         ProjectWorkspace& Workspace() { return *m_Workspace; }
         QString InspectorText() const;
         bool NewProject(const QString& path);
-        bool SavePackaging(const QString& output);
+        bool SavePackaging(const QString& output, const QString& executableName,
+            const QString& logoPath);
         bool PackageProject();
         void CancelPackaging();
         bool PackagingRunning() const;
@@ -100,6 +102,9 @@ namespace GEngineEditor
         QAction* m_CloseProject = nullptr;
         ProjectFile m_Project;
         QString m_PackageOutputDirectory;
+        QString m_PackageExecutableName;
+        QString m_PackageLogoPath;
+        QTemporaryFile* m_PackageIconFile = nullptr;
         QProcess* m_PackagingProcess = nullptr;
         QTimer* m_PackagingDeadline = nullptr;
         QAction* m_Package = nullptr;

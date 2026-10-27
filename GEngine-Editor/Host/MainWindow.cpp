@@ -483,13 +483,20 @@ namespace GEngineEditor
         { m_Error = "Project folder is missing or unreadable."; Log(m_Error); return false; }
         m_Project = project;
         m_PackageOutputDirectory.clear();
+        m_PackageExecutableName.clear();
+        m_PackageLogoPath.clear();
+        delete m_PackageIconFile;
+        m_PackageIconFile = nullptr;
         if (!m_Project.Path.isEmpty())
         {
             const auto key = QCryptographicHash::hash(m_Project.Path.toCaseFolded().toUtf8(), QCryptographicHash::Sha256).toHex();
             QSettings settings;
             m_PackageOutputDirectory = settings.value("packagingOutputs/" + QString::fromLatin1(key)).toString();
+            m_PackageExecutableName = settings.value("packagingExecutableNames/" + QString::fromLatin1(key)).toString();
+            m_PackageLogoPath = settings.value("packagingLogos/" + QString::fromLatin1(key)).toString();
             if (m_PackageOutputDirectory.isEmpty())
                 m_PackageOutputDirectory = QDir(m_Project.Root()).absoluteFilePath("../" + m_Project.Name + "-Package");
+            if (m_PackageExecutableName.isEmpty()) m_PackageExecutableName = m_Project.Name;
         }
         m_CloseProject->setEnabled(true);
         m_Error.clear(); RefreshDocument(); RefreshPackagingActions();
@@ -501,6 +508,10 @@ namespace GEngineEditor
         if (PackagingRunning()) { Log("Cancel packaging before closing the project."); return; }
         m_Project = {};
         m_PackageOutputDirectory.clear();
+        m_PackageExecutableName.clear();
+        m_PackageLogoPath.clear();
+        delete m_PackageIconFile;
+        m_PackageIconFile = nullptr;
         m_Workspace->Close(); m_CloseProject->setEnabled(false);
         RefreshDocument(); RefreshPackagingActions(); Log("Project closed; draft and engine preview are preserved.");
     }

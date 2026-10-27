@@ -1,11 +1,13 @@
 # Build and package a project
 
 Open or create a `.gproject` through **File > New project / Open project**.
-Choose **Project > Package project...**, select **one output directory**, and
-click **Build and package**. The editor compiles the engine and project in
-Release, creates a resource archive, then publishes the result. There is no EXE
-picker, packaging settings page, or separate preview operation. Progress and
-compiler errors appear in Console; Cancel packaging stops the owned build tree.
+Choose **Project > Package project...**, select **one output directory**, enter an
+executable name, and optionally choose a logo image. Click **Build and package**.
+The editor compiles the engine and project in Release, converts the logo to an
+embedded Windows icon, creates a resource archive, then publishes the result.
+There is no prebuilt-EXE picker, packaging settings page, or separate preview
+operation. Progress and compiler errors appear in Console; Cancel packaging stops
+the owned build tree.
 
 ## Project contents
 
@@ -31,14 +33,16 @@ Asset references must resolve within that project-relative layout. Existing
 absolute paths or external source-directory references are not rewritten; their
 conversion and dependency discovery remain separate asset-pipeline work.
 
-Output is remembered only in local editor preferences and never changes the
-descriptor. Choose a destination outside the project. Only empty folders or
-unmodified exporter-owned output can be replaced; user-added or modified files
-cause a protective failure.
+Output, executable name and logo are remembered only in local editor preferences
+and never change the descriptor. The executable name defaults to the project name
+and must be a valid Windows base name. Choose a destination outside the project.
+Only empty folders or unmodified exporter-owned output can be replaced;
+user-added or modified files cause a protective failure.
 
 ## Output and execution
 
-The selected folder contains one root entry executable and category folders:
+The selected folder contains one root entry executable named after the packaging
+executable name and category folders:
 
 ```text
 MyGame.exe
@@ -52,8 +56,9 @@ Metadata/
   .gengine-output.json
 ```
 
-The root `MyGame.exe` is a small launcher. It starts the real game executable
-from `Runtime/`, which keeps all native DLL imports beside that executable.
+The root `MyGame.exe` is a small launcher with the optional logo embedded as its
+Windows icon. It starts the real game executable from `Runtime/`, which keeps all
+native DLL imports beside that executable and uses the same custom name.
 Assets, config and licenses are inside `Data/MyGame.gpak`, with Assets/Cache
 excluded. No loose Assets tree or PowerShell launcher is shipped. Start the
 root EXE directly from any cwd. The runtime executable validates the adjacent
@@ -112,14 +117,17 @@ PE import and license discovery remain open.
 ## Command line and validation
 
 ```bat
-dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe export-project --project Example/FrameGraphTriangle/FrameGraphTriangle.gproject --output E:\GameExports\Triangle
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe export-project --project Example/FrameGraphTriangle/FrameGraphTriangle.gproject --output E:\GameExports\Triangle --executable-name TriangleGame --icon C:\Icons\TriangleGame.ico
 dist\qt-editor\windows-x86_64\Release\GEngine-EditorHost\GEngine-EditorHost.exe --packaging-self-test
 ```
 
-The first command performs the editor operation; output is its only deployment
-parameter. Host `--packaging-self-test` exercises the single-field dialog, real build,
-repeat, compile failure, cancel/retry and metadata preservation with isolated
-local preferences. These checks do not prove physical clean-machine installation,
+The first command performs the editor operation; output is required, while the
+executable name and `.ico` icon are optional deployment parameters. The editor
+converts supported image logos to `.ico` before invoking the exporter. Host
+`--packaging-self-test` exercises the output/name/logo dialog, invalid inputs,
+custom manifest identity, embedded icon, real build, repeat, compile failure,
+cancel/retry and metadata preservation with isolated local preferences. These
+checks do not prove physical clean-machine installation,
 long-run GPU memory stability or support for arbitrary third-party project builds.
 
 Earlier directory-deployment prototypes and their PowerShell tests were removed;

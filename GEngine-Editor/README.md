@@ -155,10 +155,11 @@ has no build consumers. Scene/Play/Qt Gizmo migration is still incomplete.
 
 Use File > New project or Open project for `.gproject` files. The descriptor has
 only schemaVersion and name, **no packaging information**. Project > Package project
-has exactly one input: output directory. It automatically builds engine/game C++
-sources in Release, creates a .gpak and publishes EXE/pack/runtime DLLs directly
-to that folder. Console reports build progress/errors; Cancel stops the owned
-compiler tree. Output is a local preference and never rewrites the project file.
+collects output directory, executable name and optional logo image. It automatically
+builds engine/game C++ sources in Release, converts the logo to an embedded Windows
+icon, creates a .gpak and publishes EXE/pack/runtime DLLs directly to that folder.
+Console reports build progress/errors; Cancel stops the owned compiler tree. These
+three values are local preferences and never rewrite the project file.
 Opening a plain folder remains a read-only browsing operation.
 
 Open `Example/FrameGraphTriangle/FrameGraphTriangle.gproject` for a ready project

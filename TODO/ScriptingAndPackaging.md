@@ -1,5 +1,35 @@
 # C#、Mono 与游戏打包
 
+- [ ] Add executable name and logo/icon inputs to the editor packaging
+      operation (2026-10-27). Scope: extend Project > Package project with
+      executable-name and logo/icon fields, persist them as local packaging
+      preferences rather than `.gproject` metadata, convert supported image
+      logos to Windows `.ico` resources, pass both values to
+      `GEngineTools.exe export-project`, and apply them to the categorized root
+      launcher/game names and embedded launcher icon. Acceptance: the dialog
+      exposes output, executable name, and logo; custom names produce
+      `<Custom>.exe` at the package root and under `Runtime/` with matching
+      `.gpak` and manifest identity; a custom logo is visible as the launcher
+      icon; invalid names/logos fail before packaging; project metadata remains
+      schema-1 name/version only; incremental repeat still reports zero copies;
+      Host packaging regression covers the new fields; and documentation is
+      synchronized.
+      Implemented: MainWindow exposes output, executable-name and logo fields,
+      persists them as local QSettings preferences, validates executable names and
+      logo inputs, and renders supported images to multi-size Windows `.ico` files.
+      `export-project` accepts `--executable-name` and `--icon`; the custom name is
+      applied to the root launcher, runtime game, `.gpak` and manifest identity, and
+      CMake embeds the icon in the launcher resource. PackagingCheck covers the
+      three-field dialog, invalid inputs, custom identity and embedded icon.
+      Verification (2026-10-27): CMake Release `GEngineTools` rebuilt successfully
+      after the CLI changes, and `git diff --check` passed before documentation
+      synchronization. The user interrupted further compilation, so Qt
+      Host/PackagingCheck and an end-to-end custom package were not run. A prior
+      `qt-editor --configuration Release --test` invocation stalled in its Ninja
+      build with no active compiler process and was cancelled.
+      Remaining work: build the Qt Host, run PackagingCheck, perform an end-to-end
+      package/visual icon check, and confirm incremental zero-copy behavior.
+
 - [x] 2026-10-27 用户授权提交并推送：发布本次项目文件、编辑器单输出路径
   自动编译、原生 .gpak 与相关工具/回归/文档。范围包含前置目录导出原型历史，
   不包含 tmp、生成的工程/构建产物、本机输出或配置；子模块指针不变。

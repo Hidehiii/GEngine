@@ -1,5 +1,8 @@
 #include "MainWindow.h"
 #include <QAction>
+#include <algorithm>
+#include <array>
+#include <iterator>
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDialog>
@@ -15,16 +18,141 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QImageReader>
+#include <QPainter>
 #include <QProcess>
 #include <QPushButton>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QStatusBar>
+#include <QTemporaryFile>
 #include <QTimer>
 #include <QVBoxLayout>
 
 namespace GEngineEditor
 {
+namespace
+{
+    bool ValidExecutableName(const QString& name)
+    {
+        if (name.isEmpty() || name.size() > 101 || name.endsWith('.') || name.endsWith(' ')) return false;
+        for (const auto character : name)
+        {
+            if (character.unicode() < 32 || QString("<>:\"/\\|?*").contains(character)) return false;
+        }
+        const auto first = name.front();
+        return first.isLetterOrNumber() || first == '_' || first == '-';
+    }
+
+    QImage RenderIconFrame(const QImage& source, int size)
+    {
+        QImage frame(size, size, QImage::Format_ARGB32);
+        frame.fill(Qt::transparent);
+        QPainter painter(&frame);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
+        const auto scale = std::min(
+            static_cast<qreal>(size) / source.width(),
+            static_cast<qreal>(size) / source.height());
+        const auto width = static_cast<int>(source.width() * scale);
+        const auto height = static_cast<int>(source.height() * scale);
+        const QRect target((size - width) / 2, (size - height) / 2, width, height);
+        painter.drawImage(target, source, source.rect());
+        return frame;
+    }
+
+    void AppendUInt16(QIODevice& device, quint16 value)
+    {
+        const unsigned char bytes[] = {static_cast<unsigned char>(value & 0xff),
+            static_cast<unsigned char>((value >> 8) & 0xff)};
+        device.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
+    }
+
+    void AppendUInt32(QIODevice& device, quint32 value)
+    {
+        const unsigned char bytes[] = {static_cast<unsigned char>(value & 0xff),
+            static_cast<unsigned char>((value >> 8) & 0xff),
+            static_cast<unsigned char>((value >> 16) & 0xff),
+            static_cast<unsigned char>((value >> 24) & 0xff)};
+        device.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
+    }
+
+    QTemporaryFile* CreatePackageIcon(const QString& logoPath, QObject* parent)
+    {
+        QImageReader reader(logoPath);
+        reader.setAutoTransform(true);
+        const QImage source = reader.read();
+        if (source.isNull() || source.width() <= 0 || source.height() <= 0 ||
+            source.width() > 4096 || source.height() > 4096 ||
+            source.sizeInBytes() > 64 * 1024 * 1024)
+        {
+            return nullptr;
+        }
+        static constexpr int sizes[] = {16, 24, 32, 48, 64, 128, 256};
+        constexpr int count = static_cast<int>(std::size(sizes));
+        std::array<QImage, count> frames;
+        std::array<quint32, count> offsets{};
+        quint32 payloadOffset = 6 + count * 16;
+        auto* file = new QTemporaryFile(parent);
+        file->setFileTemplate(QDir::tempPath() + "/GEngineIcon-XXXXXX.ico");
+        if (!file->open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            delete file;
+            return nullptr;
+        }
+        AppendUInt16(*file, 0);
+        AppendUInt16(*file, 1);
+        AppendUInt16(*file, static_cast<quint16>(count));
+        for (int index = 0; index < count; ++index)
+        {
+            frames[index] = RenderIconFrame(source, sizes[index]);
+            const int maskStride = ((sizes[index] + 31) / 32) * 4;
+            const quint32 imageSize = 40 + sizes[index] * sizes[index] * 4 +
+                sizes[index] * maskStride;
+            offsets[index] = payloadOffset;
+            payloadOffset += imageSize;
+            const auto dimension = sizes[index] == 256 ? 0 : sizes[index];
+            AppendUInt16(*file, 0);
+            AppendUInt16(*file, static_cast<quint8>(dimension));
+            AppendUInt16(*file, static_cast<quint8>(dimension));
+            AppendUInt16(*file, 0);
+            AppendUInt16(*file, 1);
+            AppendUInt16(*file, 32);
+            AppendUInt32(*file, imageSize);
+            AppendUInt32(*file, offsets[index]);
+        }
+        for (const auto& frame : frames)
+        {
+            const int size = frame.width();
+            const int maskStride = ((size + 31) / 32) * 4;
+            const quint32 imageSize = 40 + size * size * 4 + size * maskStride;
+            AppendUInt32(*file, 40);
+            AppendUInt32(*file, static_cast<quint32>(size));
+            AppendUInt32(*file, static_cast<quint32>(size * 2));
+            AppendUInt16(*file, 1);
+            AppendUInt16(*file, 32);
+            AppendUInt32(*file, 0);
+            AppendUInt32(*file, imageSize);
+            AppendUInt32(*file, 0);
+            AppendUInt32(*file, 0);
+            AppendUInt32(*file, 0);
+            AppendUInt32(*file, 0);
+            for (int row = size - 1; row >= 0; --row)
+            {
+                file->write(reinterpret_cast<const char*>(frame.scanLine(row)), size * 4);
+            }
+            file->write(QByteArray(size * maskStride, '\0'));
+        }
+        file->flush();
+        file->close();
+        if (file->error() != QFileDevice::NoError)
+        {
+            delete file;
+            return nullptr;
+        }
+        return file;
+    }
+}
+
     bool MainWindow::PackagingRunning() const
     { return m_PackagingProcess && m_PackagingProcess->state() != QProcess::NotRunning; }
 
@@ -60,7 +188,8 @@ namespace GEngineEditor
         }
         return OpenProject(path);
     }
-    bool MainWindow::SavePackaging(const QString& output)
+    bool MainWindow::SavePackaging(const QString& output, const QString& executableName,
+        const QString& logoPath)
     {
         if (m_Project.Path.isEmpty() || PackagingRunning()) { m_Error = "Open a .gproject file before configuring packaging."; return false; }
         if (output.trimmed().isEmpty()) { m_Error = "Choose an output directory."; return false; }
@@ -69,10 +198,28 @@ namespace GEngineEditor
         { return parent.compare(child, Qt::CaseInsensitive) == 0 || child.startsWith(parent + '/', Qt::CaseInsensitive); };
         if (contains(m_Project.Root(), destination) || contains(destination, m_Project.Root()))
         { m_Error = "Choose an output folder outside the project."; return false; }
+        const auto executable = executableName.trimmed();
+        if (!ValidExecutableName(executable)) { m_Error = "Choose a valid executable name."; return false; }
+        const auto logo = logoPath.trimmed();
+        QTemporaryFile* icon = nullptr;
+        if (!logo.isEmpty())
+        {
+            const auto logoFile = QFileInfo(logo);
+            if (!logoFile.isFile() || logoFile.isSymLink() || logoFile.size() > 64 * 1024 * 1024)
+            { m_Error = "Choose a readable local image logo."; return false; }
+            icon = CreatePackageIcon(logoFile.absoluteFilePath(), this);
+            if (!icon) { m_Error = "The logo is not a supported image or is too large."; return false; }
+        }
         m_PackageOutputDirectory = destination;
+        m_PackageExecutableName = executable;
+        m_PackageLogoPath = QFileInfo(logo).absoluteFilePath();
+        delete m_PackageIconFile;
+        m_PackageIconFile = icon;
         const auto key = QCryptographicHash::hash(m_Project.Path.toCaseFolded().toUtf8(), QCryptographicHash::Sha256).toHex();
         QSettings settings;
         settings.setValue("packagingOutputs/" + QString::fromLatin1(key), destination);
+        settings.setValue("packagingExecutableNames/" + QString::fromLatin1(key), executable);
+        settings.setValue("packagingLogos/" + QString::fromLatin1(key), m_PackageLogoPath);
         return true;
     }
     bool MainWindow::ShowPackagingDialog()
@@ -82,7 +229,7 @@ namespace GEngineEditor
         auto* note = new QLabel("The editor will compile your game and create its executable and resource pack in this folder.", &dialog);
         note->setWordWrap(true); layout->addWidget(note);
         auto* form = new QFormLayout; layout->addLayout(form);
-        auto row = [&](const QString& text, const char* id, const QString& value)
+        auto outputRow = [&](const QString& text, const char* id, const QString& value)
         {
             auto* container = new QWidget(&dialog); auto* line = new QHBoxLayout(container); line->setContentsMargins(0, 0, 0, 0);
             auto* edit = new QLineEdit(value, container); edit->setObjectName(id); edit->setMinimumWidth(420);
@@ -94,13 +241,28 @@ namespace GEngineEditor
             });
             return edit;
         };
-        auto* output = row("Output directory", "PackageOutput", m_PackageOutputDirectory);
+        auto* output = outputRow("Output directory", "PackageOutput", m_PackageOutputDirectory);
+        auto* executable = new QLineEdit(m_PackageExecutableName, &dialog);
+        executable->setObjectName("PackageExecutableName"); executable->setMinimumWidth(420);
+        form->addRow("Executable name", executable);
+        auto* logoRow = new QWidget(&dialog); auto* logoLayout = new QHBoxLayout(logoRow);
+        logoLayout->setContentsMargins(0, 0, 0, 0);
+        auto* logo = new QLineEdit(m_PackageLogoPath, logoRow); logo->setObjectName("PackageLogoPath");
+        logo->setMinimumWidth(420);
+        auto* browseLogo = new QPushButton("Browse...", logoRow); logoLayout->addWidget(logo); logoLayout->addWidget(browseLogo);
+        form->addRow("Logo/icon image", logoRow);
+        connect(browseLogo, &QPushButton::clicked, &dialog, [&, logo]
+        {
+            const auto selected = QFileDialog::getOpenFileName(&dialog, "Package logo", logo->text(),
+                "Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tif *.tiff *.webp);;All files (*.*)");
+            if (!selected.isEmpty()) logo->setText(selected);
+        });
         auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
         buttons->button(QDialogButtonBox::Ok)->setText("Build and package"); layout->addWidget(buttons);
         connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-        connect(buttons, &QDialogButtonBox::accepted, &dialog, [&, output]
+        connect(buttons, &QDialogButtonBox::accepted, &dialog, [&, output, executable, logo]
         {
-            if (SavePackaging(output->text())) dialog.accept();
+            if (SavePackaging(output->text(), executable->text(), logo->text())) dialog.accept();
             else QMessageBox::warning(&dialog, "Packaging settings", m_Error);
         });
         return dialog.exec() == QDialog::Accepted;
@@ -114,11 +276,14 @@ namespace GEngineEditor
         if (!ProjectFile::Load(m_Project.Path, current, m_Error)) return false;
         if (m_PackageOutputDirectory.trimmed().isEmpty())
         { m_Error = "Choose an output directory."; return false; }
+        if (!SavePackaging(m_PackageOutputDirectory, m_PackageExecutableName, m_PackageLogoPath)) return false;
         const auto exporter = QDir(QCoreApplication::applicationDirPath()).filePath("GEngineTools.exe");
         if (!QFileInfo::exists(exporter))
         { m_Error = "Packaging requires the native editor packaging tool. Rebuild/deploy the editor if it is missing."; return false; }
         m_Project = current; m_PackagingCancelled = false; m_PackagingOutput.clear(); m_Error.clear();
-        QStringList args{"export-project", "--project", m_Project.Path, "--output", m_PackageOutputDirectory};
+        QStringList args{"export-project", "--project", m_Project.Path, "--output", m_PackageOutputDirectory,
+            "--executable-name", m_PackageExecutableName};
+        if (m_PackageIconFile) args << "--icon" << m_PackageIconFile->fileName();
         m_PackagingProcess->setWorkingDirectory(m_Project.Root());
         m_PackagingProcess->start(exporter, args);
         m_PackagingDeadline->start(1800000);

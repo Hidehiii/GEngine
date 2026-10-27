@@ -27,6 +27,11 @@ add_executable(GProjectGameLauncher GameLauncher.cpp)
 target_compile_definitions(GProjectGameLauncher PRIVATE
     GE_GAME_EXECUTABLE_NAME="${GE_PROJECT_NAME}.exe" UNICODE _UNICODE)
 target_compile_options(GProjectGameLauncher PRIVATE /utf-8)
+if(GE_PROJECT_ICON)
+    file(TO_CMAKE_PATH "${GE_PROJECT_ICON}" GE_PROJECT_ICON_PATH)
+    configure_file(GameLauncher.rc.in "${CMAKE_CURRENT_BINARY_DIR}/GameLauncher.rc" @ONLY)
+    target_sources(GProjectGameLauncher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/GameLauncher.rc")
+endif()
 set_target_properties(GProjectGameLauncher PROPERTIES OUTPUT_NAME "${GE_PROJECT_NAME}"
     RUNTIME_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/Game")
 if(DEFINED ENV{VULKAN_SDK} AND NOT "$ENV{VULKAN_SDK}" STREQUAL "")
