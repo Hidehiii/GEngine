@@ -93,6 +93,7 @@
 - [Frame graph](Rendering/FrameGraph.md)
 - [Frame graph core](Rendering/FrameGraphCore.md)
 - [Frame graph transitions](Rendering/FrameGraphTransitions.md)
+- [Shader graph](Rendering/ShaderGraph.md)
 - [Rendering integration](Rendering/Integration.md)
 - [Component render helpers](Rendering/ComponentRenderHelpers.md)
 - [Rendering smoke tests](Rendering/SmokeTest.md)
