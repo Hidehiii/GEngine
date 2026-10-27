@@ -4,12 +4,25 @@ A game engine.
 
 Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics is based on the Box2D library, and the 3D physics is based on Nvidia's PhysX library.
 
-### Dependencies
-##### [VulkanSDK](https://www.lunarg.com/vulkan-sdk/)
-The repository includes Windows x64 Vulkan headers, libraries, and shader
-tools. Set `VULKAN_SDK` only to override the bundled SDK.
-##### [.Net Framework](https://dotnet.microsoft.com/zh-cn/download/visual-studio-sdks?cid=getdotnetsdk)
-Version: .NET Framework 4.7.2 Developer Pack (for the C# ScriptCore project).
+### Required dependencies
+
+- A Windows 10 or newer development environment.
+- Visual Studio 2026, 2022, or 2019 with Desktop development with C++ and the
+  matching Windows SDK installed.
+- Git and Git LFS installed, with the repository cloned recursively so
+  `GEngine/GEngine-ThirdParty` is present.
+- .NET Framework 4.7.2 Developer Pack installed.
+- The official Mono 6.10.0.87 SDK prepared under
+  `dist/mono/windows-x86_64/6.10.0.87/Mono`; run
+  `GEngineTools.exe mono-sdk` once after the workflow tool is built.
+
+Additional requirements depend on the selected build path:
+
+- CMake builds require CMake 3.24 or newer.
+- Building the Qt editor requires Python and a locally built Qt 6.10.3 SDK;
+  `GEngineTools.exe qt-sdk` builds that SDK.
+- Vulkan headers, libraries, and shader tools are bundled in the recursive
+  checkout; an external Vulkan SDK is not required.
 
 ### Start
 Generate projects with [Premake](BuildScripts/GenerateProjectsPremake.bat) (VS2022, VS2019, or VS2026) or [CMake](BuildScripts/GenerateProjectsCMake.bat) (VS2022 or VS2019). See [Build and run](Documentation/Guides/BuildAndRun.md) for commands, target coverage, and output paths.

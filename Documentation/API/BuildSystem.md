@@ -101,9 +101,10 @@ No public C++ signatures change with this build configuration.
 The CMake build uses checked-in OpenSSL import libraries at `VC/x64/MD[d]`.
 An empty vendor runtime-DLL match causes an explicit post-build error.
 
-No engine application-facing C++ API changes were made. C# ScriptCore project
-generation remains Premake-only; see the [build guide](../Guides/BuildAndRun.md).
-Premake's `Dist` configuration is also not exposed by this CMake launcher.
+No engine application-facing C++ API changes were made. CMake generates the C#
+`GEngine-ScriptCore` target when `GE_WITH_MONO` is ON, and omits it for
+native-only builds with `GE_WITH_MONO=OFF`. Premake's `Dist` configuration is
+not exposed by this CMake launcher.
 VS2022 generation was checked from outside the repository directory for both
 launchers. On 2026-10-20, Premake and CMake Debug/Release GEngine plus
 FrameGraphTriangle builds passed in the unified layout, and 120-frame D3D12

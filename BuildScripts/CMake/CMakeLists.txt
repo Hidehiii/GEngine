@@ -6,6 +6,9 @@ option(GE_WITH_MONO "Build managed scripting support" ON)
 if(NOT WIN32 OR NOT MSVC)
     message(FATAL_ERROR "This CMake build currently supports Windows/MSVC only.")
 endif()
+if(GE_WITH_MONO)
+    enable_language(CSharp)
+endif()
 
 set(GE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
 get_filename_component(GE_ROOT "${GE_ROOT}" ABSOLUTE)
@@ -171,6 +174,18 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross
 )
 if(GE_WITH_MONO)
     target_link_libraries(GEngine PRIVATE "${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/lib/libmono-static-sgen.lib")
+endif()
+
+if(GE_WITH_MONO)
+    file(GLOB_RECURSE GE_SCRIPTCORE_SOURCES CONFIGURE_DEPENDS
+        "${GE_ROOT}/GEngine-ScriptCore/Source/*.cs")
+    if(NOT GE_SCRIPTCORE_SOURCES)
+        message(FATAL_ERROR "GEngine-ScriptCore sources are missing.")
+    endif()
+    add_library(GEngine-ScriptCore SHARED ${GE_SCRIPTCORE_SOURCES})
+    ge_set_output_directories(GEngine-ScriptCore)
+    set_target_properties(GEngine-ScriptCore PROPERTIES
+        VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 endif()
 
 function(ge_add_application name directory)

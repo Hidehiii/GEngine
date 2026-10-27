@@ -13,6 +13,53 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [x] Add the C# ScriptCore target to the CMake generator and treat .NET as a
+      required dependency. Scope: generate `GEngine-ScriptCore` from the same
+      `Source/*.cs` inputs in root CMake, emit it under the unified CMake
+      `dist` layout, and update the root README dependency list and build/API/
+      architecture documentation. Acceptance: CMake VS2022 Debug/Release
+      generation and ScriptCore builds pass with the .NET Framework 4.7.2
+      Developer Pack; Premake ScriptCore remains unchanged; the root README
+      lists .NET as required rather than Premake-only; and `git diff --check`
+      passes.
+      Implemented: root CMake enables the CSharp language when `GE_WITH_MONO`
+      is ON, discovers `GEngine-ScriptCore/Source/*.cs`, emits the assembly
+      under the unified CMake `dist` tree, and targets .NET Framework 4.7.2.
+      `GE_WITH_MONO=OFF` omits the target and does not enable CSharp for
+      native-only project builds. The root README and build/API/architecture
+      pages now treat the .NET Framework 4.7.2 Developer Pack as required for
+      standard builds and describe both generators as ScriptCore-capable.
+      Verification (2026-10-27): CMake VS2022 generation enabled the CSharp
+      compiler successfully; Debug and Release `GEngine-ScriptCore` builds
+      exited 0 and produced DLLs under
+      `dist/cmake-vs2022/windows-x86_64/<Config>/GEngine-ScriptCore/`; Release
+      `GEngineTools` still built successfully; a separate `GE_WITH_MONO=OFF`
+      configuration omitted the ScriptCore project and built `GEngineTools`
+      successfully; the unchanged Premake ScriptCore project built in Release;
+      and `git diff --check` passed.
+
+- [x] Replace the root README dependency list with only required dependencies.
+      Scope: list the universally required Windows build tools, Git LFS,
+      .NET Framework 4.7.2 Developer Pack, recursive submodule checkout, and
+      Mono SDK preparation; call out CMake and Qt editor requirements only when
+      those build paths are selected; remove the external Vulkan SDK
+      installation as a dependency.
+      Acceptance: the root README contains no optional-only dependency,
+      conditional requirements are tied to their build paths, claims match the
+      build guide and project definitions, and `git diff --check` passes.
+      Documentation-only; no engine rebuild is required.
+      Implemented: the root README now describes the required new environment:
+      Windows 10+, Visual Studio C++ tools/Windows SDK, Git and Git LFS with a
+      recursive clone, .NET Framework 4.7.2 Developer Pack, and the official
+      Mono SDK prepared by `GEngineTools.exe mono-sdk`. CMake and the Qt editor
+      are called out only for their selected build paths; Vulkan is explicitly
+      bundled and not an external dependency.
+      Verification (2026-10-27): reviewed the list against the build guide,
+      `BuildScripts/CMake/CMakeLists.txt`, and `GEngine-ScriptCore/premake5.lua`;
+      confirmed no external Vulkan requirement claim; and ran
+      `git diff --check`. This entry is documentation-only, while the CMake
+      ScriptCore implementation and build evidence are recorded above.
+
 - [x] Place `GEngineTools.exe` build guidance inside the generator-specific
       build sections. Scope: move the CMake tool bootstrap into the CMake build
       section and the direct Premake bootstrap into the Premake build section,

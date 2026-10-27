@@ -76,9 +76,10 @@ and third-party source tree. Two launchers under `BuildScripts/` select Premake
 or CMake. The bundled Premake executable is in
 `BuildScripts/Premake/premake5.exe`; engine dependencies are pinned in the
 `GEngine/GEngine-ThirdParty` aggregate submodule. The CMake graph has five vendored C++ libraries, the shared
-GEngine library, seven C++ examples, Sandbox, and Editor. It copies the engine
-and required vendor runtime DLLs beside each built executable. Premake alone
-currently generates the C# ScriptCore project.
+GEngine library, seven C++ examples, Sandbox, Editor, and the C# ScriptCore
+target when `GE_WITH_MONO` is ON. It copies the engine and required vendor
+runtime DLLs beside each built executable. Premake and CMake both generate the
+C# ScriptCore target for their standard Mono-enabled builds.
 
 Both generators use one path contract keyed by generator, system,
 architecture, configuration, and target. Intermediates live under
@@ -91,8 +92,8 @@ and PCH files use the target's `build` directory. CMake's generated projects,
 cache, objects, and PCH files use
 `build/cmake-<action>/<system>-<architecture>/`; its linker outputs and
 runtime payloads use the matching `dist` tree. The C# ScriptCore assembly
-follows the same Premake `build`/`dist` layout, and the editor post-build step
-copies it into the editor target's `Resources/Scripts` directory. Legacy
+follows the same generator-specific `build`/`dist` layout in Premake and CMake.
+Legacy
 `bin/` and `bin-int/` directories are no longer selected by either generator.
 
 All current build paths resolve the engine dependency tree from
@@ -142,8 +143,8 @@ The same build and backend checks passed after replacing `glm`, `glfw`,
 `yaml-cpp`, `spdlog`, and `stb` with aggregate-local upstream submodules, and a
 fresh recursive Git LFS clone reproduced the pinned tree.
 Other application targets, VS2019, and VS2026 were not rebuilt for this path
-change. The CMake option does not generate Premake's `Dist` or C# ScriptCore
-project. A GEngine-Editor Debug build attempt still fails on pre-existing
+change. The CMake option does not generate Premake's `Dist` configuration; its
+Mono-enabled build now generates C# ScriptCore. A GEngine-Editor Debug build attempt still fails on pre-existing
 editor/API mismatches such as an invalid `OnDetach` override and removed
 legacy renderer calls; that failure is independent of the new path layout.
 

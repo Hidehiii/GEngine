@@ -7,8 +7,8 @@ C# runtime deployment redesign is documented in the
 S0.1 is implemented: `RuntimeSpecification::ScriptRuntimeRoot` and
 `ScriptCoreAssembly` select the Mono BCL root and core assembly, and relative
 values resolve against `WorkingDirectory` before the runtime changes cwd.
-RuntimeId, engine-consumed runtime manifests, Development/Packaged modes, and ScriptCore
-generation in CMake are still not implemented.
+RuntimeId, engine-consumed runtime manifests, Development/Packaged modes, and
+automatic ScriptCore deployment in project export are still not implemented.
 Current project export uses the native `GEngineTools.exe` pipeline and `.gpak`
 runtime described in [the export guide](GameExport.md). The former explicit
 manifest directory-deployment prototypes were removed; automatic scene
@@ -23,7 +23,8 @@ Development is currently Windows-first. Install the following before generating 
 - The repository includes the Vulkan headers, loader library and shader tools
   under `GEngine/GEngine-ThirdParty/VulkanSDK`. Set `VULKAN_SDK` only to use another
   installed SDK.
-- .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
+- .NET Framework 4.7.2 Developer Pack, required to build `GEngine-ScriptCore`
+  with both Premake and CMake.
 
 Build `GEngineTools.exe` first, then run its `mono-sdk` command once from the
 repository root before generating engine/game projects. The native tool downloads the official Mono
@@ -228,8 +229,9 @@ final artifacts. For example, the CMake VS2022 Debug executable is
 Run FrameGraphTriangle from `Example/FrameGraphTriangle` so its `Config.ini`
 and shader assets resolve.
 The CMake project covers the engine, vendored C++ libraries, seven C++ examples,
-Sandbox and the standalone engine worker. Qt Host is opt-in. `GEngine-ScriptCore` (C#) remains Premake-only; a CMake
-build does not generate that assembly. CMake currently requires Windows/MSVC
+Sandbox and the standalone engine worker. Qt Host is opt-in. `GE_WITH_MONO=ON`
+(the default) generates `GEngine-ScriptCore`; native-only project builds set
+`GE_WITH_MONO=OFF` and omit it. CMake currently requires Windows/MSVC
 and does not offer a VS2026 generator entry in these launchers. Premake's
 `Dist` configuration is not exposed by the CMake launcher. The same
 `VULKAN_SDK` override or bundled SDK fallback is used by both systems.
