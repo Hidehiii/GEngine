@@ -13,6 +13,17 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [x] Add the official .NET Framework 4.7.2 Developer Pack download link to
+      the root README. Scope: link the required dependency from the README
+      dependency list. Acceptance: the link resolves, it targets the required
+      .NET Framework 4.7.2 Developer Pack, no code/build behavior changes, and
+      `git diff --check` passes. Documentation-only; no engine rebuild is
+      required.
+      Implemented: linked the Microsoft .NET Framework 4.7.2 Developer Pack
+      download page from the README's required dependency bullet.
+      Verification (2026-10-27): reviewed the URL and dependency version, and
+      ran `git diff --check`.
+
 - [x] Add the C# ScriptCore target to the CMake generator and treat .NET as a
       required dependency. Scope: generate `GEngine-ScriptCore` from the same
       `Source/*.cs` inputs in root CMake, emit it under the unified CMake

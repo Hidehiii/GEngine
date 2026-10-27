@@ -11,7 +11,8 @@ Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics 
   matching Windows SDK installed.
 - Git and Git LFS installed, with the repository cloned recursively so
   `GEngine/GEngine-ThirdParty` is present.
-- .NET Framework 4.7.2 Developer Pack installed.
+- [.NET Framework 4.7.2 Developer Pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net472)
+  installed.
 - The official Mono 6.10.0.87 SDK prepared under
   `dist/mono/windows-x86_64/6.10.0.87/Mono`; run
   `GEngineTools.exe mono-sdk` once after the workflow tool is built.
