@@ -12,6 +12,7 @@
 #include "GEngine/Scripting/ScriptEngine.h"
 #include "GEngine/Tools/OpenSSLTool.h"
 #include "GEngine/Tools/Serializer.h"
+#include "GEngine/Runtime/ResourcePack.h"
 #include "GEngine/Window.h"
 #include "GEngine/Events/ApplicationEvent.h"
 
@@ -34,7 +35,7 @@ namespace GEngine
 		};
 		m_Specification.ScriptRuntimeRoot = ResolveScriptPath(m_Specification.ScriptRuntimeRoot);
 		m_Specification.ScriptCoreAssembly = ResolveScriptPath(m_Specification.ScriptCoreAssembly);
-		if (!m_Specification.WorkingDirectory.empty())
+		if (!m_Specification.WorkingDirectory.empty() && !HasResourcePack())
 			std::filesystem::current_path(workingDirectory);
 		Log::InitFileLogging();
 

@@ -6,8 +6,46 @@
 #include <bitset>
 #include <d3d12shader.h>
 #include <SPIRV-Cross/spirv_cross.hpp>
+#include "GEngine/Runtime/ResourcePack.h"
+#include <atomic>
 namespace GEngine
 {
+    namespace
+    {
+        class ResourceIncludeHandler final : public IDxcIncludeHandler
+        {
+        public:
+            explicit ResourceIncludeHandler(IDxcUtils* utils) : Utils(utils) { Utils->AddRef(); }
+            ~ResourceIncludeHandler() { Utils->Release(); }
+            HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void** result) override
+            {
+                if (!result) return E_POINTER;
+                *result = nullptr;
+                if (id != __uuidof(IUnknown) && id != __uuidof(IDxcIncludeHandler)) return E_NOINTERFACE;
+                *result = static_cast<IDxcIncludeHandler*>(this); AddRef(); return S_OK;
+            }
+            ULONG STDMETHODCALLTYPE AddRef() override { return ++References; }
+            ULONG STDMETHODCALLTYPE Release() override
+            { const auto count = --References; if (!count) delete this; return count; }
+            HRESULT STDMETHODCALLTYPE LoadSource(LPCWSTR name, IDxcBlob** result) override
+            {
+                if (!result) return E_POINTER;
+                *result = nullptr;
+                try
+                {
+                    const auto bytes = ReadResource(std::filesystem::path(name));
+                    if (bytes.size() > UINT32_MAX) return E_FAIL;
+                    IDxcBlobEncoding* blob = nullptr;
+                    const auto status = Utils->CreateBlob(bytes.data(), static_cast<UINT32>(bytes.size()), DXC_CP_UTF8, &blob);
+                    *result = blob; return status;
+                }
+                catch (...) { return E_FAIL; }
+            }
+        private:
+            std::atomic<ULONG> References{1};
+            IDxcUtils* Utils;
+        };
+    }
 	Ref<ShaderCompiler> ShaderCompiler::s_Instance = nullptr;
 	
 	namespace Utils
@@ -425,7 +463,7 @@ namespace GEngine
 	{
 		DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&m_Utils));
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_Compiler));
-		m_Utils->CreateDefaultIncludeHandler(&m_IncludeHandler);
+		m_IncludeHandler = new ResourceIncludeHandler(m_Utils);
 	}
 
 	bool ShaderCompiler::Compile(const std::string& source, const std::string& target, const std::string& entryPoint, 

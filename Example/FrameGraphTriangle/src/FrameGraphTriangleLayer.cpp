@@ -8,6 +8,11 @@
 #include <chrono>
 #include <thread>
 #include <imgui.h>
+#include <GEngine/Runtime/ResourcePack.h>
+#include <GEngine/Tools/ModelImporter.h>
+#include <GEngine/Tools/Serializer.h>
+#include <GEngine/Object/Scene/Scene.h>
+#include <future>
 
 namespace GEngine
 {
@@ -31,6 +36,26 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnAttach()
 	{
+        if (std::getenv("GENGINE_EXAMPLE_RESOURCE_CHECK"))
+        {
+            const auto expected = ReadResource("Assets/ResourceProbe.ppm");
+            auto pending = std::async(std::launch::async, [] { return ReadResource("Assets/ResourceProbe.ppm"); });
+            const auto loaded = pending.get();
+            if (loaded != expected) throw std::runtime_error("Background resource read differs.");
+            auto texture = Graphics::GetRenderDevice().CreateTexture2D("Assets/ResourceProbe.ppm");
+            if (texture->GetWidth() != 2 || texture->GetHeight() != 2)
+                throw std::runtime_error("Archive image decoding/upload failed.");
+            ModelImporter model;
+            if (!model.LoadMesh("Assets/ResourceProbe.fbx") || !model.GetMesh(0))
+                throw std::runtime_error("Archive FBX stream import failed.");
+            auto scene = CreateRef<Scene>();
+            Serializer::Deserialize("Assets/ResourceProbe.GEScene", scene);
+            if (scene->name != "ArchiveProbe") throw std::runtime_error("Archive scene YAML read failed.");
+            if (HasResourcePack() && std::filesystem::exists("Assets"))
+                throw std::runtime_error("Packaged assets were extracted to disk.");
+            GE_INFO("Resource input check passed: owned background bytes, texture upload, archive={} cwd={}",
+                HasResourcePack(), std::filesystem::current_path().string());
+        }
 		const auto capabilities = Graphics::GetCapabilities();
 		GE_INFO("Graphics capability snapshot: {} {}.", capabilities.Backend, capabilities.Version);
 		for (const auto& source : capabilities.QuerySources)
@@ -503,6 +528,11 @@ namespace GEngine
 		if ((frameLimit && m_RenderCount >= frameLimit) ||
 			(secondsLimit > 0.0 && elapsedSeconds >= secondsLimit))
 		{
+            if (std::getenv("GENGINE_EXAMPLE_RESOURCE_CHECK") && HasResourcePack())
+            {
+                if (std::filesystem::exists("Assets")) throw std::runtime_error("Asset extraction appeared during rendering.");
+                GE_INFO("Resource archive check passed at shutdown: no extracted Assets; writable cache and logs remain separate.");
+            }
 			GE_INFO("FrameGraphTriangle completed {} frames; requesting normal shutdown.", m_RenderCount);
 			Application::Get().Close();
 		}

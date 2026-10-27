@@ -2,6 +2,7 @@
 #include "Platform/OpenGL/OpenGLTexture2D.h"
 
 #include "stb_image.h"
+#include "GEngine/Tools/ResourceImage.h"
 #include <glad/glad.h>
 #include "Platform/OpenGL/OpenGLUtils.h"
 
@@ -16,7 +17,7 @@ namespace GEngine
 		int				width, height, channels;
 		stbi_uc*		data;
 		stbi_set_flip_vertically_on_load(1);
-		data		= stbi_load(path.c_str(), &width, &height, &channels, 0);
+		data		= LoadResourceImage(path.c_str(), &width, &height, &channels, 0);
 		GE_CORE_ASSERT(data, "Failed to load image!");
 		m_Width			= width;
 		m_Height		= height;

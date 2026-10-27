@@ -169,3 +169,10 @@ builds retain the existing default. Assets/config are archived after compilation
 verified in sibling staging, then published as a single-entry categorized layout:
 root launcher EXE, `Runtime/` game EXE and native DLLs, `Data/` resource pack,
 and `Metadata/` publication manifest.
+The optional launcher icon is copied into this project cache only when its
+content hash changes, so Host temporary filenames do not trigger relinking on
+every export. Each configure explicitly sets the icon path, including an empty
+value when the user removes the logo. Runtime/backend ownership is unchanged.
+The GProjectPackage target refreshes runtime DLL deployment on every invocation,
+even when an updated engine DLL does not change its import library and therefore
+does not relink the game. It no longer relies solely on the game post-link hook.

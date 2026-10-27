@@ -5,12 +5,13 @@ Shader "FrameGraphColor"
         #pragma compute updateColor
         Program
         {
+            #include "Assets/Shaders/FrameGraphColorLogic.hlsli"
             RWByteAddressBuffer ColorData : register(u0);
             [numthreads(1, 1, 1)]
             void updateColor(uint3 id : SV_DispatchThreadID)
             {
                 float4 color = asfloat(ColorData.Load4(0));
-                color.r = color.r > 0.9f ? 0.15f : 0.95f;
+                color.r = ToggleGraphRed(color.r);
                 ColorData.Store4(0, asuint(color));
             }
         }

@@ -1,8 +1,49 @@
 #include "GEpch.h"
 #include "GEngine/Tools/ModelImporter.h"
+#include "GEngine/Runtime/ResourcePack.h"
+#include <stdexcept>
 
 namespace GEngine
 {
+    namespace
+    {
+        class ResourceFbxStream final : public FbxStream
+        {
+        public:
+            explicit ResourceFbxStream(std::vector<char> bytes) : Bytes(std::move(bytes)) {}
+            EState GetState() override { return State; }
+            bool Open(void*) override { Position = 0; Error = 0; State = eOpen; return true; }
+            bool Close() override { Position = 0; State = eClosed; return true; }
+            bool Flush() override { return false; }
+            size_t Write(const void*, FbxUInt64) override { Error = 1; return 0; }
+            size_t Read(void* target, FbxUInt64 size) const override
+            {
+                if (State != eOpen) { Error = 1; return 0; }
+                const auto count = static_cast<size_t>((std::min)(size, static_cast<FbxUInt64>(Bytes.size() - Position)));
+                if (count) memcpy(target, Bytes.data() + Position, count);
+                Position += count; return count;
+            }
+            int GetReaderID() const override { return -1; }
+            int GetWriterID() const override { return -1; }
+            void Seek(const FbxInt64& offset, const FbxFile::ESeekPos& origin) override
+            {
+                const FbxInt64 base = origin == FbxFile::eBegin ? 0 :
+                    origin == FbxFile::eEnd ? static_cast<FbxInt64>(Bytes.size()) : static_cast<FbxInt64>(Position);
+                if (offset < -base || offset > static_cast<FbxInt64>(Bytes.size()) - base) { Error = 1; return; }
+                SetPosition(base + offset);
+            }
+            FbxInt64 GetPosition() const override { return static_cast<FbxInt64>(Position); }
+            void SetPosition(FbxInt64 position) override
+            { if (position < 0 || static_cast<FbxUInt64>(position) > Bytes.size()) Error = 1; else Position = static_cast<size_t>(position); }
+            int GetError() const override { return Error; }
+            void ClearError() override { Error = 0; }
+        private:
+            std::vector<char> Bytes;
+            mutable size_t Position = 0;
+            mutable int Error = 0;
+            EState State = eClosed;
+        };
+    }
     ModelImporter::~ModelImporter()
     {
 	    
@@ -10,17 +51,36 @@ namespace GEngine
     bool ModelImporter::LoadMesh(const std::string filaName)
 	{
         m_FilePath = filaName;
+        std::unique_ptr<ResourceFbxStream> stream;
+        if (HasResourcePack())
+        {
+            auto extension = std::filesystem::path(filaName).extension().string();
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+            if (extension != ".fbx") throw std::runtime_error("Archive model import currently supports FBX streams only.");
+            stream = std::make_unique<ResourceFbxStream>(ReadResource(std::filesystem::u8path(filaName)));
+        }
         FbxManager* manager = FbxManager::Create();
+        if (!manager) throw std::runtime_error("Cannot create FBX manager.");
+        const auto destroyManager = [](FbxManager* value) { value->Destroy(); };
+        std::unique_ptr<FbxManager, decltype(destroyManager)> owner(manager, destroyManager);
         FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
         manager->SetIOSettings(settings); 
         m_Importer = FbxImporter::Create(manager, "");
-        if (!m_Importer->Initialize(filaName.c_str(), -1))
+        bool initialized = false;
+        if (stream)
+        {
+            initialized = m_Importer->Initialize(stream.get(), nullptr,
+                manager->GetIOPluginRegistry()->FindReaderIDByExtension("fbx"), settings);
+        }
+        else initialized = m_Importer->Initialize(filaName.c_str(), -1);
+        if (!initialized)
 		{
-			GE_CORE_ERROR("Failed to load model: {0}", filaName);
+			GE_CORE_ERROR("Failed to load model: {0}: {1}", filaName, m_Importer->GetStatus().GetErrorString());
+            m_Importer = nullptr;
 			return false;
 		}
         FbxScene* scene = FbxScene::Create(manager, "");
-        m_Importer->Import(scene);
+        if (!m_Importer->Import(scene)) { m_Importer = nullptr; return false; }
         FbxGeometryConverter geomConverter(manager);
         geomConverter.Triangulate(scene, true);
         FbxNode* m_RootNode = scene->GetRootNode();
@@ -32,7 +92,7 @@ namespace GEngine
             for (int i = 0; i < childCount; i++)
                 ProcessNode(m_RootNode->GetChild(i));
         }
-        m_Importer->Destroy();
+        m_Importer = nullptr;
 		return true;
 	}
 

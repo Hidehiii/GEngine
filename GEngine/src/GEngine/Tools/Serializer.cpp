@@ -9,6 +9,7 @@
 #include "GEngine/Core/Config.h"
 #include<filesystem>
 #include "GEngine/Tools/FileSystemHelper.h"
+#include "GEngine/Runtime/ResourcePack.h"
 
 namespace YAML
 {
@@ -265,6 +266,7 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Config>& config)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(filepath));
 		if (!std::filesystem::exists(filepath))
 		{
 			GE_CORE_INFO("Creating config file...");
@@ -292,6 +294,7 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Scene>& scene)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(filepath));
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene";
@@ -319,6 +322,7 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, Ref<Material>& material)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(filepath));
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material";
@@ -358,6 +362,7 @@ namespace GEngine
 	template <>
 	static void GENGINE_API Serializer::Serialize(const std::string& filepath, ShaderCacheInfo& cache)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(filepath));
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << YAML::Value << cache.Name;
@@ -399,7 +404,7 @@ namespace GEngine
 		}
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
 		}
 		catch (YAML::ParserException e)
 		{
@@ -411,7 +416,7 @@ namespace GEngine
 		config->m_FramesInFlight						= data["FramesInFlight"].as<uint8_t>();
 		config->m_VSync									= data["VSync"].as<int>();
 		config->m_CommandBufferCount					= data["CommandBufferCount"].as<uint32_t>();
-		config->m_ShaderCacheDirectory					= data["ShaderCacheDirectory"].as<std::string>();
+		config->m_ShaderCacheDirectory = HasResourcePack() ? "Cache/Shaders/" : data["ShaderCacheDirectory"].as<std::string>();
 		config->m_LongPressThresholdMs					= data["LongPressThresholdMs"].as<uint32_t>();
 		config->m_DoubleClickThresholdMs				= data["DoubleClickThresholdMs"].as<uint32_t>();
 		config->m_WindowManagerAPI						= data["WindowManagerAPI"].as<uint8_t>();
@@ -429,7 +434,7 @@ namespace GEngine
 		YAML::Node data;
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
 		}
 		catch(YAML::ParserException e)
 		{
@@ -566,7 +571,7 @@ namespace GEngine
 		YAML::Node data;
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
 		}
 		catch (YAML::ParserException e)
 		{
@@ -599,7 +604,7 @@ namespace GEngine
 		YAML::Node data;
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
 		}
 		catch (YAML::ParserException e)
 		{

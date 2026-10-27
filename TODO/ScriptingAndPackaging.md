@@ -1,6 +1,12 @@
 # C#、Mono 与游戏打包
 
-- [ ] Add executable name and logo/icon inputs to the editor packaging
+- [x] 2026-10-27 用户授权提交并推送本机完成的自定义 EXE/Logo 修复与 S5.2
+  直接归档读取工作。发布范围包括实现、示例资源、回归和同步文档；不包含
+  tmp、生成工程/构建产物、本机配置或子模块指针。提交前检查预期文件清单、
+  暂存差异和 diff --check；提交/推送后核对 HEAD、origin/master 与剩余工作区。
+  此条记录发布授权与范围，不新增架构或 API 行为；功能验收证据见各所属条目。
+
+- [x] Add executable name and logo/icon inputs to the editor packaging
       operation (2026-10-27). Scope: extend Project > Package project with
       executable-name and logo/icon fields, persist them as local packaging
       preferences rather than `.gproject` metadata, convert supported image
@@ -27,8 +33,37 @@
       Host/PackagingCheck and an end-to-end custom package were not run. A prior
       `qt-editor --configuration Release --test` invocation stalled in its Ninja
       build with no active compiler process and was cancelled.
-      Remaining work: build the Qt Host, run PackagingCheck, perform an end-to-end
-      package/visual icon check, and confirm incremental zero-copy behavior.
+      Previously remaining: build the Qt Host, run PackagingCheck, perform an
+      end-to-end package/icon check, and confirm incremental zero-copy behavior.
+      Follow-up (2026-10-27, current user authorization): finish this bounded
+      milestone by rebuilding Host/tool, running the real custom-name/logo
+      packaging regression, inspecting the packaged icon and launcher behavior,
+      fixing failures, and synchronizing architecture/API/example guidance.
+      Preserve local backend selections and unrelated work. Record fresh evidence
+      separately from earlier build results before closing this entry.
+      Completed follow-up: fixed protected QTemporaryFile::open usage and switch
+      case scope compile errors, included the complete temporary-file type for
+      proper destruction, corrected ICO directory entries to 16 bytes, preserved
+      empty logo preferences, cached icon bytes at a stable content-checked build
+      path, and explicitly cleared the CMake icon argument when omitted.
+      Fresh verification: CMake Release and Debug Host/tool builds passed.
+      Each configuration passed EditorProtocol, EditorRecovery and the expanded
+      EditorPackaging regression. The latter builds the real Release engine/game,
+      checks native extracted blue/white icon pixels and matching custom identity,
+      runs the custom root launcher from an unrelated cwd for 120 D3D12 frames
+      with all three frame-119 readbacks and exit 0, checks incremental zero-copy,
+      failure preservation and cancel/retry, then renames to `Renamed Game`, removes
+      the icon, reopens preferences and verifies another unchanged zero-copy repeat.
+      Release dialog screenshot visually reviewed: all three fields and action
+      buttons render correctly. Project metadata and local backend config unchanged.
+      Validation required an elevated test child because restricted access denied
+      the system temporary output. The all-in-one qt-editor command's Mono setup
+      failed to obtain/hash its installer; direct configured CMake builds passed
+      and native game export excludes Mono. Fresh Mono setup is outside this item.
+      Limits: OpenGL/Vulkan, manual Explorer icon-cache behavior and interactive
+      resize were not rerun; this change does not alter renderer/backend APIs.
+      Premake was not rebuilt for this follow-up. Documentation synchronized;
+      final whitespace and diff review recorded before handoff.
 
 - [x] 2026-10-27 用户授权提交并推送：发布本次项目文件、编辑器单输出路径
   自动编译、原生 .gpak 与相关工具/回归/文档。范围包含前置目录导出原型历史，
@@ -272,7 +307,7 @@
   首版不承诺加密、增量补丁包、流式加载或任意格式的自动资源转换。
   S5.1 最小 .gpak 已完成，格式/原生展开/完整性及路径验证见上方 S2.4。
   此总项继续跟踪稳定身份、压缩、直接读取适配等，不能再将所有归档能力视为未实现。
-  - [ ] S5.2 直接读取 `.gpak`（2026-10-27 用户建议）：设计运行时资源读取
+  - [x] S5.2 直接读取 `.gpak`（2026-10-27 用户建议）：设计运行时资源读取
         适配层，在启动时解析并校验包索引，将规范资源路径映射到归档偏移，
         按需读取条目数据，而不是把整个包展开到 `%TEMP%` 的真实目录树。
         开发目录模式与打包模式必须使用同一逻辑资源身份；只读资源来自包，
@@ -284,6 +319,54 @@
         读取/启动前明确失败；同一资源目录模式与归档模式加载等价；异步
         加载与资源生命周期有检查；文档区分当前 S5.1 解包行为与 S5.2
         计划。实现前需先审查现有资源读取路径和 GPU 数据所有权。
+        Current implementation authorization (2026-10-27): finish S5.2 with a
+        validated immutable archive index and owned per-read bytes, migrate shader,
+        YAML/material/scene, image/cubemap and FBX input paths, keep configuration,
+        logs and shader caches in writable session state, add focused malformed-
+        archive/concurrent-read regressions, and run packaged FrameGraphTriangle
+        on available backends without extracting Assets. Preserve existing custom
+        executable/logo changes and backend config. Compression and a new async
+        asset scheduler are outside this milestone; concurrent read ownership and
+        existing upload data consumption must be checked explicitly.
+        Failures found during integration: trailing cache-directory separators
+        needed normalization; GProjectPackage must copy updated engine DLLs even
+        when the game does not relink; FBX streams need an explicit reader ID;
+        the RGB image probe exposed unsupported Vulkan RGB8 uploads. Normalize
+        Vulkan file images/cubemaps to RGBA8 and verify the probe on all backends.
+        Implemented: immutable validated path/offset/size index with retained
+        read-only backing handle, atomic mount replacement and shared snapshots;
+        per-read owning vectors with serialized seeks; FileSystemHelper reads,
+        metadata/enumeration and write guards; YAML scene/material/config/cache,
+        DXC includes, stb images/cubemaps, owned ImGui font copies and FBX memory
+        streams. Only Config.ini is seeded, with Cache/Shaders, Logs and UserData
+        outside the archive. Packaged runtime ignores development cwd overrides.
+        GPU upload ownership and queue completion policies remain unchanged.
+        Added ResourcePack CMake regression and ResourcePackRuntime.py matrix;
+        FrameGraphTriangle exercises PPM upload, the existing GpuDriven cube as
+        an FBX fixture, empty scene YAML, compute HLSL include and background bytes.
+        PPM fixture disables text conversion to preserve binary pixel layout.
+        Verification: Release/Debug focused tests passed 18 malformed archives,
+        200 concurrent reads, directory/archive byte equivalence, immutable-file
+        and write guards, failed-mount preservation, returned-buffer lifetime and
+        100 remounts (Debug handle count 60 -> 60). Release and Debug engine/game
+        builds passed with existing warnings; each OpenGL/Vulkan/D3D12 package
+        completed 120 frames, all three readbacks, resource probes and normal exit,
+        with no Assets tree after shutdown. Missing/corrupt packs exited 1 before
+        Application construction in both configurations. Release EditorProtocol,
+        EditorRecovery and expanded EditorPackaging passed, including custom icon,
+        name, real runtime probes, incremental zero-copy and cancel/failure checks.
+        A normal Debug development-directory D3D12 run also passed the probes and
+        120-frame readbacks; its original Config.ini bytes were restored.
+        D3D12 debug-layer-enabled development run reproduced the existing in-flight
+        cross-queue UAV-barrier diagnostics tracked in Rendering/FrameGraphCore.md;
+        this resource milestone does not close that synchronization defect.
+        Limits: dedicated font/cubemap runtime scenarios and full material restore
+        were not exercised (adapters compile; existing material semantics remain
+        incomplete). No new async scheduler, compression, C# deployment, clean-
+        machine or Premake rebuild, manual resize or long-duration memory claim.
+        Runtime logs: build/gpak-runtime-logs, build/gpak-runtime-debug-logs and
+        build/gpak-development-runtime.log. Final write-guard rebuild/rechecks and
+        diff/link review are completed before handoff; unrelated tmp is preserved.
   - [x] S5.3 单入口分类发布布局（2026-10-27 用户要求）：将项目打包输出从
         平铺的 EXE/DLL/.gpak/.json 目录改为“根目录只有一个 `<Game>.exe`
         和若干分类文件夹”。原生 DLL、`.gpak` 与发布元数据不嵌入 EXE，

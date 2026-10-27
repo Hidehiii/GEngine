@@ -4,18 +4,33 @@ Packaged startup now has a pre-Application phase. EntryPoint calls the portable
 ResourcePack interface, implemented under Platform/Windows: resolve EXE, require
 its same-stem `.gpak` beside the executable or in the categorized sibling
 `../Data/` directory, validate metadata/paths and per-file SHA-256,
-stream into a unique writable temp session, then set cwd before configuration,
+build an immutable path/offset index, then set a unique writable session cwd before configuration,
 logging, shader/asset reads and Application construction. Failure never proceeds
 with source-directory fallback. Development binaries without a required pack
 retain their existing startup behavior. Categorized packaged games run their real
 EXE from `Runtime/`, so native DLL loading remains adjacent to that executable;
 the user-visible root EXE is a launcher.
 
-The published archive is immutable. Runtime config rewrites, logs/caches and
-relative writes stay in the session; sessions are retained and no cleanup thread
-or new GPU ownership is introduced. This initial archive adapter extracts files
-for existing readers; it is not direct archive streaming, compression, encryption
-or a resource identity database. See the Runtime API for format/bounds and the
+The published archive is immutable. A retained Windows read handle denies
+mutation/deletion; a shared snapshot owns that handle and the indexed stream.
+Mount fully validates metadata and payload hashes before publishing the snapshot;
+failure leaves the preceding mount usable. Reads seek to one indexed payload
+under a per-archive mutex and return owned bytes. Concurrent/background readers
+and remounts cannot invalidate previously returned data. Shutdown releases the
+handle with the last snapshot; callers must join their own background jobs.
+
+Only mutable Config.ini is seeded into the session. Runtime config rewrites,
+Logs/, Cache/Shaders/ and UserData/ remain outside the archive; no Assets tree is
+created. FileSystemHelper routes reads and enumeration through the resource
+namespace and rejects writes to packaged asset paths; YAML writes enforce the
+same writable-state boundary before touching disk. The
+YAML reader and DXC includes consume owned bytes; stb decodes from memory;
+FBX import owns a memory stream through importer destruction; ImGui owns a copied
+font buffer. Existing backend uploads consume or copy input before returning, so
+the change adds no GPU waits or new resource-retirement policy. Application cwd
+overrides do not displace the packaged session. Sessions remain retained; there
+is no new cleanup thread, async asset scheduler, compression, encryption
+or resource identity database. See the Runtime API for format/bounds and the
 game export guide for native-only build and publication limitations.
 
 UI dependency upgrade: Application publishes ownership of EngineRuntime before

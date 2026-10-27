@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include <QTemporaryFile>
 #include "ConsoleOutput.h"
 #include <QAction>
 #include <QCloseEvent>

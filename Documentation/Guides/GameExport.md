@@ -36,6 +36,8 @@ conversion and dependency discovery remain separate asset-pipeline work.
 Output, executable name and logo are remembered only in local editor preferences
 and never change the descriptor. The executable name defaults to the project name
 and must be a valid Windows base name. Choose a destination outside the project.
+Clear the logo field to remove the custom icon from the next package. Unchanged
+logos keep a stable build input; an unchanged repeat should report `copyFiles:0`.
 Only empty folders or unmodified exporter-owned output can be replaced;
 user-added or modified files cause a protective failure.
 
@@ -62,8 +64,10 @@ native DLL imports beside that executable and uses the same custom name.
 Assets, config and licenses are inside `Data/MyGame.gpak`, with Assets/Cache
 excluded. No loose Assets tree or PowerShell launcher is shipped. Start the
 root EXE directly from any cwd. The runtime executable validates the adjacent
-categorized pack, extracts it into a unique `%TEMP%/GEngineGames/<session>`
-directory, then starts the application there. Config rewrites, caches and logs
+categorized pack and mounts its validated path/offset index. Asset data is read
+on demand from the pack, without an extracted Assets tree. It creates a unique
+`%TEMP%/GEngineGames/<session>` directory for Config.ini, Logs/, Cache/Shaders/
+and UserData/, then starts the application there. Config rewrites, caches and logs
 cannot modify the published pack. Session directories are retained; persistent
 settings/save migration and automatic cleanup remain open. Games overriding
 WorkingDirectory must respect the packaged session instead of a developer path.
@@ -73,9 +77,12 @@ it does not convert textures/models/shaders or stream directly from the archive.
 Missing required pack, unsupported version, checksum failure, unsafe/duplicate
 paths and truncation fail before application construction. Checksums are integrity
 checks, not authentication against someone who can rewrite a pack and its hashes.
-Direct on-demand `.gpak` reads and package-external writable state are planned as
-S5.2; until then the shipped entry point validates and extracts the complete pack
-before application construction.
+S5.2 direct `.gpak` reads are implemented: startup verifies every checksum using
+bounded buffers, retains an immutable archive/index, and only seeds mutable
+Config.ini to disk. Each resource read owns its returned bytes; package assets
+never fall back to loose files. Scene/material YAML, shader sources/includes,
+image/cubemap decoders, fonts and FBX model streams use this path. Model formats
+other than FBX explicitly fail in archive mode; C# deployment remains unfinished.
 The S5.3 categorized layout is implemented: the root launcher keeps the user
 visible entry point while the real executable and native DLLs remain together in
 `Runtime/`. Publication metadata is not a payload file and lives under

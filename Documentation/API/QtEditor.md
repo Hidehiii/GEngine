@@ -32,6 +32,13 @@ Logo 可为空或本机可读图像，Host 会在打包前转换为多尺寸 Win
 终止该作业。QSettings 分别保存 `packagingOutputs/`、`packagingExecutableNames/`、
 `packagingLogos/<canonical-project-path SHA256>`，均不进版本控制。
 
+清空 Logo 会保存空偏好并移除后续启动器的自定义图标；重新打开项目仍保持
+此选择。重复打包相同 Logo 使用内容稳定的缓存图标路径，未变输出应报告
+`copyFiles:0`。`--packaging-self-test` 检查实际提取图标的颜色、带空格的更名、
+移除图标、偏好重载，以及自定义启动器在其他工作目录启动后的 120 帧读回。
+运行时通过归档资源接口按需读取 `.gpak`，不创建 Assets 解包目录；Host 打包
+接口和 Worker IPC 无变化。自检启用示例资源检查以覆盖此运行路径。
+
 Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
 打包对话框对象名 PackagingSettingsDialog，三个输入控件分别为 PackageOutput、
 PackageExecutableName 与 PackageLogoPath。
@@ -42,7 +49,7 @@ PackageExecutableName 与 PackageLogoPath。
 --executable-name <name> [--icon <file.ico>]`。
 自动 Release 编译后，目标根目录仅包含入口 EXE 与 Runtime/、Data/、Metadata/
 分类文件夹。自定义名同时用于根 EXE、Runtime/ 内真实游戏 EXE、`.gpak`
-文件名和输出 manifest 身份；图标嵌入根启动器。资源不散放在输出根目录；原生入口负责包校验/展开，玩家不需要
+文件名和输出 manifest 身份；图标嵌入根启动器。资源不散放在输出根目录；原生入口负责包校验/挂载，玩家不需要
 PowerShell。格式/运行限制见
 [打包指南](../Guides/GameExport.md)。不提供 Mono 或资源格式转换；图形 API/IPC 不变。
 

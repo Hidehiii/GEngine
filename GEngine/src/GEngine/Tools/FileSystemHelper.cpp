@@ -1,14 +1,15 @@
 #include "GEpch.h"
 #include "GEngine/Tools/FileSystemHelper.h"
 #include <filesystem>
+#include "GEngine/Runtime/ResourcePack.h"
 
 namespace GEngine
 {
 	bool FileSystemHelper::IsFolder(const std::string& path)
 	{
-		if (std::filesystem::exists(path))
+		if (ResourceExists(path))
 		{
-			if (std::filesystem::is_directory(path))
+			if (ResourceIsDirectory(path))
 			{
 				return true;
 			}
@@ -21,6 +22,7 @@ namespace GEngine
 	}
 	bool FileSystemHelper::CreateFolder(const std::string& path)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		if (std::filesystem::exists(path))
 		{
 			GE_CORE_INFO("{0} already exists", path);
@@ -32,6 +34,7 @@ namespace GEngine
 
 	bool FileSystemHelper::DeleteFolder(const std::string& path)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		if (!std::filesystem::exists(path))
 		{
 			GE_CORE_INFO("{0} not exists", path);
@@ -46,13 +49,13 @@ namespace GEngine
 		std::vector<std::string> result;
 		if (IsFolder(folderPath))
 		{
-			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			for (const auto& entry : ListResourceDirectory(folderPath))
 			{
-				if (IsFolder(entry.path().string()))
+				if (IsFolder(entry.string()))
 				{
-					if (partOfFolderName.empty() || entry.path().stem().string().find(partOfFolderName) != std::string::npos)
+					if (partOfFolderName.empty() || entry.stem().string().find(partOfFolderName) != std::string::npos)
 					{
-						result.push_back(entry.path().string());
+						result.push_back(entry.string());
 					}
 				}
 			}
@@ -72,9 +75,9 @@ namespace GEngine
 
 	bool FileSystemHelper::IsDocument(const std::string& path)
 	{
-		if (std::filesystem::exists(path))
+		if (ResourceExists(path))
 		{
-			if (std::filesystem::is_regular_file(path))
+			if (!ResourceIsDirectory(path))
 			{
 				return true;
 			}
@@ -88,6 +91,7 @@ namespace GEngine
 
 	bool FileSystemHelper::CreateDocument(const std::string& path)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		if (std::filesystem::exists(path))
 		{
 			GE_CORE_INFO("{0} already exists", path);
@@ -100,6 +104,7 @@ namespace GEngine
 
 	bool FileSystemHelper::DeleteDocument(const std::string& path)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		if (!std::filesystem::exists(path))
 		{
 			GE_CORE_INFO("{0} not exists", path);
@@ -114,14 +119,14 @@ namespace GEngine
 		std::vector<std::string> result;
 		if (IsFolder(folderPath))
 		{
-			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			for (const auto& entry : ListResourceDirectory(folderPath))
 			{
-				if (IsDocument(entry.path().string()))
+				if (IsDocument(entry.string()))
 				{
-					if ((extension.empty() || entry.path().extension() == extension) &&
-						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					if ((extension.empty() || entry.extension() == extension) &&
+						(partOfDocName.empty() || entry.stem().string().find(partOfDocName) != std::string::npos))
 					{
-						result.push_back(entry.path().string());
+						result.push_back(entry.string());
 					}
 				}
 			}
@@ -134,14 +139,14 @@ namespace GEngine
 		std::vector<std::string> result;
 		if (IsFolder(folderPath))
 		{
-			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			for (const auto& entry : ListResourceDirectory(folderPath))
 			{
-				if (IsDocument(entry.path().string()))
+				if (IsDocument(entry.string()))
 				{
-					if ((extension.empty() || entry.path().extension() == extension) &&
-						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					if ((extension.empty() || entry.extension() == extension) &&
+						(partOfDocName.empty() || entry.stem().string().find(partOfDocName) != std::string::npos))
 					{
-						result.push_back(entry.path().filename().string());
+						result.push_back(entry.filename().string());
 					}
 				}
 			}
@@ -154,14 +159,14 @@ namespace GEngine
 		std::vector<std::string> result;
 		if (IsFolder(folderPath))
 		{
-			for (const auto& entry : std::filesystem::directory_iterator(folderPath))
+			for (const auto& entry : ListResourceDirectory(folderPath))
 			{
-				if (IsDocument(entry.path().string()))
+				if (IsDocument(entry.string()))
 				{
-					if ((extension.empty() || entry.path().extension() == extension) &&
-						(partOfDocName.empty() || entry.path().stem().string().find(partOfDocName) != std::string::npos))
+					if ((extension.empty() || entry.extension() == extension) &&
+						(partOfDocName.empty() || entry.stem().string().find(partOfDocName) != std::string::npos))
 					{
-						result.push_back(entry.path().stem().string());
+						result.push_back(entry.stem().string());
 					}
 				}
 			}
@@ -198,65 +203,23 @@ namespace GEngine
 
 	std::vector<char> FileSystemHelper::ReadFile(const std::string& path)
 	{
-		std::vector<char> result;
-		std::ifstream file(path, std::ios::in | std::ios::binary);
-
-		if (!file)
-		{
-			GE_CORE_ERROR("file not found");
-			return result;
-		}
-
-		file.seekg(0, std::ios::end);
-		result.resize(file.tellg());
-		file.seekg(0, std::ios::beg);
-		file.read(result.data(), result.size());
-		file.close();
-
-		return result;
+		return ReadResource(std::filesystem::u8path(path));
 	}
 
 	std::vector<unsigned char> FileSystemHelper::ReadFileAsBinary(const std::string& path)
 	{
-		std::vector<unsigned char> result;
-		std::ifstream file(path, std::ios::in | std::ios::binary);
-
-		if (!file)
-		{
-			GE_CORE_ERROR("file not found");
-			return result;
-		}
-
-		file.seekg(0, std::ios::end);
-		result.resize(file.tellg());
-		file.seekg(0, std::ios::beg);
-		file.read(reinterpret_cast<char*>(result.data()), result.size());
-		file.close();
-
-		return result;
+		const auto bytes = ReadFile(path);
+		return std::vector<unsigned char>(bytes.begin(), bytes.end());
 	}
 
 	std::string FileSystemHelper::ReadFileAsString(const std::string& path)
 	{
-		std::string str;
-		std::ifstream file(path, std::ios::in | std::ios::binary);
-
-		if (!file)
-		{
-			GE_CORE_ERROR("file not found");
-			return str;
-		}
-
-		file.seekg(0, std::ios::end);
-		str.resize(file.tellg());
-		file.seekg(0, std::ios::beg);
-		file.read(&str[0], str.size());
-		file.close();
-
-		return str;
+		const auto bytes = ReadFile(path);
+		return std::string(bytes.begin(), bytes.end());
 	}
 	bool FileSystemHelper::WriteFile(const std::string& path, const std::vector<char>& data)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		std::ofstream file(path, std::ios::out | std::ios::binary);
 
 		if (!file)
@@ -271,6 +234,7 @@ namespace GEngine
 	}
 	bool FileSystemHelper::WriteFile(const std::string& path, const std::vector<unsigned char>& data)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		std::ofstream file(path, std::ios::out | std::ios::binary);
 
 		if (!file)
@@ -285,6 +249,7 @@ namespace GEngine
 	}
 	bool FileSystemHelper::WriteFile(const std::string& path, const std::string& data)
 	{
+		EnsureResourceWritable(std::filesystem::u8path(path));
 		std::ofstream file(path, std::ios::out | std::ios::binary);
 
 		if (!file)

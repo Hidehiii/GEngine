@@ -1,11 +1,23 @@
 # Rendering architecture refactor
 
 E1.6/S2.4/S5.1 supersedes the editor's earlier manual deployment: metadata-only
-.gproject, output-only UI, automatic native Release compilation and .gpak output.
-EntryPoint validates/extracts resources through a Windows runtime adapter before
+.gproject, output/name/optional-logo UI, automatic native Release compilation and .gpak output.
+EntryPoint validates/mounts resources through a Windows runtime adapter before
 Application construction. Renderer/GPU interfaces and ownership are unchanged.
 Fresh engine/game source compilation and three-backend archive runs are tracked
 in ScriptingAndPackaging; the older S2.1–S2.3 notes below remain history.
+
+Custom executable/logo follow-up (2026-10-27): correct ICO serialization and
+temporary-file ownership, keep icon build inputs stable for incremental export,
+and clear cached icon selection when the user removes it. GPU APIs, backend
+synchronization and rendering ownership are unaffected; current verification
+is recorded in ScriptingAndPackaging.
+
+S5.2 direct archive reads (2026-10-27) replace asset extraction with owned-memory
+read adapters for shader/includes, YAML, images/cubemaps, fonts and FBX. Vulkan
+file-image decode now normalizes RGB inputs to supported RGBA8. Existing upload
+calls copy/consume CPU bytes before returning; queue lifetime and GPU interfaces
+are unchanged. Resource probes and per-backend verification belong to S5.2.
 
 E1.5/S2.3 adds `.gproject` descriptors and asynchronous Host packaging actions.
 Output paths stay in per-machine editor preferences or an explicit CLI argument,

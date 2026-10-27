@@ -167,7 +167,8 @@ description; no prebuilt EXE is required. New projects receive a minimal src/Gam
 `--project <file>`
 or a first `.gproject` argument opens one at startup; no OS file association is
 installed. Assets/Config.ini/Licenses are merged into an uncompressed, unencrypted
-.gpak, excluding Assets/Cache. The native EXE validates/extracts it into a private
-session and runs without a PowerShell launcher. C#, direct archive streaming,
+.gpak, excluding Assets/Cache. The native EXE validates/mounts it and reads assets
+on demand, keeping only config/logs/cache/state in a private writable session.
+It runs without a PowerShell launcher. C#,
 asset conversion and automatic native dependency discovery remain open.
 See [the export guide](../Documentation/Guides/GameExport.md).

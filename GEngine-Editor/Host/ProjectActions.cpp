@@ -94,7 +94,7 @@ namespace
         quint32 payloadOffset = 6 + count * 16;
         auto* file = new QTemporaryFile(parent);
         file->setFileTemplate(QDir::tempPath() + "/GEngineIcon-XXXXXX.ico");
-        if (!file->open(QIODevice::WriteOnly | QIODevice::Truncate))
+        if (!file->open())
         {
             delete file;
             return nullptr;
@@ -111,10 +111,9 @@ namespace
             offsets[index] = payloadOffset;
             payloadOffset += imageSize;
             const auto dimension = sizes[index] == 256 ? 0 : sizes[index];
-            AppendUInt16(*file, 0);
-            AppendUInt16(*file, static_cast<quint8>(dimension));
-            AppendUInt16(*file, static_cast<quint8>(dimension));
-            AppendUInt16(*file, 0);
+            const char dimensions[] = {static_cast<char>(dimension),
+                static_cast<char>(dimension), 0, 0};
+            file->write(dimensions, sizeof(dimensions));
             AppendUInt16(*file, 1);
             AppendUInt16(*file, 32);
             AppendUInt32(*file, imageSize);
@@ -212,7 +211,7 @@ namespace
         }
         m_PackageOutputDirectory = destination;
         m_PackageExecutableName = executable;
-        m_PackageLogoPath = QFileInfo(logo).absoluteFilePath();
+        m_PackageLogoPath = logo.isEmpty() ? QString{} : QFileInfo(logo).absoluteFilePath();
         delete m_PackageIconFile;
         m_PackageIconFile = icon;
         const auto key = QCryptographicHash::hash(m_Project.Path.toCaseFolded().toUtf8(), QCryptographicHash::Sha256).toHex();

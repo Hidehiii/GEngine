@@ -39,10 +39,9 @@ if(DEFINED ENV{VULKAN_SDK} AND NOT "$ENV{VULKAN_SDK}" STREQUAL "")
 else()
     set(project_vulkan "${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty/VulkanSDK")
 endif()
-add_custom_command(TARGET GProjectGame POST_BUILD
+add_custom_target(GProjectPackage DEPENDS GProjectGame GProjectGameLauncher
     COMMAND "${CMAKE_COMMAND}" "-DGE_VENDOR=${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty"
         "-DGE_VULKAN_SDK=${project_vulkan}"
         "-DGE_CONFIG=$<CONFIG>" "-DGE_ENGINE_DLL=$<TARGET_FILE:GEngine>"
         "-DGE_OUTPUT_DIR=$<TARGET_FILE_DIR:GProjectGame>"
         -P "${GE_ENGINE_ROOT}/BuildScripts/CMake/CopyRuntime.cmake")
-add_custom_target(GProjectPackage DEPENDS GProjectGame GProjectGameLauncher)

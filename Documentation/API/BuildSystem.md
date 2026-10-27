@@ -129,6 +129,11 @@ src/*.cpp recursively, builds Release with GE_PACKAGED_GAME=1 and GE_WITH_MONO=O
 and links/deploys the current GEngine and native runtime dependencies. It never
 asks for a prebuilt game EXE. `GE_PROJECT_NAME` controls both launcher and game
 output names; `GE_PROJECT_ICON` optionally configures an embedded launcher icon.
+`GEngineTools export-project --executable-name <base-name> --icon <file.ico>`
+provides those values. Omitting `--icon` clears a previous cached icon selection;
+unchanged icon bytes reuse a stable cached resource file for incremental builds.
+`GProjectPackage` always runs CopyRuntime after its game/launcher dependencies,
+so an engine-only DLL change reaches the package even without game relinking.
 The generated package root contains only the launcher EXE plus `Runtime/`, `Data/`,
 and `Metadata/`; the real game EXE and DLLs are under `Runtime/`. General CMake
 GE_WITH_MONO defaults ON; OFF omits managed SDK linking and explicitly rejects

@@ -12,7 +12,7 @@ C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设�
 项目根是描述文件所在目录。Host 的 ProjectFile 负责有界读取/版本校验和
 QSaveFile 原子保存；打开失败保留旧项目，目录浏览仍作为兼容入口存在。
 File 提供 New/Open project，项目菜单提供一个打包入口与作业取消；打包窗口
-只有输出目录输入，自动 Release 构建 src 与引擎，再归档并发布单入口分类
+提供输出目录、可执行名和可选 Logo 输入，自动 Release 构建 src 与引擎，再归档并发布单入口分类
 布局。
 
 输出目录、可执行名与 Logo 由 Host 在打包对话框选择，单独保存至本机 QSettings，
@@ -21,6 +21,11 @@ File 提供 New/Open project，项目菜单提供一个打包入口与作业取�
 --executable-name 与 --icon 为可选部署参数，不会从项目内容读取；项目不指定已有 EXE，
 不能靠复制旧构建代替编译。Host 将支持的图像 Logo 渲染为多尺寸 `.ico` 临时文件，
 仅把该资源交给原生导出器。
+
+Logo 临时文件由 Host 拥有，在切换/关闭项目或替换 Logo 时销毁。导出器把
+图标按内容哈希更新到项目构建缓存中的固定路径，避免临时路径变化导致重复
+链接；清空 Logo 显式清除 CMake 图标参数，后续包不继承旧资源。此流程不改变
+引擎 GPU 资源所有权、后端接口或 IPC。
 
 Host 用异步 QProcess 调用随编辑器部署的原生 GEngineTools 工具，参数逐项传递，
 不通过 shell 拼接命令；Console 显示有界输出，重复打包/项目切换在作业期间
@@ -33,8 +38,9 @@ staging 可能保留。目标目录切换失败尝试恢复旧目录，变化的
 失败不丢弃旧包或草稿/项目状态。
 
 当前流程从源码编译 EXE/DLL，将 Config.ini/Assets（排除 Cache）/Licenses
-合为 .gpak，输出没有原始 Assets 或脚本启动器。原生入口校验并展开到独立
-会话目录再运行；源码 SDK 供编辑器编译使用，不是玩家依赖。原生资源包 API
+合为 .gpak，输出没有原始 Assets 或脚本启动器。原生入口校验并挂载资源索引，
+资源按需读取，只有配置、日志、缓存和用户状态使用独立可写会话；不再整包展开。
+源码 SDK 供编辑器编译使用，不是玩家依赖。原生资源包 API
 新增于 Runtime；GPU API/IPC 不变。当前不支持 C#/Mono、压缩/加密、资源
 格式转换、场景文档编辑或自动原生依赖解析。
 项目和 UI 打包验收见 TODO/EditorArchitecture.md 与 TODO/ScriptingAndPackaging.md。

@@ -4,6 +4,7 @@
 #include "Platform/D3D12/D3D12Texture2D.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "stb_image.h"
+#include "GEngine/Tools/ResourceImage.h"
 
 namespace GEngine
 {
@@ -33,7 +34,7 @@ namespace GEngine
 		: m_Paths{ rightPath, leftPath, topPath, bottomPath, backPath, frontPath }
 	{
 		int width = 0, height = 0, channels = 0;
-		stbi_uc* first = stbi_load(rightPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		stbi_uc* first = LoadResourceImage(rightPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		GE_CORE_ASSERT(first, "Failed to load cube-map face.");
 		D3D12CubeMap temporary(static_cast<uint32_t>(width), static_cast<uint32_t>(height), generateMipmap, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 		*this = std::move(temporary);
@@ -44,7 +45,7 @@ namespace GEngine
 		for (uint32_t face = 1; face < 6; ++face)
 		{
 			int faceWidth = 0, faceHeight = 0, faceChannels = 0;
-			stbi_uc* data = stbi_load(m_Paths[face].c_str(), &faceWidth, &faceHeight, &faceChannels, STBI_rgb_alpha);
+			stbi_uc* data = LoadResourceImage(m_Paths[face].c_str(), &faceWidth, &faceHeight, &faceChannels, STBI_rgb_alpha);
 			GE_CORE_ASSERT(data && faceWidth == width && faceHeight == height, "Cube-map faces must have matching dimensions.");
 			UploadFace(data, static_cast<uint32_t>(width * height * 4), face);
 			stbi_image_free(data);

@@ -1,5 +1,36 @@
 # Focused regression checks
 
+## Native resource pack
+
+The dependency-free resource regression compiles the production Windows archive
+implementation and exercises directory/archive equality, concurrent owned reads,
+immutable backing handles, replacement lifetime, failed-mount preservation,
+directory enumeration, read-only write rejection and malformed archives. It also
+checks handle counts across 100 remounts. From the repository root:
+
+```bat
+cmake -S Tests/ResourcePack -B build/resource-pack-tests -G "Visual Studio 17 2022" -A x64
+cmake --build build/resource-pack-tests --config Release --parallel 4
+ctest --test-dir build/resource-pack-tests -C Release --output-on-failure
+```
+
+Repeat with Debug for the other configuration. Fixtures stay inside that build
+directory; no source assets/configuration are changed.
+
+After exporting FrameGraphTriangle, run:
+
+```bat
+python Tests/ResourcePackRuntime.py build/gpak-direct-package/DirectPack.exe --logs build/gpak-runtime-logs
+```
+
+Use a generated test package without concurrent users. The check temporarily
+changes only its pack's backend configuration and restores the original bytes
+in a finally block. Each backend must render 120 frames, pass three readbacks,
+read image/FBX/YAML/include assets and owned background bytes, and keep Assets
+absent from writable session storage. Corrupt/missing packs must fail before
+Application construction. Logs record each backend independently; this does not
+establish manual visual/resize behavior or long-duration memory stability.
+
 ## Public logging header
 
 `LoggingHeader.cpp` includes the public engine logging header first and checks

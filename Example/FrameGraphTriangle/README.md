@@ -1,18 +1,47 @@
 # FrameGraphTriangle
 
 The included `FrameGraphTriangle.gproject` can be opened in the Qt editor through
-File > Open project. Project > Package project asks only for output directory,
+File > Open project. Project > Package project asks for output directory,
+executable name and optional logo image,
 then automatically compiles the project and engine and publishes a root
 FrameGraphTriangle.exe with Runtime/, Data/, and Metadata/ folders. The descriptor has
 only schemaVersion/name. No existing executable or packaging fields are needed.
-Run the generated root EXE directly; it extracts validated resources into a private
-session before startup. The output has no loose Assets directory or script launcher.
+Run the generated root EXE directly; it mounts the validated archive and reads
+assets on demand. Only writable config/logs/cache/state use a private session.
+The output has no loose Assets directory or script launcher.
 
 For current automatic packaging, see the [export guide](../../Documentation/Guides/GameExport.md).
 The former directory-deployment smoke scripts were removed. The native
 `.gproject` pipeline now compiles the project, creates the `.gpak`, publishes
-the flat output, and validates repeated builds through the editor's
+the categorized output, and validates repeated builds through the editor's
 `--packaging-self-test`.
+
+For the custom-name/logo regression, run the built Qt Host with
+`--packaging-self-test` (or CTest `EditorPackaging`). It builds `TriangleGame.exe`,
+checks the embedded blue/white test logo pixels and matching runtime/pack/manifest,
+then launches the root entry from an unrelated working directory for 120 frames.
+Expected: normal exit and all three frame-119 readbacks. It also checks zero-copy
+repeat, failure preservation, cancel/retry, renaming to `Renamed Game`, clearing
+the logo and reopening preferences. Missing icons, old filenames, changed project
+metadata or nonzero copies on an unchanged repeat fail the check. This packaging
+test does not exercise manual resize; rendering resize/replacement/shutdown checks
+remain separate below.
+
+Set `GENGINE_EXAMPLE_RESOURCE_CHECK=1` with `GENGINE_EXAMPLE_FRAME_LIMIT=120` to
+check owned background reads, 2x2 PPM decoding/upload, FBX memory-stream import and
+scene YAML deserialization. ResourceProbe.fbx is copied from the existing
+GpuDriven cube fixture. The compute shader also reads its HLSL include through
+the resource interface. Expected: the usual triangle and color changes, all three
+GPU readbacks, resource-check messages and normal shutdown; a packaged run must
+have no Assets directory even after shader compilation. Cache/Shaders and Logs
+remain writable in the session. This check uses the same logical paths in
+development mode. It does not validate manual resize or full material restoration.
+
+`python Tests/ResourcePackRuntime.py <package-root-exe> --logs <log-directory>`
+temporarily selects each backend inside a generated test pack, runs the checks,
+rejects corrupt/missing packs, and restores the original pack. It preserves source
+Config.ini; run it on a test package with no concurrent users. Focused malformed
+archive/concurrency regression commands are in [Tests](../../Tests/README.md).
 
 Set `GENGINE_EXAMPLE_IMGUI=1` to enable the dependency-upgrade UI smoke window.
 Expected: readable version text, a working click counter, and a window that can

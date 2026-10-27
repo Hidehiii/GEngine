@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.24)
+project(ResourcePackRegression LANGUAGES CXX)
+add_executable(ResourcePackRegression ../ResourcePack.cpp
+    ../../GEngine/src/Platform/Windows/WindowsResourcePack.cpp)
+target_compile_features(ResourcePackRegression PRIVATE cxx_std_17)
+target_compile_definitions(ResourcePackRegression PRIVATE GE_BUILD_DLL GE_RESOURCE_PACK_TEST UNICODE _UNICODE NOMINMAX)
+target_include_directories(ResourcePackRegression PRIVATE ../../GEngine/include)
+target_link_libraries(ResourcePackRegression PRIVATE bcrypt)
+enable_testing()
+add_test(NAME ResourcePackRegression COMMAND ResourcePackRegression "${CMAKE_CURRENT_BINARY_DIR}/fixtures")

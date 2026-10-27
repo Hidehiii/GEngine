@@ -698,10 +698,18 @@ namespace
             L"-DCMAKE_MAKE_PROGRAM=" + makeProgram, L"-DCMAKE_BUILD_TYPE=Release",
             L"-DGE_ENGINE_ROOT=" + engine, L"-DGE_PROJECT_ROOT=" + projectRoot,
             L"-DGE_PROJECT_NAME=" + options.ExecutableName, L"-DGE_DIST_ROOT=" + nativeRoot};
+        Path cachedIcon;
         if (!options.Icon.empty())
         {
-            configureArguments.push_back(L"-DGE_PROJECT_ICON=" + options.Icon.wstring());
+            cachedIcon = cache / L"launcher.ico";
+            if (!std::filesystem::exists(cachedIcon) ||
+                Hex(HashFile(cachedIcon)) != Hex(HashFile(options.Icon)))
+            {
+                std::filesystem::copy_file(options.Icon, cachedIcon,
+                    std::filesystem::copy_options::overwrite_existing);
+            }
         }
+        configureArguments.push_back(L"-DGE_PROJECT_ICON=" + cachedIcon.generic_wstring());
         RunVcLogged(visualStudio, cmake, configureArguments, repoRoot, cache / L"configure.log");
         RunVcLogged(visualStudio, cmake, {L"--build", buildRoot, L"--target", L"GProjectPackage",
             L"--parallel", L"2"}, repoRoot, cache / L"build.log");

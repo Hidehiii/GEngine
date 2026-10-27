@@ -17,6 +17,8 @@
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QProcess>
+#include <QProcessEnvironment>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <iostream>
@@ -35,7 +37,34 @@ namespace GEngineEditor
                 return false;
             }
             ICONINFO information{};
-            const bool valid = GetIconInfo(icon, &information) && information.hbmColor;
+            bool valid = GetIconInfo(icon, &information) && information.hbmColor;
+            if (valid)
+            {
+                BITMAP bitmap{};
+                valid = GetObject(information.hbmColor, sizeof(bitmap), &bitmap) != 0;
+                if (valid)
+                {
+                    QImage pixels(bitmap.bmWidth, bitmap.bmHeight, QImage::Format_ARGB32);
+                    BITMAPINFO format{};
+                    format.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+                    format.bmiHeader.biWidth = pixels.width();
+                    format.bmiHeader.biHeight = -pixels.height();
+                    format.bmiHeader.biPlanes = 1;
+                    format.bmiHeader.biBitCount = 32;
+                    format.bmiHeader.biCompression = BI_RGB;
+                    HDC context = GetDC(nullptr);
+                    valid = context && GetDIBits(context, information.hbmColor, 0,
+                        pixels.height(), pixels.bits(), &format, DIB_RGB_COLORS) == pixels.height();
+                    if (context) ReleaseDC(nullptr, context);
+                    if (valid)
+                    {
+                        const auto corner = pixels.pixelColor(0, 0);
+                        const auto center = pixels.pixelColor(pixels.width() / 2, pixels.height() / 2);
+                        valid = corner.blue() > 150 && corner.red() < 60 &&
+                            center.red() > 200 && center.green() > 200 && center.blue() > 200;
+                    }
+                }
+            }
             if (information.hbmColor) DeleteObject(information.hbmColor);
             if (information.hbmMask) DeleteObject(information.hbmMask);
             DestroyIcon(icon);
@@ -56,11 +85,17 @@ namespace GEngineEditor
 
     void RunPackagingCheck(MainWindow& window)
     {
-        struct Check { QTemporaryDir Directory; QElapsedTimer Clock; QString Project, Output, Executable, Logo; QByteArray Manifest, Metadata; int Phase = 0, Ticks = 0; };
+        struct Check { QTemporaryDir Directory; QElapsedTimer Clock; QString Project, Output, Executable, Logo; QByteArray Manifest, Metadata, GameOutput; QProcess* Game = nullptr; int Phase = 0, Ticks = 0; };
         auto check = std::make_shared<Check>(); check->Clock.start();
         auto* timer = new QTimer(&window); timer->setInterval(20);
-        auto finish = [timer](bool ok, const char* text)
-        { timer->stop(); std::cout << (ok ? "PASS: " : "FAIL: ") << text << std::endl; QApplication::exit(ok ? 0 : 1); };
+        auto finish = [timer, &window](bool ok, const char* text)
+        {
+            timer->stop();
+            if (!ok)
+                std::cerr << window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().toStdString() << std::endl;
+            std::cout << (ok ? "PASS: " : "FAIL: ") << text << std::endl;
+            QApplication::exit(ok ? 0 : 1);
+        };
         auto read = [](const QString& path) { QFile file(path); return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray{}; };
         QObject::connect(timer, &QTimer::timeout, &window, [&window, timer, check, finish, read]
         {
@@ -114,6 +149,7 @@ namespace GEngineEditor
                 check->Phase=1; timer->start(); break;
             }
             case 1:
+            {
                 if (!window.LastPackagingSucceeded() || read(check->Project) != check->Metadata ||
                     !QFileInfo::exists(check->Output+"/"+check->Executable+".exe") ||
                     !read(check->Output+"/Data/"+check->Executable+".gpak").startsWith("GEPAK001") ||
@@ -131,6 +167,7 @@ namespace GEngineEditor
                 if (!window.OpenProject(check->Project) || !window.PackageProject())
                 { finish(false, "output preference/reopen/repeat failed"); return; }
                 ++check->Phase; break;
+            }
             case 2:
             {
                 if (!window.LastPackagingSucceeded())
@@ -157,6 +194,50 @@ namespace GEngineEditor
                 ++check->Phase; break;
             case 5:
                 if (!window.LastPackagingSucceeded()) { finish(false, "build did not recover after cancel"); return; }
+                check->Game = new QProcess(&window);
+                check->Game->setProcessChannelMode(QProcess::MergedChannels);
+                {
+                    auto environment = QProcessEnvironment::systemEnvironment();
+                    environment.insert("GENGINE_EXAMPLE_FRAME_LIMIT", "120");
+                    environment.insert("GENGINE_EXAMPLE_RESOURCE_CHECK", "1");
+                    environment.insert("GENGINE_EXAMPLE_RESOURCE_CHECK", "1");
+                    environment.remove("GENGINE_EXAMPLE_SECONDS");
+                    check->Game->setProcessEnvironment(environment);
+                }
+                check->Game->setWorkingDirectory(check->Directory.path());
+                check->Game->start(check->Output + "/" + check->Executable + ".exe", QStringList{});
+                ++check->Phase; break;
+            case 6:
+                check->GameOutput += check->Game->readAll();
+                if (check->Game->state() != QProcess::NotRunning) return;
+                if (check->Game->exitStatus() != QProcess::NormalExit || check->Game->exitCode() != 0 ||
+                    check->GameOutput.count("readback passed after 119 frames.") != 3)
+                {
+                    std::cerr << check->GameOutput.toStdString() << std::endl;
+                    finish(false, "custom launcher failed packaged 120-frame readbacks from unrelated cwd"); return;
+                }
+                check->Executable = "Renamed Game";
+                if (!window.SavePackaging(check->Output, check->Executable, {}) || !window.PackageProject())
+                { finish(false, "could not remove logo and change executable name"); return; }
+                ++check->Phase; break;
+            case 7:
+                if (!window.LastPackagingSucceeded() || read(check->Project) != check->Metadata ||
+                    !QFileInfo::exists(check->Output + "/Renamed Game.exe") ||
+                    !QFileInfo::exists(check->Output + "/Runtime/Renamed Game.exe") ||
+                    !QFileInfo::exists(check->Output + "/Data/Renamed Game.gpak") ||
+                    QFileInfo::exists(check->Output + "/TriangleGame.exe") ||
+                    ExtractIconExW(reinterpret_cast<LPCWSTR>((check->Output + "/Renamed Game.exe").utf16()),
+                        -1, nullptr, nullptr, 0) != 0)
+                { finish(false, "renaming or clearing cached logo failed"); return; }
+                check->Manifest = read(check->Output + "/Metadata/.gengine-output.json");
+                if (!window.OpenProject(check->Project) || !window.PackageProject())
+                { finish(false, "empty logo preference did not survive reopen"); return; }
+                ++check->Phase; break;
+            case 8:
+                if (!window.LastPackagingSucceeded() ||
+                    read(check->Output + "/Metadata/.gengine-output.json") != check->Manifest ||
+                    !window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("\"copyFiles\":0"))
+                { finish(false, "repeat after removing logo failed"); return; }
                 window.CloseProject();
                 if (window.findChild<QAction*>("PackageProjectAction")->isEnabled()) { finish(false, "closed project can still package"); return; }
                 finish(true,"metadata-only .gproject, output/name/logo dialog, invalid-input rejection, real automatic Release build and .gpak, custom manifest and icon, incremental repeat, build failure preservation, cancel/retry, local preferences and project close");

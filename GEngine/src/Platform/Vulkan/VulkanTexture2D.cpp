@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "stb_image.h"
+#include "GEngine/Tools/ResourceImage.h"
 
 namespace GEngine
 {
@@ -15,7 +16,8 @@ namespace GEngine
         stbi_uc* data;
         stbi_set_flip_vertically_on_load(1);
         {
-            data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+            data = LoadResourceImage(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+            channels = 4;
         }
         GE_CORE_ASSERT(data, "Failed to load image!");
         m_ExclusiveSharing = Utils::UseExclusiveTransferImageSharing();

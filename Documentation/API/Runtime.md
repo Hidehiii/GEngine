@@ -5,7 +5,7 @@
 `Runtime/ResourcePack.h` exports `std::filesystem::path PreparePackagedResources(bool required = false)`.
 The Windows implementation locates the EXE-adjacent same-stem `.gpak`, or the
 same-stem pack in the categorized sibling `../Data/` directory, validates and
-extracts it into a new writable session, sets cwd and returns that directory.
+mounts it, creates a writable session, sets cwd and returns that directory.
 Absent optional pack returns empty; required/malformed/missing/truncated/unsafe/
 checksum-invalid packs throw before application construction. `EntryPoint.h`
 calls it with `GE_PACKAGED_GAME != 0`, catches archive errors and exits 1. Standard
@@ -17,10 +17,38 @@ has uint32 UTF-8 path length, uint64 payload length, 32 SHA-256 bytes, relative 
 bytes, then payload bytes. Limits are 100000 entries, 4096 path bytes, 8 GiB per
 file, 32 GiB total; zero entries/trailing data are rejected. Paths cannot traverse,
 be absolute, use reserved Windows names, alternate streams, or collide by case.
-Extraction is uncompressed, with bounded streaming buffers; session storage remains
-until manually cleaned. Checksums provide integrity, not cryptographic authenticity.
+Mount validation streams all payloads through bounded buffers for SHA-256, then
+keeps only the path/offset/length index. No asset tree is extracted. Only Config.ini
+is seeded (maximum 1 MiB); logs, Cache/Shaders and UserData belong to the writable
+session. Session storage remains until manually cleaned. Checksums provide
+integrity, not cryptographic authenticity.
 GPU interfaces are unchanged. Native-only engines built with GE_WITH_MONO=0
 explicitly fail ScriptEngine::Init requests instead of silently enabling scripts.
+
+`MountResourcePack(path)` validates a replacement before publishing it; a failed
+mount preserves the old archive. `HasResourcePack()` reports the active mount.
+`ReadResource(path)` returns an owning `std::vector<char>` from a logical archive
+path, or an ordinary file in development mode. Missing/escaping archive resources
+throw with no loose-file fallback. `ResourceExists`, `ResourceIsDirectory` and
+`ListResourceDirectory` query the same namespace, with case-insensitive archive
+identity and normalized `./`/trailing directory separators. Config.ini, Logs/,
+Cache/ and UserData/ explicitly address writable session files. Absolute paths
+must remain within the current session when mounted; custom WorkingDirectory is
+ignored in packaged mode. These APIs do not introduce an async scheduler.
+`EnsureResourceWritable(path)` rejects mutations outside this writable namespace
+when mounted. FileSystemHelper mutations and YAML serialization call it before
+touching disk, so saving a packaged asset cannot silently create a loose shadow.
+
+Concurrent readers retain a shared archive snapshot and serialize stream seeks;
+each returned vector survives later mounts. The archive's retained read handle
+denies writes/deletion until its last reader is gone. Shader sources and DXC
+includes, YAML scene/material reads, images/cubemaps, ImGui fonts and packaged FBX
+imports consume owned memory. stb pixels remain alive through the existing upload
+call; FBX bytes remain alive through importer teardown; ImGui receives its own
+allocated copy. Archive model import explicitly rejects formats other than FBX,
+the only stream format supported by the bundled SDK. Existing incomplete material
+deserialization semantics are unchanged. Compression/direct GPU streaming and
+script runtime deployment remain outside this API.
 
 `Application` initializes optional ImGui after assigning its runtime. Direct
 `EngineRuntime` consumers must call `InitializeImGui()` after publishing any

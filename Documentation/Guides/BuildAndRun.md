@@ -332,7 +332,7 @@ Use `Example/Triangle` as the smallest reference application. It deliberately ha
 
 The optional [game export guide](GameExport.md) documents the native C++
 project build/archive/publish pipeline. In the editor choose Project > Package
-project and select only an output directory; it automatically builds Release and
+project and select an output directory, executable name and optional logo; it automatically builds Release and
 writes EXE/.gpak/DLLs directly there. The .gproject descriptor contains only name
 and schemaVersion. Player startup reads the pack natively without PowerShell.
 Native-only packaging uses GE_WITH_MONO=OFF; normal builds retain Mono by default.
