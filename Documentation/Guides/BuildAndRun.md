@@ -60,8 +60,12 @@ git submodule update --init --recursive
 git lfs pull
 ```
 
-Build `GEngineTools.exe` once through CMake. It owns the Mono SDK setup and the
-optional Qt/editor workflow commands:
+### CMake build
+
+#### Build GEngineTools first
+
+Generate the CMake project and build the native workflow tool. It owns the
+Mono SDK setup and the optional Qt/editor workflow commands:
 
 ```bat
 BuildScripts\GenerateProjectsCMake.bat vs2022
@@ -69,17 +73,22 @@ cmake --build build\cmake-vs2022\windows-x86_64 --config Release --target GEngin
 dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe mono-sdk
 ```
 
-### CMake build
+The tool is emitted under:
 
-Generate the CMake project and build a focused example. Replace `Debug` with
+```text
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe
+```
+
+#### Build an engine or example
+
+After preparing the Mono SDK, build a focused example. Replace `Debug` with
 `Release` for an optimized build; `vs2019` is also accepted by the launcher.
 
 ```bat
-BuildScripts\GenerateProjectsCMake.bat vs2022
 cmake --build build\cmake-vs2022\windows-x86_64 --config Debug --target FrameGraphTriangle --parallel 6
 ```
 
-The executable is emitted under:
+The example executable is emitted under:
 
 ```text
 dist\cmake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe
@@ -94,6 +103,8 @@ cd Example\FrameGraphTriangle
 ```
 
 ### Premake build
+
+#### Build GEngineTools first
 
 `GEngineTools.exe` can also be bootstrapped directly through Premake. Premake
 currently generates the target when the optional `--qt6-sdk` option is present,
@@ -118,8 +129,11 @@ command also generates and builds this target:
 dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe qt-editor --configuration Release --premake
 ```
 
-After preparing the Mono SDK as shown above, generate the Premake solution.
-The launcher supports `vs2022`, `vs2019`, and `vs2026`; VS2022 is shown here.
+#### Build an engine or example
+
+After preparing the Mono SDK with either tool path above, generate the Premake
+solution. The launcher supports `vs2022`, `vs2019`, and `vs2026`; VS2022 is
+shown here.
 
 ```bat
 BuildScripts\GenerateProjectsPremake.bat vs2022

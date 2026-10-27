@@ -13,6 +13,25 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [x] Place `GEngineTools.exe` build guidance inside the generator-specific
+      build sections. Scope: move the CMake tool bootstrap into the CMake build
+      section and the direct Premake bootstrap into the Premake build section,
+      with explicit engine/example subsections following each tool path.
+      Acceptance: each generator section contains its own tool-build commands
+      and output path, the quick start no longer places tool guidance before
+      the generator sections, commands match the current project definitions,
+      and `git diff --check` passes. Documentation-only; no engine rebuild is
+      required.
+      Implemented: `Documentation/Guides/BuildAndRun.md` now uses
+      `Build GEngineTools first` and `Build an engine or example` subsections
+      under both CMake and Premake. The CMake section owns the CMake tool
+      command and path; the Premake section owns the bundled-Premake and
+      native-tool Premake paths.
+      Verification (2026-10-27): reviewed the restructured section headings and
+      command paths against the current CMake/Premake definitions and ran
+      `git diff --check`. No engine rebuild was needed for this
+      documentation-only change.
+
 - [x] Document a direct Premake bootstrap for `GEngineTools.exe`. Scope: add
       the exact bundled-Premake invocation, `--qt6-sdk` generation condition,
       focused MSBuild command, and unified output path to the build guide.
