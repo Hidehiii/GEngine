@@ -13,6 +13,25 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [x] Document a direct Premake bootstrap for `GEngineTools.exe`. Scope: add
+      the exact bundled-Premake invocation, `--qt6-sdk` generation condition,
+      focused MSBuild command, and unified output path to the build guide.
+      Acceptance: the command matches the current Premake project definition,
+      states that `GEngineTools` itself does not link Qt, avoids any removed
+      `.ps1` workflow reference, and `git diff --check` passes.
+      Documentation-only; no engine rebuild is required.
+      Implemented: the Premake build section now shows direct generation with
+      the bundled executable, the focused MSBuild command, the unified
+      `dist/premake-vs2022/.../GEngineTools.exe` output path, and the native
+      tool's `qt-editor --premake` path. It also notes that the `--qt6-sdk`
+      option currently gates target generation while `GEngineTools` itself does
+      not link Qt.
+      Verification (2026-10-27): reviewed the commands against
+      `BuildScripts/Premake/GEngineTools.lua` and `premake5.lua`, confirmed no
+      removed `.ps1` workflow appears in the section, and ran
+      `git diff --check`. No engine rebuild was needed for this documentation-only
+      change.
+
 - [x] Add a fresh-environment quick start to the build guide and reference it
       from the root README. Scope: document recursive clone/LFS setup,
       `GEngineTools.exe` bootstrap, Mono SDK preparation, and complete CMake and

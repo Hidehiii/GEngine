@@ -95,6 +95,29 @@ cd Example\FrameGraphTriangle
 
 ### Premake build
 
+`GEngineTools.exe` can also be bootstrapped directly through Premake. Premake
+currently generates the target when the optional `--qt6-sdk` option is present,
+even though `GEngineTools` itself does not link Qt. Run this from the repository
+root, then build only the native tool:
+
+```bat
+BuildScripts\Premake\premake5.exe --qt6-sdk="%CD%\dist\qt6" vs2022
+msbuild BuildScripts\Premake\GEngineTools.vcxproj /p:Configuration=Release /p:Platform=x64 /m:6
+```
+
+The Premake tool path is:
+
+```text
+dist\premake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe
+```
+
+If a CMake-built `GEngineTools.exe` is already available, its Premake editor
+command also generates and builds this target:
+
+```bat
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe qt-editor --configuration Release --premake
+```
+
 After preparing the Mono SDK as shown above, generate the Premake solution.
 The launcher supports `vs2022`, `vs2019`, and `vs2026`; VS2022 is shown here.
 
