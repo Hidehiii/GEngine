@@ -3,8 +3,9 @@
 ## Native packaged resources
 
 `Runtime/ResourcePack.h` exports `std::filesystem::path PreparePackagedResources(bool required = false)`.
-The Windows implementation locates the EXE-adjacent same-stem `.gpak`, validates
-and extracts it into a new writable session, sets cwd and returns that directory.
+The Windows implementation locates the EXE-adjacent same-stem `.gpak`, or the
+same-stem pack in the categorized sibling `../Data/` directory, validates and
+extracts it into a new writable session, sets cwd and returns that directory.
 Absent optional pack returns empty; required/malformed/missing/truncated/unsafe/
 checksum-invalid packs throw before application construction. `EntryPoint.h`
 calls it with `GE_PACKAGED_GAME != 0`, catches archive errors and exits 1. Standard

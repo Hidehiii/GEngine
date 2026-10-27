@@ -36,8 +36,9 @@ Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction�
 输入错误、保存失败、子进程非零退出均为可恢复失败，Console 提供细节。
 作业期间不允许替换项目，草稿和预览仍可操作；成功/失败均恢复菜单状态。
 导出命令为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>`。
-自动 Release 编译后，在目标根目录生成 EXE/.gpak/原生 DLL。资源不散放在输出
-目录；原生入口负责包校验/展开，玩家不需要 PowerShell。格式/运行限制见
+自动 Release 编译后，目标根目录仅包含入口 EXE 与 Runtime/、Data/、Metadata/
+分类文件夹。资源不散放在输出根目录；原生入口负责包校验/展开，玩家不需要
+PowerShell。格式/运行限制见
 [打包指南](../Guides/GameExport.md)。不提供 Mono 或资源格式转换；图形 API/IPC 不变。
 
 ConsoleOutput::AppendBytes(QByteArray) 接收原始 stderr 分块，跨调用保留 UTF-8

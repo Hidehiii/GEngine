@@ -2,11 +2,14 @@
 
 Packaged startup now has a pre-Application phase. EntryPoint calls the portable
 ResourcePack interface, implemented under Platform/Windows: resolve EXE, require
-its adjacent .gpak for packaged builds, validate metadata/paths and per-file SHA-256,
+its same-stem `.gpak` beside the executable or in the categorized sibling
+`../Data/` directory, validate metadata/paths and per-file SHA-256,
 stream into a unique writable temp session, then set cwd before configuration,
 logging, shader/asset reads and Application construction. Failure never proceeds
 with source-directory fallback. Development binaries without a required pack
-retain their existing startup behavior. Native DLL loading remains EXE-adjacent.
+retain their existing startup behavior. Categorized packaged games run their real
+EXE from `Runtime/`, so native DLL loading remains adjacent to that executable;
+the user-visible root EXE is a launcher.
 
 The published archive is immutable. Runtime config rewrites, logs/caches and
 relative writes stay in the session; sessions are retained and no cleanup thread

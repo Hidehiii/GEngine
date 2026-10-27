@@ -127,7 +127,9 @@ cross-tool artifacts.
 The automatic project pipeline uses BuildScripts/Project/CMakeLists.txt, discovers
 src/*.cpp recursively, builds Release with GE_PACKAGED_GAME=1 and GE_WITH_MONO=OFF,
 and links/deploys the current GEngine and native runtime dependencies. It never
-asks for a prebuilt game EXE. General CMake GE_WITH_MONO defaults ON; OFF omits
+asks for a prebuilt game EXE. The generated package root contains only the
+launcher EXE plus `Runtime/`, `Data/`, and `Metadata/`; the real game EXE and
+DLLs are under `Runtime/`. General CMake GE_WITH_MONO defaults ON; OFF omits
 managed SDK linking and explicitly rejects script initialization. Premake supports
 the equivalent --without-mono opt-in. GE_DIST_ROOT is a cache PATH override for
 isolated output roots; its default retains the standard build/dist convention.

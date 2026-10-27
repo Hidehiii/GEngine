@@ -38,30 +38,43 @@ cause a protective failure.
 
 ## Output and execution
 
-The selected folder directly contains:
+The selected folder contains one root entry executable and category folders:
 
 ```text
 MyGame.exe
-MyGame.gpak
-GEngine.dll
-<required native runtime DLLs>
-.gengine-output.json
+Runtime/
+  MyGame.exe
+  GEngine.dll
+  <required native runtime DLLs>
+Data/
+  MyGame.gpak
+Metadata/
+  .gengine-output.json
 ```
 
-Assets, config and licenses are inside `.gpak`, with Assets/Cache excluded.
-No loose Assets tree or PowerShell launcher is shipped. Start the EXE directly
-from any cwd. Its compiled entry point requires the adjacent pack, validates paths
-and SHA-256, extracts into a unique `%TEMP%/GEngineGames/<session>` directory, then
-starts the application there. Config rewrites, caches and logs cannot modify the
-published pack. Session directories are retained; persistent settings/save
-migration and automatic cleanup remain open. Games overriding WorkingDirectory
-must respect the packaged session instead of a developer path.
+The root `MyGame.exe` is a small launcher. It starts the real game executable
+from `Runtime/`, which keeps all native DLL imports beside that executable.
+Assets, config and licenses are inside `Data/MyGame.gpak`, with Assets/Cache
+excluded. No loose Assets tree or PowerShell launcher is shipped. Start the
+root EXE directly from any cwd. The runtime executable validates the adjacent
+categorized pack, extracts it into a unique `%TEMP%/GEngineGames/<session>`
+directory, then starts the application there. Config rewrites, caches and logs
+cannot modify the published pack. Session directories are retained; persistent
+settings/save migration and automatic cleanup remain open. Games overriding
+WorkingDirectory must respect the packaged session instead of a developer path.
 
 The initial format is **uncompressed and unencrypted**. It merges/checks files;
 it does not convert textures/models/shaders or stream directly from the archive.
 Missing required pack, unsupported version, checksum failure, unsafe/duplicate
 paths and truncation fail before application construction. Checksums are integrity
 checks, not authentication against someone who can rewrite a pack and its hashes.
+Direct on-demand `.gpak` reads and package-external writable state are planned as
+S5.2; until then the shipped entry point validates and extracts the complete pack
+before application construction.
+The S5.3 categorized layout is implemented: the root launcher keeps the user
+visible entry point while the real executable and native DLLs remain together in
+`Runtime/`. Publication metadata is not a payload file and lives under
+`Metadata/`.
 
 ## Build and publication requirements
 

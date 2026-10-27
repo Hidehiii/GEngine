@@ -22,6 +22,12 @@ target_link_libraries(GProjectGame PRIVATE GEngine ImGui
     "${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty/FBXSDK/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libxml2-md.lib"
     "${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty/FBXSDK/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/zlib-md.lib")
 set_target_properties(GProjectGame PROPERTIES OUTPUT_NAME "${GE_PROJECT_NAME}"
+    RUNTIME_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/Game/Runtime")
+add_executable(GProjectGameLauncher GameLauncher.cpp)
+target_compile_definitions(GProjectGameLauncher PRIVATE
+    GE_GAME_EXECUTABLE_NAME="${GE_PROJECT_NAME}.exe" UNICODE _UNICODE)
+target_compile_options(GProjectGameLauncher PRIVATE /utf-8)
+set_target_properties(GProjectGameLauncher PROPERTIES OUTPUT_NAME "${GE_PROJECT_NAME}"
     RUNTIME_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/Game")
 if(DEFINED ENV{VULKAN_SDK} AND NOT "$ENV{VULKAN_SDK}" STREQUAL "")
     set(project_vulkan "$ENV{VULKAN_SDK}")
@@ -34,3 +40,4 @@ add_custom_command(TARGET GProjectGame POST_BUILD
         "-DGE_CONFIG=$<CONFIG>" "-DGE_ENGINE_DLL=$<TARGET_FILE:GEngine>"
         "-DGE_OUTPUT_DIR=$<TARGET_FILE_DIR:GProjectGame>"
         -P "${GE_ENGINE_ROOT}/BuildScripts/CMake/CopyRuntime.cmake")
+add_custom_target(GProjectPackage DEPENDS GProjectGame GProjectGameLauncher)

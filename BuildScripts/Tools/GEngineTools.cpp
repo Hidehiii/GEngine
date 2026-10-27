@@ -693,12 +693,13 @@ namespace
             L"-DGE_ENGINE_ROOT=" + engine, L"-DGE_PROJECT_ROOT=" + projectRoot,
             L"-DGE_PROJECT_NAME=" + project.Name, L"-DGE_DIST_ROOT=" + nativeRoot},
             repoRoot, cache / L"configure.log");
-        RunVcLogged(visualStudio, cmake, {L"--build", buildRoot, L"--target", L"GProjectGame",
+        RunVcLogged(visualStudio, cmake, {L"--build", buildRoot, L"--target", L"GProjectPackage",
             L"--parallel", L"2"}, repoRoot, cache / L"build.log");
         const auto output = cache / L"native" / L"Release" / L"Game";
-        if (!std::filesystem::exists(output / (project.Name + L".exe")))
+        if (!std::filesystem::exists(output / (project.Name + L".exe")) ||
+            !std::filesystem::exists(output / L"Runtime" / (project.Name + L".exe")))
         {
-            throw std::runtime_error("Compilation did not produce the game executable.");
+            throw std::runtime_error("Compilation did not produce the launcher and game executable.");
         }
         return output;
     }
@@ -874,68 +875,98 @@ namespace
         AssertNoLinks(output.parent_path());
         std::vector<PublishRecord> records;
         std::map<std::string, Path> sources;
-        const auto add = [&](const std::wstring& filename, const Path& source)
+        const auto add = [&](const std::string& relativePath, const Path& source)
         {
             AssertNoLinks(source);
             if (!std::filesystem::exists(source)) throw std::runtime_error("Missing publication input: " + WideToUtf8(source.wstring()));
-            const auto path = WideToUtf8(filename);
-            records.push_back({path, std::filesystem::file_size(source), Hex(HashFile(source)), source});
-            sources[path] = source;
-        };
-        add(name + L".exe", nativeRoot / (name + L".exe"));
-        add(name + L".gpak", pack);
-        for (const auto& item : std::filesystem::directory_iterator(nativeRoot))
-        {
-            if (item.is_regular_file() && _wcsicmp(item.path().extension().c_str(), L".dll") == 0)
+            if (relativePath.empty() || relativePath.find('\\') != std::string::npos ||
+                relativePath.find("..") != std::string::npos)
             {
-                add(item.path().filename().wstring(), item.path());
+                throw std::runtime_error("Invalid publication path: " + relativePath);
             }
+            records.push_back({relativePath, std::filesystem::file_size(source), Hex(HashFile(source)), source});
+            sources[relativePath] = source;
+        };
+
+        add(WideToUtf8(name + L".exe"), nativeRoot / (name + L".exe"));
+        const auto runtimeRoot = nativeRoot / L"Runtime";
+        if (!std::filesystem::exists(runtimeRoot))
+        {
+            throw std::runtime_error("Project runtime directory is missing.");
         }
+        for (const auto& item : std::filesystem::recursive_directory_iterator(runtimeRoot))
+        {
+            if (!item.is_regular_file() || IsReparsePoint(item.path())) continue;
+            const auto relative = std::filesystem::relative(item.path(), runtimeRoot);
+            add("Runtime/" + relative.generic_u8string(), item.path());
+        }
+        if (!std::filesystem::exists(pack))
+            {
+            throw std::runtime_error("Resource pack is missing.");
+        }
+        add("Data/" + WideToUtf8(name + L".gpak"), pack);
+
         std::sort(records.begin(), records.end(), [](const auto& left, const auto& right)
         {
             return _stricmp(left.RelativePath.c_str(), right.RelativePath.c_str()) < 0;
         });
         const auto manifest = BuildManifest(records, name);
-        const auto marker = output / L".gengine-output.json";
+        const auto marker = output / L"Metadata" / L".gengine-output.json";
         std::map<std::string, std::string> previous;
         if (std::filesystem::exists(output))
         {
+            bool hasManagedContent = false;
             for (const auto& item : std::filesystem::directory_iterator(output))
             {
-                if (item.is_directory() || IsReparsePoint(item.path()))
+                hasManagedContent = true;
+                if (IsReparsePoint(item.path()))
                 {
-                    throw std::runtime_error("Output contains unmanaged directories or links.");
+                    throw std::runtime_error("Output contains links.");
                 }
-            }
-            if (!std::filesystem::exists(marker))
-            {
-                throw std::runtime_error("Output contains unmanaged files; choose an empty folder.");
-            }
-            const auto oldManifest = ReadText(marker);
-            const auto oldRecords = ParseManifestRecords(oldManifest);
-            if (oldRecords.empty()) throw std::runtime_error("Unknown output manifest version.");
-            for (const auto& record : oldRecords) previous[record.first] = record.second;
-            for (const auto& item : std::filesystem::directory_iterator(output))
-            {
                 const auto filename = WideToUtf8(item.path().filename().wstring());
-                if (filename != ".gengine-output.json" && !previous.count(filename))
+                if (item.is_directory() && filename != "Runtime" && filename != "Data" && filename != "Metadata")
+                {
+                    throw std::runtime_error("Output contains unmanaged directories; refusing replacement.");
+                }
+                if (item.is_regular_file() && filename != WideToUtf8(name + L".exe"))
                 {
                     throw std::runtime_error("Output contains unmanaged files; refusing replacement.");
                 }
             }
-            for (const auto& record : oldRecords)
+            if (hasManagedContent && !std::filesystem::exists(marker))
             {
-                const auto path = output / Utf8ToWide(record.first);
-                if (!std::filesystem::exists(path) || Hex(HashFile(path)) != record.second)
-                {
-                    throw std::runtime_error("Published output was modified; choose a new destination.");
-                }
+                throw std::runtime_error("Output contains unmanaged files; choose an empty folder.");
             }
-            if (oldManifest == manifest)
+            if (std::filesystem::exists(marker))
             {
-                return "{\"output\":\"" + JsonEscape(WideToUtf8(output.wstring())) + "\",\"executable\":\"" +
-                    JsonEscape(WideToUtf8((output / (name + L".exe")).wstring())) + "\",\"resourcePack\":\"" +
-                    JsonEscape(WideToUtf8((output / (name + L".gpak")).wstring())) + "\",\"copyFiles\":0}\n";
+                const auto oldManifest = ReadText(marker);
+                const auto oldRecords = ParseManifestRecords(oldManifest);
+                if (oldRecords.empty()) throw std::runtime_error("Unknown output manifest version.");
+                for (const auto& record : oldRecords) previous[record.first] = record.second;
+                for (const auto& item : std::filesystem::recursive_directory_iterator(output))
+                {
+                    if (!item.is_regular_file() || IsReparsePoint(item.path())) continue;
+                    const auto relative = std::filesystem::relative(item.path(), output).generic_u8string();
+                    if (relative != "Metadata/.gengine-output.json" && !previous.count(relative))
+                    {
+                        throw std::runtime_error("Output contains unmanaged files; refusing replacement.");
+                    }
+                }
+                for (const auto& record : oldRecords)
+                {
+                    const auto path = output / Utf8ToWide(record.first);
+                    if (!std::filesystem::exists(path) || Hex(HashFile(path)) != record.second)
+                    {
+                        throw std::runtime_error("Published output was modified; choose a new destination.");
+                    }
+                }
+                if (oldManifest == manifest)
+                {
+                    return "{\"output\":\"" + JsonEscape(WideToUtf8(output.wstring())) + "\",\"executable\":\"" +
+                        JsonEscape(WideToUtf8((output / (name + L".exe")).wstring())) + "\",\"resourcePack\":\"" +
+                        JsonEscape(WideToUtf8((output / L"Data" / (name + L".gpak")).wstring())) +
+                        "\",\"copyFiles\":0}\n";
+                }
             }
         }
         const auto parent = output.parent_path();
@@ -970,7 +1001,7 @@ namespace
                     throw std::runtime_error("Publish integrity check failed.");
                 }
             }
-            WriteText(staging / L".gengine-output.json", manifest);
+            WriteText(staging / L"Metadata" / L".gengine-output.json", manifest);
             bool movedOld = false;
             if (std::filesystem::exists(output))
             {
@@ -997,7 +1028,7 @@ namespace
         }
         return "{\"output\":\"" + JsonEscape(WideToUtf8(output.wstring())) + "\",\"executable\":\"" +
             JsonEscape(WideToUtf8((output / (name + L".exe")).wstring())) + "\",\"resourcePack\":\"" +
-            JsonEscape(WideToUtf8((output / (name + L".gpak")).wstring())) + "\",\"copyFiles\":" +
+            JsonEscape(WideToUtf8((output / L"Data" / (name + L".gpak")).wstring())) + "\",\"copyFiles\":" +
             std::to_string(copied) + ",\"previousOutput\":\"" + JsonEscape(WideToUtf8(backup)) + "\"}\n";
     }
 

@@ -2,10 +2,10 @@
 
 The included `FrameGraphTriangle.gproject` can be opened in the Qt editor through
 File > Open project. Project > Package project asks only for output directory,
-then automatically compiles the project and engine, creates FrameGraphTriangle.gpak
-and publishes it beside the EXE/DLLs in the selected folder. The descriptor has
+then automatically compiles the project and engine and publishes a root
+FrameGraphTriangle.exe with Runtime/, Data/, and Metadata/ folders. The descriptor has
 only schemaVersion/name. No existing executable or packaging fields are needed.
-Run the generated EXE directly; it extracts validated resources into a private
+Run the generated root EXE directly; it extracts validated resources into a private
 session before startup. The output has no loose Assets directory or script launcher.
 
 For current automatic packaging, see the [export guide](../../Documentation/Guides/GameExport.md).

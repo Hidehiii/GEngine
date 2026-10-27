@@ -242,6 +242,59 @@
   首版不承诺加密、增量补丁包、流式加载或任意格式的自动资源转换。
   S5.1 最小 .gpak 已完成，格式/原生展开/完整性及路径验证见上方 S2.4。
   此总项继续跟踪稳定身份、压缩、直接读取适配等，不能再将所有归档能力视为未实现。
+  - [ ] S5.2 直接读取 `.gpak`（2026-10-27 用户建议）：设计运行时资源读取
+        适配层，在启动时解析并校验包索引，将规范资源路径映射到归档偏移，
+        按需读取条目数据，而不是把整个包展开到 `%TEMP%` 的真实目录树。
+        开发目录模式与打包模式必须使用同一逻辑资源身份；只读资源来自包，
+        Config 重写、日志、shader cache 和用户状态写入独立可写目录，不得
+        尝试修改 `.gpak`。迁移 Shader、材质、纹理、网格、配置等现有直接
+        文件读取点，并保留数据生命周期直到上传/GPU/异步消费完成。验收：
+        打包 FrameGraphTriangle 不再创建完整资源解包目录；三后端 120 帧
+        运行与读回通过；缺失、重复、损坏、截断、路径穿越和索引越界均在
+        读取/启动前明确失败；同一资源目录模式与归档模式加载等价；异步
+        加载与资源生命周期有检查；文档区分当前 S5.1 解包行为与 S5.2
+        计划。实现前需先审查现有资源读取路径和 GPU 数据所有权。
+  - [x] S5.3 单入口分类发布布局（2026-10-27 用户要求）：将项目打包输出从
+        平铺的 EXE/DLL/.gpak/.json 目录改为“根目录只有一个 `<Game>.exe`
+        和若干分类文件夹”。原生 DLL、`.gpak` 与发布元数据不嵌入 EXE，
+        而是分别放入固定子目录（例如 Runtime/、Data/、Metadata/；最终
+        命名可在实现时确定）。先审计 PE import 依赖与启动顺序，并设计
+        子目录 DLL 加载策略（如 delay-load + 显式搜索目录、动态加载或
+        最小启动器）；不能假设 Windows loader 会自动搜索 EXE 子目录。
+        发布清单、校验、版本与更新元数据移入 Metadata 子目录，不再在
+        根目录输出 `.gengine-output.json`。系统图形驱动、Windows SDK/VC
+        运行时等外部系统依赖仍可保留为机器前提，但需明确列出。验收：
+        输出根目录仅包含 `<Game>.exe` 与子文件夹，除该 EXE 外没有任何
+        散落文件；所有 DLL/.gpak/.json 均位于分类子目录；重复打包保留
+        布局且只更新变化内容；从任意 cwd 启动根 EXE；三后端 120 帧/
+        读回/退出 0；Config、日志、shader cache 与用户状态写入包外用户
+        状态目录；损坏/篡改/缺失子目录载荷在启动前或首次加载前明确失败；
+        Debug/Release 与干净机器检查通过；架构/API/导出文档同步布局和
+        仍需的系统运行库。实现前需完成依赖/链接与目录契约设计，不把
+        现有平铺输出伪装成单入口分类布局。
+        Implemented: project CMake now builds a root `<Game>.exe` launcher and
+        the real game executable under `Runtime/`; CopyRuntime places GEngine and
+        vendor DLLs beside that executable. The publisher emits `Data/<Game>.gpak`
+        and `Metadata/.gengine-output.json`, records category-relative paths,
+        validates managed directory structure, and hard-links unchanged payloads.
+        The launcher starts `Runtime/<Game>.exe`; `PreparePackagedResources`
+        accepts the categorized `../Data/<Game>.gpak` location while retaining
+        adjacent-pack compatibility. Nothing is embedded in the root EXE.
+        Verification (2026-10-27): a fresh FrameGraphTriangle export produced a
+        root with exactly one EXE and three folders (`Runtime`, `Data`,
+        `Metadata`), with 20 Runtime files, one Data pack, and one Metadata
+        manifest; launching the root EXE from `%TEMP%` completed 120 D3D12
+        frames, all three GPU readbacks, and exit 0; a changed launcher update
+        copied only one file; an unchanged repeat reported `copyFiles:0`; a
+        missing-src failure preserved the existing manifest; and Qt Host
+        `--packaging-self-test` passed build, layout, incremental repeat,
+        failure preservation, cancel/retry, and close checks; full
+        `GEngineTools.exe qt-editor --configuration Release --test` also passed
+        configure/build, CTest, and real engine checks. Separate
+        categorized packages built with GraphicsAPI 1/2/3 each completed 120
+        frames, all three GPU readbacks, normal shutdown, and exit 0; logs are
+        `%TEMP%/GEngineCategorized-{OpenGL,Vulkan,D3D12}.log`. Debug and
+        clean-machine runs remain open for this layout change.
 
 当前证据：ScriptEngine 使用显式 ScriptRuntimeRoot/ScriptCoreAssembly 路径，
 仍加载固定 GEngine.Main 测试类；Mono 原生库静态链接，构建已切换到官方 SDK。

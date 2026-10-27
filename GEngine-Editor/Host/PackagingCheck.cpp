@@ -74,18 +74,24 @@ namespace GEngineEditor
             case 1:
                 if (!window.LastPackagingSucceeded() || read(check->Project) != check->Metadata ||
                     !QFileInfo::exists(check->Output+"/FrameGraphTriangle.exe") ||
-                    !read(check->Output+"/FrameGraphTriangle.gpak").startsWith("GEPAK001") ||
+                    !read(check->Output+"/Data/FrameGraphTriangle.gpak").startsWith("GEPAK001") ||
+                    !QFileInfo::exists(check->Output+"/Runtime/FrameGraphTriangle.exe") ||
+                    !QFileInfo::exists(check->Output+"/Metadata/.gengine-output.json") ||
+                    QFileInfo::exists(check->Output+"/FrameGraphTriangle.gpak") ||
                     QFileInfo::exists(check->Output+"/Assets") || check->Ticks < 2)
-                { finish(false, "automatic build/flat EXE and resource pack failed or changed project metadata"); return; }
-                check->Manifest=read(check->Output+"/.gengine-output.json");
+                { finish(false, "automatic build/single-entry categorized output failed or changed project metadata"); return; }
+                check->Manifest=read(check->Output+"/Metadata/.gengine-output.json");
                 if (!window.OpenProject(check->Project) || !window.PackageProject())
                 { finish(false, "output preference/reopen/repeat failed"); return; }
                 ++check->Phase; break;
             case 2:
             {
-                if (!window.LastPackagingSucceeded() || read(check->Output+"/.gengine-output.json") != check->Manifest ||
-                    !window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("\"copyFiles\":0"))
-                { finish(false, "incremental automatic rebuild/repeat failed"); return; }
+                if (!window.LastPackagingSucceeded())
+                { finish(false, "incremental automatic rebuild failed"); return; }
+                if (read(check->Output+"/Metadata/.gengine-output.json") != check->Manifest)
+                { finish(false, "incremental manifest changed"); return; }
+                if (!window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("\"copyFiles\":0"))
+                { finish(false, "incremental repeat was not zero-copy"); return; }
                 const auto brokenRoot=check->Directory.filePath("broken"); QDir().mkpath(brokenRoot);
                 ProjectFile broken; broken.Path=brokenRoot+"/Broken.gproject"; broken.Name="Broken"; QString error;
                 if (!broken.Save(error) || !window.OpenProject(broken.Path) || !window.SavePackaging(check->Output) || !window.PackageProject())
@@ -93,7 +99,7 @@ namespace GEngineEditor
                 ++check->Phase; break;
             }
             case 3:
-                if (window.LastPackagingSucceeded() || read(check->Output+"/.gengine-output.json") != check->Manifest ||
+                if (window.LastPackagingSucceeded() || read(check->Output+"/Metadata/.gengine-output.json") != check->Manifest ||
                     !window.OpenProject(check->Project) || !window.SavePackaging(check->Output) || !window.PackageProject())
                 { finish(false, "compiler failure damaged existing output or recovery failed"); return; }
                 QTimer::singleShot(600,&window,[&window] { window.CancelPackaging(); }); ++check->Phase; break;

@@ -166,4 +166,6 @@ job owns the compiler tree and a project mutex prevents concurrent shared-cache
 writes. User-controlled arguments are passed separately, not interpolated into
 a shell build command. Native-only packaging explicitly excludes Mono; standard
 builds retain the existing default. Assets/config are archived after compilation,
-verified in sibling staging, then published beside the EXE and required DLLs.
+verified in sibling staging, then published as a single-entry categorized layout:
+root launcher EXE, `Runtime/` game EXE and native DLLs, `Data/` resource pack,
+and `Metadata/` publication manifest.

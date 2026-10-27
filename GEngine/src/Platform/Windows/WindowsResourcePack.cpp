@@ -76,6 +76,11 @@ namespace GEngine
         executable.resize(length);
         auto pack = std::filesystem::path(executable); pack.replace_extension(L".gpak");
         if (!std::filesystem::exists(pack))
+        {
+            const auto categorized = pack.parent_path().parent_path() / L"Data" / pack.filename();
+            if (std::filesystem::exists(categorized)) pack = categorized;
+        }
+        if (!std::filesystem::exists(pack))
         { if (required) throw std::runtime_error("Required resource pack is missing."); return {}; }
         std::ifstream input(pack, std::ios::binary);
         std::array<char, 8> magic{}; Read(input, magic.data(), magic.size());
