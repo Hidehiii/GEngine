@@ -25,6 +25,10 @@ enable_testing()
 add_test(NAME EditorProtocol COMMAND GEngine-EditorProtocolTests)
 if(NOT GE_EDITOR_PROTOCOL_ONLY)
     find_package(Qt6 6.10.3 EXACT REQUIRED COMPONENTS Core Gui Widgets)
+    add_executable(GEngineTools "${GE_EDITOR_ROOT}/BuildScripts/Tools/GEngineTools.cpp")
+    ge_editor_output(GEngineTools)
+    target_compile_definitions(GEngineTools PRIVATE UNICODE _UNICODE)
+    target_link_libraries(GEngineTools PRIVATE bcrypt)
     add_executable(GEngine-EditorHost
         "${GE_EDITOR_SOURCE}/Host/main.cpp"
         "${GE_EDITOR_SOURCE}/Host/MainWindow.cpp"
@@ -37,23 +41,14 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
         "${GE_EDITOR_SOURCE}/Host/RecoveryCheck.cpp")
     ge_editor_output(GEngine-EditorHost)
     target_link_libraries(GEngine-EditorHost PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
-    add_dependencies(GEngine-EditorHost GEngine-EditorDiagnosticWorker)
-    set_property(TARGET GEngine-EditorHost APPEND PROPERTY LINK_DEPENDS
-        "${GE_EDITOR_ROOT}/BuildScripts/ExportProject.ps1"
-        "${GE_EDITOR_ROOT}/BuildScripts/BuildProject.ps1"
-        "${GE_EDITOR_ROOT}/BuildScripts/WriteResourcePack.ps1"
-        "${GE_EDITOR_ROOT}/BuildScripts/PublishProject.ps1")
+    add_dependencies(GEngine-EditorHost GEngine-EditorDiagnosticWorker GEngineTools)
     get_target_property(qt_qmake Qt6::qmake IMPORTED_LOCATION)
     get_filename_component(qt_bin "${qt_qmake}" DIRECTORY)
     find_program(GE_WINDEPLOYQT windeployqt HINTS "${qt_bin}" REQUIRED NO_DEFAULT_PATH)
     add_custom_command(TARGET GEngine-EditorHost POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:GEngine-EditorHost>/packaging"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${GE_EDITOR_ROOT}/BuildScripts/ExportProject.ps1"
-            "${GE_EDITOR_ROOT}/BuildScripts/BuildProject.ps1"
-            "${GE_EDITOR_ROOT}/BuildScripts/WriteResourcePack.ps1"
-            "${GE_EDITOR_ROOT}/BuildScripts/PublishProject.ps1"
-            "$<TARGET_FILE_DIR:GEngine-EditorHost>/packaging"
+            "$<TARGET_FILE:GEngineTools>"
+            "$<TARGET_FILE_DIR:GEngine-EditorHost>/GEngineTools.exe"
         COMMAND "${GE_WINDEPLOYQT}" "$<IF:$<CONFIG:Debug>,--debug,--release>"
             --no-translations --no-compiler-runtime "$<TARGET_FILE:GEngine-EditorHost>"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different

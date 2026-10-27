@@ -37,6 +37,11 @@ function(ge_set_output_directories target)
     )
 endfunction()
 
+add_executable(GEngineTools "${GE_ROOT}/BuildScripts/Tools/GEngineTools.cpp")
+ge_set_output_directories(GEngineTools)
+target_compile_definitions(GEngineTools PRIVATE UNICODE _UNICODE)
+target_link_libraries(GEngineTools PRIVATE bcrypt)
+
 set(GE_INCLUDE_DIRS
     "${GE_ROOT}/GEngine/include"
     "${GE_VENDOR}"

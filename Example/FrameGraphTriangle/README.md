@@ -9,15 +9,10 @@ Run the generated EXE directly; it extracts validated resources into a private
 session before startup. The output has no loose Assets directory or script launcher.
 
 For current automatic packaging, see the [export guide](../../Documentation/Guides/GameExport.md).
-The following scripts are older manual directory-deployment smoke prototypes:
-`BuildScripts/ExportFrameGraphTriangle.ps1` collects the built executable/DLLs,
-Config.ini and the two shaders. Its package-local LaunchGame.ps1 validates hashes
-and creates a separate writable asset/config/cache/log directory, allowing launch
-from any cwd without modifying published files. PowerShell 7.2+ and system graphics
-runtimes are required. This is not a complete vendor license/import audit.
-`BuildScripts/Tests/TestExportedFrameGraphTriangle.ps1 -WorkRoot <new-directory>`
-checks repeated zero-copy export and 120-frame GPU readbacks on all three backends
-using the existing selected build, without rebuilding engine sources.
+The former directory-deployment smoke scripts were removed. The native
+`.gproject` pipeline now compiles the project, creates the `.gpak`, publishes
+the flat output, and validates repeated builds through the editor's
+`--packaging-self-test`.
 
 Set `GENGINE_EXAMPLE_IMGUI=1` to enable the dependency-upgrade UI smoke window.
 Expected: readable version text, a working click counter, and a window that can

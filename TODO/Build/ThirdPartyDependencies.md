@@ -65,6 +65,28 @@
   as a visual pass. The unbounded diagnostic process was explicitly stopped.
   Final regression: FrameGraphTriangle Debug/Release builds and six 120-frame
   D3D12/OpenGL/Vulkan runs also exited 0 after the common rendering fixes.
+- [x] Rebuild the current Qt editor after the legacy third-party output
+      cleanup (2026-10-27). Scope: run the standard Release CMake editor build,
+      including the missing Qt 6.10.3 Release SDK prerequisite, Qt Host, and
+      GEngine-EditorEngineWorker, without changing engine API, architecture,
+      backend selection, or source. Acceptance: BuildQt6.ps1 and
+      BuildQtEditor.ps1 exit successfully, their configure/build/install logs
+      contain no command failure, and updated SDK/Host/Worker artifacts appear
+      in their unified dist paths. Runtime interaction is outside this rebuild
+      request unless the build output requires a focused check.
+      Implemented: built and installed the Qt 6.10.3 Release SDK, then rebuilt
+      the Qt Host and GEngine-EditorEngineWorker through the standard CMake
+      editor script. No source, build configuration, engine API, architecture
+      surface, or backend selection changed.
+      Verification (2026-10-27): `BuildQt6.ps1 -Configuration Release` configure,
+      build, and install commands each exited 0. `BuildQtEditor.ps1
+      -Configuration Release` Qt configure/build and engine configure/build
+      commands each exited 0. Updated artifacts exist under
+      `dist/qt6/windows-x86_64/Release`, `dist/qt-editor/windows-x86_64/Release/
+      GEngine-EditorHost`, and `dist/qt-editor/windows-x86_64/Release/
+      GEngine-EditorEngineWorker`. An offscreen Host self-test with engine-check
+      and the rebuilt Worker exited 0 and reported the recovery suite PASS.
+      Manual visual/interaction checks were not run and remain separate.
 
 ### In progress: ImGui, Box2D, and SPIRV-Cross upgrade (2026-10-22)
 

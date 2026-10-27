@@ -84,7 +84,7 @@ namespace GEngineEditor
             case 2:
             {
                 if (!window.LastPackagingSucceeded() || read(check->Output+"/.gengine-output.json") != check->Manifest ||
-                    !window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("\"copyFiles\": 0"))
+                    !window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("\"copyFiles\":0"))
                 { finish(false, "incremental automatic rebuild/repeat failed"); return; }
                 const auto brokenRoot=check->Directory.filePath("broken"); QDir().mkpath(brokenRoot);
                 ProjectFile broken; broken.Path=brokenRoot+"/Broken.gproject"; broken.Name="Broken"; QString error;

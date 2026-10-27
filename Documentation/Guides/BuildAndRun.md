@@ -9,11 +9,10 @@ S0.1 is implemented: `RuntimeSpecification::ScriptRuntimeRoot` and
 values resolve against `WorkingDirectory` before the runtime changes cwd.
 RuntimeId, engine-consumed runtime manifests, Development/Packaged modes, and ScriptCore
 generation in CMake are still not implemented.
-The proposed first export includes resource dependency collection and Assets/
-directory deployment. Compressed .pak archives and their runtime reader are a
-later stage. Explicit-manifest directory deployment and a FrameGraphTriangle
-package/launcher are implemented in [the PowerShell export guide](GameExport.md);
-automatic scene dependency discovery, script deployment and .pak tooling remain open.
+Current project export uses the native `GEngineTools.exe` pipeline and `.gpak`
+runtime described in [the export guide](GameExport.md). The former explicit
+manifest directory-deployment prototypes were removed; automatic scene
+dependency discovery and script deployment remain open.
 
 Development is currently Windows-first. Install the following before generating the solution:
 
@@ -26,15 +25,15 @@ Development is currently Windows-first. Install the following before generating 
   installed SDK.
 - .NET Framework 4.7.2 Developer Pack, required by the current solution tooling.
 
-Run `BuildScripts\BuildMonoSdk.ps1` once from the repository root before
-generating engine/game projects. The script downloads the official Mono
+Build `GEngineTools.exe` first, then run its `mono-sdk` command once from the
+repository root before generating engine/game projects. The native tool downloads the official Mono
 `6.10.0.87` x64 MSI, verifies its SHA-256, extracts it under
 `dist/mono/windows-x86_64/6.10.0.87/Mono`, and copies the matching
 `LICENSE`/`PATENTS.TXT` files from the official `mono/mono` tag. CMake and
 Premake now consume that SDK’s `include/mono-2.0` and
 `lib/libmono-static-sgen.lib`.
-BuildQtEditor.ps1 invokes BuildMonoSdk.ps1 automatically for full builds;
-ProtocolOnly remains dependency-free.
+`GEngineTools.exe qt-editor` invokes `mono-sdk` automatically for full builds;
+`--protocol-only` remains dependency-free.
 Runtime BCL path configuration is still the legacy `mono/lib` behavior and
 defaults to `mono/lib`; explicit path fields are available, but this command
 does not enable packaging or script export.
@@ -48,14 +47,91 @@ aggregate submodule. Clone recursively and enable Git LFS so the nested
 available. Do not replace those folders with global installations unless you
 also update `Dependencies.lua`.
 
+## Fresh environment quick start
+
+Run these commands from a Windows command prompt after installing the
+prerequisites above. The first clone uses recursive submodules and Git LFS:
+
+```bat
+git lfs install
+git clone --recurse-submodules https://github.com/Hidehiii/GEngine.git
+cd GEngine
+git submodule update --init --recursive
+git lfs pull
+```
+
+Build `GEngineTools.exe` once through CMake. It owns the Mono SDK setup and the
+optional Qt/editor workflow commands:
+
+```bat
+BuildScripts\GenerateProjectsCMake.bat vs2022
+cmake --build build\cmake-vs2022\windows-x86_64 --config Release --target GEngineTools --parallel 6
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe mono-sdk
+```
+
+### CMake build
+
+Generate the CMake project and build a focused example. Replace `Debug` with
+`Release` for an optimized build; `vs2019` is also accepted by the launcher.
+
+```bat
+BuildScripts\GenerateProjectsCMake.bat vs2022
+cmake --build build\cmake-vs2022\windows-x86_64 --config Debug --target FrameGraphTriangle --parallel 6
+```
+
+The executable is emitted under:
+
+```text
+dist\cmake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe
+```
+
+Run it from `Example\FrameGraphTriangle` so `Config.ini` and shader assets
+resolve:
+
+```bat
+cd Example\FrameGraphTriangle
+..\..\dist\cmake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe
+```
+
+### Premake build
+
+After preparing the Mono SDK as shown above, generate the Premake solution.
+The launcher supports `vs2022`, `vs2019`, and `vs2026`; VS2022 is shown here.
+
+```bat
+BuildScripts\GenerateProjectsPremake.bat vs2022
+```
+
+Build the complete solution from a VS developer command prompt:
+
+```bat
+msbuild GEngine.sln /p:Configuration=Debug /p:Platform=x64 /m:6
+```
+
+For a focused build, use the generated example project instead:
+
+```bat
+msbuild Example\FrameGraphTriangle\FrameGraphTriangle.vcxproj /p:Configuration=Debug /p:Platform=x64 /m:6
+```
+
+Premake outputs use the same unified layout. The Debug example is:
+
+```text
+dist\premake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe
+```
+
+Run it from `Example\FrameGraphTriangle`, exactly as in the CMake path. For
+the optional Qt editor, build the Qt SDK and editor with `GEngineTools.exe`;
+see the [editor README](../../GEngine-Editor/README.md).
+
 ## Generate the solution
 
 Editor-only Qt source is in `GEngine/GEngine-ThirdParty/qtbase` at v6.10.3
 (`7ddbc87d8e14ce51d2957ea72d0a6077593d5ff4`). Recursive submodule initialization
 fetches it once the updated aggregate revision is published. This is not an
 installed Qt SDK; existing engine/game builds do not need Qt and their commands
-are unchanged. BuildScripts/BuildQt6.ps1 now builds matching Debug/Release SDKs;
-BuildScripts/BuildQtEditor.ps1 builds/tests the independent E0.1 Qt prototype.
+are unchanged. `GEngineTools.exe qt-sdk` builds matching Debug/Release SDKs;
+`GEngineTools.exe qt-editor` builds/tests the independent E0.1 Qt prototype.
 Commands, deployment and fixed-size GPU preview limitations are in the
 [editor README](../../GEngine-Editor/README.md). Full editor builds also build and
 deploy GEngine-EditorEngineWorker; Host starts it and receives frames and logs.
@@ -215,7 +291,7 @@ Use `Example/Triangle` as the smallest reference application. It deliberately ha
 
 ## Automatic project packaging
 
-The optional [game export guide](GameExport.md) documents the PowerShell 7.2+
+The optional [game export guide](GameExport.md) documents the native C++
 project build/archive/publish pipeline. In the editor choose Project > Package
 project and select only an output directory; it automatically builds Release and
 writes EXE/.gpak/DLLs directly there. The .gproject descriptor contains only name

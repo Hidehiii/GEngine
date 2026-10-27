@@ -4,7 +4,13 @@ Editor ConsoleOutput is a Qt-only Host source, explicitly listed by the standalo
 CMake build and discovered by Premake's existing Host glob. The worker reuses its
 existing spdlog dependency for ANSI stderr; no new module or game dependency.
 
-GEngine-Editor/RunQtEditor.bat delegates to its sibling PowerShell launcher. Auto
+`BuildScripts/Tools/GEngineTools.cpp` is the first-party Windows workflow tool.
+It links only the Windows API and BCrypt, and owns Mono/Qt/editor build process
+orchestration, editor launcher selection, project compilation, `.gpak` writing,
+and managed-output publication. CMake and Premake emit it as `GEngineTools.exe`
+under the unified `dist` layout; no engine, game, or Qt target links it.
+
+GEngine-Editor/RunQtEditor.bat delegates to the native GEngineTools launcher. Auto
 selects the newest Host executable in the requested configuration across the
 standalone CMake and Premake outputs, then runs from that executable's directory.
 Explicit generator selection and PrintPath support diagnosing stale outputs.
@@ -18,7 +24,7 @@ E1.4 adds the header-only Core/SelectionService used by ProjectWorkspace and
 ProtocolTests. Existing CMake source includes and Premake Core discovery cover it
 without a new target, Qt module, engine dependency or deployment artifact.
 
-2026-10-26 S1.1: BuildScripts/BuildMonoSdk.ps1 installs the official Mono
+2026-10-26 S1.1: `GEngineTools.exe mono-sdk` installs the official Mono
 6.10.0.87 x64 SDK under `dist/mono/windows-x86_64/6.10.0.87/Mono`. CMake and
 Premake now consume that SDK’s headers and `libmono-static-sgen.lib`; the
 Hazel-derived static library snapshot is no longer referenced by generated
@@ -38,10 +44,10 @@ present; neither build generator links Qt into GEngine or games. The original
 source-only addition is now followed by an opt-in Qt SDK/Host prototype build.
 
 Planned UI split: a separate Qt 6 Widgets EditorHost links Qt Core/Gui/Widgets;
-EngineWorker/game link GEngine and Dear ImGui, without Qt. The legacy ImGui editor target and launcher have been removed; Qt Host is the only editor. BuildQt6.ps1 installs
-matching Debug/Release SDKs out of source. BuildQtEditor.ps1 builds independent
+EngineWorker/game link GEngine and Dear ImGui, without Qt. The legacy ImGui editor target and launcher have been removed; Qt Host is the only editor. `GEngineTools.exe qt-sdk` installs
+matching Debug/Release SDKs out of source. `GEngineTools.exe qt-editor` builds independent
 Host, DiagnosticWorker, EngineWorker and ProtocolTests targets using CMake or optional Premake.
-Only EngineWorker links GEngine; Host remains Qt-only. The standalone build script
+Only EngineWorker links GEngine; Host remains Qt-only. The standalone native tool
 also builds EngineWorker through the root MSVC CMake project and deploys it beside
 the Host's sibling target directories; protocol-only builds skip the engine.
 SDK/target outputs are isolated under build/qt6, dist/qt6 and build/dist/qt-editor;

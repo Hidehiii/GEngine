@@ -16,33 +16,35 @@ synchronous GPU readback confined to the child. Scene/Play/Gizmo and `.GEScene`
 editing remain future work. The Host can edit/undo/redo and atomically save a
 separate `.gedraft` note document even after the child crashes.
 
-From the repository root in PowerShell (VS C++ tools, CMake and Python required):
+Build the native workflow tool first (VS C++ tools, CMake and Python are required):
 
-```powershell
-.\BuildScripts\BuildQt6.ps1 -Configuration Release
-.\BuildScripts\BuildQtEditor.ps1 -Configuration Release -Test
-.\GEngine-Editor\RunQtEditor.bat Release
+```bat
+BuildScripts\GenerateProjectsCMake.bat vs2022
+cmake --build build\cmake-vs2022\windows-x86_64 --config Release --target GEngineTools --parallel 6
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe qt-sdk --configuration Release
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe qt-editor --configuration Release --test
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe run-qt-editor Release CMake
 ```
 
-BuildQtEditor.ps1 automatically installs the official Mono 6.10.0.87 SDK before
-building the full editor/engine targets. `-ProtocolOnly` does not download it.
+The full `qt-editor` command installs the official Mono 6.10.0.87 SDK before
+building the editor/engine targets. `--protocol-only` does not download it.
 
 RunQtEditor selects the newest executable for the requested configuration across
 CMake and Premake outputs. Use `RunQtEditor.bat Release Premake` (or `CMake`)
 to select one explicitly; add `-PrintPath` to inspect the selection without launching.
 No arguments means Release/Auto. A missing selected build returns an error.
 
-If Python is not on PATH, pass `-Python` with its executable's absolute path to
-BuildQt6.ps1. The script initializes VS developer tools in an isolated child
+If Python is not on PATH, pass `--python` with its executable's absolute path to
+`qt-sdk`. The native tool initializes VS developer tools in an isolated child
 environment and uses bundled Ninja. SDK artifacts go to
 `build/qt6/windows-x86_64/Release` and `dist/qt6/windows-x86_64/Release`; upstream
 source stays clean. Repeat with Debug for its matching SDK/Host. Do not build
 the same configuration concurrently.
 
 For Premake, after building the SDK run
-`BuildQtEditor.ps1 -Configuration Release -Premake -Test` (or Debug). It generates
+`GEngineTools.exe qt-editor --configuration Release --premake --test` (or Debug). It generates
 optional Qt targets with `--qt6-sdk=<root-containing-Debug-and-Release>`, then
-builds/deploys them. `-QtSdk <configuration-prefix>` overrides the CMake SDK;
+builds/deploys them. `--qt-sdk <configuration-prefix>` overrides the CMake SDK;
 Premake derives its paired SDK root from the prefix's parent. Default engine/game
 builds still need no Qt. Root CMake also has opt-in GE_BUILD_QT_EDITOR=ON.
 
@@ -71,8 +73,8 @@ restores the default arrangement. The worker toolbar can also move/float/hide.
 Layout state version 2 saves these positions; incompatible older states reset
 to defaults without touching the legacy editor's imgui.ini.
 
-`BuildQtEditor.ps1 -ProtocolOnly -Configuration Debug -Test` checks protocol/history
-without Qt. Full `-Test` also runs the real engine check using the deployed worker's
+`GEngineTools.exe qt-editor --protocol-only --configuration Debug --test` checks protocol/history
+without Qt. Full `--test` also runs the real engine check using the deployed worker's
 current backend configuration and writes engine-tests.log. It runs the diagnostic Host offscreen (CTest timeout 35 seconds),
 covering missing child, handshake/image, native crash, hang, corrupt pipe,
 restart, save failure and draft round trip. Tests use temporary files and do not

@@ -132,8 +132,9 @@ S2.4/S5.1 替换 S2.3：`.gproject` 仅保存名称/版本，没有任何打包�
 当前自动构建显式排除 Mono，脚本初始化请求明确失败；C# 支持保持开放。
 GUI 只有输出路径输入，构建要求与格式见 [打包指南](../Guides/GameExport.md)。
 
-2026-10-26 S2.1/S2.2 已实现 `BuildScripts/ExportGame.ps1`（PowerShell 7.2+，
-替换初版 Python 工具）：基于显式文件 ID 和
+2026-10-26 S2.1/S2.2 曾实现 `BuildScripts/ExportGame.ps1`（PowerShell 7.2+，
+替换初版 Python 工具）；该目录部署原型已于 2026-10-27 移除，由原生
+`.gproject`/`.gpak` 管线取代。历史设计基于显式文件 ID 和
 依赖闭包预检，生成包含哈希/大小/角色的版本化部署清单；新增/变更文件复制到
 隔离 staging，未变文件仅从已发布版本硬链接，校验后发布内容寻址版本，再
 原子替换 current 指针。源构建文件绝不硬链接；已发布文件必须不可变，游戏

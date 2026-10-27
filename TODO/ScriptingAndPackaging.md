@@ -6,6 +6,51 @@
   已复核本轮构建/运行证据与工作区差异，提交前检查暂存清单及 diff --check；
   推送后核对本地 HEAD 与 origin/master 一致。
 
+- [x] Replace every first-party repository `.ps1` workflow with one native
+      C++/Win32 tool (2026-10-27). Scope: remove all first-party
+      `BuildScripts/*.ps1`, `BuildScripts/Tests/*.ps1`, and
+      `GEngine-Editor/RunQtEditor.ps1`; add `GEngineTools.exe` with native
+      subcommands for Mono SDK setup, Qt SDK build, Qt editor build/test,
+      editor launch, `.gproject` export, resource-pack generation, publication,
+      and packaging regression checks; update CMake/Premake generation,
+      editor Host invocation, launchers, documentation, and README references.
+      Third-party submodule scripts remain untouched. Historical directory
+      export prototypes (`ExportGame`, `ExportFrameGraphTriangle`,
+      `StartExportedGame`) are superseded by the native `.gproject`/`.gpak`
+      pipeline rather than translated one-for-one. Acceptance: no first-party
+      `.ps1` remains or is referenced as a current workflow; `GEngineTools`
+      builds through CMake and Premake; `mono-sdk`, `qt-sdk`, `qt-editor`,
+      `run-qt-editor`, and `export-project` commands work; editor packaging no
+      longer requires PowerShell; `EditorPackaging` still covers the real
+      build, `.gpak`, incremental repeat, failure preservation, cancel/retry,
+      and close behavior; documentation accurately distinguishes native
+      workflow tooling from third-party scripts; and `git diff --check` passes.
+      Implemented: added `BuildScripts/Tools/GEngineTools.cpp` and generator
+      targets in CMake and Premake. The tool provides `mono-sdk`, `qt-sdk`,
+      `qt-editor`, `run-qt-editor`, and `export-project`; the Qt Host launches
+      the deployed native exporter for Project > Package project. All fifteen
+      first-party `.ps1` workflow/test files and the legacy deployed
+      `packaging/*.ps1` payloads were removed. CMake and Premake both build and
+      deploy `GEngineTools.exe`; `RunQtEditor.bat` locates and invokes it. The
+      historical directory-deployment commands are documented as removed rather
+      than translated one-for-one. Third-party submodule scripts remain
+      untouched.
+      Verification (2026-10-27): root CMake built `GEngineTools.exe`; `mono-sdk`
+      reused the installed official SDK successfully; `qt-sdk --configuration
+      Release` configure/build/install commands each exited 0; `qt-editor
+      --configuration Release --test` configure/build/engine/CTest/engine-check
+      commands each exited 0; Premake `qt-editor --premake` generated and built
+      GEngineTools, Host, worker, diagnostic worker, and protocol tests; direct
+      `export-project` compiled FrameGraphTriangle, wrote `.gpak`, published a
+      flat output, and a repeat reported `copyFiles:0`; CMake and Premake Host
+      `--packaging-self-test` runs both passed the real build, incremental
+      repeat, failure preservation, cancel/retry, and close checks.
+      `RunQtEditor.bat Release CMake -PrintPath` selected the CMake Host.
+      Remaining limitations: fresh-machine Mono download/extraction and Debug
+      tool commands were not rerun; GUI launch/interaction and clean-machine
+      behavior remain separate checks; historical directory-deployment
+      functionality is intentionally superseded rather than preserved.
+
 - [x] S2.4/S5.1 自动编译与原生资源包（2026-10-26 用户更正）：`.gproject`
   仅存名称/版本，移除整个 packaging 对象及 EXE 输入；项目约定 src/Assets。
   编辑器仅保留输出路径这一打包输入，自动 Release 编译引擎/游戏，生成 EXE、

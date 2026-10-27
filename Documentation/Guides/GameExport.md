@@ -65,7 +65,7 @@ checks, not authentication against someone who can rewrite a pack and its hashes
 
 ## Build and publication requirements
 
-The editor needs PowerShell 7.2+, CMake, Visual Studio C++ tools and a complete
+The editor needs CMake, Visual Studio C++ tools and a complete
 GEngine source SDK/dependency checkout. It discovers the SDK above its deployed
 location. A relocated standalone editor without that SDK cannot compile games.
 These are automatic tool choices, not extra packaging inputs. Incremental build
@@ -90,7 +90,7 @@ A Windows job owns the build tree, so forced cancellation stops its compiler
 children. Project/output locks refuse competing operations. Directories are trusted
 and must not be mutated concurrently by external processes. The editor uses a
 thirty-minute deadline. System graphics drivers/runtimes and the Visual C++ runtime
-are player prerequisites; PowerShell/CMake/Visual Studio are not.
+are player prerequisites; CMake/Visual Studio are not.
 
 Vendor DLL collection follows the existing build runtime set. Audit redistribution
 rights/notices and clean-machine prerequisites before a public release; automatic
@@ -98,20 +98,16 @@ PE import and license discovery remain open.
 
 ## Command line and validation
 
-```powershell
-pwsh -File BuildScripts/ExportProject.ps1 -Project Example/FrameGraphTriangle/FrameGraphTriangle.gproject -Output E:/GameExports/Triangle
-pwsh -File BuildScripts/Tests/TestProjectPublishing.ps1
-pwsh -File BuildScripts/Tests/TestResourcePack.ps1 -PackageRoot E:/GameExports/Triangle -ProjectRoot Example/FrameGraphTriangle
+```bat
+dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe export-project --project Example/FrameGraphTriangle/FrameGraphTriangle.gproject --output E:\GameExports\Triangle
+dist\qt-editor\windows-x86_64\Release\GEngine-EditorHost\GEngine-EditorHost.exe --packaging-self-test
 ```
 
 The first command performs the editor operation; output is its only deployment
-parameter. The publisher test covers reuse, updates, backups and user-file
-protection. The native test runs the freshly compiled example on all three
-backends for 120 frames, checks three readbacks/shutdown, and rejects malformed
-packs. Host `--packaging-self-test` exercises the single-field dialog, real build,
+parameter. Host `--packaging-self-test` exercises the single-field dialog, real build,
 repeat, compile failure, cancel/retry and metadata preservation with isolated
 local preferences. These checks do not prove physical clean-machine installation,
 long-run GPU memory stability or support for arbitrary third-party project builds.
 
-Earlier ExportGame.ps1 / ExportFrameGraphTriangle.ps1 scripts remain manual
-directory-deployment prototypes and are not used by the editor.
+Earlier directory-deployment prototypes and their PowerShell tests were removed;
+the native `.gproject`/`.gpak` pipeline supersedes them.

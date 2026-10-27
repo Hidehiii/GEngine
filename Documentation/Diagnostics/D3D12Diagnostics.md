@@ -4,9 +4,9 @@
 
 The D3D12 debug layer is opt-in in Debug builds. Enable it for a diagnostic run:
 
-```powershell
-$env:GENGINE_D3D12_DEBUG_LAYER = '1'
-.\Triangle.exe
+```bat
+set GENGINE_D3D12_DEBUG_LAYER=1
+Triangle.exe
 ```
 
 The engine enables the D3D12 debug layer before device creation and drains warnings/errors from a bounded info queue. The queue deliberately filters informational messages and has a finite capacity so validation cannot grow memory without limit during a render loop.

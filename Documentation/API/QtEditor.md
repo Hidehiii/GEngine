@@ -32,10 +32,10 @@ LastPackagingSucceeded 查询状态；CancelPackaging 终止该作业。QSetting
 
 Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
 打包对话框对象名 PackagingSettingsDialog，唯一输入控件为 PackageOutput。
-缺少 pwsh 7.2+、编译工具、引擎 SDK 或部署工具、
+缺少 GEngineTools.exe、编译工具、引擎 SDK、
 输入错误、保存失败、子进程非零退出均为可恢复失败，Console 提供细节。
 作业期间不允许替换项目，草稿和预览仍可操作；成功/失败均恢复菜单状态。
-导出命令为 `ExportProject.ps1 -Project <file.gproject> -Output <directory>`。
+导出命令为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>`。
 自动 Release 编译后，在目标根目录生成 EXE/.gpak/原生 DLL。资源不散放在输出
 目录；原生入口负责包校验/展开，玩家不需要 PowerShell。格式/运行限制见
 [打包指南](../Guides/GameExport.md)。不提供 Mono 或资源格式转换；图形 API/IPC 不变。

@@ -47,6 +47,7 @@ group ""
 
 group "Tools"
     if _OPTIONS["qt6-sdk"] then
+        include "BuildScripts/Premake/GEngineTools.lua"
         include "BuildScripts/Premake/QtEditor.lua"
     end
 group ""

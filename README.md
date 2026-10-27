@@ -13,11 +13,18 @@ Version: .NET Framework 4.7.2 Developer Pack (for the C# ScriptCore project).
 
 ### Start
 Generate projects with [Premake](BuildScripts/GenerateProjectsPremake.bat) (VS2022, VS2019, or VS2026) or [CMake](BuildScripts/GenerateProjectsCMake.bat) (VS2022 or VS2019). See [Build and run](Documentation/Guides/BuildAndRun.md) for commands, target coverage, and output paths.
+For a new machine, start with the [fresh environment quick start](Documentation/Guides/BuildAndRun.md#fresh-environment-quick-start).
 
 ### Example project
 You could find some example projects in the Example folder, and you could run them after building the engine core and example project.
 
 ### Documentation
-#### Shader(.shader)
 
-[Example shader](Example/ShaderCompile/Assets/Shaders/ExampleShader.shader)
+Start with the [documentation home](Documentation/README.md). It indexes the
+project's architecture, API, guides, workflows, diagnostics, examples, editor,
+tests, and engineering standards.
+
+### TODO
+
+Track implementation milestones and verification evidence in the
+[workflow TODO index](TODO/Workflow.md).

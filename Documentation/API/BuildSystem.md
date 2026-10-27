@@ -1,6 +1,12 @@
 # Build entry points
 
-Console color preservation uses the existing BuildQtEditor commands and Qt SDK;
+`GEngineTools.exe <mono-sdk|qt-sdk|qt-editor|run-qt-editor|export-project>`
+is the native first-party workflow CLI. It is built from
+`BuildScripts/Tools/GEngineTools.cpp`, links only Win32/BCrypt, and does not add
+an engine public API. CMake and Premake both emit and deploy it under the
+unified `dist` layout.
+
+Console color preservation uses the existing GEngineTools Qt editor commands and Qt SDK;
 no new flag is required. Full -Test also checks stream formatting and actual
 engine info-log color. Regenerate/build the Host and EngineWorker together.
 
@@ -11,14 +17,14 @@ configuration. Explicit generator selection never falls back. PrintPath prints
 the selected absolute path without launching; missing builds/invalid arguments
 return nonzero. Normal launch runs from the Host directory and returns its exit code.
 
-Editor E1.1 project/assets browsing uses the same BuildQtEditor commands and Qt
+Editor E1.1 project/assets browsing uses the same GEngineTools Qt editor commands and Qt
 SDK as E0.2. No new build flags or deployment dependencies are required; CMake and
 Premake both include ProjectWorkspace, and full -Test covers its project lifecycle.
 E1.4 SelectionService is a header-only Core type. ProtocolTests include it directly,
 while the Qt Host consumes it through ProjectWorkspace; no generator source list,
 Qt module or engine dependency changes.
 
-`BuildScripts/BuildMonoSdk.ps1` installs the official Mono 6.10.0.87 x64 SDK
+`GEngineTools.exe mono-sdk` installs the official Mono 6.10.0.87 x64 SDK
 under `dist/mono/windows-x86_64/6.10.0.87/Mono`. CMake and Premake reference
 that SDK’s `include/mono-2.0` directory and static library. The command does
 not add a
@@ -37,9 +43,9 @@ installed SDK. Current engine/game targets do not compile, link or deploy Qt;
 their public APIs and generator commands remain unchanged.
 
 The E0.1 Qt Host now uses find_package(Qt6 6.10.3 EXACT COMPONENTS Core Gui
-Widgets) and matching imported targets. BuildScripts/BuildQt6.ps1 and
-BuildScripts/BuildQtEditor.ps1 provide opt-in SDK/build/test commands; the latter
-supports -Premake or -ProtocolOnly. See the editor README for arguments and
+Widgets) and matching imported targets. `GEngineTools.exe qt-sdk` and
+`GEngineTools.exe qt-editor` provide opt-in SDK/build/test commands; the latter
+supports `--premake` or `--protocol-only`. See the editor README for arguments and
 outputs. Default runtime/game generation still works without Qt. The root CMake
 project provides GEngine-EditorEngineWorker without requiring Qt. Full editor
 builds deploy that real render child; -ProtocolOnly skips it. Premake's optional

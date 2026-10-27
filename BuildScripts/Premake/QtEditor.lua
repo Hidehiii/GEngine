@@ -73,11 +73,7 @@ editorProject("GEngine-EditorHost")
         postbuildcommands { '{COPYFILE} "' .. sdkRoot .. '/Release/plugins/platforms/qoffscreen.dll" "%{cfg.targetdir}/platforms/qoffscreen.dll"' }
     filter {}
     postbuildcommands {
-        '{MKDIR} "%{cfg.targetdir}/packaging"',
-        '{COPYFILE} "' .. editorRoot .. '/../BuildScripts/ExportProject.ps1" "%{cfg.targetdir}/packaging/ExportProject.ps1"',
-        '{COPYFILE} "' .. editorRoot .. '/../BuildScripts/BuildProject.ps1" "%{cfg.targetdir}/packaging/BuildProject.ps1"',
-        '{COPYFILE} "' .. editorRoot .. '/../BuildScripts/WriteResourcePack.ps1" "%{cfg.targetdir}/packaging/WriteResourcePack.ps1"',
-        '{COPYFILE} "' .. editorRoot .. '/../BuildScripts/PublishProject.ps1" "%{cfg.targetdir}/packaging/PublishProject.ps1"',
+        '{COPYFILE} "%{cfg.targetdir}/../GEngineTools/GEngineTools.exe" "%{cfg.targetdir}/GEngineTools.exe"',
         '{MKDIR} "%{cfg.targetdir}/fonts"',
         '{COPYFILE} "' .. editorRoot .. '/Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.ttf" "%{cfg.targetdir}/fonts/NotoSansSC-Regular.ttf"',
         '{COPYFILE} "' .. editorRoot .. '/Assets/Fonts/Noto_Sans_SC/OFL.txt" "%{cfg.targetdir}/fonts/OFL.txt"'

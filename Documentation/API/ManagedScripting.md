@@ -17,12 +17,13 @@ C++ 类型、配置字段、环境变量或命令行参数。
 
 ## 已实现：S2.1 目录部署 CLI
 
-S2.4 当前项目入口为 `ExportProject.ps1 -Project <file.gproject> -Output <directory>`，
+S2.4 当前项目入口为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>`，
 自动编译并输出 EXE/.gpak/DLL。`.gproject` 无任何打包信息，Qt 窗口仅选输出路径，
 不选择程序或构建选项。Host 只把输出作为本机 QSettings 偏好。下述目录 CLI
 为仍保留的低层原型，编辑器不再调用它。当前接口见 [Qt 项目契约](QtEditor.md)。
 
-S2.2 已迁移至 PowerShell 7.2+，不再依赖 Python：
+以下 S2.2 目录部署契约是历史记录；对应 `.ps1` 工具已随原生
+`.gproject`/`.gpak` 管线移除，不再作为当前入口：
 
 `pwsh -File BuildScripts/ExportGame.ps1 -Manifest <json> -Output <directory> [-Preview]`
 
@@ -44,7 +45,7 @@ Preview 不创建目录；copy 计数仅统计 payload，不含生成清单/指�
 C++ 公共接口和后端行为无变化。完整示例、路径限制、lock/失败恢复及运行边界
 见 [导出指南](../Guides/GameExport.md)。下文其余契约仍为目标能力。
 
-S2.2 同时提供 `ExportFrameGraphTriangle.ps1`，参数为 `-Configuration <Debug|Release>`、
+S2.2 历史示例同时提供 `ExportFrameGraphTriangle.ps1`，参数为 `-Configuration <Debug|Release>`、
 `-Generator <CMake|Premake> -Output <directory> [-Preview]`，打印 JSON 计划/结果，
 收集现有构建目录的 EXE/DLL、配置、两个 shader 和包内 `LaunchGame.ps1`。
 包内启动器支持 `-StateRoot`、`-GraphicsAPI <Default|OpenGL|Vulkan|D3D12>`、

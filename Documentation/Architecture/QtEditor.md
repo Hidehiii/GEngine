@@ -16,10 +16,10 @@ File 提供 New/Open project，项目菜单提供一个打包入口与作业取�
 
 输出目录由 Host 在打包对话框选择，单独保存至本机 QSettings，以 canonical
 项目路径摘要区分；更换机器/移动项目后重新选择或采用默认相邻输出目录。
-改输出不修改项目文件。命令行 ExportProject.ps1 的 -Output 为独立必填参数，
+改输出不修改项目文件。命令行 `GEngineTools.exe export-project` 的 --output 为独立必填参数，
 不会从项目内容读取；项目不指定已有 EXE，不能靠复制旧构建代替编译。
 
-Host 用异步 QProcess 调用随编辑器部署的 PowerShell 工具，参数逐项传递，
+Host 用异步 QProcess 调用随编辑器部署的原生 GEngineTools 工具，参数逐项传递，
 不通过 shell 拼接命令；Console 显示有界输出，重复打包/项目切换在作业期间
 禁用。退出先确认草稿，再终止自己启动的导出器，等进程退出后继续 Worker
 关闭。30 分钟期限和取消只影响该 Windows Job 中的打包/编译进程树；不会杀

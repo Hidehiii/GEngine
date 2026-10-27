@@ -13,6 +13,45 @@
 
 ## CMake build option and build-script layout (2026-10-19)
 
+- [x] Add a fresh-environment quick start to the build guide and reference it
+      from the root README. Scope: document recursive clone/LFS setup,
+      `GEngineTools.exe` bootstrap, Mono SDK preparation, and complete CMake and
+      Premake engine/example build paths with output locations. Acceptance:
+      both generators use current commands, no removed `.ps1` workflow is
+      referenced, the root README links to the guide without duplicating the full
+      procedure, relative links resolve, and `git diff --check` passes. This is
+      documentation-only; no engine rebuild is required.
+      Implemented: `Documentation/Guides/BuildAndRun.md` now has a fresh
+      environment quick start with recursive clone/LFS setup, CMake
+      `GEngineTools.exe` bootstrap, Mono SDK preparation, CMake and Premake
+      engine/example build commands, unified output paths, and execution from
+      `Example/FrameGraphTriangle`. The root README links to that section
+      without duplicating the full procedure. No engine API, architecture
+      surface, or build configuration changed.
+      Verification (2026-10-27): reviewed both generator command paths against
+      the current launchers/generated project layout, checked the new Markdown
+      links, found no removed `.ps1` workflow reference in the new quick start,
+      and ran `git diff --check`. No engine rebuild was run for this
+      documentation-only change.
+
+- [x] Remove stale legacy third-party build outputs and generated project
+      files. Scope: delete only the unreferenced legacy `box2d`/`ImGui`
+      `.vcxproj` files, their filters, and legacy `bin`/`bin-int` directories
+      under the third-party submodule; keep the active `GLAD` project files
+      referenced by `GEngine.sln`, package runtime directories, and all
+      unified `build`/`dist` outputs. Acceptance: stale paths are absent,
+      the active solution still references the expected third-party projects,
+      no tracked source or package payload changes, and `git diff --check`
+      passes. This cleanup does not require an engine rebuild because it
+      changes no build configuration or source.
+      Implemented: removed the ten stale legacy paths under `box2d`, `ImGui`,
+      and `GLAD`; retained the active `GLAD/GLAD.vcxproj` and filter files.
+      Verification (2026-10-27): all stale paths are absent, the active GLAD
+      project files remain present and referenced by `GEngine.sln`, the
+      `box2d` and `ImGui` nested repository statuses are clean, and no tracked
+      source or package payload changed. No engine rebuild was run because the
+      build configuration and source were unchanged.
+
 ## Engine project split for compile throughput (planned)
 
 - [ ] Split the current single `GEngine` project into focused build projects

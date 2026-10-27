@@ -114,15 +114,13 @@ namespace GEngineEditor
         if (!ProjectFile::Load(m_Project.Path, current, m_Error)) return false;
         if (m_PackageOutputDirectory.trimmed().isEmpty())
         { m_Error = "Choose an output directory."; return false; }
-        const auto powershell = QStandardPaths::findExecutable("pwsh");
-        const auto script = QDir(QCoreApplication::applicationDirPath()).filePath("packaging/ExportProject.ps1");
-        if (powershell.isEmpty() || !QFileInfo::exists(script))
-        { m_Error = "Packaging requires PowerShell 7.2+ and the editor packaging tools. Rebuild/deploy the editor if tools are missing."; return false; }
+        const auto exporter = QDir(QCoreApplication::applicationDirPath()).filePath("GEngineTools.exe");
+        if (!QFileInfo::exists(exporter))
+        { m_Error = "Packaging requires the native editor packaging tool. Rebuild/deploy the editor if it is missing."; return false; }
         m_Project = current; m_PackagingCancelled = false; m_PackagingOutput.clear(); m_Error.clear();
-        QStringList args{"-NoLogo", "-NoProfile", "-NonInteractive", "-File", script, "-Project", m_Project.Path,
-            "-Output", m_PackageOutputDirectory};
+        QStringList args{"export-project", "--project", m_Project.Path, "--output", m_PackageOutputDirectory};
         m_PackagingProcess->setWorkingDirectory(m_Project.Root());
-        m_PackagingProcess->start(powershell, args);
+        m_PackagingProcess->start(exporter, args);
         m_PackagingDeadline->start(1800000);
         Log("Building and packaging project: " + m_Project.Name + "\nOutput: " + m_PackageOutputDirectory);
         RefreshPackagingActions(); return true;
