@@ -76,10 +76,11 @@ namespace GEngine
         struct Archive
         {
             HANDLE Lock = INVALID_HANDLE_VALUE;
+            HANDLE StateLock = nullptr;
             std::ifstream Input;
             std::map<std::wstring, Entry, WindowsLess> Entries;
             std::mutex Mutex;
-            ~Archive() { Input.close(); if (Lock != INVALID_HANDLE_VALUE) CloseHandle(Lock); }
+            ~Archive() { Input.close(); if (Lock != INVALID_HANDLE_VALUE) CloseHandle(Lock); if (StateLock) CloseHandle(StateLock); }
         };
         std::shared_ptr<Archive> Mounted;
         std::mutex MountMutex;
@@ -99,7 +100,8 @@ namespace GEngine
         {
             auto name = path.generic_wstring();
             std::transform(name.begin(), name.end(), name.begin(), towlower);
-            return name == L"config.ini" || name == L"logs" || name.rfind(L"logs/", 0) == 0 ||
+            return name == L"config.ini" || name == L"config" || name.rfind(L"config/", 0) == 0 ||
+                name == L"logs" || name.rfind(L"logs/", 0) == 0 ||
                 name == L"cache" || name.rfind(L"cache/", 0) == 0 ||
                 name == L"userdata" || name.rfind(L"userdata/", 0) == 0;
         }
@@ -115,7 +117,7 @@ namespace GEngine
         std::array<char, 8> magic{}; Read(input, magic.data(), magic.size());
         if (std::string(magic.data(), magic.size()) != "GEPAK001") throw std::runtime_error("Unsupported resource pack version.");
         const auto count = Number(input, 4);
-        if (!count || count > 100000) throw std::runtime_error("Invalid resource count.");
+        if (count > 100000) throw std::runtime_error("Invalid resource count.");
         std::set<std::wstring, WindowsLess> paths;
         const auto packSize = std::filesystem::file_size(pack);
         std::uint64_t total = 0;
@@ -250,32 +252,15 @@ namespace GEngine
         if (!std::filesystem::exists(pack))
         { if (required) throw std::runtime_error("Required resource pack is missing."); return {}; }
         MountResourcePack(pack);
-        std::wstring temporary(32768, L'\0');
-        const auto tempLength = GetTempPathW(static_cast<DWORD>(temporary.size()), temporary.data());
-        if (!tempLength || tempLength >= temporary.size()) throw std::runtime_error("Cannot locate writable game state directory.");
-        temporary.resize(tempLength);
-        const auto parent = std::filesystem::path(temporary) / L"GEngineGames";
-        std::filesystem::create_directories(parent);
-        if (GetFileAttributesW(parent.c_str()) & FILE_ATTRIBUTE_REPARSE_POINT) throw std::runtime_error("Linked game state directory rejected.");
-        std::array<unsigned char, 16> random{};
-        if (BCryptGenRandom(nullptr, random.data(), static_cast<ULONG>(random.size()), BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) throw std::runtime_error("Cannot allocate game session identity.");
-        std::wstring name;
-        for (auto c : random) { name += L"0123456789abcdef"[c >> 4]; name += L"0123456789abcdef"[c & 15]; }
-        const auto working = parent / name;
-        if (!CreateDirectoryW(working.c_str(), nullptr)) throw std::runtime_error("Cannot create private game session.");
-        // Only mutable configuration is seeded; asset payloads stay in the archive.
         const auto archive = Snapshot();
-        const auto config = archive->Entries.find(L"Config.ini");
-        if (config == archive->Entries.end()) throw std::runtime_error("Packaged Config.ini is missing.");
-        if (config->second.Size > 1024 * 1024) throw std::runtime_error("Packaged configuration exceeds 1 MiB.");
-        std::lock_guard<std::mutex> guard(archive->Mutex);
-        auto& input = archive->Input;
-        input.clear(); input.seekg(static_cast<std::streamoff>(config->second.Offset));
-        std::vector<char> bytes(static_cast<std::size_t>(config->second.Size));
-        Read(input, bytes.data(), bytes.size());
-        std::ofstream output(working / L"Config.ini", std::ios::binary);
-        output.write(bytes.data(), static_cast<std::streamsize>(bytes.size())); output.close();
-        if (!output) throw std::runtime_error("Cannot seed writable configuration.");
+        const auto root = pack.parent_path().filename() == L"Data" ? pack.parent_path().parent_path() : pack.parent_path();
+        const auto config = root / L"Config" / L"Config.ini";
+        if (!std::filesystem::is_regular_file(config) || std::filesystem::file_size(config) > 1024 * 1024)
+            throw std::runtime_error("External Config/Config.ini is missing or exceeds 1 MiB.");
+        const auto working = std::filesystem::absolute(config.parent_path().parent_path());
+        archive->StateLock = CreateFileW((config.parent_path() / L".runtime.lock").c_str(), GENERIC_READ | GENERIC_WRITE,
+            0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
+        if (archive->StateLock == INVALID_HANDLE_VALUE) { archive->StateLock = nullptr; throw std::runtime_error("Game root is already in use or not writable."); }
         std::filesystem::current_path(working);
         return working;
     }

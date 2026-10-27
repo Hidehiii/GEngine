@@ -134,6 +134,10 @@ provides those values. Omitting `--icon` clears a previous cached icon selection
 unchanged icon bytes reuse a stable cached resource file for incremental builds.
 `GProjectPackage` always runs CopyRuntime after its game/launcher dependencies,
 so an engine-only DLL change reaches the package even without game relinking.
+`export-project` publishes Config/Config.ini separately from the asset pack,
+generating defaults if the project has no config. Existing destination config and
+Cache/, Logs/, UserData/ are retained when updating a managed package; native
+binaries/archive still use strict modification checks. Empty asset packs are valid.
 The generated package root contains only the launcher EXE plus `Runtime/`, `Data/`,
 and `Metadata/`; the real game EXE and DLLs are under `Runtime/`. General CMake
 GE_WITH_MONO defaults ON; OFF omits managed SDK linking and explicitly rejects

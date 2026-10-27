@@ -85,7 +85,7 @@ namespace GEngineEditor
 
     void RunPackagingCheck(MainWindow& window)
     {
-        struct Check { QTemporaryDir Directory; QElapsedTimer Clock; QString Project, Output, Executable, Logo; QByteArray Manifest, Metadata, GameOutput; QProcess* Game = nullptr; int Phase = 0, Ticks = 0; };
+        struct Check { QTemporaryDir Directory; QElapsedTimer Clock; QString Project, Output, Executable, Logo; QByteArray Manifest, Metadata, GameOutput, PreservedConfig; QProcess* Game = nullptr; int Phase = 0, Ticks = 0; };
         auto check = std::make_shared<Check>(); check->Clock.start();
         auto* timer = new QTimer(&window); timer->setInterval(20);
         auto finish = [timer, &window](bool ok, const char* text)
@@ -155,6 +155,7 @@ namespace GEngineEditor
                     !read(check->Output+"/Data/"+check->Executable+".gpak").startsWith("GEPAK001") ||
                     !QFileInfo::exists(check->Output+"/Runtime/"+check->Executable+".exe") ||
                     !QFileInfo::exists(check->Output+"/Metadata/.gengine-output.json") ||
+                    !QFileInfo::exists(check->Output+"/Config/Config.ini") ||
                     QFileInfo::exists(check->Output+"/FrameGraphTriangle.exe") ||
                     QFileInfo::exists(check->Output+"/FrameGraphTriangle.gpak") ||
                     QFileInfo::exists(check->Output+"/Assets") || !HasEmbeddedIcon(check->Output+"/"+check->Executable+".exe") ||
@@ -216,12 +217,25 @@ namespace GEngineEditor
                     std::cerr << check->GameOutput.toStdString() << std::endl;
                     finish(false, "custom launcher failed packaged 120-frame readbacks from unrelated cwd"); return;
                 }
+                {
+                    QFile config(check->Output + "/Config/Config.ini");
+                    const QByteArray comment("\n# preserve root configuration\n");
+                    if (!config.open(QIODevice::WriteOnly | QIODevice::Append) || config.write(comment) != comment.size())
+                    { finish(false, "could not prepare mutable config preservation check"); return; }
+                    config.close();
+                    check->PreservedConfig = read(check->Output + "/Config/Config.ini");
+                    QFile cache(check->Output + "/Cache/keep.txt");
+                    if (!cache.open(QIODevice::WriteOnly) || cache.write("persistent cache") != 16)
+                    { finish(false, "could not prepare cache preservation check"); return; }
+                }
                 check->Executable = "Renamed Game";
                 if (!window.SavePackaging(check->Output, check->Executable, {}) || !window.PackageProject())
                 { finish(false, "could not remove logo and change executable name"); return; }
                 ++check->Phase; break;
             case 7:
                 if (!window.LastPackagingSucceeded() || read(check->Project) != check->Metadata ||
+                    read(check->Output + "/Config/Config.ini") != check->PreservedConfig ||
+                    read(check->Output + "/Cache/keep.txt") != "persistent cache" ||
                     !QFileInfo::exists(check->Output + "/Renamed Game.exe") ||
                     !QFileInfo::exists(check->Output + "/Runtime/Renamed Game.exe") ||
                     !QFileInfo::exists(check->Output + "/Data/Renamed Game.gpak") ||

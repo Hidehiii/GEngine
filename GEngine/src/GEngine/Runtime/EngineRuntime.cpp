@@ -40,6 +40,7 @@ namespace GEngine
 		Log::InitFileLogging();
 
 		m_Config = CreateRef<Config>();
+		if (HasResourcePack()) m_ConfigPath = "Config/Config.ini";
 		Serializer::Deserialize(m_ConfigPath, m_Config);
 
 		GraphicsSpecification graphicsSpecification{};

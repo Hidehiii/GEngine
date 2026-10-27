@@ -4,7 +4,7 @@ Packaged startup now has a pre-Application phase. EntryPoint calls the portable
 ResourcePack interface, implemented under Platform/Windows: resolve EXE, require
 its same-stem `.gpak` beside the executable or in the categorized sibling
 `../Data/` directory, validate metadata/paths and per-file SHA-256,
-build an immutable path/offset index, then set a unique writable session cwd before configuration,
+build an immutable path/offset index, then use the game root as cwd before configuration,
 logging, shader/asset reads and Application construction. Failure never proceeds
 with source-directory fallback. Development binaries without a required pack
 retain their existing startup behavior. Categorized packaged games run their real
@@ -19,8 +19,9 @@ under a per-archive mutex and return owned bytes. Concurrent/background readers
 and remounts cannot invalidate previously returned data. Shutdown releases the
 handle with the last snapshot; callers must join their own background jobs.
 
-Only mutable Config.ini is seeded into the session. Runtime config rewrites,
-Logs/, Cache/Shaders/ and UserData/ remain outside the archive; no Assets tree is
+Configuration is external at Config/Config.ini under the game root and is never
+packed or copied into a temporary session. Runtime config rewrites,
+Logs/, Cache/Shaders/<backend>/ and UserData/ stay under that same root; no Assets tree is
 created. FileSystemHelper routes reads and enumeration through the resource
 namespace and rejects writes to packaged asset paths; YAML writes enforce the
 same writable-state boundary before touching disk. The
@@ -28,10 +29,16 @@ YAML reader and DXC includes consume owned bytes; stb decodes from memory;
 FBX import owns a memory stream through importer destruction; ImGui owns a copied
 font buffer. Existing backend uploads consume or copy input before returning, so
 the change adds no GPU waits or new resource-retirement policy. Application cwd
-overrides do not displace the packaged session. Sessions remain retained; there
+overrides do not displace the game root. A retained delete-on-close lock in Config/
+rejects concurrent state writers. Backend-specific caches persist across launches;
+literal includes contribute recursively to shader-cache identity. There
 is no new cleanup thread, async asset scheduler, compression, encryption
 or resource identity database. See the Runtime API for format/bounds and the
 game export guide for native-only build and publication limitations.
+
+Publication preserves game-root Config/Cache/Logs/UserData across updates. Immutable
+binary/archive ownership checks still apply, and running games hold a state lock
+so the publisher refuses replacement while that state is in use.
 
 UI dependency upgrade: Application publishes ownership of EngineRuntime before
 calling its idempotent InitializeImGui step. Backend attach can then safely use

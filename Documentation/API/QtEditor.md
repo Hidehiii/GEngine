@@ -38,6 +38,8 @@ Logo 可为空或本机可读图像，Host 会在打包前转换为多尺寸 Win
 移除图标、偏好重载，以及自定义启动器在其他工作目录启动后的 120 帧读回。
 运行时通过归档资源接口按需读取 `.gpak`，不创建 Assets 解包目录；Host 打包
 接口和 Worker IPC 无变化。自检启用示例资源检查以覆盖此运行路径。
+Config.ini 单独发布为游戏根目录 Config/Config.ini；缓存位于根目录
+Cache/Shaders/<API>/，跨启动保留。打包更新保留已有配置/缓存；Host 接口不变。
 
 Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
 打包对话框对象名 PackagingSettingsDialog，三个输入控件分别为 PackageOutput、

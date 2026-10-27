@@ -7,7 +7,8 @@ then automatically compiles the project and engine and publishes a root
 FrameGraphTriangle.exe with Runtime/, Data/, and Metadata/ folders. The descriptor has
 only schemaVersion/name. No existing executable or packaging fields are needed.
 Run the generated root EXE directly; it mounts the validated archive and reads
-assets on demand. Only writable config/logs/cache/state use a private session.
+assets on demand. Config/Config.ini and Cache/Shaders/<API>/ live directly under
+the game root, along with Logs/ and UserData/. Configuration is not in .gpak.
 The output has no loose Assets directory or script launcher.
 
 For current automatic packaging, see the [export guide](../../Documentation/Guides/GameExport.md).
@@ -33,13 +34,15 @@ scene YAML deserialization. ResourceProbe.fbx is copied from the existing
 GpuDriven cube fixture. The compute shader also reads its HLSL include through
 the resource interface. Expected: the usual triangle and color changes, all three
 GPU readbacks, resource-check messages and normal shutdown; a packaged run must
-have no Assets directory even after shader compilation. Cache/Shaders and Logs
-remain writable in the session. This check uses the same logical paths in
+have no Assets directory even after shader compilation. Cache/Shaders/<API>/ and Logs
+remain writable in the game root. This check uses the same logical paths in
 development mode. It does not validate manual resize or full material restoration.
 
 `python Tests/ResourcePackRuntime.py <package-root-exe> --logs <log-directory>`
-temporarily selects each backend inside a generated test pack, runs the checks,
-rejects corrupt/missing packs, and restores the original pack. It preserves source
+temporarily selects each backend through external Config/Config.ini, runs cold and
+warm launches, verifies unchanged nonempty cache files and include invalidation,
+rejects corrupt/missing packs and missing external config, and restores config/pack.
+It preserves source
 Config.ini; run it on a test package with no concurrent users. Focused malformed
 archive/concurrency regression commands are in [Tests](../../Tests/README.md).
 

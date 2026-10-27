@@ -1,5 +1,11 @@
 ## Shader asset
 
+Packaged games create and reuse `Cache/Shaders/<API>/` under the game root
+(1=OpenGL, 2=Vulkan, 3=D3D12); configuration remains external at
+`Config/Config.ini`. Cache identity includes source text, backend target and
+recursively referenced literal HLSL includes. Editing an included file invalidates
+the dependent shader. Macro-generated include dependencies are not fingerprinted.
+
 Shaders use the `.shader` container format. A `Pass` contains fixed render state, stage pragmas and HLSL-like program code.
 
 ```hlsl

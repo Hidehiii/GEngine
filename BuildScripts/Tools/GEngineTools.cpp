@@ -747,7 +747,7 @@ namespace
             std::optional<std::string> Content;
         };
         std::vector<Entry> entries;
-        for (const auto& name : {L"Config.ini", L"Assets", L"Licenses"})
+        for (const auto& name : {L"Assets", L"Licenses"})
         {
             const Path root = project.Root / name;
             if (!std::filesystem::exists(root)) continue;
@@ -781,19 +781,7 @@ namespace
                 }
             }
         }
-        bool defaultConfig = true;
-        for (const auto& entry : entries)
-        {
-            if (entry.RelativePath == "Config.ini") defaultConfig = false;
-        }
-        if (defaultConfig)
-        {
-            static const std::string configuration = "GraphicsAPI: 3\nFramesInFlight: 2\nVSync: 1\n"
-                "CommandBufferCount: 8\nShaderCacheDirectory: Assets/Cache/Shaders/\n"
-                "LongPressThresholdMs: 500\nDoubleClickThresholdMs: 500\nWindowManagerAPI: 0\n";
-            entries.push_back({"Config.ini", {}, configuration.size(), configuration});
-        }
-        if (entries.empty() || entries.size() > 100000)
+        if (entries.size() > 100000)
         {
             throw std::runtime_error("Resource pack entry count is invalid.");
         }
@@ -923,6 +911,13 @@ namespace
             throw std::runtime_error("Resource pack is missing.");
         }
         add("Data/" + WideToUtf8(name + L".gpak"), pack);
+        if (std::filesystem::exists(output / L"Config" / L".runtime.lock"))
+            throw std::runtime_error("Close the running game before replacing its package.");
+        const auto existingConfig = output / L"Config" / L"Config.ini";
+        add("Config/Config.ini", std::filesystem::exists(existingConfig) ? existingConfig : pack.parent_path() / L"Config.ini");
+        const auto mutablePath = [](const std::string& path)
+        { return path.rfind("Config/", 0) == 0 || path.rfind("Cache/", 0) == 0 ||
+            path.rfind("Logs/", 0) == 0 || path.rfind("UserData/", 0) == 0; };
 
         std::sort(records.begin(), records.end(), [](const auto& left, const auto& right)
         {
@@ -942,7 +937,8 @@ namespace
                     throw std::runtime_error("Output contains links.");
                 }
                 const auto filename = WideToUtf8(item.path().filename().wstring());
-                if (item.is_directory() && filename != "Runtime" && filename != "Data" && filename != "Metadata")
+                if (item.is_directory() && filename != "Runtime" && filename != "Data" && filename != "Metadata" &&
+                    filename != "Config" && filename != "Cache" && filename != "Logs" && filename != "UserData")
                 {
                     throw std::runtime_error("Output contains unmanaged directories; refusing replacement.");
                 }
@@ -960,12 +956,15 @@ namespace
                 const auto oldManifest = ReadText(marker);
                 const auto oldRecords = ParseManifestRecords(oldManifest);
                 if (oldRecords.empty()) throw std::runtime_error("Unknown output manifest version.");
-                for (const auto& record : oldRecords) previous[record.first] = record.second;
+                for (const auto& record : oldRecords)
+                    if (!mutablePath(record.first) || std::filesystem::exists(output / Utf8ToWide(record.first)))
+                        previous[record.first] = record.second;
                 for (const auto& item : std::filesystem::recursive_directory_iterator(output))
                 {
-                    if (!item.is_regular_file() || IsReparsePoint(item.path())) continue;
+                    if (IsReparsePoint(item.path())) throw std::runtime_error("Linked output state rejected.");
+                    if (!item.is_regular_file()) continue;
                     const auto relative = std::filesystem::relative(item.path(), output).generic_u8string();
-                    if (relative != "Metadata/.gengine-output.json" && !previous.count(relative))
+                    if (relative != "Metadata/.gengine-output.json" && !previous.count(relative) && !mutablePath(relative))
                     {
                         throw std::runtime_error("Output contains unmanaged files; refusing replacement.");
                     }
@@ -973,7 +972,7 @@ namespace
                 for (const auto& record : oldRecords)
                 {
                     const auto path = output / Utf8ToWide(record.first);
-                    if (!std::filesystem::exists(path) || Hex(HashFile(path)) != record.second)
+                    if (!mutablePath(record.first) && (!std::filesystem::exists(path) || Hex(HashFile(path)) != record.second))
                     {
                         throw std::runtime_error("Published output was modified; choose a new destination.");
                     }
@@ -1001,7 +1000,7 @@ namespace
                 const auto target = staging / Utf8ToWide(record.RelativePath);
                 std::filesystem::create_directories(target.parent_path());
                 const auto old = previous.find(record.RelativePath);
-                if (old != previous.end() && old->second == record.Hash)
+                if (old != previous.end() && old->second == record.Hash && !mutablePath(record.RelativePath))
                 {
                 const auto oldPath = output / Utf8ToWide(record.RelativePath);
                     if (!CreateHardLinkW(target.c_str(), oldPath.c_str(), nullptr))
@@ -1020,6 +1019,21 @@ namespace
                 }
             }
             WriteText(staging / L"Metadata" / L".gengine-output.json", manifest);
+            for (const auto* folder : {L"Config", L"Cache", L"Logs", L"UserData"})
+            {
+                const auto source = output / folder;
+                if (!std::filesystem::exists(source)) continue;
+                for (const auto& item : std::filesystem::recursive_directory_iterator(source))
+                {
+                    AssertNoLinks(item.path());
+                    const auto relative = std::filesystem::relative(item.path(), output);
+                    if (relative.generic_wstring() == L"Config/Config.ini") continue;
+                    const auto target = staging / relative;
+                    if (item.is_directory()) std::filesystem::create_directories(target);
+                    else if (item.is_regular_file())
+                    { std::filesystem::create_directories(target.parent_path()); std::filesystem::copy_file(item.path(), target); }
+                }
+            }
             bool movedOld = false;
             if (std::filesystem::exists(output))
             {
@@ -1299,6 +1313,17 @@ namespace
         const auto pack = staging / (options.ExecutableName + L".gpak");
         std::cout << "Creating resource pack...\n";
         WriteResourcePack(project, pack);
+        const auto sourceConfig = project.Root / L"Config.ini";
+        if (std::filesystem::exists(sourceConfig))
+        {
+            AssertNoLinks(sourceConfig);
+            if (!std::filesystem::is_regular_file(sourceConfig) || std::filesystem::file_size(sourceConfig) > 1024 * 1024)
+                throw std::runtime_error("Project Config.ini is invalid or exceeds 1 MiB.");
+            std::filesystem::copy_file(sourceConfig, staging / L"Config.ini");
+        }
+        else WriteText(staging / L"Config.ini", "GraphicsAPI: 3\nFramesInFlight: 2\nVSync: 1\n"
+            "CommandBufferCount: 8\nShaderCacheDirectory: Cache/Shaders/\n"
+            "LongPressThresholdMs: 500\nDoubleClickThresholdMs: 500\nWindowManagerAPI: 0\n");
         std::cout << "Publishing executable and resource pack...\n";
         const auto result = PublishProject(nativeRoot, pack, options.ExecutableName, output);
         RemoveTree(staging, TemporaryPath(), L"gengine-package-");

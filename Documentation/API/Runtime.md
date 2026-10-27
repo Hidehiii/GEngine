@@ -5,22 +5,25 @@
 `Runtime/ResourcePack.h` exports `std::filesystem::path PreparePackagedResources(bool required = false)`.
 The Windows implementation locates the EXE-adjacent same-stem `.gpak`, or the
 same-stem pack in the categorized sibling `../Data/` directory, validates and
-mounts it, creates a writable session, sets cwd and returns that directory.
+mounts it, requires external `Config/Config.ini`, sets cwd to the game root and
+returns that directory. No temporary session or user-profile folder is used.
 Absent optional pack returns empty; required/malformed/missing/truncated/unsafe/
 checksum-invalid packs throw before application construction. `EntryPoint.h`
 calls it with `GE_PACKAGED_GAME != 0`, catches archive errors and exits 1. Standard
 development targets default that macro to 0; automatic project targets set 1.
-Games must preserve the packaged session rather than overriding cwd to source.
+Games must preserve the game root rather than overriding cwd to source.
 
 Format v1: 8 ASCII bytes `GEPAK001`, uint32 little-endian entry count; each entry
 has uint32 UTF-8 path length, uint64 payload length, 32 SHA-256 bytes, relative path
 bytes, then payload bytes. Limits are 100000 entries, 4096 path bytes, 8 GiB per
-file, 32 GiB total; zero entries/trailing data are rejected. Paths cannot traverse,
+file, 32 GiB total; empty archives are valid for resource-free games, trailing data is rejected. Paths cannot traverse,
 be absolute, use reserved Windows names, alternate streams, or collide by case.
 Mount validation streams all payloads through bounded buffers for SHA-256, then
-keeps only the path/offset/length index. No asset tree is extracted. Only Config.ini
-is seeded (maximum 1 MiB); logs, Cache/Shaders and UserData belong to the writable
-session. Session storage remains until manually cleaned. Checksums provide
+keeps only the path/offset/length index. No asset tree is extracted. Config.ini is
+never archived or seeded: the runtime reads/writes `<game-root>/Config/Config.ini`
+(maximum 1 MiB). Logs, Cache/Shaders/<API>/ and UserData are under the game root.
+The root must be writable. A delete-on-close Config/.runtime.lock prevents two
+instances from writing the same configuration/cache concurrently. Checksums provide
 integrity, not cryptographic authenticity.
 GPU interfaces are unchanged. Native-only engines built with GE_WITH_MONO=0
 explicitly fail ScriptEngine::Init requests instead of silently enabling scripts.
@@ -31,9 +34,9 @@ mount preserves the old archive. `HasResourcePack()` reports the active mount.
 path, or an ordinary file in development mode. Missing/escaping archive resources
 throw with no loose-file fallback. `ResourceExists`, `ResourceIsDirectory` and
 `ListResourceDirectory` query the same namespace, with case-insensitive archive
-identity and normalized `./`/trailing directory separators. Config.ini, Logs/,
-Cache/ and UserData/ explicitly address writable session files. Absolute paths
-must remain within the current session when mounted; custom WorkingDirectory is
+identity and normalized `./`/trailing directory separators. Config/, Logs/,
+Cache/ and UserData/ explicitly address writable game-root files. Absolute paths
+must remain within the game root when mounted; custom WorkingDirectory is
 ignored in packaged mode. These APIs do not introduce an async scheduler.
 `EnsureResourceWritable(path)` rejects mutations outside this writable namespace
 when mounted. FileSystemHelper mutations and YAML serialization call it before
@@ -49,6 +52,11 @@ allocated copy. Archive model import explicitly rejects formats other than FBX,
 the only stream format supported by the bundled SDK. Existing incomplete material
 deserialization semantics are unchanged. Compression/direct GPU streaming and
 script runtime deployment remain outside this API.
+
+Packaged shader caches use `Cache/Shaders/1/` (OpenGL), `2/` (Vulkan), and `3/`
+(D3D12). Repeated launches reuse these files; source and recursively referenced
+literal HLSL include contents participate in cache identity. Macro-generated
+include dependencies are not scanned by this cache fingerprint.
 
 `Application` initializes optional ImGui after assigning its runtime. Direct
 `EngineRuntime` consumers must call `InitializeImGui()` after publishing any

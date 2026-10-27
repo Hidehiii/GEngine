@@ -176,3 +176,7 @@ value when the user removes the logo. Runtime/backend ownership is unchanged.
 The GProjectPackage target refreshes runtime DLL deployment on every invocation,
 even when an updated engine DLL does not change its import library and therefore
 does not relink the game. It no longer relies solely on the game post-link hook.
+Publication separates immutable payloads from mutable game-root state. Config.ini
+is a loose Config/Config.ini file, excluded from the archive. Updates preserve the
+destination configuration and copy Cache/Logs/UserData through staging, while
+unknown immutable files and changes to managed binaries remain protective failures.

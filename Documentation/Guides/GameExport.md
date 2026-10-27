@@ -39,7 +39,8 @@ and must be a valid Windows base name. Choose a destination outside the project.
 Clear the logo field to remove the custom icon from the next package. Unchanged
 logos keep a stable build input; an unchanged repeat should report `copyFiles:0`.
 Only empty folders or unmodified exporter-owned output can be replaced;
-user-added or modified files cause a protective failure.
+user-added or modified immutable payloads cause a protective failure. Existing
+Config/Cache/Logs/UserData are mutable state and are preserved during updates.
 
 ## Output and execution
 
@@ -54,6 +55,8 @@ Runtime/
   <required native runtime DLLs>
 Data/
   MyGame.gpak
+Config/
+  Config.ini
 Metadata/
   .gengine-output.json
 ```
@@ -61,16 +64,17 @@ Metadata/
 The root `MyGame.exe` is a small launcher with the optional logo embedded as its
 Windows icon. It starts the real game executable from `Runtime/`, which keeps all
 native DLL imports beside that executable and uses the same custom name.
-Assets, config and licenses are inside `Data/MyGame.gpak`, with Assets/Cache
+Assets and licenses are inside `Data/MyGame.gpak`, with Assets/Cache
 excluded. No loose Assets tree or PowerShell launcher is shipped. Start the
 root EXE directly from any cwd. The runtime executable validates the adjacent
 categorized pack and mounts its validated path/offset index. Asset data is read
-on demand from the pack, without an extracted Assets tree. It creates a unique
-`%TEMP%/GEngineGames/<session>` directory for Config.ini, Logs/, Cache/Shaders/
-and UserData/, then starts the application there. Config rewrites, caches and logs
-cannot modify the published pack. Session directories are retained; persistent
-settings/save migration and automatic cleanup remain open. Games overriding
-WorkingDirectory must respect the packaged session instead of a developer path.
+on demand from the pack, without an extracted Assets tree. It directly reads/writes
+`Config/Config.ini` and creates persistent `Cache/Shaders/<API>/`, `Logs/` and
+`UserData/` under the game root. No AppData or temporary state directory is used.
+The game root must be writable. Close a running instance before starting another
+or repackaging the same folder. Configuration and cache changes persist between
+launches and are preserved when repackaging. To reset defaults, choose a new output
+folder, or remove the old Config/Config.ini while the game is closed and repackage.
 
 The initial format is **uncompressed and unencrypted**. It merges/checks files;
 it does not convert textures/models/shaders or stream directly from the archive.
@@ -78,8 +82,8 @@ Missing required pack, unsupported version, checksum failure, unsafe/duplicate
 paths and truncation fail before application construction. Checksums are integrity
 checks, not authentication against someone who can rewrite a pack and its hashes.
 S5.2 direct `.gpak` reads are implemented: startup verifies every checksum using
-bounded buffers, retains an immutable archive/index, and only seeds mutable
-Config.ini to disk. Each resource read owns its returned bytes; package assets
+bounded buffers and retains an immutable archive/index. Configuration is a separate
+file and is not inside the pack. Each resource read owns its returned bytes; package assets
 never fall back to loose files. Scene/material YAML, shader sources/includes,
 image/cubemap decoders, fonts and FBX model streams use this path. Model formats
 other than FBX explicitly fail in archive mode; C# deployment remains unfinished.

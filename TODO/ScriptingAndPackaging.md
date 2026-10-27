@@ -1,5 +1,51 @@
 # C#、Mono 与游戏打包
 
+- [x] External config and persistent shader cache correction (2026-10-27).
+  User requirement: Config.ini must not be inside .gpak. Publish defaults under
+  Config/Config.ini, keep mutable state directly in the game root (user correction),
+  and verify that cache files are generated and reused on the second launch.
+  Read/write that external configuration directly and preserve it on repackaging;
+  separate backend caches and reject concurrent writers to one state directory.
+  Preserve source config/backend selections. Acceptance: archive has no config,
+  default/missing/changed external config and empty-resource projects behave
+  explicitly, Debug/Release builds and available backend cold/warm runs pass,
+  warm cache content is unchanged, packaging zero-copy/failure checks pass,
+  and architecture/API/example documentation reflects the actual paths.
+  Implemented: .gpak collection now contains only Assets/Licenses, with empty
+  archives accepted for resource-free games. Config/Config.ini is published as
+  a separate file (project config or generated defaults). Runtime uses the game
+  root as cwd, reads/writes Config/Config.ini there, and retains a delete-on-close
+  Config/.runtime.lock against concurrent state writers. No AppData or temporary
+  state directory is used. Cache/Shaders/1, /2, /3 are persistent backend caches.
+  Repackaging preserves destination config, Cache, Logs and UserData; mutable
+  files are copied rather than hard-linked to keep old-version state independent.
+  Missing destination config is restored on repackaging. Shader fingerprints now
+  include recursive literal includes and ignore commented include directives.
+  Verification: Debug/Release engine/game builds passed; each backend completed
+  two 120-frame launches with three readbacks each. Each backend generated/reused
+  8 nonempty cache files with unchanged content on the second launch. Both builds
+  rejected missing external config and corrupt/missing packs before Application;
+  modified include content invalidated its dependent cache. Source config stayed
+  unchanged. Focused Debug/Release archive tests passed, including empty mounts,
+  concurrency and handle checks. Release Host/tool built and all 3 editor tests
+  passed; the packaging regression now modifies config/adds cache data, renames
+  and republishes, and checks preservation. Manual generated-package checks also
+  preserved all existing cache hashes and modified config, restored a deleted
+  config from project defaults, then reported copyFiles:0 on unchanged export.
+  One publication directory switch was temporarily denied by Windows; rollback
+  preserved the old output and the later bounded retry passed. No atomic directory
+  replacement is claimed. Generated defaults for a project lacking config were
+  source-reviewed rather than building a separate fresh starter project.
+  Macro-generated include dependencies, clean-machine/Premake builds, manual
+  resize/visual checks and the existing D3D12 UAV-barrier defect remain outside
+  this correction. Logs: build/gpak-root-config-logs and its Debug counterpart.
+  Publication authorization (2026-10-27): user requested commit and push for this
+  correction. Scope is the 25 reviewed implementation/test/example/documentation
+  files; exclude tmp, build outputs, local backend config and submodule changes.
+  Staged-diff/whitespace checks precede commit; verify commit, remote tracking
+  revision and remaining worktree after push. No additional API/architecture
+  behavior is introduced by this publication step.
+
 - [x] 2026-10-27 用户授权提交并推送本机完成的自定义 EXE/Logo 修复与 S5.2
   直接归档读取工作。发布范围包括实现、示例资源、回归和同步文档；不包含
   tmp、生成工程/构建产物、本机配置或子模块指针。提交前检查预期文件清单、

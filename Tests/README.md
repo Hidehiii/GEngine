@@ -24,10 +24,13 @@ python Tests/ResourcePackRuntime.py build/gpak-direct-package/DirectPack.exe --l
 ```
 
 Use a generated test package without concurrent users. The check temporarily
-changes only its pack's backend configuration and restores the original bytes
-in a finally block. Each backend must render 120 frames, pass three readbacks,
+changes its external Config/Config.ini backend and restores original config/pack
+bytes in a finally block. Config.ini must be absent from the archive. Each backend
+must render 120 frames twice, reuse nonempty Cache/Shaders/<API>/ files unchanged,
+and pass three readbacks,
 read image/FBX/YAML/include assets and owned background bytes, and keep Assets
-absent from writable session storage. Corrupt/missing packs must fail before
+absent from the game root. An edited literal HLSL include must invalidate cache.
+Corrupt/missing packs and missing external configuration must fail before
 Application construction. Logs record each backend independently; this does not
 establish manual visual/resize behavior or long-duration memory stability.
 

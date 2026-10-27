@@ -87,7 +87,6 @@ int main(int argc, char** argv)
         bytes = valid; bytes.push_back('x'); invalid.push_back(bytes);
         bytes = valid; bytes[24] ^= 1; invalid.push_back(bytes);
         bytes = valid; for (int i = 16; i < 24; ++i) bytes[i] = static_cast<char>(0xff); invalid.push_back(bytes);
-        invalid.push_back(Pack({}));
         invalid.push_back(Pack({{"Assets/A", "a"}, {"assets/a", "b"}}));
         invalid.push_back(Pack({{"Assets/a", "a"}, {"Assets/a/b", "b"}}));
         for (const auto& path : {"../escape", "/root", "C:/bad", "Assets/../bad", "Assets//bad",
@@ -109,6 +108,9 @@ int main(int argc, char** argv)
             GEngine::MountResourcePack(root / (i % 2 ? "replacement.gpak" : "valid.gpak"));
         Require(GetProcessHandleCount(GetCurrentProcess(), &handlesAfter) != 0, "Cannot sample final handle count");
         Require(handlesAfter <= handlesBefore + 2, "Repeated mounts leak file/hash handles");
+        Write(root / "empty.gpak", Pack({}));
+        GEngine::MountResourcePack(root / "empty.gpak");
+        Require(!GEngine::ResourceExists("Assets/missing"), "Empty archive lookup failed");
         std::cout << "PASS: directory/archive equality, 200 concurrent reads, owned lifetime, immutable file, "
             << invalid.size() << " malformed archives, failed-mount preservation and 100 remounts; handles "
             << handlesBefore << " -> " << handlesAfter << '\n';

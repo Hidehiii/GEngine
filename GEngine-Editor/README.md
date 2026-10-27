@@ -166,9 +166,11 @@ Open `Example/FrameGraphTriangle/FrameGraphTriangle.gproject` for a ready projec
 description; no prebuilt EXE is required. New projects receive a minimal src/Game.cpp.
 `--project <file>`
 or a first `.gproject` argument opens one at startup; no OS file association is
-installed. Assets/Config.ini/Licenses are merged into an uncompressed, unencrypted
+installed. Assets/Licenses are merged into an uncompressed, unencrypted
 .gpak, excluding Assets/Cache. The native EXE validates/mounts it and reads assets
-on demand, keeping only config/logs/cache/state in a private writable session.
+on demand. Config/Config.ini and Cache/Shaders/<API>/ are stored directly under
+the game root, together with Logs/ and UserData/. They persist between launches
+and are preserved by subsequent packaging; Config.ini is never inside the archive.
 It runs without a PowerShell launcher. C#,
 asset conversion and automatic native dependency discovery remain open.
 See [the export guide](../Documentation/Guides/GameExport.md).

@@ -114,7 +114,8 @@ S5.1 提供最小 .gpak 写入，S5.2 已提供原生校验/挂载与条目直�
 资产数据库身份、压缩和归档块级增量仍为后续 S5。
 文件级零复制不等于归档块级更新或增量补丁已实现。
 S5.2 将逻辑资源路径解析为归档条目并返回独立持有的字节，同时为 Config/
-日志/cache 提供包外可写会话。`PreparePackagedResources` 校验并挂载索引，
+日志/cache 提供包外可写目录。Config/Config.ini 和 Cache/Shaders/<API>/ 均位于
+游戏根目录并跨启动保留，配置不进归档。`PreparePackagedResources` 校验并挂载索引，
 `ReadResource` 按条目读取，不再展开 Assets；这不实现 C# 运行库部署。
 S5.3 已实现根目录仅含 `<Game>.exe` 与 `Runtime/`、`Data/`、`Metadata/`
 分类子文件夹。根 EXE 是启动器；真实游戏 EXE 与原生 DLL 位于 `Runtime/`，

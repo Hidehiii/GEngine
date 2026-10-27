@@ -1,5 +1,11 @@
 ## Backend layering and shader ownership
 
+Packaged shader cache files live in game-root Cache/Shaders/<API>/ and persist
+between launches. Backend directories prevent switching APIs from clearing another
+backend's cache. Cache fingerprints include recursively referenced literal HLSL
+include contents as well as source and target settings. This CPU file-cache change
+does not alter shader module ownership, GPU synchronization or public factories.
+
 Application and renderer code use `GEngine/include/GEngine` interfaces.
 `GEngine/src/Platform` and `GEngine/include/Platform` contain OpenGL, Vulkan,
 and D3D12 resource, command, context, and presentation implementations;

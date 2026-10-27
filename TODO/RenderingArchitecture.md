@@ -1,5 +1,11 @@
 # Rendering architecture refactor
 
+2026-10-27 configuration/cache correction: Config/Config.ini is external to .gpak;
+Cache/Shaders/<API>/ persists directly under the game root. Literal shader include
+contents participate in cache identity. Publication preserves these state folders.
+GPU interfaces and submission lifetime are unchanged; evidence is tracked in
+ScriptingAndPackaging.
+
 E1.6/S2.4/S5.1 supersedes the editor's earlier manual deployment: metadata-only
 .gproject, output/name/optional-logo UI, automatic native Release compilation and .gpak output.
 EntryPoint validates/mounts resources through a Windows runtime adapter before

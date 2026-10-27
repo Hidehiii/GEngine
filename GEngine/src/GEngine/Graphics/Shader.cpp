@@ -8,6 +8,8 @@
 #include "GEngine/Tools/ShaderCompiler.h"
 #include "GEngine/Application.h"
 #include <filesystem>
+#include <regex>
+#include <set>
 
 namespace GEngine
 {
@@ -21,11 +23,31 @@ namespace GEngine
 
 	namespace
 	{
+		std::string ShaderCacheSource(const std::string& source)
+		{
+            static const std::regex includePattern(R"inc((?:^|\n)[ \t]*#[ \t]*include\s*["<]([^">]+)[">])inc");
+            static const std::regex comments(R"inc(/\*[\s\S]*?\*/|//[^\r\n]*)inc");
+            std::set<std::string> visited;
+            std::string result = source;
+            std::function<void(const std::string&)> append = [&](const std::string& text)
+            {
+                const auto active = std::regex_replace(text, comments, "");
+                for (std::sregex_iterator match(active.begin(), active.end(), includePattern), end; match != end; ++match)
+                {
+                    const auto path = std::filesystem::path((*match)[1].str()).lexically_normal().generic_string();
+                    if (!visited.insert(path).second) continue;
+                    const auto included = FileSystemHelper::ReadFileAsString(path);
+                    result += "\nGEngine-Include:" + path + "\n" + included;
+                    append(included);
+                }
+            };
+            append(source); return result;
+        }
 		std::string GetSPIRVCacheSource(const std::string& source)
 		{
 			const bool isOpenGL = Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL;
 			const char* target = isOpenGL ? "vulkan1.3;reflect=true;glsl450-cross-v1" : "vulkan1.3;reflect=true";
-			return source + "\nGEngine-SPIRV-Target:" + target;
+			return ShaderCacheSource(source) + "\nGEngine-SPIRV-Target:" + target;
 		}
 	}
 
@@ -178,7 +200,7 @@ namespace GEngine
 			std::string hashCode = OpenSSLTool::ComputeMD5(GetSPIRVCacheSource(source));
 			return cache.Name == m_Name && cache.SpirvHash == hashCode;
 		}
-		std::string hashCode = OpenSSLTool::ComputeMD5(source);
+		std::string hashCode = OpenSSLTool::ComputeMD5(ShaderCacheSource(source));
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
 			return cache.Name == m_Name && cache.DxilHash == hashCode;
 		// this should never happen, but just in case
@@ -442,7 +464,7 @@ namespace GEngine
 			cache.SpirvHash = OpenSSLTool::ComputeMD5(GetSPIRVCacheSource(source));
 		}
 		if(Graphics::GetGraphicsAPI() == GRAPHICS_API_DIRECT3DX12)
-			cache.DxilHash = OpenSSLTool::ComputeMD5(source);
+			cache.DxilHash = OpenSSLTool::ComputeMD5(ShaderCacheSource(source));
 		cache.Name = m_Name;
 	}
 

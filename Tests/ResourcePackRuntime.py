@@ -62,21 +62,22 @@ def main():
     pack = executable.parent / "Data" / (executable.stem + ".gpak")
     original = pack.read_bytes()
     items = entries(original)
+    if any(name.lower() == b"config.ini" for name, _ in items):
+        raise RuntimeError("Config.ini must not be packed into gpak")
+    config = executable.parent / "Config" / "Config.ini"
+    original_config = config.read_bytes()
     directory = args.logs.resolve()
     directory.mkdir(parents=True, exist_ok=True)
     environment = dict(os.environ, GENGINE_EXAMPLE_FRAME_LIMIT="120",
                        GENGINE_EXAMPLE_RESOURCE_CHECK="1")
     environment.pop("GENGINE_EXAMPLE_SECONDS", None)
+    state = executable.parent
     try:
         for backend, api in [("OpenGL", 1), ("Vulkan", 2), ("D3D12", 3)]:
-            variant = []
-            for name, payload in items:
-                if name == b"Config.ini":
-                    payload, count = re.subn(rb"GraphicsAPI: [123]", f"GraphicsAPI: {api}".encode(), payload)
-                    if count != 1:
-                        raise RuntimeError("Fixture config must select exactly one backend")
-                variant.append((name, payload))
-            replace_pack(pack, encode(variant))
+            variant, count = re.subn(rb"GraphicsAPI: [123]", f"GraphicsAPI: {api}".encode(), original_config)
+            if count != 1:
+                raise RuntimeError("External config must select exactly one backend")
+            config.write_bytes(variant)
             code, output = run(executable, directory, environment)
             (directory / f"{backend}.log").write_text(output, encoding="utf-8")
             if code or output.count("readback passed after 119 frames.") != 3:
@@ -87,9 +88,27 @@ def main():
             if not match:
                 raise RuntimeError(f"{backend}: archive read probe missing")
             session = Path(match.group(1).strip())
-            if (session / "Assets").exists() or not (session / "Cache/Shaders").is_dir():
+            cache = session / "Cache/Shaders" / str(api)
+            if (session / "Assets").exists() or not cache.is_dir() or session != state:
                 raise RuntimeError(f"{backend}: extracted assets or missing writable cache")
-            print(f"PASS {backend}: 120 frames, three readbacks, image/FBX/background reads, no Assets extraction")
+            cached = {path.relative_to(cache): path.read_bytes() for path in cache.rglob("*") if path.is_file()}
+            if not cached:
+                raise RuntimeError(f"{backend}: shader cache directory is empty")
+            code, warm = run(executable, directory, environment)
+            (directory / f"{backend}-warm.log").write_text(warm, encoding="utf-8")
+            after = {path.relative_to(cache): path.read_bytes() for path in cache.rglob("*") if path.is_file()}
+            if code or warm.count("readback passed after 119 frames.") != 3 or warm.count(" from cache.") < 2 or cached != after:
+                raise RuntimeError(f"{backend}: second launch failed cache reuse")
+            print(f"PASS {backend}: external config, cold/warm 120 frames, three readbacks, unchanged reused cache ({len(cached)} files)")
+        changed_include = [(name, payload + b"\n// persistent cache dependency probe\n"
+                            if name.endswith(b"FrameGraphColorLogic.hlsli") else payload)
+                           for name, payload in items]
+        replace_pack(pack, encode(changed_include))
+        code, output = run(executable, directory, environment)
+        (directory / "changed-include.log").write_text(output, encoding="utf-8")
+        if code or "Shader cache is invalid" not in output or output.count("readback passed after 119 frames.") != 3:
+            raise RuntimeError("Changed include did not invalidate persistent shader cache")
+        print("PASS changed HLSL include invalidates its shader cache")
         corrupt = bytearray(original)
         corrupt[-1] ^= 1
         replace_pack(pack, corrupt)
@@ -103,8 +122,16 @@ def main():
         if code != 1 or "Required resource pack is missing" not in output:
             raise RuntimeError("Missing pack did not fail before Application")
         print("PASS startup rejection: corrupt/missing packs fail before Application")
+        replace_pack(pack, original)
+        config.unlink()
+        code, output = run(executable, directory, environment)
+        (directory / "missing-config.log").write_text(output, encoding="utf-8")
+        if code != 1 or "External Config/Config.ini is missing" not in output or "Creating window" in output:
+            raise RuntimeError("Missing external config did not fail before Application")
+        print("PASS missing external config rejection; original config/pack restored")
     finally:
         replace_pack(pack, original)
+        config.write_bytes(original_config)
 
 
 if __name__ == "__main__":

@@ -416,7 +416,9 @@ namespace GEngine
 		config->m_FramesInFlight						= data["FramesInFlight"].as<uint8_t>();
 		config->m_VSync									= data["VSync"].as<int>();
 		config->m_CommandBufferCount					= data["CommandBufferCount"].as<uint32_t>();
-		config->m_ShaderCacheDirectory = HasResourcePack() ? "Cache/Shaders/" : data["ShaderCacheDirectory"].as<std::string>();
+		config->m_ShaderCacheDirectory = HasResourcePack()
+            ? "Cache/Shaders/" + std::to_string(config->m_GraphicsAPI) + "/"
+            : data["ShaderCacheDirectory"].as<std::string>();
 		config->m_LongPressThresholdMs					= data["LongPressThresholdMs"].as<uint32_t>();
 		config->m_DoubleClickThresholdMs				= data["DoubleClickThresholdMs"].as<uint32_t>();
 		config->m_WindowManagerAPI						= data["WindowManagerAPI"].as<uint8_t>();
