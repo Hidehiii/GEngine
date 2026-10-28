@@ -5,6 +5,8 @@
 #include "Platform/D3D12/D3D12ComputePipeline.h"
 #include "Platform/D3D12/D3D12GraphicsPipeline.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "Platform/D3D12/D3D12StorageBuffer.h"
+#include "Platform/D3D12/D3D12StorageImage2D.h"
 
 namespace GEngine
 {
@@ -178,6 +180,27 @@ namespace GEngine
         const auto value = m_SubmissionValue + 1;
         D3D12_THROW_IF_FAILED(queue->Signal(m_CompletionFence.Get(), value));
         m_SubmissionValue = value;
+        for (const auto& resource : m_ResourceUses)
+            *resource.Usage = {m_CompletionFence, value, m_Type};
+    }
+    void D3D12CommandBuffer::TrackStorageResource(const Ref<GraphicsResource>& resource)
+    {
+        D3D12ResourceUsage* usage = nullptr;
+        if (auto buffer = std::dynamic_pointer_cast<D3D12StorageBuffer>(resource)) usage = &buffer->GetQueueUsage();
+        else if (auto image = std::dynamic_pointer_cast<D3D12StorageImage2D>(resource)) usage = &image->GetQueueUsage();
+        if (!usage) return;
+        for (const auto& existing : m_ResourceUses)
+            if (existing.Usage == usage) return;
+        m_ResourceUses.push_back({resource, usage});
+    }
+    void D3D12CommandBuffer::WaitForResourceUses(ID3D12CommandQueue* queue) const
+    {
+        for (const auto& resource : m_ResourceUses)
+        {
+            const auto& previous = *resource.Usage;
+            if (previous.Fence && previous.Queue != m_Type)
+                D3D12_THROW_IF_FAILED(queue->Wait(previous.Fence.Get(), previous.Value));
+        }
     }
     void D3D12CommandBuffer::ResetRecording()
     {
@@ -186,6 +209,7 @@ namespace GEngine
         D3D12_THROW_IF_FAILED(m_Allocator->Reset());
         D3D12_THROW_IF_FAILED(m_CommandList->Reset(m_Allocator.Get(), nullptr));
         m_RetainedOwners.clear();
+        m_ResourceUses.clear();
         m_FrameBuffer.reset();
     }
 	void D3D12CommandBuffer::Begin(Ref<FrameBuffer>& buffer)

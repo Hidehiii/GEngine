@@ -2,6 +2,7 @@
 #include "GEngine/Graphics/CommandBuffer.h"
 #include "D3D12FrameBuffer.h"
 #include <directx/d3dx12.h>
+#include "D3D12ResourceUsage.h"
 namespace GEngine
 {
 	class GENGINE_API D3D12CommandBuffer : public CommandBuffer
@@ -27,6 +28,8 @@ namespace GEngine
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>		GetCommandAllocator() { return m_Allocator; }
 		void ResetRecording();
 		void MarkSubmitted(ID3D12CommandQueue* queue);
+		void TrackStorageResource(const Ref<GraphicsResource>& resource);
+		void WaitForResourceUses(ID3D12CommandQueue* queue) const;
 		std::pair<Microsoft::WRL::ComPtr<ID3D12Fence>, uint64_t> NextCompletion() const
 		{ return { m_CompletionFence, m_SubmissionValue + 1 }; }
 		void Retain(const Ref<void>& owner) { m_RetainedOwners.push_back(owner); }
@@ -53,6 +56,12 @@ namespace GEngine
 		uint64_t m_SubmissionValue = 0;
 		HANDLE m_CompletionEvent = nullptr;
 		std::vector<Ref<void>> m_RetainedOwners;
+        struct ResourceUse
+        {
+            Ref<GraphicsResource> Owner;
+            D3D12ResourceUsage* Usage; // Borrowed from Owner, which keeps it alive.
+        };
+        std::vector<ResourceUse> m_ResourceUses;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>						m_CommandList;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>							m_Allocator;
 		Ref<D3D12FrameBuffer>													m_FrameBuffer;

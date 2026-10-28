@@ -2,14 +2,24 @@
 
 ## Enable validation
 
-The D3D12 debug layer is opt-in in Debug builds. Enable it for a diagnostic run:
+The D3D12 debug layer is opt-in in Debug and Release builds. Enable it for a diagnostic run:
 
 ```bat
 set GENGINE_D3D12_DEBUG_LAYER=1
 Triangle.exe
 ```
 
-The engine enables the D3D12 debug layer before device creation and drains warnings/errors from a bounded info queue. The queue deliberately filters informational messages and has a finite capacity so validation cannot grow memory without limit during a render loop.
+The engine enables the D3D12 debug layer before device creation and logs warnings/errors from a bounded info queue. Polling uses an append-only cursor so it cannot erase a message arriving between reading and clearing; a final drain follows GPU completion. The queue filters informational messages and retains at most 1024 messages. No UAV warnings/errors are filtered out.
+
+Run `python Tests/D3D12QueueRegression.py <packaged-root-exe> --logs <directory>`
+for replacement/no-replacement, discarded recording with synthetic resize, and a
+bounded stress run. The script requires an active info-queue logger, all three
+frame-119 readbacks, exit 0 and zero D3D12 warnings/errors in each case. It samples
+the actual Runtime executable's handles/private bytes, then restores external
+configuration. Before the cross-execution fix, the named baseline identified
+StorageBuffer#2 (ComputeFirstColor), still used on GraphicsQueue when ComputeQueue
+began the next frame's UAV barrier. Numerical readback success alone did not
+establish correct synchronization.
 
 For a memory-isolation run only, set
 `GENGINE_D3D12_INFO_QUEUE_LOGGER=0` alongside the Debug Layer switch. This
@@ -100,8 +110,9 @@ earlier run with an unread redirected stdout pipe was output-blocked at
 348 frames and is not used as memory evidence.
 
 The same change built in Debug and Release; a 120-frame Release D3D12 run
-passed both readbacks and normal shutdown. The logger switch affects only
-Debug builds.
+passed both readbacks and normal shutdown. At that historical checkpoint the
+logger switch affected only Debug builds; current opt-in validation/logging also
+supports Release, as described above.
 
 Do not enable it for ordinary profiling; validation changes timing and may report known third-party messages.
 

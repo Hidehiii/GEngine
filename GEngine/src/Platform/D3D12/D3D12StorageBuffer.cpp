@@ -3,6 +3,7 @@
 #include "Platform/D3D12/D3D12Context.h"
 #include "Platform/D3D12/D3D12Utils.h"
 #include "GEngine/Graphics/Graphics.h"
+#include <atomic>
 
 namespace GEngine
 {
@@ -11,6 +12,8 @@ namespace GEngine
 		if (!destination || !size || offset > m_Size || size > m_Size - offset)
 			throw std::invalid_argument("Storage readback exceeds buffer bounds.");
 		Graphics::GetRenderDevice().GetQueue(COMMAND_BUFFER_TYPE_GRAPHICS).WaitForIdle();
+        if (m_QueueUsage.Fence && m_QueueUsage.Queue != COMMAND_BUFFER_TYPE_GRAPHICS)
+            D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Wait(m_QueueUsage.Fence.Get(), m_QueueUsage.Value));
 		Microsoft::WRL::ComPtr<ID3D12Resource> staging;
 		Utils::CreateBuffer(size, D3D12_HEAP_TYPE_READBACK, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_COPY_DEST, staging);
 		auto command = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
@@ -35,6 +38,9 @@ namespace GEngine
 		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &desc,
 			D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_Resource)));
+        static std::atomic<uint64_t> nextName{0};
+        const auto name = L"StorageBuffer#" + std::to_wstring(++nextName);
+        D3D12_THROW_IF_FAILED(m_Resource->SetName(name.c_str()));
 		// Buffers are created in COMMON even when a different initial state is
 		// requested. Establish the state used by uploads and graph imports.
 		auto command = D3D12Context::Get()->BeginSingleTimeGraphicsCommand();
@@ -54,6 +60,8 @@ namespace GEngine
 
 	void D3D12StorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
+        if (m_QueueUsage.Fence && m_QueueUsage.Queue != COMMAND_BUFFER_TYPE_GRAPHICS)
+            D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetGraphicsQueue()->Wait(m_QueueUsage.Fence.Get(), m_QueueUsage.Value));
 		GE_CORE_ASSERT(data && size > 0 && offset + size <= m_Size, "Storage buffer write is outside its allocation.");
 		Microsoft::WRL::ComPtr<ID3D12Resource> upload;
 		Utils::CreateBuffer(size, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, upload);

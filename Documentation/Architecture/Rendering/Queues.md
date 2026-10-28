@@ -18,6 +18,23 @@ ordering. D3D12
 dependencies identify a producer submission generation rather than a mutable
 shared fence value. OpenGL executes the logical chain on one context.
 
+D3D12 UAV buffers/images additionally retain their last submitted queue, fence
+and monotonic value. Barriers and material bindings register resource use on the
+recording command. Before submission, another queue waits on that recorded value;
+after the command's signal succeeds, its exact completion replaces the resource's
+last-use token. This covers separate graph executions and presentation material
+uses, including graphics in frame N followed by compute in frame N+1. Same-queue
+ordering stays FIFO. CPU uploads/readbacks wait on an outstanding other-queue use
+before their existing one-time graphics submission.
+
+Recording/discarding a command never publishes a completion token. Each command
+retains the resource owning its borrowed usage record through GPU completion and
+clears its deduplicated use list on safe allocator reset. Tokens own only native
+fences, not command-buffer objects, so they cannot form an owner cycle. Existing
+per-command fences are reused; there is no per-frame fence allocation, new CPU
+queue-wide wait, or device-wide idle path. This is backend bookkeeping under the
+existing public queue contract; OpenGL/Vulkan implementation and API are unchanged.
+
 The runtime pauses rendering on a zero-size window event and updates its
 viewport on a nonzero event. OpenGL applies the viewport during presentation;
 Vulkan compares the swap-chain extent and recreates it before acquisition.

@@ -30,15 +30,15 @@ namespace
 	}
 }
 
-#ifdef GE_DEBUG
 	std::atomic_bool	g_D3D12DebugInfoQueueLoggerRunning{ false };
 	std::thread			g_D3D12DebugInfoQueueLoggerThread;
 	static void D3D12DebugInfoQueueLoggerThreadFunc(Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue)
 	{
-		while (g_D3D12DebugInfoQueueLoggerRunning.load())
+        UINT64 nextMessage = 0;
+		while (true)
 		{
 			UINT64 num = infoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
-			for (UINT64 i = 0; i < num; ++i)
+			for (UINT64 i = nextMessage; i < num; ++i)
 			{
 				SIZE_T msgLen = 0;
 				infoQueue->GetMessage(i, nullptr, &msgLen);
@@ -55,8 +55,9 @@ namespace
 					GE_CORE_ERROR("D3D12 Error: {0}", msg->pDescription ? msg->pDescription : "null");
 				}
 			}
-			// 清除已存消息
-			infoQueue->ClearStoredMessages();
+            // Keep the bounded queue append-only so polling cannot erase new messages.
+            nextMessage = num;
+			if (!g_D3D12DebugInfoQueueLoggerRunning.load()) break;
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
@@ -81,7 +82,6 @@ namespace
 			g_D3D12DebugInfoQueueLoggerThread.join();
 		}
 	}
-#endif
 
 	D3D12Context* D3D12Context::s_ContextInstance = nullptr;
 
@@ -98,10 +98,8 @@ namespace
 	{
 		CreateFactory();
 		CreateDevice();
-#ifdef GE_DEBUG
 		if (IsD3D12DebugLayerRequested())
 			SetupDebugInfoQueue();
-#endif
 		CreateQueues();
 		CreateSwapChain(width, height);
 		CreateDescriptorHeaps();
@@ -124,9 +122,7 @@ namespace
 		}
 		m_Fences.clear();
 		m_FenceEvents.clear();
-#ifdef GE_DEBUG
 		StopD3D12DebugInfoQueueLogger();
-#endif
 		for (HANDLE eventHandle : m_TrackedFenceEvents)
 		{
 			if (eventHandle != nullptr)
@@ -135,7 +131,6 @@ namespace
 		m_TrackedFenceEvents.clear();
 		m_TrackedFences.clear();
 
-#ifdef GE_DEBUG
 		if (IsD3D12DebugLayerRequested() && IsD3D12LiveObjectReportRequested() && m_DebugInfoQueue)
 		{
 			// The application and presenter are gone, but context-owned objects remain.
@@ -172,7 +167,6 @@ namespace
 			else
 				GE_CORE_WARN("D3D12 debug-device query failed: HRESULT 0x{:08X}.", static_cast<unsigned>(queryResult));
 		}
-#endif
 
 	}
 	void D3D12Context::SetVSync(bool enable)
@@ -266,7 +260,6 @@ namespace
 		const uint64_t fenceValue = m_TrackedFenceValues.at(queueIndex);
 		D3D12_THROW_IF_FAILED(queue->Signal(m_TrackedFences.at(queueIndex).Get(), fenceValue));
 		m_PendingSubmissions.push_back({ submission, type, m_TrackedFences.at(queueIndex), fenceValue });
-#ifdef GE_DEBUG
 		static const bool traceLifetime = []()
 		{
 			const char* value = std::getenv("GENGINE_D3D12_LIFETIME_TRACE");
@@ -279,7 +272,6 @@ namespace
 			GE_CORE_INFO("D3D12 lifetime: submitted={}, completed={}, pending={}, deferred={}, storedMessages={}, discardedMessages={}",
 				submission, m_CompletedSubmission, m_PendingSubmissions.size(), m_DeferredReleases.size(), storedMessages, discardedMessages);
 		}
-#endif
 	}
 
 	void D3D12Context::RetireResource(DeferredRelease release)
@@ -391,7 +383,6 @@ namespace
 	void D3D12Context::CreateFactory()
 	{
 		UINT dxgiFactoryFlags = 0;
-#ifdef GE_DEBUG
 		if (IsD3D12DebugLayerRequested())
 		{
 			Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
@@ -399,7 +390,6 @@ namespace
 			debugController->EnableDebugLayer();
 			dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
-#endif
 		D3D12_THROW_IF_FAILED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_Factory)));
 	}
 	void D3D12Context::CreateDevice()
@@ -419,7 +409,6 @@ namespace
 	}
 	void D3D12Context::SetupDebugInfoQueue()
 	{
-#ifdef GE_DEBUG
 		
 		D3D12_THROW_IF_FAILED(m_Device->QueryInterface(IID_PPV_ARGS(&m_DebugInfoQueue)));
 		// The debug layer retains validation messages in this queue.  A busy frame
@@ -452,7 +441,6 @@ namespace
 		filter.DenyList.NumIDs	= _countof(hide);
 		filter.DenyList.pIDList = hide;
 		D3D12_THROW_IF_FAILED(m_DebugInfoQueue->AddStorageFilterEntries(&filter));*/
-#endif
 	}
 	void D3D12Context::CreateQueues()
 	{
@@ -461,12 +449,15 @@ namespace
 		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue)));
+		D3D12_THROW_IF_FAILED(m_GraphicsQueue->SetName(L"GraphicsQueue"));
 
 		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_COMPUTE;
 		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_ComputeQueue)));
+		D3D12_THROW_IF_FAILED(m_ComputeQueue->SetName(L"ComputeQueue"));
 
 		queueDesc.Type				= D3D12_COMMAND_LIST_TYPE_COPY;
 		D3D12_THROW_IF_FAILED(m_Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_TransferQueue)));
+		D3D12_THROW_IF_FAILED(m_TransferQueue->SetName(L"TransferQueue"));
 	}
 	void D3D12Context::CreateSwapChain(const unsigned int width, const unsigned int height)
 	{

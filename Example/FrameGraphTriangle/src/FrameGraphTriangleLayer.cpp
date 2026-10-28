@@ -371,6 +371,16 @@ namespace GEngine
 			{ command->Compute(m_ComputeFirstComputePipeline, 0, 1, 1, 1); });
 		const auto computeFirstUpdated = computeFirst.Write(computeFirstInitial,
 			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
+        if (std::getenv("GENGINE_EXAMPLE_DISCARD_RECORDING"))
+        {
+            auto discarded = Graphics::GetGraphicsCommandBuffer();
+            discarded->Begin();
+            Graphics::TransitionResource(discarded, m_ComputeFirstColor,
+                GraphicsResourceState::ShaderWrite, GraphicsResourceState::ShaderWrite);
+            discarded->End();
+            // Recording alone must not publish an unsignaled resource completion.
+            GE_INFO("Discarded a graphics UAV recording before the compute-first graph.");
+        }
 		const auto initialVersion = m_Graph.GetVersion(m_Graph.ImportStorageBuffer("ColorData", m_Color, RenderGraph::ResourceState::ShaderWrite));
 		auto first = m_Graph.BuildGraphicsPass("ReadPreviousColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
 		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);

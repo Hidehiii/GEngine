@@ -8,6 +8,7 @@
 #include "Platform/D3D12/D3D12Texture2DArray.h"
 #include "Platform/D3D12/D3D12CubeMap.h"
 #include "Platform/D3D12/D3D12TextureCombineSampler.h"
+#include "Platform/D3D12/D3D12CommandBuffer.h"
 
 namespace GEngine
 {
@@ -60,6 +61,17 @@ namespace GEngine
 
 	void D3D12Material::Update(CommandBuffer* cmdBuffer, const uint32_t& pass)
 	{
+        auto* command = dynamic_cast<D3D12CommandBuffer*>(cmdBuffer);
+        if (!command) throw std::invalid_argument("D3D12 material update requires a D3D12 command buffer.");
+        for (const auto& resource : m_Shader->GetPassReflections().at(pass).Resources)
+        {
+            const auto property = m_Passes.at(pass).ResourceProperties.find(resource.Name);
+            if (property == m_Passes.at(pass).ResourceProperties.end() || !property->second.Ptr) continue;
+            if (resource.Type == SHADER_PROPERTY_TYPE_STORAGE_BUFFER)
+                command->TrackStorageResource(*static_cast<Ref<StorageBuffer>*>(property->second.Ptr));
+            else if (resource.Type == SHADER_PROPERTY_TYPE_STORAGE_IMAGE_2D)
+                command->TrackStorageResource(*static_cast<Ref<StorageImage2D>*>(property->second.Ptr));
+        }
 		GE_CORE_ASSERT(pass < m_Passes.size(), "Pass index out of range!");
 		GE_CORE_ASSERT(m_ConstantBuffers.size() > pass, "Pass index out of range for constant buffers!");
 		for (auto& [bindPoint, buffer] : m_ConstantBuffers.at(pass))

@@ -1,5 +1,23 @@
 # FrameGraphTriangle
 
+For the cross-frame D3D12 UAV regression, build/export this example and run:
+
+```bat
+python Tests/D3D12QueueRegression.py <packaged-root-exe> --logs build/d3d12-queue-check
+```
+
+The check explicitly enables the real D3D12 debug layer in Debug or Release and
+runs 120-frame replacement and no-replacement cases, then discarded recording
+with two synthetic target resizes, followed by a bounded 15-second stress run.
+Expected: triangle/color behavior remains the same, three frame-119 readbacks,
+exit 0 and no D3D12 warnings/errors. An active info-queue logger is required.
+`GENGINE_EXAMPLE_DISCARD_RECORDING=1` records a graphics UAV barrier but never
+submits it before the compute-first graph; hanging indicates an unsignaled token.
+The resize case requests the existing 960x540/1280x720 sequence; it is not a manual
+window/DPI/minimize test. Logs/CSV sample the actual Runtime process's handles
+and private bytes. Existing layer-on handle growth remains a separate diagnosis;
+normal shutdown/readbacks do not prove flat process memory.
+
 The included `FrameGraphTriangle.gproject` can be opened in the Qt editor through
 File > Open project. Project > Package project asks for output directory,
 executable name and optional logo image,

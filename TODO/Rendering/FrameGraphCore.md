@@ -166,7 +166,7 @@
       covered barrier recording and normal shutdown, not interactive visible
       output, resize, or long-run memory stability. Queue ownership, dedicated
 
-- [ ] Resolve D3D12 debug-layer cross-queue UAV-barrier diagnostics.
+- [x] Resolve D3D12 debug-layer cross-queue UAV-barrier diagnostics.
       Scope: FrameGraphTriangle D3D12 Debug/Release runs with
       `GENGINE_D3D12_DEBUG_LAYER=1` exit 0 and pass all three readbacks, but the
       debug layer reports that a buffer is still referenced by an in-flight
@@ -175,3 +175,42 @@
       resource ownership.
       Acceptance: bounded 120-frame D3D12 runs in Debug and Release pass all
       three graph readbacks with no D3D12 debug-layer errors.
+      Active follow-up (2026-10-28, user authorized): reproduce with the current
+      FrameGraphTriangle, identify the native buffer and graphics/compute queue
+      dependency (including consecutive graph executions), implement a bounded
+      synchronization fix without per-frame device-wide waits, and verify Debug/
+      Release 120-frame readbacks plus debug-layer output. Preserve the separate
+      planned resource-data TODO and local backend configuration. Record focused
+      regression, queue lifetime/allocation evidence and other-backend coverage.
+      Reproduction: current Debug ran 120 frames, passed all three readbacks but
+      emitted 5 UAV errors. With native object names, a second baseline emitted
+      11 errors identifying StorageBuffer#2 (ComputeFirstColor): GraphicsQueue
+      still referenced it when the next frame's ComputeQueue began its barrier.
+      Graph edges covered one execution but omitted this inter-execution seam.
+      Implemented: UAV buffer/image-owned last submitted fence/value/queue token;
+      command-local deduplicated owner/use records populated by barriers and
+      material binding; a different queue waits before execution and updates the
+      token only after its submission signal. Discarded recording cannot publish
+      an unsignaled completion. Safe allocator reset clears uses after completion;
+      native fence references create no C++ command/resource owner cycle. CPU
+      storage uploads/readbacks also respect a preceding other-queue submission.
+      No new per-frame native fence, CPU per-frame device wait, or common API.
+      Release opt-in validation is now real (previously GE_DEBUG guarded it out).
+      Bounded info-queue polling retains an append-only cursor and drains after
+      GPU completion, avoiding messages lost by read/clear races; UAV errors are
+      not filtered. Added native queue/buffer names and an example discarded-
+      graphics recording before the compute-first pass.
+      Verification (2026-10-28): CMake Debug and Release engine/example builds
+      passed with existing warnings. Tests/D3D12QueueRegression.py passed both
+      configurations: replacement and no-replacement 120-frame runs, discarded
+      recording plus two synthetic resizes, and 15-second stress; every case
+      passed all three readbacks, exited 0 and logged zero D3D12 warnings/errors
+      with the logger explicitly active. A further 10-second Release trace kept
+      pending submissions bounded (1-5 in final samples), deferred releases 0,
+      stored/discarded messages 0. Debug and Release OpenGL/Vulkan/D3D12 resource
+      matrices each passed cold/warm 120-frame readbacks independently.
+      Limits: storage-image bookkeeping compiled but has no dedicated GPU image
+      workload here; manual OS resize/visible pixels, Premake and clean-machine
+      builds are not claimed. A pre-existing layer-on kernel-handle growth also
+      reproduced on the old binary and remains open in Integration/D3D12Memory.md;
+      this milestone establishes synchronization, not complete memory attribution.

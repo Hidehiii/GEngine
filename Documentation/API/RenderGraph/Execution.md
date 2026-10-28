@@ -49,6 +49,12 @@ families differ. Opt-in exclusive 2D/array images use the release/acquire path
 described above; other allocations remain concurrent. OpenGL
 executes on its single context and uses memory barriers for visibility.
 
+For D3D12 UAV resources reused across executions, backend submission also waits
+on the resource's last actual queue use. A compute-first graph therefore waits
+for the preceding frame's final graphics use without a CPU device-wide idle.
+This uses the existing graph API; it does not enable independent subresource
+scheduling or replace the graph's declared dependencies.
+
 Current GPU compute declarations accept storage/UAV (`ShaderWrite`) state for
 both read and write intent. ShaderWrite names the native state, not exclusively
 the access direction. Other compute states are explicitly rejected rather than

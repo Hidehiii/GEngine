@@ -1,5 +1,33 @@
 # C#、Mono 与游戏打包
 
+## Engine-specific resource data types (planned, 2026-10-28)
+
+- [ ] Define engine-owned resource data types and their serialized asset format.
+  Scope: distinguish source/import formats (PNG, FBX, etc.), engine CPU resource
+  data, serialized runtime assets, and backend GPU objects. Decide which types
+  need dedicated schemas (initial candidates: texture, mesh, material, shader),
+  with explicit resource type, schema version, stable identity, dependency
+  references, payload layout and validation rules. Names/extensions and the exact
+  public API remain undecided; do not introduce a generic byte wrapper alone and
+  call the asset-format problem solved. `.gpak` remains a container for resource
+  payloads, not the definition of each resource's data type.
+  Begin with one bounded resource type and a source importer -> engine data ->
+  directory/archive loader -> RenderDevice upload example. Preserve owning CPU
+  data through asynchronous consumption/upload and keep native handles in the
+  backends. Consider OpenGL/Vulkan/D3D12 capabilities explicitly. Keep mutable
+  Config/Cache outside the archive and retain compatibility with existing readers
+  during migration. Connect this design to S4 dependency collection rather than
+  adding a separate resource identity system for packaging.
+  Acceptance: documented CPU/file/GPU ownership boundaries; deterministic import
+  and serialization; equivalent directory/.gpak loads; explicit rejection of
+  unknown types/versions, malformed/truncated payloads and invalid dependencies;
+  a focused example with resource lifetime and available-backend verification;
+  synchronized architecture/API/import/export documentation. Record deferred
+  resource types and migration gaps individually.
+  Status: user requested TODO registration only. No implementation or new API is
+  authorized by this entry. Documentation links/content reviewed; no engine build
+  is required for this planning-only change.
+
 - [x] External config and persistent shader cache correction (2026-10-27).
   User requirement: Config.ini must not be inside .gpak. Publish defaults under
   Config/Config.ini, keep mutable state directly in the game root (user correction),

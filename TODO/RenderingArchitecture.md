@@ -1,5 +1,18 @@
 # Rendering architecture refactor
 
+2026-10-28 D3D12 cross-execution UAV synchronization repair is tracked in
+[FrameGraphCore](Rendering/FrameGraphCore.md). It adds resource-owned submitted
+fence/value/queue tracking for UAV buffers/images, retaining owners through each
+submission; no common rendering signature changes, CPU device-wide waits or
+OpenGL/Vulkan behavior changes are introduced. Release supports explicit debug-
+layer validation for this regression, and discarded recordings publish no token.
+
+2026-10-28 planned engine-specific resource data types are owned by
+[ScriptingAndPackaging](ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
+The plan separates CPU/file schemas from backend GPU objects and requires
+available-backend upload/lifetime verification. Current rendering APIs, native
+ownership and submission semantics are unaffected; no implementation is authorized.
+
 2026-10-27 configuration/cache correction: Config/Config.ini is external to .gpak;
 Cache/Shaders/<API>/ persists directly under the game root. Literal shader include
 contents participate in cache identity. Publication preserves these state folders.

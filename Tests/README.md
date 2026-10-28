@@ -1,5 +1,24 @@
 # Focused regression checks
 
+## D3D12 cross-queue UAV ordering
+
+After building/exporting FrameGraphTriangle:
+
+```bat
+python Tests/D3D12QueueRegression.py <packaged-root-exe> --logs build/d3d12-queue-check
+```
+
+Run against Debug and Release packages separately. This uses the real runtime
+and debug layer, covering repeated executions sharing ComputeFirstColor, normal
+resource replacement, no replacement, an unsubmitted graphics recording and two
+synthetic resizes. Every case must pass three readbacks, exit 0, emit the active
+logger marker and contain no D3D12 warnings/errors. `--stress-seconds` accepts
+4-45 (default 15); every owned process has a 60-second deadline. Kernel handle
+and private-byte samples are written to CSV, not treated as proof of ownership
+or a flat-memory assertion. Config/Config.ini is restored on completion/failure.
+Use a generated test package without concurrent users. Manual visible output,
+OS resize and complete native allocation attribution remain separate checks.
+
 ## Native resource pack
 
 The dependency-free resource regression compiles the production Windows archive

@@ -1,5 +1,10 @@
 # Runtime, core, window, and event API
 
+Engine-specific typed resource data and asset schemas are
+[planned in TODO](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
+No type names, extensions or public interfaces have been selected. `ReadResource`
+continues to return owned bytes; this plan does not add a supported typed loader.
+
 ## Native packaged resources
 
 `Runtime/ResourcePack.h` exports `std::filesystem::path PreparePackagedResources(bool required = false)`.

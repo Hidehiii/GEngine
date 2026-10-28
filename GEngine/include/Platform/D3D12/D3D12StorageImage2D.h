@@ -3,6 +3,7 @@
 #include "GEngine/Compute/StorageImage.h"
 #include <d3d12.h>
 #include <wrl.h>
+#include "D3D12ResourceUsage.h"
 
 namespace GEngine
 {
@@ -15,11 +16,13 @@ namespace GEngine
 		virtual void Bind(CommandBuffer* cmdBuffer, const uint32_t slot = 0) override {}
 
 		ID3D12Resource* GetResource() const { return m_Resource.Get(); }
+		D3D12ResourceUsage& GetQueueUsage() { return m_QueueUsage; }
 		virtual void* GetNativeResource() const override { return m_Resource.Get(); }
 		const D3D12_UNORDERED_ACCESS_VIEW_DESC& GetUnorderedAccessViewDesc() const { return m_UavDesc; }
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_Resource;
 		D3D12_UNORDERED_ACCESS_VIEW_DESC m_UavDesc{};
+		D3D12ResourceUsage m_QueueUsage;
 	};
 }

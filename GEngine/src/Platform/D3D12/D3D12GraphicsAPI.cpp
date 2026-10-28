@@ -420,6 +420,7 @@ namespace GEngine
 		for (const auto& wait : d3dCommandBuffer->GetWaitFences())
 			D3D12_THROW_IF_FAILED(queue->Wait(wait.first.Get(), wait.second));
 		auto commandList = d3dCommandBuffer->GetCommandList();
+		d3dCommandBuffer->WaitForResourceUses(queue.Get());
 		queue->ExecuteCommandLists(1, CommandListCast(commandList.GetAddressOf()));
 		d3dCommandBuffer->MarkSubmitted(queue.Get());
 		for (const auto& signal : d3dCommandBuffer->GetSignalFences())
@@ -447,6 +448,7 @@ namespace GEngine
 		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
 		d3dCommandBuffer->Retain(resource);
+		d3dCommandBuffer->TrackStorageResource(resource);
 		if (before == after)
 		{
 			if (before == GraphicsResourceState::ShaderWrite)
@@ -475,6 +477,7 @@ namespace GEngine
 		auto d3dCommandBuffer = std::dynamic_pointer_cast<D3D12CommandBuffer>(commandBuffer);
 		GE_CORE_ASSERT(d3dCommandBuffer, "D3D12 resource transitions require a D3D12 command buffer.");
 		d3dCommandBuffer->Retain(resource);
+		d3dCommandBuffer->TrackStorageResource(resource);
 		if (before.State == after.State && before.State == GraphicsResourceState::ShaderWrite)
 		{
 			auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(static_cast<ID3D12Resource*>(GetNativeResource(resource)));

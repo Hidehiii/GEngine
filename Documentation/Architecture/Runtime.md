@@ -1,5 +1,11 @@
 # Runtime and window architecture
 
+Engine-owned resource data and serialized asset schemas are a
+[planned follow-up](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
+That TODO distinguishes imported source files, CPU resource data, archive payloads
+and backend GPU objects. Current resource loading, ownership and `.gpak` behavior
+are unchanged; no typed resource-format implementation is claimed here.
+
 Packaged startup now has a pre-Application phase. EntryPoint calls the portable
 ResourcePack interface, implemented under Platform/Windows: resolve EXE, require
 its same-stem `.gpak` beside the executable or in the categorized sibling

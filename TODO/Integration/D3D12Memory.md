@@ -4,6 +4,19 @@
   time runs, inspect live-object/debug-layer diagnostics and driver allocation
   behavior, then distinguish engine-owned growth from diagnostic or driver
   overhead. Do not label the current process-level observation a leak.
+  Additional observation (2026-10-28, during the UAV synchronization fix): kernel
+  handle count grows with validation enabled in both the old Debug development
+  binary (5,695 -> 20,608 sampled after warm-up during a 6-second run, 4,020 total
+  frames) and the fixed Debug binary (6,575 -> 24,525, 3,926 total frames).
+  Layer-off controls stayed near 519/522 handles before shutdown. The fixed
+  10-second Release validation run had pending submissions 1-5 at the final
+  30k-60k submission samples, deferred releases 0 and stored/discarded messages 0,
+  yet handles still increased. This does not attribute ownership to the driver
+  or validation runtime and is not a new per-frame fence allocation in the fix.
+  Keep this separate from the now-verified UAV ordering repair. Remaining:
+  use matched frame-count controls and native handle-type/allocation attribution;
+  verify release after GPU idle/shutdown before assigning a leak. Logs/CSV are
+  build/d3d12-handles-*.log and build/d3d12-uav-*-regression/*-memory.csv.
   Next bounded diagnosis: run 60,000-frame D3D12 Debug comparisons with the
   layer on/off from isolated configuration copies, sample private bytes at
   start/end, and enable the existing pipeline lifetime trace. Inspect the
