@@ -131,7 +131,7 @@ project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspect
 隐式打开 .GEScene、加载 Mono 或资产导入。该目录浏览入口不执行打包；上面的
 `.gproject` 入口提供显式打包操作。本机输出偏好与项目文件分开保存。
 
-下面的协议契约与 E0.2 相同，不随项目浏览变化；引擎公共接口保持不变。
+下面是 E4.1 图像协议；场景公共录制接口见 SceneAndPhysics.md。
 
 头文件：`GEngine-Editor/Protocol/EditorProtocol.h`（标准 C++，无 Qt/引擎依赖）。
 所有整数显式小端编码，禁止按 C++ struct 内存布局发送。
@@ -140,23 +140,29 @@ project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspect
 | --- | --- |
 | 0–3 | ASCII GEIP |
 | 4–5 | uint16 version = 1 |
-| 6–7 | uint16 Kind（1–11） |
+| 6–7 | uint16 Kind（1–15） |
 | 8–15 | uint64 非零 session |
 | 16–23 | uint64 request |
 | 24–27 | uint32 payload length，最大 65536 |
 | 28–31 | uint32 reserved，必须为零 |
 
 Kind 依次为 Hello、Ready、Ping、Pong、Shutdown、Ack、DiagnosticFrame、Crash、
-Hang、Malformed、EngineFrame。Hello payload 为 UTF-8 GEngine.EditorDiagnostic/1；
-Ready 由诊断 Worker 返回同值，真实引擎 Worker 返回 GEngine.EditorEngine/1。
-Host 按 Ready 标识限制接收 DiagnosticFrame 或 EngineFrame，禁止混用。
-真实 Worker 在设备和管线初始化后才 Ready，Ping 同时触发下一帧预览。
-EngineFrame 为 160×90 RGBA8，复用下面的尺寸/步长结构，仍受 64 KiB 上限约束。
+Hang、Malformed、EngineFrame（旧保留值）、RequestFrame、FrameBegin、FrameChunk、FrameEnd。
+Hello payload 为 UTF-8 GEngine.EditorDiagnostic/1；Ready 由诊断 Worker 返回同值，
+真实 Worker 返回 GEngine.EditorEngine/2，旧版引擎标识被拒绝。
+真实 Worker 在设备和 Scene 初始化后 Ready。Ping 仅回复 Pong，不再触发渲染。
+RequestFrame payload 是 uint32 width/height，范围 1..1280 × 1..720；Host 按 DPI
+和宽高比限制输出尺寸，16 ms 定时器检查、请求间隔至少 33 ms，最多一帧在途。
+FrameBegin/Chunk/End 均复用该请求 ID：Begin 是 width/height/stride 三个 uint32，
+Chunk 是非空 RGBA8 字节（最多 65536），End 为空且必须已收到完整图像。
+Host 拒绝乱序、尺寸/请求不匹配、超量、截断、无请求图像；尺寸改变后旧帧丢弃。
+Worker 将 OpenGL 行翻转为顶部起始。隐藏视口停止请求，恢复后重新请求尺寸；
+每个图像请求截止 10 秒，心跳仍独立保持 2 秒截止（首图前 10 秒）。
 真实 Worker stdout 保留为二进制协议，CRT stdout 日志重定向到 stderr；
 Host Console 接收核心/应用日志。Stop/故障注入也适用于真实 Worker。
 EngineRuntime/RenderGraph/Texture2DArray 公共签名不变，同步读回仅发生在子进程。
 Worker 一次握手后拒绝会话不匹配、重复/倒序 request 或非法命令；其他控制
-payload 为空，响应复用请求 ID。图像 request=0，payload 前三个 uint32 为
+payload 除 RequestFrame 外为空，响应复用请求 ID。诊断图像 request=0，payload 前三个 uint32 为
 width/height/stride，后续为顶部起始 RGBA8；诊断 Worker 只生成 128×80 图案，
 Host 拒绝大于 256×256、stride 不等于 width×4 或字节数不符的数据。
 
@@ -168,11 +174,12 @@ Decoder 支持分片/粘包，Feed 每次最大 64 KiB，缓冲上限为两份�
 `Core/DraftDocument.h` 提供 Reset/Edit/Undo/Redo/MarkSaved/Text/Dirty 查询，
 最多 256 个独立历史状态。`.gedraft` 仅含 format、version、notes 三个字段，
 明确不是现有 `.GEScene`；不支持字段的文件被拒绝而非丢字段重存。
-`Host/WorkerSupervisor` 提供 Start/Stop/Inject 与状态/日志/QImage 回调，仅在
+`Host/WorkerSupervisor` 提供 Start(executable, scenePath)、SetViewportSize(QSize)、
+FrameSize()、Stop/Inject 与状态/日志/QImage 回调，仅在
 Host 主线程使用；Inject 只发送给其启动的子进程。Host 源码不加载 GEngine。
 ProtocolTests 和 Host --self-test 分别覆盖解析/历史与真实子进程恢复。
 Host --self-test --engine-check --worker <absolute-exe> 进一步验证真实引擎标识、
-至少两帧、三角形像素/方向及 Console 日志。CMake/Premake 的完整 -Test 包含
+GPU 帧、场景像素及 Console 日志。CMake/Premake 的完整 -Test 包含
 该检查；协议专用模式仍不要求 Qt 或 GPU。逐后端/配置证据见编辑器 TODO。
 
 ## 其余目标契约（待实施）
@@ -215,6 +222,11 @@ E0 的协议头及测试向量中定义，禁止依赖 struct padding 或本机�
 | Input | 输入序号、视图/焦点 generation、位置/按键/文本及 ReleaseAll。 |
 | FrameChunk / FrameReady | 有界二进制块与完整帧元数据；只发布全部校验通过的图像。 |
 | Heartbeat / Shutdown | 健康状态与有界关闭；退出监测不能依赖 Worker 游戏循环仍在推进。 |
+
+E4.1（2026-10-28）增加共享 `SceneRenderer::Render(Scene&, command)`
+及组件显式命令重载，保留无参呈现适配。Worker 图像请求携带尺寸，图像使用
+FrameBegin/FrameChunk/FrameEnd 分块回复；一次仅一个请求在途。完整上表
+契约仍为规划，不能把颜色场景支持等同于完整相机/材质/Play。
 
 ACK、Ready、FrameReady 分别表示操作已应用、初始化完成、图像完成。重复
 RequestId 不重复执行同一会话的变更；重启不重用 session generation。

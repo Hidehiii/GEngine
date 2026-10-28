@@ -16,6 +16,7 @@ namespace GEngine
 		MeshRenderer(const MeshRenderer& other);
 
 		void OnRender();
+		void OnRender(const Ref<CommandBuffer>& command);
 
 		void SetMaterial(Ref<Material> material);
 		Ref<Material> GetMaterial() { return m_Material; }

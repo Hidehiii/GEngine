@@ -2,6 +2,7 @@
 #include "GEngine/Components/Renderer/ImageRenderer/ImageRenderer.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsPresent.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include "GEngine/Components/Transform/Transform.h"
 #include <stdexcept>
 
@@ -23,6 +24,12 @@ namespace GEngine
 
 	void ImageRenderer::OnRender()
 	{
+		OnRender(GraphicsPresent::GetCommandBuffer());
+	}
+
+	void ImageRenderer::OnRender(const Ref<CommandBuffer>& command)
+	{
+		if (!command) throw std::invalid_argument("ImageRenderer requires a command buffer.");
 		if (m_Texture)
 			throw std::logic_error("Textured ImageRenderer drawing is unsupported.");
 		if (!m_Material)
@@ -40,6 +47,6 @@ namespace GEngine
 		}
 		m_Material->SetConstant<Matrix4x4>("GE_MATRIX_M", m_GameObject.GetComponent<Transform>().GetModelMatrix());
 		m_Material->SetConstant<Vector4>("GE_IMAGE_COLOR", m_Color);
-		GraphicsPresent::Render(m_Pipeline, 0);
+		command->Render(m_Pipeline, 0);
 	}
 }

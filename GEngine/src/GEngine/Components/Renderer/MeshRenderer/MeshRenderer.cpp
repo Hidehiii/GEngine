@@ -4,6 +4,7 @@
 #include "GEngine/Components/Transform/Transform.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Graphics/GraphicsPresent.h"
+#include "GEngine/Graphics/CommandBuffer.h"
 #include <stdexcept>
 
 namespace GEngine
@@ -15,6 +16,12 @@ namespace GEngine
 
 	void MeshRenderer::OnRender()
 	{
+		OnRender(GraphicsPresent::GetCommandBuffer());
+	}
+
+	void MeshRenderer::OnRender(const Ref<CommandBuffer>& command)
+	{
+		if (!command) throw std::invalid_argument("MeshRenderer requires a command buffer.");
 		if (!m_Material)
 			throw std::logic_error("MeshRenderer requires a material before rendering.");
 		if (!m_Pipeline)
@@ -22,7 +29,7 @@ namespace GEngine
 		if (!m_Pipeline)
 			throw std::logic_error("MeshRenderer requires a nonempty MeshFilter before rendering.");
 		m_Material->SetConstant<Matrix4x4>("GE_MATRIX_M", m_GameObject.GetComponent<Transform>().GetModelMatrix());
-		GraphicsPresent::Render(m_Pipeline, 0);
+		command->Render(m_Pipeline, 0);
 	}
 	void MeshRenderer::SetMaterial(Ref<Material> material)
 	{

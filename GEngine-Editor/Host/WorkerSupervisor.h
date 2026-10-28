@@ -15,13 +15,15 @@ namespace GEngineEditor
         enum class State { Stopped, Starting, Ready, Unresponsive, Stopping, Disconnected };
         explicit WorkerSupervisor(QObject* parent = nullptr);
         ~WorkerSupervisor() override;
-        void Start(const QString& executable);
+        void Start(const QString& executable, const QString& scene = {});
+        void SetViewportSize(QSize size);
         void Stop();
         void Inject(Protocol::Kind kind);
         State GetState() const { return m_State; }
         bool Running() const { return m_Process.state() != QProcess::NotRunning; }
         QString Description() const;
         bool IsEngine() const { return m_IsEngine; }
+        QSize FrameSize() const { return m_LastFrameSize; }
         std::function<void(State)> OnState;
         std::function<void(const QString&)> OnLog;
         std::function<void(const QByteArray&)> OnConsoleOutput;
@@ -29,7 +31,7 @@ namespace GEngineEditor
         std::function<void(const QImage&)> OnFrame;
     private:
         void SetState(State state);
-        void Send(Protocol::Kind kind);
+        void Send(Protocol::Kind kind, std::vector<std::uint8_t> payload = {});
         void ReadOutput();
         void ReadError(bool drain = false);
         void Handle(const Protocol::Packet& packet);
@@ -47,6 +49,14 @@ namespace GEngineEditor
         std::uint64_t m_PingRequest = 0;
         qint64 m_Deadline = 0;
         qint64 m_NextPing = 0;
+        qint64 m_NextFrame = 0;
+        qint64 m_FrameDeadline = 0;
+        std::uint64_t m_FrameRequest = 0;
+        QSize m_ViewportSize{640, 360};
+        QSize m_RequestedSize;
+        QSize m_LastFrameSize;
+        std::vector<std::uint8_t> m_FramePixels;
+        bool m_FrameBegun = false;
         bool m_ExpectedStop = false;
         bool m_IsEngine = false;
         bool m_ReceivedFrame = false;

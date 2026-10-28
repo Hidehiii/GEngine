@@ -1,6 +1,10 @@
 # SceneRenderHelpers
 
-This example exercises the `GameObject::OnRender` dispatch and the retained
+This example alternates `SceneRenderer::Render(*scene, presentationCommand)`
+with `GameObject::OnRender` on successive frames, exercising both shared scene
+recording and presentation compatibility with the same materials. The Qt Worker
+uses that shared recorder in an offscreen render graph graphics pass.
+This example also exercises the retained
 `ImageRenderer` and `MeshRenderer` component paths. Set `GraphicsAPI` in
 `Config.ini` to 1 (OpenGL), 2 (Vulkan), or 3 (D3D12), then launch the example
 with this directory as its working directory so its shaders resolve.

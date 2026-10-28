@@ -119,6 +119,10 @@ and remaining visual checks are tracked in the editor compatibility TODO.
 ## Topic index
 
 - [Editor architecture proposal and E1–E6 acceptance](EditorArchitecture.md):
+  E4.1 now tracks shared SceneRenderer recording and continuous, sized image
+  transport (implemented; OpenGL/Vulkan/D3D12 Debug/Release pixel/resize and Host
+  recovery checks passed). Synchronous readback remains bounded to the Worker;
+  full camera/material serialization, async readback and long-run memory remain open.
   E4 owns the editor viewport/render bridge migration; shared scene rendering
   must preserve backend-neutral interfaces and explicit GPU lifetime.
 

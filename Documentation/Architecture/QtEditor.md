@@ -120,7 +120,8 @@ SceneDocument、导入、组件 Inspector、运行场景同步与 Mono 仍未接
 没有引擎公共 API、渲染接口、IPC 或 .GEScene 格式变更。远程/超大目录的取消
 响应和长时文件监视资源增长尚未验证，不能以小型临时目录测试代替。
 
-2026-10-25 E0.2：新增 GEngine-EditorEngineWorker，链接 GEngine 而不链接 Qt。
+以下为 2026-10-25 E0.2 历史实现；固定三角形传输已由下文 E4.1 替换。
+E0.2 新增 GEngine-EditorEngineWorker，链接 GEngine 而不链接 Qt。
 正常启动默认连接此子进程；诊断模式仍由 --self-test 或 --worker 显式选择。
 真实 Worker 通过 Application 兼容入口创建 EngineRuntime（Shader 缓存仍依赖
 Application 单例），创建离屏 RenderGraph 与持久管线，渲染青色三角形，
@@ -347,6 +348,18 @@ LoadSnapshot 成功 ACK 后增量 ApplyEdits 必须匹配 base revision；不匹
 跨会话的结果直接丢弃。命令不能因掉线后重发而创建两次对象。控制队列有界，
 图像分块间优先发送控制消息；流量积压时丢旧图像，不丢已接受的文档命令。
 如果命令队列不能继续接收，则标记镜像需完整重同步，Host 文档仍接受编辑。
+
+### E4.1 实时场景连接（2026-10-28）
+
+TODO/EditorArchitecture.md 的 E4.1 把共享 SceneRenderer 组件录制接入 Worker
+离屏图。Host 每 33 ms 最多请求一帧，目标按可见视口/DPI 尺寸并限制到 1280×720；
+隐藏时暂停、旧尺寸结果丢弃，心跳独立。最多一帧在途，图像分成 64 KiB 包，
+Host 增量解析并复制最终 QImage；不跨进程传递 GPU 句柄。同步读回暂留 Worker，
+上一帧读回完成后才可能收到下一次替换请求，复用既有 GPU 完成路径。
+File > Open scene for rendering 重启子进程并传入绝对 .GEScene 路径，保留 Host 草稿。
+当前读取 Attribute/Transform/颜色 ImageRenderer，复用 Serializer 并提供引擎颜色
+材质；不支持的组件/纹理明确失败。无文件时是标记清楚的引擎示例 Scene，含动态
+变换对象；不是项目场景的隐式替身。完整相机、材质序列化、Play 和异步读回仍开放。
 
 ## 8. 视口与 GPU 生命周期
 

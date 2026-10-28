@@ -13,11 +13,12 @@ namespace GEngineEditor::Protocol
     constexpr std::size_t HeaderSize = 32;
     constexpr std::size_t MaxPayload = 64 * 1024;
     constexpr const char* BuildId = "GEngine.EditorDiagnostic/1";
-    constexpr const char* EngineBuildId = "GEngine.EditorEngine/1";
+    constexpr const char* EngineBuildId = "GEngine.EditorEngine/2";
+    constexpr unsigned MaxFrameWidth = 1280, MaxFrameHeight = 720;
     enum class Kind : std::uint16_t
     {
         Hello = 1, Ready, Ping, Pong, Shutdown, Ack, DiagnosticFrame,
-        Crash, Hang, Malformed, EngineFrame
+        Crash, Hang, Malformed, EngineFrame, RequestFrame, FrameBegin, FrameChunk, FrameEnd
     };
     struct Packet
     {
@@ -41,7 +42,7 @@ namespace GEngineEditor::Protocol
     inline std::vector<std::uint8_t> Encode(const Packet& packet)
     {
         const auto type = static_cast<std::uint16_t>(packet.Type);
-        if (packet.Session == 0 || type < 1 || type > 11 || packet.Payload.size() > MaxPayload)
+        if (packet.Session == 0 || type < 1 || type > 15 || packet.Payload.size() > MaxPayload)
             throw std::invalid_argument("Invalid editor protocol packet");
         std::vector<std::uint8_t> result{'G','E','I','P'};
         Append(result, Version, 2);
@@ -69,7 +70,7 @@ namespace GEngineEditor::Protocol
                 const auto type = Read(header + 6, 2);
                 const auto payload = Read(header + 24, 4);
                 if (std::memcmp(header, "GEIP", 4) != 0 || Read(header + 4, 2) != Version ||
-                    type < 1 || type > 11 || Read(header + 8, 8) == 0 || Read(header + 28, 4) != 0)
+                    type < 1 || type > 15 || Read(header + 8, 8) == 0 || Read(header + 28, 4) != 0)
                     return Fail("Invalid packet header or protocol version");
                 if (payload > MaxPayload) return Fail("Payload limit exceeded");
                 if (m_Buffer.size() - consumed < HeaderSize + payload) break;

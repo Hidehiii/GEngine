@@ -42,6 +42,7 @@ namespace GEngineEditor
         bool HasEngineEvidence() const;
         QString LastError() const { return m_Error; }
         void StartWorker();
+        bool OpenScene(const QString& path);
         bool OpenProject(const QString& path);
         void CloseProject();
         ProjectWorkspace& Workspace() { return *m_Workspace; }
@@ -86,6 +87,8 @@ namespace GEngineEditor
         unsigned m_NextUntitled = 0;
         WorkerSupervisor m_Worker;
         QString m_WorkerPath;
+        QString m_ScenePath;
+        bool m_RestartForScene = false;
         QString m_Error;
         ConsoleOutput* m_Console = nullptr;
         QLabel* m_StateLabel = nullptr;

@@ -26,6 +26,7 @@ namespace GEngine
 		ImageRenderer(const ImageRenderer& other);
 
 		void OnRender();
+		void OnRender(const Ref<CommandBuffer>& command);
 		void SetMaterial(const Ref<Material>& material);
 		Ref<Material> GetMaterial() const { return m_Material; }
 

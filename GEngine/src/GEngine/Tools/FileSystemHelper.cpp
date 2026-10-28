@@ -75,9 +75,10 @@ namespace GEngine
 
 	bool FileSystemHelper::IsDocument(const std::string& path)
 	{
-		if (ResourceExists(path))
+		const auto nativePath = std::filesystem::u8path(path);
+		if (ResourceExists(nativePath))
 		{
-			if (!ResourceIsDirectory(path))
+			if (!ResourceIsDirectory(nativePath))
 			{
 				return true;
 			}

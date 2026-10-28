@@ -1,4 +1,5 @@
 #include "SceneRenderHelpersLayer.h"
+#include <GEngine/Renderer/SceneRenderer.h>
 
 #include <GEngine/Tools/GraphicsTool.h>
 #include <GEngine/Events/ApplicationEvent.h>
@@ -94,8 +95,13 @@ namespace GEngine
 
 	void SceneRenderHelpersLayer::OnPresent()
 	{
-		m_Image.OnRender();
-		m_Mesh.OnRender();
+		if (m_FrameCount % 2 == 0)
+			SceneRenderer::Render(*m_Scene, GraphicsPresent::GetCommandBuffer());
+		else
+		{
+			m_Image.OnRender();
+			m_Mesh.OnRender();
+		}
 		++m_FrameCount;
 		static const uint64_t frameLimit = []
 		{

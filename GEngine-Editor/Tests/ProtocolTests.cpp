@@ -38,6 +38,19 @@ int main()
                 decoded.front().Payload.size() == 57612, "engine frame preserved");
         }
         Decoder decoder;
+        {
+            // Largest chunks cross both header and payload boundaries in the byte stream.
+            const auto chunk = Encode({Kind::FrameChunk, hello.Session, 99, std::vector<std::uint8_t>(MaxPayload, 0xa5)});
+            const auto end = Encode({Kind::FrameEnd, hello.Session, 99, {}});
+            auto stream = chunk; stream.insert(stream.end(), end.begin(), end.end());
+            Decoder chunks; std::vector<Packet> result;
+            for (std::size_t offset = 0; offset < stream.size(); offset += 4093)
+                Require(chunks.Feed(stream.data() + offset, std::min<std::size_t>(4093, stream.size() - offset), result),
+                    "maximum chunk fragmented across stream reads");
+            Require(result.size() == 2 && result[0].Request == 99 && result[0].Payload.size() == MaxPayload &&
+                result[0].Payload.back() == 0xa5 && result[1].Type == Kind::FrameEnd && !chunks.HasPartial(),
+                "maximum chunk and frame boundary preserved");
+        }
         std::vector<Packet> packets;
         Require(decoder.Feed(pair.data(), pair.size(), packets) && packets.size() == 2, "coalesced packets");
         for (auto offset : {0, 4, 6, 28})

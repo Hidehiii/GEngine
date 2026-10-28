@@ -43,6 +43,15 @@ components through the portable presentation command buffer. ImageRenderer
 draws a color quad and writes `GE_MATRIX_M` and `GE_IMAGE_COLOR` material
 constants; MeshRenderer draws the indexed mesh and writes `GE_MATRIX_M`.
 Give each component its own material when it has per-object constants.
+For an offscreen render graph pass, include `GEngine/Renderer/SceneRenderer.h`
+and call `SceneRenderer::Render(*scene, command)` from the graphics recording
+callback. This records active objects' image/mesh components into that pass;
+it neither acquires/presents nor executes scene update/physics. The target,
+resource dependencies and command submission belong to the caller. Individual
+components provide `OnRender(const Ref<CommandBuffer>&)` as well; null commands
+throw `std::invalid_argument`. Existing no-argument calls remain compatible.
+Projection/camera constants remain the material's responsibility; the shared
+recorder does not implement automatic camera/light rendering or sorting.
 `ImageRenderer::m_Texture` drawing and `GraphicsTool::Init/RenderPoint/RenderLine`
 currently throw `std::logic_error` as unsupported paths. Missing materials
 also fail explicitly. The [rendering TODO](../../TODO/RenderingArchitecture.md)

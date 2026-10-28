@@ -354,6 +354,31 @@
 - [ ] E3：拆出 PlaySession 与显式状态机。验收：运行副本不污染编辑场景，
   Play/Pause/Resume/Stop 重复循环资源回收正确，初始化失败回到 Edit，
   运行时对象选择不串入编辑文档；暂停单步只在引擎提供明确能力后启用。
+- [x] E4.1 实时场景视口（2026-10-28）：用共享 SceneRenderer 和显式命令录制
+  替换 Worker 私有三角形；连续拉取、按视口尺寸输出、64 KiB 分块且最多一帧
+  在途，心跳独立。UTF-8 场景路径检查与读取保持一致，覆盖中文文件名。
+  支持打开现有颜色 ImageRenderer 场景，未提供场景时展示明确
+  标记的引擎示例 Scene。验收组件呈现兼容、连续变化像素、resize、三后端
+  Debug/Release 构建与恢复检查；记录同步读回及未支持的场景能力，不宣称 E4 全部完成。
+  完成：组件新增显式命令重载，保留呈现适配；SceneRenderer 录制活动对象的
+  ImageRenderer/MeshRenderer，Worker 使用该接口绘制离屏 Scene。移除旧三角形
+  shader；示例 Scene 有动态变换，File 菜单可打开颜色 .GEScene，未知组件/纹理
+  明确报错。Host 使用单帧 credit、64 KiB 分块、尺寸/请求校验和隐藏暂停。
+  验证：CMake native-only 引擎/Worker/SceneRenderHelpers 与 Qt Host Debug/Release
+  构建通过。OpenGL/Vulkan/D3D12 各配置均通过 EditorSceneViewport.py（71 帧、
+  40 次尺寸替换、中文路径、方向/像素、独立心跳与不支持组件失败）；D3D12
+  显式开启 debug layer/info queue，无警告/错误。每配置三后端 Host 恢复检查
+  通过，包含至少 12 帧、801×451 替换、隐藏暂停/恢复、打开/恢复示例 Scene、
+  crash/hang/malformed/退出；协议/诊断恢复 CTest 通过。组件示例三后端每配置
+  120 帧退出 0，交替共享录制/兼容绘制及材质/网格替换通过。
+  证据：build/editor-live-{debug,release}*、build/editor-live-tests/、
+  build/editor-live-host-{Debug,Release}-{1,2}.log；原生 Release 截图
+  build/editor-live-native-release.png 已审阅。优化 Python (-O) D3D12 回归也通过。
+  40 次替换采样：OpenGL handles 561→561；Vulkan Debug 816→816、Release 812→811；
+  D3D12 Debug 1085→1087、Release 1504→1504。私有字节增长约 8–38 MiB，不能
+  据此声称长期内存稳定；更长压力、高 DPI/真实最小化/人工拖动与 Premake 本轮未验。
+  已部署 CMake Debug/Release，启动器 Auto 选择新 Release；保留各部署 Config.ini。
+  完整材质序列化、相机/Gizmo/Play 和异步读回仍开放，E4 不标完成。未提交/推送。
 - [ ] E4：抽出 ViewportController、EditorRenderBridge 和 ViewportPanel，随后
   接入共享 SceneRenderer。验收：不保留两套材质语义；离屏目标/最终 UI
   依赖明确，正向画面、DPI、缩放、最小化、替换和关闭可验证；OpenGL、

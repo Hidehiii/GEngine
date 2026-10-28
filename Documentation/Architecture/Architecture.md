@@ -5,7 +5,7 @@ Each function has a focused page:
 
 - [Runtime and window](Runtime.md): startup, shutdown, layers, time, input,
   events, and surface adapters.
-- [Scene and services](SceneAndServices.md): objects/components, 2D and 3D
+- [Scene and services](SceneAndServices.md): objects/components, shared SceneRenderer, 2D and 3D
   physics, scripting, assets, tools, ImGui, math, utilities, and diagnostics.
 - [Rendering and backends](Rendering.md): frame graph, device/queues,
   presentation, OpenGL/Vulkan/D3D12 boundaries, and GPU lifetime.
@@ -13,8 +13,8 @@ Each function has a focused page:
 - [C# runtime and packaging design](ManagedScripting.md): shared Mono SDK,
   explicit script paths, worker reload, resource deployment and later .pak export;
   script paths and official SDK build input are partially implemented.
-- [Qt editor architecture](QtEditor.md): Qt Host, draft document tabs, engine preview/
-  logs and asset browsing; planned scenes, interactive viewports and migration criteria.
+- [Qt editor architecture](QtEditor.md): Qt Host, draft tabs, live color-scene viewport,
+  logs and asset browsing; planned full scene editing, Play and migration criteria.
 - [Legacy editor removal](Editor.md): removal scope and links to the Qt replacement.
 
 Caller-facing entry points are in the [API index](../API/README.md). The

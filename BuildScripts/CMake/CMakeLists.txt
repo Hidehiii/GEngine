@@ -216,6 +216,7 @@ ge_add_application(Sandbox Sandbox)
 ge_add_application(GEngine-EditorEngineWorker GEngine-Editor
     "${GE_ROOT}/GEngine-Editor/Worker/EngineWorker.cpp")
 target_include_directories(GEngine-EditorEngineWorker PRIVATE "${GE_ROOT}/GEngine-Editor")
+target_link_libraries(GEngine-EditorEngineWorker PRIVATE yaml-cpp)
 if(TARGET GEngine-EditorHost)
     add_dependencies(GEngine-EditorHost GEngine-EditorEngineWorker)
 endif()

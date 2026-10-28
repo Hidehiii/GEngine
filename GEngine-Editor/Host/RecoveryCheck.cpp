@@ -34,6 +34,9 @@ namespace GEngineEditor
             int Phase = 0;
             int UiTicks = 0;
             int HangTick = 0;
+            int LivePhase = 0;
+            unsigned PauseFrames = 0;
+            qint64 PauseTime = 0;
             bool Done = false;
             QWidget* BackgroundTab = nullptr;
         };
@@ -392,11 +395,46 @@ namespace GEngineEditor
                 if (state != State::Ready || !window.HasImage()) break;
                 if (QCoreApplication::arguments().contains("--engine-check"))
                 {
-                    if (window.FrameCount() < 2) break;
+                    if (check->LivePhase == 1)
+                    {
+                        if (worker.FrameSize() != QSize(801, 451)) break;
+                        worker.SetViewportSize({});
+                        check->PauseFrames = window.FrameCount(); check->PauseTime = check->Clock.elapsed();
+                        check->LivePhase = 2; break;
+                    }
+                    if (check->LivePhase == 2)
+                    {
+                        if (check->Clock.elapsed() - check->PauseTime < 300) break;
+                        if (window.FrameCount() != check->PauseFrames)
+                        { finish(false, "hidden viewport continued delivering frames"); return; }
+                        worker.SetViewportSize({640, 360}); check->LivePhase = 3; break;
+                    }
+                    if (check->LivePhase == 3)
+                    {
+                        if (worker.FrameSize() != QSize(640, 360)) break;
+                        const auto args = QCoreApplication::arguments();
+                        const auto workerIndex = args.indexOf("--worker");
+                        const auto source = QDir(QFileInfo(args.value(workerIndex + 1)).absolutePath())
+                            .filePath("Assets/Scenes/ColorScene.GEScene");
+                        const auto scene = check->Directory.filePath("loaded.GEScene");
+                        if (workerIndex < 0 || !QFile::copy(source, scene) || !window.OpenScene(scene))
+                        { finish(false, "could not open scene through Host"); return; }
+                        check->LivePhase = 4; break;
+                    }
+                    if (check->LivePhase == 4)
+                    {
+                        if (window.FrameCount() < 3) break;
+                        if (!window.findChild<QPlainTextEdit*>("ConsoleOutput")->toPlainText().contains("Editor scene loaded: Color scene"))
+                        { finish(false, "Host scene restart did not load selected document"); return; }
+                        window.OpenScene({}); check->LivePhase = 5; break;
+                    }
+                    if (window.FrameCount() < 12) break;
                     if (!window.HasEngineEvidence())
-                    { finish(false, "engine triangle pixels/orientation or console log missing"); return; }
+                    { finish(false, "engine scene pixels or console log missing"); return; }
+                    if (check->LivePhase == 0)
+                    { worker.SetViewportSize({801, 451}); check->LivePhase = 1; break; }
                     auto* console = window.findChild<QPlainTextEdit*>("ConsoleOutput");
-                    if (!console || console->document()->find("Editor engine preview initialized").charFormat().foreground().color() != QColor(0, 128, 0))
+                    if (!console || console->document()->find("Editor SceneRenderer initialized").charFormat().foreground().color() != QColor(0, 128, 0))
                     { finish(false, "real engine log color was not preserved through stderr"); return; }
                 }
                 if (!document.Dirty() || !document.CanUndo())

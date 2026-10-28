@@ -8,7 +8,7 @@ namespace GEngineEditor
     WorkerSupervisor::WorkerSupervisor(QObject* parent) : QObject(parent)
     {
         m_Clock.start();
-        m_Timer.setInterval(100);
+        m_Timer.setInterval(16);
         connect(&m_Timer, &QTimer::timeout, this, [this] { Tick(); });
         m_Timer.start();
         connect(&m_Process, &QProcess::started, this, [this]
@@ -55,37 +55,46 @@ namespace GEngineEditor
         {
         case State::Stopped: return "Stopped";
         case State::Starting: return "Starting";
-        case State::Ready: return m_IsEngine ? "Ready (GEngine GPU preview)" : "Ready (protocol diagnostic only)";
+        case State::Ready: return m_IsEngine ? "Ready (live engine scene)" : "Ready (protocol diagnostic only)";
         case State::Unresponsive: return "Unresponsive - stop/restart available";
         case State::Stopping: return "Stopping";
         case State::Disconnected: return "Disconnected - document remains editable";
         }
         return "Unknown";
     }
-    void WorkerSupervisor::Start(const QString& executable)
+    void WorkerSupervisor::SetViewportSize(QSize size)
+    {
+        if (size.isEmpty()) { m_ViewportSize = {}; return; }
+        if (size.width() > static_cast<int>(MaxFrameWidth) || size.height() > static_cast<int>(MaxFrameHeight))
+            size.scale(MaxFrameWidth, MaxFrameHeight, Qt::KeepAspectRatio);
+        m_ViewportSize = size.expandedTo(QSize(1, 1));
+    }
+    void WorkerSupervisor::Start(const QString& executable, const QString& scene)
     {
         if (Running()) return;
         if (OnConsoleReset) OnConsoleReset();
         m_Decoder.Reset();
         m_IsEngine = false;
         m_ReceivedFrame = false;
+        m_FrameRequest = 0; m_FrameBegun = false; m_FramePixels.clear(); m_NextFrame = 0; m_LastFrameSize = {};
         m_ExpectedStop = false;
         m_Request = m_PingRequest = 0;
         if (++m_Session == 0) ++m_Session;
         m_Deadline = m_Clock.elapsed() + 30000;
         m_Process.setProgram(QFileInfo(executable).absoluteFilePath());
-        m_Process.setArguments({});
+        m_Process.setArguments(scene.isEmpty() ? QStringList{} : QStringList{"--scene", scene});
         m_Process.setWorkingDirectory(QFileInfo(executable).absolutePath());
         SetState(State::Starting);
         m_Process.start();
     }
-    void WorkerSupervisor::Send(Kind kind)
+    void WorkerSupervisor::Send(Kind kind, std::vector<std::uint8_t> payload)
     {
         if (!Running()) return;
         if (m_Process.bytesToWrite() > 2 * static_cast<qint64>(MaxPayload))
         { Fail("Outgoing protocol queue limit exceeded."); return; }
-        Packet packet{kind, m_Session, ++m_Request, {}};
+        Packet packet{kind, m_Session, ++m_Request, std::move(payload)};
         if (kind == Kind::Ping) m_PingRequest = packet.Request;
+        if (kind == Kind::RequestFrame) m_FrameRequest = packet.Request;
         auto bytes = Encode(packet);
         if (m_Process.write(reinterpret_cast<const char*>(bytes.data()), bytes.size()) < 0)
             Fail("Protocol write failed.");
@@ -142,6 +151,45 @@ namespace GEngineEditor
         if (packet.Session != m_Session) { Log("Discarded old-session packet."); return; }
         // Replies already in flight are harmless while the owned process is shutting down.
         if (m_State == State::Stopping) return;
+        if (m_IsEngine && m_State == State::Ready &&
+            (packet.Type == Kind::FrameBegin || packet.Type == Kind::FrameChunk || packet.Type == Kind::FrameEnd))
+        {
+            if (!m_FrameRequest || packet.Request != m_FrameRequest)
+            { Fail("Unexpected scene frame generation."); return; }
+            const auto expected = static_cast<std::size_t>(m_RequestedSize.width()) * m_RequestedSize.height() * 4;
+            if (packet.Type == Kind::FrameBegin)
+            {
+                const auto& data = packet.Payload;
+                if (m_FrameBegun || data.size() != 12 ||
+                    Read(data.data(), 4) != static_cast<unsigned>(m_RequestedSize.width()) ||
+                    Read(data.data() + 4, 4) != static_cast<unsigned>(m_RequestedSize.height()) ||
+                    Read(data.data() + 8, 4) != static_cast<unsigned>(m_RequestedSize.width() * 4))
+                { Fail("Invalid scene frame header."); return; }
+                m_FrameBegun = true; m_FramePixels.clear(); m_FramePixels.reserve(expected);
+            }
+            else if (packet.Type == Kind::FrameChunk)
+            {
+                if (!m_FrameBegun || packet.Payload.empty() || packet.Payload.size() > expected - m_FramePixels.size())
+                { Fail("Invalid scene frame chunk."); return; }
+                m_FramePixels.insert(m_FramePixels.end(), packet.Payload.begin(), packet.Payload.end());
+            }
+            else
+            {
+                if (!m_FrameBegun || !packet.Payload.empty() || m_FramePixels.size() != expected)
+                { Fail("Incomplete scene frame."); return; }
+                const QImage image(m_FramePixels.data(), m_RequestedSize.width(), m_RequestedSize.height(),
+                    m_RequestedSize.width() * 4, QImage::Format_RGBA8888);
+                const auto owned = image.copy();
+                if (owned.isNull()) { Fail("Could not allocate scene frame."); return; }
+                m_FrameRequest = 0; m_FrameBegun = false; m_FramePixels.clear(); m_ReceivedFrame = true;
+                if (m_RequestedSize == m_ViewportSize)
+                {
+                    m_LastFrameSize = m_RequestedSize;
+                    if (OnFrame) OnFrame(owned);
+                }
+            }
+            return;
+        }
         if (packet.Type == Kind::Ready && m_State == State::Starting &&
             packet.Request == m_HelloRequest &&
             (Text(packet.Payload) == BuildId || Text(packet.Payload) == EngineBuildId))
@@ -158,7 +206,7 @@ namespace GEngineEditor
             m_NextPing = m_Clock.elapsed() + 500;
             return;
         }
-        if (packet.Type == (m_IsEngine ? Kind::EngineFrame : Kind::DiagnosticFrame) &&
+        if (!m_IsEngine && packet.Type == Kind::DiagnosticFrame &&
             m_State == State::Ready && packet.Request == 0)
         {
             const auto& data = packet.Payload;
@@ -186,6 +234,16 @@ namespace GEngineEditor
         else if (m_State == State::Stopping && now > m_Deadline && Running()) m_Process.kill();
         else if (m_State == State::Ready)
         {
+            if (m_IsEngine && m_FrameRequest && now > m_FrameDeadline)
+            { Log("Scene frame timed out."); SetState(State::Unresponsive); return; }
+            if (m_IsEngine && !m_FrameRequest && !m_ViewportSize.isEmpty() && now >= m_NextFrame)
+            {
+                m_RequestedSize = m_ViewportSize;
+                std::vector<std::uint8_t> payload;
+                Append(payload, m_RequestedSize.width(), 4); Append(payload, m_RequestedSize.height(), 4);
+                m_FrameDeadline = now + 10000; m_NextFrame = now + 33;
+                Send(Kind::RequestFrame, std::move(payload));
+            }
             if (m_PingRequest && now > m_Deadline)
             { Log("Worker heartbeat timed out."); SetState(State::Unresponsive); }
             else if (!m_PingRequest && now >= m_NextPing)

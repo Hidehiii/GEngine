@@ -35,6 +35,10 @@ meshes. `ModelImporter::LoadMesh(path)` reads FBX meshes for later retrieval.
 `Serializer` has scene, config, material, and shader-cache specializations;
 it is not a blanket serialization implementation for arbitrary `T`.
 `StreamReader` and `StreamWriter` are lower-level binary-stream interfaces.
+`FileSystemHelper::IsDocument` interprets its string path as UTF-8, matching
+`ReadFile`/`ReadFileAsString`; this keeps scene preflight and reads consistent
+for Windows Unicode paths. Other path helpers have not been generalized here.
+
 `FileSystemHelper` and `StringHelper` provide file/path and string
 operations. `ShaderCompiler` builds bytecode/reflection for backend shader
 code; normal applications should start with `Shader::Create(path)` and the

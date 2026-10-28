@@ -41,7 +41,18 @@ callbacks. Separately, `ScriptEngine` bootstraps a Mono domain and the configure
 script-core assembly when `EnableScripting` is true; it is not yet a general
 managed-component attachment interface.
 
-`GameObject::OnRender` now dispatches image and mesh renderer components. Each
+`SceneRenderer::Render(Scene&, command)` records active ImageRenderer and
+MeshRenderer components into the caller's already-open graphics pass, using
+their existing material/pipeline implementation. It owns neither scene nor
+target and does not start scripts, physics, or a camera pass. The caller keeps
+the scene alive through recording; backend command retention governs submitted
+GPU resources. Materials still determine camera/projection semantics.
+Components also expose `OnRender(command)`; null commands fail explicitly.
+The no-argument methods remain presentation compatibility adapters.
+Worker scene preflight uses UTF-8 paths through FileSystemHelper; IsDocument
+now makes the same native UTF-8 conversion as the subsequent resource read.
+
+`GameObject::OnRender` dispatches image and mesh renderer components. Each
 uses a caller-provided material and the active portable presentation command
 buffer, so a layer calls it during `OnPresent`, not during its offscreen
 `OnRender`. ImageRenderer owns a quad pipeline; MeshRenderer invalidates its
@@ -51,7 +62,7 @@ instead of being silent no-ops.
 The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
 is a separate application so its runtime and materials
 are not coupled to `FrameGraphTriangle`'s GPU graph workload. It owns two
-scene objects, calls their render hooks during presentation, replaces a
+scene objects, alternates shared scene recording with compatibility hooks during presentation, replaces a
 material and mesh after frame boundaries, and can request synthetic resize.
 Synthetic resize is D3D12-only and one-shot at each selected frame: Vulkan's
 swap-chain extent must match its native surface, so a synthetic smaller extent

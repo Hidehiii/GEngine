@@ -31,7 +31,8 @@ editorProject("GEngine-EditorEngineWorker")
         "%{IncludeDir.glm}", "%{IncludeDir.entt}", "%{IncludeDir.ImGui}",
         "%{IncludeDir.yaml}", "%{IncludeDir.FBX}", "%{IncludeDir.mono}",
         "%{IncludeDir.PhysX}", "%{IncludeDir.vender}" }
-    links { "GEngine", "ImGui" }
+    links { "GEngine", "ImGui", "yaml-cpp" }
+    defines { "YAML_CPP_STATIC_DEFINE" }
     defines { "FBX_SHARED" }
     filter "configurations:Debug"
         defines { "GE_DEBUG" }

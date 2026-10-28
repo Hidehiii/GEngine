@@ -44,8 +44,18 @@ namespace GEngineEditor
         QImage Image;
         QString State;
         bool Engine = false;
+        QString Scene = "Engine sample scene";
+        std::function<void(QSize)> OnSize;
         explicit ViewportWidget(QWidget* parent = nullptr) : QWidget(parent) { setMinimumSize(320, 240); }
     protected:
+        bool event(QEvent* event) override
+        {
+            const auto result = QWidget::event(event);
+            if (OnSize && (event->type() == QEvent::Resize || event->type() == QEvent::Show ||
+                event->type() == QEvent::Hide || event->type() == QEvent::DevicePixelRatioChange))
+                OnSize(isVisible() ? QSize(qRound(width() * devicePixelRatioF()), qRound(height() * devicePixelRatioF())) : QSize{});
+            return result;
+        }
         void paintEvent(QPaintEvent*) override
         {
             QPainter painter(this);
@@ -60,7 +70,7 @@ namespace GEngineEditor
             painter.fillRect(0, 0, width(), 60, QColor(0, 0, 0, 200));
             painter.setPen(Qt::white);
             painter.drawText(rect().adjusted(12, 6, -12, -6), Qt::AlignTop | Qt::TextWordWrap,
-                (Engine ? "GEngine GPU preview\n" : "CPU protocol diagnostic image - NOT an engine scene\n") + State);
+                (Engine ? "Live engine scene: " + Scene + "\n" : "CPU protocol diagnostic image - NOT an engine scene\n") + State);
         }
     };
     MainWindow::MainWindow(QString workerPath) : m_WorkerPath(std::move(workerPath))
@@ -145,6 +155,7 @@ namespace GEngineEditor
         m_Console = new ConsoleOutput(this);
         dock("Console", "ConsoleDock", m_Console, Qt::BottomDockWidgetArea);
         m_Viewport = new ViewportWidget(this);
+        m_Viewport->OnSize = [this](QSize size) { m_Worker.SetViewportSize(size); };
         dock("Viewport", "ViewportDock", m_Viewport, Qt::LeftDockWidgetArea);
         m_Inspector = new QPlainTextEdit(this);
         m_Inspector->setObjectName("ResourceInspector");
@@ -175,6 +186,15 @@ namespace GEngineEditor
         m_CloseProject->setEnabled(false);
         connect(m_CloseProject, &QAction::triggered, this, [this] { CloseProject(); });
         InitProjectActions(file, menus);
+        auto* openScene = file->addAction("Open scene for rendering...");
+        openScene->setObjectName("OpenRenderSceneAction");
+        connect(openScene, &QAction::triggered, this, [this]
+        {
+            const auto path = QFileDialog::getOpenFileName(this, "Open engine scene", m_Workspace->Root(), "Engine scene (*.GEScene)");
+            if (!path.isEmpty() && !OpenScene(path)) QMessageBox::warning(this, "Scene open failed", m_Error);
+        });
+        auto* sampleScene = file->addAction("Show engine sample scene");
+        connect(sampleScene, &QAction::triggered, this, [this] { OpenScene({}); });
         file->addSeparator();
         auto* fresh = file->addAction("New draft");
         fresh->setShortcut(QKeySequence::New);
@@ -240,6 +260,11 @@ namespace GEngineEditor
         m_Worker.OnState = [this](WorkerSupervisor::State)
         {
             RefreshWorker();
+            if (m_RestartForScene && !m_Worker.Running())
+            {
+                m_RestartForScene = false;
+                QTimer::singleShot(0, this, [this] { if (!m_ClosePending) StartWorker(); });
+            }
             if (m_ClosePending && !m_Worker.Running()) QTimer::singleShot(0, this, [this] { close(); });
         };
         m_Worker.OnFrame = [this](const QImage& image)
@@ -564,17 +589,36 @@ namespace GEngineEditor
     {
         if (m_Worker.Running()) return;
         m_HasImage = false; m_FrameCount = 0; m_Viewport->Image = {};
-        m_Worker.Start(m_WorkerPath);
+        m_Worker.SetViewportSize(m_Viewport->isVisible() ? QSize(qRound(m_Viewport->width() * m_Viewport->devicePixelRatioF()),
+            qRound(m_Viewport->height() * m_Viewport->devicePixelRatioF())) : QSize{});
+        m_Worker.Start(m_WorkerPath, m_ScenePath);
+    }
+    bool MainWindow::OpenScene(const QString& path)
+    {
+        const QFileInfo file(path);
+        if (!path.isEmpty() && (!file.isFile() || file.suffix().compare("GEScene", Qt::CaseInsensitive) != 0))
+        { m_Error = "Select an existing .GEScene file."; return false; }
+        m_Error.clear(); m_ScenePath = path.isEmpty() ? QString{} : file.absoluteFilePath();
+        m_Viewport->Scene = path.isEmpty() ? "Engine sample scene" : file.fileName();
+        m_Viewport->Image = {}; m_Viewport->update();
+        if (m_Worker.Running()) { m_RestartForScene = true; m_Worker.Stop(); }
+        else StartWorker();
+        return true;
     }
     bool MainWindow::HasEngineEvidence() const
     {
         const auto& image = m_Viewport->Image;
-        if (!m_Worker.IsEngine() || image.size() != QSize(160, 90)) return false;
-        const auto center = image.pixelColor(80, 45);
+        if (!m_Worker.IsEngine() || image.width() < 320 || image.height() < 200) return false;
+        const auto left = image.pixelColor(image.width() / 4, image.height() / 2);
+        bool cyan = false;
+        for (int y = image.height() / 4; y < image.height() * 3 / 4; ++y)
+        {
+            const auto color = image.pixelColor(image.width() * 3 / 4, y);
+            cyan |= color.blue() > 230 && color.green() > 150 && color.red() < 80;
+        }
         const auto corner = image.pixelColor(2, 2);
-        return center.blue() > 230 && center.green() > 150 && center.red() < 80 &&
-            corner.blue() < 100 && image.pixelColor(80, 20).blue() > 230 &&
-            image.pixelColor(80, 75).blue() < 100 &&
+        return left.red() > 220 && left.green() < 100 && cyan &&
+            corner.blue() < 100 &&
             m_Console->toPlainText().contains("Editor engine frame 1 delivered");
     }
     bool MainWindow::SaveDraft(const QString& path)

@@ -7,13 +7,29 @@ to copied text. Host diagnostics stay neutral, HTML is literal, and restart rese
 partial/color state while retaining history. History is capped at 300 text blocks
 and each line at 16 Ki characters. This is a log viewer, not a terminal emulator.
 
-## New Qt editor: engine preview prototype
+## Live engine scene viewport (E4.1)
 
 The independent Qt Host now starts a GEngine render child automatically. It
-displays a real GPU-rendered cyan triangle and streams engine logs into Console.
-This first connection uses a fixed 160x90 RGBA8 preview at roughly 2 FPS, with
-synchronous GPU readback confined to the child. Scene/Play/Gizmo and `.GEScene`
-editing remain future work. The Host can edit/undo/redo and atomically save a
+displays a Scene through the shared engine SceneRenderer and streams engine logs
+into Console. Frame requests run independently of heartbeat at up to about 30 FPS.
+The target follows visible viewport size and DPI, capped to fit 1280x720 while
+preserving aspect ratio. Hide the viewport to pause frame requests. RGBA8 frames
+are split into at most 64 KiB packets, with one request/frame in flight; stale
+resize results are discarded. Synchronous GPU readback remains in the child,
+so achieved FPS depends on backend, target size and pipe throughput.
+
+File > Open scene for rendering selects a `.GEScene` and restarts the child with
+that document. This milestone supports Attribute/Transform and color-only
+ImageRenderer scenes in the existing clip-space material convention. It uses
+the existing scene serializer and supplies the engine color material because
+material serialization is incomplete. Camera, mesh serialization, textures,
+scripts and physics in loaded files explicitly fail in Console rather than
+silently displaying the sample. Scene transforms are not editable from the Host.
+File > Show engine sample scene restores two real scene objects (red quad and
+moving cyan quad); its label identifies it as the sample. A static supported
+file is provided at `Worker/Assets/Scenes/ColorScene.GEScene`.
+Full Scene editing, camera/lighting, Play/Gizmo and asynchronous readback remain
+open. The Host can edit/undo/redo and atomically save a
 separate `.gedraft` note document even after the child crashes.
 
 Build the native workflow tool first (VS C++ tools, CMake and Python are required):
@@ -57,15 +73,15 @@ DiagnosticWorker unless overridden. Premake uses standard
 Windows/offscreen plugins and the existing Noto font/OFL deploy beside Host;
 the machine's matching MSVC runtime is required.
 
-Expected: menus, docked hierarchy/draft/console, cyan GPU triangle in Viewport and
+Expected: menus, docked hierarchy/draft/console, two scene quads in Viewport and
 engine startup/frame logs. Use Engine > Start / restart worker, then inject native crash, hang
 or malformed pipe data. Host remains responsive, retains draft/history, allows
 Save and can stop/restart its child. Engine Ready follows device and pipeline
-initialization. File > New/Open/Save handles `.gedraft`; `.GEScene` is unsupported.
+initialization. File > New/Open/Save draft handles `.gedraft`; scene opening is read-only.
 The worker's own presentation window is hidden. Change GraphicsAPI in its deployed
 Config.ini (1=OpenGL, 2=Vulkan, 3=D3D12), then restart; the legacy editor's local
-configuration is unaffected. Host resizing scales the fixed preview; it does not
-resize the child render target yet.
+configuration is unaffected. Host resizing replaces the child render target;
+old GPU use completes before replacement through the preceding readback.
 
 All six panels, including Viewport, Assets and Inspector, can dock in any area, float, tab together
 and close without losing contents. Reopen panels from View; View > Reset layout
@@ -80,15 +96,20 @@ covering missing child, handshake/image, native crash, hang, corrupt pipe,
 restart, save failure and draft round trip. Tests use temporary files and do not
 overwrite user layout. To exercise the real engine, run Host with
 `--self-test --engine-check --worker <absolute-EngineWorker-exe>` from any directory.
-It checks at least two GPU frames, expected triangle pixels, engine logs and the
+It checks at least 12 GPU frames, expected scene pixels, target resize,
+pause/resume, opening a scene and returning to the sample, engine logs and the
 same crash/hang/restart/save sequence (120-second internal deadline). Add
 `--self-test-image <absolute-png>` to capture the first working preview.
 
 Verification evidence for this milestone is recorded in TODO/EditorArchitecture.md:
 Debug/Release SDK and both generators' builds/tests, plus a native Windows Release
 recovery run. The normal Qt window image was reviewed for layout and readable text.
-The fixed preview has separate OpenGL/Vulkan/D3D12 Debug/Release checks. Full
-Scene/Play rendering and manual input/resize checks remain open.
+`python Tests/EditorSceneViewport.py <worker.exe> --backend 1|2|3 --logs <folder>`
+checks continuous transform-dependent pixels without heartbeat, full-size chunking,
+40 target replacements (including odd dimensions), pause without credit, independent
+heartbeat, a Unicode scene path, image orientation and explicit unsupported-component
+failure. It preserves the deployed backend setting and records memory/handle samples.
+Full Scene/Play rendering and manual input/resize checks remain open.
 
 ## Document tabs (E1.2)
 
