@@ -11,17 +11,27 @@ the owned build tree.
 
 ## Project contents
 
-The complete version-1 descriptor is:
+The version-1 descriptor supports project settings:
 
 ```json
-{ "schemaVersion": 1, "name": "MyGame" }
+{
+  "schemaVersion": 1,
+  "name": "MyGame",
+  "settings": { "defaultScene": "Assets/Scenes/Default.GEScene" }
+}
 ```
 
 It contains **no packaging information**: no executable, output, runtime flags
 or packaging object. Legacy descriptors must remove their packaging object.
+The optional default scene is editor startup metadata. Choose it in Project >
+Project settings; opening the .gproject loads that project-relative scene.
+Legacy files without settings remain valid. The exporter accepts these settings
+but does not change the game's native CreateApplication entry point or instantiate
+the editor scene in the packaged game automatically.
 Source files live in `src/`, assets in `Assets/`, and optional config/notices in
 `Config.ini` and `Licenses/` alongside the descriptor. New project creation
-provides a minimal native `src/Game.cpp`. The included FrameGraphTriangle.gproject
+provides a minimal native `src/Game.cpp` and an empty configured default scene.
+The included FrameGraphTriangle.gproject
 is a complete source-project example.
 
 Games use the normal GEngine CreateApplication contract and include

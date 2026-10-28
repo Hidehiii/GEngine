@@ -10,6 +10,12 @@ orchestration, editor launcher selection, project compilation, `.gpak` writing,
 and managed-output publication. CMake and Premake emit it as `GEngineTools.exe`
 under the unified `dist` layout; no engine, game, or Qt target links it.
 
+E1.7 keeps project startup settings inside .gproject. The tool's bounded project
+parser accepts the optional settings object/defaultScene string so editor-saved
+projects remain exportable; it does not instantiate scenes in the native game.
+ProjectSettingsCheck is a Qt Host source/CTest in CMake and uses Premake's current
+glob. Device/renderer APIs and deployment dependencies are unaffected.
+
 GEngine-Editor/RunQtEditor.bat delegates to the native GEngineTools launcher. Auto
 selects the newest Host executable in the requested configuration across the
 standalone CMake and Premake outputs, then runs from that executable's directory.

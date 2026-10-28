@@ -6,6 +6,13 @@ is the native first-party workflow CLI. It is built from
 an engine public API. CMake and Premake both emit and deploy it under the
 unified `dist` layout.
 
+Editor E1.7 adds optional settings.defaultScene to schema-1 project files.
+export-project accepts this editor metadata without changing native game startup
+or packaging options. The tool checks the settings object/known string field;
+the Host owns scene existence and project-root validation. CMake explicitly lists
+ProjectSettingsCheck.cpp and its CTest; Premake's existing Host glob covers it.
+No additional Qt module, vendor library or engine public API is introduced.
+
 Console color preservation uses the existing GEngineTools Qt editor commands and Qt SDK;
 no new flag is required. Full -Test also checks stream formatting and actual
 engine info-log color. Regenerate/build the Host and EngineWorker together.

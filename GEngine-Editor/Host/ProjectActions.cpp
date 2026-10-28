@@ -163,6 +163,53 @@ namespace
         m_Package->setEnabled(available && !running);
         m_CancelPackaging->setEnabled(running && !m_PackagingCancelled);
         m_CloseProject->setEnabled(!m_Workspace->Root().isEmpty() && !running);
+        m_ProjectSettings->setEnabled(available && !running);
+    }
+    bool MainWindow::SaveProjectSettings(const QString& defaultScene)
+    {
+        if (m_Project.Path.isEmpty() || PackagingRunning())
+        { m_Error = "Open a .gproject file and wait for packaging to finish."; return false; }
+        auto candidate = m_Project;
+        candidate.DefaultScene = defaultScene;
+        if (!candidate.ValidateSettings(m_Error)) return false;
+        if (!defaultScene.isEmpty() && candidate.ResolveDefaultScene(m_Error).isEmpty()) return false;
+        if (!candidate.DefaultScene.isEmpty())
+            candidate.DefaultScene = QDir::cleanPath(QDir::fromNativeSeparators(candidate.DefaultScene));
+        if (!candidate.Save(m_Error)) return false;
+        m_Project = candidate;
+        Log("Project settings saved: " + m_Project.Path);
+        ApplyProjectScene();
+        return true;
+    }
+    void MainWindow::ShowProjectSettingsDialog()
+    {
+        QDialog dialog(this); dialog.setObjectName("ProjectSettingsDialog");
+        dialog.setWindowTitle("Project settings — " + m_Project.Name);
+        auto* layout = new QVBoxLayout(&dialog);
+        auto* form = new QFormLayout(); layout->addLayout(form);
+        auto* row = new QWidget(&dialog);
+        auto* rowLayout = new QHBoxLayout(row); rowLayout->setContentsMargins(0, 0, 0, 0);
+        auto* scene = new QLineEdit(m_Project.DefaultScene, row); scene->setObjectName("ProjectDefaultScene");
+        scene->setPlaceholderText("No default scene"); rowLayout->addWidget(scene);
+        auto* browse = new QPushButton("Browse...", row); rowLayout->addWidget(browse);
+        form->addRow("Default scene", row);
+        auto* note = new QLabel("The scene opens automatically with this project. Paths are relative to the project folder.", &dialog);
+        note->setWordWrap(true); layout->addWidget(note);
+        auto* error = new QLabel(&dialog); error->setObjectName("ProjectSettingsError"); error->setWordWrap(true); layout->addWidget(error);
+        auto* buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
+        layout->addWidget(buttons);
+        connect(browse, &QPushButton::clicked, &dialog, [this, scene]
+        {
+            const auto path = QFileDialog::getOpenFileName(this, "Default scene", m_Project.Root(), "Engine scene (*.GEScene)");
+            if (!path.isEmpty()) scene->setText(QDir(m_Project.Root()).relativeFilePath(path));
+        });
+        connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+        connect(buttons, &QDialogButtonBox::accepted, &dialog, [this, scene, error, &dialog]
+        {
+            if (SaveProjectSettings(scene->text())) dialog.accept();
+            else error->setText(m_Error);
+        });
+        dialog.resize(620, dialog.sizeHint().height()); dialog.exec();
     }
     bool MainWindow::NewProject(const QString& path)
     {
@@ -171,6 +218,17 @@ namespace
         ProjectFile project;
         project.Path = QFileInfo(path).absoluteFilePath();
         project.Name = QFileInfo(path).completeBaseName();
+        project.DefaultScene = "Assets/Scenes/Default.GEScene";
+        const auto scenePath = project.Resolve(project.DefaultScene);
+        if (!QFileInfo::exists(scenePath))
+        {
+            if (!QDir().mkpath(QFileInfo(scenePath).absolutePath()))
+            { m_Error = "Could not create the scene directory."; return false; }
+            QSaveFile scene(scenePath); scene.setDirectWriteFallback(false);
+            const QByteArray initial = "Scene: Untitled\nGameObjects: []\n";
+            if (!scene.open(QIODevice::WriteOnly) || scene.write(initial) != initial.size() || !scene.commit())
+            { m_Error = "Could not create the default scene."; return false; }
+        }
         if (!project.Save(m_Error)) return false;
         const auto sources = QDir(project.Root()).filePath("src");
         if (!QDir(sources).exists())
@@ -315,6 +373,8 @@ namespace
             if (!path.isEmpty() && !OpenProject(path)) QMessageBox::warning(this, "Open project failed", m_Error);
         });
         auto* menu = menus->addMenu("Project");
+        m_ProjectSettings = menu->addAction("Project settings..."); m_ProjectSettings->setObjectName("ProjectSettingsAction");
+        connect(m_ProjectSettings, &QAction::triggered, this, [this] { ShowProjectSettingsDialog(); });
         m_Package = menu->addAction("Package project..."); m_Package->setObjectName("PackageProjectAction");
         m_CancelPackaging = menu->addAction("Cancel packaging"); m_CancelPackaging->setObjectName("CancelPackagingAction");
         connect(m_Package, &QAction::triggered, this, [this]

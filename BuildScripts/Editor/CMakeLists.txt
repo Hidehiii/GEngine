@@ -37,6 +37,7 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
         "${GE_EDITOR_SOURCE}/Host/ProjectFile.cpp"
         "${GE_EDITOR_SOURCE}/Host/ProjectActions.cpp"
         "${GE_EDITOR_SOURCE}/Host/PackagingCheck.cpp"
+        "${GE_EDITOR_SOURCE}/Host/ProjectSettingsCheck.cpp"
         "${GE_EDITOR_SOURCE}/Host/WorkerSupervisor.cpp"
         "${GE_EDITOR_SOURCE}/Host/RecoveryCheck.cpp")
     ge_editor_output(GEngine-EditorHost)
@@ -63,6 +64,8 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
             "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts/OFL.txt"
         VERBATIM)
     add_test(NAME EditorRecovery COMMAND GEngine-EditorHost --self-test)
+    add_test(NAME EditorProjectSettings COMMAND GEngine-EditorHost --project-settings-self-test)
+    set_tests_properties(EditorProjectSettings PROPERTIES TIMEOUT 60 ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     add_test(NAME EditorPackaging COMMAND GEngine-EditorHost --packaging-self-test)
     set_tests_properties(EditorPackaging PROPERTIES TIMEOUT 1800 ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     set_tests_properties(EditorRecovery PROPERTIES TIMEOUT 35 ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

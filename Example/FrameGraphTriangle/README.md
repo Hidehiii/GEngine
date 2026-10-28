@@ -1,5 +1,12 @@
 # FrameGraphTriangle
 
+Open FrameGraphTriangle.gproject in the Qt editor to load
+Assets/Scenes/Default.GEScene automatically: a red quad on the left and a cyan
+quad above center on the right, rendered by the shared scene path. Project >
+Project settings changes this editor default using a project-relative path.
+This editor document does not replace the native frame-graph workload below;
+the standalone/exported example still runs its existing graph and readbacks.
+
 For the cross-frame D3D12 UAV regression, build/export this example and run:
 
 ```bat

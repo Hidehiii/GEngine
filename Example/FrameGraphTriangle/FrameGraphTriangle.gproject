@@ -1,4 +1,7 @@
 {
     "schemaVersion": 1,
-    "name": "FrameGraphTriangle"
+    "name": "FrameGraphTriangle",
+    "settings": {
+        "defaultScene": "Assets/Scenes/Default.GEScene"
+    }
 }

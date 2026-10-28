@@ -110,7 +110,9 @@ namespace GEngineEditor
                 const auto metadataPath = check->Directory.filePath("Metadata.gproject");
                 if (!window.NewProject(metadataPath) || window.NewProject(metadataPath)) { finish(false, "new project handling failed"); return; }
                 const auto metadata = QJsonDocument::fromJson(read(metadataPath)).object();
-                if (metadata.size() != 2 || !metadata.contains("name") || !metadata.contains("schemaVersion") ||
+                if (metadata.size() != 3 || !metadata.contains("name") || !metadata.contains("schemaVersion") ||
+                    metadata.value("settings").toObject().value("defaultScene").toString() != "Assets/Scenes/Default.GEScene" ||
+                    !QFileInfo::exists(check->Directory.filePath("Assets/Scenes/Default.GEScene")) ||
                     !QFileInfo::exists(check->Directory.filePath("src/Game.cpp")))
                 { finish(false, "project contains packaging fields or lacks starter source"); return; }
                 ProjectFile invalid; invalid.Path=check->Directory.filePath("missing/Bad.gproject"); invalid.Name="Bad"; QString error;

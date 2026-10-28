@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     else std::cerr << "Bundled UI font could not be loaded: " << fontPath.toStdString() << '\n';
     const auto args = application.arguments();
     std::unique_ptr<QTemporaryDir> testSettings;
-    if (args.contains("--self-test") || args.contains("--packaging-self-test"))
+    if (args.contains("--self-test") || args.contains("--packaging-self-test") || args.contains("--project-settings-self-test"))
     {
         testSettings = std::make_unique<QTemporaryDir>();
         if (!testSettings->isValid()) { std::cerr << "Could not isolate editor test settings\n"; return 1; }
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     { std::cerr << "--worker requires an executable path\n"; return 1; }
     const auto workerPath = workerIndex >= 0 ? args[workerIndex + 1] :
         QDir(application.applicationDirPath()).absoluteFilePath(
-            args.contains("--self-test") ? "../GEngine-EditorDiagnosticWorker/GEngine-EditorDiagnosticWorker.exe" :
+            (args.contains("--self-test") || args.contains("--project-settings-self-test")) ? "../GEngine-EditorDiagnosticWorker/GEngine-EditorDiagnosticWorker.exe" :
             "../GEngine-EditorEngineWorker/GEngine-EditorEngineWorker.exe");
     GEngineEditor::MainWindow window(workerPath);
     QString projectPath;
@@ -47,7 +47,8 @@ int main(int argc, char** argv)
     if (!projectPath.isEmpty() && !window.OpenProject(projectPath))
     { std::cerr << window.LastError().toStdString() << '\n'; return 1; }
     window.show();
-    if (args.contains("--packaging-self-test")) GEngineEditor::RunPackagingCheck(window);
+    if (args.contains("--project-settings-self-test")) GEngineEditor::RunProjectSettingsCheck(window);
+    else if (args.contains("--packaging-self-test")) GEngineEditor::RunPackagingCheck(window);
     else if (args.contains("--self-test")) GEngineEditor::RunRecoveryCheck(window);
     else QTimer::singleShot(0, &window, [&window] { window.StartWorker(); });
     return application.exec();

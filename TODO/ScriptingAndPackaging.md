@@ -1,5 +1,10 @@
 # C#、Mono 与游戏打包
 
+2026-10-28：编辑器 E1.7（EditorArchitecture.md）新增可选
+settings.defaultScene，旧 schema 1 描述兼容。原生导出器接受该项目启动元数据，
+不改变游戏原生入口或本机打包偏好；Debug/Release 元数据回归及 Release 实际
+打包/运行通过，证据见 E1.7。以下旧条目中的 name/version-only 为当时历史范围。
+
 ## Engine-specific resource data types (planned, 2026-10-28)
 
 - [ ] Define engine-owned resource data types and their serialized asset format.

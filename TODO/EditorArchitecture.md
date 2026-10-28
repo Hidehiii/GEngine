@@ -1,5 +1,41 @@
 # 编辑器架构重设计
 
+- [x] E1.8 所有示例项目描述（2026-10-28）：为 Example 下七个示例提供同名
+  .gproject，保留 FrameGraphTriangle 现有设置；其余示例配置各自的空默认编辑器
+  场景，避免将含尚不支持组件的历史场景设为默认。原生示例程序保持现有工作负载。
+  验收全部描述格式/相对路径/场景存在，实际 Host 打开七个项目；同步示例说明、
+  Architecture/API，无引擎接口或构建配置变更。
+  完成：补齐 DeferredRender、GpuDriven、InputSystem、SceneRenderHelpers、
+  ShaderCompile、Triangle 的描述及各自 Default.GEScene，新增 Example/README.md
+  覆盖列表和空场景预期。七个描述的名称/schema/相对路径/文件存在检查通过；
+  Release Host + D3D12 Worker 逐个通过启动默认场景及设置恢复自检，证据
+  build/example-project-<name>.log。无代码/构建改动，未重建引擎或重跑各原生工作负载；
+  OpenGL/Vulkan 未重验。保留上项未提交改动及 tmp/，本项未提交/推送。
+
+- [x] E1.7 项目设置与默认场景（2026-10-28）：每个 .gproject 保存
+  settings.defaultScene（项目根相对路径），Project > Project settings 可选择、
+  原子保存；打开 .gproject（菜单/命令行）自动选择其默认场景，切换项目不沿用
+  上一场景。兼容旧双字段文件；未设置显示空项目视口，缺失/越界路径明确诊断，
+  不用引擎示例冒充默认场景。保留本机打包偏好；原生导出器接受新设置。
+  验收：设置往返/取消/失败保存、路径边界、旧格式、项目切换、真实 Worker
+  自动加载和启动参数，Debug/Release Host/工具构建与既有恢复回归。
+  完成：Project settings 对话框选择/保存默认场景，兼容 schema 1 旧双字段文件；
+  新建项目生成 Assets/Scenes/Default.GEScene 并设为默认。打开文件、切换/关闭
+  项目、空/缺失设置会选择/清理对应 Worker 及图像；失败保存保留旧状态。
+  原生工具接受可选 settings 对象，FrameGraphTriangle 附带默认编辑器场景。
+  验证：CMake Host/原生工具 Debug/Release 构建、协议/恢复/新设置 CTest 全通过。
+  ProjectSettingsCheck 覆盖对话框错误/Save/Cancel、真实失败保存、路径越界、
+  旧格式/错误字段、缺失场景修复、新项目和切换/关闭。实际 D3D12 Worker 在
+  两个配置均通过默认场景加载/替换；分别验证 --project 与首个 .gproject 参数
+  的启动图像/路径。原生元数据回归两配置各 9 案例通过；Release 实际自动编译/
+  打包/增量/取消/自定义 EXE 与图标/资源包运行回归通过（88 秒）。
+  证据 build/project-settings-{debug,release}-build.log、
+  build/project-settings-{Debug,Release}-tests.log、build/project-settings-engine-*.log、
+  build/project-settings-metadata-*、build/project-settings-packaging-release.log；
+  build/project-settings-dialog.png 已审阅。入口 Auto 继续使用新 CMake Host。
+  本轮 GPU 接口/IPC 未变；未重复 OpenGL/Vulkan、Premake 和人工文件选择操作。
+  完整 Scene 编辑、Play 和已打包游戏启动场景行为不在本项范围。未提交/推送。
+
 - [x] E1.6 单输入自动打包（2026-10-26）：Project 打包只选输出目录；删除程序
   路径、独立打包设置/预览入口，`.gproject` 不含任何打包字段。自动构建项目
   src 与引擎并归档资源，取消终止自己启动的构建进程树，失败保留旧包。验证

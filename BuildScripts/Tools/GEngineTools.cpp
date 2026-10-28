@@ -525,7 +525,7 @@ namespace
         HANDLE handle_ = nullptr;
     };
 
-    std::vector<std::pair<std::string, std::string>> ParseFlatJsonObject(const std::string& text)
+    std::vector<std::pair<std::string, std::string>> ParseJsonObject(const std::string& text)
     {
         std::vector<std::pair<std::string, std::string>> result;
         std::size_t position = text.find_first_not_of(" \t\r\n");
@@ -535,7 +535,12 @@ namespace
         {
             position = text.find_first_not_of(" \t\r\n", position);
             if (position == std::string::npos) throw std::runtime_error("Truncated JSON object.");
-            if (text[position] == '}') return result;
+            if (text[position] == '}')
+            {
+                if (text.find_first_not_of(" \t\r\n", position + 1) != std::string::npos)
+                    throw std::runtime_error("Unexpected text after JSON object.");
+                return result;
+            }
             if (text[position] != ',') if (!result.empty()) throw std::runtime_error("Expected JSON comma.");
             if (text[position] == ',')
             {
@@ -552,6 +557,8 @@ namespace
             }
             if (position >= text.size()) throw std::runtime_error("Truncated JSON key.");
             const std::string key = text.substr(keyStart, position++ - keyStart);
+            if (std::any_of(result.begin(), result.end(), [&key](const auto& field) { return field.first == key; }))
+                throw std::runtime_error("Duplicate project field.");
             position = text.find_first_not_of(" \t\r\n", position);
             if (position == std::string::npos || text[position] != ':') throw std::runtime_error("Expected JSON colon.");
             position = text.find_first_not_of(" \t\r\n", ++position);
@@ -569,6 +576,22 @@ namespace
                 if (end >= text.size()) throw std::runtime_error("Truncated JSON string.");
                 ++end;
                 result.emplace_back(key, text.substr(valueStart, end - valueStart));
+            }
+            else if (text[position] == '{')
+            {
+                unsigned depth = 0;
+                bool quoted = false;
+                for (; end < text.size(); ++end)
+                {
+                    const auto character = text[end];
+                    if (quoted && character == '\\') { ++end; continue; }
+                    if (character == '"') quoted = !quoted;
+                    if (quoted) continue;
+                    if (character == '{' && ++depth > 2) throw std::runtime_error("Project settings nesting limit exceeded.");
+                    if (character == '}' && --depth == 0) { ++end; break; }
+                }
+                if (depth || quoted) throw std::runtime_error("Truncated project settings.");
+                result.emplace_back(key, text.substr(position, end - position));
             }
             else
             {
@@ -648,8 +671,8 @@ namespace
         {
             throw std::runtime_error("Project file exceeds 1 MiB.");
         }
-        const auto fields = ParseFlatJsonObject(ReadText(project));
-        if (fields.size() != 2) throw std::runtime_error("Project files contain project metadata only.");
+        const auto fields = ParseJsonObject(ReadText(project));
+        if (fields.size() < 2 || fields.size() > 3) throw std::runtime_error("Invalid project metadata/settings.");
         bool hasVersion = false;
         std::optional<std::wstring> name;
         for (const auto& field : fields)
@@ -664,7 +687,16 @@ namespace
                 }
                 name = Trim(value.substr(1, value.size() - 2));
             }
-            else throw std::runtime_error("Project files contain project metadata only.");
+            else if (field.first == "settings")
+            {
+                const auto settings = ParseJsonObject(field.second);
+                for (const auto& setting : settings)
+                    if (setting.first != "defaultScene" || setting.second.size() < 2 ||
+                        setting.second.front() != '"' || setting.second.back() != '"')
+                        throw std::runtime_error("Invalid project setting; expected defaultScene string.");
+                // Editor startup settings do not select the packaged game's native entry point.
+            }
+            else throw std::runtime_error("Unknown project metadata field.");
         }
         if (!hasVersion || !name || !ValidProjectName(*name))
         {

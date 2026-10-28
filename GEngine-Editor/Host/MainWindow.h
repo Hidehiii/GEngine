@@ -43,6 +43,9 @@ namespace GEngineEditor
         QString LastError() const { return m_Error; }
         void StartWorker();
         bool OpenScene(const QString& path);
+        bool SaveProjectSettings(const QString& defaultScene);
+        QString DefaultScene() const { return m_Project.DefaultScene; }
+        QString ActiveScenePath() const { return m_ScenePath; }
         bool OpenProject(const QString& path);
         void CloseProject();
         ProjectWorkspace& Workspace() { return *m_Workspace; }
@@ -69,6 +72,9 @@ namespace GEngineEditor
         void RefreshDockTabs();
         void InitProjectActions(QMenu* file, QMenuBar* menus);
         void RefreshPackagingActions();
+        void ApplyProjectScene();
+        void ClearProjectScene(const QString& reason);
+        void ShowProjectSettingsDialog();
         bool ShowPackagingDialog();
         QDockWidget* DockForTab(QTabBar* bar, int index) const;
         struct DraftTab
@@ -89,6 +95,7 @@ namespace GEngineEditor
         QString m_WorkerPath;
         QString m_ScenePath;
         bool m_RestartForScene = false;
+        bool m_ProjectViewportEmpty = false;
         QString m_Error;
         ConsoleOutput* m_Console = nullptr;
         QLabel* m_StateLabel = nullptr;
@@ -111,6 +118,7 @@ namespace GEngineEditor
         QProcess* m_PackagingProcess = nullptr;
         QTimer* m_PackagingDeadline = nullptr;
         QAction* m_Package = nullptr;
+        QAction* m_ProjectSettings = nullptr;
         QAction* m_CancelPackaging = nullptr;
         bool m_PackagingSucceeded = false;
         bool m_PackagingCancelled = false;
@@ -122,4 +130,5 @@ namespace GEngineEditor
     };
     void RunRecoveryCheck(MainWindow& window);
     void RunPackagingCheck(MainWindow& window);
+    void RunProjectSettingsCheck(MainWindow& window);
 }

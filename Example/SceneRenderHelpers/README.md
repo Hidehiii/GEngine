@@ -1,5 +1,9 @@
 # SceneRenderHelpers
 
+Open SceneRenderHelpers.gproject to open its empty default editor scene. The
+native application below creates its own image and mesh objects in C++; those
+objects are not serialized into the default .GEScene. See the [example index](../README.md).
+
 This example alternates `SceneRenderer::Render(*scene, presentationCommand)`
 with `GameObject::OnRender` on successive frames, exercising both shared scene
 recording and presentation compatibility with the same materials. The Qt Worker

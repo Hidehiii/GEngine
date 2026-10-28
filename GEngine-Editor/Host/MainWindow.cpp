@@ -45,6 +45,7 @@ namespace GEngineEditor
         QString State;
         bool Engine = false;
         QString Scene = "Engine sample scene";
+        QString EmptyMessage;
         std::function<void(QSize)> OnSize;
         explicit ViewportWidget(QWidget* parent = nullptr) : QWidget(parent) { setMinimumSize(320, 240); }
     protected:
@@ -70,7 +71,9 @@ namespace GEngineEditor
             painter.fillRect(0, 0, width(), 60, QColor(0, 0, 0, 200));
             painter.setPen(Qt::white);
             painter.drawText(rect().adjusted(12, 6, -12, -6), Qt::AlignTop | Qt::TextWordWrap,
-                (Engine ? "Live engine scene: " + Scene + "\n" : "CPU protocol diagnostic image - NOT an engine scene\n") + State);
+                EmptyMessage.isEmpty()
+                    ? (Engine ? "Live engine scene: " + Scene + "\n" : "CPU protocol diagnostic image - NOT an engine scene\n") + State
+                    : EmptyMessage);
         }
     };
     MainWindow::MainWindow(QString workerPath) : m_WorkerPath(std::move(workerPath))
@@ -166,7 +169,11 @@ namespace GEngineEditor
         { if (m_Inspector->toPlainText() != text) m_Inspector->setPlainText(text); };
         m_Workspace->OnLog = [this](const QString& text)
         {
-            if (m_Workspace->Root().isEmpty()) { m_Project = {}; m_PackageOutputDirectory.clear(); }
+            if (m_Workspace->Root().isEmpty())
+            {
+                if (!m_Project.Path.isEmpty()) ClearProjectScene("The project folder is unavailable.");
+                m_Project = {}; m_PackageOutputDirectory.clear();
+            }
             m_CloseProject->setEnabled(!m_Workspace->Root().isEmpty());
             RefreshPackagingActions(); Log(text); RefreshDocument();
         };
@@ -268,7 +275,7 @@ namespace GEngineEditor
             if (m_ClosePending && !m_Worker.Running()) QTimer::singleShot(0, this, [this] { close(); });
         };
         m_Worker.OnFrame = [this](const QImage& image)
-        { m_HasImage = true; ++m_FrameCount; m_Viewport->Engine = m_Worker.IsEngine(); m_Viewport->Image = image; m_Viewport->update(); };
+        { if (!m_ProjectViewportEmpty) { m_HasImage = true; ++m_FrameCount; m_Viewport->Engine = m_Worker.IsEngine(); m_Viewport->Image = image; m_Viewport->update(); } };
         bool restored = false;
         if (!QCoreApplication::arguments().contains("--self-test"))
         {
@@ -525,6 +532,7 @@ namespace GEngineEditor
             if (m_PackageExecutableName.isEmpty()) m_PackageExecutableName = m_Project.Name;
         }
         m_CloseProject->setEnabled(true);
+        if (!directory) ApplyProjectScene();
         m_Error.clear(); RefreshDocument(); RefreshPackagingActions();
         Log(directory ? "Opened project folder: " + m_Workspace->Root() : "Opened project: " + m_Project.Path);
         return true;
@@ -532,14 +540,31 @@ namespace GEngineEditor
     void MainWindow::CloseProject()
     {
         if (PackagingRunning()) { Log("Cancel packaging before closing the project."); return; }
+        const bool hadProject = !m_Project.Path.isEmpty();
         m_Project = {};
+        if (hadProject) ClearProjectScene("No project scene is open.");
         m_PackageOutputDirectory.clear();
         m_PackageExecutableName.clear();
         m_PackageLogoPath.clear();
         delete m_PackageIconFile;
         m_PackageIconFile = nullptr;
         m_Workspace->Close(); m_CloseProject->setEnabled(false);
-        RefreshDocument(); RefreshPackagingActions(); Log("Project closed; draft and engine preview are preserved.");
+        RefreshDocument(); RefreshPackagingActions(); Log("Project closed; drafts are preserved.");
+    }
+    void MainWindow::ClearProjectScene(const QString& reason)
+    {
+        m_ProjectViewportEmpty = true; m_RestartForScene = false; m_ScenePath.clear();
+        m_HasImage = false; m_FrameCount = 0; m_Viewport->Image = {};
+        m_Viewport->EmptyMessage = reason; m_Viewport->update();
+        m_Worker.Stop(); RefreshWorker();
+    }
+    void MainWindow::ApplyProjectScene()
+    {
+        QString error;
+        const auto scene = m_Project.ResolveDefaultScene(error);
+        if (scene.isEmpty())
+        { ClearProjectScene(error); Log(error); return; }
+        if (!OpenScene(scene)) { const auto reason = m_Error; ClearProjectScene(reason); Log(reason); }
     }
     QString MainWindow::InspectorText() const { return m_Inspector->toPlainText(); }
     void MainWindow::RefreshDocument()
@@ -580,14 +605,14 @@ namespace GEngineEditor
         const auto description = m_Worker.Description();
         m_StateLabel->setText(description);
         m_Viewport->State = description; m_Viewport->update();
-        m_Start->setEnabled(!m_Worker.Running() && m_Worker.GetState() != WorkerSupervisor::State::Starting);
+        m_Start->setEnabled(!m_ProjectViewportEmpty && !m_Worker.Running() && m_Worker.GetState() != WorkerSupervisor::State::Starting);
         m_Stop->setEnabled(m_Worker.Running() || m_Worker.GetState() == WorkerSupervisor::State::Starting);
         const bool ready = m_Worker.GetState() == WorkerSupervisor::State::Ready;
         m_Crash->setEnabled(ready); m_Hang->setEnabled(ready); m_Malformed->setEnabled(ready);
     }
     void MainWindow::StartWorker()
     {
-        if (m_Worker.Running()) return;
+        if (m_ProjectViewportEmpty || m_Worker.Running()) return;
         m_HasImage = false; m_FrameCount = 0; m_Viewport->Image = {};
         m_Worker.SetViewportSize(m_Viewport->isVisible() ? QSize(qRound(m_Viewport->width() * m_Viewport->devicePixelRatioF()),
             qRound(m_Viewport->height() * m_Viewport->devicePixelRatioF())) : QSize{});
@@ -599,6 +624,7 @@ namespace GEngineEditor
         if (!path.isEmpty() && (!file.isFile() || file.suffix().compare("GEScene", Qt::CaseInsensitive) != 0))
         { m_Error = "Select an existing .GEScene file."; return false; }
         m_Error.clear(); m_ScenePath = path.isEmpty() ? QString{} : file.absoluteFilePath();
+        m_ProjectViewportEmpty = false; m_Viewport->EmptyMessage.clear();
         m_Viewport->Scene = path.isEmpty() ? "Engine sample scene" : file.fileName();
         m_Viewport->Image = {}; m_Viewport->update();
         if (m_Worker.Running()) { m_RestartForScene = true; m_Worker.Stop(); }

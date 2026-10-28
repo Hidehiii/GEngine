@@ -16,7 +16,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
 | Contributor-facing project generation | [Build entry points](BuildSystem.md) |
 | C# runtime paths, resource deployment and archive boundaries | [Managed scripting contracts](ManagedScripting.md) |
-| Qt document tabs, project/assets browsing, live scene image IPC and planned editing | [Qt editor contracts](QtEditor.md) |
+| Qt document tabs, project/default-scene settings, asset browsing, live image IPC and planned editing | [Qt editor contracts](QtEditor.md) |
 | Legacy editor removal and replacement | [Removed editor interfaces](Editor.md) |
 
 `<GEngine.h>` aggregates common application, scene, math, graphics, and

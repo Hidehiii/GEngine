@@ -9,21 +9,40 @@ C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedS
 
 ### E1.5 项目文件与导出操作
 
+E1.7（2026-10-28）为 schema 1 添加可选 settings.defaultScene 字符串及
+Project settings 入口；引擎公共 API/IPC 不变，场景能力仍受 E4.1 限制。
+
 `.gproject` schema 1 示例：
 
 ```json
 {
   "schemaVersion": 1,
-  "name": "MyGame"
+  "name": "MyGame",
+  "settings": { "defaultScene": "Assets/Scenes/Default.GEScene" }
 }
 ```
 
-项目文件不含任何打包信息，schema 1 只接受 name/schemaVersion 两个字段。
+项目文件不含任何打包信息，schema 1 接受 name/schemaVersion 和可选 settings。
+settings 目前只接受 defaultScene 字符串；缺省或空值表示未配置。旧双字段文件
+仍可打开；新建项目生成空 Default.GEScene 并保存相对路径。
 `ProjectFile::Load/Save` 限制 1 MiB、校验版本/字段，Save 使用 QSaveFile；Root
 为文件父目录，src/Assets/Config.ini/Licenses 均按项目根约定查找。
 MainWindow::NewProject/OpenProject/CloseProject 管理此描述与只读 Assets 工作区；
 无效打开不覆盖旧状态，新建不覆盖既有文件。目录浏览兼容入口不提供打包能力。
+ProjectFile::DefaultScene 存项目根相对路径；ValidateSettings 拒绝绝对、根外和
+非 .GEScene 路径，ResolveDefaultScene 检查存在性及 canonical 路径边界。
+MainWindow::SaveProjectSettings(defaultScene) 校验后原子保存，再加载此场景；
+失败保留旧描述/选择/视口。ProjectSettingsAction 打开 ProjectSettingsDialog，
+ProjectDefaultScene 输入路径，Browse 选文件后转相对路径，Cancel 不改文件。
+打开 .gproject 自动选择默认场景，切换项目替换 Worker，关闭项目清空项目视口。
+未配置或缺失场景允许进入项目以修复设置，显示诊断并停止 Worker，不保留旧画面
+或自动启动示例；手动打开场景不修改默认设置。原生导出器接受 settings，但游戏
+原生入口不因该编辑器设置改变。
 命令行 `--project <file.gproject>` 或首个 `.gproject` 参数打开项目，未注册系统关联。
+
+E1.8 的七个 Example 描述均使用 settings.defaultScene 指向各自
+Assets/Scenes/Default.GEScene；覆盖列表及空场景预期见 Example/README.md。
+本项仅添加项目数据，不新增公共接口；原生示例入口及现有场景支持范围不变。
 
 MainWindow::SavePackaging(output, executableName, logoPath) 仅保存本机打包偏好，
 绝不改写项目文件。输出须与项目输入目录不重叠；可执行名沿用项目名或输入合法自定义名；
@@ -41,7 +60,7 @@ Logo 可为空或本机可读图像，Host 会在打包前转换为多尺寸 Win
 Config.ini 单独发布为游戏根目录 Config/Config.ini；缓存位于根目录
 Cache/Shaders/<API>/，跨启动保留。打包更新保留已有配置/缓存；Host 接口不变。
 
-Project 菜单仅有 PackageProjectAction 与作业取消 CancelPackagingAction。
+Project 菜单提供 ProjectSettingsAction、PackageProjectAction 与作业取消 CancelPackagingAction。
 打包对话框对象名 PackagingSettingsDialog，三个输入控件分别为 PackageOutput、
 PackageExecutableName 与 PackageLogoPath。
 缺少 GEngineTools.exe、编译工具、引擎 SDK、

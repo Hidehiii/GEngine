@@ -119,6 +119,10 @@ and remaining visual checks are tracked in the editor compatibility TODO.
 ## Topic index
 
 - [Editor architecture proposal and E1–E6 acceptance](EditorArchitecture.md):
+  E1.8 supplies a project descriptor/default editor scene for every Example;
+  this data-only addition changes no rendering API or native example workload.
+  E1.7 adds per-project default-scene settings and automatic Worker selection on
+  project open; renderer APIs/GPU ownership/IPC are unaffected.
   E4.1 now tracks shared SceneRenderer recording and continuous, sized image
   transport (implemented; OpenGL/Vulkan/D3D12 Debug/Release pixel/resize and Host
   recovery checks passed). Synchronous readback remains bounded to the Worker;

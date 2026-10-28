@@ -7,8 +7,22 @@ C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设�
 
 ## 当前实施：E0.1 基础原型
 
+E1.7 项目设置（2026-10-28）：.gproject 的可选 settings 对象保存
+项目根相对 defaultScene，Host 在打开项目时选择该场景并更新独立 Worker；
+未设置/缺失场景清空项目视口、停止 Worker，并保留项目以便修复设置；不退回
+引擎示例。Project settings 原子保存校验后的项目内路径，再选择该场景；Cancel
+或失败保存保留旧文件/视口。新项目创建空 Default.GEScene 并设置默认路径。
+关闭项目清空其场景，普通目录浏览入口仍保持原有独立视口行为。
+原生导出器兼容该元数据但不改变游戏原生启动入口，打包偏好仍在本机。
+引擎渲染 API、GPU 所有权和 IPC 不变；跟踪见 TODO/EditorArchitecture.md E1.7。
+
+E1.8：Example 下七个示例均有同名 .gproject 和默认场景。FrameGraphTriangle
+保留颜色场景，其余提供空编辑器起点，避免隐式运行 C++ 工作负载或加载不支持
+组件的历史场景；见 Example/README.md。引擎架构、IPC 和构建发现规则无变化。
+
 2026-10-26 E1.6/S2.4：`.gproject` 是 schema 1 JSON 项目描述，只记录版本和
-项目名称；**不记录任何打包信息**。整个 packaging 对象及 EXE 路径已移除。
+项目名称（E1.7 新增可选 settings.defaultScene）；**不记录任何打包信息**。
+整个 packaging 对象及 EXE 路径已移除。
 项目根是描述文件所在目录。Host 的 ProjectFile 负责有界读取/版本校验和
 QSaveFile 原子保存；打开失败保留旧项目，目录浏览仍作为兼容入口存在。
 File 提供 New/Open project，项目菜单提供一个打包入口与作业取消；打包窗口

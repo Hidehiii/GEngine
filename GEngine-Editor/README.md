@@ -174,14 +174,31 @@ has no build consumers. Scene/Play/Qt Gizmo migration is still incomplete.
 
 ## Project files and packaging
 
-Use File > New project or Open project for `.gproject` files. The descriptor has
-only schemaVersion and name, **no packaging information**. Project > Package project
+Use File > New project or Open project for `.gproject` files. Each project stores
+its default scene in `settings.defaultScene`, relative to the project folder.
+Project > Project settings lets you browse/save that scene; Cancel leaves settings
+unchanged. Opening a project (including `--project` or the first `.gproject` argument)
+automatically opens its default scene and replaces the previous project's scene.
+New projects create `Assets/Scenes/Default.GEScene` as an empty scene. Legacy projects
+without settings and projects whose scene is missing show a blank viewport with
+a diagnostic; configure a scene to resume, or open a scene manually. Unsupported
+scene components still report Worker errors under the E4.1 capability limits.
+Closing a project clears its scene. Manual scene opening does not change the saved
+default. Settings are project metadata and contain **no packaging information**.
+Project > Package project
 collects output directory, executable name and optional logo image. It automatically
 builds engine/game C++ sources in Release, converts the logo to an embedded Windows
 icon, creates a .gpak and publishes EXE/pack/runtime DLLs directly to that folder.
 Console reports build progress/errors; Cancel stops the owned compiler tree. These
 three values are local preferences and never rewrite the project file.
 Opening a plain folder remains a read-only browsing operation.
+
+`--project-settings-self-test` checks the settings dialog's Save/Cancel/error path,
+failed atomic save, path validation, project switching, missing/legacy descriptors,
+and new-project defaults. Add `--engine-check --worker <EngineWorker.exe>` for real
+scene loading; a startup `--project <file>` or first `.gproject` argument also checks
+that the initial project scene was delivered. Native export metadata compatibility
+is checked with `python Tests/ProjectSettingsMetadata.py <GEngineTools.exe> --logs <folder>`.
 
 Open `Example/FrameGraphTriangle/FrameGraphTriangle.gproject` for a ready project
 description; no prebuilt EXE is required. New projects receive a minimal src/Game.cpp.

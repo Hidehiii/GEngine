@@ -13,7 +13,7 @@ Each function has a focused page:
 - [C# runtime and packaging design](ManagedScripting.md): shared Mono SDK,
   explicit script paths, worker reload, resource deployment and later .pak export;
   script paths and official SDK build input are partially implemented.
-- [Qt editor architecture](QtEditor.md): Qt Host, draft tabs, live color-scene viewport,
+- [Qt editor architecture](QtEditor.md): Qt Host, project/default-scene settings, draft tabs, live color-scene viewport,
   logs and asset browsing; planned full scene editing, Play and migration criteria.
 - [Legacy editor removal](Editor.md): removal scope and links to the Qt replacement.
 
