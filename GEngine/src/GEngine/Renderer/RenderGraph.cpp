@@ -76,6 +76,66 @@ namespace GEngine
 					intersection.BaseArrayLayer, static_cast<uint32_t>(sourceLayerEnd - intersectionLayerEnd) });
 			return result;
 		}
+
+		bool StateSupportsAccess(RenderGraph::ResourceState state, bool isWrite)
+		{
+			switch (state)
+			{
+			case RenderGraph::ResourceState::ShaderRead:
+			case RenderGraph::ResourceState::CopySource:
+				return !isWrite;
+			case RenderGraph::ResourceState::ShaderWrite:
+				return true;
+			case RenderGraph::ResourceState::RenderTarget:
+			case RenderGraph::ResourceState::DepthWrite:
+			case RenderGraph::ResourceState::CopyDestination:
+			case RenderGraph::ResourceState::Present:
+				return isWrite;
+			case RenderGraph::ResourceState::Undefined:
+				break;
+			}
+			return false;
+		}
+
+		bool StateSupportsStage(RenderGraph::ResourceState state, GraphicsPipelineStage stage)
+		{
+			if (stage == GraphicsPipelineStage::All)
+				return true;
+			switch (state)
+			{
+			case RenderGraph::ResourceState::ShaderRead:
+			case RenderGraph::ResourceState::ShaderWrite:
+				return stage == GraphicsPipelineStage::Graphics || stage == GraphicsPipelineStage::Compute;
+			case RenderGraph::ResourceState::CopySource:
+			case RenderGraph::ResourceState::CopyDestination:
+				return stage == GraphicsPipelineStage::Transfer;
+			case RenderGraph::ResourceState::RenderTarget:
+			case RenderGraph::ResourceState::DepthWrite:
+			case RenderGraph::ResourceState::Present:
+				return stage == GraphicsPipelineStage::Graphics;
+			case RenderGraph::ResourceState::Undefined:
+				break;
+			}
+			return false;
+		}
+
+		bool StageSupportsQueue(GraphicsPipelineStage stage, CommandBufferType queue)
+		{
+			if (queue == COMMAND_BUFFER_TYPE_NONE)
+				return true;
+			switch (stage)
+			{
+			case GraphicsPipelineStage::All:
+				return true;
+			case GraphicsPipelineStage::Graphics:
+				return queue == COMMAND_BUFFER_TYPE_GRAPHICS;
+			case GraphicsPipelineStage::Compute:
+				return queue == COMMAND_BUFFER_TYPE_COMPUTE;
+			case GraphicsPipelineStage::Transfer:
+				return queue == COMMAND_BUFFER_TYPE_GRAPHICS || queue == COMMAND_BUFFER_TYPE_TRANSFER;
+			}
+			return false;
+		}
 	}
 
 	RenderGraph::TargetHandle RenderGraph::CreateRenderTarget(std::string name,
@@ -640,9 +700,10 @@ namespace GEngine
 			throw std::invalid_argument("Invalid render-graph resource access.");
 		if (m_Resources[resource].UsesVersions != versioned)
 			throw std::invalid_argument("Cannot mix versioned and legacy resource accesses.");
-		if ((isWrite && (state == ResourceState::ShaderRead || state == ResourceState::CopySource)) ||
-			(!isWrite && state == ResourceState::CopyDestination))
+		if (!StateSupportsAccess(state, isWrite))
 			throw std::invalid_argument("Resource state is incompatible with the declared access.");
+		if (!StateSupportsStage(state, stage))
+			throw std::invalid_argument("Resource state is incompatible with the declared pipeline stage.");
 		if (!range.MipLevelCount || !range.ArrayLayerCount)
 			throw std::invalid_argument("Render-graph subresource ranges must not be empty.");
 		if ((range.MipLevelCount != SubresourceRange::All && range.BaseMipLevel > std::numeric_limits<uint32_t>::max() - range.MipLevelCount) ||
@@ -729,6 +790,8 @@ namespace GEngine
 		{
 			for (const auto& access : m_Passes[pass].ResourceAccesses)
 			{
+				if (!StageSupportsQueue(access.Usage.Stage, m_Passes[pass].Queue))
+					throw std::invalid_argument("Pipeline stage is incompatible with the pass queue: " + m_Passes[pass].Name);
 				const auto& resource = m_Resources[access.Resource];
 				if (!resource.IsTransient && !resource.IsAttachment) continue;
 				if (std::find(resource.AllowedStates.begin(), resource.AllowedStates.end(), access.Usage.State) == resource.AllowedStates.end())

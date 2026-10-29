@@ -72,8 +72,8 @@ namespace
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
 		switch (access)
 		{
-		case Access::Read: return reads ? reads : fallback;
-		case Access::Write: return writes ? writes : fallback;
+		case Access::Read: return reads;
+		case Access::Write: return writes;
 		case Access::ReadWrite: return fallback;
 		}
 		return fallback;
@@ -85,6 +85,8 @@ namespace
 		const VkPipelineStageFlags graphicsStages = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT |
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
 			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		if (type == GEngine::COMMAND_BUFFER_TYPE_GRAPHICS)
+			stage &= ~VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		if (type == GEngine::COMMAND_BUFFER_TYPE_COMPUTE || type == GEngine::COMMAND_BUFFER_TYPE_TRANSFER)
 			stage &= ~graphicsStages;
 		if (type == GEngine::COMMAND_BUFFER_TYPE_TRANSFER)

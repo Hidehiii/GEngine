@@ -214,3 +214,30 @@
       builds are not claimed. A pre-existing layer-on kernel-handle growth also
       reproduced on the old binary and remains open in Integration/D3D12Memory.md;
       this milestone establishes synchronization, not complete memory attribution.
+      Completed follow-up (2026-10-29, user authorized): finish the declaration-to-
+      barrier synchronization for resource state, read/write intent, and pipeline
+      stage. Reject write-only states declared as reads, read-only states declared
+      as writes, presentation declarations with an explicit shader/transfer stage,
+      and state/stage combinations the public model cannot express. Validate the
+      declared stage against graphics/compute/transfer pass queues before
+      transient allocation or command recording, and make Vulkan derive access
+      masks only from declarations that can legally map to native access scopes.
+      Acceptance: focused positive/negative regressions cover declaration
+      validation and queue-stage rejection; Debug/Release builds and available
+      backend readback runs are recorded separately. Subresource independent
+      scheduling and pooling remain outside this bounded follow-up.
+      Implemented: `RenderGraph` validates state/access and state/stage
+      compatibility when an access is declared, then validates the declared stage
+      against the pass queue during compilation. FrameGraphTriangle adds positive
+      intent and three negative startup checks (write-state/read intent, shader
+      state/transfer stage, and compute stage on a graphics pass). Vulkan no
+      longer substitutes an incompatible access fallback and removes compute-shader
+      scope from graphics command barriers.
+      Verification: CMake Debug and Release GEngine/FrameGraphTriangle builds
+      passed with existing warnings and zero errors. D3D12 Debug Layer-on
+      Debug/Release, OpenGL Debug/Release, Vulkan shared Debug/Release, and Vulkan
+      dedicated-queue Debug/Release each completed 120 frames, passed all three
+      frame-119 readbacks, and exited 0 with no captured D3D12 or Vulkan
+      diagnostics. The original D3D12 `Config.ini` selection was restored. Vulkan
+      validation layers were unavailable on this host, so those runs did not
+      provide validation-layer coverage.

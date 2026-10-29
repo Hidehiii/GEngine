@@ -7,6 +7,14 @@ presentation image to a render target and back, then submits. `RenderGraph`
 expresses pass ordering, resource versions, resource states, and subresource
 ranges. D3D12 records resource/UAV barriers, Vulkan records image/buffer/memory
 barriers, and OpenGL emits memory barriers without tracking image layouts.
+The graph validates state/read-write and state/stage compatibility when an
+access is declared, then checks the declared stage against the pass queue
+during compilation. Write-only attachment/copy/presentation states cannot be
+declared as reads, read-only shader/copy-source states cannot be declared as
+writes, and copy states require the transfer stage. Vulkan derives native
+access masks only from compatible declaration intent and removes compute-shader
+scope from graphics command barriers. Validation runs in both Debug and
+Release before transient allocation or command recording.
 
 Renderer features can use a persistent GPU graph with `BuildGraphicsPass`,
 `BuildGraphicsCopyPass`, `BuildTransferCopyPass`, `BuildComputePass`, graph-owned

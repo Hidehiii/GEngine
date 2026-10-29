@@ -296,6 +296,44 @@ namespace GEngine
 		if (observedStage != GraphicsPipelineStage::Compute || observedAccess != GraphicsResourceAccess::Write)
 			throw std::runtime_error("RenderGraph stage/access intent did not reach transition compilation.");
 
+		RenderGraph invalidUsageGraph;
+		auto invalidUsageResource = invalidUsageGraph.ImportResource("InvalidUsage");
+		auto invalidUsagePass = invalidUsageGraph.AddPass("InvalidUsage", []() {});
+		bool invalidUsageRejected = false;
+		try
+		{
+			invalidUsageGraph.Read(invalidUsagePass, invalidUsageResource,
+				RenderGraph::ResourceState::RenderTarget);
+		}
+		catch (const std::invalid_argument&) { invalidUsageRejected = true; }
+		if (!invalidUsageRejected)
+			throw std::runtime_error("RenderGraph accepted a read-only declaration for a write-only state.");
+
+		RenderGraph invalidStageGraph;
+		auto invalidStageResource = invalidStageGraph.ImportResource("InvalidStage");
+		auto invalidStagePass = invalidStageGraph.AddPass("InvalidStage", []() {});
+		bool invalidStageRejected = false;
+		try
+		{
+			invalidStageGraph.Read(invalidStagePass, invalidStageResource,
+				RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::Transfer);
+		}
+		catch (const std::invalid_argument&) { invalidStageRejected = true; }
+		if (!invalidStageRejected)
+			throw std::runtime_error("RenderGraph accepted a shader state with a transfer stage.");
+
+		RenderGraph invalidQueueStageGraph;
+		auto invalidQueueResource = invalidQueueStageGraph.ImportResource("InvalidQueueStage");
+		auto invalidQueuePass = invalidQueueStageGraph.BuildGraphicsCopyPass(
+			"InvalidQueueStage", [](const Ref<CommandBuffer>&) {});
+		invalidQueueStageGraph.Read(invalidQueuePass.GetHandle(), invalidQueueResource,
+			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::Compute);
+		bool invalidQueueStageRejected = false;
+		try { invalidQueueStageGraph.Compile(); }
+		catch (const std::invalid_argument&) { invalidQueueStageRejected = true; }
+		if (!invalidQueueStageRejected)
+			throw std::runtime_error("RenderGraph accepted a compute stage on a graphics pass.");
+
 		RenderGraph subpassGraph;
 		RenderGraph::AttachmentSpecification subpassAttachment{};
 		subpassAttachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };

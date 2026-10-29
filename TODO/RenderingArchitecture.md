@@ -1,5 +1,14 @@
 # Rendering architecture refactor
 
+2026-10-29 graph access-declaration synchronization is tracked in
+[FrameGraphCore](Rendering/FrameGraphCore.md). It validates state/read-write
+and state/stage compatibility at declaration time, validates stage against the
+pass queue during compilation, and removes illegal Vulkan access-mask fallback.
+No public signature changes; OpenGL/D3D12 ordering remains conservative.
+CMake Debug/Release builds and the FrameGraphTriangle 120-frame matrix passed on
+OpenGL, D3D12 (Debug Layer active), Vulkan shared, and Vulkan dedicated queues.
+Vulkan validation layers were unavailable on this host.
+
 2026-10-28 D3D12 cross-execution UAV synchronization repair is tracked in
 [FrameGraphCore](Rendering/FrameGraphCore.md). It adds resource-owned submitted
 fence/value/queue tracking for UAV buffers/images, retaining owners through each

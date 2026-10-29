@@ -422,9 +422,12 @@ process was stopped, so normal shutdown, resize, cache-clear/reload, long-term
 stability and other backend runs remain unverified.
 
 Startup checks also cover reverse access declaration order, repeated graph
-compilation, dependency-cycle detection, transient read-before-write, and invalid
-render-target usage. One expected cycle diagnostic is printed by the negative
-test. Failure throws before drawing; these checks do not validate GPU barriers.
+compilation, dependency-cycle detection, transient read-before-write, invalid
+render-target usage, write-only state/read intent rejection, shader-state/
+transfer-stage rejection, and compute-stage use on a graphics-pass queue. One
+expected cycle diagnostic is printed by the negative test. Failure throws before
+drawing; these checks do not validate every backend barrier. Run both Debug and
+Release so declaration validation is exercised without assertions.
 
 The triangle alternates left/right every 30 rendered frames while replacing its
 pipeline, material, and vertex buffer. Each replacement allocates new Vulkan

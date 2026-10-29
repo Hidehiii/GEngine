@@ -12,7 +12,15 @@ graph.Write(geometry, color, RenderGraph::ResourceState::RenderTarget);
 graph.Read(postProcess, color, RenderGraph::ResourceState::ShaderRead);
 ```
 
-The graph adds ordering dependencies for conflicting accesses and inserts a transition whenever a resource's requested state differs from its previous state.
+The graph adds ordering dependencies for conflicting accesses and inserts a
+transition whenever a resource's requested state differs from its previous
+state. Read/write declarations must match the state: `ShaderRead` and
+`CopySource` are read-only, while `RenderTarget`, `DepthWrite`,
+`CopyDestination`, and `Present` are declared as writes. `ShaderWrite` is the
+storage/UAV state and can be declared with either read or write intent. Stage
+declarations must also match the state: shader states accept graphics or
+compute, copy states require transfer, and attachment/presentation states
+require graphics.
 
 For a graphics-queue copy without a render target, use
 `BuildGraphicsCopyPass(name, callback)`. The callback receives a graphics

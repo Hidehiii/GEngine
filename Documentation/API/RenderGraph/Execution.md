@@ -58,12 +58,17 @@ scheduling or replace the graph's declared dependencies.
 Current GPU compute declarations accept storage/UAV (`ShaderWrite`) state for
 both read and write intent. ShaderWrite names the native state, not exclusively
 the access direction. Other compute states are explicitly rejected rather than
-emitting graphics-only stages on a compute queue. Barriers cover whole resources.
-Access declarations can identify graphics, compute, or transfer usage; omitted
-stage declarations remain conservative (`All`). Vulkan narrows its stage/access
-masks from that intent, while D3D12 legacy barriers and OpenGL memory barriers
-preserve the same ordering conservatively. Subresource ranges and dedicated
-pass coverage is incomplete; remaining graph-access work is tracked in
+emitting graphics-only stages on a compute queue. Access declarations identify
+graphics, compute, or transfer usage; omitted stage declarations remain
+conservative (`All`). Shader states accept graphics or compute, copy states
+require transfer, and render-target, depth-write, and presentation states
+require graphics. A graphics pass may also use the transfer stage for a copy;
+compute and transfer stages are rejected on incompatible pass queues during
+compilation. Write-only states cannot be declared as reads and read-only states
+cannot be declared as writes. Vulkan narrows its stage/access masks from that
+validated intent, while D3D12 legacy barriers and OpenGL memory barriers
+preserve the same ordering conservatively. Independent subresource scheduling
+and pooling remain unavailable; remaining graph-access work is tracked in
 [RenderingArchitecture.md](../../../TODO/RenderingArchitecture.md).
 
 `SubresourceRange` is available on the legacy `Read` and `Write` declarations
