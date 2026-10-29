@@ -162,7 +162,7 @@ namespace
         void SetMaterial(GEngine::ImageRenderer& image)
         {
             image.SetMaterial(GEngine::Graphics::GetRenderDevice().CreateMaterial(
-                GEngine::Shader::Create("Assets/Shaders/SceneImageColor.shader"), "Scene image"));
+                GEngine::Shader::Create("Assets/Shaders/SceneImageColor.gasset"), "Scene image"));
         }
         void Resize(unsigned width, unsigned height)
         {

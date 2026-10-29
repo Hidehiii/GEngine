@@ -1,7 +1,7 @@
 # FrameGraphTriangle
 
 Open FrameGraphTriangle.gproject in the Qt editor to load
-Assets/Scenes/Default.GEScene automatically: a red quad on the left and a cyan
+Assets/Scenes/Default.gscene automatically: a red quad on the left and a cyan
 quad above center on the right, rendered by the shared scene path. Project >
 Project settings changes this editor default using a project-relative path.
 This editor document does not replace the native frame-graph workload below;
@@ -55,9 +55,11 @@ remain separate below.
 
 Set `GENGINE_EXAMPLE_RESOURCE_CHECK=1` with `GENGINE_EXAMPLE_FRAME_LIMIT=120` to
 check owned background reads, 2x2 PPM decoding/upload, FBX memory-stream import and
-scene YAML deserialization. ResourceProbe.fbx is copied from the existing
+scene YAML deserialization. ResourceProbe_texture.gasset and
+ResourceProbe_mesh.gasset wrap the existing
 GpuDriven cube fixture. The compute shader also reads its HLSL include through
-the resource interface. Expected: the usual triangle and color changes, all three
+the resource interface. All runtime resources use `.gasset`, and the scene uses
+`.gscene`. Expected: the usual triangle and color changes, all three
 GPU readbacks, resource-check messages and normal shutdown; a packaged run must
 have no Assets directory even after shader compilation. Cache/Shaders/<API>/ and Logs
 remain writable in the game root. This check uses the same logical paths in

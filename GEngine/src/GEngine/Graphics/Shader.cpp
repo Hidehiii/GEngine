@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "GEngine/Graphics/Shader.h"
+#include "GEngine/Asset/GAsset.h"
 #include "GEngine/Graphics/Graphics.h"
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
@@ -36,7 +37,9 @@ namespace GEngine
                 {
                     const auto path = std::filesystem::path((*match)[1].str()).lexically_normal().generic_string();
                     if (!visited.insert(path).second) continue;
-                    const auto included = FileSystemHelper::ReadFileAsString(path);
+                    const auto included = std::filesystem::path(path).extension() == ".gasset"
+                        ? LoadGAssetText(path, "shader-include")
+                        : FileSystemHelper::ReadFileAsString(path);
                     result += "\nGEngine-Include:" + path + "\n" + included;
                     append(included);
                 }
@@ -175,7 +178,10 @@ namespace GEngine
 		std::vector<std::string>												srcCodes; // each pass src code
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionDxils; // pass { stage : reflection dxil }
-		std::string																source = FileSystemHelper::ReadFileAsString(path);
+		const bool isGAsset = std::filesystem::path(path).extension() == ".gasset";
+		std::string																source = isGAsset
+			? LoadGAssetText(path, "shader")
+			: FileSystemHelper::ReadFileAsString(path);
 		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
 		if (LoadFromCache(shaders, reflectionDxils, source, cache))

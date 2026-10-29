@@ -200,7 +200,7 @@ namespace
         layout->addWidget(buttons);
         connect(browse, &QPushButton::clicked, &dialog, [this, scene]
         {
-            const auto path = QFileDialog::getOpenFileName(this, "Default scene", m_Project.Root(), "Engine scene (*.GEScene)");
+            const auto path = QFileDialog::getOpenFileName(this, "Default scene", m_Project.Root(), "Engine scene (*.gscene)");
             if (!path.isEmpty()) scene->setText(QDir(m_Project.Root()).relativeFilePath(path));
         });
         connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
@@ -218,7 +218,7 @@ namespace
         ProjectFile project;
         project.Path = QFileInfo(path).absoluteFilePath();
         project.Name = QFileInfo(path).completeBaseName();
-        project.DefaultScene = "Assets/Scenes/Default.GEScene";
+        project.DefaultScene = "Assets/Scenes/Default.gscene";
         const auto scenePath = project.Resolve(project.DefaultScene);
         if (!QFileInfo::exists(scenePath))
         {

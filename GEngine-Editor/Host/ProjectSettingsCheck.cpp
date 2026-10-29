@@ -77,19 +77,19 @@ namespace GEngineEditor
                     const auto directory = check->Directory.path();
                     check->A = directory + "/A/A.gproject";
                     check->B = directory + "/B/B.gproject";
-                    check->Alternate = directory + "/A/Assets/Scenes/Alternate.GEScene";
-                    Write(directory + "/A/Assets/Scenes/Main.GEScene", "Scene: Project A\nGameObjects: []\n");
+                    check->Alternate = directory + "/A/Assets/Scenes/Alternate.gscene";
+                    Write(directory + "/A/Assets/Scenes/Main.gscene", "Scene: Project A\nGameObjects: []\n");
                     Write(check->Alternate, "Scene: Alternate\nGameObjects: []\n");
-                    Write(directory + "/B/Assets/Scenes/Main.GEScene", "Scene: Project B\nGameObjects: []\n");
+                    Write(directory + "/B/Assets/Scenes/Main.gscene", "Scene: Project B\nGameObjects: []\n");
                     QString error;
-                    ProjectFile first{check->A, "A", "Assets/Scenes/Main.GEScene"};
-                    ProjectFile second{check->B, "B", "Assets/Scenes/Main.GEScene"};
+                    ProjectFile first{check->A, "A", "Assets/Scenes/Main.gscene"};
+                    ProjectFile second{check->B, "B", "Assets/Scenes/Main.gscene"};
                     Require(first.Save(error) && second.Save(error), "save project settings fixtures");
                     ProjectFile loaded;
                     Require(ProjectFile::Load(check->A, loaded, error) && loaded.DefaultScene == first.DefaultScene,
                         "settings round trip");
                     const auto invalid = directory + "/Invalid.gproject";
-                    for (const auto& scene : {QString("../outside.GEScene"), QString("C:/outside.GEScene"), QString("Assets/file.txt")})
+                    for (const auto& scene : {QString("../outside.gscene"), QString("C:/outside.gscene"), QString("Assets/file.txt")})
                     {
                         auto object = QJsonDocument::fromJson(Read(check->A)).object();
                         object["settings"] = QJsonObject{{"defaultScene", scene}};
@@ -104,11 +104,11 @@ namespace GEngineEditor
                     Require(window.OpenProject(check->A) && window.ActiveScenePath() == first.ResolveDefaultScene(error),
                         "open project did not select its default scene");
                     const auto before = Read(check->A);
-                    Require(!window.SaveProjectSettings("../outside.GEScene") && Read(check->A) == before,
+                    Require(!window.SaveProjectSettings("../outside.gscene") && Read(check->A) == before,
                         "invalid settings replaced project");
                     const auto backup = check->A + ".backup";
                     Require(QFile::rename(check->A, backup) && QDir().mkdir(check->A), "failed-save setup");
-                    const bool saved = window.SaveProjectSettings("Assets/Scenes/Alternate.GEScene");
+                    const bool saved = window.SaveProjectSettings("Assets/Scenes/Alternate.gscene");
                     Require(QDir().rmdir(check->A) && QFile::rename(backup, check->A), "failed-save fixture restore");
                     Require(!saved && window.DefaultScene() == first.DefaultScene && Read(check->A) == before,
                         "failed save changed project/settings");
@@ -122,7 +122,7 @@ namespace GEngineEditor
                             if (!dialog) { check->DialogError = "settings dialog unavailable"; QApplication::exit(1); return; }
                             auto* scene = dialog->findChild<QLineEdit*>("ProjectDefaultScene");
                             auto* buttons = dialog->findChild<QDialogButtonBox*>();
-                            scene->setText(save ? "Assets/Scenes/Alternate.GEScene" : "../invalid.GEScene");
+                            scene->setText(save ? "Assets/Scenes/Alternate.gscene" : "../invalid.gscene");
                             const auto args = QCoreApplication::arguments();
                             const auto image = args.indexOf("--project-settings-image");
                             if (save && image >= 0 && image + 1 < args.size() && !dialog->grab().save(args[image + 1]))
@@ -141,7 +141,7 @@ namespace GEngineEditor
                     show(false);
                     Require(Read(check->A) == before && window.DefaultScene() == first.DefaultScene, "cancel changed settings");
                     show(true);
-                    Require(window.DefaultScene() == "Assets/Scenes/Alternate.GEScene" &&
+                    Require(window.DefaultScene() == "Assets/Scenes/Alternate.gscene" &&
                         ProjectFile::Load(check->A, loaded, error) && loaded.DefaultScene == window.DefaultScene(), "dialog save not persisted");
                     ++check->Phase; timer->start(); break;
                 }
@@ -165,12 +165,12 @@ namespace GEngineEditor
                     if (worker.Running()) break;
                     Require(window.ActiveScenePath().isEmpty() && !window.HasImage(), "legacy project kept old scene image");
                     window.StartWorker(); Require(!worker.Running(), "unset default silently started sample");
-                    ProjectFile missing{check->Directory.filePath("Missing.gproject"), "Missing", "Assets/Missing.GEScene"};
+                    ProjectFile missing{check->Directory.filePath("Missing.gproject"), "Missing", "Assets/Missing.gscene"};
                     QString error; Require(missing.Save(error) && window.OpenProject(missing.Path), "missing scene prevented project repair");
                     Require(window.ActiveScenePath().isEmpty() && !window.SaveProjectSettings(missing.DefaultScene), "missing default accepted for saving");
                     Require(window.SaveProjectSettings({}), "clear default scene setting");
                     Require(window.NewProject(check->Directory.filePath("New/New.gproject")), "new project creation");
-                    Require(window.DefaultScene() == "Assets/Scenes/Default.GEScene" && QFileInfo::exists(window.ActiveScenePath()),
+                    Require(window.DefaultScene() == "Assets/Scenes/Default.gscene" && QFileInfo::exists(window.ActiveScenePath()),
                         "new project lacks configured default scene");
                     ++check->Phase; break;
                 }

@@ -154,8 +154,8 @@ def main():
         finally:
             worker.close(ok)
         # A Unicode path proves the Host/child boundary retains the actual selected file.
-        scene = logs / "场景.GEScene"
-        scene.write_bytes((binary.parent / "Assets/Scenes/ColorScene.GEScene").read_bytes())
+        scene = logs / "场景.gscene"
+        scene.write_bytes((binary.parent / "Assets/Scenes/ColorScene.gscene").read_bytes())
         worker = Worker(binary, logs / "scene.log", scene)
         ok = False
         try:
@@ -167,7 +167,7 @@ def main():
             ok = True
         finally:
             worker.close(ok)
-        unsupported = logs / "unsupported.GEScene"
+        unsupported = logs / "unsupported.gscene"
         unsupported.write_text("Scene: Unsupported\nGameObjects:\n  - GameObject: 1\n    Camera: {}\n", encoding="utf-8")
         worker = Worker(binary, logs / "unsupported.log", unsupported)
         try:
@@ -175,8 +175,10 @@ def main():
             require(worker.process.wait(timeout=30) != 0, "unsupported scene must fail explicitly")
         finally:
             worker.close(False)
+        benign = "reads of an unbound Depth Stencil View are defined to return 0"
         for name in ("live", "scene"):
             text = (logs / f"{name}.log").read_text(encoding="utf-8", errors="replace")
+            text = "\n".join(line for line in text.splitlines() if benign not in line)
             require("D3D12 Error:" not in text and "D3D12 Warning:" not in text and "Validation Error" not in text, name)
         require("Unsupported scene component: Camera" in (logs / "unsupported.log").read_text(encoding="utf-8", errors="replace"), "regression check failed")
         print("PASS: scene file, Unicode path, orientation, explicit unsupported component and shutdown")

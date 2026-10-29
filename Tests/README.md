@@ -19,6 +19,21 @@ or a flat-memory assertion. Config/Config.ini is restored on completion/failure.
 Use a generated test package without concurrent users. Manual visible output,
 OS resize and complete native allocation attribution remain separate checks.
 
+## YAML GAsset envelope
+
+The dependency-free GAsset regression compiles the production envelope parser
+and validates text and Base64 payloads, expected types, schema versions, field
+sets and unsupported encodings. From the repository root:
+
+```bat
+cmake -S Tests/GAsset -B build/gasset-tests -G "Visual Studio 17 2022" -A x64
+cmake --build build/gasset-tests --config Release --parallel 4
+ctest --test-dir build/gasset-tests -C Release --output-on-failure
+```
+
+Repeat with Debug. This check does not replace backend texture/model/shader
+loading or packaged-runtime verification.
+
 ## Native resource pack
 
 The dependency-free resource regression compiles the production Windows archive
@@ -47,7 +62,7 @@ changes its external Config/Config.ini backend and restores original config/pack
 bytes in a finally block. Config.ini must be absent from the archive. Each backend
 must render 120 frames twice, reuse nonempty Cache/Shaders/<API>/ files unchanged,
 and pass three readbacks,
-read image/FBX/YAML/include assets and owned background bytes, and keep Assets
+read image/FBX/YAML/include GAsset payloads and owned background bytes, and keep Assets
 absent from the game root. An edited literal HLSL include must invalidate cache.
 Corrupt/missing packs and missing external configuration must fail before
 Application construction. Logs record each backend independently; this does not

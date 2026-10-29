@@ -9,14 +9,14 @@ namespace GEngine
     {
         m_EditorCamera = Editor::EditorCamera(30.0f, 1.0f, 0.01f, 10000.0f);
 
-		m_AlbedoTexture = Texture2D::Create("Resources/Textures/Albedo.png");
-		m_RoughnessTexture = Texture2D::Create("Resources/Textures/Roughness.png");
-		m_MetallicTexture = Texture2D::Create("Resources/Textures/Metallic.png");
+		m_AlbedoTexture = Texture2D::Create("Resources/Textures/Albedo.gasset");
+		m_RoughnessTexture = Texture2D::Create("Resources/Textures/Roughness.gasset");
+		m_MetallicTexture = Texture2D::Create("Resources/Textures/Metallic.gasset");
 
-        m_ModelImporter.LoadMesh("Resources/Model/Cube.fbx");
-        m_ModelImporter.LoadMesh("Resources/Model/Cylinder.fbx");
-        m_ModelImporter.LoadMesh("Resources/Model/Sphere.fbx");
-        m_ModelImporter.LoadMesh("Resources/Model/Monkey.fbx");
+        m_ModelImporter.LoadMesh("Resources/Model/Cube.gasset");
+        m_ModelImporter.LoadMesh("Resources/Model/Cylinder.gasset");
+        m_ModelImporter.LoadMesh("Resources/Model/Sphere.gasset");
+        m_ModelImporter.LoadMesh("Resources/Model/Monkey.gasset");
         
 
         RenderPassSpecification spec;
@@ -55,7 +55,7 @@ namespace GEngine
 
 
         m_CubePipeline = GraphicsPipeline::Create(
-            Material::Create("Assets/Shaders/BuildGBuffer.glvk"),
+            Material::Create("Assets/Shaders/BuildGBuffer.gasset"),
             VertexBuffer::Create(sizeof(Vertex) * m_ModelImporter.GetMesh(0).m_Vertices.size())
         );
         m_CubePipeline->GetVertexBuffer()->SetLayout({
@@ -78,7 +78,7 @@ namespace GEngine
 		m_CubePipeline->GetMaterial()->SetMatrix4x4("GE_MATRIX_M", cubeTransform.GetModelMatrix());
 
 		m_CylinderPipeline = GraphicsPipeline::Create(
-			Material::Create("Assets/Shaders/BuildGBuffer.glvk"),
+			Material::Create("Assets/Shaders/BuildGBuffer.gasset"),
 			VertexBuffer::Create(sizeof(Vertex) * m_ModelImporter.GetMesh(1).m_Vertices.size())
 		);
         m_CylinderPipeline->GetVertexBuffer()->SetLayout({
@@ -101,7 +101,7 @@ namespace GEngine
 		m_CylinderPipeline->GetMaterial()->SetMatrix4x4("GE_MATRIX_M", cylinderTransform.GetModelMatrix());
 
 		m_SpherePipeline = GraphicsPipeline::Create(
-			Material::Create("Assets/Shaders/BuildGBuffer.glvk"),
+			Material::Create("Assets/Shaders/BuildGBuffer.gasset"),
 			VertexBuffer::Create(sizeof(Vertex) * m_ModelImporter.GetMesh(2).m_Vertices.size())
 		);
 		m_SpherePipeline->GetVertexBuffer()->SetLayout({
@@ -124,7 +124,7 @@ namespace GEngine
 		m_SpherePipeline->GetMaterial()->SetMatrix4x4("GE_MATRIX_M", sphereTransform.GetModelMatrix());
 
         m_MonkeyPipeline = GraphicsPipeline::Create(
-			Material::Create("Assets/Shaders/BuildGBuffer.glvk"),
+			Material::Create("Assets/Shaders/BuildGBuffer.gasset"),
 			VertexBuffer::Create(sizeof(Vertex) * m_ModelImporter.GetMesh(3).m_Vertices.size())
         );
 		m_MonkeyPipeline->GetVertexBuffer()->SetLayout({
@@ -147,7 +147,7 @@ namespace GEngine
 		m_MonkeyPipeline->GetMaterial()->SetMatrix4x4("GE_MATRIX_M", monkeyTransform.GetModelMatrix());
 
 		m_LightingPipeline = GraphicsPipeline::Create(
-			Material::Create("Assets/Shaders/Lighting.glvk"),
+			Material::Create("Assets/Shaders/Lighting.gasset"),
 			VertexBuffer::Create(sizeof(PresentVertex) * 4)
 		);
 		m_LightingPipeline->GetVertexBuffer()->SetLayout({
@@ -158,7 +158,7 @@ namespace GEngine
 		m_LightingPipeline->GetVertexBuffer()->SetData(vertices, sizeof(PresentVertex) * 4);
 
         m_PresentPipeline = GraphicsPipeline::Create(
-            Material::Create("Assets/Shaders/Present.glvk"),
+            Material::Create("Assets/Shaders/Present.gasset"),
             VertexBuffer::Create(sizeof(PresentVertex) * 4)
         );
 		m_PresentPipeline->GetVertexBuffer()->SetLayout({

@@ -16,7 +16,7 @@ namespace GEngine
 			-0.65f, -0.55f, 0.0f
 		};
 
-		auto shader = Shader::Create("Assets/Shaders/Triangle.shader");
+		auto shader = Shader::Create("Assets/Shaders/Triangle.gasset");
 		auto material = Material::Create(shader, "TriangleMaterial");
 
 		auto vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));

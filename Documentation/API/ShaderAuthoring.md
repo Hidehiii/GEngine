@@ -2,7 +2,42 @@
 
 ## File format
 
-GEngine shader assets use a `.shader` wrapper around HLSL-like program source. A file contains one `Shader` block and one or more `Pass` blocks.
+GEngine shader assets use the `.gasset` YAML envelope with `type: shader`,
+`format: shader` and a text payload. The payload is the `.shader` authoring
+container around HLSL-like program source and contains one `Shader` block with
+one or more `Pass` blocks. Raw `.shader` files remain a compatibility input for
+advanced hand-authored projects, but first-party examples use `.gasset`.
+
+```yaml
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "Example"
+    {
+        Pass
+        {
+            Cull Off
+            DepthTest LessEqual
+            DepthWrite On
+            Blend SrcAlpha OneMinusSrcAlpha
+            BlendOp Add
+            ColorMask R G B A
+            Tag Forward
+
+            #pragma vertex vert
+            #pragma fragment frag
+
+            Program
+            {
+                // HLSL declarations and entry points
+            }
+        }
+    }
+```
+
+The unescaped payload is the legacy `.shader` structure:
 
 ```hlsl
 Shader "Example"
@@ -29,6 +64,9 @@ Shader "Example"
 ```
 
 The engine parses the state block, extracts the program body, compiles each declared stage for the active backend and stores a backend-specific cache entry.
+
+Shader includes must reference `.gasset` files with `type: shader-include`.
+The include handler unwraps the YAML payload before DXC consumes it.
 
 ## Pass state
 
@@ -89,6 +127,6 @@ For D3D12, reflection creates the root-signature descriptor ranges. Cached DXIL 
 
 ## Shader cache
 
-The cache stores compiled stage code and reflection blobs under `ShaderCacheDirectory`. Cache validity is based on the shader source hash and active graphics backend.
+The cache stores compiled stage code and reflection blobs under `ShaderCacheDirectory`. Cache validity is based on the unescaped shader source hash, recursively included `shader-include` payload text and active graphics backend.
 
 When a shader source edit changes its hash, the engine recompiles it automatically. When changing engine reflection logic, loading an existing cache is sufficient because reflection is performed again from the stored reflection blob.

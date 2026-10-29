@@ -38,18 +38,25 @@ namespace GEngine
 	{
         if (std::getenv("GENGINE_EXAMPLE_RESOURCE_CHECK"))
         {
-            const auto expected = ReadResource("Assets/ResourceProbe.ppm");
-            auto pending = std::async(std::launch::async, [] { return ReadResource("Assets/ResourceProbe.ppm"); });
+            GE_INFO("GAsset resource check: reading envelope bytes.");
+            const auto expected = ReadResource("Assets/ResourceProbe_texture.gasset");
+            auto pending = std::async(std::launch::async, [] { return ReadResource("Assets/ResourceProbe_texture.gasset"); });
             const auto loaded = pending.get();
             if (loaded != expected) throw std::runtime_error("Background resource read differs.");
-            auto texture = Graphics::GetRenderDevice().CreateTexture2D("Assets/ResourceProbe.ppm");
+            GE_INFO("GAsset resource check: decoding texture payload.");
+            auto texture = Graphics::GetRenderDevice().CreateTexture2D("Assets/ResourceProbe_texture.gasset");
             if (texture->GetWidth() != 2 || texture->GetHeight() != 2)
                 throw std::runtime_error("Archive image decoding/upload failed.");
             ModelImporter model;
-            if (!model.LoadMesh("Assets/ResourceProbe.fbx") || !model.GetMesh(0))
+            GE_INFO("GAsset resource check: importing mesh payload.");
+            const bool meshLoaded = model.LoadMesh("Assets/ResourceProbe_mesh.gasset");
+            const auto probeMesh = meshLoaded ? model.GetMesh(0) : Mesh{};
+            if (!meshLoaded || !probeMesh)
                 throw std::runtime_error("Archive FBX stream import failed.");
+            GE_INFO("GAsset resource check: mesh imported.");
+            GE_INFO("GAsset resource check: loading scene.");
             auto scene = CreateRef<Scene>();
-            Serializer::Deserialize("Assets/ResourceProbe.GEScene", scene);
+            Serializer::Deserialize("Assets/ResourceProbe.gscene", scene);
             if (scene->name != "ArchiveProbe") throw std::runtime_error("Archive scene YAML read failed.");
             if (HasResourcePack() && std::filesystem::exists("Assets"))
                 throw std::runtime_error("Packaged assets were extracted to disk.");
@@ -369,12 +376,12 @@ namespace GEngine
 			-0.65f, -0.55f, 0.0f
 		};
 
-		auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+		auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.gasset");
 		for (int request = 0; request < 64; ++request)
 		{
 			const auto cached = Shader::Create(request % 2
-				? "Assets/Shaders/./FrameGraphTriangle.shader"
-				: "Assets/Shaders/FrameGraphTriangle.shader");
+				? "Assets/Shaders/./FrameGraphTriangle.gasset"
+				: "Assets/Shaders/FrameGraphTriangle.gasset");
 			if (cached != shader)
 				throw std::runtime_error("Shader factory cache identity check failed.");
 		}
@@ -397,10 +404,10 @@ namespace GEngine
 		offscreenAttachment.DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
 		const auto target = m_Graph.CreateRenderTarget("GraphColor", offscreenAttachment, 512, 512);
 		m_Target = target;
-		auto computeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "GraphCompute");
+		auto computeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.gasset"), "GraphCompute");
 		computeMaterial->SetResource("ColorData", m_Color);
 		m_ComputePipeline = device.CreateComputePipeline(computeMaterial);
-		auto computeFirstComputeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.shader"), "ComputeFirstCompute");
+		auto computeFirstComputeMaterial = device.CreateMaterial(Shader::Create("Assets/Shaders/FrameGraphColor.gasset"), "ComputeFirstCompute");
 		computeFirstComputeMaterial->SetResource("ColorData", m_ComputeFirstColor);
 		m_ComputeFirstComputePipeline = device.CreateComputePipeline(computeFirstComputeMaterial);
 		const auto computeFirstInitial = m_Graph.GetVersion(m_Graph.ImportStorageBuffer(
@@ -520,7 +527,7 @@ namespace GEngine
 				-0.65f + offset, -0.55f, 0.0f
 			};
 			auto buffer = VertexBuffer::Create(vertices, sizeof(vertices));
-			auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+			auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.gasset");
 			auto material = Material::Create(shader, "ReplacementMaterial");
 			material->SetResource("ColorData", m_Color);
 			m_Pipeline = GraphicsPipeline::Create(material, buffer);

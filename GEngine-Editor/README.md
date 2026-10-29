@@ -18,7 +18,7 @@ are split into at most 64 KiB packets, with one request/frame in flight; stale
 resize results are discarded. Synchronous GPU readback remains in the child,
 so achieved FPS depends on backend, target size and pipe throughput.
 
-File > Open scene for rendering selects a `.GEScene` and restarts the child with
+File > Open scene for rendering selects a `.gscene` and restarts the child with
 that document. This milestone supports Attribute/Transform and color-only
 ImageRenderer scenes in the existing clip-space material convention. It uses
 the existing scene serializer and supplies the engine color material because
@@ -27,7 +27,10 @@ scripts and physics in loaded files explicitly fail in Console rather than
 silently displaying the sample. Scene transforms are not editable from the Host.
 File > Show engine sample scene restores two real scene objects (red quad and
 moving cyan quad); its label identifies it as the sample. A static supported
-file is provided at `Worker/Assets/Scenes/ColorScene.GEScene`.
+file is provided at `Worker/Assets/Scenes/ColorScene.gscene`.
+Worker runtime resources use `.gasset`, and scenes use `.gscene`. The Host's
+bundled UI font is also deployed as `.gasset` and decoded to a temporary TTF for
+Qt font registration.
 Full Scene editing, camera/lighting, Play/Gizmo and asynchronous readback remain
 open. The Host can edit/undo/redo and atomically save a
 separate `.gedraft` note document even after the child crashes.
@@ -137,7 +140,7 @@ before stopping the worker. Cancel retains all tabs and restores the previous
 active tab; saves already completed during confirmation remain saved.
 Worker failure preserves inactive documents too. Documents can float as one
 dock; individual tabs cannot detach into separate windows yet. Tabs edit
-`.gedraft` notes, not `.GEScene`, and are not restored after restarting the editor.
+`.gedraft` notes, not `.gscene`, and are not restored after restarting the editor.
 
 ## Project workspace (E1.1)
 
@@ -145,7 +148,7 @@ Use File > Open project folder to browse a directory in Assets. Select a file or
 folder to see its relative path, type, size and modification time in Inspector.
 Both panels dock/float/close and reopen through View; Reset layout places Assets
 on the left and tabs Inspector with the draft. This is read-only browsing: no
-resource execution, import, component editing or .GEScene loading occurs.
+resource execution, import, component editing or .gscene loading occurs.
 
 An invalid project path preserves the current project and selection. Switching
 or closing projects clears selection while retaining the draft, undo history
@@ -179,7 +182,7 @@ its default scene in `settings.defaultScene`, relative to the project folder.
 Project > Project settings lets you browse/save that scene; Cancel leaves settings
 unchanged. Opening a project (including `--project` or the first `.gproject` argument)
 automatically opens its default scene and replaces the previous project's scene.
-New projects create `Assets/Scenes/Default.GEScene` as an empty scene. Legacy projects
+New projects create `Assets/Scenes/Default.gscene` as an empty scene. Legacy projects
 without settings and projects whose scene is missing show a blank viewport with
 a diagnostic; configure a scene to resume, or open a scene manually. Unsupported
 scene components still report Worker errors under the E4.1 capability limits.

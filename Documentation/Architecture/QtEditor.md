@@ -11,7 +11,7 @@ E1.7 项目设置（2026-10-28）：.gproject 的可选 settings 对象保存
 项目根相对 defaultScene，Host 在打开项目时选择该场景并更新独立 Worker；
 未设置/缺失场景清空项目视口、停止 Worker，并保留项目以便修复设置；不退回
 引擎示例。Project settings 原子保存校验后的项目内路径，再选择该场景；Cancel
-或失败保存保留旧文件/视口。新项目创建空 Default.GEScene 并设置默认路径。
+或失败保存保留旧文件/视口。新项目创建空 Default.gscene 并设置默认路径。
 关闭项目清空其场景，普通目录浏览入口仍保持原有独立视口行为。
 原生导出器兼容该元数据但不改变游戏原生启动入口，打包偏好仍在本机。
 引擎渲染 API、GPU 所有权和 IPC 不变；跟踪见 TODO/EditorArchitecture.md E1.7。
@@ -131,7 +131,7 @@ Assets/Inspector 是可停靠面板，View 或停靠组 + 菜单可重新打开�
 保存上次项目路径或把目录视为资产数据库。草稿与静态引擎预览独立于项目，
 关闭项目不清空草稿或重启 Worker；Worker 崩溃不丢失项目选择。
 SceneDocument、导入、组件 Inspector、运行场景同步与 Mono 仍未接入；本次
-没有引擎公共 API、渲染接口、IPC 或 .GEScene 格式变更。远程/超大目录的取消
+没有引擎公共 API、渲染接口、IPC 或 .gscene 格式变更。远程/超大目录的取消
 响应和长时文件监视资源增长尚未验证，不能以小型临时目录测试代替。
 
 以下为 2026-10-25 E0.2 历史实现；固定三角形传输已由下文 E4.1 替换。
@@ -175,7 +175,7 @@ kill/wait 回收兜底，正常帧无阻塞等待。心跳每 0.5 秒请求，2 
 `DraftDocument` 提供 Host 独立草稿与最多 256 个历史状态。Qt 文本控件关闭
 自己的 Undo，核心历史管理保存点；原子写 `.gedraft`（格式名
 GEngine.EditorDraft、version 1、notes）。它是明确标识的实验性笔记文件，
-不解析/保存 `.GEScene`，不代替正式 SceneDocument。失败保存/打开保留当前
+不解析/保存 `.gscene`，不代替正式 SceneDocument。失败保存/打开保留当前
 内容和历史，草稿限制 64 KiB UTF-8，读取文件最大 1 MiB。UI 布局用独立的
 QtEditorHostPrototype 设置保存，不触碰旧 imgui.ini。
 
@@ -302,7 +302,7 @@ QAction 的菜单、快捷键、工具栏共用一份命令与可用性判断。
 
 SceneDocument 是 Worker 断连时仍可保存的独立模型，不能把保存实现成 RPC。
 新建/打开先产生候选文档，验证通过后才替换；打开失败不破坏旧场景。Host
-需要独立的文档编解码适配器，保留现有 `.GEScene` 中的未知字段/组件。
+需要独立的文档编解码适配器，保留现有 `.gscene` 中的未知字段/组件。
 现有 Serializer 依赖引擎 Scene，不能直接搬入 Host；E1 通过往返样本验证
 兼容性，不在本设计中切换文件格式。遇到无法保留的数据必须拒绝破坏性保存。
 
@@ -370,7 +370,7 @@ TODO/EditorArchitecture.md 的 E4.1 把共享 SceneRenderer 组件录制接入 W
 隐藏时暂停、旧尺寸结果丢弃，心跳独立。最多一帧在途，图像分成 64 KiB 包，
 Host 增量解析并复制最终 QImage；不跨进程传递 GPU 句柄。同步读回暂留 Worker，
 上一帧读回完成后才可能收到下一次替换请求，复用既有 GPU 完成路径。
-File > Open scene for rendering 重启子进程并传入绝对 .GEScene 路径，保留 Host 草稿。
+File > Open scene for rendering 重启子进程并传入绝对 .gscene 路径，保留 Host 草稿。
 当前读取 Attribute/Transform/颜色 ImageRenderer，复用 Serializer 并提供引擎颜色
 材质；不支持的组件/纹理明确失败。无文件时是标记清楚的引擎示例 Scene，含动态
 变换对象；不是项目场景的隐式替身。完整相机、材质序列化、Play 和异步读回仍开放。
@@ -474,5 +474,5 @@ Example，记录启动、可见结果、resize/替换/退出和逐后端能力�
 Vulkan、D3D12 在 Debug/Release 分别记录可见结果、验证日志、进程/句柄/
 图像内存与 GPU 资源增长。编译或有界正常退出不能替代交互、故障与长期检查。
 
-E0.1 不改变当前公共引擎 API 或 `.GEScene` 格式；后续实施须同步契约、示例
+E0.1 不改变当前公共引擎 API 或 `.gscene` 格式；后续实施须同步契约、示例
 和验证记录。真实 EngineWorker、场景编辑/运行与后端视口仍待实施。

@@ -32,6 +32,49 @@ settings.defaultScene，旧 schema 1 描述兼容。原生导出器接受该项�
   Status: user requested TODO registration only. No implementation or new API is
   authorized by this entry. Documentation links/content reviewed; no engine build
   is required for this planning-only change.
+  2026-10-29 user-authorized bounded follow-up: establish a two-extension
+  authoring convention analogous to Unreal's `.uasset`/`.umap`: use `.gasset`
+  for engine resources and `.gscene` for scenes. For the first bounded
+  implementation, `.gasset` may reuse YAML as an envelope with explicit type,
+  schema version, source format and payload fields; text payloads can be stored
+  directly and binary payloads may use an explicit hexadecimal representation.
+  This migration must not merely rename raw PNG/FBX/TTF/shader bytes while
+  claiming an engine-owned asset format. First inventory loaders, editor
+  filters, project references, archive collection and cache behavior; then
+  either provide an explicit `.gasset` envelope/type identity for the bounded
+  resource set or record the narrower compatible migration actually
+  implemented. Preserve `.gpak` as a container and
+  keep project/package files outside this resource-extension milestone.
+  Acceptance: all first-party example references and shipped resource files use
+  the selected convention; loaders reject malformed or unknown resource data;
+  equivalent development and `.gpak` loads pass on available backends; scene
+  open/save/export and shader cache behavior are exercised; documentation and
+  editor filters no longer advertise mixed resource extensions. Remaining
+  implementation, verification and migration gaps stay open in this entry.
+      Implemented (bounded first pass, 2026-10-29): added the validated YAML
+      GAsset envelope and public loaders; migrated first-party Example, Sandbox,
+      editor Worker/editor Host runtime resources, scene references, filters and
+      project metadata to `.gasset`/`.gscene`; added the migration tool with
+      same-stem collision suffixes; connected texture, FBX, font, shader and
+      shader-include paths; updated editor Host font loading and build copies;
+      fixed FBX SDK child destruction order and Vertex hashing/Mesh copying;
+      and documented the format in architecture/API/build/example pages.
+      Verification: GAsset Debug/Release regression tests passed; CMake Debug
+      and Release GEngine + FrameGraphTriangle builds passed; development-mode
+      FrameGraphTriangle 120-frame resource checks passed on OpenGL, Vulkan and
+      D3D12 (Debug Layer enabled); a generated `.gpak` runtime with external
+      Config also passed all three backends, resource probes, three readbacks,
+      archive-read checks and normal shutdown; `Tests/ResourcePackRuntime.py`
+      additionally passed cold/warm cache reuse, include invalidation, corrupt/
+      missing pack rejection and missing external-config rejection. Logs are under
+      build/gasset-framegraph-release-api*.log and
+      build/gasset-publish-api*.log. Existing unrelated compiler warnings
+      remain. Full typed resource schemas, editor asset import/save workflows,
+      Qt editor self-tests and a full `GEngineTools export-project` publication
+      remain open; the direct exporter command still needs investigation after
+      the manual package verification. Binary payloads also remain YAML Base64
+      and should move to a compact envelope before large production assets are
+      distributed.
 
 - [x] External config and persistent shader cache correction (2026-10-27).
   User requirement: Config.ini must not be inside .gpak. Publish defaults under

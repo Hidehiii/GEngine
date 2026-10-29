@@ -36,14 +36,22 @@ namespace std
 	{
 		size_t operator()(const GEngine::Vertex& vertex) const
 		{
-			return ((((((hash<GEngine::Vector4>()(vertex.m_Position) ^
-				(hash<GEngine::Vector4>()(vertex.m_Color) << 1)) >> 1) ^
-				(hash<GEngine::Vector4>()(vertex.m_Normal) << 1) >> 1) ^
-				(hash<GEngine::Vector3>()(vertex.m_Tangent) << 1) |
-				(hash<GEngine::Vector2>()(vertex.m_UV0)) >> 1) << 1) ^
-				(hash<GEngine::Vector2>()(vertex.m_UV1)) >> 1) |
-				(hash<GEngine::Vector2>()(vertex.m_UV2)) ^ 
-				(hash<GEngine::Vector2>()(vertex.m_UV3) << 1);
+			size_t seed = 0x9e3779b97f4a7c15ULL;
+			const auto combine = [&seed](float value)
+			{
+				seed ^= std::hash<float>{}(value) + 0x9e3779b9U +
+					(seed << 6) + (seed >> 2);
+			};
+			for (float value : { vertex.m_Position.x, vertex.m_Position.y, vertex.m_Position.z, vertex.m_Position.w,
+				vertex.m_Color.x, vertex.m_Color.y, vertex.m_Color.z, vertex.m_Color.w,
+				vertex.m_Normal.x, vertex.m_Normal.y, vertex.m_Normal.z, vertex.m_Normal.w,
+				vertex.m_Tangent.x, vertex.m_Tangent.y, vertex.m_Tangent.z, vertex.m_Tangent.w,
+				vertex.m_UV0.x, vertex.m_UV0.y, vertex.m_UV1.x, vertex.m_UV1.y,
+				vertex.m_UV2.x, vertex.m_UV2.y, vertex.m_UV3.x, vertex.m_UV3.y })
+			{
+				combine(value);
+			}
+			return seed;
 		}
 	};
 }
@@ -54,7 +62,25 @@ namespace GEngine
 	{
 	public:
 		Mesh() = default;
-		Mesh(const Mesh&) = default;
+		Mesh(const Mesh& other)
+			: m_SourceFilePath(other.m_SourceFilePath)
+			, m_Name(other.m_Name)
+			, m_Vertices(other.m_Vertices)
+			, m_Indices(other.m_Indices)
+			, m_VertexsIndex()
+		{
+		}
+
+		Mesh& operator=(const Mesh& other)
+		{
+			if (this == &other) return *this;
+			m_SourceFilePath = other.m_SourceFilePath;
+			m_Name = other.m_Name;
+			m_Vertices = other.m_Vertices;
+			m_Indices = other.m_Indices;
+			m_VertexsIndex.clear();
+			return *this;
+		}
 
 		operator bool() const { return m_Vertices.size() > 0 && m_Indices.size() > 0; }
 	public:

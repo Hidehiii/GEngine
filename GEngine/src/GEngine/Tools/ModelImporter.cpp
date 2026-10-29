@@ -1,5 +1,6 @@
 #include "GEpch.h"
 #include "GEngine/Tools/ModelImporter.h"
+#include "GEngine/Asset/GAsset.h"
 #include "GEngine/Runtime/ResourcePack.h"
 #include <stdexcept>
 
@@ -7,6 +8,15 @@ namespace GEngine
 {
     namespace
     {
+        void DestroyFbxObjects(FbxImporter* importer, FbxScene* scene,
+            FbxIOSettings* settings, FbxManager* manager)
+        {
+            if (importer) importer->Destroy();
+            if (scene) scene->Destroy();
+            if (settings) settings->Destroy();
+            if (manager) manager->Destroy();
+        }
+
         class ResourceFbxStream final : public FbxStream
         {
         public:
@@ -34,7 +44,14 @@ namespace GEngine
             }
             FbxInt64 GetPosition() const override { return static_cast<FbxInt64>(Position); }
             void SetPosition(FbxInt64 position) override
-            { if (position < 0 || static_cast<FbxUInt64>(position) > Bytes.size()) Error = 1; else Position = static_cast<size_t>(position); }
+            {
+                if (position < 0 || static_cast<FbxUInt64>(position) > Bytes.size()) Error = 1;
+                else
+                {
+                    Position = static_cast<size_t>(position);
+                    Error = 0;
+                }
+            }
             int GetError() const override { return Error; }
             void ClearError() override { Error = 0; }
         private:
@@ -51,49 +68,67 @@ namespace GEngine
     bool ModelImporter::LoadMesh(const std::string filaName)
 	{
         m_FilePath = filaName;
-        std::unique_ptr<ResourceFbxStream> stream;
-        if (HasResourcePack())
-        {
-            auto extension = std::filesystem::path(filaName).extension().string();
-            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-            if (extension != ".fbx") throw std::runtime_error("Archive model import currently supports FBX streams only.");
-            stream = std::make_unique<ResourceFbxStream>(ReadResource(std::filesystem::u8path(filaName)));
-        }
         FbxManager* manager = FbxManager::Create();
         if (!manager) throw std::runtime_error("Cannot create FBX manager.");
         const auto destroyManager = [](FbxManager* value) { value->Destroy(); };
-        std::unique_ptr<FbxManager, decltype(destroyManager)> owner(manager, destroyManager);
+        std::unique_ptr<FbxManager, decltype(destroyManager)> managerOwner(manager, destroyManager);
         FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
-        manager->SetIOSettings(settings); 
-        m_Importer = FbxImporter::Create(manager, "");
+        if (!settings) throw std::runtime_error("Cannot create FBX IO settings.");
+        manager->SetIOSettings(settings);
+        FbxImporter* importer = FbxImporter::Create(manager, "");
+        if (!importer) throw std::runtime_error("Cannot create FBX importer.");
+        std::unique_ptr<ResourceFbxStream> stream;
+        const auto path = std::filesystem::u8path(filaName);
+        if (path.extension() == ".gasset")
+        {
+            const auto envelope = LoadGAsset(path, "mesh");
+            std::string format = envelope.Format;
+            std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+            if (format != "fbx") throw std::runtime_error("GAsset model import currently supports FBX payloads only.");
+            stream = std::make_unique<ResourceFbxStream>(envelope.Payload);
+        }
+        else if (HasResourcePack())
+        {
+            auto extension = path.extension().string();
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+            if (extension != ".fbx") throw std::runtime_error("Archive model import currently supports FBX streams only.");
+            stream = std::make_unique<ResourceFbxStream>(ReadResource(path));
+        }
         bool initialized = false;
+        const auto readerId = manager->GetIOPluginRegistry()->FindReaderIDByExtension("fbx");
         if (stream)
         {
-            initialized = m_Importer->Initialize(stream.get(), nullptr,
-                manager->GetIOPluginRegistry()->FindReaderIDByExtension("fbx"), settings);
+            initialized = importer->Initialize(stream.get(), nullptr, readerId, settings);
         }
-        else initialized = m_Importer->Initialize(filaName.c_str(), -1);
+        else initialized = importer->Initialize(filaName.c_str(), -1);
+        FbxScene* scene = nullptr;
         if (!initialized)
 		{
-			GE_CORE_ERROR("Failed to load model: {0}: {1}", filaName, m_Importer->GetStatus().GetErrorString());
-            m_Importer = nullptr;
+            GE_CORE_ERROR("Failed to load model: {0}: {1}", filaName, importer->GetStatus().GetErrorString());
+            DestroyFbxObjects(importer, scene, settings, manager);
 			return false;
 		}
-        FbxScene* scene = FbxScene::Create(manager, "");
-        if (!m_Importer->Import(scene)) { m_Importer = nullptr; return false; }
+        scene = FbxScene::Create(manager, "");
+        if (!scene) throw std::runtime_error("Cannot create FBX scene.");
+        if (!importer->Import(scene))
+        {
+            DestroyFbxObjects(importer, scene, settings, manager);
+            return false;
+        }
         FbxGeometryConverter geomConverter(manager);
         geomConverter.Triangulate(scene, true);
-        FbxNode* m_RootNode = scene->GetRootNode();
-        if (m_RootNode)
+        FbxNode* rootNode = scene->GetRootNode();
+        if (rootNode)
         {
-            GE_TRACE("Root Node: {0}", m_RootNode->GetName());
+            GE_TRACE("Root Node: {0}", rootNode->GetName());
 
-            int childCount = m_RootNode->GetChildCount();
+            int childCount = rootNode->GetChildCount();
             for (int i = 0; i < childCount; i++)
-                ProcessNode(m_RootNode->GetChild(i));
+                ProcessNode(rootNode->GetChild(i));
         }
-        m_Importer = nullptr;
-		return true;
+        DestroyFbxObjects(importer, scene, settings, manager);
+        managerOwner.release();
+        return true;
 	}
 
 
@@ -169,6 +204,8 @@ namespace GEngine
             }
         }
 		m_Meshes.push_back(newMesh);
+        GE_CORE_INFO("GAsset mesh processed: {} vertices, {} indices",
+            newMesh.m_Vertices.size(), newMesh.m_Indices.size());
     }
     void ModelImporter::ReadVertex(FbxMesh* mesh, int ctrlPointIndex, Vertex& vertex)
     {

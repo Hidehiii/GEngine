@@ -49,7 +49,7 @@ interface, not proof that all declared operations are complete.
 | `Core`, `Events` | [Runtime](Runtime.md) | [Runtime API](../API/Runtime.md) |
 | `Graphics`, `Renderer`, `Compute` | [Rendering](Rendering.md) | [Graphics API](../API/GraphicsAPI.md), [Render graph](../API/RenderGraph.md) |
 | `Object`, `Components`, `Physics`, `Scripting` | [Scene and services](SceneAndServices.md) | [Scene and physics API](../API/SceneAndPhysics.md), [Assets and services API](../API/AssetsAndServices.md) |
-| `Asset`, `Tools`, `Math` | [Scene and services](SceneAndServices.md) | [Assets and services API](../API/AssetsAndServices.md) |
+| `Asset` GAsset envelope, `Tools`, `Math` | [Scene and services](SceneAndServices.md) | [Assets and services API](../API/AssetsAndServices.md) |
 | `ImGui`, `Debug`, `Utils` | [Scene and services](SceneAndServices.md) | [Assets and services API](../API/AssetsAndServices.md) |
 | Backend `Platform` and `Surface` | [Rendering](Rendering.md), [Runtime](Runtime.md) | Portable `Graphics` and `Window`; native headers are backend-facing. |
 

@@ -10,7 +10,7 @@ void TriangleLayer::OnAttach()
         -0.65f, -0.55f, 0.0f
     };
 
-    auto shader = GEngine::Shader::Create("Assets/Shaders/Triangle.shader");
+    auto shader = GEngine::Shader::Create("Assets/Shaders/Triangle.gasset");
     auto material = GEngine::Material::Create(shader, "TriangleMaterial");
     auto vertexBuffer = GEngine::VertexBuffer::Create(vertices, sizeof(vertices));
     m_Pipeline = GEngine::GraphicsPipeline::Create(material, vertexBuffer);

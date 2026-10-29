@@ -2,6 +2,6 @@
     "schemaVersion": 1,
     "name": "SceneRenderHelpers",
     "settings": {
-        "defaultScene": "Assets/Scenes/Default.GEScene"
+        "defaultScene": "Assets/Scenes/Default.gscene"
     }
 }

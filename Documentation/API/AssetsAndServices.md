@@ -1,5 +1,31 @@
 # Assets, math, tools, and service API
 
+## GAsset API
+
+`<GEngine/Asset/GAsset.h>` exports `LoadGAsset(path, expectedType)`,
+`LoadGAssetText(path, expectedType)` and `LoadGAssetBinary(path, expectedType)`.
+The path must end in `.gasset`; version 1 requires a YAML map containing exactly
+`schemaVersion`, `type`, `format`, `payloadEncoding` and `payload`. Text payloads
+use `payloadEncoding: text`; binary payloads use `payloadEncoding: base64` with
+a standard YAML `!!binary` scalar. Malformed files, unknown fields, unsupported
+schema versions and mismatched expected types throw before payload consumption.
+
+Current bounded types are `texture`, `mesh`, `font`, `shader` and
+`shader-include`; `format` records the underlying source/import format such as
+`png`, `jpg`, `ppm`, `fbx`, `ttf`, `shader`, `glsl`, `glvk` or `hlsli`. The
+convenience loaders return owned text or byte storage. Backend-specific loaders
+then decode/upload the payload using their existing ownership and lifetime rules.
+Scenes use `.gscene` and continue through the scene serializer rather than the
+GAsset API. `.gpak` remains a container and may store `.gasset`/`.gscene` paths.
+
+`ModelImporter::LoadMesh(path)` accepts a mesh GAsset with `format: fbx`, uses
+the explicit FBX reader ID for its memory stream, and destroys FBX children in
+the documented order. `Mesh` copies retain vertices/indices and omit the private
+import map.
+
+Binary payloads use standard YAML Base64. This is intentionally simple for the
+first migration, not a size-optimized production asset format.
+
 新编辑器的文档/命令/Worker 协议见 [Qt 编辑器契约](QtEditor.md)。本次仅
 同步设计入口，当前 Scene、Serializer、ImGuiLayer 及其他引擎签名不变。
 

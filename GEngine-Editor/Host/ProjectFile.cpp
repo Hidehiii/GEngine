@@ -18,8 +18,8 @@ namespace GEngineEditor
         const auto path = QDir::cleanPath(QDir::fromNativeSeparators(DefaultScene));
         if (QDir::isAbsolutePath(path) || path.contains(':') || path.contains(QChar::Null) ||
             path == ".." || path.startsWith("../") ||
-            QFileInfo(path).suffix().compare("GEScene", Qt::CaseInsensitive) != 0)
-        { error = "Default scene must be a project-relative .GEScene path inside this project."; return false; }
+            QFileInfo(path).suffix().compare("gscene", Qt::CaseInsensitive) != 0)
+        { error = "Default scene must be a project-relative .gscene path inside this project."; return false; }
         error.clear(); return true;
     }
 

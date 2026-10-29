@@ -68,10 +68,10 @@ void Sandbox2D::OnAttach()
 	m_Scene = CreateRef<Scene>();
 	m_SkyBox = m_Scene->CreateGameObject("SkyBox");
 	m_SkyBox.AddComponent<MeshFilter>();
-	m_ModelImporter.LoadMesh("Resources/Model/2Cube.fbx");
+	m_ModelImporter.LoadMesh("Resources/Model/2Cube.gasset");
 	m_SkyBox.GetComponent<MeshFilter>().SetMesh(m_ModelImporter.GetMesh(0));
 	m_SkyBox.AddComponent<MeshRenderer>();
-	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.glsl"));
+	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.gasset"));
 	mat->SetCullMode(CullMode::Front);
 	m_SkyBox.GetComponent<MeshRenderer>().SetMaterial(mat);
 	m_SkyBox.GetComponent<Transform>().m_Scale *= 100;
@@ -80,7 +80,7 @@ void Sandbox2D::OnAttach()
 
 	m_PresentVertex.resize(4);
 	m_OITRender = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/OITRender.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/OITRender.gasset")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
 	m_OITRender->GetVertexBuffer()->SetLayout({
@@ -89,7 +89,7 @@ void Sandbox2D::OnAttach()
 		});
 
 	m_CopyColorDepth = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/CopyColorDepth.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/CopyColorDepth.gasset")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
 	m_CopyColorDepth->GetVertexBuffer()->SetLayout({
@@ -98,7 +98,7 @@ void Sandbox2D::OnAttach()
 		});
 
 	m_PresentPipeline = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/Present.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/Present.gasset")),
 		VertexBuffer::Create(sizeof(PresentVertex) * m_PresentVertex.size())
 	);
 	m_PresentPipeline->GetVertexBuffer()->SetLayout({
@@ -126,7 +126,7 @@ void Sandbox2D::OnAttach()
 	int count = 12;
 	m_vertex.resize(count);
 	m_OITWrite = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/OITWrite.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/OITWrite.gasset")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
 	m_OITWrite->GetVertexBuffer()->SetLayout({
@@ -178,7 +178,7 @@ void Sandbox2D::OnAttach()
 	m_vertex[11].Color = { 0.0f,  0.0f, 1.0f, 0.25f };
 
 
-	m_Texture = Texture2D::Create("Assets/Textures/02.png");
+	m_Texture = Texture2D::Create("Assets/Textures/02.gasset");
 
 	m_OITWrite->GetVertexBuffer()->SetData(m_vertex.data(), sizeof(TestVertex)* m_vertex.size());
 	m_CopyColorDepth->GetVertexBuffer()->SetData(m_PresentVertex.data(), sizeof(PresentVertex) * m_PresentVertex.size());
@@ -202,19 +202,19 @@ void Sandbox2D::OnAttach()
 	m_OITWrite->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 	m_OITRender->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
 
-	m_CubeMap = CubeMap::Create("Assets/Textures/right.png",
-		"Assets/Textures/left.png",
-		"Assets/Textures/top.png",
-		"Assets/Textures/bottom.png",
-		"Assets/Textures/back.png",
-		"Assets/Textures/front.png");
+	m_CubeMap = CubeMap::Create("Assets/Textures/right.gasset",
+		"Assets/Textures/left.gasset",
+		"Assets/Textures/top.gasset",
+		"Assets/Textures/bottom.gasset",
+		"Assets/Textures/back.gasset",
+		"Assets/Textures/front.gasset");
 
 	m_CubeMap->SetData(m_Texture, m_CubeMap->GetWidth(), m_CubeMap->GetHeight(), CubeMap::CubeMapFace::Front);
 	
 	mat->SetCubeMap("CubeMap", m_CubeMap);
 
 
-	m_OITReset = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/OITWrite.glsl")));
+	m_OITReset = ComputePipeline::Create(Material::Create(Shader::Create("Assets/Shaders/OITWrite.gasset")));
 	m_OITReset->GetMaterial()->SetStorageBuffer("GeometrySBO", m_SBO);
 	m_OITReset->GetMaterial()->SetStorageImage2D("HeadIndexImage", m_StorageImage);
 	m_OITReset->GetMaterial()->SetStorageBuffer("LinkedListSBO", m_StorageBuffer);
@@ -226,7 +226,7 @@ void Sandbox2D::OnAttach()
 	}*/
 
 	/*m_SeparateTextureSampler = GraphicsPipeline::Create(
-		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.glsl")),
+		Material::Create(Shader::Create("Assets/Shaders/SperateTexture2DAndSampler.gasset")),
 		VertexBuffer::Create(sizeof(TestVertex) * m_vertex.size())
 	);
 	m_SeparateTextureSampler->GetVertexBuffer()->SetLayout({

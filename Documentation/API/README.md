@@ -10,7 +10,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | --- | --- |
 | Application/runtime, config, window, input, events, core values | [Runtime API](Runtime.md) |
 | Scene, shared SceneRenderer recording, game objects, components, 2D/3D physics | [Scene and physics API](SceneAndPhysics.md) |
-| Math, mesh/assets, serialization, tools, ImGui, scripting, utilities, diagnostics | [Assets and services API](AssetsAndServices.md) |
+| GAsset envelope, math, mesh/assets, serialization, tools, ImGui, scripting, utilities, diagnostics | [Assets and services API](AssetsAndServices.md) |
 | Graphics device, resources, queues, pipelines, compute, presentation | [Graphics and compute API](GraphicsAPI.md) |
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |

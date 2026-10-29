@@ -100,8 +100,10 @@ def main():
             if code or warm.count("readback passed after 119 frames.") != 3 or warm.count(" from cache.") < 2 or cached != after:
                 raise RuntimeError(f"{backend}: second launch failed cache reuse")
             print(f"PASS {backend}: external config, cold/warm 120 frames, three readbacks, unchanged reused cache ({len(cached)} files)")
-        changed_include = [(name, payload + b"\n// persistent cache dependency probe\n"
-                            if name.endswith(b"FrameGraphColorLogic.hlsli") else payload)
+        changed_include = [(name, payload.replace(
+                                b"payload: |\n",
+                                b"payload: |\n    // persistent cache dependency probe\n", 1)
+                            if name.endswith(b"FrameGraphColorLogic.gasset") else payload)
                            for name, payload in items]
         replace_pack(pack, encode(changed_include))
         code, output = run(executable, directory, environment)

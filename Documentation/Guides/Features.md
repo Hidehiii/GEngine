@@ -17,7 +17,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 - **Compute:** compute pipelines, storage buffers and storage images.
 - **Scene and components:** game objects, scenes, transform and renderer components, cameras and serialization. Component renderer draw paths are currently incomplete.
 - **Physics:** Box2D-backed 2D scene simulation and PhysX-backed 3D world/body wrappers. The scene does not currently step the 3D world.
-- **Tools/assets:** model importing, string/file helpers, serialization, shader compilation and asset meshes.
+- **Tools/assets:** YAML `.gasset` envelopes, `.gscene` files, model importing, string/file helpers, serialization, shader compilation and asset meshes.
 - **Editor:** a separate editor application built on the core engine.
 
 ## Example projects

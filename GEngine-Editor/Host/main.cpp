@@ -1,10 +1,13 @@
 #include "MainWindow.h"
 #include <QApplication>
+#include <QFile>
 #include <QDir>
 #include <QFontDatabase>
 #include <QFont>
 #include <QSettings>
 #include <QTemporaryDir>
+#include <QTemporaryFile>
+#include <QTextStream>
 #include <memory>
 #include <iostream>
 
@@ -13,8 +16,41 @@ int main(int argc, char** argv)
     QApplication application(argc, argv);
     application.setOrganizationName("GEngine");
     application.setApplicationName("QtEditorHostPrototype");
-    const auto fontPath = QDir(application.applicationDirPath()).filePath("fonts/NotoSansSC-Regular.ttf");
-    const int fontId = QFontDatabase::addApplicationFont(fontPath);
+    const auto loadBundledFont = [](const QString& path, std::unique_ptr<QTemporaryFile>& fontFile)
+    {
+        QFile input(path);
+        if (!input.open(QIODevice::ReadOnly | QIODevice::Text)) return -1;
+        QTextStream stream(&input);
+        QString type;
+        QString format;
+        QString encoding;
+        QByteArray encoded;
+        bool payloadStarted = false;
+        while (!stream.atEnd())
+        {
+            const auto line = stream.readLine().trimmed();
+            if (!payloadStarted)
+            {
+                if (line == "schemaVersion: 1") continue;
+                if (line.startsWith("type: ")) type = line.mid(6);
+                else if (line.startsWith("format: ")) format = line.mid(8);
+                else if (line.startsWith("payloadEncoding: ")) encoding = line.mid(17);
+                else if (line.startsWith("payload: !!binary")) payloadStarted = true;
+                else if (!line.isEmpty()) return -1;
+            }
+            else if (!line.isEmpty()) encoded.append(line);
+        }
+        if (type != "font" || format != "ttf" || encoding != "base64" || encoded.isEmpty()) return -1;
+        const auto decoded = QByteArray::fromBase64(encoded, QByteArray::AbortOnBase64DecodingErrors);
+        if (decoded.isEmpty()) return -1;
+        fontFile = std::make_unique<QTemporaryFile>();
+        if (!fontFile->open() || fontFile->write(decoded) != decoded.size()) return -1;
+        fontFile->close();
+        return QFontDatabase::addApplicationFont(fontFile->fileName());
+    };
+    std::unique_ptr<QTemporaryFile> bundledFont;
+    const auto fontPath = QDir(application.applicationDirPath()).filePath("fonts/NotoSansSC-Regular.gasset");
+    const int fontId = loadBundledFont(fontPath, bundledFont);
     if (fontId >= 0)
     {
         const auto families = QFontDatabase::applicationFontFamilies(fontId);

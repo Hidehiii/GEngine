@@ -57,8 +57,8 @@ if(NOT GE_EDITOR_PROTOCOL_ONLY)
             "$<TARGET_FILE_DIR:GEngine-EditorHost>/platforms/$<IF:$<CONFIG:Debug>,qoffscreend.dll,qoffscreen.dll>"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${GE_EDITOR_SOURCE}/Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.ttf"
-            "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts/NotoSansSC-Regular.ttf"
+            "${GE_EDITOR_SOURCE}/Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.gasset"
+            "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts/NotoSansSC-Regular.gasset"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${GE_EDITOR_SOURCE}/Assets/Fonts/Noto_Sans_SC/OFL.txt"
             "$<TARGET_FILE_DIR:GEngine-EditorHost>/fonts/OFL.txt"

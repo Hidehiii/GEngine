@@ -18,19 +18,19 @@ Project settings 入口；引擎公共 API/IPC 不变，场景能力仍受 E4.1 
 {
   "schemaVersion": 1,
   "name": "MyGame",
-  "settings": { "defaultScene": "Assets/Scenes/Default.GEScene" }
+  "settings": { "defaultScene": "Assets/Scenes/Default.gscene" }
 }
 ```
 
 项目文件不含任何打包信息，schema 1 接受 name/schemaVersion 和可选 settings。
 settings 目前只接受 defaultScene 字符串；缺省或空值表示未配置。旧双字段文件
-仍可打开；新建项目生成空 Default.GEScene 并保存相对路径。
+仍可打开；新建项目生成空 Default.gscene 并保存相对路径。
 `ProjectFile::Load/Save` 限制 1 MiB、校验版本/字段，Save 使用 QSaveFile；Root
 为文件父目录，src/Assets/Config.ini/Licenses 均按项目根约定查找。
 MainWindow::NewProject/OpenProject/CloseProject 管理此描述与只读 Assets 工作区；
 无效打开不覆盖旧状态，新建不覆盖既有文件。目录浏览兼容入口不提供打包能力。
 ProjectFile::DefaultScene 存项目根相对路径；ValidateSettings 拒绝绝对、根外和
-非 .GEScene 路径，ResolveDefaultScene 检查存在性及 canonical 路径边界。
+非 .gscene 路径，ResolveDefaultScene 检查存在性及 canonical 路径边界。
 MainWindow::SaveProjectSettings(defaultScene) 校验后原子保存，再加载此场景；
 失败保留旧描述/选择/视口。ProjectSettingsAction 打开 ProjectSettingsDialog，
 ProjectDefaultScene 输入路径，Browse 选文件后转相对路径，Cancel 不改文件。
@@ -41,7 +41,7 @@ ProjectDefaultScene 输入路径，Browse 选文件后转相对路径，Cancel �
 命令行 `--project <file.gproject>` 或首个 `.gproject` 参数打开项目，未注册系统关联。
 
 E1.8 的七个 Example 描述均使用 settings.defaultScene 指向各自
-Assets/Scenes/Default.GEScene；覆盖列表及空场景预期见 Example/README.md。
+Assets/Scenes/Default.gscene；覆盖列表及空场景预期见 Example/README.md。
 本项仅添加项目数据，不新增公共接口；原生示例入口及现有场景支持范围不变。
 
 MainWindow::SavePackaging(output, executableName, logoPath) 仅保存本机打包偏好，
@@ -147,7 +147,7 @@ Qt 树控件只是选择状态与 Inspector 元数据的投影。只读 QFileSys
 MainWindow::OpenProject/CloseProject 对接 File > Open project folder / Close
 project；AssetsTree 的当前选择更新 ResourceInspector 元数据。Inspector 为
 只读资源信息而非组件编辑器。草稿/历史与 Worker 进程不随项目切换改变；没有
-隐式打开 .GEScene、加载 Mono 或资产导入。该目录浏览入口不执行打包；上面的
+隐式打开 .gscene、加载 Mono 或资产导入。该目录浏览入口不执行打包；上面的
 `.gproject` 入口提供显式打包操作。本机输出偏好与项目文件分开保存。
 
 下面是 E4.1 图像协议；场景公共录制接口见 SceneAndPhysics.md。
@@ -192,7 +192,7 @@ Decoder 支持分片/粘包，Feed 每次最大 64 KiB，缓冲上限为两份�
 
 `Core/DraftDocument.h` 提供 Reset/Edit/Undo/Redo/MarkSaved/Text/Dirty 查询，
 最多 256 个独立历史状态。`.gedraft` 仅含 format、version、notes 三个字段，
-明确不是现有 `.GEScene`；不支持字段的文件被拒绝而非丢字段重存。
+明确不是现有 `.gscene`；不支持字段的文件被拒绝而非丢字段重存。
 `Host/WorkerSupervisor` 提供 Start(executable, scenePath)、SetViewportSize(QSize)、
 FrameSize()、Stop/Inject 与状态/日志/QImage 回调，仅在
 Host 主线程使用；Inject 只发送给其启动的子进程。Host 源码不加载 GEngine。
@@ -271,7 +271,7 @@ Worker 先向游戏 ImGui 投递，再按 capture 状态投递游戏逻辑；Hos
 
 ## 兼容与验收边界
 
-现有 `.GEScene` 需经 Host 独立 codec 往返验证，未知字段/组件必须保留或
+现有 `.gscene` 需经 Host 独立 codec 往返验证，未知字段/组件必须保留或
 明确拒绝不安全保存；不将现有引擎 Serializer 直接链接到 Host。
 Qt Gizmo 与命令接口通过 E4-G 验收后才移除现有 ImGuizmo 依赖。
 

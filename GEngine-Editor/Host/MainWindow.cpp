@@ -197,7 +197,7 @@ namespace GEngineEditor
         openScene->setObjectName("OpenRenderSceneAction");
         connect(openScene, &QAction::triggered, this, [this]
         {
-            const auto path = QFileDialog::getOpenFileName(this, "Open engine scene", m_Workspace->Root(), "Engine scene (*.GEScene)");
+            const auto path = QFileDialog::getOpenFileName(this, "Open engine scene", m_Workspace->Root(), "Engine scene (*.gscene)");
             if (!path.isEmpty() && !OpenScene(path)) QMessageBox::warning(this, "Scene open failed", m_Error);
         });
         auto* sampleScene = file->addAction("Show engine sample scene");
@@ -462,7 +462,7 @@ namespace GEngineEditor
         auto* editor = new QPlainTextEdit(m_DraftTabs);
         tab->Editor = editor;
         editor->setUndoRedoEnabled(false);
-        editor->setPlaceholderText("Draft notes; .GEScene editing is not connected yet.");
+        editor->setPlaceholderText("Draft notes; .gscene editing is not connected yet.");
         editor->setPlainText(QString::fromStdString(tab->Document.Text()));
         m_Drafts.emplace(editor, std::move(tab));
         connect(editor, &QPlainTextEdit::textChanged, this, [this, editor]
@@ -621,8 +621,8 @@ namespace GEngineEditor
     bool MainWindow::OpenScene(const QString& path)
     {
         const QFileInfo file(path);
-        if (!path.isEmpty() && (!file.isFile() || file.suffix().compare("GEScene", Qt::CaseInsensitive) != 0))
-        { m_Error = "Select an existing .GEScene file."; return false; }
+        if (!path.isEmpty() && (!file.isFile() || file.suffix().compare("gscene", Qt::CaseInsensitive) != 0))
+        { m_Error = "Select an existing .gscene file."; return false; }
         m_Error.clear(); m_ScenePath = path.isEmpty() ? QString{} : file.absoluteFilePath();
         m_ProjectViewportEmpty = false; m_Viewport->EmptyMessage.clear();
         m_Viewport->Scene = path.isEmpty() ? "Engine sample scene" : file.fileName();
@@ -694,7 +694,7 @@ namespace GEngineEditor
         if (error.error != QJsonParseError::NoError || object.value("format") != "GEngine.EditorDraft" ||
             object.value("version").toDouble() != 1 || !object.value("notes").isString() ||
             object.size() != 3 || object.value("notes").toString().toUtf8().size() > 64 * 1024)
-        { m_Error = "Unsupported editor draft; .GEScene is not supported by this prototype."; return false; }
+        { m_Error = "Unsupported editor draft; .gscene is not supported by this prototype."; return false; }
         if (!NewDraft()) return false;
         m_Error.clear(); ActiveDraft().Path = key;
         Document().Reset(object.value("notes").toString().toUtf8().toStdString());

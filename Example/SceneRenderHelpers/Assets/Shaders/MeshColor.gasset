@@ -1,0 +1,62 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "SceneMeshColor"
+    {
+        Pass
+        {
+            Cull Off
+            DepthTest Always
+            DepthWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            BlendOp None
+            ColorMask R G B A
+            Tag SceneMeshColor
+
+            #pragma vertex vert
+            #pragma fragment frag
+
+            Program
+            {
+                cbuffer material
+                {
+                    float4x4 GE_MATRIX_M;
+                };
+
+                struct VsInput
+                {
+                    float4 position : POSITION;
+                    float4 color : COLOR0;
+                    float4 normal : NORMAL;
+                    float4 tangent : TANGENT;
+                    float2 uv0 : TEXCOORD0;
+                    float2 uv1 : TEXCOORD1;
+                    float2 uv2 : TEXCOORD2;
+                    float2 uv3 : TEXCOORD3;
+                };
+
+                struct VsOutput
+                {
+                    float4 position : SV_POSITION;
+                    float4 color : COLOR0;
+                };
+
+                VsOutput vert(VsInput input)
+                {
+                    VsOutput output;
+                    output.position = mul(GE_MATRIX_M, input.position);
+                    float attributes = input.normal.x + input.tangent.x +
+                        input.uv0.x + input.uv1.x + input.uv2.x + input.uv3.x;
+                    output.color = input.color * (1.0f + 0.00001f * attributes);
+                    return output;
+                }
+
+                float4 frag(VsOutput input) : SV_Target
+                {
+                    return input.color;
+                }
+            }
+        }
+    }

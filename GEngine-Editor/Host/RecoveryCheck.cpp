@@ -415,8 +415,8 @@ namespace GEngineEditor
                         const auto args = QCoreApplication::arguments();
                         const auto workerIndex = args.indexOf("--worker");
                         const auto source = QDir(QFileInfo(args.value(workerIndex + 1)).absolutePath())
-                            .filePath("Assets/Scenes/ColorScene.GEScene");
-                        const auto scene = check->Directory.filePath("loaded.GEScene");
+                            .filePath("Assets/Scenes/ColorScene.gscene");
+                        const auto scene = check->Directory.filePath("loaded.gscene");
                         if (workerIndex < 0 || !QFile::copy(source, scene) || !window.OpenScene(scene))
                         { finish(false, "could not open scene through Host"); return; }
                         check->LivePhase = 4; break;

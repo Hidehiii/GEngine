@@ -1,10 +1,12 @@
 # Runtime and window architecture
 
-Engine-owned resource data and serialized asset schemas are a
-[planned follow-up](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
-That TODO distinguishes imported source files, CPU resource data, archive payloads
-and backend GPU objects. Current resource loading, ownership and `.gpak` behavior
-are unchanged; no typed resource-format implementation is claimed here.
+First-party runtime resources use the version-1 `.gasset` YAML envelope, while
+scenes use `.gscene`. GAsset identifies and validates the envelope, source format
+and payload, but does not yet replace every imported payload with a mature
+engine-owned CPU schema. The remaining typed resource-data design is tracked in
+[Scripting and packaging TODO](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
+Current resource ownership, backend upload rules and `.gpak` behavior remain
+unchanged.
 
 Packaged startup now has a pre-Application phase. EntryPoint calls the portable
 ResourcePack interface, implemented under Platform/Windows: resolve EXE, require

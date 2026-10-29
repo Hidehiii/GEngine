@@ -6,7 +6,10 @@ Packaged games create and reuse `Cache/Shaders/<API>/` under the game root
 recursively referenced literal HLSL includes. Editing an included file invalidates
 the dependent shader. Macro-generated include dependencies are not fingerprinted.
 
-Shaders use the `.shader` container format. A `Pass` contains fixed render state, stage pragmas and HLSL-like program code.
+Shaders use `.gasset` files with `type: shader`, `format: shader` and a text
+payload. That payload is the `.shader` container: a `Pass` contains fixed render
+state, stage pragmas and HLSL-like program code. Literal includes reference
+`.gasset` files whose type is `shader-include`.
 
 ```hlsl
 Shader "Triangle"

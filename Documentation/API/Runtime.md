@@ -1,9 +1,10 @@
 # Runtime, core, window, and event API
 
-Engine-specific typed resource data and asset schemas are
-[planned in TODO](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
-No type names, extensions or public interfaces have been selected. `ReadResource`
-continues to return owned bytes; this plan does not add a supported typed loader.
+Resource files use `.gasset`; scenes use `.gscene`. `ReadResource` still returns
+the complete owned file/envelope bytes. `GAsset.h` provides validated envelope
+loading for bounded texture, mesh, font, shader and shader-include payloads.
+Full engine-owned typed resource schemas and dependency identity remain planned
+in [TODO](../../TODO/ScriptingAndPackaging.md#engine-specific-resource-data-types-planned-2026-10-28).
 
 ## Native packaged resources
 

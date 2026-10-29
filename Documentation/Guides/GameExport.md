@@ -17,7 +17,7 @@ The version-1 descriptor supports project settings:
 {
   "schemaVersion": 1,
   "name": "MyGame",
-  "settings": { "defaultScene": "Assets/Scenes/Default.GEScene" }
+  "settings": { "defaultScene": "Assets/Scenes/Default.gscene" }
 }
 ```
 
@@ -31,6 +31,8 @@ the editor scene in the packaged game automatically.
 Source files live in `src/`, assets in `Assets/`, and optional config/notices in
 `Config.ini` and `Licenses/` alongside the descriptor. New project creation
 provides a minimal native `src/Game.cpp` and an empty configured default scene.
+Runtime resources use `.gasset`; scenes use `.gscene`. The archive stores those
+files without extracting or converting their envelopes.
 The included FrameGraphTriangle.gproject
 is a complete source-project example.
 

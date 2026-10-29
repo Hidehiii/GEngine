@@ -1,0 +1,24 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "FrameGraphColor"
+    {
+        Pass
+        {
+            #pragma compute updateColor
+            Program
+            {
+                #include "Assets/Shaders/FrameGraphColorLogic.gasset"
+                RWByteAddressBuffer ColorData : register(u0);
+                [numthreads(1, 1, 1)]
+                void updateColor(uint3 id : SV_DispatchThreadID)
+                {
+                    float4 color = asfloat(ColorData.Load4(0));
+                    color.r = ToggleGraphRed(color.r);
+                    ColorData.Store4(0, asuint(color));
+                }
+            }
+        }
+    }

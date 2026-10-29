@@ -74,9 +74,9 @@ int main()
         int undoCount = 0; while (draft.CanUndo()) { draft.Undo(); ++undoCount; }
         Require(undoCount == 255 && draft.Dirty(), "bounded history retains correct dirty state");
         SelectionService selection;
-        Require(!selection.Select(0, "Assets/texture.png"), "empty scope rejected");
+        Require(!selection.Select(0, "Assets/texture.gasset"), "empty scope rejected");
         Require(!selection.Select(9, {}), "empty selection id rejected");
-        Require(selection.Select(9, "Assets/texture.png"), "valid selection accepted");
+        Require(selection.Select(9, "Assets/texture.gasset"), "valid selection accepted");
         Require(selection.Validate(9, true), "current project selection remains valid");
         Require(!selection.Validate(10, true) && selection.Empty(), "project switch clears selection");
         Require(selection.Select(11, "Assets/scene.txt"), "selection restored");
@@ -84,7 +84,7 @@ int main()
         Require(!selection.Empty(), "unrelated scope does not clear selection");
         selection.ClearScope(11);
         Require(selection.Empty(), "matching scope clears selection");
-        Require(selection.Select(13, "Assets/image.png"), "selection after clear accepted");
+        Require(selection.Select(13, "Assets/image.gasset"), "selection after clear accepted");
         Require(!selection.Validate(13, false) && selection.Empty(), "deleted resource clears selection");
         std::cout << "PASS: fragmented/coalesced pipes, invalid headers, limits, EOF, draft history and selection scope\n";
         return 0;

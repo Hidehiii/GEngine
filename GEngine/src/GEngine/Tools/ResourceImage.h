@@ -1,4 +1,5 @@
 #pragma once
+#include "GEngine/Asset/GAsset.h"
 #include "GEngine/Runtime/ResourcePack.h"
 #include "stb_image.h"
 #include <limits>
@@ -10,7 +11,7 @@ namespace GEngine
     inline stbi_uc* LoadResourceImage(const char* path, int* width, int* height,
         int* channels, int desiredChannels)
     {
-        const auto bytes = ReadResource(std::filesystem::u8path(path));
+        const auto bytes = LoadGAsset(std::filesystem::u8path(path), "texture").Payload;
         if (bytes.size() > static_cast<std::size_t>((std::numeric_limits<int>::max)()))
             throw std::runtime_error("Image exceeds decoder input limits.");
         auto* pixels = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(bytes.data()),

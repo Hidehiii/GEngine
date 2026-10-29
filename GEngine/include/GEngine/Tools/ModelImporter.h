@@ -30,8 +30,5 @@ namespace GEngine
     private:
 		std::filesystem::path m_FilePath;
         std::vector<Mesh> m_Meshes;
-		FbxNode* m_RootNode = nullptr;
-	private:
-        FbxImporter* m_Importer = nullptr;
 	};
 }

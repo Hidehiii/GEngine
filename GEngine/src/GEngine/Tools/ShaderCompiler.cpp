@@ -3,6 +3,7 @@
 #include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Graphics/Shader.h"
 #include "GEngine/Graphics/Graphics.h"
+#include "GEngine/Asset/GAsset.h"
 #include <bitset>
 #include <d3d12shader.h>
 #include <SPIRV-Cross/spirv_cross.hpp>
@@ -33,7 +34,10 @@ namespace GEngine
                 *result = nullptr;
                 try
                 {
-                    const auto bytes = ReadResource(std::filesystem::path(name));
+                    const auto path = std::filesystem::path(name);
+                    const auto bytes = path.extension() == ".gasset"
+                        ? LoadGAsset(path, "shader-include").Payload
+                        : ReadResource(path);
                     if (bytes.size() > UINT32_MAX) return E_FAIL;
                     IDxcBlobEncoding* blob = nullptr;
                     const auto status = Utils->CreateBlob(bytes.data(), static_cast<UINT32>(bytes.size()), DXC_CP_UTF8, &blob);

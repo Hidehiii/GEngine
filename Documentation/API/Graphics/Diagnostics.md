@@ -42,7 +42,7 @@ resources' static factory functions.
 
 ```cpp
 auto& device = Graphics::GetRenderDevice();
-auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.shader");
+auto shader = Shader::Create("Assets/Shaders/FrameGraphTriangle.gasset");
 auto material = device.CreateMaterial(shader, "Triangle");
 auto pipeline = device.CreateGraphicsPipeline(material, vertices);
 ```

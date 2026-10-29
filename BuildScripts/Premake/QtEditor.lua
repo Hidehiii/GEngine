@@ -76,6 +76,6 @@ editorProject("GEngine-EditorHost")
     postbuildcommands {
         '{COPYFILE} "%{cfg.targetdir}/../GEngineTools/GEngineTools.exe" "%{cfg.targetdir}/GEngineTools.exe"',
         '{MKDIR} "%{cfg.targetdir}/fonts"',
-        '{COPYFILE} "' .. editorRoot .. '/Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.ttf" "%{cfg.targetdir}/fonts/NotoSansSC-Regular.ttf"',
+        '{COPYFILE} "' .. editorRoot .. '/Assets/Fonts/Noto_Sans_SC/static/NotoSansSC-Regular.gasset" "%{cfg.targetdir}/fonts/NotoSansSC-Regular.gasset"',
         '{COPYFILE} "' .. editorRoot .. '/Assets/Fonts/Noto_Sans_SC/OFL.txt" "%{cfg.targetdir}/fonts/OFL.txt"'
     }

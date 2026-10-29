@@ -7,7 +7,7 @@ namespace GEngine
 	}
 	void ShaderCompile::OnAttach()
 	{
-		Ref<Shader> shader = Shader::Create("Assets/Shaders/ExampleShader.shader");
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/ExampleShader.gasset");
 		Ref<Material> material = Material::Create(shader, "ExampleMaterial");
 
 		float trianglePos[] = {

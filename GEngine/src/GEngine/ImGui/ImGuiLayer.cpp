@@ -1,6 +1,7 @@
 #include "GEpch.h"
 #include "GEngine/Runtime/ResourcePack.h"
 #include "GEngine/ImGui/ImGuiLayer.h"
+#include "GEngine/Asset/GAsset.h"
 #include "GEngine/Application.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_win32.h"
@@ -66,19 +67,19 @@ namespace GEngine
 		//io.ConfigViewportsNoTaskBarIcon = true;
 
 		const std::filesystem::path fontDirectory = "Assets/Fonts/Noto_Sans_SC/static";
-		if (ResourceExists(fontDirectory / "NotoSansSC-Regular.ttf"))
+		if (ResourceExists(fontDirectory / "NotoSansSC-Regular.gasset"))
 		{
             auto addFont = [&io](const std::filesystem::path& path)
             {
-                const auto bytes = ReadResource(path);
+                const auto bytes = LoadGAsset(path, "font").Payload;
                 if (bytes.size() > INT_MAX) throw std::runtime_error("Font exceeds input limits.");
                 void* owned = IM_ALLOC(bytes.size());
                 if (!owned) throw std::bad_alloc();
                 memcpy(owned, bytes.data(), bytes.size());
                 return io.Fonts->AddFontFromMemoryTTF(owned, static_cast<int>(bytes.size()), 20.0f);
             };
-            if (ResourceExists(fontDirectory / "NotoSansSC-Bold.ttf")) addFont(fontDirectory / "NotoSansSC-Bold.ttf");
-            io.FontDefault = addFont(fontDirectory / "NotoSansSC-Regular.ttf");
+            if (ResourceExists(fontDirectory / "NotoSansSC-Bold.gasset")) addFont(fontDirectory / "NotoSansSC-Bold.gasset");
+            io.FontDefault = addFont(fontDirectory / "NotoSansSC-Regular.gasset");
 		}
 
 		// Setup Dear ImGui style

@@ -14,9 +14,9 @@ def main():
     root.mkdir(parents=True, exist_ok=True)
     valid = {"schemaVersion": 1, "name": "SettingsProbe"}
     cases = [("legacy", valid, True),
-             ("default", dict(valid, settings={"defaultScene": "Assets/Scenes/场景.GEScene"}), True),
+             ("default", dict(valid, settings={"defaultScene": "Assets/Scenes/场景.gscene"}), True),
              ("empty", dict(valid, settings={"defaultScene": ""}), True),
-             ("braces-in-path", dict(valid, settings={"defaultScene": "Assets/Scenes/a}b.GEScene"}), True),
+             ("braces-in-path", dict(valid, settings={"defaultScene": "Assets/Scenes/a}b.gscene"}), True),
              ("bad-type", dict(valid, settings={"defaultScene": 12}), False),
              ("unknown", dict(valid, settings={"unknown": "x"}), False),
              ("nested", dict(valid, settings={"defaultScene": {"nested": "x"}}), False),

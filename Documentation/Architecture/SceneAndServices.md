@@ -1,5 +1,32 @@
 # Scene, physics, assets, and services architecture
 
+## GAsset envelope and scene extension
+
+First-party runtime resources use `.gasset`, and scenes use `.gscene`. A
+version-1 GAsset is a YAML envelope with `schemaVersion`, `type`, `format`,
+`payloadEncoding` and `payload`. Text shader and shader-include payloads are
+stored as UTF-8 YAML scalars; texture, mesh and font payloads use standard YAML
+binary Base64. The envelope is deliberately not a claim that every resource has
+a mature engine-owned CPU schema: its payload is still the declared source/import
+format, while the full typed resource-data design remains tracked in
+[Scripting and packaging TODO](../../TODO/ScriptingAndPackaging.md).
+
+`GAsset.cpp` validates the extension, YAML map, exact field set, schema version,
+identifier characters, requested type and payload encoding before returning
+owned bytes. Image, mesh, font, shader and DXC include loaders unwrap the
+payload and retain their existing backend ownership rules. `.gscene` remains
+the existing scene YAML with a scene-specific extension; it is not wrapped in
+GAsset. Legacy raw source extensions remain loader compatibility inputs, but
+first-party examples and editor runtime resources use the two-extension
+convention.
+`ModelImporter` explicitly destroys the FBX importer, scene, IO settings and
+manager in that order before returning. `Mesh` copies expose the CPU vertices
+and indices while omitting the importer-only deduplication map, and `Vertex`
+uses a deterministic component hash.
+Binary GAsset payloads currently use YAML Base64, which inflates large font and
+texture files by about 33%; a compact binary envelope remains a future
+optimization.
+
 当前编辑器采用 [Qt Host/Worker 架构](QtEditor.md)。2026-10-25 已移除旧 ImGui
 编辑器、私有面板与 GizmoController；旧实现及验证记录保留在 Git/TODO 历史。
 Qt Host 负责 UI/草稿，独立 GEngine Worker 提供真实 GPU 预览和日志。

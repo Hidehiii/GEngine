@@ -38,7 +38,7 @@ headers in `GEngine/include` remain the source of truth for API signatures.
 - [API index](API/README.md): public entry-point map.
 - [Runtime API](API/Runtime.md)
 - [Scene and physics API](API/SceneAndPhysics.md)
-- [Assets and services API](API/AssetsAndServices.md)
+- [Assets and services API](API/AssetsAndServices.md): GAsset envelope, mesh/assets, serialization, tools, ImGui, scripting, utilities, diagnostics.
 - [Graphics and compute API](API/GraphicsAPI.md)
 - [Render graph API](API/RenderGraph.md)
 - [Shader authoring](API/ShaderAuthoring.md)

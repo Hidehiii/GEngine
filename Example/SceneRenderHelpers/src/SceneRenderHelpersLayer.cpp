@@ -33,7 +33,7 @@ namespace GEngine
 		m_Image.GetComponent<Transform>().SetScale({ 0.65f, 0.65f, 1.0f });
 		m_Image.AddComponent<ImageRenderer>(Vector4{ 0.95f, 0.22f, 0.18f, 1.0f });
 		auto& imageRenderer = m_Image.GetComponent<ImageRenderer>();
-		imageRenderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.shader"), "ImageColor"));
+		imageRenderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.gasset"), "ImageColor"));
 		imageRenderer.m_Texture = Texture2D::White();
 		expectUnsupported([&imageRenderer] { imageRenderer.OnRender(); }, "Textured ImageRenderer");
 		imageRenderer.m_Texture.reset();
@@ -52,7 +52,7 @@ namespace GEngine
 		m_Mesh.GetComponent<MeshFilter>().SetMesh(mesh);
 		m_Mesh.AddComponent<MeshRenderer>();
 		m_Mesh.GetComponent<MeshRenderer>().SetMaterial(
-			Material::Create(Shader::Create("Assets/Shaders/MeshColor.shader"), "MeshColor"));
+			Material::Create(Shader::Create("Assets/Shaders/MeshColor.gasset"), "MeshColor"));
 		GE_INFO("SceneRenderHelpers initialized: color quad, indexed mesh, unsupported paths rejected.");
 	}
 
@@ -62,7 +62,7 @@ namespace GEngine
 		{
 			auto& renderer = m_Image.GetComponent<ImageRenderer>();
 			renderer.m_Color = { 0.95f, 0.72f, 0.18f, 1.0f };
-			renderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.shader"), "ReplacedImageColor"));
+			renderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.gasset"), "ReplacedImageColor"));
 			GE_INFO("SceneRenderHelpers replaced image material after 30 frames.");
 		}
 		if (m_FrameCount == 60)
