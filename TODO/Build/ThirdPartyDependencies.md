@@ -40,9 +40,28 @@
   layout testing; this host still has no installed SDK.
   Published: aggregate commit
   `99c4b5e529f402e2292d0e367fabe5c356bbe995` removes the snapshot, and this
-  main-repository change pins that commit. The development host still needs a
-  real external SDK installed; clean-machine generation/build evidence remains
+  main-repository change pins that commit. The development host now has
+  Vulkan SDK 1.4.363.0 installed and its validation layer is visible; the
+  shaderc-layout follow-up below must pass before the installed SDK is a
+  complete build prerequisite. Clean-machine generation/build evidence remains
   a future environment check, not a claim of this item.
+  Follow-up (2026-10-29): support the current official SDK layout. The installed
+  Vulkan SDK 1.4.363.0 provides `Lib/shaderc_shared.lib` and
+  `Bin/shaderc_shared.dll`, but not the old snapshot's
+  `Lib/shaderc_sharedd.lib` or `Bin/shaderc_sharedd.dll`. It exposes VMA
+  through the optional `com.lunarg.vulkan.vma` package.
+  Implemented: Debug and Release now link the official
+  `Lib/shaderc_shared.lib`; generation and runtime copying no longer require
+  the old Debug shaderc names. The official VMA package is installed on this
+  host, the repository-owned `vk_mem_alloc.h` is removed, and engine includes
+  use the SDK's `vma/vk_mem_alloc.h` path. Both generators require the official
+  Vulkan and VMA headers.
+  Verification: with `VULKAN_SDK=C:\VulkanSDK\1.4.363.0`, CMake VS2022
+  configuration and Premake VS2022 generation passed. Single-parallel CMake
+  Debug and Release FrameGraphTriangle builds passed with existing warnings.
+  A source scan found no remaining `shaderc_sharedd`, local VMA include, or
+  vendored VulkanSDK build references. Clean-machine generation/build evidence
+  remains future environment work.
 
 ## Third-party dependency layout and submodules (implemented)
 

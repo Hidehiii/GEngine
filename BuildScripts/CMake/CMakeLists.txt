@@ -19,10 +19,9 @@ endif()
 file(TO_CMAKE_PATH "$ENV{VULKAN_SDK}" GE_VULKAN_SDK)
 foreach(vulkan_required_path
         "${GE_VULKAN_SDK}/Include/vulkan/vulkan.h"
+        "${GE_VULKAN_SDK}/Include/vma/vk_mem_alloc.h"
         "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
-        "${GE_VULKAN_SDK}/Lib/shaderc_sharedd.lib"
         "${GE_VULKAN_SDK}/Lib/shaderc_shared.lib"
-        "${GE_VULKAN_SDK}/Bin/shaderc_sharedd.dll"
         "${GE_VULKAN_SDK}/Bin/shaderc_shared.dll")
     if(NOT EXISTS "${vulkan_required_path}")
         message(FATAL_ERROR "VULKAN_SDK is invalid; missing ${vulkan_required_path}")
@@ -175,7 +174,7 @@ target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCooking_64.lib"
     "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"
     "${GE_VENDOR}/dxc/lib/x64/dxil.lib"
-    "${GE_VULKAN_SDK}/Lib/$<IF:$<CONFIG:Debug>,shaderc_sharedd.lib,shaderc_shared.lib>"
+    "${GE_VULKAN_SDK}/Lib/shaderc_shared.lib"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libfbxsdk-md.lib"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libxml2-md.lib"
     "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/$<IF:$<CONFIG:Debug>,zlib-md.lib,zlib-md.lib>"

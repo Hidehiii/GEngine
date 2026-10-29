@@ -8,10 +8,9 @@ if not vulkanSdkOverride or vulkanSdkOverride == "" then
 end
 local requiredVulkanFiles = {
 	"Include/vulkan/vulkan.h",
+	"Include/vma/vk_mem_alloc.h",
 	"Lib/vulkan-1.lib",
-	"Lib/shaderc_sharedd.lib",
 	"Lib/shaderc_shared.lib",
-	"Bin/shaderc_sharedd.dll",
 	"Bin/shaderc_shared.dll"
 }
 for _, requiredFile in ipairs(requiredVulkanFiles) do
@@ -71,7 +70,7 @@ Library["FBX_SDK_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/libfbxsdk-md.lib
 Library["FBX_XML2_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/libxml2-md.lib"
 Library["FBX_Z_Release"] = "%{LibraryDir.FBX_SDK}/x64/release/zlib-md.lib"
 
-Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
+Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["SPIRV_Cross_Debug"] = "spirv-cross-core"
 Library["SPIRV_Cross_GLSL_Debug"] = "spirv-cross-glsl"
 Library["SPIRV_Tools_Debug"] = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.lib"

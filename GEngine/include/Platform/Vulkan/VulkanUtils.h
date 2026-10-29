@@ -1,5 +1,5 @@
 #pragma once
-#include <VMA/vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include "GEngine/Graphics/FrameBuffer.h"
 #include "GEngine/Graphics/ImageFormat.h"
 #include "GEngine/Graphics/Shader.h"

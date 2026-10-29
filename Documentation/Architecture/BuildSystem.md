@@ -129,8 +129,8 @@ The first CMake Debug compile found wide-string Win32 calls resolving to ANSI
 entry points. The CMake targets now define `UNICODE` and `_UNICODE` explicitly;
 this corrects build configuration without changing runtime APIs.
 The CMake link graph resolves OpenSSL import libraries from the checked-in
-`VC/x64/MD[d]` layout and resolves Vulkan headers, import libraries, shaderc,
-and runtime DLLs from the mandatory `VULKAN_SDK` installation.
+`VC/x64/MD[d]` layout and resolves Vulkan/VMA headers, import libraries,
+shaderc, and runtime DLLs from the mandatory `VULKAN_SDK` installation.
 The post-build copy script requires vendor DLL matches so a missing runtime
 or Vulkan SDK bundle fails the build instead of producing an executable that
 cannot start.

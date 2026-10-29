@@ -17,8 +17,9 @@ Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics 
   `dist/mono/windows-x86_64/6.10.0.87/Mono`; run
   `GEngineTools.exe mono-sdk` once after the workflow tool is built.
 - The [Vulkan SDK](https://vulkan.lunarg.com/sdk/latest/windows)
-  installed and its root exported as `VULKAN_SDK`; both CMake and Premake
-  require this environment variable.
+  installed with its optional Vulkan Memory Allocator component, and its root
+  exported as `VULKAN_SDK`; both CMake and Premake require this environment
+  variable.
 
 Additional requirements depend on the selected build path:
 

@@ -20,9 +20,10 @@ Development is currently Windows-first. Install the following before generating 
 - Premake 5.0.0-beta8 is bundled as `BuildScripts/Premake/premake5.exe` and supports
   VS2026, VS2022 and VS2019 project generation.
 - CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
-- Install the Vulkan SDK and export its root as `VULKAN_SDK`. CMake and Premake
-  require this environment variable and validate its headers, import libraries,
-  shaderc libraries, and runtime DLLs before generating projects.
+- Install the Vulkan SDK, select its optional Vulkan Memory Allocator
+  component, and export its root as `VULKAN_SDK`. CMake and Premake require
+  this environment variable and validate its Vulkan/VMA headers, import
+  libraries, shaderc library, and runtime DLLs before generating projects.
 - .NET Framework 4.7.2 Developer Pack, required to build `GEngine-ScriptCore`
   with both Premake and CMake.
 
