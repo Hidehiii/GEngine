@@ -7,6 +7,14 @@ C# 运行库共享、编译与重启的拟议分工见 [Mono 与游戏发布设�
 
 ## 当前实施：E0.1 基础原型
 
+E1.9 资源导入：Project > Import resource 选择源文件和项目 Assets 内目录，
+Host 异步运行原生 GEngineTools import-resource，以现有 GAsset schema 写入新资源。
+源文件保留，不覆盖现有目标；Host 校验目录边界，工具检查格式/大小/链接。
+临时输出完成后以禁止覆盖的重命名发布，失败清理临时文件。导入期间禁止切换/
+关闭项目及打包；窗口关闭等待作业完成。成功刷新并选择目标，失败写入 Console/
+状态栏。Host 不链接引擎，不改变 GPU/IPC；当前只封装源数据，不解码或收集依赖。
+Host 的内置字体 Base64 读取显式转为 Latin-1 字节，保持字体加载语义并兼容 Qt 类型要求。
+
 E1.7 项目设置（2026-10-28）：.gproject 的可选 settings 对象保存
 项目根相对 defaultScene，Host 在打开项目时选择该场景并更新独立 Worker；
 未设置/缺失场景清空项目视口、停止 Worker，并保留项目以便修复设置；不退回
@@ -371,9 +379,11 @@ TODO/EditorArchitecture.md 的 E4.1 把共享 SceneRenderer 组件录制接入 W
 Host 增量解析并复制最终 QImage；不跨进程传递 GPU 句柄。同步读回暂留 Worker，
 上一帧读回完成后才可能收到下一次替换请求，复用既有 GPU 完成路径。
 File > Open scene for rendering 重启子进程并传入绝对 .gscene 路径，保留 Host 草稿。
-当前读取 Attribute/Transform/颜色 ImageRenderer，复用 Serializer 并提供引擎颜色
-材质；不支持的组件/纹理明确失败。无文件时是标记清楚的引擎示例 Scene，含动态
-变换对象；不是项目场景的隐式替身。完整相机、材质序列化、Play 和异步读回仍开放。
+当前读取 GameObject 基础数据及 ImageComponent、StaticMeshComponent、CameraComponent。
+复用 Serializer 的资源路径/材质 shader 与名称加载；缺失 ImageComponent 材质时
+提供引擎默认采样材质。CameraComponent 保持数据/投影行为，不新增自动相机渲染。
+不支持的组件明确失败。无文件时是标记清楚的引擎示例 Scene，含动态变换对象。
+任意材质属性序列化、Play 和异步读回仍开放；GPU/IPC 契约不变。
 
 ## 8. 视口与 GPU 生命周期
 

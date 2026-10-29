@@ -51,6 +51,9 @@ namespace GEngineEditor
         ProjectWorkspace& Workspace() { return *m_Workspace; }
         QString InspectorText() const;
         bool NewProject(const QString& path);
+        bool ImportResource(const QString& source, const QString& destinationDirectory);
+        bool ImportRunning() const;
+        bool LastImportSucceeded() const { return m_ImportSucceeded; }
         bool SavePackaging(const QString& output, const QString& executableName,
             const QString& logoPath);
         bool PackageProject();
@@ -118,6 +121,11 @@ namespace GEngineEditor
         QProcess* m_PackagingProcess = nullptr;
         QTimer* m_PackagingDeadline = nullptr;
         QAction* m_Package = nullptr;
+        QAction* m_Import = nullptr;
+        QProcess* m_ImportProcess = nullptr;
+        QString m_ImportTarget;
+        QByteArray m_ImportOutput;
+        bool m_ImportSucceeded = false;
         QAction* m_ProjectSettings = nullptr;
         QAction* m_CancelPackaging = nullptr;
         bool m_PackagingSucceeded = false;
@@ -131,4 +139,5 @@ namespace GEngineEditor
     void RunRecoveryCheck(MainWindow& window);
     void RunPackagingCheck(MainWindow& window);
     void RunProjectSettingsCheck(MainWindow& window);
+    void RunImportCheck(MainWindow& window);
 }

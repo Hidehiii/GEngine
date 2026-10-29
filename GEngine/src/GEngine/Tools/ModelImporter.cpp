@@ -106,6 +106,7 @@ namespace GEngine
 		{
             GE_CORE_ERROR("Failed to load model: {0}: {1}", filaName, importer->GetStatus().GetErrorString());
             DestroyFbxObjects(importer, scene, settings, manager);
+			managerOwner.release();
 			return false;
 		}
         scene = FbxScene::Create(manager, "");
@@ -113,6 +114,7 @@ namespace GEngine
         if (!importer->Import(scene))
         {
             DestroyFbxObjects(importer, scene, settings, manager);
+            managerOwner.release();
             return false;
         }
         FbxGeometryConverter geomConverter(manager);

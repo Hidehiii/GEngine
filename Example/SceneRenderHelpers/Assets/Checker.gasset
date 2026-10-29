@@ -1,0 +1,6 @@
+schemaVersion: 1
+type: texture
+format: ppm
+payloadEncoding: base64
+payload: !!binary |
+    UDYKMiAyCjI1NQr///9QUFBQUFD///8=

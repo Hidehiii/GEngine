@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Physics/PhysicsTypes.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Components/Components.h"
 #include "GEngine/Physics/2D/PhysicalContactListener2D.h"
 #include "GEngine/Object/GameObject.h"
 
@@ -46,7 +46,7 @@ namespace GEngine
 	class GENGINE_API Physics2DBodyDef
 	{
 	public:
-		void SetType(RigidBody2D::RigidBodyType type);
+		void SetType(PhysicsBodyType type);
 		void SetPosition(Vector2 position);
 		void SetAngle(float angle);
 	private:

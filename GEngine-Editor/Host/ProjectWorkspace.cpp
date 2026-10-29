@@ -121,6 +121,12 @@ namespace GEngineEditor
         const auto relative = QDir(Root()).relativeFilePath(selectedPath);
         if (!m_Selection.Select(m_Context.Generation(), relative.toStdString()))
         { ClearSelection(); return false; }
+        if (m_Model)
+        {
+            const auto index = m_Model->index(selectedPath);
+            if (index.isValid() && m_Tree->currentIndex() != index)
+            { m_Tree->setCurrentIndex(index); m_Tree->scrollTo(index); }
+        }
         if (OnInspector) OnInspector(QString("%1\n\nPath: %2\nType: %3\nSize: %4\nModified: %5\n\nRead-only metadata; file contents are not loaded or executed.")
             .arg(file.fileName(), relative, file.isDir() ? "Folder" : file.suffix().isEmpty() ? "File" : file.suffix(),
                 file.isDir() ? "-" : QString::number(file.size()) + " bytes", file.lastModified().toString(Qt::ISODate)));

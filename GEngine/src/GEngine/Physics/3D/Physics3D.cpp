@@ -116,36 +116,36 @@ namespace GEngine
 	{
 		this->m_Plane = other.m_Plane;
 	}
-	Physics3DBody::Physics3DBody(RigidBody::RigidBodyType type)
+	Physics3DBody::Physics3DBody(PhysicsBodyType type)
 	{
 		m_Type = type;
 		switch (type)
 		{
-		case RigidBody::RigidBodyType::Static:
+		case PhysicsBodyType::Static:
 			m_BodyStatic = Physics3D::s_Physics->createRigidStatic({ 0, 0, 0 });
 			break;
-		case RigidBody::RigidBodyType::Dynamic:
+		case PhysicsBodyType::Dynamic:
 			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
 			break;
-		case RigidBody::RigidBodyType::Kinematic:
+		case PhysicsBodyType::Kinematic:
 			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
 			break;
 		default:
 			break;
 		}
 	}
-	void Physics3DBody::SetType(RigidBody::RigidBodyType type)
+	void Physics3DBody::SetType(PhysicsBodyType type)
 	{
 		m_Type = type;
 		switch (type)
 		{
-		case RigidBody::RigidBodyType::Static:
+		case PhysicsBodyType::Static:
 			m_BodyStatic = Physics3D::s_Physics->createRigidStatic({ 0, 0, 0 });
 			break;
-		case RigidBody::RigidBodyType::Dynamic:
+		case PhysicsBodyType::Dynamic:
 			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
 			break;
-		case RigidBody::RigidBodyType::Kinematic:
+		case PhysicsBodyType::Kinematic:
 			m_BodyDynamic = Physics3D::s_Physics->createRigidDynamic({ 0, 0, 0 });
 			break;
 		default:

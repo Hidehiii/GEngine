@@ -1362,6 +1362,255 @@ namespace
         std::cout << result;
     }
 
+    namespace GAssetTools
+    {
+        void Write(const Path& path, const std::string& bytes)
+        {
+            std::ofstream file(path, std::ios::binary | std::ios::trunc);
+            file.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+            file.close();
+            if (!file) throw std::runtime_error("Cannot finish writing " + WideToUtf8(path.wstring()));
+        }
+
+        using Replacements = std::vector<std::pair<std::string, std::string>>;
+        const std::map<std::wstring, std::string> Types{
+            {L".png", "texture"}, {L".jpg", "texture"}, {L".jpeg", "texture"},
+            {L".tga", "texture"}, {L".ppm", "texture"}, {L".fbx", "mesh"},
+            {L".ttf", "font"}, {L".otf", "font"}, {L".shader", "shader"},
+            {L".glsl", "shader"}, {L".glvk", "shader"}, {L".hlsli", "shader-include"}};
+        const std::set<std::wstring> TextResources{L".shader", L".glsl", L".glvk", L".hlsli"};
+        const std::set<std::wstring> TextFiles{L".cpp", L".h", L".hpp", L".lua", L".json",
+            L".md", L".txt", L".ini", L".gproject", L".cmake", L".bat", L".shader",
+            L".glsl", L".glvk", L".hlsli", L".gescene", L".gasset", L".gscene"};
+
+        bool Excluded(const Path& path)
+        {
+            static const std::set<std::wstring> names{L"build", L"dist", L"generatedfiles",
+                L"cache", L"logs", L"mono", L"intermediates", L"gengine-thirdparty", L"todo", L".git"};
+            for (const auto& part : path)
+                if (names.count(Lowercase(part.wstring()))) return true;
+            return false;
+        }
+
+        std::vector<Path> Files(const Path& root)
+        {
+            std::vector<Path> files;
+            if (!std::filesystem::is_directory(root)) return files;
+            for (auto it = std::filesystem::recursive_directory_iterator(root);
+                it != std::filesystem::recursive_directory_iterator(); ++it)
+            {
+                if (it->is_symlink() || Excluded(it->path()))
+                {
+                    if (it->is_directory()) it.disable_recursion_pending();
+                    continue;
+                }
+                if (it->is_regular_file()) files.push_back(it->path());
+            }
+            std::sort(files.begin(), files.end());
+            return files;
+        }
+
+        bool Utf8(const std::string& text)
+        {
+            return text.empty() || (text.size() <= INT_MAX && MultiByteToWideChar(CP_UTF8,
+                MB_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()), nullptr, 0) != 0);
+        }
+
+        std::string Replace(std::string text, const Replacements& replacements)
+        {
+            for (const auto& [oldValue, newValue] : replacements)
+            {
+                std::size_t position = 0;
+                while ((position = text.find(oldValue, position)) != std::string::npos)
+                {
+                    text.replace(position, oldValue.size(), newValue);
+                    position += newValue.size();
+                }
+            }
+            return text;
+        }
+
+        void AddPair(Replacements& replacements, const Path& oldPath, const Path& newPath)
+        {
+            auto oldValue = WideToUtf8(oldPath.generic_wstring());
+            auto newValue = WideToUtf8(newPath.generic_wstring());
+            replacements.emplace_back(oldValue, newValue);
+            std::replace(oldValue.begin(), oldValue.end(), '/', '\\');
+            std::replace(newValue.begin(), newValue.end(), '/', '\\');
+            replacements.emplace_back(oldValue, newValue);
+        }
+
+        std::string Envelope(const std::string& bytes, const std::string& type, const std::string& format, bool text)
+        {
+            std::string result = "schemaVersion: 1\ntype: " + type + "\nformat: " + format +
+                "\npayloadEncoding: " + (text ? "text" : "base64") + "\npayload: ";
+            if (text)
+            {
+                if (!Utf8(bytes)) throw std::runtime_error("Text resource is not valid UTF-8.");
+                // YAML double-quoted scalars preserve whitespace and empty payloads.
+                result += '"';
+                constexpr char hex[] = "0123456789abcdef";
+                for (const unsigned char byte : bytes)
+                {
+                    if (byte == '"' || byte == '\\') { result += '\\'; result += byte; }
+                    else if (byte < 32 || byte == 127)
+                    {
+                        result += "\\u00";
+                        result += hex[byte >> 4]; result += hex[byte & 15];
+                    }
+                    else result += byte;
+                }
+                return result + "\"\n";
+            }
+            static constexpr char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            std::string encoded;
+            for (std::size_t i = 0; i < bytes.size(); i += 3)
+            {
+                const auto a = static_cast<unsigned char>(bytes[i]);
+                const auto b = i + 1 < bytes.size() ? static_cast<unsigned char>(bytes[i + 1]) : 0;
+                const auto c = i + 2 < bytes.size() ? static_cast<unsigned char>(bytes[i + 2]) : 0;
+                encoded += alphabet[a >> 2]; encoded += alphabet[((a & 3) << 4) | (b >> 4)];
+                encoded += i + 1 < bytes.size() ? alphabet[((b & 15) << 2) | (c >> 6)] : '=';
+                encoded += i + 2 < bytes.size() ? alphabet[c & 63] : '=';
+            }
+            if (encoded.empty()) return result + "!!binary \"\"\n";
+            result += "!!binary |\n";
+            for (std::size_t i = 0; i < encoded.size(); i += 76) result += "    " + encoded.substr(i, 76) + '\n';
+            return result;
+        }
+
+        void Import(const Path& source, const Path& output)
+        {
+            AssertNoLinks(source);
+            AssertNoLinks(output.parent_path());
+            const auto extension = Lowercase(source.extension().wstring());
+            if (!Types.count(extension)) throw std::runtime_error("Unsupported resource source format.");
+            if (!std::filesystem::is_regular_file(source) || std::filesystem::file_size(source) > 64 * 1024 * 1024)
+                throw std::runtime_error("Choose a source file no larger than 64 MiB.");
+            if (output.extension() != L".gasset" || !std::filesystem::is_directory(output.parent_path()) ||
+                std::filesystem::exists(output))
+                throw std::runtime_error("Choose a new .gasset file in an existing directory; existing files are never overwritten.");
+            const auto bytes = Envelope(ReadText(source), Types.at(extension), WideToUtf8(extension.substr(1)),
+                TextResources.count(extension) != 0);
+            const auto staging = output.parent_path() / (L".gasset-import-" + RandomId() + L".tmp");
+            try
+            {
+                Write(staging, bytes);
+                if (!MoveFileExW(staging.c_str(), output.c_str(), MOVEFILE_WRITE_THROUGH))
+                    throw std::runtime_error("Cannot publish imported resource; destination may already exist or be unwritable.");
+            }
+            catch (...)
+            {
+                std::error_code ignored;
+                std::filesystem::remove(staging, ignored);
+                throw;
+            }
+            std::cout << "Imported resource: " << WideToUtf8(output.wstring()) << '\n';
+        }
+
+        void Convert(const Path& root, bool repair)
+        {
+            struct Pending { Path Source, Target, Project; std::string Type, Bytes; };
+            std::vector<Pending> pending;
+            std::set<Path> roots, sources, reserved;
+            std::map<Path, Replacements> replacements;
+            for (const auto& top : {root / L"Example", root / L"Sandbox"})
+                for (const auto& file : Files(top))
+                    for (auto parent = file.parent_path(); parent != top && parent.has_relative_path(); parent = parent.parent_path())
+                        if (parent.filename() == L"Assets" || parent.filename() == L"Resources") roots.insert(parent);
+            for (const auto& directory : {root / L"GEngine-Editor" / L"Worker" / L"Assets", root / L"GEngine-Editor" / L"Assets"})
+                if (std::filesystem::is_directory(directory)) roots.insert(directory);
+            for (const auto& directory : roots)
+            {
+                const auto project = directory.parent_path();
+                const auto files = Files(directory);
+                std::map<Path, std::size_t> counts;
+                for (auto file : files)
+                    if (Types.count(Lowercase(file.extension().wstring()))) ++counts[file.replace_extension(L".gasset")];
+                for (const auto& source : files)
+                {
+                    if (!sources.insert(source).second) continue;
+                    const auto extension = Lowercase(source.extension().wstring());
+                    auto target = source;
+                    std::string type;
+                    if (repair)
+                    {
+                        if (extension == L".gscene") target.replace_extension(L".GEScene");
+                        else if (extension == L".gasset")
+                        {
+                            std::istringstream lines(ReadText(source));
+                            std::string line, format;
+                            while (std::getline(lines, line))
+                                if (line.rfind("format: ", 0) == 0) { format = Trim(line.substr(8)); break; }
+                            if (format.empty()) continue;
+                            if (!std::all_of(format.begin(), format.end(), [](unsigned char c) {
+                                return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                                    (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.'; }))
+                                throw std::runtime_error("Invalid GAsset format in reference repair.");
+                            target.replace_extension(Utf8ToWide("." + format));
+                        }
+                        else continue;
+                        AddPair(replacements[project], target, source);
+                        AddPair(replacements[project], target.lexically_relative(project), source.lexically_relative(project));
+                        AddPair(replacements[project], source, source.lexically_relative(project));
+                        continue;
+                    }
+                    if (extension == L".gescene") target.replace_extension(L".gscene");
+                    else if (Types.count(extension))
+                    {
+                        type = Types.at(extension);
+                        target.replace_extension(L".gasset");
+                        if (counts[target] > 1)
+                        {
+                            auto suffix = type;
+                            std::replace(suffix.begin(), suffix.end(), '-', '_');
+                            const auto base = source.stem().wstring() + L"_" + Utf8ToWide(suffix);
+                            target = source.parent_path() / (base + L".gasset");
+                            if (reserved.count(target) || std::filesystem::exists(target))
+                                target = source.parent_path() / (base + L"_" + extension.substr(1) + L".gasset");
+                        }
+                    }
+                    else continue;
+                    if (std::filesystem::exists(target) || !reserved.insert(target).second)
+                        throw std::runtime_error("GAsset target already exists: " + WideToUtf8(target.wstring()));
+                    AddPair(replacements[project], source, target);
+                    AddPair(replacements[project], source.lexically_relative(project), target.lexically_relative(project));
+                    pending.push_back({source, target, project, type, ReadText(source)});
+                }
+            }
+            for (auto& [project, pairs] : replacements)
+                std::stable_sort(pairs.begin(), pairs.end(), [](const auto& a, const auto& b) { return a.first.size() > b.first.size(); });
+            // Validate every payload and destination before modifying references or sources.
+            for (auto& item : pending)
+            {
+                const auto extension = Lowercase(item.Source.extension().wstring());
+                if (item.Type.empty()) item.Bytes = Replace(item.Bytes, replacements[item.Project]);
+                else
+                {
+                    const bool text = TextResources.count(extension) != 0;
+                    item.Bytes = Envelope(text ? Replace(item.Bytes, replacements[item.Project]) : item.Bytes,
+                        item.Type, WideToUtf8(extension.substr(1)), text);
+                }
+            }
+            std::map<Path, std::string> updates;
+            for (const auto& [project, pairs] : replacements)
+                for (const auto& file : Files(project))
+                {
+                    if ((!repair && std::any_of(pending.begin(), pending.end(), [&](const auto& item) { return item.Source == file; })) ||
+                        !TextFiles.count(Lowercase(file.extension().wstring()))) continue;
+                    const auto original = updates.count(file) ? updates.at(file) : ReadText(file);
+                    if (!Utf8(original)) continue;
+                    auto updated = Replace(original, pairs);
+                    if (updated != original) updates[file] = std::move(updated);
+                }
+            for (const auto& item : pending) Write(item.Target, item.Bytes);
+            for (const auto& [file, bytes] : updates) Write(file, bytes);
+            for (const auto& item : pending) std::filesystem::remove(item.Source);
+            std::cout << (repair ? "Repaired project-relative GAsset references.\n" :
+                "Migrated " + std::to_string(pending.size()) + " resources/scenes.\n");
+        }
+    }
+
     struct Options
     {
         std::map<std::wstring, std::wstring> Values;
@@ -1423,12 +1672,45 @@ namespace
     {
         if (arguments.empty())
         {
-            std::cerr << "Usage: GEngineTools <mono-sdk|qt-sdk|qt-editor|run-qt-editor|export-project> [options]\n";
+            std::cerr << "Usage: GEngineTools <gasset|import-resource|mono-sdk|qt-sdk|qt-editor|run-qt-editor|export-project> [options]\n";
             return 2;
         }
         const auto command = arguments.front();
         const auto options = ParseArguments(std::vector<std::wstring>(arguments.begin() + 1, arguments.end()));
         const auto root = RepoRoot();
+        if (command == L"import-resource")
+        {
+            if (!options.Flags.empty() || !options.Positional.empty())
+                throw std::runtime_error("Usage: GEngineTools import-resource --source <file> --output <new.gasset>");
+            for (const auto& [key, value] : options.Values)
+                if (key != L"source" && key != L"output") throw std::runtime_error("Unknown resource import option.");
+            GAssetTools::Import(std::filesystem::absolute(RequiredValue(options, L"source")),
+                std::filesystem::absolute(RequiredValue(options, L"output")));
+            return 0;
+        }
+        if (command == L"gasset")
+        {
+            for (const auto& [key, value] : options.Values)
+                if (key != L"root")
+                    throw std::runtime_error("Unknown GAsset option: " + WideToUtf8(key));
+            for (const auto& flag : options.Flags)
+                if (flag != L"repair-references" && flag != L"help")
+                    throw std::runtime_error("Invalid or missing GAsset option value: " + WideToUtf8(flag));
+            if (!options.Positional.empty())
+                throw std::runtime_error("GAsset accepts named options only.");
+            if (options.Flags.count(L"help"))
+            {
+                std::cout << "Usage: GEngineTools gasset [--root <repository>] [--repair-references]\n"
+                    "Converts resources in place and updates references; back up the selected repository first.\n";
+                return 0;
+            }
+            const auto resourceRoot = options.Values.count(L"root")
+                ? Path(RequiredValue(options, L"root")) : root;
+            if (!std::filesystem::is_directory(resourceRoot))
+                throw std::runtime_error("GAsset root must be an existing directory.");
+            GAssetTools::Convert(std::filesystem::absolute(resourceRoot), options.Flags.count(L"repair-references") != 0);
+            return 0;
+        }
         if (command == L"mono-sdk")
         {
             BuildMonoSdk(root, options.Flags.count(L"force") != 0);

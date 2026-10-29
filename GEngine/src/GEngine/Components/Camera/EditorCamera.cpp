@@ -6,7 +6,7 @@
 namespace GEngine::Editor
 {
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-		: Camera(CameraType::Perspective, fov, aspectRatio, nearClip, farClip)
+		: CameraComponent(CameraType::Perspective, fov, aspectRatio, nearClip, farClip)
 	{
 		UpdateView();
 	}

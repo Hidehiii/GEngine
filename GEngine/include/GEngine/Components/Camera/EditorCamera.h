@@ -3,11 +3,11 @@
 #include "GEngine/Core/Core.h"
 #include "GEngine/Math/Math.h"
 #include "GEngine/Events/MouseEvent.h"
-#include "GEngine/Components/Camera/Camera.h"
+#include "GEngine/Components/Camera/CameraComponent.h"
 
 namespace GEngine::Editor
 {
-	class GENGINE_API EditorCamera : public Camera
+	class GENGINE_API EditorCamera : public CameraComponent
 	{
 	public:
 		EditorCamera() = default;

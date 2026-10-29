@@ -7,6 +7,23 @@ C# 编译与 Worker 重启的目标边界见 [托管脚本拟议契约](ManagedS
 
 ## 已实现的 E0.1 契约
 
+场景组件已收敛为 ImageComponent、StaticMeshComponent、CameraComponent，名称与
+启用状态/Transform 属于 GameObject 基础数据。Worker 使用新 Serializer 加载资源
+与材质 shader/name，缺失 ImageComponent 材质时提供默认采样材质；CameraComponent
+不新增自动相机 pass。未知/已删除组件明确拒绝，IPC 消息与 Host 接口不变。
+
+### E1.9 资源导入
+
+`MainWindow::ImportResource(source, destinationDirectory)` 启动异步原生导入；
+`ImportRunning()` 查询作业，`LastImportSucceeded()` 查询最近结果，失败原因在
+`LastError()`。需要打开 .gproject；目标必须位于其 Assets 内且不存在同名
+`<source-stem>.gasset`。Project > Import resource 提供文件/目录选择，取消不写入。
+支持 png/jpg/jpeg/tga/ppm、fbx、ttf/otf、shader/glsl/glvk/hlsli；源文件上限
+64 MiB。源文件保留；不覆盖目标；不导入场景或已有 GAsset。成功选择资源，
+失败显示 Console/状态栏。不保证内容能被解码，不收集外部依赖；引擎加载接口、
+项目元数据与 Worker 协议不变。
+内置 GAsset 字体读取修正仅涉及 Host 字节转换，字体格式及对外接口不变。
+
 ### E1.5 项目文件与导出操作
 
 E1.7（2026-10-28）为 schema 1 添加可选 settings.defaultScene 字符串及

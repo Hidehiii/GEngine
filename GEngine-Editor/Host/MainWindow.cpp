@@ -291,6 +291,11 @@ namespace GEngineEditor
     }
     MainWindow::~MainWindow()
     {
+        if (m_ImportProcess)
+        {
+            disconnect(m_ImportProcess, nullptr, this, nullptr);
+            if (ImportRunning()) m_ImportProcess->waitForFinished(-1);
+        }
         if (m_PackagingProcess)
         {
             disconnect(m_PackagingProcess, nullptr, this, nullptr);
@@ -508,7 +513,7 @@ namespace GEngineEditor
     void MainWindow::SetDraftText(const QString& text) { ActiveDraft().Editor->setPlainText(text); }
     bool MainWindow::OpenProject(const QString& path)
     {
-        if (PackagingRunning()) { m_Error = "Wait for packaging to finish or cancel it before switching projects."; return false; }
+        if (PackagingRunning() || ImportRunning()) { m_Error = "Wait for the current project operation before switching projects."; return false; }
         ProjectFile project;
         const bool directory = QFileInfo(path).isDir();
         if (!directory && !ProjectFile::Load(path, project, m_Error)) { Log(m_Error); return false; }
@@ -539,7 +544,7 @@ namespace GEngineEditor
     }
     void MainWindow::CloseProject()
     {
-        if (PackagingRunning()) { Log("Cancel packaging before closing the project."); return; }
+        if (PackagingRunning() || ImportRunning()) { Log("Wait for the current project operation before closing the project."); return; }
         const bool hadProject = !m_Project.Path.isEmpty();
         m_Project = {};
         if (hadProject) ClearProjectScene("No project scene is open.");
@@ -729,6 +734,7 @@ namespace GEngineEditor
         if (!m_ClosePending && !ConfirmAllDrafts()) { event->ignore(); return; }
         m_ClosePending = true;
         setEnabled(false);
+        if (ImportRunning()) { event->ignore(); return; }
         if (PackagingRunning()) { event->ignore(); CancelPackaging(); return; }
         if (m_Worker.Running()) { event->ignore(); m_Worker.Stop(); return; }
         if (!QCoreApplication::arguments().contains("--self-test"))

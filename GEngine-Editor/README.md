@@ -1,5 +1,20 @@
 # GEngine Editor
 
+Open a `.gproject`, then choose **Project > Import resource...**. Select an image
+(PNG/JPEG/TGA/PPM), FBX mesh, TTF/OTF font, shader or HLSL include and choose a
+folder inside the project's `Assets` directory (create `Assets` in the folder
+picker for a project that does not have it). Import creates `<name>.gasset`,
+preserves the source and selects the result in Assets. Existing names are rejected;
+rename the source or choose another folder. Files are limited to 64 MiB. Import is
+asynchronous; failures appear in Console and the status bar. Cancel either picker
+to leave files unchanged. Import only packages source bytes; external mesh/shader
+dependencies and format decoding are not validated. No Python is required.
+
+Regression: `ctest --test-dir build/qt-editor/windows-x86_64/Release -R EditorImport --output-on-failure`
+(use the Debug build directory for Debug). After import, also check the visible
+selection/Inspector and source preservation. Import does not restart the viewport;
+resize/render/shutdown behavior remains the existing Worker contract.
+
 Console preserves engine log colors (trace white, debug cyan, info green, warning
 bright yellow, error bright red, critical bright white on red). The editor worker
 sends color codes over stderr; the Qt Console renders them without adding codes
@@ -19,12 +34,13 @@ resize results are discarded. Synchronous GPU readback remains in the child,
 so achieved FPS depends on backend, target size and pipe throughput.
 
 File > Open scene for rendering selects a `.gscene` and restarts the child with
-that document. This milestone supports Attribute/Transform and color-only
-ImageRenderer scenes in the existing clip-space material convention. It uses
-the existing scene serializer and supplies the engine color material because
-material serialization is incomplete. Camera, mesh serialization, textures,
-scripts and physics in loaded files explicitly fail in Console rather than
-silently displaying the sample. Scene transforms are not editable from the Host.
+that document. Scenes now use GameObject base data and ImageComponent,
+StaticMeshComponent and CameraComponent. Image components sample image assets;
+mesh/image asset paths and material shader/name round-trip through the serializer.
+The Worker supplies its default image material only when none is assigned.
+Automatic camera passes and arbitrary material-property serialization remain
+unavailable. Removed script/physics component keys fail explicitly in Console.
+Scene transforms are not editable from the Host.
 File > Show engine sample scene restores two real scene objects (red quad and
 moving cyan quad); its label identifies it as the sample. A static supported
 file is provided at `Worker/Assets/Scenes/ColorScene.gscene`.

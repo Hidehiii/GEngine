@@ -67,14 +67,13 @@ void Sandbox2D::OnAttach()
 
 	m_Scene = CreateRef<Scene>();
 	m_SkyBox = m_Scene->CreateGameObject("SkyBox");
-	m_SkyBox.AddComponent<MeshFilter>();
 	m_ModelImporter.LoadMesh("Resources/Model/2Cube.gasset");
-	m_SkyBox.GetComponent<MeshFilter>().SetMesh(m_ModelImporter.GetMesh(0));
-	m_SkyBox.AddComponent<MeshRenderer>();
+	m_SkyBox.AddComponent<StaticMeshComponent>();
+	m_SkyBox.GetComponent<StaticMeshComponent>().SetMeshAsset(CreateRef<Mesh>(m_ModelImporter.GetMesh(0)));
 	Ref<Material> mat = Material::Create(Shader::Create("Assets/Shaders/CubeMap.gasset"));
 	mat->SetCullMode(CullMode::Front);
-	m_SkyBox.GetComponent<MeshRenderer>().SetMaterial(mat);
-	m_SkyBox.GetComponent<Transform>().m_Scale *= 100;
+	m_SkyBox.GetComponent<StaticMeshComponent>().SetMaterial(mat);
+	m_SkyBox.GetTransform().m_Scale *= 100;
 
 	
 

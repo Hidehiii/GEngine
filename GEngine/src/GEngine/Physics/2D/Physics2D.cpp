@@ -7,13 +7,13 @@ namespace GEngine
 {
 	namespace Utils
 	{
-		static b2BodyType RigidBodyTypeToBox2D(RigidBody2D::RigidBodyType type)
+		static b2BodyType RigidBodyTypeToBox2D(PhysicsBodyType type)
 		{
 			switch (type)
 			{
-			case RigidBody2D::RigidBodyType::Static:		return b2_staticBody;
-			case RigidBody2D::RigidBodyType::Dynamic:		return b2_dynamicBody;
-			case RigidBody2D::RigidBodyType::Kinematic:		return b2_kinematicBody;
+			case PhysicsBodyType::Static:		return b2_staticBody;
+			case PhysicsBodyType::Dynamic:		return b2_dynamicBody;
+			case PhysicsBodyType::Kinematic:		return b2_kinematicBody;
 			}
 			GE_CORE_ASSERT(false, "Unknown RigidBodyType!");
 			return b2_staticBody;
@@ -47,7 +47,7 @@ namespace GEngine
 		delete this->m_PhysicsWorld2D;
 	}
 
-	void Physics2DBodyDef::SetType(RigidBody2D::RigidBodyType type)
+	void Physics2DBodyDef::SetType(PhysicsBodyType type)
 	{
 		this->m_BodyDef.type = Utils::RigidBodyTypeToBox2D(type);
 	}

@@ -2,70 +2,73 @@
 
 [API index](README.md) · [Scene architecture](../Architecture/SceneAndServices.md)
 
-## Scene and objects
+## GameObject base data
 
-`Scene::CreateGameObject(name)` creates an entity with `Attribute`,
-`Transform`, and `NativeScript` components. `GameObject` is a handle into
-its scene, not an owning copy. Keep the scene alive while using object handles.
-`AddComponent<T>`, `AddOrReplaceComponent<T>`, `HasComponent<T>`,
-`GetComponent<T>`, `TryGetComponent<T>`, and `RemoveComponent<T>` operate
-on that registry. `Scene::DestroyGameObject` queues deletion until
-`OnEndFrame`; `DuplicateGameObject` and `Scene::Copy` copy components in
-`AllComponents`.
+`Scene::CreateGameObject(name)` creates an object with base data and no attached
+components. The explicit-ID overload takes a uint64_t UUID; duplicate IDs fail.
+Use `GetTransform()`, `GetUUID()`, `GetName()/SetName()` and
+`IsActive()/SetActive()`. Transform is a value type in
+`GEngine/Object/Transform.h`, not an attachable component.
+GameObject is a non-owning scene handle; it must not outlive its scene.
 
-An application or editor that owns a scene calls `OnAwake` before `OnStart`,
-then `OnUpdate`, `OnLateUpdate`, and `OnEndFrame` as appropriate. The engine
-runtime does not call these automatically. `OnViewportResize` updates camera
-viewport sizes. `MainCamera` and `MainDirectionalLight` select primary
-components.
+`Parent()` returns a GameObject handle; `SetParent(parent)` rejects cycles and
+cross-scene links. `SetParent()` detaches. Relationships do not compose local
+transform matrices. Scene copy remaps links; duplication preserves base data and
+assigns a new UUID. DestroyGameObject is deferred until OnEndFrame and detaches
+children. `GetGameObjects<>()` enumerates all objects.
 
-## Components and physics
+## Retained components
 
-`Transform` stores position, rotation, and scale and computes model matrices.
-`Camera` has orthographic/perspective settings; `EditorCamera` is the
-editor-oriented derivative. Other components include `ImageRenderer`,
-`MeshFilter`, `MeshRenderer`, `DirectionalLight`, `BoxCollider2D`,
-`CircleCollider2D`, `RigidBody2D`, `BoxCollider`, and `RigidBody`.
+Only StaticMeshComponent, ImageComponent and CameraComponent are accepted by AddComponent,
+AddOrReplaceComponent, HasComponent, GetComponent, TryGetComponent and
+RemoveComponent. Transform/Attribute and native script, physics, light,
+MeshFilter, MeshRenderer and ImageRenderer component APIs have been removed.
 
-`Scene::OnAwake` creates Box2D and PhysX worlds and builds 2D bodies/fixtures
-from existing rigid-body/collider components. `OnUpdate` performs fixed 2D
-steps and physics hooks. The scene fixed-update code does **not** call
-`Physics3DWorld::Simulate`: a 3D world/body wrapper exists, but automatic 3D
-simulation is not a supported scene behavior. The runtime must have PhysX
-enabled before scene 3D-world creation. See
-[scene/physics TODO](../../TODO/SceneAndPhysics.md).
+`StaticMeshComponent::SetMeshAsset(const Ref<const Mesh>&)` holds a shared, immutable
+in-memory mesh asset; callers replace the asset rather than mutating aliases.
+`LoadMeshAsset(path, index=0)` loads a mesh .gasset and records its persistent
+path/index. `GetMeshAsset()`, `GetMeshAssetPath()`, `GetMeshIndex()` expose
+the current selection. SetMaterial/GetMaterial manage the material. Missing
+assets/materials or invalid indices fail explicitly. Mesh/material replacement
+invalidates the pipeline; component copies retain assets/materials and rebuild it.
 
-`NativeScript` holds C++ `ScriptableObject` instances with lifecycle and
-contact callbacks. Set a material on each `ImageRenderer` and `MeshRenderer`
-before drawing; `MeshRenderer` also needs a nonempty `MeshFilter`. Call
-`GameObject::OnRender()` during a layer's `OnPresent`: it dispatches both
-components through the portable presentation command buffer. ImageRenderer
-draws a color quad and writes `GE_MATRIX_M` and `GE_IMAGE_COLOR` material
-constants; MeshRenderer draws the indexed mesh and writes `GE_MATRIX_M`.
-Give each component its own material when it has per-object constants.
-For an offscreen render graph pass, include `GEngine/Renderer/SceneRenderer.h`
-and call `SceneRenderer::Render(*scene, command)` from the graphics recording
-callback. This records active objects' image/mesh components into that pass;
-it neither acquires/presents nor executes scene update/physics. The target,
-resource dependencies and command submission belong to the caller. Individual
-components provide `OnRender(const Ref<CommandBuffer>&)` as well; null commands
-throw `std::invalid_argument`. Existing no-argument calls remain compatible.
-Projection/camera constants remain the material's responsibility; the shared
-recorder does not implement automatic camera/light rendering or sorting.
-`ImageRenderer::m_Texture` drawing and `GraphicsTool::Init/RenderPoint/RenderLine`
-currently throw `std::logic_error` as unsupported paths. Missing materials
-also fail explicitly. The [rendering TODO](../../TODO/RenderingArchitecture.md)
-tracks manual visual and backend validation still in progress.
-The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
-is the new sample application for the retained
-component paths. It selects a backend in `Config.ini`, supports
-`GENGINE_SCENE_HELPER_FRAME_LIMIT=120` and optional
-`GENGINE_SCENE_HELPER_SYNTHETIC_RESIZE=1` on D3D12 only, and documents manual
-visibility, resize, and shutdown checks. Vulkan/OpenGL ignore this diagnostic;
-real resize remains a manual check. The final Debug and Release runs on D3D12,
-OpenGL, and Vulkan each completed
-120 frames with empty stderr and replacement/exit logs. This confirms command
-recording and shutdown, not visible output, real window resize, or long-run
-memory stability. The user subsequently reported no problem with the manual
-test; this is user-observed evidence, not an agent-captured per-backend log or
-long-run memory measurement.
+`ImageComponent::SetImageAsset(const Ref<Texture2D>&)` and `LoadImageAsset(path)`
+select a texture asset; GetImageAsset returns it. SetMaterial/GetMaterial manage
+the material. Color and Tiling are per-component values. An empty image selection
+uses white for a color-only quad. The material shader must declare:
+GE_MATRIX_M (float4x4), GE_IMAGE_COLOR (float4), GE_IMAGE_TILING (float2),
+GE_IMAGE_TEXTURE (Texture2D) and GE_IMAGE_SAMPLER (sampler).
+StaticMeshComponent shaders require GE_MATRIX_M and the full Vertex input layout.
+Use separate materials for objects with different per-object constants.
+
+CameraComponent retains its existing orthographic/perspective, primary, RenderOrder and
+viewport behavior. OnViewportResize updates cameras for nonzero sizes;
+MainCamera selects the primary camera. EditorCamera remains a standalone utility.
+
+## Recording, serialization and services
+
+Call `SceneRenderer::Render(scene, command)` inside an open graphics pass, or
+`GameObject::OnRender()` during OnPresent. ImageComponent/StaticMeshComponent also expose
+OnRender(command). The caller owns targets, graph dependencies and submissions;
+backends retain resources through GPU completion. No automatic camera pass,
+sorting, lighting or parent-transform composition is added.
+
+Serializer<Scene> writes GameObject/Name/Active/Transform/optional Parent,
+CameraComponent, ImageComponent and StaticMeshComponent maps. ImageAsset/MeshAsset store .gasset paths;
+StaticMeshComponent also stores MeshIndex. Material stores Shader and Name only;
+arbitrary material constants/resources/render-state overrides remain runtime-only.
+SetMeshAsset alone has no persistent submesh identity: use LoadMeshAsset before
+saving it. Procedural resources without persistent paths fail save explicitly.
+Unknown/removed component keys fail load and leave the original scene reference
+unchanged. Legacy Attribute.IsActive is read as base metadata only; no Attribute
+component is created. First-party scenes use the new keys.
+
+Scene lifecycle no longer starts/steps physics or native scripts. Standalone
+physics and Mono runtime services remain; Physics2DBodyDef::SetType now takes
+`PhysicsBodyType::{Static,Dynamic,Kinematic}`. Contact listener hooks can be
+overridden but do not dispatch scene scripts. GraphicsTool point/line helpers
+remain explicitly unsupported.
+
+See [SceneRenderHelpers](../../Example/SceneRenderHelpers/README.md) for asset,
+material, replacement, scene-roundtrip and available-backend checks. Current
+evidence and remaining work live in [TODO](../../TODO/SceneAndPhysics.md).

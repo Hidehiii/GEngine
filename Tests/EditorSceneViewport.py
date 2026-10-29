@@ -1,5 +1,6 @@
 """Exercise real scene pixels, frame credits, chunking, resize and scene loading."""
 import argparse
+import json
 import os
 from pathlib import Path
 import queue
@@ -167,8 +168,22 @@ def main():
             ok = True
         finally:
             worker.close(ok)
+        textured = logs / "textured.gscene"
+        checker = Path(__file__).resolve().parent.parent / "Example/SceneRenderHelpers/Assets/Checker.gasset"
+        textured.write_text(scene.read_text(encoding="utf-8").replace('ImageAsset: ""',
+                            'ImageAsset: ' + json.dumps(checker.as_posix())), encoding="utf-8")
+        worker = Worker(binary, logs / "textured.log", textured)
+        ok = False
+        try:
+            worker.ready()
+            image = worker.frame(640, 360)
+            reds = [pixel(image, 640, x, y)[0] for x in range(95, 226, 10) for y in range(145, 216, 10)]
+            require(max(reds) - min(reds) > 45, "ImageComponent samples its image asset")
+            ok = True
+        finally:
+            worker.close(ok)
         unsupported = logs / "unsupported.gscene"
-        unsupported.write_text("Scene: Unsupported\nGameObjects:\n  - GameObject: 1\n    Camera: {}\n", encoding="utf-8")
+        unsupported.write_text("Scene: Unsupported\nGameObjects:\n  - GameObject: 1\n    RigidBody2D: {}\n", encoding="utf-8")
         worker = Worker(binary, logs / "unsupported.log", unsupported)
         try:
             worker.send(1, b"GEngine.EditorDiagnostic/1")
@@ -176,12 +191,12 @@ def main():
         finally:
             worker.close(False)
         benign = "reads of an unbound Depth Stencil View are defined to return 0"
-        for name in ("live", "scene"):
+        for name in ("live", "scene", "textured"):
             text = (logs / f"{name}.log").read_text(encoding="utf-8", errors="replace")
             text = "\n".join(line for line in text.splitlines() if benign not in line)
             require("D3D12 Error:" not in text and "D3D12 Warning:" not in text and "Validation Error" not in text, name)
-        require("Unsupported scene component: Camera" in (logs / "unsupported.log").read_text(encoding="utf-8", errors="replace"), "regression check failed")
-        print("PASS: scene file, Unicode path, orientation, explicit unsupported component and shutdown")
+        require("Removed or unknown scene component: RigidBody2D" in (logs / "unsupported.log").read_text(encoding="utf-8", errors="replace"), "regression check failed")
+        print("PASS: scene file, Unicode path, orientation, sampled image asset, explicit removed component and shutdown")
     finally:
         config.write_bytes(original)
 

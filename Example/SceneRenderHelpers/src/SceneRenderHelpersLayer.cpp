@@ -8,6 +8,7 @@
 
 namespace GEngine
 {
+    void RunComponentChecks();
 	SceneRenderHelpersLayer::SceneRenderHelpersLayer()
 		: Layer("SceneRenderHelpers")
 	{
@@ -15,6 +16,7 @@ namespace GEngine
 
 	void SceneRenderHelpersLayer::OnAttach()
 	{
+        RunComponentChecks();
 		auto expectUnsupported = [](auto&& operation, const char* name)
 		{
 			bool rejected = false;
@@ -29,18 +31,15 @@ namespace GEngine
 
 		m_Scene = CreateRef<Scene>();
 		m_Image = m_Scene->CreateGameObject("Color quad");
-		m_Image.GetComponent<Transform>().SetPosition({ -0.5f, 0.0f, 0.0f });
-		m_Image.GetComponent<Transform>().SetScale({ 0.65f, 0.65f, 1.0f });
-		m_Image.AddComponent<ImageRenderer>(Vector4{ 0.95f, 0.22f, 0.18f, 1.0f });
-		auto& imageRenderer = m_Image.GetComponent<ImageRenderer>();
+		m_Image.GetTransform().SetPosition({ -0.5f, 0.0f, 0.0f });
+		m_Image.GetTransform().SetScale({ 0.65f, 0.65f, 1.0f });
+		m_Image.AddComponent<ImageComponent>(Vector4{ 0.95f, 0.22f, 0.18f, 1.0f });
+		auto& imageRenderer = m_Image.GetComponent<ImageComponent>();
 		imageRenderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.gasset"), "ImageColor"));
-		imageRenderer.m_Texture = Texture2D::White();
-		expectUnsupported([&imageRenderer] { imageRenderer.OnRender(); }, "Textured ImageRenderer");
-		imageRenderer.m_Texture.reset();
+		imageRenderer.LoadImageAsset("Assets/Checker.gasset");
 
 		m_Mesh = m_Scene->CreateGameObject("Indexed mesh");
-		m_Mesh.GetComponent<Transform>().SetPosition({ 0.5f, 0.0f, 0.0f });
-		m_Mesh.AddComponent<MeshFilter>();
+		m_Mesh.GetTransform().SetPosition({ 0.5f, 0.0f, 0.0f });
 		Mesh mesh;
 		mesh.m_Vertices.resize(3);
 		mesh.m_Vertices[0].m_Position = { -0.42f, -0.48f, 0.0f, 1.0f };
@@ -49,9 +48,9 @@ namespace GEngine
 		for (auto& vertex : mesh.m_Vertices)
 			vertex.m_Color = { 0.10f, 0.72f, 0.95f, 1.0f };
 		mesh.m_Indices = { 0, 1, 2 };
-		m_Mesh.GetComponent<MeshFilter>().SetMesh(mesh);
-		m_Mesh.AddComponent<MeshRenderer>();
-		m_Mesh.GetComponent<MeshRenderer>().SetMaterial(
+		m_Mesh.AddComponent<StaticMeshComponent>();
+		m_Mesh.GetComponent<StaticMeshComponent>().SetMeshAsset(CreateRef<Mesh>(mesh));
+		m_Mesh.GetComponent<StaticMeshComponent>().SetMaterial(
 			Material::Create(Shader::Create("Assets/Shaders/MeshColor.gasset"), "MeshColor"));
 		GE_INFO("SceneRenderHelpers initialized: color quad, indexed mesh, unsupported paths rejected.");
 	}
@@ -60,18 +59,23 @@ namespace GEngine
 	{
 		if (m_FrameCount == 30)
 		{
-			auto& renderer = m_Image.GetComponent<ImageRenderer>();
-			renderer.m_Color = { 0.95f, 0.72f, 0.18f, 1.0f };
+			auto& renderer = m_Image.GetComponent<ImageComponent>();
+			renderer.Color = { 0.95f, 0.72f, 0.18f, 1.0f };
 			renderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.gasset"), "ReplacedImageColor"));
 			GE_INFO("SceneRenderHelpers replaced image material after 30 frames.");
 		}
 		if (m_FrameCount == 60)
 		{
-			Mesh mesh = m_Mesh.GetComponent<MeshFilter>().GetMesh();
+			Mesh mesh = *m_Mesh.GetComponent<StaticMeshComponent>().GetMeshAsset();
 			mesh.m_Vertices[2].m_Position.y = 0.65f;
-			m_Mesh.GetComponent<MeshFilter>().SetMesh(mesh);
+			m_Mesh.GetComponent<StaticMeshComponent>().SetMeshAsset(CreateRef<Mesh>(mesh));
 			GE_INFO("SceneRenderHelpers replaced mesh vertices after 60 frames.");
 		}
+        if (m_FrameCount == 90)
+        {
+            m_Image.GetComponent<ImageComponent>().LoadImageAsset("Assets/Checker.gasset");
+            GE_INFO("SceneRenderHelpers replaced the image asset after 90 frames.");
+        }
 		static const bool syntheticResize = []
 		{
 			const char* value = std::getenv("GENGINE_SCENE_HELPER_SYNTHETIC_RESIZE");

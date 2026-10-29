@@ -9,6 +9,7 @@ namespace GEngine
 	{
 	public:
 		Component() = default;
+		virtual ~Component() = default;
 
 		virtual void OnRender() {};
 		virtual void OnAwake() {};

@@ -159,9 +159,10 @@ namespace
     {
         if (!m_Package) return;
         const bool available = !m_Project.Path.isEmpty() && !m_Workspace->Root().isEmpty();
-        const bool running = PackagingRunning();
+        const bool running = PackagingRunning() || ImportRunning();
+        if (m_Import) m_Import->setEnabled(available && !running);
         m_Package->setEnabled(available && !running);
-        m_CancelPackaging->setEnabled(running && !m_PackagingCancelled);
+        m_CancelPackaging->setEnabled(PackagingRunning() && !m_PackagingCancelled);
         m_CloseProject->setEnabled(!m_Workspace->Root().isEmpty() && !running);
         m_ProjectSettings->setEnabled(available && !running);
     }
@@ -213,7 +214,7 @@ namespace
     }
     bool MainWindow::NewProject(const QString& path)
     {
-        if (PackagingRunning() || QFileInfo::exists(path))
+        if (PackagingRunning() || ImportRunning() || QFileInfo::exists(path))
         { m_Error = "Choose a new project file, after packaging finishes."; return false; }
         ProjectFile project;
         project.Path = QFileInfo(path).absoluteFilePath();
@@ -327,7 +328,7 @@ namespace
     bool MainWindow::PackageProject()
     {
         m_PackagingSucceeded = false;
-        if (PackagingRunning() || m_Project.Path.isEmpty() || m_Workspace->Root().isEmpty())
+        if (PackagingRunning() || ImportRunning() || m_Project.Path.isEmpty() || m_Workspace->Root().isEmpty())
         { m_Error = "Open a .gproject file and wait for the current export to finish."; return false; }
         ProjectFile current;
         if (!ProjectFile::Load(m_Project.Path, current, m_Error)) return false;
@@ -354,6 +355,50 @@ namespace
         Log("Cancelling packaging. The previous package is preserved; an incomplete staging directory may remain.");
         m_PackagingProcess->kill(); RefreshPackagingActions();
     }
+    bool MainWindow::ImportRunning() const
+    { return m_ImportProcess && m_ImportProcess->state() != QProcess::NotRunning; }
+
+    bool MainWindow::ImportResource(const QString& source, const QString& destinationDirectory)
+    {
+        m_ImportSucceeded = false;
+        if (m_Project.Path.isEmpty() || m_Workspace->Root().isEmpty() || PackagingRunning() || ImportRunning())
+        { m_Error = "Open a project and wait for the current operation to finish."; return false; }
+        const QFileInfo input(source);
+        const QStringList formats{"png", "jpg", "jpeg", "tga", "ppm", "fbx", "ttf", "otf", "shader", "glsl", "glvk", "hlsli"};
+        if (!input.isFile() || input.isSymLink() || !input.isReadable() || input.size() > 64 * 1024 * 1024 ||
+            !formats.contains(input.suffix().toLower()))
+        { m_Error = "Choose a supported source resource no larger than 64 MiB."; return false; }
+        const auto root = QFileInfo(m_Project.Root()).canonicalFilePath();
+        const auto assets = QDir(root).filePath("Assets");
+        const auto destination = QDir::cleanPath(QFileInfo(destinationDirectory).absoluteFilePath());
+        if (root.isEmpty() || (destination.compare(assets, Qt::CaseInsensitive) != 0 &&
+            !destination.startsWith(assets + '/', Qt::CaseInsensitive)))
+        { m_Error = "Choose a destination inside this project's Assets folder."; return false; }
+        // Reject redirected directory components before creating or writing anything.
+        auto current = destination;
+        while (current.compare(root, Qt::CaseInsensitive) != 0)
+        {
+            const QFileInfo part(current);
+            if (part.isSymLink() || (part.exists() && !part.isDir()) ||
+                (!part.canonicalFilePath().isEmpty() && part.canonicalFilePath().compare(current, Qt::CaseInsensitive) != 0))
+            { m_Error = "Resource destinations cannot contain redirected directories."; return false; }
+            current = QFileInfo(current).absolutePath();
+        }
+        const auto target = QDir(destination).filePath(input.completeBaseName() + ".gasset");
+        if (QFileInfo::exists(target) || QFileInfo(target).isSymLink())
+        { m_Error = "A resource with this name already exists. Choose another folder or rename the source."; return false; }
+        const auto tool = QDir(QCoreApplication::applicationDirPath()).filePath("GEngineTools.exe");
+        if (!QFileInfo(tool).isFile())
+        { m_Error = "The resource import tool is missing. Rebuild/deploy the editor."; return false; }
+        if (!QDir().mkpath(destination))
+        { m_Error = "Could not create the resource destination folder."; return false; }
+        m_ImportTarget = target; m_ImportOutput.clear(); m_Error.clear();
+        m_ImportProcess->start(tool, {"import-resource", "--source", input.absoluteFilePath(), "--output", target});
+        Log("Importing resource: " + input.fileName());
+        RefreshPackagingActions();
+        return true;
+    }
+
     void MainWindow::InitProjectActions(QMenu* file, QMenuBar* menus)
     {
         auto* create = new QAction("New project...", this); create->setObjectName("NewProjectAction");
@@ -373,6 +418,47 @@ namespace
             if (!path.isEmpty() && !OpenProject(path)) QMessageBox::warning(this, "Open project failed", m_Error);
         });
         auto* menu = menus->addMenu("Project");
+        m_Import = menu->addAction("Import resource..."); m_Import->setObjectName("ImportResourceAction");
+        connect(m_Import, &QAction::triggered, this, [this]
+        {
+            const auto source = QFileDialog::getOpenFileName(this, "Import resource", {},
+                "Supported resources (*.png *.jpg *.jpeg *.tga *.ppm *.fbx *.ttf *.otf *.shader *.glsl *.glvk *.hlsli)");
+            if (source.isEmpty()) return;
+            auto initial = m_Workspace->SelectedPath();
+            if (!QFileInfo(initial).isDir()) initial = QFileInfo(initial).absolutePath();
+            const auto assets = QDir(m_Project.Root()).filePath("Assets");
+            if (!initial.startsWith(assets, Qt::CaseInsensitive)) initial = m_Project.Root();
+            const auto destination = QFileDialog::getExistingDirectory(this, "Import into project Assets folder", initial);
+            if (!destination.isEmpty() && !ImportResource(source, destination))
+                QMessageBox::warning(this, "Import failed", m_Error);
+        });
+        m_ImportProcess = new QProcess(this);
+        m_ImportProcess->setProcessChannelMode(QProcess::MergedChannels);
+        connect(m_ImportProcess, &QProcess::readyRead, this, [this]
+        { m_ImportOutput += m_ImportProcess->readAll().left(65536 - m_ImportOutput.size()); });
+        auto finishImport = [this](bool succeeded)
+        {
+            m_ImportOutput += m_ImportProcess->readAll().left(65536 - m_ImportOutput.size());
+            m_ImportSucceeded = succeeded;
+            if (succeeded)
+            {
+                m_Workspace->Select(m_ImportTarget);
+                Log("Resource imported: " + m_ImportTarget);
+            }
+            else
+            {
+                m_Error = "Resource import failed: " + (m_ImportOutput.isEmpty() ?
+                    m_ImportProcess->errorString() : QString::fromUtf8(m_ImportOutput));
+                Log(m_Error);
+            }
+            statusBar()->showMessage(succeeded ? "Resource imported" : m_Error, 10000);
+            RefreshPackagingActions();
+            if (m_ClosePending) QTimer::singleShot(0, this, [this] { close(); });
+        };
+        connect(m_ImportProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+            [finishImport](int code, QProcess::ExitStatus status) { finishImport(status == QProcess::NormalExit && code == 0); });
+        connect(m_ImportProcess, &QProcess::errorOccurred, this, [finishImport](QProcess::ProcessError error)
+        { if (error == QProcess::FailedToStart) finishImport(false); });
         m_ProjectSettings = menu->addAction("Project settings..."); m_ProjectSettings->setObjectName("ProjectSettingsAction");
         connect(m_ProjectSettings, &QAction::triggered, this, [this] { ShowProjectSettingsDialog(); });
         m_Package = menu->addAction("Package project..."); m_Package->setObjectName("PackageProjectAction");

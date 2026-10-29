@@ -1,5 +1,25 @@
 # 编辑器架构重设计
 
+- [x] E1.9 资源导入（2026-10-29）：Project 菜单加入 Import resource，选择
+  源文件及项目 Assets 内目标目录，调用纯 C++ Engine Tools 单资源导入。
+  保留原始文件、拒绝覆盖已有资源，异步执行并显示失败原因，成功刷新/选择资源。
+  支持现有 texture/mesh/font/shader/include 源格式；不新增解码器或 GPU API。
+  验收：工具和 Host Debug/Release 构建；导入/重复/无项目/越界/失败回归；
+  文档、示例使用说明同步。导入期间禁止项目切换及打包，关闭等待作业完成。
+  完成：新增 import-resource 原生命令，复用 C++ Envelope，保留源文件，以同目录
+  临时文件及禁止覆盖重命名发布；Host 异步执行、错误提示和 Assets 选择已接入。
+  CMake 加入 ImportCheck/CTest；Premake Host glob 已覆盖新源文件，补充其工具
+  构建依赖。修复本次首次构建发现的既有字体读取 QString -> QByteArray 编译错误。
+  验证：独立 VS2022 开发环境下 Host/工具 Debug、Release 构建通过；两个配置
+  EditorImport/EditorProjectSettings/EditorRecovery/EditorProtocol 各四项 CTest
+  全通过。导入检查覆盖文本/二进制内容、源文件保留、选中目标、重复拒绝、无项目、
+  目录越界、导入中项目切换阻止、无效 UTF-8 的后台失败及菜单状态恢复。
+  Tests/GAssetTools.py 两配置空 PATH 验证原生转换/修复及单文件无覆盖导入通过。
+  git diff --check 与文档链接/内容审查通过。Qt 部署保留缺少翻译 catalog 的提示。
+  剩余：原生文件选择器人工操作/取消与导入期间关闭窗口未人工验收；Premake 未
+  重新生成/构建。导入只封装已有格式，不收集外部依赖或验证解码，64 MiB 上限；
+  无渲染/IPC 变更，不重复引擎后端运行。未提交，保留先前工具改动与 tmp/。
+
 - [x] E1.8 所有示例项目描述（2026-10-28）：为 Example 下七个示例提供同名
   .gproject，保留 FrameGraphTriangle 现有设置；其余示例配置各自的空默认编辑器
   场景，避免将含尚不支持组件的历史场景设为默认。原生示例程序保持现有工作负载。

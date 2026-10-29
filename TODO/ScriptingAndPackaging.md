@@ -1,5 +1,47 @@
 # C#、Mono 与游戏打包
 
+## GAsset tooling entry point (2026-10-29)
+
+- [x] Native C++ correction: replace Python dispatch with C++ conversion and
+  reference repair; remove the script and interpreter option. Acceptance:
+  Debug/Release tool builds and isolated text/binary/scene/collision/repair
+  regressions pass without Python at runtime. Preserve resource scope and schema;
+  document implementation and any remaining migration limitations.
+  Implemented: conversion/discovery, Base64/YAML emission, collision suffixes,
+  scene migration and reference repair now run in GEngineTools.cpp. Removed
+  ConvertResourcesToGAssets.py and the gasset --python option. Text scalars retain
+  exact UTF-8 whitespace instead of normalizing tabs/trailing spaces. Invalid
+  UTF-8 and collisions fail before writes; originals are removed after successful
+  output/reference writes. Runtime APIs and GPU ownership are unaffected.
+  Verification: CMake GEngineTools Debug/Release builds passed; both binaries
+  passed Tests/GAssetTools.py with an empty child PATH (no Python process lookup),
+  covering Unicode/CRLF/tab text, all byte values, empty payloads, same-stem
+  collisions, scene/reference updates, repair, repeat runs, exclusions, rejected
+  interpreter options and preflight failures. Harness requires Python/PyYAML;
+  the actual tool does not. CMake/Premake source lists need no change because
+  implementation remains in their existing GEngineTools.cpp source.
+  Remaining: batches are not atomic on I/O failure and preflight retains payloads
+  in CPU memory. No renderer changes or backend runtime runs were required.
+
+- [x] Historical wrapper integration (superseded by the native C++ correction above).
+  Scope: reuse the existing Python migration implementation through the native
+  workflow tool, with explicit root/interpreter options and propagated failures.
+  Acceptance: tool builds, conversion/repair work on an isolated resource fixture,
+  invalid arguments and conversion errors fail, and architecture/API usage agrees.
+  Runtime loaders and GPU interfaces are unaffected; a native converter rewrite
+  is outside this bounded integration.
+  Implemented: added the gasset command with help, root/interpreter validation,
+  explicit Python PATH resolution, reference-repair mode and worker exit status.
+  Existing CMake/Premake source lists already include the changed tool source.
+  Verification: CMake GEngineTools Debug/Release builds passed. Both binaries
+  passed isolated fixtures covering shader conversion, scene migration, reference
+  rewriting/repair, paths containing spaces, invalid arguments/root, collision
+  rejection and missing interpreter. Initial default interpreter lookup failed;
+  resolved it through SearchTool and reran both configurations successfully.
+  Documentation links/content reviewed; git diff --check passed. No runtime or
+  rendering code changed, so engine/example GPU runs were not required.
+  Historical limitation (now removed): conversion required Python and the source checkout.
+
 2026-10-28：编辑器 E1.7（EditorArchitecture.md）新增可选
 settings.defaultScene，旧 schema 1 描述兼容。原生导出器接受该项目启动元数据，
 不改变游戏原生入口或本机打包偏好；Debug/Release 元数据回归及 Release 实际

@@ -1,5 +1,22 @@
 # Focused regression checks
 
+## Scene component assets and base data
+
+Build and run SceneRenderHelpers with GENGINE_SCENE_HELPER_FRAME_LIMIT=120.
+Its ComponentChecks.cpp exercises GameObject base data/64-bit identity, the three
+retained Component classes, Camera settings, shared asset/material ownership,
+scene copy/duplication/hierarchy/deletion, persistent asset/material shader/name
+roundtrips and explicit invalid/removed-component rejection. It also checks a
+malformed FBX error without replacing the previous mesh. Run Debug and Release
+on each available backend; success must include the component-check marker,
+replacement markers and normal 120-frame shutdown.
+
+Tests/EditorSceneViewport.py additionally checks actual sampled image pixels,
+real Worker recording, sized targets and removed-component rejection. It uses
+Python only as a test driver; component implementations and Engine Tools are C++.
+Full material-property serialization, camera passes and manual window checks
+are outside these regressions; see TODO/SceneAndPhysics.md.
+
 ## D3D12 cross-queue UAV ordering
 
 After building/exporting FrameGraphTriangle:

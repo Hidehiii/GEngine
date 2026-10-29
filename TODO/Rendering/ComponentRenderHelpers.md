@@ -1,5 +1,13 @@
 ## Component and helper rendering gaps found during documentation audit
 
+2026-10-29: the component API below is historical and superseded by the active
+consolidation in [SceneAndPhysics](../SceneAndPhysics.md). ImageRenderer and
+MeshFilter/MeshRenderer are removed in favor of ImageComponent (image asset plus
+material) and StaticMeshComponent (mesh asset plus material); CameraComponent
+keeps camera behavior. Transform/identity/active fields move to GameObject base
+data. Recheck current builds and backends using SceneRenderHelpers; earlier
+checkboxes/logs do not validate the new API.
+
 - [x] Implement and verify D3D12 swap-chain resize before claiming interactive
   resize support. Source inspection on 2026-10-11 found that
   `EngineRuntime::OnWindowResize` updates only the graphics viewport, while

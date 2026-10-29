@@ -139,116 +139,67 @@ namespace GEngine
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
-	// 编码游戏对象和组件的数据
-	static void SerializeGameObject(YAML::Emitter& out, GameObject gameObject)
-	{
-		out << YAML::BeginMap;
-		// Attributes
-		if (gameObject.HasComponent<Attribute>())
-		{
-			auto& attribute = gameObject.GetComponent<Attribute>();
-			// uuid and name
-			out << YAML::Key << "GameObject" << YAML::Value << attribute.GetUUID();
-			out << YAML::Key << "Name" << YAML::Value << attribute.m_Name;
-
-
-			out << YAML::Key << "Attribute";
-			out << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "IsActive" << YAML::Value << attribute.m_IsActive;
-			out << YAML::EndMap;
-		}
-		// Transform
-		if (gameObject.HasComponent<Transform>())
-		{
-
-			out << YAML::Key << "Transform";
-			out << YAML::Value << YAML::BeginMap;
-			auto& transform = gameObject.GetComponent<Transform>();
-			out << YAML::Key << "Position" << YAML::Value << transform.m_Position;
-			out << YAML::Key << "Rotation" << YAML::Value << transform.m_Rotation;
-			out << YAML::Key << "Rotation_Angles" << YAML::Value << Math::Degrees(transform.GetEulerAngle());
-			out << YAML::Key << "Scale" << YAML::Value << transform.m_Scale;
-			out << YAML::EndMap;
-		}
-		// Camera
-		if (gameObject.HasComponent<Camera>())
-		{
-
-			out << YAML::Key << "Camera";	
-			out << YAML::Value << YAML::BeginMap;
-			auto& camera = gameObject.GetComponent<Camera>();
-			out << YAML::Key << "CameraParameters";
-			out << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "CameraType" << YAML::Value << (int)camera.GetCameraType();
-			out << YAML::Key << "OrthoGraphicSize" << YAML::Value << camera.m_OrthoGraphicSize;
-			out << YAML::Key << "OrthoGraphicNear" << YAML::Value << camera.m_OrthoGraphicNear;
-			out << YAML::Key << "OrthoGraphicFar" << YAML::Value << camera.m_OrthoGraphicFar;
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.m_PerspectiveFOV;
-			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.m_PerspectiveNear;
-			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.m_PerspectiveFar;
-
-			out << YAML::EndMap;
-
-
-			out << YAML::Key << "RenderOrder" << YAML::Value << camera.RenderOrder;
-			out << YAML::Key << "isPrimary" << YAML::Value << camera.isPrimary;
-			out << YAML::EndMap;
-		}
-		// Image Renderer
-		if (gameObject.HasComponent<ImageRenderer>())
-		{
-
-			out << YAML::Key << "ImageRenderer";
-			out << YAML::Value << YAML::BeginMap;
-			auto& imageRenderer = gameObject.GetComponent<ImageRenderer>();
-			out << YAML::Key << "Color" << YAML::Value << imageRenderer.m_Color;
-			out << YAML::Key << "Texture" << YAML::Value << (imageRenderer.m_Texture ? imageRenderer.m_Texture->GetPath() : "None");
-			out << YAML::Key << "Tiling" << YAML::Value << imageRenderer.m_Tiling;
-			out << YAML::EndMap;
-		}
-		// RigidBody2D
-		if (gameObject.HasComponent<RigidBody2D>())
-		{
-			out << YAML::Key << "RigidBody2D";
-			out << YAML::Value << YAML::BeginMap;
-			auto& rigidBody2D = gameObject.GetComponent<RigidBody2D>();
-			out << YAML::Key << "RigidBodyType" << YAML::Value << (int)rigidBody2D.m_RigidBodyType;
-			out << YAML::Key << "FixedRotation" << YAML::Value << rigidBody2D.m_FixedRotation;
-			out << YAML::EndMap;
-		}
-		// BoxCollider2D
-		if (gameObject.HasComponent<BoxCollider2D>())
-		{
-			out << YAML::Key << "BoxCollider2D";
-			out << YAML::Value << YAML::BeginMap;
-			auto& boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
-			out << YAML::Key << "Offset" << YAML::Value << boxCollider2D.m_Offset;
-			out << YAML::Key << "Size" << YAML::Value << boxCollider2D.m_Size;
-			out << YAML::Key << "Rotation" << YAML::Value << boxCollider2D.m_Rotation;
-			out << YAML::Key << "Density" << YAML::Value << boxCollider2D.m_Density;
-			out << YAML::Key << "Friction" << YAML::Value << boxCollider2D.m_Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << boxCollider2D.m_Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << boxCollider2D.m_RestitutionThreshold;
-			out << YAML::Key << "IsTrigger" << YAML::Value << boxCollider2D.m_IsTrigger;
-			out << YAML::EndMap;
-		}
-		// CircleCollider2D
-		if (gameObject.HasComponent<CircleCollider2D>())
-		{
-			out << YAML::Key << "CircleCollider2D";
-			out << YAML::Value << YAML::BeginMap;
-			auto& circleCollider2D = gameObject.GetComponent<CircleCollider2D>();
-			out << YAML::Key << "Offset" << YAML::Value << circleCollider2D.m_Offset;
-			out << YAML::Key << "Radius" << YAML::Value << circleCollider2D.m_Radius;
-			out << YAML::Key << "Density" << YAML::Value << circleCollider2D.m_Density;
-			out << YAML::Key << "Friction" << YAML::Value << circleCollider2D.m_Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << circleCollider2D.m_Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << circleCollider2D.m_RestitutionThreshold;
-			out << YAML::Key << "IsTrigger" << YAML::Value << circleCollider2D.m_IsTrigger;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-	}
+    static void SerializeComponentMaterial(YAML::Emitter& out, const Ref<Material>& material)
+    {
+        out << YAML::Key << "Material" << YAML::Value;
+        if (!material) { out << YAML::Null; return; }
+        const auto path = material->GetShader()->GetShaderPath();
+        if (std::filesystem::u8path(path).extension() != ".gasset")
+            throw std::runtime_error("Scene materials require a persistent shader .gasset.");
+        out << YAML::BeginMap << YAML::Key << "Shader" << YAML::Value << path;
+        out << YAML::Key << "Name" << YAML::Value << material->GetName() << YAML::EndMap;
+    }
+    static void SerializeGameObject(YAML::Emitter& out, GameObject object)
+    {
+        out << YAML::BeginMap;
+        out << YAML::Key << "GameObject" << YAML::Value << static_cast<uint64_t>(object.GetUUID());
+        out << YAML::Key << "Name" << YAML::Value << object.GetName();
+        out << YAML::Key << "Active" << YAML::Value << object.IsActive();
+        if (auto parent = object.Parent())
+            out << YAML::Key << "Parent" << YAML::Value << static_cast<uint64_t>(parent.GetUUID());
+        auto& transform = object.GetTransform();
+        out << YAML::Key << "Transform" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "Position" << YAML::Value << transform.GetPosition();
+        out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotation();
+        out << YAML::Key << "Scale" << YAML::Value << transform.GetScale() << YAML::EndMap;
+        if (auto* camera = object.TryGetComponent<CameraComponent>())
+        {
+            out << YAML::Key << "CameraComponent" << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "CameraParameters" << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "CameraType" << YAML::Value << static_cast<int>(camera->GetCameraType());
+            out << YAML::Key << "OrthoGraphicSize" << YAML::Value << camera->m_OrthoGraphicSize;
+            out << YAML::Key << "OrthoGraphicNear" << YAML::Value << camera->m_OrthoGraphicNear;
+            out << YAML::Key << "OrthoGraphicFar" << YAML::Value << camera->m_OrthoGraphicFar;
+            out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera->m_PerspectiveFOV;
+            out << YAML::Key << "PerspectiveNear" << YAML::Value << camera->m_PerspectiveNear;
+            out << YAML::Key << "PerspectiveFar" << YAML::Value << camera->m_PerspectiveFar << YAML::EndMap;
+            out << YAML::Key << "RenderOrder" << YAML::Value << camera->RenderOrder;
+            out << YAML::Key << "isPrimary" << YAML::Value << camera->isPrimary << YAML::EndMap;
+        }
+        if (auto* image = object.TryGetComponent<ImageComponent>())
+        {
+            out << YAML::Key << "ImageComponent" << YAML::Value << YAML::BeginMap;
+            const auto asset = image->GetImageAsset();
+            if (asset && std::filesystem::u8path(asset->GetPath()).extension() != ".gasset")
+                throw std::runtime_error("Cannot serialize an ImageComponent without a persistent image .gasset path.");
+            out << YAML::Key << "ImageAsset" << YAML::Value << (asset ? asset->GetPath() : "");
+            out << YAML::Key << "Color" << YAML::Value << image->Color;
+            out << YAML::Key << "Tiling" << YAML::Value << image->Tiling;
+            SerializeComponentMaterial(out, image->GetMaterial());
+            out << YAML::EndMap;
+        }
+        if (auto* mesh = object.TryGetComponent<StaticMeshComponent>())
+        {
+            if (mesh->GetMeshAsset() && std::filesystem::u8path(mesh->GetMeshAssetPath()).extension() != ".gasset")
+                throw std::runtime_error("Cannot serialize a procedural mesh without a persistent mesh .gasset path.");
+            out << YAML::Key << "StaticMeshComponent" << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "MeshAsset" << YAML::Value << mesh->GetMeshAssetPath();
+            out << YAML::Key << "MeshIndex" << YAML::Value << mesh->GetMeshIndex();
+            SerializeComponentMaterial(out, mesh->GetMaterial());
+            out << YAML::EndMap;
+        }
+        out << YAML::EndMap;
+    }
 
 	template<typename T>
 	static void Serializer::Serialize(const std::string& filepath, Ref<T>& data)
@@ -301,7 +252,7 @@ namespace GEngine
 		out << YAML::Value << scene->name;
 		out << YAML::Key << "GameObjects";
 		out << YAML::Value << YAML::BeginSeq;
-		auto view = scene->m_Registry.view<Attribute>();
+		auto view = scene->m_Registry.view<GameObjectData>();
 		for (auto entity : view)
 		{
 			GameObject gameObject = { entity, scene.get()};
@@ -426,140 +377,87 @@ namespace GEngine
 	
 	// 解码场景的YAML数据
 	template <>
-	static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Scene>& scene)
-	{
-		if (FileSystemHelper::IsDocument(filepath) == false)
-		{
-			GE_CORE_INFO("Failed to load scene file: {0}, because it is not a document.", filepath);
-			return;
-		}
-		YAML::Node data;
-		try
-		{
-			data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
-		}
-		catch(YAML::ParserException e)
-		{
-			GE_CORE_ERROR("Failed to load scene file: {0}, \n{1}", filepath, e.what());
-			return;
-		}
-		if (!data["Scene"])
-			return;
-
-		std::string sceneName = data["Scene"].as<std::string>();
-		scene->name = sceneName;
-		auto gameObjects = data["GameObjects"];
-		if (gameObjects)
-		{
-			for (auto gameObject : gameObjects)
-			{
-				uint64_t uuid = gameObject["GameObject"].as<uint64_t>();
-				std::string name;
-				if (gameObject["Name"])
-				{
-					name = gameObject["Name"].as<std::string>();
-				}
-				GameObject newGameObject = scene->CreateGameObject(uuid, name);
-				if (gameObject["Attribute"])
-				{
-					auto attribute = gameObject["Attribute"];
-					bool isActive = attribute["IsActive"].as<bool>();
-					newGameObject.GetComponent<Attribute>().m_IsActive = isActive;
-				}
-				if (gameObject["Transform"])
-				{
-					auto transform			= gameObject["Transform"];
-					auto position			= transform["Position"].as<Vector3>();
-					auto rotation			= transform["Rotation"].as<Quaternion>();
-					auto rotation_angles	= transform["Rotation_Angles"].as<Vector3>();
-					auto scale				= transform["Scale"].as<Vector3>();
-					newGameObject.GetComponent<Transform>().SetPosition(position);
-					newGameObject.GetComponent<Transform>().SetEulerAngle(rotation_angles);
-					newGameObject.GetComponent<Transform>().SetRotation(rotation);
-					newGameObject.GetComponent<Transform>().SetScale(scale);
-				}
-				if (gameObject["Camera"])
-				{
-					auto camera					= gameObject["Camera"];
-					auto cameraParameters		= camera["CameraParameters"];
-					CameraType cameraType		= (CameraType)cameraParameters["CameraType"].as<int>();
-					float orthoGraphicSize		= cameraParameters["OrthoGraphicSize"].as<float>();
-					float orthoGraphicNear		= cameraParameters["OrthoGraphicNear"].as<float>();
-					float orthoGraphicFar		= cameraParameters["OrthoGraphicFar"].as<float>();
-					float perspectiveFOV		= cameraParameters["PerspectiveFOV"].as<float>();
-					float perspectiveNear		= cameraParameters["PerspectiveNear"].as<float>();
-					float perspectiveFar		= cameraParameters["PerspectiveFar"].as<float>();
-					newGameObject.AddComponent<Camera>(cameraType);
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicSize		= orthoGraphicSize;
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicNear		= orthoGraphicNear;
-					newGameObject.GetComponent<Camera>().m_OrthoGraphicFar		= orthoGraphicFar;
-					newGameObject.GetComponent<Camera>().m_PerspectiveFOV		= perspectiveFOV;
-					newGameObject.GetComponent<Camera>().m_PerspectiveNear		= perspectiveNear;
-					newGameObject.GetComponent<Camera>().m_PerspectiveFar		= perspectiveFar;
-					newGameObject.GetComponent<Camera>().RenderOrder			= camera["RenderOrder"].as<int>();
-					newGameObject.GetComponent<Camera>().isPrimary				= camera["isPrimary"].as<bool>();
-				}
-				if (gameObject["ImageRenderer"])
-				{
-					auto imageRenderer		= gameObject["ImageRenderer"];
-					Vector4 color			= imageRenderer["Color"].as<Vector4>();
-					Vector2 tiling			= imageRenderer["Tiling"].as<Vector2>();
-					std::string texturePath = imageRenderer["Texture"].as<std::string>();
-					newGameObject.AddComponent<ImageRenderer>();
-					newGameObject.GetComponent<ImageRenderer>().m_Color = color;
-					if (texturePath != "None")
-					{
-						newGameObject.GetComponent<ImageRenderer>().m_Texture = Texture2D::Create(texturePath);
-					}
-					newGameObject.GetComponent<ImageRenderer>().m_Tiling = tiling;
-				}
-				if (gameObject["RigidBody2D"])
-				{
-					auto rigidBody2D = gameObject["RigidBody2D"];
-					RigidBody2D::RigidBodyType rigidBodyType = (RigidBody2D::RigidBodyType)rigidBody2D["RigidBodyType"].as<int>();
-					bool fixedRotation = rigidBody2D["FixedRotation"].as<bool>();
-					newGameObject.AddComponent<RigidBody2D>(rigidBodyType);
-					newGameObject.GetComponent<RigidBody2D>().m_FixedRotation = fixedRotation;
-				}
-				if (gameObject["BoxCollider2D"])
-				{
-					auto boxCollider2D			= gameObject["BoxCollider2D"];
-					Vector2 offset				= boxCollider2D["Offset"].as<Vector2>();
-					Vector2 size				= boxCollider2D["Size"].as<Vector2>();
-					float rotation				= boxCollider2D["Rotation"].as<float>();
-					float density				= boxCollider2D["Density"].as<float>();
-					float friction				= boxCollider2D["Friction"].as<float>();
-					float restitution			= boxCollider2D["Restitution"].as<float>();
-					float restitutionThreshold	= boxCollider2D["RestitutionThreshold"].as<float>();
-					bool isTrigger				= boxCollider2D["IsTrigger"].as<bool>();
-					newGameObject.AddComponent<BoxCollider2D>(size, offset);
-					newGameObject.GetComponent<BoxCollider2D>().m_Rotation				= rotation;
-					newGameObject.GetComponent<BoxCollider2D>().m_Density				= density;
-					newGameObject.GetComponent<BoxCollider2D>().m_Friction				= friction;
-					newGameObject.GetComponent<BoxCollider2D>().m_Restitution			= restitution;
-					newGameObject.GetComponent<BoxCollider2D>().m_RestitutionThreshold	= restitutionThreshold;
-					newGameObject.GetComponent<BoxCollider2D>().m_IsTrigger				= isTrigger;
-				}
-				if (gameObject["CircleCollider2D"])
-				{
-					auto circleCollider2D		= gameObject["CircleCollider2D"];
-					Vector2 offset				= circleCollider2D["Offset"].as<Vector2>();
-					float radius				= circleCollider2D["Radius"].as<float>();
-					float density				= circleCollider2D["Density"].as<float>();
-					float friction				= circleCollider2D["Friction"].as<float>();
-					float restitution			= circleCollider2D["Restitution"].as<float>();
-					float restitutionThreshold	= circleCollider2D["RestitutionThreshold"].as<float>();
-					bool isTrigger				= circleCollider2D["IsTrigger"].as<bool>();
-					newGameObject.AddComponent<CircleCollider2D>(offset, radius);
-					newGameObject.GetComponent<CircleCollider2D>().m_Density				= density;
-					newGameObject.GetComponent<CircleCollider2D>().m_Friction				= friction;
-					newGameObject.GetComponent<CircleCollider2D>().m_Restitution			= restitution;
-					newGameObject.GetComponent<CircleCollider2D>().m_RestitutionThreshold	= restitutionThreshold;
-					newGameObject.GetComponent<CircleCollider2D>().m_IsTrigger				= isTrigger;
-				}
-			}
-		}
-	}
+    static void GENGINE_API Serializer::Deserialize(const std::string& filepath, Ref<Scene>& scene)
+    {
+        const auto data = YAML::Load(FileSystemHelper::ReadFileAsString(filepath));
+        if (!data.IsMap() || !data["Scene"] || !data["GameObjects"] || !data["GameObjects"].IsSequence())
+            throw std::runtime_error("Invalid scene document: " + filepath);
+        auto candidate = CreateRef<Scene>();
+        candidate->name = data["Scene"].as<std::string>();
+        std::unordered_map<uint64_t, GameObject> objects;
+        auto loadMaterial = [](const YAML::Node& node) -> Ref<Material>
+        {
+            if (!node || node.IsNull()) return {};
+            const auto shader = node["Shader"].as<std::string>();
+            if (std::filesystem::u8path(shader).extension() != ".gasset")
+                throw std::runtime_error("Scene material shader must use .gasset.");
+            return Material::Create(Shader::Create(shader), node["Name"].as<std::string>());
+        };
+        for (const auto& node : data["GameObjects"])
+        {
+            if (!node.IsMap()) throw std::runtime_error("GameObject must be a map.");
+            for (const auto& entry : node)
+            {
+                const auto key = entry.first.as<std::string>();
+                if (key != "GameObject" && key != "Name" && key != "Active" && key != "Attribute" &&
+                    key != "Transform" && key != "Parent" && key != "CameraComponent" && key != "ImageComponent" && key != "StaticMeshComponent")
+                    throw std::runtime_error("Removed or unknown scene component: " + key);
+            }
+            const auto id = node["GameObject"].as<uint64_t>();
+            auto object = candidate->CreateGameObject(id, node["Name"] ? node["Name"].as<std::string>() : "");
+            objects.emplace(id, object);
+            if (node["Active"]) object.SetActive(node["Active"].as<bool>());
+            else if (node["Attribute"]) object.SetActive(node["Attribute"]["IsActive"].as<bool>());
+            if (const auto transform = node["Transform"])
+            {
+                object.GetTransform().SetPosition(transform["Position"].as<Vector3>());
+                object.GetTransform().SetRotation(transform["Rotation"].as<Quaternion>());
+                object.GetTransform().SetScale(transform["Scale"].as<Vector3>());
+            }
+            if (const auto nodeCamera = node["CameraComponent"])
+            {
+                const auto parameters = nodeCamera["CameraParameters"];
+                const auto type = parameters["CameraType"].as<int>();
+                if (type < 0 || type > 1) throw std::runtime_error("Invalid CameraType.");
+                object.AddComponent<CameraComponent>(static_cast<CameraType>(type));
+                auto& camera = object.GetComponent<CameraComponent>();
+                camera.m_OrthoGraphicSize = parameters["OrthoGraphicSize"].as<float>();
+                camera.m_OrthoGraphicNear = parameters["OrthoGraphicNear"].as<float>();
+                camera.m_OrthoGraphicFar = parameters["OrthoGraphicFar"].as<float>();
+                camera.m_PerspectiveFOV = parameters["PerspectiveFOV"].as<float>();
+                camera.m_PerspectiveNear = parameters["PerspectiveNear"].as<float>();
+                camera.m_PerspectiveFar = parameters["PerspectiveFar"].as<float>();
+                camera.RenderOrder = nodeCamera["RenderOrder"].as<int>();
+                camera.isPrimary = nodeCamera["isPrimary"].as<bool>();
+            }
+            if (const auto nodeImage = node["ImageComponent"])
+            {
+                object.AddComponent<ImageComponent>();
+                auto& image = object.GetComponent<ImageComponent>();
+                const auto path = nodeImage["ImageAsset"].as<std::string>();
+                if (!path.empty()) image.LoadImageAsset(path);
+                image.Color = nodeImage["Color"].as<Vector4>();
+                image.Tiling = nodeImage["Tiling"].as<Vector2>();
+                if (auto material = loadMaterial(nodeImage["Material"])) image.SetMaterial(material);
+            }
+            if (const auto nodeMesh = node["StaticMeshComponent"])
+            {
+                object.AddComponent<StaticMeshComponent>();
+                auto& mesh = object.GetComponent<StaticMeshComponent>();
+                const auto path = nodeMesh["MeshAsset"].as<std::string>();
+                if (!path.empty()) mesh.LoadMeshAsset(path, nodeMesh["MeshIndex"].as<uint32_t>());
+                if (auto material = loadMaterial(nodeMesh["Material"])) mesh.SetMaterial(material);
+            }
+        }
+        for (const auto& node : data["GameObjects"])
+            if (node["Parent"])
+            {
+                const auto parent = node["Parent"].as<uint64_t>();
+                if (!objects.count(parent)) throw std::runtime_error("Scene parent reference does not exist.");
+                objects.at(node["GameObject"].as<uint64_t>()).SetParent(objects.at(parent));
+            }
+        scene = std::move(candidate);
+    }
 
 	// 解码材质的YAML数据
 	template <>

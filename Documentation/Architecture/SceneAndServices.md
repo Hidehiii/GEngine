@@ -13,7 +13,7 @@ format, while the full typed resource-data design remains tracked in
 
 `GAsset.cpp` validates the extension, YAML map, exact field set, schema version,
 identifier characters, requested type and payload encoding before returning
-owned bytes. Image, mesh, font, shader and DXC include loaders unwrap the
+owned bytes. ImageComponent, mesh, font, shader and DXC include loaders unwrap the
 payload and retain their existing backend ownership rules. `.gscene` remains
 the existing scene YAML with a scene-specific extension; it is not wrapped in
 GAsset. Legacy raw source extensions remain loader compatibility inputs, but
@@ -35,71 +35,52 @@ ImGui 与引擎 EditorCamera 的接口和所有权不受本次删除影响。
 
 ## Scene and component ownership
 
-`Scene` owns an `entt` registry. `Scene::CreateGameObject` creates an entity
-with `Attribute`, `Transform`, and `NativeScript`; `GameObject` stores the
-entity handle plus a non-owning scene pointer. It must not outlive its scene.
-`Scene::Copy` and duplication copy the component set in `AllComponents`.
-`DestroyGameObject` defers removal to `OnEndFrame`; scene resize updates
-camera components. Scene/component lifecycle is called by an application or
-editor, not by the engine runtime automatically.
+Only `StaticMeshComponent`, `ImageComponent` and the existing `CameraComponent` are attachable scene
+components. `GameObject` remains a non-owning registry handle. The scene's
+`GameObjectData` owns UUID, name, active state, Transform values and a parent
+entity handle; Transform no longer inherits Component. Keep the scene alive
+while using handles. Removed components include Attribute, NativeScript,
+MeshFilter/MeshRenderer/ImageRenderer, lights, rigid bodies and colliders.
 
-Components cover attributes, transforms, cameras/editor camera, directional
-lights, image/mesh render data, native scripts, and 2D/3D colliders and rigid
-bodies. `Math` provides the vector, matrix, quaternion, projection, and
-transformation operations used across rendering and physics.
+StaticMeshComponent owns a shared immutable CPU Mesh asset and a material. Replacing
+either invalidates its GPU pipeline; copying retains those owners but rebuilds
+the destination pipeline. ImageComponent owns a sampled Texture2D asset and material,
+and records a position/UV quad with color and tiling. Missing images use a white
+texture for color-only scenes. CameraComponent projection and selection behavior remain;
+EditorCamera remains a camera utility, not an additional attachable type.
 
-## Physics and scripting
+Scene copy duplicates base data, reattaches components and remaps parent handles.
+Duplication assigns a new UUID. Deferred deletion detaches children and ignores
+repeated deletion requests. Hierarchy links preserve relationships; model matrices
+remain local Transform matrices (no new parent-transform composition).
+Scene lifecycle no longer creates or steps physics worlds, or dispatches native
+scripts. Standalone Box2D/PhysX and Mono runtime services remain optional and
+independent; Physics2DBodyDef uses PhysicsBodyType instead of a removed component
+enum. Standalone contact listener hooks no longer dispatch scene scripts.
 
-共享 Mono SDK、开发/发布路径、C# 编译与 Worker 重启的目标设计见
-[C# 与游戏发布架构](ManagedScripting.md)。`RuntimeSpecification` 现在提供
-`ScriptRuntimeRoot` 与 `ScriptCoreAssembly`，`EngineRuntime` 在切换 cwd 前解析
-相对路径并传给 `ScriptEngine`；RuntimeId/清单/发布模式仍未实施。
+Scene serialization writes base data plus CameraComponent, StaticMeshComponent and ImageComponent, including
+asset paths, mesh index, and each material's shader path/name. Arbitrary runtime
+material property overrides are not serialized. In-memory procedural meshes or
+textures without persistent asset identities fail serialization explicitly.
+Removed/unknown component keys fail loading; failed loads preserve the destination
+scene by constructing a candidate first. Legacy Attribute.IsActive is accepted
+only as a base-data input adapter; new output writes Active directly. Shipped
+scenes have been migrated, removing historical physics/circle-renderer data.
+Legacy physics-demo filenames do not imply retained simulation.
 
-`Scene::OnAwake` creates Box2D and PhysX worlds, attaches the 2D contact
-listener, and builds 2D bodies/fixtures for existing rigid-body/collider
-components. Its fixed-update loop steps the **2D** world and invokes physics
-hooks; `Scene::OnFixedUpdate` does not step the 3D world. The runtime initializes
-global PhysX only when `EnablePhysics` is true. The 3D world/body wrappers
-exist, but automatic scene-driven 3D simulation remains an open follow-up in
-[scene and physics tracking](../../TODO/SceneAndPhysics.md).
+SceneRenderer records active ImageComponent/StaticMeshComponent components into an already-open
+graphics pass; GameObject::OnRender is the presentation adapter. Command/resource
+retention remains in backends: replacing CPU references does not imply GPU
+completion. No native handles, queue semantics or backend APIs changed.
+ImageComponent shaders explicitly expose the sampled-image binding contract documented
+in the [component API](../API/SceneAndPhysics.md). Missing bindings fail before
+rendering rather than silently dropping required work.
 
-`NativeScript` owns C++ `ScriptableObject` instances with lifecycle and contact
-callbacks. Separately, `ScriptEngine` bootstraps a Mono domain and the configured
-script-core assembly when `EnableScripting` is true; it is not yet a general
-managed-component attachment interface.
-
-`SceneRenderer::Render(Scene&, command)` records active ImageRenderer and
-MeshRenderer components into the caller's already-open graphics pass, using
-their existing material/pipeline implementation. It owns neither scene nor
-target and does not start scripts, physics, or a camera pass. The caller keeps
-the scene alive through recording; backend command retention governs submitted
-GPU resources. Materials still determine camera/projection semantics.
-Components also expose `OnRender(command)`; null commands fail explicitly.
-The no-argument methods remain presentation compatibility adapters.
-Worker scene preflight uses UTF-8 paths through FileSystemHelper; IsDocument
-now makes the same native UTF-8 conversion as the subsequent resource read.
-
-`GameObject::OnRender` dispatches image and mesh renderer components. Each
-uses a caller-provided material and the active portable presentation command
-buffer, so a layer calls it during `OnPresent`, not during its offscreen
-`OnRender`. ImageRenderer owns a quad pipeline; MeshRenderer invalidates its
-pipeline on material changes and rebuilds it on mesh changes or the next draw.
-Textured images and GraphicsTool point/line paths explicitly report unsupported
-instead of being silent no-ops.
 The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
-is a separate application so its runtime and materials
-are not coupled to `FrameGraphTriangle`'s GPU graph workload. It owns two
-scene objects, alternates shared scene recording with compatibility hooks during presentation, replaces a
-material and mesh after frame boundaries, and can request synthetic resize.
-Synthetic resize is D3D12-only and one-shot at each selected frame: Vulkan's
-swap-chain extent must match its native surface, so a synthetic smaller extent
-without a real window resize can keep acquisition from progressing. After the
-one-shot fix, Debug and Release runs on D3D12, OpenGL, and Vulkan
-each reached 120 frames and exited 0. D3D12 alone performed two synthetic
-resizes per run. Visible pixels, real resize, and long-run memory remain
-unverified by the agent in the [rendering TODO](../../TODO/RenderingArchitecture.md).
-The user subsequently reported that the requested manual test had no problem;
-per-backend output and long-run memory measurements were not supplied.
+draws a textured quad and indexed mesh, replaces materials/meshes/images and runs
+base-data, copy/duplicate, hierarchy, serialization and malformed-resource checks.
+Current verification and remaining manual/backend checks are tracked in
+[SceneAndPhysics](../../TODO/SceneAndPhysics.md).
 
 ## Assets, tools, UI, and diagnostics
 

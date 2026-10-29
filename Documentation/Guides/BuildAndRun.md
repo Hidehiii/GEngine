@@ -83,6 +83,18 @@ dist\cmake-vs2022\windows-x86_64\Release\GEngineTools\GEngineTools.exe
 
 #### Build an engine or example
 
+GAsset migration is available through the same built tool:
+
+```bat
+GEngineTools.exe gasset --root E:\GEngine
+GEngineTools.exe gasset --root E:\GEngine --repair-references
+```
+
+Conversion changes files in place and removes converted source resources; back
+up the checkout first. Conversion and repair run directly in C++ without Python. Use
+`GEngineTools.exe gasset --help` for options. See the
+[command contract](../API/BuildSystem.md#gasset-conversion).
+
 After preparing the Mono SDK, build a focused example. Replace `Debug` with
 `Release` for an optimized build; `vs2019` is also accepted by the launcher.
 

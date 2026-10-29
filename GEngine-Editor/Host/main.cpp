@@ -38,7 +38,7 @@ int main(int argc, char** argv)
                 else if (line.startsWith("payload: !!binary")) payloadStarted = true;
                 else if (!line.isEmpty()) return -1;
             }
-            else if (!line.isEmpty()) encoded.append(line);
+            else if (!line.isEmpty()) encoded.append(line.toLatin1());
         }
         if (type != "font" || format != "ttf" || encoding != "base64" || encoded.isEmpty()) return -1;
         const auto decoded = QByteArray::fromBase64(encoded, QByteArray::AbortOnBase64DecodingErrors);
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     else std::cerr << "Bundled UI font could not be loaded: " << fontPath.toStdString() << '\n';
     const auto args = application.arguments();
     std::unique_ptr<QTemporaryDir> testSettings;
-    if (args.contains("--self-test") || args.contains("--packaging-self-test") || args.contains("--project-settings-self-test"))
+    if (args.contains("--self-test") || args.contains("--packaging-self-test") || args.contains("--project-settings-self-test") || args.contains("--import-self-test"))
     {
         testSettings = std::make_unique<QTemporaryDir>();
         if (!testSettings->isValid()) { std::cerr << "Could not isolate editor test settings\n"; return 1; }
@@ -83,7 +83,8 @@ int main(int argc, char** argv)
     if (!projectPath.isEmpty() && !window.OpenProject(projectPath))
     { std::cerr << window.LastError().toStdString() << '\n'; return 1; }
     window.show();
-    if (args.contains("--project-settings-self-test")) GEngineEditor::RunProjectSettingsCheck(window);
+    if (args.contains("--import-self-test")) GEngineEditor::RunImportCheck(window);
+    else if (args.contains("--project-settings-self-test")) GEngineEditor::RunProjectSettingsCheck(window);
     else if (args.contains("--packaging-self-test")) GEngineEditor::RunPackagingCheck(window);
     else if (args.contains("--self-test")) GEngineEditor::RunRecoveryCheck(window);
     else QTimer::singleShot(0, &window, [&window] { window.StartWorker(); });

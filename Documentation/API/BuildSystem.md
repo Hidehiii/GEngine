@@ -1,6 +1,31 @@
 # Build entry points
 
-`GEngineTools.exe <mono-sdk|qt-sdk|qt-editor|run-qt-editor|export-project>`
+## GAsset conversion
+
+`GEngineTools.exe import-resource --source <file> --output <new.gasset>` imports
+one supported source file (at most 64 MiB) without deleting it or rewriting project
+references. The destination directory must exist. Existing targets and linked paths
+are rejected. Output is staged in that directory, checked, then renamed without
+replacement; errors return nonzero and remove staging files. This is the editor's
+native import endpoint. It wraps source bytes without validating image/FBX contents
+or collecting dependencies.
+
+`GEngineTools.exe gasset [--root <repository>]`
+converts supported resources in place to `.gasset` and scenes to `.gscene`,
+updating project references. Back up the selected checkout first. The root
+defaults to the engine checkout. Add `--repair-references` to repair references
+to existing assets without conversion; `--help` prints usage without changes.
+Conversion and repair are implemented directly in C++; no Python interpreter or
+conversion script is required. Errors return nonzero. The tool scans Example/Sandbox Assets/Resources
+and editor resource roots rather than arbitrary standalone files. Runtime GAsset
+APIs and backend ownership are unchanged. Text payloads use YAML double-quoted
+scalars preserving whitespace; binary payloads use YAML Base64. Payloads and
+destination collisions are checked before writes. The batch is not atomic:
+I/O failure may leave partial output; keep a backup.
+
+## Workflow commands
+
+`GEngineTools.exe <gasset|import-resource|mono-sdk|qt-sdk|qt-editor|run-qt-editor|export-project>`
 is the native first-party workflow CLI. It is built from
 `BuildScripts/Tools/GEngineTools.cpp`, links only Win32/BCrypt, and does not add
 an engine public API. CMake and Premake both emit and deploy it under the

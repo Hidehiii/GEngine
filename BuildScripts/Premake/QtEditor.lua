@@ -56,7 +56,7 @@ editorProject("GEngine-EditorHost")
     files { editorRoot .. "/Host/**.cpp", editorRoot .. "/Host/**.h",
         editorRoot .. "/Protocol/**.h", editorRoot .. "/Core/**.h" }
     defines { "UNICODE", "_UNICODE", "QT_CORE_LIB", "QT_GUI_LIB", "QT_WIDGETS_LIB" }
-    dependson { "GEngine-EditorDiagnosticWorker", "GEngine-EditorEngineWorker" }
+    dependson { "GEngine-EditorDiagnosticWorker", "GEngine-EditorEngineWorker", "GEngineTools" }
     filter "configurations:Debug"
         includedirs { sdkRoot .. "/Debug/include", sdkRoot .. "/Debug/include/QtCore",
             sdkRoot .. "/Debug/include/QtGui", sdkRoot .. "/Debug/include/QtWidgets" }

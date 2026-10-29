@@ -47,37 +47,24 @@ namespace
                     throw std::runtime_error("Scene file exceeds 4 MiB.");
                 const auto data = YAML::Load(FileSystemHelper::ReadFileAsString(scenePath));
                 if (!data["Scene"]) throw std::runtime_error("Missing Scene document.");
-                // The legacy serializer cannot round-trip materials, meshes or camera rendering yet.
-                for (const auto& object : data["GameObjects"])
-                {
-                    for (const auto& field : object)
-                    {
-                        const auto key = field.first.as<std::string>();
-                        if (key != "GameObject" && key != "Name" && key != "Attribute" &&
-                            key != "Transform" && key != "ImageRenderer")
-                            throw std::runtime_error("Unsupported scene component: " + key);
-                    }
-                    if (object["ImageRenderer"] && object["ImageRenderer"]["Texture"].as<std::string>() != "None")
-                        throw std::runtime_error("Textured scene rendering is unsupported.");
-                }
                 Serializer::Deserialize(scenePath, m_Scene);
-                for (auto object : m_Scene->GetGameObjects<ImageRenderer>())
-                    SetMaterial(object.GetComponent<ImageRenderer>());
+                for (auto object : m_Scene->GetGameObjects<ImageComponent>())
+                    if (!object.GetComponent<ImageComponent>().GetMaterial()) SetMaterial(object.GetComponent<ImageComponent>());
                 GE_INFO("Editor scene loaded: {}", m_Scene->name);
             }
             else
             {
                 m_Scene->name = "Engine sample scene";
                 auto left = m_Scene->CreateGameObject("Red quad");
-                left.GetComponent<Transform>().SetPosition({-0.5f, 0.0f, 0.0f});
-                left.GetComponent<Transform>().SetScale({0.6f, 0.7f, 1.0f});
-                left.AddComponent<ImageRenderer>(Vector4{0.95f, 0.22f, 0.18f, 1.0f});
-                SetMaterial(left.GetComponent<ImageRenderer>());
+                left.GetTransform().SetPosition({-0.5f, 0.0f, 0.0f});
+                left.GetTransform().SetScale({0.6f, 0.7f, 1.0f});
+                left.AddComponent<ImageComponent>(Vector4{0.95f, 0.22f, 0.18f, 1.0f});
+                SetMaterial(left.GetComponent<ImageComponent>());
                 m_Animated = m_Scene->CreateGameObject("Moving cyan quad");
-                m_Animated.GetComponent<Transform>().SetPosition({0.5f, 0.0f, 0.0f});
-                m_Animated.GetComponent<Transform>().SetScale({0.6f, 0.5f, 1.0f});
-                m_Animated.AddComponent<ImageRenderer>(Vector4{0.1f, 0.75f, 1.0f, 1.0f});
-                SetMaterial(m_Animated.GetComponent<ImageRenderer>());
+                m_Animated.GetTransform().SetPosition({0.5f, 0.0f, 0.0f});
+                m_Animated.GetTransform().SetScale({0.6f, 0.5f, 1.0f});
+                m_Animated.AddComponent<ImageComponent>(Vector4{0.1f, 0.75f, 1.0f, 1.0f});
+                SetMaterial(m_Animated.GetComponent<ImageComponent>());
             }
             GE_INFO("Editor SceneRenderer initialized: backend={}, scene={}",
                 static_cast<int>(Graphics::GetGraphicsAPI()), m_Scene->name);
@@ -113,7 +100,7 @@ namespace
                     if (scenePath.empty())
                     {
                         const auto seconds = std::chrono::duration<float>(std::chrono::steady_clock::now() - m_Start).count();
-                        m_Animated.GetComponent<GEngine::Transform>().SetPosition({0.5f, 0.25f * std::sin(seconds * 2.0f), 0.0f});
+                        m_Animated.GetTransform().SetPosition({0.5f, 0.25f * std::sin(seconds * 2.0f), 0.0f});
                     }
                     break;
                 }
@@ -159,7 +146,7 @@ namespace
             if (++m_Frames == 1 || m_Frames % 300 == 0) GE_INFO("Editor engine frame {} delivered", m_Frames);
         }
     private:
-        void SetMaterial(GEngine::ImageRenderer& image)
+        void SetMaterial(GEngine::ImageComponent& image)
         {
             image.SetMaterial(GEngine::Graphics::GetRenderDevice().CreateMaterial(
                 GEngine::Shader::Create("Assets/Shaders/SceneImageColor.gasset"), "Scene image"));

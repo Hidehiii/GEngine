@@ -1,5 +1,20 @@
 # Rendering architecture refactor
 
+2026-10-29 component consolidation is tracked in SceneAndPhysics.md: only
+StaticMeshComponent, ImageComponent and CameraComponent remain attachable.
+GameObject owns transform/identity/active base data. ImageComponent samples its
+image asset and material; StaticMeshComponent owns its mesh asset and material.
+Scene physics/scripts/lights are removed; backend APIs and submission lifetime
+are unchanged. CameraComponent keeps the existing camera behavior.
+
+Editor E1.9 imports source files through the native C++ tool into project GAssets.
+The Host remains independent of the engine. Rendering APIs, GPU ownership and
+Worker IPC are unchanged; acceptance is tracked in TODO/EditorArchitecture.md.
+
+2026-10-29 GAsset tooling integration is tracked in ScriptingAndPackaging:
+conversion/reference repair are implemented directly in the GEngineTools C++ CLI.
+Rendering APIs, resource formats, backend synchronization and ownership are unchanged.
+
 2026-10-29 graph access-declaration synchronization is tracked in
 [FrameGraphCore](Rendering/FrameGraphCore.md). It validates state/read-write
 and state/stage compatibility at declaration time, validates stage against the

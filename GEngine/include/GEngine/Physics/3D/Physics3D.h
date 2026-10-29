@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GEngine/Core/Core.h"
+#include "GEngine/Physics/PhysicsTypes.h"
 #include "GEngine/Math/Math.h"
-#include "GEngine/Components/Components.h"
 #include <filesystem>
 
 #include <PhysX/include/PxPhysicsAPI.h>
@@ -164,13 +164,13 @@ namespace GEngine
 	class GENGINE_API Physics3DBody
 	{
 	public:
-		Physics3DBody(RigidBody::RigidBodyType type);
+		Physics3DBody(PhysicsBodyType type);
 
-		void SetType(RigidBody::RigidBodyType type);
+		void SetType(PhysicsBodyType type);
 	private:
 		physx::PxRigidDynamic*	m_BodyDynamic = nullptr;
 		physx::PxRigidStatic*	m_BodyStatic = nullptr;
-		RigidBody::RigidBodyType m_Type;
+		PhysicsBodyType m_Type;
 	};
 
 

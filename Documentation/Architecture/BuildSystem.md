@@ -1,5 +1,18 @@
 # Build system architecture
 
+GAsset conversion and reference repair are exposed through `GEngineTools gasset`.
+`import-resource` reuses its C++ serializer for one nondestructive import, with
+same-directory staging and a no-replacement publish operation. The Qt Host calls
+this endpoint asynchronously; no interpreter or engine linkage is introduced.
+The native command implements discovery, collision planning, YAML serialization
+and project reference repair in C++, without Python or conversion scripts.
+Payloads/destinations are validated before writes; original resources are retained
+until output/reference writes finish. Write completion is checked. Batches are
+not atomic; I/O failures can leave partial output. Pending payloads are held in
+CPU memory for preflight. CMake and Premake already build this tool; no new build sources
+or engine dependencies are introduced. Runtime asset loading, serialized formats
+and GPU lifetime are unaffected. See the [command contract](../API/BuildSystem.md).
+
 Editor ConsoleOutput is a Qt-only Host source, explicitly listed by the standalone
 CMake build and discovered by Premake's existing Host glob. The worker reuses its
 existing spdlog dependency for ANSI stderr; no new module or game dependency.

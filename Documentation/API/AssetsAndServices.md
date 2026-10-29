@@ -95,9 +95,9 @@ Layers implement `OnImGuiRender`; `GUIUtils` supplies texture IDs and UVs
 for UI integration. `FileDialogs::OpenFile/SaveFile` return an empty string
 on cancel. `ScriptEngine::Init/Shutdown` bootstrap Mono when scripting is
 enabled, but the current implementation loads the configured script-core assembly
-rather than exposing general managed-component registration. For the exposed
-scene scripting path, use C++ `NativeScript` (see
-[Scene and physics API](SceneAndPhysics.md)).
+rather than exposing general managed-component registration. NativeScript and
+ScriptableObject scene-component attachment have been removed; standalone Mono
+services remain (see [Scene and physics API](SceneAndPhysics.md)).
 
 `Instrumentor` in `<GEngine/Debug/Instrumentation.h>` writes trace events
 for profiling sessions. Backend validation is separate; see
