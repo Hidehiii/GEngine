@@ -1,3 +1,20 @@
+- [ ] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
+      replace direct `vkAllocateMemory`, memory binding, mapping/unmapping,
+      and `vkFreeMemory` in backend resource, staging, upload, and readback
+      paths with VMA allocations owned by the corresponding engine resource;
+      preserve queue-sharing requirements, required memory properties, mapped
+      pointer lifetime, and retirement through GPU completion. Command buffers,
+      descriptor sets/pools, semaphores, fences, and swap-chain images remain
+      native Vulkan objects because VMA allocates device memory, not those
+      handles. Keep application-facing resource APIs backend-neutral unless a
+      migration-required ownership change is explicitly designed.
+      Acceptance: a source audit finds no engine-owned buffer/image
+      `vkAllocateMemory` path outside VMA; partial initialization and shutdown
+      destroy allocations before the allocator/device; Debug/Release builds
+      pass; FrameGraphTriangle Vulkan shared and dedicated-queue runs complete
+      120 frames, pass all three readbacks, exit normally, and report no
+      validation errors. Exercise replacement and normal shutdown, and confirm
+      OpenGL/D3D12 behavior is unchanged.
 - [ ] Add Vulkan exclusive-sharing queue-family ownership transfer as a
       separate feature. Current graph-created buffers/images use concurrent
       sharing when graphics/compute/transfer families differ, so the new
