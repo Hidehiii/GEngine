@@ -83,8 +83,10 @@ The generators resolve engine dependencies from the `GEngine/GEngine-ThirdParty/
 aggregate submodule. Recursive submodule initialization and Git LFS are build
 prerequisites; the migration status and fresh-clone evidence are owned by
 [ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md). No
-public engine build API changes. The submodule is pinned at
-`91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a`; application project files and
+public engine build API changes. Both CMake and Premake require an installed
+Vulkan SDK whose root is exported as `VULKAN_SDK`; generation fails with an
+actionable error when it is missing or incomplete. The submodule is pinned at
+`99c4b5e529f402e2292d0e367fabe5c356bbe995`; application project files and
 runtime DLL copy commands consume the same path without new public C++
 signatures. `DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`, `glm`, `glfw`,
 `yaml-cpp`, `spdlog`, and `stb` are aggregate-local

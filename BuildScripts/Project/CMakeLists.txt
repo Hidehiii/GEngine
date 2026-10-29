@@ -34,11 +34,10 @@ if(GE_PROJECT_ICON)
 endif()
 set_target_properties(GProjectGameLauncher PROPERTIES OUTPUT_NAME "${GE_PROJECT_NAME}"
     RUNTIME_OUTPUT_DIRECTORY "${GE_DIST_ROOT}/$<CONFIG>/Game")
-if(DEFINED ENV{VULKAN_SDK} AND NOT "$ENV{VULKAN_SDK}" STREQUAL "")
-    set(project_vulkan "$ENV{VULKAN_SDK}")
-else()
-    set(project_vulkan "${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty/VulkanSDK")
+if(NOT DEFINED ENV{VULKAN_SDK} OR "$ENV{VULKAN_SDK}" STREQUAL "")
+    message(FATAL_ERROR "VULKAN_SDK is required. Install the Vulkan SDK and export its root path.")
 endif()
+file(TO_CMAKE_PATH "$ENV{VULKAN_SDK}" project_vulkan)
 add_custom_target(GProjectPackage DEPENDS GProjectGame GProjectGameLauncher
     COMMAND "${CMAKE_COMMAND}" "-DGE_VENDOR=${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty"
         "-DGE_VULKAN_SDK=${project_vulkan}"

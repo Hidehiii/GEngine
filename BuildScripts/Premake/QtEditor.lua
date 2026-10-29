@@ -48,7 +48,7 @@ editorProject("GEngine-EditorEngineWorker")
         '{COPY} "' .. editorRoot .. '/../GEngine/GEngine-ThirdParty/PhysX/lib/%{cfg.buildcfg}/*.dll" "%{cfg.targetdir}"',
         '{COPY} "' .. editorRoot .. '/../GEngine/GEngine-ThirdParty/dxc/bin/x64/*.dll" "%{cfg.targetdir}"',
         '{COPY} "' .. editorRoot .. '/../GEngine/GEngine-ThirdParty/OpenSSL/bin/*.dll" "%{cfg.targetdir}"',
-        '{COPY} "' .. editorRoot .. '/../GEngine/GEngine-ThirdParty/VulkanSDK/Bin/*.dll" "%{cfg.targetdir}"'
+        '{COPY} "%{LibraryDir.VulkanSDK_Bin}*.dll" "%{cfg.targetdir}"'
     }
 
 editorProject("GEngine-EditorHost")

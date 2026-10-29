@@ -13,7 +13,7 @@ file(GLOB runtime_dlls
     "${GE_VENDOR}/OpenSSL/bin/*.dll"
     "${GE_VULKAN_SDK}/Bin/*.dll")
 if(NOT runtime_dlls)
-    message(FATAL_ERROR "No vendor runtime DLLs found; check GE_VENDOR and GE_VULKAN_SDK.")
+    message(FATAL_ERROR "No runtime DLLs found; check GE_VENDOR and VULKAN_SDK.")
 endif()
 foreach(runtime_dll IN LISTS runtime_dlls)
     get_filename_component(runtime_name "${runtime_dll}" NAME)

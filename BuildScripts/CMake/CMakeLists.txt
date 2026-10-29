@@ -14,10 +14,20 @@ set(GE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
 get_filename_component(GE_ROOT "${GE_ROOT}" ABSOLUTE)
 set(GE_VENDOR "${GE_ROOT}/GEngine/GEngine-ThirdParty")
 if(NOT DEFINED ENV{VULKAN_SDK} OR "$ENV{VULKAN_SDK}" STREQUAL "")
-    set(GE_VULKAN_SDK "${GE_VENDOR}/VulkanSDK")
-else()
-    set(GE_VULKAN_SDK "$ENV{VULKAN_SDK}")
+    message(FATAL_ERROR "VULKAN_SDK is required. Install the Vulkan SDK and export its root path.")
 endif()
+file(TO_CMAKE_PATH "$ENV{VULKAN_SDK}" GE_VULKAN_SDK)
+foreach(vulkan_required_path
+        "${GE_VULKAN_SDK}/Include/vulkan/vulkan.h"
+        "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
+        "${GE_VULKAN_SDK}/Lib/shaderc_sharedd.lib"
+        "${GE_VULKAN_SDK}/Lib/shaderc_shared.lib"
+        "${GE_VULKAN_SDK}/Bin/shaderc_sharedd.dll"
+        "${GE_VULKAN_SDK}/Bin/shaderc_shared.dll")
+    if(NOT EXISTS "${vulkan_required_path}")
+        message(FATAL_ERROR "VULKAN_SDK is invalid; missing ${vulkan_required_path}")
+    endif()
+endforeach()
 set(GE_FBX_SDK "${GE_VENDOR}/FBXSDK")
 
 set(CMAKE_C_STANDARD 11)

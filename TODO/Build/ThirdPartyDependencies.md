@@ -11,6 +11,39 @@
   planned tasks to be recorded in `TODO/`. Verified by link/content review and
   `git diff --check`.
 
+## Remove the vendored Vulkan SDK snapshot (2026-10-29, implemented)
+
+- [x] Remove `GEngine/GEngine-ThirdParty/VulkanSDK` from the shared dependency
+  aggregate. Development machines must install a Vulkan SDK and export
+  `VULKAN_SDK`; CMake and Premake generation fail with an actionable message
+  when the environment variable is missing. Update engine/editor copying and
+  build documentation so no script silently falls back to the removed snapshot.
+  Acceptance: no main-repository or aggregate build script references the
+  vendored path; a no-SDK generation fails before build-file output; a valid
+  `VULKAN_SDK` path builds the engine/example; documentation states the
+  mandatory prerequisite. Publishing the aggregate change and updating the main
+  repository gitlink were required before claiming reproducible clean-machine
+  behavior.
+  Implemented: the aggregate commit removes all 646 tracked
+  `VulkanSDK` files. CMake and Premake now require a non-empty `VULKAN_SDK`,
+  validate the Vulkan header, loader import library, Debug/Release shaderc
+  libraries and runtime DLLs, and fail generation when the SDK is missing or
+  incomplete. Engine, editor worker, and project copying use the external SDK
+  path. Build/API/architecture documentation and the root README state the new
+  prerequisite; the README links to the official Windows Vulkan SDK download.
+  Verification: with no `VULKAN_SDK`, both CMake VS2022 configuration and
+  Premake VS2022 generation fail with actionable errors. With an external SDK
+  path supplied in a child environment, CMake VS2022 configuration and a
+  single-parallel Debug FrameGraphTriangle build passed, and Premake VS2022
+  generation passed. The verification SDK was extracted only into ignored
+  `build/verify-vulkan-sdk` from the aggregate's pre-change Git object for
+  layout testing; this host still has no installed SDK.
+  Published: aggregate commit
+  `99c4b5e529f402e2292d0e367fabe5c356bbe995` removes the snapshot, and this
+  main-repository change pins that commit. The development host still needs a
+  real external SDK installed; clean-machine generation/build evidence remains
+  a future environment check, not a claim of this item.
+
 ## Third-party dependency layout and submodules (implemented)
 
 ### Editor compatibility repair (2026-10-23, in progress)

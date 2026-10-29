@@ -20,9 +20,9 @@ Development is currently Windows-first. Install the following before generating 
 - Premake 5.0.0-beta8 is bundled as `BuildScripts/Premake/premake5.exe` and supports
   VS2026, VS2022 and VS2019 project generation.
 - CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
-- The repository includes the Vulkan headers, loader library and shader tools
-  under `GEngine/GEngine-ThirdParty/VulkanSDK`. Set `VULKAN_SDK` only to use another
-  installed SDK.
+- Install the Vulkan SDK and export its root as `VULKAN_SDK`. CMake and Premake
+  require this environment variable and validate its headers, import libraries,
+  shaderc libraries, and runtime DLLs before generating projects.
 - .NET Framework 4.7.2 Developer Pack, required to build `GEngine-ScriptCore`
   with both Premake and CMake.
 
@@ -234,7 +234,7 @@ Sandbox and the standalone engine worker. Qt Host is opt-in. `GE_WITH_MONO=ON`
 `GE_WITH_MONO=OFF` and omit it. CMake currently requires Windows/MSVC
 and does not offer a VS2026 generator entry in these launchers. Premake's
 `Dist` configuration is not exposed by the CMake launcher. The same
-`VULKAN_SDK` override or bundled SDK fallback is used by both systems.
+`VULKAN_SDK` installation is required by both systems.
 On 2026-10-20, Premake and CMake VS2022 Debug/Release GEngine plus
 FrameGraphTriangle builds passed in the unified layout. Premake Debug and
 CMake Release 120-frame D3D12 runs passed all three graph readbacks and exited

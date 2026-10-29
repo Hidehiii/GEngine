@@ -26,6 +26,9 @@
       vendored include/library paths, and isolated Release builds of GEngine,
       its dependencies, and FrameGraphTriangle succeed. A child-process
       `VULKAN_SDK` override also selects that SDK during generation.
+      Superseded on 2026-10-29 by the required external Vulkan SDK migration in
+      [ThirdPartyDependencies.md](ThirdPartyDependencies.md); keep this record
+      only as history for the removed snapshot.
 
 ## Visual Studio 2026 project generation
 

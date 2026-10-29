@@ -111,13 +111,10 @@ local overlays, binary assets, and license gaps. Fresh recursive-clone
 verification is recorded with the migration work item in
 [ThirdPartyDependencies.md](../../TODO/Build/ThirdPartyDependencies.md).
 The main repository pins aggregate commit
-`91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a`; its snapshot contains the
-originally tracked vendor paths plus aggregate metadata, excludes generated
-local build outputs, and uses aggregate-local submodules for
-`DirectX-Headers`, `jsoncpp`, `HLSLcc`, `entt`, `glm`, `glfw`, `yaml-cpp`,
-`spdlog`, `stb`, and `SPIRV-Reflect`. It passed a
-fresh recursive
-Git LFS clone.
+`99c4b5e529f402e2292d0e367fabe5c356bbe995`, which removes the Vulkan SDK
+snapshot. Its earlier dependency-snapshot ancestor
+`91ffb9e797f2e0d8e34571cef4dda14cbcc6e29a` passed a fresh recursive Git LFS
+clone; the newer pointer has not yet been re-cloned from a clean machine.
 Submodule directory names match their remote repository names. The engine-level
 aggregate directory is `GEngine/GEngine-ThirdParty`, and aggregate-local
 submodule directories such as `jsoncpp` use the same rule; new submodules must
@@ -132,9 +129,11 @@ The first CMake Debug compile found wide-string Win32 calls resolving to ANSI
 entry points. The CMake targets now define `UNICODE` and `_UNICODE` explicitly;
 this corrects build configuration without changing runtime APIs.
 The CMake link graph resolves OpenSSL import libraries from the checked-in
-`VC/x64/MD[d]` layout and uses the vendored Vulkan SDK unless overridden.
+`VC/x64/MD[d]` layout and resolves Vulkan headers, import libraries, shaderc,
+and runtime DLLs from the mandatory `VULKAN_SDK` installation.
 The post-build copy script requires vendor DLL matches so a missing runtime
-bundle fails the build instead of producing an executable that cannot start.
+or Vulkan SDK bundle fails the build instead of producing an executable that
+cannot start.
 
 VS2022 CMake Debug/Release builds of GEngine and FrameGraphTriangle passed.
 Premake Debug/Release and CMake Debug/Release builds of GEngine and

@@ -4,7 +4,20 @@
 
 local vulkanSdkOverride = os.getenv("VULKAN_SDK")
 if not vulkanSdkOverride or vulkanSdkOverride == "" then
-	vulkanSdkOverride = "%{wks.location}/GEngine/GEngine-ThirdParty/VulkanSDK"
+	error("VULKAN_SDK is required. Install the Vulkan SDK and export its root path.")
+end
+local requiredVulkanFiles = {
+	"Include/vulkan/vulkan.h",
+	"Lib/vulkan-1.lib",
+	"Lib/shaderc_sharedd.lib",
+	"Lib/shaderc_shared.lib",
+	"Bin/shaderc_sharedd.dll",
+	"Bin/shaderc_shared.dll"
+}
+for _, requiredFile in ipairs(requiredVulkanFiles) do
+	if not os.isfile(path.join(vulkanSdkOverride, requiredFile)) then
+		error("VULKAN_SDK is invalid; missing " .. path.join(vulkanSdkOverride, requiredFile))
+	end
 end
 VULKAN_SDK = vulkanSdkOverride
 FBX_SDK = "%{wks.location}/GEngine/GEngine-ThirdParty/FBXSDK"
