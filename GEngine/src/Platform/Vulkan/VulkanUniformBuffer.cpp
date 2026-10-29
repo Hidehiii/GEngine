@@ -31,8 +31,14 @@ namespace GEngine
 							VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
 							m_UniformBuffer, 
-							m_UniformBufferMemory);
-		vkMapMemory(VulkanContext::Get()->GetDevice(), m_UniformBufferMemory, 0, size, 0, &m_MapData);
+							m_UniformBufferAllocation);
+		if (vmaMapMemory(VulkanContext::Get()->GetVmaAllocator(), m_UniformBufferAllocation, &m_MapData) != VK_SUCCESS)
+		{
+			vmaDestroyBuffer(VulkanContext::Get()->GetVmaAllocator(), m_UniformBuffer, m_UniformBufferAllocation);
+			m_UniformBuffer = VK_NULL_HANDLE;
+			m_UniformBufferAllocation = nullptr;
+			throw std::runtime_error("Failed to map Vulkan uniform buffer memory.");
+		}
 
 		m_BufferInfo.buffer		= m_UniformBuffer;
 		m_BufferInfo.offset		= 0;
@@ -44,19 +50,18 @@ namespace GEngine
 		auto* context = VulkanContext::Get();
 		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
-			vkUnmapMemory(context->GetDevice(), m_UniformBufferMemory);
+			vmaUnmapMemory(context->GetVmaAllocator(), m_UniformBufferAllocation);
 			const VkBuffer uniformBuffer = m_UniformBuffer;
-			const VkDeviceMemory uniformMemory = m_UniformBufferMemory;
-			context->RetireResource([uniformBuffer, uniformMemory](VkDevice device)
+			const VmaAllocation uniformAllocation = m_UniformBufferAllocation;
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([uniformBuffer, uniformAllocation, allocator](VkDevice device)
 			{
 				if (uniformBuffer != VK_NULL_HANDLE)
-					vkDestroyBuffer(device, uniformBuffer, nullptr);
-				if (uniformMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, uniformMemory, nullptr);
+					vmaDestroyBuffer(allocator, uniformBuffer, uniformAllocation);
 			});
 		}
 		m_UniformBuffer = VK_NULL_HANDLE;
-		m_UniformBufferMemory = VK_NULL_HANDLE;
+		m_UniformBufferAllocation = nullptr;
 		m_MapData = nullptr;
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size)

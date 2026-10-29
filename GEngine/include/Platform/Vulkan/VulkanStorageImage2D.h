@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Compute/StorageImage.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
@@ -29,7 +30,7 @@ namespace GEngine
 		uint32_t						m_Width, m_Height;
 		ComputeImage2DFormat			m_Format;
 		VkImage							m_Image = nullptr;
-		VkDeviceMemory					m_ImageMemory = nullptr;
+		VmaAllocation					m_ImageAllocation = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;

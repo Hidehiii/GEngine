@@ -54,9 +54,9 @@ namespace GEngine
 		std::vector<VkImageView>	m_Attachments;
 		std::vector<VkImageView>	m_SwapChainAdditionalAttachments;
 		std::vector<VkImage>		m_ColorImages;
-		std::vector<VkDeviceMemory> m_ColorImagesMemory;
+		std::vector<VmaAllocation> m_ColorImageAllocations;
 		std::vector<VkImage>		m_DepthStencilImages;
-		std::vector<VkDeviceMemory> m_DepthStencilImagesMemory;
+		std::vector<VmaAllocation> m_DepthStencilImageAllocations;
 
 		std::vector<Ref<VulkanTexture2D>>	m_RenderTargets;
 		Ref<VulkanTexture2D>				m_DepthStencil = nullptr;

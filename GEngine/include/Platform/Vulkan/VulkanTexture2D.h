@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GEngine/Graphics/Texture.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace GEngine
 		VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
 		VulkanTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format, uint32_t mipLevelCount);
 		VulkanTexture2D(uint32_t width, uint32_t height, void* data, uint32_t size, RenderImage2DFormat format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
-		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag,
+		VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VmaAllocation imageAllocation, VkImageLayout layout, VkFlags aspectFlag,
 			uint32_t width = 0, uint32_t height = 0);
 		virtual ~VulkanTexture2D();
 
@@ -46,7 +47,7 @@ namespace GEngine
 	private:
 		std::string						m_Path;
 		VkImage							m_Image = nullptr;
-		VkDeviceMemory					m_ImageMemory = nullptr;
+		VmaAllocation					m_ImageAllocation = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;

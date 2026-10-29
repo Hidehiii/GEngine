@@ -2,6 +2,7 @@
 
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/UniformBuffer.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
@@ -24,8 +25,8 @@ namespace GEngine
 		}
 	private:
 		VkBuffer					m_UniformBuffer = nullptr;
-		VkDeviceMemory				m_UniformBufferMemory;
-		void*						m_MapData;
+		VmaAllocation				m_UniformBufferAllocation = nullptr;
+		void*						m_MapData = nullptr;
 		VkDescriptorBufferInfo		m_BufferInfo{};
 		VkDescriptorType			m_DescriptorType;
 	};

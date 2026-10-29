@@ -7,6 +7,10 @@
 - `FrameBuffer` and `RenderPass` create off-screen rendering targets.
 
 Use `Material::Set*` APIs that correspond to reflected shader property names. Recreate or update the material's resources after changing the shader interface.
+No public resource signature changes for VMA. On the Vulkan backend, buffers,
+images, upload staging, and readback staging are allocated through VMA and
+retired with their native objects after GPU completion. Swap-chain images and
+non-memory Vulkan objects remain backend-owned native handles.
 
 ## Shader cache
 

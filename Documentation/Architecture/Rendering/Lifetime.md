@@ -7,6 +7,9 @@ descriptor sets, shader modules/layouts, and render passes. The descriptor
 pool is context-owned and destroyed only after device wait and retirement
 flush. Short-lived uploads remain synchronous. Callers retain owners until
 recorded commands are submitted; unsubmitted commands are not tracked.
+VMA buffer/image allocations are retired together with their native handles;
+context shutdown waits for queues, flushes deferred releases, and destroys the
+VMA allocator only afterward.
 
 D3D12 has separate mechanisms: context submission tracking retires replaced
 native buffers/pipelines across queues, while each command buffer retains

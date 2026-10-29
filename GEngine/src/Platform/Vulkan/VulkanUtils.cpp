@@ -26,21 +26,7 @@ namespace GEngine
 			families.erase(std::unique(families.begin(), families.end()), families.end());
 			return families;
 		}
-        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDvice)
-        {
-            VkPhysicalDeviceMemoryProperties    memProperties;
-            vkGetPhysicalDeviceMemoryProperties(physicalDvice, &memProperties);
-            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                    return i;
-				}
-			}
-
-            GE_CORE_ASSERT(false, "failed to find suitable memory type!");
-            return 0;
-        }
-
-        void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool exclusiveSharing)
+        void CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaAllocation& bufferAllocation, bool exclusiveSharing)
         {
 
             VkBufferCreateInfo      bufferInfo{};
@@ -56,23 +42,18 @@ namespace GEngine
 				bufferInfo.pQueueFamilyIndices = families.data();
 			}
 
-			VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
+            VmaAllocationCreateInfo allocationInfo{};
+            allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+            allocationInfo.requiredFlags = properties;
+            if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0)
+                allocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
 
-            VkMemoryRequirements memRequirements;
-            vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-            VkMemoryAllocateInfo        allocInfo{};
-            allocInfo.sType             = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize    = memRequirements.size;
-            allocInfo.memoryTypeIndex   = FindMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
-
-            VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));
-            vkBindBufferMemory(device, buffer, bufferMemory, 0);
+            VK_CHECK_RESULT(vmaCreateBuffer(VulkanContext::Get()->GetVmaAllocator(), &bufferInfo, &allocationInfo, &buffer, &bufferAllocation, nullptr));
         }
 
 		void CreateImages(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, VkFormat format, 
 			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkSampleCountFlagBits sample, 
-			uint32_t arrayLayers, VkImageCreateFlags flags, uint32_t mipLevel, VkImage& outImage, VkDeviceMemory& imageMemory, bool exclusiveSharing)
+			uint32_t arrayLayers, VkImageCreateFlags flags, uint32_t mipLevel, VkImage& outImage, VmaAllocation& imageAllocation, bool exclusiveSharing)
 		{
 			VkImageCreateInfo		imageInfo{};
 			imageInfo.sType			= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -97,21 +78,13 @@ namespace GEngine
 			}
 			imageInfo.flags			= flags; // Optional
 
-            VK_CHECK_RESULT(vkCreateImage(device, &imageInfo, nullptr, &outImage));
+			VmaAllocationCreateInfo allocationInfo{};
+			allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+			allocationInfo.requiredFlags = properties;
+			if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0)
+				allocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
 
-			VkMemoryRequirements memRequirements;
-			vkGetImageMemoryRequirements(device, outImage, &memRequirements);
-
-			uint32_t memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
-
-			VkMemoryAllocateInfo		allocInfo{};
-			allocInfo.sType				= VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize	= memRequirements.size;
-			allocInfo.memoryTypeIndex	= memoryTypeIndex;
-
-			VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory));
-
-			vkBindImageMemory(device, outImage, imageMemory, 0);
+			VK_CHECK_RESULT(vmaCreateImage(VulkanContext::Get()->GetVmaAllocator(), &imageInfo, &allocationInfo, &outImage, &imageAllocation, nullptr));
 		}
 
 		void CreateImageViews(VkDevice device, VkImage image, VkFormat format, VkImageViewType viewType, uint32_t layerCount, VkImageAspectFlags aspectMask, uint32_t mipLevel, VkImageView& outImageView)

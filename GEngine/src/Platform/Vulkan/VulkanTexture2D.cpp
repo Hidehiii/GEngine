@@ -48,7 +48,7 @@ namespace GEngine
                             0,
                             m_MipLevels,
 			                m_Image,
-		                m_ImageMemory, m_ExclusiveSharing);
+		                m_ImageAllocation, m_ExclusiveSharing);
         Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
         SetData(data, m_Width * m_Height * channels);
 
@@ -88,7 +88,7 @@ namespace GEngine
                             0,
                             m_MipLevels,
 			                m_Image,
-		                m_ImageMemory, m_ExclusiveSharing);
+		                m_ImageAllocation, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
     }
@@ -116,12 +116,12 @@ namespace GEngine
             0,
             m_MipLevels,
 			m_Image,
-			m_ImageMemory, m_ExclusiveSharing);
+			m_ImageAllocation, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels, m_ImageView);
 
         SetData(data, size);
     }
-    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VkDeviceMemory imageMemory, VkImageLayout layout, VkFlags aspectFlag,
+    VulkanTexture2D::VulkanTexture2D(VkFormat format, VkImage image, VkImageView imageView, VmaAllocation imageAllocation, VkImageLayout layout, VkFlags aspectFlag,
         uint32_t width, uint32_t height)
     {
 		// Borrowed framebuffer attachments keep metadata independently of ownership.
@@ -133,7 +133,7 @@ namespace GEngine
         m_Image         = image;
         m_ImageView     = imageView;
         m_ImageLayout   = layout;
-        m_ImageMemory   = imageMemory;
+        m_ImageAllocation = imageAllocation;
         m_AspectFlag    = aspectFlag;
     }
     VulkanTexture2D::~VulkanTexture2D()
@@ -144,27 +144,26 @@ namespace GEngine
 		{
 			const VkImageView imageView = m_ImageView;
 			const VkImage image = m_Image;
-			const VkDeviceMemory imageMemory = m_ImageMemory;
-			context->RetireResource([imageView, image, imageMemory](VkDevice device)
+			const VmaAllocation imageAllocation = m_ImageAllocation;
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([imageView, image, imageAllocation, allocator](VkDevice device)
 			{
 				if (imageView != VK_NULL_HANDLE)
 					vkDestroyImageView(device, imageView, nullptr);
 				if (image != VK_NULL_HANDLE)
-					vkDestroyImage(device, image, nullptr);
-				if (imageMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, imageMemory, nullptr);
+					vmaDestroyImage(allocator, image, imageAllocation);
 			});
 		}
 		m_ImageView = VK_NULL_HANDLE;
 		m_Image = VK_NULL_HANDLE;
-		m_ImageMemory = VK_NULL_HANDLE;
+		m_ImageAllocation = nullptr;
     }
 
     void VulkanTexture2D::SetData(const void* data, uint32_t size)
     {
 
         VkBuffer    buffer;
-        VkDeviceMemory memory;
+        VmaAllocation allocation = nullptr;
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			                VulkanContext::Get()->GetDevice(),
@@ -172,13 +171,13 @@ namespace GEngine
 			                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                             buffer,
-                            memory);
+                            allocation);
 		
 
-        void* tempData;
-        vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
+        void* tempData = nullptr;
+        vmaMapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation, &tempData);
         memcpy(tempData, data, static_cast<uint32_t>(size));
-        vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
+        vmaUnmapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation);
 
         SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, 0, m_AspectFlag);
@@ -192,8 +191,7 @@ namespace GEngine
 			SetImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
         
-        vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
-        vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
+        vmaDestroyBuffer(VulkanContext::Get()->GetVmaAllocator(), buffer, allocation);
     }
     void VulkanTexture2D::SetData(const Ref<Texture2D>& texture, uint32_t width, uint32_t height)
     {

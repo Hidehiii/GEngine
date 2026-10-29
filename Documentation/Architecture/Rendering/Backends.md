@@ -11,6 +11,10 @@ Application and renderer code use `GEngine/include/GEngine` interfaces.
 and D3D12 resource, command, context, and presentation implementations;
 `Surface` contains GLFW and Win32 windows/input adapters. Native handles,
 allocation policies, and synchronization remain behind those boundaries.
+Vulkan engine-owned buffers, images, staging uploads, and readbacks use the
+context-owned VMA allocator from the official Vulkan SDK. Allocation handles
+are backend-private; resource retirement destroys them after submitted GPU
+work and before the allocator/device.
 
 OpenGL backend construction selects an API without issuing GL calls. Window
 creation makes the context current and loads GLAD; `GraphicsRuntime::Initialize`

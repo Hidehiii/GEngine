@@ -47,7 +47,7 @@ namespace GEngine
 		std::vector<VkImageView>	attachments(spec.ColorAttachments);
 		VkImage						image;
 		VkImageView					imageView;
-		VkDeviceMemory				imageMemory;
+		VmaAllocation				imageAllocation = nullptr;
 		VkFormat					imageFormat;
 		VkFlags						depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 
@@ -68,13 +68,13 @@ namespace GEngine
 				0,
 				1,
 				image,
-				imageMemory);
+				imageAllocation);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
 			m_SwapChainAdditionalAttachments.push_back(imageView);
 
 			m_DepthStencilImages.push_back(image);
-			m_DepthStencilImagesMemory.push_back(imageMemory);
+			m_DepthStencilImageAllocations.push_back(imageAllocation);
 
 			attachments.push_back(imageView);
 		}
@@ -98,13 +98,13 @@ namespace GEngine
 					0,
 					1,
 					image,
-					imageMemory);
+					imageAllocation);
 				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
 
 				m_SwapChainAdditionalAttachments.push_back(imageView);
 
 				m_ColorImages.push_back(image);
-				m_ColorImagesMemory.push_back(imageMemory);
+				m_ColorImageAllocations.push_back(imageAllocation);
 
 				attachments.push_back(imageView);
 			}
@@ -125,13 +125,13 @@ namespace GEngine
 					0,
 					1,
 					image,
-					imageMemory);
+					imageAllocation);
 				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
 				m_SwapChainAdditionalAttachments.push_back(imageView);
 
 				m_DepthStencilImages.push_back(image);
-				m_DepthStencilImagesMemory.push_back(imageMemory);
+				m_DepthStencilImageAllocations.push_back(imageAllocation);
 
 				attachments.push_back(imageView);
 			}
@@ -158,13 +158,14 @@ namespace GEngine
 			auto attachments = std::move(m_Attachments);
 			auto additionalAttachments = std::move(m_SwapChainAdditionalAttachments);
 			auto colorImages = std::move(m_ColorImages);
-			auto colorMemories = std::move(m_ColorImagesMemory);
+			auto colorAllocations = std::move(m_ColorImageAllocations);
 			auto depthImages = std::move(m_DepthStencilImages);
-			auto depthMemories = std::move(m_DepthStencilImagesMemory);
+			auto depthAllocations = std::move(m_DepthStencilImageAllocations);
+			const VmaAllocator allocator = context->GetVmaAllocator();
 
 			context->RetireResource([frameBuffer, attachments = std::move(attachments), additionalAttachments = std::move(additionalAttachments),
-				colorImages = std::move(colorImages), colorMemories = std::move(colorMemories),
-				depthImages = std::move(depthImages), depthMemories = std::move(depthMemories)](VkDevice device)
+				colorImages = std::move(colorImages), colorAllocations = std::move(colorAllocations),
+				depthImages = std::move(depthImages), depthAllocations = std::move(depthAllocations), allocator](VkDevice device)
 			{
 				if (frameBuffer != VK_NULL_HANDLE)
 					vkDestroyFramebuffer(device, frameBuffer, nullptr);
@@ -174,13 +175,11 @@ namespace GEngine
 					vkDestroyImageView(device, imageView, nullptr);
 				for (size_t i = 0; i < colorImages.size(); ++i)
 				{
-					vkDestroyImage(device, colorImages[i], nullptr);
-					vkFreeMemory(device, colorMemories[i], nullptr);
+					vmaDestroyImage(allocator, colorImages[i], colorAllocations[i]);
 				}
 				for (size_t i = 0; i < depthImages.size(); ++i)
 				{
-					vkDestroyImage(device, depthImages[i], nullptr);
-					vkFreeMemory(device, depthMemories[i], nullptr);
+					vmaDestroyImage(allocator, depthImages[i], depthAllocations[i]);
 				}
 			});
 		}
@@ -313,14 +312,14 @@ namespace GEngine
 		m_Attachments.clear();
 
 		m_ColorImages.clear();
-		m_ColorImagesMemory.clear();
+		m_ColorImageAllocations.clear();
 
 		m_DepthStencilImages.clear();
-		m_DepthStencilImagesMemory.clear();
+		m_DepthStencilImageAllocations.clear();
 
 		VkImage						image;
 		VkImageView					imageView;
-		VkDeviceMemory				imageMemory;
+		VmaAllocation				imageAllocation = nullptr;
 		VkFormat 					imageFormat;
 		VkFlags						depthAspectFlag;
 		// create color attachments
@@ -340,15 +339,15 @@ namespace GEngine
 				0,
 				1,
 				image,
-				imageMemory);
+				imageAllocation);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
 
 			m_Attachments.push_back(imageView);
 
 			m_ColorImages.push_back(image);
-			m_ColorImagesMemory.push_back(imageMemory);
+			m_ColorImageAllocations.push_back(imageAllocation);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT,
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT,
                 m_Specification.Width, m_Specification.Height);
 			m_RenderTargets.push_back(texture);
 		}
@@ -386,15 +385,15 @@ namespace GEngine
 				0,
 				1,
 				image,
-				imageMemory);
+				imageAllocation);
 			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
 			m_Attachments.push_back(imageView);
 
 			m_DepthStencilImages.push_back(image);
-			m_DepthStencilImagesMemory.push_back(imageMemory);
+			m_DepthStencilImageAllocations.push_back(imageAllocation);
 
-			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageMemory, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag,
+			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag,
                 m_Specification.Width, m_Specification.Height);
 		}
 		// multi samples
@@ -417,13 +416,13 @@ namespace GEngine
 					0,
 					1,
 					image,
-					imageMemory);
+					imageAllocation);
 				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
 
 				m_Attachments.push_back(imageView);
 
 				m_ColorImages.push_back(image);
-				m_ColorImagesMemory.push_back(imageMemory);
+				m_ColorImageAllocations.push_back(imageAllocation);
 			}
 			// create multi sample depth attachment
 			if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
@@ -459,13 +458,13 @@ namespace GEngine
 					0,
 					1,
 					image,
-					imageMemory);
+					imageAllocation);
 				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
 
 				m_Attachments.push_back(imageView);
 
 				m_DepthStencilImages.push_back(image);
-				m_DepthStencilImagesMemory.push_back(imageMemory);
+				m_DepthStencilImageAllocations.push_back(imageAllocation);
 			}
 		}
 

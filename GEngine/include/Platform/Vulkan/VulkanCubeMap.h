@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Graphics/Texture.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
@@ -35,7 +36,7 @@ namespace GEngine
 	private:
 		std::vector<std::string>		m_Path;
 		VkImage							m_Image = nullptr;
-		VkDeviceMemory					m_ImageMemory = nullptr;
+		VmaAllocation					m_ImageAllocation = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};
 		VkImageLayout 					m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;

@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Compute/StorageBuffer.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace GEngine
@@ -21,12 +22,12 @@ namespace GEngine
 
 		bool operator==(const VulkanStorageBuffer& other) const
 		{
-			return m_StorageBuffer == other.m_StorageBuffer && m_StorageBufferMemory == other.m_StorageBufferMemory;
+			return m_StorageBuffer == other.m_StorageBuffer && m_StorageBufferAllocation == other.m_StorageBufferAllocation;
 		}
 	private:
 		uint32_t m_Size = 0;
 		VkBuffer					m_StorageBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory				m_StorageBufferMemory = VK_NULL_HANDLE;
+		VmaAllocation				m_StorageBufferAllocation = nullptr;
 		uint32_t					m_Offset = 0;
 		VkDescriptorBufferInfo		m_BufferInfo{};
 		bool m_ExclusiveSharing = false;

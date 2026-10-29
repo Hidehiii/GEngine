@@ -1,5 +1,6 @@
 #pragma once
 #include "GEngine/Graphics/Texture.h"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -42,7 +43,7 @@ namespace GEngine
 		void CreateSampler();
 	private:
 		VkImage							m_Image = VK_NULL_HANDLE;
-		VkDeviceMemory					m_ImageMemory = nullptr;
+		VmaAllocation					m_ImageAllocation = nullptr;
 		VkImageView						m_ImageView = nullptr;
 		VkSampler						m_Sampler = nullptr;
 		VkDescriptorImageInfo			m_ImageInfo{};

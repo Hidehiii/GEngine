@@ -32,7 +32,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_MipLevels,
 			m_Image,
-			m_ImageMemory);
+			m_ImageAllocation);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
 
 	}
@@ -81,7 +81,7 @@ namespace GEngine
 			VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			m_MipLevels,
 			m_Image,
-			m_ImageMemory);
+			m_ImageAllocation);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_CUBE, 6, m_AspectFlag, m_MipLevels, m_ImageView);
 
 		LoadImageData();
@@ -94,20 +94,19 @@ namespace GEngine
 		{
 			const VkImageView imageView = m_ImageView;
 			const VkImage image = m_Image;
-			const VkDeviceMemory imageMemory = m_ImageMemory;
-			context->RetireResource([imageView, image, imageMemory](VkDevice device)
+			const VmaAllocation imageAllocation = m_ImageAllocation;
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([imageView, image, imageAllocation, allocator](VkDevice device)
 			{
 				if (imageView != VK_NULL_HANDLE)
 					vkDestroyImageView(device, imageView, nullptr);
 				if (image != VK_NULL_HANDLE)
-					vkDestroyImage(device, image, nullptr);
-				if (imageMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, imageMemory, nullptr);
+					vmaDestroyImage(allocator, image, imageAllocation);
 			});
 		}
 		m_ImageView = VK_NULL_HANDLE;
 		m_Image = VK_NULL_HANDLE;
-		m_ImageMemory = VK_NULL_HANDLE;
+		m_ImageAllocation = nullptr;
 	}
 
 	void VulkanCubeMap::SetData(const void* data, uint32_t size)
@@ -126,7 +125,7 @@ namespace GEngine
 	void VulkanCubeMap::SetData(const void* data, uint32_t size, CubeMapFace face)
 	{
 		VkBuffer    buffer;
-		VkDeviceMemory memory;
+		VmaAllocation allocation = nullptr;
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
@@ -134,17 +133,16 @@ namespace GEngine
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			buffer,
-			memory);
+			allocation);
 
-		void* tempData;
-		vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
+		void* tempData = nullptr;
+		vmaMapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation, &tempData);
 		memcpy(tempData, data, static_cast<uint32_t>(size));
-		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
+		vmaUnmapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation);
 		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, (uint32_t)face, m_AspectFlag);
 
-		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
+		vmaDestroyBuffer(VulkanContext::Get()->GetVmaAllocator(), buffer, allocation);
 		if (m_GenerateMipmap)
 		{
 			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, 6);

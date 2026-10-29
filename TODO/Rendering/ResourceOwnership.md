@@ -1,4 +1,4 @@
-- [ ] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
+- [~] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
       replace direct `vkAllocateMemory`, memory binding, mapping/unmapping,
       and `vkFreeMemory` in backend resource, staging, upload, and readback
       paths with VMA allocations owned by the corresponding engine resource;
@@ -15,6 +15,28 @@
       120 frames, pass all three readbacks, exit normally, and report no
       validation errors. Exercise replacement and normal shutdown, and confirm
       OpenGL/D3D12 behavior is unchanged.
+      Implemented (2026-10-29): `Utils::CreateBuffer` and
+      `Utils::CreateImages` call `vmaCreateBuffer`/`vmaCreateImage` with the
+      previous usage, sharing, and required memory properties. Host-visible
+      allocations request random host access before VMA mapping. Storage
+      buffers, storage images, textures, texture arrays, cube maps, frame
+      buffers, uniform buffers, vertex/index buffers, upload staging, and
+      readback staging now own `VmaAllocation` handles. Destruction uses
+      deferred `vmaDestroyBuffer`/`vmaDestroyImage` retirement through the
+      context allocator; mapped uniform memory is unmapped before retirement.
+      The unused manual memory-type helper was removed.
+      Verification: source audit found no remaining direct
+      `vkAllocateMemory`, memory binding, `vkMapMemory`, or `vkFreeMemory`
+      calls in the Vulkan backend. CMake Debug and Release
+      FrameGraphTriangle builds passed. Vulkan shared and dedicated runs in
+      both configurations completed 120 frames, passed all three readbacks,
+      and exited 0. Debug runs still report the separately tracked
+      messenger/device-layer/swapchain-semaphore validation diagnostics; none
+      are VMA allocation diagnostics. D3D12 Debug Layer-on and OpenGL
+      Debug/Release control runs also completed 120 frames, passed all three
+      readbacks, and exited 0 with no captured diagnostics. Remaining: resolve
+      the separately tracked Vulkan validation diagnostics and rerun this
+      item's zero-validation acceptance.
 - [ ] Add Vulkan exclusive-sharing queue-family ownership transfer as a
       separate feature. Current graph-created buffers/images use concurrent
       sharing when graphics/compute/transfer families differ, so the new

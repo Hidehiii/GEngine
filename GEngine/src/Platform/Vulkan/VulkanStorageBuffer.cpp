@@ -14,11 +14,11 @@ namespace GEngine
 		auto* context = VulkanContext::Get();
 		context->WaitForIdle();
 		VkBuffer staging = VK_NULL_HANDLE;
-		VkDeviceMemory memory = VK_NULL_HANDLE;
+		VmaAllocation stagingAllocation = nullptr;
 		try
 		{
 			Utils::CreateBuffer(context->GetPhysicalDevice(), context->GetDevice(), size, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging, memory);
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging, stagingAllocation);
 			auto command = context->BeginSingleTimeGraphicsCommand();
 			VkMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -32,19 +32,17 @@ namespace GEngine
 			vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 			context->EndSingleTimeGraphicsCommand(command);
 			void* mapped = nullptr;
-			if (vkMapMemory(context->GetDevice(), memory, 0, size, 0, &mapped) != VK_SUCCESS)
+			if (vmaMapMemory(context->GetVmaAllocator(), stagingAllocation, &mapped) != VK_SUCCESS)
 				throw std::runtime_error("Failed to map Vulkan storage readback memory.");
 			memcpy(destination, mapped, size);
-			vkUnmapMemory(context->GetDevice(), memory);
+			vmaUnmapMemory(context->GetVmaAllocator(), stagingAllocation);
 		}
 		catch (...)
 		{
-			if (staging) vkDestroyBuffer(context->GetDevice(), staging, nullptr);
-			if (memory) vkFreeMemory(context->GetDevice(), memory, nullptr);
+			if (staging) vmaDestroyBuffer(context->GetVmaAllocator(), staging, stagingAllocation);
 			throw;
 		}
-		vkDestroyBuffer(context->GetDevice(), staging, nullptr);
-		vkFreeMemory(context->GetDevice(), memory, nullptr);
+		vmaDestroyBuffer(context->GetVmaAllocator(), staging, stagingAllocation);
 	}
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size) : m_Size(size)
 	{
@@ -55,7 +53,7 @@ namespace GEngine
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_StorageBuffer,
-			m_StorageBufferMemory, m_ExclusiveSharing);
+			m_StorageBufferAllocation, m_ExclusiveSharing);
 
 		m_BufferInfo.buffer = m_StorageBuffer;
 		m_BufferInfo.offset = m_Offset;
@@ -67,40 +65,38 @@ namespace GEngine
 		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
 		{
 			const VkBuffer storageBuffer = m_StorageBuffer;
-			const VkDeviceMemory storageMemory = m_StorageBufferMemory;
-			context->RetireResource([storageBuffer, storageMemory](VkDevice device)
+			const VmaAllocation storageAllocation = m_StorageBufferAllocation;
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([storageBuffer, storageAllocation, allocator](VkDevice device)
 			{
 				if (storageBuffer != VK_NULL_HANDLE)
-					vkDestroyBuffer(device, storageBuffer, nullptr);
-				if (storageMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, storageMemory, nullptr);
+					vmaDestroyBuffer(allocator, storageBuffer, storageAllocation);
 			});
 		}
 		m_StorageBuffer = VK_NULL_HANDLE;
-		m_StorageBufferMemory = VK_NULL_HANDLE;
+		m_StorageBufferAllocation = nullptr;
 	}
 	void VulkanStorageBuffer::SetData(uint32_t size, const void* data, uint32_t offset)
 	{
 		if (m_ExclusiveSharing && m_QueueOwnership != 0)
 			throw std::invalid_argument("Exclusive Vulkan storage upload requires graphics ownership.");
 		VkBuffer stagingBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+		VmaAllocation stagingBufferAllocation = nullptr;
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
 			size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			stagingBuffer,
-			stagingBufferMemory);
+			stagingBufferAllocation);
 
-		void* tempData;
-		vkMapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, offset, size, 0, &tempData);
+		void* tempData = nullptr;
+		vmaMapMemory(VulkanContext::Get()->GetVmaAllocator(), stagingBufferAllocation, &tempData);
 		memcpy(tempData, data, size);
-		vkUnmapMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory);
+		vmaUnmapMemory(VulkanContext::Get()->GetVmaAllocator(), stagingBufferAllocation);
 		Utils::CopyBufferToBuffer(stagingBuffer, m_StorageBuffer, size);
 
-		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), stagingBuffer, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), stagingBufferMemory, nullptr);
+		vmaDestroyBuffer(VulkanContext::Get()->GetVmaAllocator(), stagingBuffer, stagingBufferAllocation);
 	}
 	void VulkanStorageBuffer::Bind(uint32_t slot)
 	{

@@ -1,6 +1,7 @@
 #pragma once
 #include "GEngine/Core/Core.h"
 #include "GEngine/Graphics/VertexBuffer.h"
+#include <vma/vk_mem_alloc.h>
 
 #include <vulkan/vulkan.h>
 
@@ -41,8 +42,8 @@ namespace GEngine
 		
 		VkBuffer		m_VertexBuffer = VK_NULL_HANDLE;
 		VkBuffer		m_InstanceBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory	m_VertexBufferMemory = VK_NULL_HANDLE;
-		VkDeviceMemory	m_InstanceBufferMemory = VK_NULL_HANDLE;
+		VmaAllocation	m_VertexBufferAllocation = nullptr;
+		VmaAllocation	m_InstanceBufferAllocation = nullptr;
 		
 		std::vector<VkVertexInputBindingDescription>	m_VertexInputBindingDescription;
 		std::vector<VkVertexInputAttributeDescription>	m_VertexInputAttributeDescriptions;
@@ -67,7 +68,7 @@ namespace GEngine
 	private:
 		
 		VkBuffer		m_IndexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory	m_IndexBufferMemory = VK_NULL_HANDLE;
+		VmaAllocation	m_IndexBufferAllocation = nullptr;
 
 		friend class VulkanVertexBuffer;
 	};

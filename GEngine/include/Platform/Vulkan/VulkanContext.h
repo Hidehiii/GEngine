@@ -123,7 +123,7 @@ namespace GEngine
 		VkDebugUtilsMessengerEXT			m_DebugMessenger = VK_NULL_HANDLE;
 		VkPhysicalDevice					m_PhysicalDevice;
 		VkDevice							m_Device;
-		VmaAllocator						m_VmaAllocator;
+		VmaAllocator						m_VmaAllocator = nullptr;
 		VkQueue								m_GraphicsQueue;
 		VkQueue								m_PresentQueue;
 		VkQueue								m_ComputeQueue;

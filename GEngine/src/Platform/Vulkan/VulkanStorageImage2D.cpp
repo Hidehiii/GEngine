@@ -24,7 +24,7 @@ namespace GEngine
 			0,
 			1,
 			m_Image,
-			m_ImageMemory);
+			m_ImageAllocation);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::ComputeImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, m_ImageView);
 	}
 
@@ -35,20 +35,19 @@ namespace GEngine
 		{
 			const VkImageView imageView = m_ImageView;
 			const VkImage image = m_Image;
-			const VkDeviceMemory imageMemory = m_ImageMemory;
-			context->RetireResource([imageView, image, imageMemory](VkDevice device)
+			const VmaAllocation imageAllocation = m_ImageAllocation;
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([imageView, image, imageAllocation, allocator](VkDevice device)
 			{
 				if (imageView != VK_NULL_HANDLE)
 					vkDestroyImageView(device, imageView, nullptr);
 				if (image != VK_NULL_HANDLE)
-					vkDestroyImage(device, image, nullptr);
-				if (imageMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, imageMemory, nullptr);
+					vmaDestroyImage(allocator, image, imageAllocation);
 			});
 		}
 		m_ImageView = VK_NULL_HANDLE;
 		m_Image = VK_NULL_HANDLE;
-		m_ImageMemory = VK_NULL_HANDLE;
+		m_ImageAllocation = nullptr;
 	}
 
 	void VulkanStorageImage2D::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)

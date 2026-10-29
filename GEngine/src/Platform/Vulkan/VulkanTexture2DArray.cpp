@@ -30,7 +30,7 @@ namespace GEngine
 			0,
 			m_MipLevels,
 			m_Image,
-			m_ImageMemory, m_ExclusiveSharing);
+			m_ImageAllocation, m_ExclusiveSharing);
 		Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format), VK_IMAGE_VIEW_TYPE_2D_ARRAY, m_Layers, m_AspectFlag, m_MipLevels, m_ImageView);
 		CreateSampler();
     }
@@ -41,23 +41,22 @@ namespace GEngine
 		{
 			const VkImageView imageView = m_ImageView;
 			const VkImage image = m_Image;
-			const VkDeviceMemory imageMemory = m_ImageMemory;
+			const VmaAllocation imageAllocation = m_ImageAllocation;
 			const VkSampler sampler = m_Sampler;
-			context->RetireResource([imageView, image, imageMemory, sampler](VkDevice device)
+			const VmaAllocator allocator = context->GetVmaAllocator();
+			context->RetireResource([imageView, image, imageAllocation, sampler, allocator](VkDevice device)
 			{
 				if (imageView != VK_NULL_HANDLE)
 					vkDestroyImageView(device, imageView, nullptr);
 				if (image != VK_NULL_HANDLE)
-					vkDestroyImage(device, image, nullptr);
-				if (imageMemory != VK_NULL_HANDLE)
-					vkFreeMemory(device, imageMemory, nullptr);
+					vmaDestroyImage(allocator, image, imageAllocation);
 				if (sampler != VK_NULL_HANDLE)
 					vkDestroySampler(device, sampler, nullptr);
 			});
 		}
 		m_ImageView = VK_NULL_HANDLE;
 		m_Image = VK_NULL_HANDLE;
-		m_ImageMemory = VK_NULL_HANDLE;
+		m_ImageAllocation = nullptr;
 		m_Sampler = VK_NULL_HANDLE;
     }
 	void VulkanTexture2DArray::Bind(CommandBuffer* cmdBuffer, const uint32_t slot)
@@ -103,7 +102,7 @@ namespace GEngine
 	void VulkanTexture2DArray::SetData(const void* data, uint32_t size, uint32_t layer)
 	{
 		VkBuffer    buffer;
-		VkDeviceMemory memory;
+		VmaAllocation allocation = nullptr;
 
 		Utils::CreateBuffer(VulkanContext::Get()->GetPhysicalDevice(),
 			VulkanContext::Get()->GetDevice(),
@@ -111,17 +110,16 @@ namespace GEngine
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			buffer,
-			memory);
+			allocation);
 
-		void* tempData;
-		vkMapMemory(VulkanContext::Get()->GetDevice(), memory, 0, size, 0, &tempData);
+		void* tempData = nullptr;
+		vmaMapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation, &tempData);
 		memcpy(tempData, data, static_cast<uint32_t>(size));
-		vkUnmapMemory(VulkanContext::Get()->GetDevice(), memory);
+		vmaUnmapMemory(VulkanContext::Get()->GetVmaAllocator(), allocation);
 		SetImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		Utils::CopyBufferToImage(buffer, m_Image, m_Width, m_Height, 0, layer, m_AspectFlag);
 
-		vkDestroyBuffer(VulkanContext::Get()->GetDevice(), buffer, nullptr);
-		vkFreeMemory(VulkanContext::Get()->GetDevice(), memory, nullptr);
+		vmaDestroyBuffer(VulkanContext::Get()->GetVmaAllocator(), buffer, allocation);
 		if (m_GenerateMipmap)
 		{
 			Utils::GenerateMipmap(m_Image, m_Width, m_Height, m_MipLevels, m_AspectFlag, 0, m_Layers);
@@ -143,12 +141,12 @@ namespace GEngine
 		auto* context = VulkanContext::Get();
 		context->WaitForIdle();
 		VkBuffer staging = VK_NULL_HANDLE;
-		VkDeviceMemory memory = VK_NULL_HANDLE;
+		VmaAllocation stagingAllocation = nullptr;
 		try
 		{
 			Utils::CreateBuffer(context->GetPhysicalDevice(), context->GetDevice(), size,
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging, memory);
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging, stagingAllocation);
 			const VkCommandBuffer command = context->BeginSingleTimeGraphicsCommand();
 			if (previousLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
 				Utils::TransitionImageLayout(command, m_Image, Utils::RenderImage2DFormatToVulkanFormat(m_Format),
@@ -162,19 +160,17 @@ namespace GEngine
 					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, previousLayout, 1, m_AspectFlag, 1, 0, layer);
 			context->EndSingleTimeGraphicsCommand(command);
 			void* mapped = nullptr;
-			if (vkMapMemory(context->GetDevice(), memory, 0, size, 0, &mapped) != VK_SUCCESS)
+			if (vmaMapMemory(context->GetVmaAllocator(), stagingAllocation, &mapped) != VK_SUCCESS)
 				throw std::runtime_error("Failed to map Vulkan texture-array readback memory.");
 			memcpy(destination, mapped, size);
-			vkUnmapMemory(context->GetDevice(), memory);
+			vmaUnmapMemory(context->GetVmaAllocator(), stagingAllocation);
 		}
 		catch (...)
 		{
-			if (staging != VK_NULL_HANDLE) vkDestroyBuffer(context->GetDevice(), staging, nullptr);
-			if (memory != VK_NULL_HANDLE) vkFreeMemory(context->GetDevice(), memory, nullptr);
+			if (staging != VK_NULL_HANDLE) vmaDestroyBuffer(context->GetVmaAllocator(), staging, stagingAllocation);
 			throw;
 		}
-		vkDestroyBuffer(context->GetDevice(), staging, nullptr);
-		vkFreeMemory(context->GetDevice(), memory, nullptr);
+		vmaDestroyBuffer(context->GetVmaAllocator(), staging, stagingAllocation);
 	}
 	void VulkanTexture2DArray::SetImageLayout(VkImageLayout newLayout)
 	{
