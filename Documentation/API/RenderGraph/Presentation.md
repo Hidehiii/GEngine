@@ -9,6 +9,9 @@ For Vulkan, the legacy swap-chain render pass currently owns the native
 the presentation resource for ordering, but does not emit a duplicate native
 barrier for that image. This is an implementation boundary; layer code remains
 backend-neutral.
+Presentation synchronization is also backend-owned: Vulkan uses per-frame
+acquire semaphores and per-swap-chain-image present semaphores. No public
+presentation API or graph declaration changes.
 
 ## Rules
 

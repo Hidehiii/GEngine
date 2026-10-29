@@ -8,9 +8,14 @@ and exceptional synchronization, not routine per-frame lifetime management.
 
 Presentation owns acquire, submit, fence, and present synchronization. On
 Vulkan, inter-command dependencies live in the device submission layer;
-the presenter consumes the acquire semaphore and produces the present
-semaphore. Resize compares the requested viewport with swap-chain extent
-before acquisition, avoiding an abandoned signaled acquire semaphore.
+the presenter uses one acquire semaphore per in-flight frame and one present
+semaphore per swap-chain image. Recreating the swap-chain recreates those
+presenter-owned semaphores after device idle, so a present semaphore is not
+reused while its swap-chain image is still in use. Resize compares the
+requested viewport with swap-chain extent before acquisition, avoiding an
+abandoned signaled acquire semaphore. Debug messengers request only message
+types supported by the enabled instance extensions, and device creation no
+longer enables deprecated Vulkan device layers.
 Vulkan allocations use concurrent sharing by default across distinct graphics,
 compute, and transfer families; opt-in exclusive 2D/array transfer images use
 ownership barriers as described above. Dependency semaphores provide queue

@@ -20,9 +20,14 @@ namespace GEngine
 		virtual Ref<GraphicsResource> GetPresentationResource() const override;
 
 	private:
+		void CreatePresentationSemaphores();
+		void DestroyPresentationSemaphores();
+
 		uint32_t							m_SwapChainImageIndex = 0;
 		bool								m_RecreateSwapChain = false;
 		VkSemaphore							m_AcquireSemaphore = VK_NULL_HANDLE;
+		std::vector<VkSemaphore>			m_AcquireSemaphores;
+		std::vector<VkSemaphore>			m_PresentSemaphores;
 		std::vector<VkFence>				m_Fences;
 	};
 }

@@ -1,4 +1,4 @@
-- [~] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
+- [x] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
       replace direct `vkAllocateMemory`, memory binding, mapping/unmapping,
       and `vkFreeMemory` in backend resource, staging, upload, and readback
       paths with VMA allocations owned by the corresponding engine resource;
@@ -34,9 +34,11 @@
       messenger/device-layer/swapchain-semaphore validation diagnostics; none
       are VMA allocation diagnostics. D3D12 Debug Layer-on and OpenGL
       Debug/Release control runs also completed 120 frames, passed all three
-      readbacks, and exited 0 with no captured diagnostics. Remaining: resolve
-      the separately tracked Vulkan validation diagnostics and rerun this
-      item's zero-validation acceptance.
+      readbacks, and exited 0 with no captured diagnostics. The Vulkan
+      validation diagnostics were resolved in
+      [PresentationLifecycle.md](../Integration/PresentationLifecycle.md):
+      Debug shared and dedicated runs now log zero validation messages, so this
+      item's acceptance is complete.
 - [ ] Add Vulkan exclusive-sharing queue-family ownership transfer as a
       separate feature. Current graph-created buffers/images use concurrent
       sharing when graphics/compute/transfer families differ, so the new

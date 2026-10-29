@@ -1,6 +1,6 @@
 ## Presentation and lifecycle follow-up (2026-10-11)
 
-- [ ] Resolve the Vulkan validation diagnostics exposed by SDK 1.4.363.0.
+- [x] Resolve the Vulkan validation diagnostics exposed by SDK 1.4.363.0.
   Scope: request only debug-messenger message types supported by the enabled
   instance extensions, stop enabling deprecated Vulkan device layers, and fix
   presentation semaphore reuse (per-swapchain-image semaphores or the
@@ -12,6 +12,18 @@
   reports the unsupported `VK_EXT_device_address_binding_report` messenger
   type, nonzero `VkDeviceCreateInfo.enabledLayerCount`, and signal semaphores
   still in use by the swapchain.
+  Implemented (2026-10-29, user authorized): removed the unsupported
+  messenger message type, stopped enabling layers in `VkDeviceCreateInfo`, and
+  moved presentation synchronization out of the context-wide rotating pool. The
+  presenter owns one acquire semaphore per in-flight frame and one present
+  semaphore per swap-chain image; swap-chain recreation recreates them after
+  device idle.
+  Verification: Vulkan Debug shared and dedicated runs with the SDK validation
+  layer each completed 120 frames, passed all three frame-119 readbacks,
+  exited 0, and logged zero validation messages. Release shared and dedicated
+  runs also completed 120 frames with all three readbacks. This does not add
+  manual resize/minimize coverage; the separate interactive lifecycle item
+  remains open.
 - [ ] Verify FrameGraphTriangle's visible triangle and color/motion changes on
   each available backend, then resize and minimize/restore the live window and
   close it normally. Acceptance: no crash or validation/debug error; rendering

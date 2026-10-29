@@ -74,7 +74,6 @@ namespace GEngine
         CreateVmaAllocator();
         CreateSwapChain(width, height);
         CreateImageViews();
-        CreateSyncObjects();
         CreateCommandBuffers();
         CreateDescriptor();
         CreateRenderPass();
@@ -93,16 +92,6 @@ namespace GEngine
 		m_SwapChainFrameBuffers.clear();
 		m_SwapChainRenderPass.reset();
 
-        for(int i = 0;i < m_Semaphores.size();i++)
-        {
-            vkDestroySemaphore(m_Device, m_Semaphores[i], nullptr);
-		}
-		m_Semaphores.clear();
-        for (int i = 0; i < m_Fences.size(); i++)
-		{
-			vkDestroyFence(m_Device, m_Fences[i], nullptr);
-		}
-		m_Fences.clear();
 		m_Descriptor.Release();
 		m_CommandBufferPool.Release();
         for (auto imageView : m_SwapChainImageViews)
@@ -230,10 +219,6 @@ namespace GEngine
         m_VSync = enable;
 		RecreateSwapChain(m_SwapChainExtent.width, m_SwapChainExtent.height);
     }
-    VkSemaphore VulkanContext::GetSemaphore()
-    {
-        return m_Semaphores.at(m_SemaphoreIndex++ % m_Semaphores.size());
-    }
     Ref<VulkanCommandBuffer> VulkanContext::GetCommandBuffer(CommandBufferType type)
     {
         if (type == COMMAND_BUFFER_TYPE_COMPUTE)
@@ -336,8 +321,7 @@ namespace GEngine
                                     | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType      = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
                                     | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
-                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT;
+                                    | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         createInfo.pfnUserCallback   = DebugCallback;
     }
     void VulkanContext::SetPhysicalDevice()
@@ -567,13 +551,8 @@ namespace GEngine
 
         createInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames  = extensions.data();
-#ifdef GE_DEBUG
-        createInfo.enabledLayerCount        = static_cast<uint32_t>(m_ValidationLayers.size());
-        createInfo.ppEnabledLayerNames      = m_ValidationLayers.data();
-#else
         createInfo.enabledLayerCount        = 0;
         createInfo.ppEnabledLayerNames      = nullptr;
-#endif
         VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device));
 
         LoadFunctionEXT(extensions);
@@ -832,26 +811,6 @@ namespace GEngine
 	{
         m_Descriptor            = VulkanDescriptor(10000, 10000);
 	}
-
-    void VulkanContext::CreateSyncObjects()
-    {
-        m_Semaphores.resize(Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
-        m_Fences.resize(Graphics::GetCommandBufferCount() * Graphics::GetFrameCount());
-
-        for (int i = 0; i < m_Semaphores.size(); i++)
-        {
-            VkSemaphoreCreateInfo   semaphoreInfo{};
-            semaphoreInfo.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_Semaphores[i]));
-        }
-        for (int i = 0; i < m_Fences.size(); i++)
-        {
-            VkFenceCreateInfo       fenceInfo{};
-            fenceInfo.sType         = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceInfo.flags         = VK_FENCE_CREATE_SIGNALED_BIT;
-            VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Fences[i]));
-        }
-    }
 
     void VulkanContext::CleanUpSwapChain()
     {

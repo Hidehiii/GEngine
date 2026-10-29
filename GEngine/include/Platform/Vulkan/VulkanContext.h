@@ -72,10 +72,8 @@ namespace GEngine
 		VkQueue						GetTransferQueue() { return m_TransferQueue; }
 		VkSwapchainKHR				GetSwapChain() { return m_SwapChain; }
 		Ref<VulkanFrameBuffer>		GetFrameBuffer(int index) { return m_SwapChainFrameBuffers[index % m_SwapChainFrameBuffers.size()]; }
-		VkSemaphore&				GetSemaphore(int index) { return m_Semaphores.at(index % m_Semaphores.size()); }
 		VulkanFunctionEXT&			GetVulkanFunctionEXT() { return m_Function; }
 		VkCommandPool				GetGraphicsCommandPool() { return m_CommandBufferPool.GetGraphicsCommandPool(); }
-		VkSemaphore					GetSemaphore();
 		uint32_t					GetSwapChainImageCount() { return m_SwapChainImages.size(); }
 	protected:
 		
@@ -103,7 +101,6 @@ namespace GEngine
 		void						CreateFrameBuffer();
 		void						CreateCommandBuffers();
 		void						CreateDescriptor();
-		void						CreateSyncObjects();
 		void						CleanUpSwapChain();
 		void						FlushDeferredReleases();
 		void						LoadFunctionEXT(std::vector<const char*> ext);
@@ -170,10 +167,6 @@ namespace GEngine
 		Vector4								m_ClearColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 		VulkanDescriptor					m_Descriptor;
 		QueueFamilyIndices					m_QueueFamily;
-		std::vector<VkSemaphore>			m_Semaphores;
-		uint32_t							m_SemaphoreIndex = 0;
-		std::vector<VkFence>				m_Fences;
-		uint32_t							m_FenceIndex = 0;
 		struct DeferredReleaseEntry
 		{
 			uint64_t Submission;

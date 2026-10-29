@@ -56,6 +56,8 @@ namespace GEngine
 		{
 			m_CommandBuffers.at(i) = VulkanCommandBuffer::Create(cmds.at(i), COMMAND_BUFFER_TYPE_GRAPHICS);
 		}
+
+		CreatePresentationSemaphores();
 	}
 
 	VulkanGraphicsPresent::~VulkanGraphicsPresent()
@@ -66,11 +68,42 @@ namespace GEngine
 		if (device != VK_NULL_HANDLE)
 		{
 			VulkanContext::Get()->WaitForIdle();
+			DestroyPresentationSemaphores();
 			for (const auto fence : m_Fences)
 				vkDestroyFence(device, fence, nullptr);
 		}
 		m_Fences.clear();
 	}
+
+	void VulkanGraphicsPresent::CreatePresentationSemaphores()
+	{
+		const auto imageCount = VulkanContext::Get()->GetSwapChainImageCount();
+		const auto frameCount = Graphics::GetFrameCount();
+		if (imageCount == 0 || frameCount == 0)
+			throw std::runtime_error("Vulkan presentation requires swapchain images and in-flight frames.");
+
+		m_AcquireSemaphores.assign(frameCount, VK_NULL_HANDLE);
+		m_PresentSemaphores.assign(imageCount, VK_NULL_HANDLE);
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		for (uint32_t i = 0; i < frameCount; ++i)
+			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_AcquireSemaphores[i]));
+		for (uint32_t i = 0; i < imageCount; ++i)
+			VK_CHECK_RESULT(vkCreateSemaphore(VulkanContext::Get()->GetDevice(), &semaphoreInfo, nullptr, &m_PresentSemaphores[i]));
+	}
+
+	void VulkanGraphicsPresent::DestroyPresentationSemaphores()
+	{
+		const auto device = VulkanContext::Get()->GetDevice();
+		for (auto semaphore : m_AcquireSemaphores)
+			if (semaphore != VK_NULL_HANDLE) vkDestroySemaphore(device, semaphore, nullptr);
+		for (auto semaphore : m_PresentSemaphores)
+			if (semaphore != VK_NULL_HANDLE) vkDestroySemaphore(device, semaphore, nullptr);
+		m_AcquireSemaphores.clear();
+		m_PresentSemaphores.clear();
+		m_AcquireSemaphore = VK_NULL_HANDLE;
+	}
+
 	bool VulkanGraphicsPresent::AquireImage()
 	{
 		const VkExtent2D swapChainExtent = VulkanContext::Get()->GetSwapChainExtent();
@@ -78,23 +111,35 @@ namespace GEngine
 			swapChainExtent.height != Graphics::GetViewportHeight())
 		{
 			VulkanContext::Get()->RecreateSwapChain(Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
+			DestroyPresentationSemaphores();
+			CreatePresentationSemaphores();
 			GE_CORE_INFO("Recreate swapChain");
 			return false;
 		}
 
 		VK_CHECK_RESULT(vkWaitForFences(VulkanContext::Get()->GetDevice(), 1, &m_Fences.at(Graphics::GetFrame()), VK_TRUE, std::numeric_limits<uint64_t>::max()));
 		VulkanContext::Get()->CollectDeferredReleases();
-		m_AcquireSemaphore = VulkanContext::Get()->GetSemaphore();
+		if (m_AcquireSemaphores.size() != Graphics::GetFrameCount() ||
+			m_PresentSemaphores.size() != VulkanContext::Get()->GetSwapChainImageCount())
+		{
+			DestroyPresentationSemaphores();
+			CreatePresentationSemaphores();
+		}
+		m_AcquireSemaphore = m_AcquireSemaphores.at(Graphics::GetFrame());
 		VkResult result = vkAcquireNextImageKHR(VulkanContext::Get()->GetDevice(),
 			VulkanContext::Get()->GetSwapChain(),
 			std::numeric_limits<uint64_t>::max(),
 			m_AcquireSemaphore,
 			VK_NULL_HANDLE,
 			&m_SwapChainImageIndex);
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			m_AcquireSemaphore = VK_NULL_HANDLE;
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			m_AcquireSemaphore = VK_NULL_HANDLE;
 			VulkanContext::Get()->RecreateSwapChain(Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
+			DestroyPresentationSemaphores();
+			CreatePresentationSemaphores();
 			GE_CORE_INFO("Recreate swapChain");
 			return false;
 		}
@@ -134,7 +179,7 @@ namespace GEngine
 
 	uint64_t VulkanGraphicsPresent::Submit()
 	{
-		VkSemaphore presentSemaphore = VulkanContext::Get()->GetSemaphore();
+		VkSemaphore presentSemaphore = m_PresentSemaphores.at(m_SwapChainImageIndex);
 		auto& graphicsAPI = dynamic_cast<VulkanGraphicsAPI&>(Graphics::GetRenderDevice());
 		graphicsAPI.SubmitPresentationCommandBuffer(m_CommandBuffers.at(Graphics::GetFrame()), m_AcquireSemaphore,
 			presentSemaphore, m_Fences.at(Graphics::GetFrame()));
