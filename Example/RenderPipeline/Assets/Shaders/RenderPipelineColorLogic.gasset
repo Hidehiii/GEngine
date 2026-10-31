@@ -1,0 +1,9 @@
+schemaVersion: 1
+type: shader-include
+format: hlsli
+payloadEncoding: text
+payload: |
+    float TogglePipelineRed(float red)
+    {
+        return red > 0.9f ? 0.15f : 0.95f;
+    }

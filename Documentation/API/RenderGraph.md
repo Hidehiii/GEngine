@@ -6,6 +6,8 @@
 dependencies, resource versions, per-resource access declarations, and the
 resulting state transitions. It does not own application resources; imported
 resources remain owned by their texture, buffer, or presentation system.
+The composable layer above this scheduler is documented in
+[Render pipeline API](RenderPipeline.md).
 
 ## Topic index
 

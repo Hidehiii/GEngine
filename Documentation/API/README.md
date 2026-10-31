@@ -13,6 +13,7 @@ exposed declaration does not necessarily mean a complete runtime path.
 | GAsset envelope, math, mesh/assets, serialization, tools, ImGui, scripting, utilities, diagnostics | [Assets and services API](AssetsAndServices.md) |
 | Graphics device, resources, queues, pipelines, compute, presentation | [Graphics and compute API](GraphicsAPI.md) |
 | GPU pass/resource dependency declarations | [Render graph API](RenderGraph.md) |
+| Composable render pipeline framework | [Render pipeline API](RenderPipeline.md) |
 | Shader source container and authoring | [Shader authoring](ShaderAuthoring.md) |
 | Contributor-facing project generation | [Build entry points](BuildSystem.md) |
 | C# runtime paths, resource deployment and archive boundaries | [Managed scripting contracts](ManagedScripting.md) |

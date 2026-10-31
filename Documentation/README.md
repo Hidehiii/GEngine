@@ -30,6 +30,7 @@ headers in `GEngine/include` remain the source of truth for API signatures.
 - [Backends](Architecture/Rendering/Backends.md)
 - [Extensions](Architecture/Rendering/Extensions.md)
 - [Framework](Architecture/Rendering/FrameWork.md)
+- [Render pipeline framework](Architecture/Rendering/RenderPipeline.md)
 - [GPU lifetime](Architecture/Rendering/Lifetime.md)
 - [Queues](Architecture/Rendering/Queues.md)
 
@@ -41,6 +42,7 @@ headers in `GEngine/include` remain the source of truth for API signatures.
 - [Assets and services API](API/AssetsAndServices.md): GAsset envelope, mesh/assets, serialization, tools, ImGui, scripting, utilities, diagnostics.
 - [Graphics and compute API](API/GraphicsAPI.md)
 - [Render graph API](API/RenderGraph.md)
+- [Render pipeline API](API/RenderPipeline.md)
 - [Shader authoring](API/ShaderAuthoring.md)
 - [Build entry points](API/BuildSystem.md)
 - [Managed scripting contracts](API/ManagedScripting.md)
@@ -76,6 +78,7 @@ headers in `GEngine/include` remain the source of truth for API signatures.
 
 - [GEngine editor](../GEngine-Editor/README.md)
 - [FrameGraphTriangle example](../Example/FrameGraphTriangle/README.md)
+- [RenderPipeline example](../Example/RenderPipeline/README.md)
 - [Scene render helpers example](../Example/SceneRenderHelpers/README.md)
 - [GameWorld example](../Example/GameWorld/README.md)
 - [Deferred render example introduction](../Example/DeferredRender/intro.md)

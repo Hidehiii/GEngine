@@ -194,3 +194,4 @@ and remaining visual checks are tracked in the editor compatibility TODO.
 - [Frame graph phase](Rendering/FrameGraph.md)
 - [Resource ownership](Rendering/ResourceOwnership.md)
 - [Phase 4 and verification](Rendering/Phase4.md)
+- [Render pipeline framework](Rendering/RenderPipeline.md)

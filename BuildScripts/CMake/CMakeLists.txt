@@ -296,7 +296,7 @@ add_custom_command(TARGET GEngine-EditorEngineWorker POST_BUILD
     COMMAND "${CMAKE_COMMAND}" "-DGE_WORKER_SOURCE=${GE_ROOT}/GEngine-Editor/Worker"
         "-DGE_WORKER_OUTPUT=$<TARGET_FILE_DIR:GEngine-EditorEngineWorker>"
         -P "${GE_ROOT}/BuildScripts/Editor/DeployWorkerConfig.cmake")
-foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle SceneRenderHelpers GameWorld)
+foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle RenderPipeline SceneRenderHelpers GameWorld)
     ge_add_application(${example} "Example/${example}")
 endforeach()
 

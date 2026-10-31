@@ -47,7 +47,7 @@ interface, not proof that all declared operations are complete.
 | --- | --- | --- |
 | Root `Application`, `Layer`, `LayerStack`, `Window`; `Runtime` | [Runtime](Runtime.md) | [Runtime API](../API/Runtime.md) |
 | `Core`, `Events` | [Runtime](Runtime.md) | [Runtime API](../API/Runtime.md) |
-| `Graphics`, `Renderer`, `Compute` | [Rendering](Rendering.md) | [Graphics API](../API/GraphicsAPI.md), [Render graph](../API/RenderGraph.md) |
+| `Graphics`, `Renderer`, `Compute` | [Rendering](Rendering.md) | [Graphics API](../API/GraphicsAPI.md), [Render graph](../API/RenderGraph.md), [Render pipeline](../API/RenderPipeline.md) |
 | `Object`, `Components`, `Physics`, `Scripting` | [Scene and services](SceneAndServices.md) | [Scene and physics API](../API/SceneAndPhysics.md), [Assets and services API](../API/AssetsAndServices.md) |
 | `Asset` GAsset envelope, `Tools`, `Math` | [Scene and services](SceneAndServices.md) | [Assets and services API](../API/AssetsAndServices.md) |
 | `ImGui`, `Debug`, `Utils` | [Scene and services](SceneAndServices.md) | [Assets and services API](../API/AssetsAndServices.md) |

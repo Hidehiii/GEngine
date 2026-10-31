@@ -26,6 +26,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 | --- | --- |
 | `Example/Triangle` | Minimal shader, vertex buffer, graphics pipeline and presentation draw; configured for D3D12. |
 | `Example/FrameGraphTriangle` | Cross-API queue submission, presentation, render-graph, and shutdown smoke test; use it on OpenGL, Vulkan, or D3D12. |
+| `Example/RenderPipeline` | Composable render pipeline framework with compute, offscreen graphics, and sampled presentation. |
 | `Example/GameWorld` | C#/C++ scene-script lifecycle, failure handling and physics backend smoke checks. |
 | `Example/ShaderCompile` | Shader compilation and shader asset workflow. |
 | `Example/DeferredRender` | Deferred-rendering path. |

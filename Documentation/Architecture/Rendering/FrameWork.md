@@ -30,6 +30,8 @@ synchronization. Disjoint texture ranges are capability-gated: D3D12 and
 Vulkan can omit false inferred dependencies when per-mip/per-layer state is
 tracked, while OpenGL and resources without metadata remain conservative. See
 [RenderGraph.md](../../API/RenderGraph.md) for the exact contract.
+The composable `RenderPipeline` layer above this graph is described in
+[Render pipeline framework](RenderPipeline.md).
 
 A transfer pass validates transfer-stage CopySource/CopyDestination accesses.
 The graph records state/layout preparation on a graphics command, submits it

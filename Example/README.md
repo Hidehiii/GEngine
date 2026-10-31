@@ -8,6 +8,7 @@ Project > Project settings selects the default scene using a project-relative pa
 | --- | --- |
 | [DeferredRender](DeferredRender/DeferredRender.gproject) | Empty DeferredRender editor scene |
 | [FrameGraphTriangle](FrameGraphTriangle/FrameGraphTriangle.gproject) | Red and cyan color quads |
+| [RenderPipeline](RenderPipeline/RenderPipeline.gproject) | Empty RenderPipeline editor scene |
 | [GpuDriven](GpuDriven/GpuDriven.gproject) | Empty GpuDriven editor scene |
 | [GameWorld](GameWorld/GameWorld.gproject) | Empty GameWorld editor scene |
 | [InputSystem](InputSystem/InputSystem.gproject) | Empty InputSystem editor scene |
@@ -15,7 +16,7 @@ Project > Project settings selects the default scene using a project-relative pa
 | [ShaderCompile](ShaderCompile/ShaderCompile.gproject) | Empty ShaderCompile editor scene |
 | [Triangle](Triangle/Triangle.gproject) | Empty Triangle editor scene |
 
-The default file in each project is Assets/Scenes/Default.gscene. The eight empty
+The default file in each project is Assets/Scenes/Default.gscene. The nine empty
 scenes are explicit editor starting points; the examples' native C++ render/input/
 shader workloads continue to run through their existing application entry points.
 Runtime resources in these projects use the `.gasset` YAML envelope; scenes use

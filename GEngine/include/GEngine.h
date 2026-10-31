@@ -33,7 +33,7 @@
 #include "GEngine/Graphics/GraphicsPresent.h"
 #include "GEngine/Graphics/Sampler.h"
 #include "GEngine/Graphics/RenderPass.h"
-#include "GEngine/Graphics/RenderPipeline.h"
+#include "GEngine/Renderer/RenderPipeline.h"
 #include "GEngine/Graphics/Sampler.h"
 #include "GEngine/Graphics/CommandBuffer.h"
 

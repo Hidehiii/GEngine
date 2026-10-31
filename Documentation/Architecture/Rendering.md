@@ -25,6 +25,7 @@ backend code.
 ## Topic index
 
 - [Frame work and graph](Rendering/FrameWork.md)
+- [Render pipeline framework](Rendering/RenderPipeline.md)
 - [Device queues and presentation](Rendering/Queues.md)
 - [Backend layering and shader ownership](Rendering/Backends.md)
 - [GPU resource lifetime](Rendering/Lifetime.md)
