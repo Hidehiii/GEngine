@@ -6,7 +6,7 @@
       exercises shader/material/graphics-pipeline/vertex/target creation, not
       every cube/array/storage-image factory variant. The GPU graph example now
       also exercises raw storage-buffer and compute-pipeline creation/readback.
-- [ ] Build OpenGL, Vulkan, and D3D12 as separate backend modules.
+- [x] Build OpenGL, Vulkan, and D3D12 as separate backend modules.
       Current bounded milestone (2026-10-31, user authorized): keep the public
       render API and runtime backend selection unchanged, but split each
       platform source set and its native link dependencies into named static

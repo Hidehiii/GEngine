@@ -1,5 +1,34 @@
 ## Phase 3 — real frame graph
 
+- [x] Close the dedicated transfer-builder milestone against current sources
+      (2026-10-31, user authorized). Scope: audit the existing
+      `RenderGraph::BuildTransferCopyPass`, state/queue validation, backend
+      preparation/submission, and FrameGraphTriangle coverage; correct stale
+      tracking/docs; and reverify the path after the later backend-module and
+      graph changes. Do not add a new public API or expand transfer resource
+      types in this milestone. Acceptance: current CMake Debug/Release
+      FrameGraphTriangle builds pass; OpenGL, Vulkan, and D3D12 bounded runs
+      pass the existing array-layer/compute readbacks and shut down normally;
+      Vulkan dedicated queues are checked when available; documentation and
+      this TODO distinguish implemented transfer support from remaining
+      fine-grained scheduling and broader ownership work.
+      Audit result: `BuildTransferCopyPass` already exists and is used by the
+      live FrameGraphTriangle graphics -> transfer -> graphics texture-to-array
+      copy. It validates transfer-stage CopySource/CopyDestination declarations,
+      acquires a graphics preparation command for D3D12/Vulkan dedicated copy
+      queues, submits the copy command, and joins consumers and presentation.
+      No new public API or transfer resource type was needed in this milestone.
+      Verification: current-source CMake Debug and Release
+      FrameGraphTriangle builds passed. OpenGL, Vulkan, and D3D12 completed
+      120-frame runs in both configurations; every run passed the compute,
+      compute-first, and texture-array readbacks and exited through normal
+      shutdown. Vulkan dedicated-queue Debug/Release runs also passed with
+      graphics=0, compute=2, transfer=4. D3D12 runs used the debug layer and
+      reported no debug-layer issues. `Config.ini` was restored to GraphicsAPI 3.
+      Remaining: fine-grained independent scheduling, broader transfer resource
+      types, arbitrary external queue users, interactive behavior, and long-run
+      memory remain outside this completed transfer-builder milestone.
+
 - [x] Make graph validation deterministic before GPU allocation: rebuild inferred
       dependencies at compile time independently of access declaration order,
       reject incompatible transient resource states and read-before-write, and
@@ -24,10 +53,10 @@
       and overwrite-after-reader dependencies. This does not enable aliasing.
 - [~] Add stage/access intent, subresource ranges, queue ownership, and
       per-backend barrier compilation.
-      Graphics/compute queue dependencies are now submitted by ExecuteGpu;
-      D3D12 uses command-generation fences, Vulkan uses per-edge semaphores and
-      concurrent-family resources. Whole-resource storage barriers are tested.
-      Fine-grained stage/subresource scopes and dedicated transfer builders remain.
+      Graphics/compute/transfer queue dependencies are now submitted by
+      ExecuteGpu; D3D12 uses command-generation fences, Vulkan uses per-edge
+      semaphores, and the dedicated transfer-copy builder is implemented.
+      Fine-grained stage/subresource scopes and broader queue ownership remain.
       Current milestone 2026-09-21: add portable pipeline-stage and read/write
       intent to RenderGraph access declarations, carry it through compiled
       transitions, and make each backend preserve the synchronization semantics
@@ -35,7 +64,8 @@
       Acceptance: the existing GPU graph explicitly declares graphics and compute
       storage usage; a focused declaration regression confirms the intent reaches
       transition compilation; Debug build and the three-backend readback scenario
-      are rechecked. Subresource ranges and transfer builders remain open.
+      are rechecked. Subresource ranges remain open; transfer-copy builders are
+      implemented and verified separately above.
       Verification 2026-09-21: static diff review and `git diff --check` passed.
       The isolated VS2022 Debug example build reached compilation after removing
       the host PATH/Path collision, but the shared Debug intermediate directory

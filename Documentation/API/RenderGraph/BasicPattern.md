@@ -55,6 +55,10 @@ This is bounded example evidence, not arbitrary buffer or external-queue proof.
 FrameGraphTriangle uses the transfer builder for a real array-layer pixel
 copy, retains invalid layer/size/format checks, and passed 120-frame Debug
 and Release runs on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues.
+On 2026-10-31, the current backend-module sources were rebuilt and rechecked:
+the same Debug/Release matrix plus Vulkan dedicated queues passed all three
+GPU readbacks and normal shutdown. D3D12 used its debug layer and reported no
+issues; the dedicated Vulkan run selected graphics=0, compute=2, transfer=4.
 Debug D3D12 and Vulkan dedicated additionally completed 10,000-frame runs;
 the existing array-layer readback still passed, with no captured validation
 issues. These checks do not cover arbitrary transfer resource types.

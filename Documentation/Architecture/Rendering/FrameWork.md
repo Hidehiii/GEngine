@@ -41,6 +41,11 @@ passed both GPU readbacks and normal shutdown; D3D12 Debug Layer emitted no
 issues, and the dedicated Vulkan run selected graphics=0, compute=2,
 transfer=5 with no captured validation messages. Other resource types and
 long-run/interactive behavior remain unverified.
+The 2026-10-31 current-source recheck rebuilt CMake Debug/Release and repeated
+the backend matrix after the backend-module split. OpenGL, D3D12, Vulkan
+shared, and Vulkan dedicated queues passed all three readbacks and normal
+shutdown; D3D12 used its debug layer without reported issues, and dedicated
+Vulkan selected graphics=0, compute=2, transfer=4.
 Debug D3D12 and Vulkan dedicated also completed 10,000-frame reuse checks
 without captured validation issues. A 30-second Vulkan dedicated run stayed
 near 414.9 MB private bytes from 10 to 30 seconds; this is bounded evidence,
