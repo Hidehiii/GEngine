@@ -30,6 +30,7 @@ namespace GEngine
 		bool StorageImage = false;
 		bool Compute = false;
 		bool Subpasses = false;
+		bool IndependentSubresourceScheduling = false;
 
 		std::string Backend;
 		std::string Version;

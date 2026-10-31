@@ -1,5 +1,38 @@
 ## Phase 3 — real frame graph
 
+- [x] Enable independent scheduling for supported texture subresources
+      (2026-10-31, user authorized). Scope: add a backend-neutral capability
+      that reports whether native per-subresource barriers/state tracking can
+      preserve disjoint texture ranges, use it in RenderGraph dependency
+      analysis, and keep OpenGL and resources without subresource metadata
+      conservative. Do not claim parallel execution or enable pooling/aliasing.
+      Acceptance: a focused startup regression proves disjoint ranges remove the
+      inferred dependency only on D3D12/Vulkan while OpenGL still rejects the
+      same conservative cycle; Debug/Release FrameGraphTriangle builds pass;
+      OpenGL, Vulkan, and D3D12 bounded runs retain all readbacks and normal
+      shutdown; architecture/API/example documentation is synchronized.
+      Implemented: `GraphicsCapabilities::IndependentSubresourceScheduling`
+      reports whether the active backend can preserve per-mip/per-layer image
+      state. D3D12 and Vulkan report it for their ranged texture barriers;
+      OpenGL reports false because it uses resource-global memory barriers.
+      RenderGraph caches the capability for each compilation and omits inferred
+      dependencies for disjoint texture ranges only when both the backend
+      capability and resource subresource metadata are present. Resources
+      without metadata and every OpenGL access remain conservatively ordered.
+      FrameGraphTriangle's disjoint two-mip regression now succeeds on
+      D3D12/Vulkan and retains the expected cycle on OpenGL.
+      Verification: current-source CMake Debug/Release
+      FrameGraphTriangle builds passed. OpenGL, Vulkan, and D3D12 completed
+      120-frame runs in both configurations; every run passed the compute,
+      compute-first, and texture-array readbacks and exited through normal
+      shutdown. Vulkan dedicated-queue Debug/Release runs also passed with
+      graphics=0, compute=2, transfer=4. D3D12 used the debug layer with no
+      reported issues. `Config.ini` was restored to GraphicsAPI 3.
+      Remaining: this removes false ordering dependencies, not a claim of
+      parallel command execution. Fine-grained pipeline-stage scopes, broader
+      queue ownership, buffer subresources, pooling/aliasing, interactive
+      behavior, and long-run memory remain open.
+
 - [x] Close the dedicated transfer-builder milestone against current sources
       (2026-10-31, user authorized). Scope: audit the existing
       `RenderGraph::BuildTransferCopyPass`, state/queue validation, backend
@@ -56,7 +89,9 @@
       Graphics/compute/transfer queue dependencies are now submitted by
       ExecuteGpu; D3D12 uses command-generation fences, Vulkan uses per-edge
       semaphores, and the dedicated transfer-copy builder is implemented.
-      Fine-grained stage/subresource scopes and broader queue ownership remain.
+      Fine-grained pipeline-stage scopes and broader queue ownership remain;
+      supported texture subresources can now avoid disjoint-range false
+      dependencies through the backend capability above.
       Current milestone 2026-09-21: add portable pipeline-stage and read/write
       intent to RenderGraph access declarations, carry it through compiled
       transitions, and make each backend preserve the synchronization semantics

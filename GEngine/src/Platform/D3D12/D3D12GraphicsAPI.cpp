@@ -271,6 +271,9 @@ namespace GEngine
         capabilities.StorageImage = supportsStorageImage;
         capabilities.Compute = featureLevelSupported && shaderModelSupported;
         capabilities.Subpasses = false;
+        capabilities.IndependentSubresourceScheduling = supportsColorTexture;
+        capabilities.QuerySources.push_back(
+            "IndependentSubresourceScheduling=per-mip/per-layer D3D12 resource barriers");
         return capabilities;
     }
     Ref<RenderPass> D3D12GraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

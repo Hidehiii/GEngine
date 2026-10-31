@@ -395,6 +395,9 @@ namespace GEngine
         capabilities.StorageImage = supportsStorageImage;
         capabilities.Compute = supportsComputeQueue;
         capabilities.Subpasses = supportsRenderPass2;
+        capabilities.IndependentSubresourceScheduling = supportsSampledColor;
+        capabilities.QuerySources.push_back(
+            "IndependentSubresourceScheduling=per-mip/per-layer Vulkan image barriers");
         return capabilities;
     }
     Ref<RenderPass> VulkanGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

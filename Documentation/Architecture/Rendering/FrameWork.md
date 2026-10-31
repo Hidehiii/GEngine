@@ -22,7 +22,9 @@ targets, and `ExecuteGpu`. The graph owns command Begin/End, attachment binding,
 dependency submission, and the presentation join. Versioned resources order
 producers, readers, and overwrites independently of declaration order. CPU-only
 `BuildPass`/`Execute` remains a compatibility path, not cross-queue GPU
-synchronization. Disjoint ranges are still conservatively ordered. See
+synchronization. Disjoint texture ranges are capability-gated: D3D12 and
+Vulkan can omit false inferred dependencies when per-mip/per-layer state is
+tracked, while OpenGL and resources without metadata remain conservative. See
 [RenderGraph.md](../../API/RenderGraph.md) for the exact contract.
 
 A transfer pass validates transfer-stage CopySource/CopyDestination accesses.

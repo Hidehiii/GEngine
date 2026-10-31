@@ -19,6 +19,13 @@ CMake and Premake now build OpenGL, Vulkan, and D3D12 as named static modules
 and link all three into GEngine. Runtime selection and public rendering APIs are
 unchanged; generator/backend verification is recorded in Phase 4.
 
+2026-10-31 subresource scheduling is tracked in
+[FrameGraphCore](Rendering/FrameGraphCore.md): `GraphicsCapabilities::
+IndependentSubresourceScheduling` gates disjoint texture-range dependency
+analysis. D3D12 and Vulkan can omit false inferred dependencies; OpenGL and
+resources without metadata remain conservative. This is not parallel command
+execution and does not enable pooling or aliasing.
+
 Editor E1.9 imports source files through the native C++ tool into project GAssets.
 The Host remains independent of the engine. Rendering APIs, GPU ownership and
 Worker IPC are unchanged; acceptance is tracked in TODO/EditorArchitecture.md.

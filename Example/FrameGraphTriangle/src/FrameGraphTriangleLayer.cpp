@@ -282,9 +282,18 @@ namespace GEngine
 		conservativeRangeGraph.Read(disjointReader, conservativeRangeResource,
 			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::All, { 0, 1, 0, 1 });
 		conservativeRangeGraph.AddDependency(disjointWriter, disjointReader);
-		GE_INFO("Expected negative test: the next disjoint range cycle diagnostic is intentional.");
-		if (conservativeRangeGraph.Compile())
-			throw std::runtime_error("RenderGraph allowed independent disjoint subresource scheduling before backend support.");
+		if (capabilities.IndependentSubresourceScheduling)
+		{
+			if (!conservativeRangeGraph.Compile())
+				throw std::runtime_error("RenderGraph kept an inferred dependency for supported disjoint subresources.");
+			GE_INFO("Independent disjoint subresource scheduling is supported by {}.", capabilities.Backend);
+		}
+		else
+		{
+			GE_INFO("Expected negative test: the next disjoint range cycle diagnostic is intentional.");
+			if (conservativeRangeGraph.Compile())
+				throw std::runtime_error("RenderGraph allowed independent disjoint subresource scheduling before backend support.");
+		}
 
 		RenderGraph usageGraph;
 		GraphicsPipelineStage observedStage = GraphicsPipelineStage::All;

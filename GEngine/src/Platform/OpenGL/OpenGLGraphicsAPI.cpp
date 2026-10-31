@@ -203,7 +203,10 @@ namespace GEngine
 		capabilities.StorageImage = version >= 420 || hasExtension("GL_ARB_shader_image_load_store");
 		capabilities.Compute = version >= 430 || hasExtension("GL_ARB_compute_shader");
 		capabilities.Subpasses = false;
+		capabilities.IndependentSubresourceScheduling = false;
 		capabilities.QuerySources.push_back("Subpasses=OpenGL has no subpass contract");
+		capabilities.QuerySources.push_back(
+			"IndependentSubresourceScheduling=OpenGL uses whole-resource memory barriers");
 		return capabilities;
 	}
 	Ref<RenderPass> OpenGLGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)

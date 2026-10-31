@@ -250,6 +250,7 @@ namespace GEngine
 		TransitionCallback m_TransitionCallback;
 		UsageTransitionCallback m_UsageTransitionCallback;
 		bool m_IsCompiled = false;
+		bool m_SupportsIndependentSubresourceScheduling = false;
 		uint64_t m_Generation = 1;
 	};
 }

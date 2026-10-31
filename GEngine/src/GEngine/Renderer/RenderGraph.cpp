@@ -602,6 +602,8 @@ namespace GEngine
 	bool RenderGraph::Compile()
 	{
 		m_IsCompiled = false;
+		m_SupportsIndependentSubresourceScheduling =
+			Graphics::GetCapabilities().IndependentSubresourceScheduling;
 		m_ExecutionOrder.clear();
 		for (auto& pass : m_Passes)
 			pass.InferredDependencies.clear();
@@ -681,7 +683,9 @@ namespace GEngine
 
 	void RenderGraph::AddResourceDependency(PassHandle pass, ResourceHandle resource, bool isWrite, const SubresourceRange& range)
 	{
-		const bool supportsIndependentSubresourceScheduling = false;
+		const bool supportsIndependentSubresourceScheduling =
+			m_SupportsIndependentSubresourceScheduling &&
+			m_Resources[resource].HasSubresourceMetadata;
 		for (PassHandle previous = 0; previous < pass; ++previous)
 		{
 			for (const auto& access : m_Passes[previous].ResourceAccesses)

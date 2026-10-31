@@ -67,13 +67,13 @@ compute and transfer stages are rejected on incompatible pass queues during
 compilation. Write-only states cannot be declared as reads and read-only states
 cannot be declared as writes. Vulkan narrows its stage/access masks from that
 validated intent, while D3D12 legacy barriers and OpenGL memory barriers
-preserve the same ordering conservatively. Independent subresource scheduling
-and pooling remain unavailable; remaining graph-access work is tracked in
+preserve the same ordering conservatively. Texture subresource dependency
+analysis is capability-gated; pooling remains unavailable. Remaining
+graph-access work is tracked in
 [RenderingArchitecture.md](../../../TODO/RenderingArchitecture.md).
 
 `SubresourceRange` is available on the legacy `Read` and `Write` declarations
-for validation and range-aware scheduling. Remaining independent-scheduling
-work is tracked in [RenderingArchitecture.md](../../../TODO/RenderingArchitecture.md).
+for validation and range-aware scheduling.
 The default denotes the whole resource.
 Empty and overflowing ranges are rejected when the access is declared. During
 compilation, `All` counts are resolved against the imported or transient
@@ -95,9 +95,11 @@ memory dependency. The barrier recorded on the receiving queue uses only stages
 supported there; an unsupported prior-queue source stage becomes a top-of-pipe
 scope with no source access mask. Unsupported destination stages are rejected.
 
-Dependency analysis compares declared ranges, but disjoint ranges remain
-conservatively ordered until every backend can track and synchronize
-subresources independently. Compiled transition state is split by touched
+Dependency analysis compares declared ranges. When
+`GraphicsCapabilities::IndependentSubresourceScheduling` is true and the
+resource has mip/layer metadata, D3D12 and Vulkan omit inferred dependencies
+between disjoint texture ranges. OpenGL and resources without subresource
+metadata remain conservatively ordered. Compiled transition state is split by touched
 mip/layer ranges, so an access to one mip does not consume the state of
 another. `SetTransitionUsageCallback` receives the transition range and
 `RenderSystem` forwards it to the range-aware `Graphics::TransitionResource`

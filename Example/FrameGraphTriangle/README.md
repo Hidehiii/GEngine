@@ -334,7 +334,12 @@ range on a resource without metadata must fail before allocation; a transient
 two-mip texture must resolve `All`; a transient two-layer array, an imported
 two-mip texture, and an imported two-layer texture array must accept valid
 mip/layer ranges. It also checks untouched-mip state isolation and conservative
-disjoint-range ordering.
+disjoint-range behavior on OpenGL.
+The disjoint-range check is capability-aware: D3D12 and Vulkan compile the
+opposite explicit edge without an inferred disjoint-range dependency and log
+`Independent disjoint subresource scheduling is supported`; OpenGL keeps its
+intentional conservative cycle. This is dependency pruning, not parallel
+command execution.
 
 The live GPU graph copies a red pixel from a 2D texture into layer 0 of a
 two-layer RGBA8 texture array. A targetless graphics pass declares the source
