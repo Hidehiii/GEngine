@@ -24,7 +24,10 @@ SPIR-V intermediate to desktop GLSL 450 using SPIRV-Cross; it does not submit
 Vulkan binaries to `glShaderBinary`. Shader compile/link failures throw and
 release partial programs. Both vertex-buffer constructors create a VAO and
 destruction deletes it; non-indexed draws do not require an index buffer.
-Complex texture/sampler combinations still need focused coverage.
+Separate Texture2D/cube-map and sampler reflection is translated into combined
+image samplers; material code binds both resources to the image unit. Other
+complex texture/sampler combinations remain explicitly unsupported until they
+gain focused coverage.
 
 `Shader` owns reflection data and compiled bytes. Reflected vertex inputs set
 buffer format/offset/stride; D3D12 uses DXIL reflection and Vulkan uses SPIR-V

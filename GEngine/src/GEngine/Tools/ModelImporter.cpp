@@ -9,12 +9,11 @@ namespace GEngine
     namespace
     {
         void DestroyFbxObjects(FbxImporter* importer, FbxScene* scene,
-            FbxIOSettings* settings, FbxManager* manager)
+            FbxIOSettings* settings)
         {
             if (importer) importer->Destroy();
             if (scene) scene->Destroy();
             if (settings) settings->Destroy();
-            if (manager) manager->Destroy();
         }
 
         class ResourceFbxStream final : public FbxStream
@@ -105,16 +104,14 @@ namespace GEngine
         if (!initialized)
 		{
             GE_CORE_ERROR("Failed to load model: {0}: {1}", filaName, importer->GetStatus().GetErrorString());
-            DestroyFbxObjects(importer, scene, settings, manager);
-			managerOwner.release();
+            DestroyFbxObjects(importer, scene, settings);
 			return false;
 		}
         scene = FbxScene::Create(manager, "");
         if (!scene) throw std::runtime_error("Cannot create FBX scene.");
         if (!importer->Import(scene))
         {
-            DestroyFbxObjects(importer, scene, settings, manager);
-            managerOwner.release();
+            DestroyFbxObjects(importer, scene, settings);
             return false;
         }
         FbxGeometryConverter geomConverter(manager);
@@ -128,8 +125,7 @@ namespace GEngine
             for (int i = 0; i < childCount; i++)
                 ProcessNode(rootNode->GetChild(i));
         }
-        DestroyFbxObjects(importer, scene, settings, manager);
-        managerOwner.release();
+        DestroyFbxObjects(importer, scene, settings);
         return true;
 	}
 

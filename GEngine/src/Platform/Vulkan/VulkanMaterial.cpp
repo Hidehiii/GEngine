@@ -91,7 +91,7 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
-				GE_CORE_ASSERT(false, "");
+				(*((Ref<Sampler>*)prop.Ptr))->Bind(prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D:

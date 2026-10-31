@@ -7,6 +7,13 @@ image asset and material; StaticMeshComponent owns its mesh asset and material.
 Scene physics/scripts/lights are removed; backend APIs and submission lifetime
 are unchanged. CameraComponent keeps the existing camera behavior.
 
+2026-10-31 component verification follow-up: ModelImporter manager ownership is
+RAII-only on failed FBX loads, OpenGL maps separate Texture2D/sampler reflection
+to combined image samplers, and Vulkan accepts separate samplers during material
+update. Debug/Release engine, SceneRenderHelpers and EngineWorker builds plus
+six 120-frame OpenGL/Vulkan/D3D12 runs passed. Manual visible, real resize and
+long-run memory checks remain open in their focused TODOs.
+
 Editor E1.9 imports source files through the native C++ tool into project GAssets.
 The Host remains independent of the engine. Rendering APIs, GPU ownership and
 Worker IPC are unchanged; acceptance is tracked in TODO/EditorArchitecture.md.

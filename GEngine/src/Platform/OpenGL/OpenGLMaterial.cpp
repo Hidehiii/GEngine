@@ -69,17 +69,22 @@ namespace GEngine
 			}
 			case SHADER_PROPERTY_TYPE_SAMPLER:
 			{
-				GE_CORE_ASSERT(false, "");
+				const auto unit = m_Shader->GetCombinedSamplerUnit(name);
+				(*((Ref<Sampler>*)prop.Ptr))->Bind(unit.value_or(prop.Location));
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D:
 			{
-				GE_CORE_ASSERT(false, "OpenGL not support sperate image!");
+				const auto combinedName = m_Shader->GetCombinedSamplerName(name);
+				m_Shader->SetInt1(combinedName.empty() ? name : combinedName, prop.Location, pass);
+				(*((Ref<Texture2D>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_CUBE:
 			{
-				GE_CORE_ASSERT(false, "OpenGL not support sperate image!");
+				const auto combinedName = m_Shader->GetCombinedSamplerName(name);
+				m_Shader->SetInt1(combinedName.empty() ? name : combinedName, prop.Location, pass);
+				(*((Ref<CubeMap>*)prop.Ptr))->Bind(cmdBuffer, prop.Location);
 				break;
 			}
 			case SHADER_PROPERTY_TYPE_TEXTURE_2D_ARRAY:

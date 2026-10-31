@@ -8,6 +8,11 @@ keeps camera behavior. Transform/identity/active fields move to GameObject base
 data. Recheck current builds and backends using SceneRenderHelpers; earlier
 checkboxes/logs do not validate the new API.
 
+2026-10-31 follow-up: SceneRenderHelpers now passes six 120-frame runs on
+OpenGL, Vulkan and D3D12 in Debug and Release, including sampled image/mesh
+drawing, replacement and malformed-FBX rejection. The remaining manual visible,
+real resize/minimize/restore and long-run memory checks stay open.
+
 - [x] Implement and verify D3D12 swap-chain resize before claiming interactive
   resize support. Source inspection on 2026-10-11 found that
   `EngineRuntime::OnWindowResize` updates only the graphics viewport, while

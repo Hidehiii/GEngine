@@ -124,6 +124,10 @@ Inputs named `TEXCOORD8` through `TEXCOORD15` are currently treated as per-insta
 Constant buffers, textures, samplers and storage resources are reflected from compiled shader data. A `Material` owns the CPU-side property values and backend descriptors. Bind properties through the material API using the reflected name; do not assume descriptor-table offsets in application code.
 
 For D3D12, reflection creates the root-signature descriptor ranges. Cached DXIL remains owned by `D3D12Shader`, so pipeline-state bytecode pointers remain valid after construction.
+Separate `Texture2D` and `sampler` declarations remain portable material
+properties. D3D12 and Vulkan bind them as distinct descriptors; OpenGL builds
+combined image samplers with SPIRV-Cross and maps the sampler to the image's
+texture unit. Applications continue using the reflected HLSL names.
 
 ## Shader cache
 

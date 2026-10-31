@@ -19,8 +19,9 @@ the existing scene YAML with a scene-specific extension; it is not wrapped in
 GAsset. Legacy raw source extensions remain loader compatibility inputs, but
 first-party examples and editor runtime resources use the two-extension
 convention.
-`ModelImporter` explicitly destroys the FBX importer, scene, IO settings and
-manager in that order before returning. `Mesh` copies expose the CPU vertices
+`ModelImporter` explicitly destroys the FBX importer, scene and IO settings;
+the FBX manager is owned only by its RAII holder, including failed imports.
+`Mesh` copies expose the CPU vertices
 and indices while omitting the importer-only deduplication map, and `Vertex`
 uses a deterministic component hash.
 Binary GAsset payloads currently use YAML Base64, which inflates large font and
@@ -74,7 +75,11 @@ retention remains in backends: replacing CPU references does not imply GPU
 completion. No native handles, queue semantics or backend APIs changed.
 ImageComponent shaders explicitly expose the sampled-image binding contract documented
 in the [component API](../API/SceneAndPhysics.md). Missing bindings fail before
-rendering rather than silently dropping required work.
+rendering rather than silently dropping required work. D3D12 and Vulkan bind
+the reflected Texture2D and sampler resources separately. OpenGL translates
+that reflection into a SPIRV-Cross combined image sampler and maps both
+material bindings to the image's texture unit; the component-facing contract
+remains backend-neutral.
 
 The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
 draws a textured quad and indexed mesh, replaces materials/meshes/images and runs

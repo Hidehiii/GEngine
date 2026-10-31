@@ -40,6 +40,9 @@ GE_MATRIX_M (float4x4), GE_IMAGE_COLOR (float4), GE_IMAGE_TILING (float2),
 GE_IMAGE_TEXTURE (Texture2D) and GE_IMAGE_SAMPLER (sampler).
 StaticMeshComponent shaders require GE_MATRIX_M and the full Vertex input layout.
 Use separate materials for objects with different per-object constants.
+The separate image/sampler contract is portable: D3D12 and Vulkan use distinct
+descriptors, while OpenGL internally combines them and keeps the material API
+names unchanged.
 
 CameraComponent retains its existing orthographic/perspective, primary, RenderOrder and
 viewport behavior. OnViewportResize updates cameras for nonzero sizes;

@@ -102,6 +102,8 @@ namespace GEngine
 	void OpenGLShader::ProcessMachineCode(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders)
 	{
 		m_Programs.clear();
+		m_CombinedSamplerNames.clear();
+		m_CombinedSamplerUnits.clear();
 		m_Programs.resize(shaders.size());
 		for (int i = 0; i < shaders.size(); i++)
 		{
@@ -121,6 +123,17 @@ namespace GEngine
 				options.es = false;
 				options.vulkan_semantics = false;
 				compiler.set_common_options(options);
+				compiler.build_combined_image_samplers();
+				for (const auto& remap : compiler.get_combined_image_samplers())
+				{
+					const auto textureName = compiler.get_name(remap.image_id);
+					const auto samplerName = compiler.get_name(remap.sampler_id);
+					const auto combinedName = "SPIRV_Cross_Combined" + textureName + samplerName;
+					compiler.set_name(remap.combined_id, combinedName);
+					m_CombinedSamplerNames[textureName] = combinedName;
+					m_CombinedSamplerUnits[samplerName] =
+						compiler.get_decoration(remap.image_id, spv::DecorationBinding);
+				}
 				// DXC emits Vulkan SPIR-V, not an OpenGL-specializable binary.
 				const auto source = compiler.compile();
 				const auto* sourceText = source.c_str();
@@ -168,6 +181,19 @@ namespace GEngine
 
 			m_Programs[i] = program;
 		}
+	}
+
+	std::string OpenGLShader::GetCombinedSamplerName(const std::string& textureName) const
+	{
+		const auto found = m_CombinedSamplerNames.find(textureName);
+		return found == m_CombinedSamplerNames.end() ? std::string{} : found->second;
+	}
+
+	std::optional<uint32_t> OpenGLShader::GetCombinedSamplerUnit(const std::string& samplerName) const
+	{
+		const auto found = m_CombinedSamplerUnits.find(samplerName);
+		if (found == m_CombinedSamplerUnits.end()) return std::nullopt;
+		return found->second;
 	}
 
 }

@@ -18,6 +18,8 @@ index, malformed FBX and removed scene-component key must be rejected without
 changing existing resources/scenes. Temporary fixtures are removed. GraphicsTool
 point/line methods remain unsupported. Shader materials must match the
 [component contract](../../Documentation/API/SceneAndPhysics.md).
+The separate image/sampler material contract is exercised on OpenGL, Vulkan
+and D3D12; current bounded-run evidence is recorded in the TODO above.
 
 Set GENGINE_SCENE_HELPER_FRAME_LIMIT=120 for normal bounded shutdown. On D3D12,
 GENGINE_SCENE_HELPER_SYNTHETIC_RESIZE=1 requests 960x540 and 1280x720 at frames
