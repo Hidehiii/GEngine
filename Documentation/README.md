@@ -77,6 +77,7 @@ headers in `GEngine/include` remain the source of truth for API signatures.
 - [GEngine editor](../GEngine-Editor/README.md)
 - [FrameGraphTriangle example](../Example/FrameGraphTriangle/README.md)
 - [Scene render helpers example](../Example/SceneRenderHelpers/README.md)
+- [GameWorld example](../Example/GameWorld/README.md)
 - [Deferred render example introduction](../Example/DeferredRender/intro.md)
 
 ## Getting started

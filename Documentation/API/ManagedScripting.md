@@ -15,6 +15,28 @@
 C++ 类型、配置字段、环境变量或命令行参数。
 构建输入已切换到官方 Mono 6.10.0.87 SDK；这未改变脚本运行时路径或导出能力。
 
+2026-10-31 world-logic integration: `GEngine-ScriptCore` defines the managed
+base class `GEngine.ScriptBehaviour` and a minimal `GEngine.GameObject` wrapper
+exposing UUID, Name and Active. GameObject script class names are serialized in
+`.gscene`; ScriptEngine creates and owns one `ScriptBehaviour` instance per
+scene/object/class and dispatches OnAwake, OnStart, OnEnable, OnDisable,
+OnFixedUpdate, OnUpdate, OnLateUpdate, OnPause, OnResume and OnDestroy. A
+  managed exception logs the exception, stops future update dispatch for that
+  instance, and still permits OnDestroy cleanup.
+  2026-10-31 native C++ script integration: game-side classes derived from
+  `GEngine::NativeScriptBehaviour` can be registered with
+  `GE_REGISTER_NATIVE_SCRIPT(Type, "Namespace.Type")` and attached through the
+  same GameObject `Scripts` sequence. Native scripts use the same lifecycle
+  contract as C# ScriptBehaviour. The current milestone statically registers
+  native behaviours in game code and does not load C++ source files dynamically.
+  Native script dispatch is verified in the default Mono-enabled engine build;
+  `GE_WITH_MONO=OFF` does not yet dispatch native scripts.
+  Managed assemblies are also not dynamically loaded or reloaded at runtime:
+  startup reads the configured ScriptCore assembly only. A staged
+  startup-project-assembly, ABI/Build ID, Worker-restart reload and optional
+  in-process reload plan is tracked in
+  [ScriptingAndPackaging](../../TODO/ScriptingAndPackaging.md#managed-dynamic-loading-milestones-planned-2026-10-31).
+
 ## 已实现：S2.1 目录部署 CLI
 
 S2.4 当前项目入口为 `GEngineTools.exe export-project --project <file.gproject> --output <directory>`，

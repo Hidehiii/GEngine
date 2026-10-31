@@ -18,9 +18,15 @@
 
 namespace GEngine
 {
+	void LinkPhysicsBackends();
+}
+
+namespace GEngine
+{
 	EngineRuntime::EngineRuntime(const RuntimeSpecification& specification)
 		: m_Specification(specification)
 	{
+		LinkPhysicsBackends();
 		Log::Init();
 		std::filesystem::path workingDirectory = m_Specification.WorkingDirectory;
 		if (!workingDirectory.empty() && workingDirectory.is_relative())

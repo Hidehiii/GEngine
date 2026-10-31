@@ -8,7 +8,8 @@ namespace GEngine
     void RunComponentChecks()
     {
         static_assert(!IsSceneComponent<Transform> && !IsSceneComponent<GameObjectData>);
-        static_assert(IsSceneComponent<StaticMeshComponent> && IsSceneComponent<ImageComponent> && IsSceneComponent<CameraComponent>);
+        static_assert(IsSceneComponent<StaticMeshComponent> && IsSceneComponent<ImageComponent> &&
+            IsSceneComponent<CameraComponent> && IsSceneComponent<DirectionalLightComponent>);
         auto require = [](bool value, const char* message)
         { if (!value) throw std::runtime_error(message); };
         auto reject = [&](auto operation, const char* message)
@@ -36,6 +37,11 @@ namespace GEngine
         image.SetMaterial(Material::Create("Assets/Shaders/ImageColor.gasset", "Persisted image"));
         image.Color = {0.2f, 0.3f, 0.4f, 1};
         image.Tiling = {2, 3};
+        parent.AddComponent<DirectionalLightComponent>();
+        auto& light = parent.GetComponent<DirectionalLightComponent>();
+        light.Color = {0.9f, 0.85f, 0.75f, 1.0f};
+        light.Intensity = 1.25f;
+        require(light.GetDirection() == Vector3(0.0f, 0.0f, -1.0f), "DirectionalLightComponent default direction differs.");
         child.AddComponent<StaticMeshComponent>();
         auto& mesh = child.GetComponent<StaticMeshComponent>();
         mesh.LoadMeshAsset("Assets/Mesh.gasset");
@@ -52,6 +58,8 @@ namespace GEngine
         require(copiedChild.GetTransform().GetPosition() == Vector3(1, 2, 3) && !copiedChild.IsActive(), "Copied base data differs.");
         require(copiedChild.GetComponent<StaticMeshComponent>().GetMeshAsset() == originalMesh, "Scene copy did not share mesh asset ownership.");
         require(copiedParent.GetComponent<ImageComponent>().GetImageAsset() == image.GetImageAsset(), "Scene copy did not share image ownership.");
+        require(copiedParent.GetComponent<DirectionalLightComponent>().Color == light.Color &&
+            copiedParent.GetComponent<DirectionalLightComponent>().Intensity == light.Intensity, "Copied DirectionalLight data differs.");
         require(copiedChild.GetComponent<StaticMeshComponent>().GetMaterial() == mesh.GetMaterial(), "Scene copy did not retain its material.");
         scene->DuplicateGameObject(child);
         require(scene->GetGameObjects<StaticMeshComponent>().size() == 2, "Object duplication failed.");
@@ -79,6 +87,9 @@ namespace GEngine
                 "ImageComponent asset/color/tiling roundtrip failed.");
             require(loadedImage.GetMaterial()->GetName() == "Persisted image" && restored->MainCamera()->GetPerspectiveVerticalFOV() == 55,
                 "Material/camera roundtrip failed.");
+            auto& loadedLight = loaded.Parent().GetComponent<DirectionalLightComponent>();
+            require(loadedLight.Color == light.Color && loadedLight.Intensity == light.Intensity,
+                "DirectionalLight color/intensity roundtrip failed.");
             const auto before = restored;
             {
                 std::ofstream file(temporary);

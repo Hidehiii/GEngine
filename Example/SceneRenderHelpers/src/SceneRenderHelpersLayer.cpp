@@ -52,6 +52,11 @@ namespace GEngine
 		m_Mesh.GetComponent<StaticMeshComponent>().SetMeshAsset(CreateRef<Mesh>(mesh));
 		m_Mesh.GetComponent<StaticMeshComponent>().SetMaterial(
 			Material::Create(Shader::Create("Assets/Shaders/MeshColor.gasset"), "MeshColor"));
+		m_Light = m_Scene->CreateGameObject("Directional light");
+		m_Light.GetTransform().SetPosition({0.0f, 2.0f, 3.0f});
+		m_Light.AddComponent<DirectionalLightComponent>();
+		m_Light.GetComponent<DirectionalLightComponent>().Color = {1.0f, 0.94f, 0.82f, 1.0f};
+		m_Light.GetComponent<DirectionalLightComponent>().Intensity = 1.15f;
 		GE_INFO("SceneRenderHelpers initialized: color quad, indexed mesh, unsupported paths rejected.");
 	}
 
@@ -63,6 +68,13 @@ namespace GEngine
 			renderer.Color = { 0.95f, 0.72f, 0.18f, 1.0f };
 			renderer.SetMaterial(Material::Create(Shader::Create("Assets/Shaders/ImageColor.gasset"), "ReplacedImageColor"));
 			GE_INFO("SceneRenderHelpers replaced image material after 30 frames.");
+		}
+		if (m_FrameCount == 45)
+		{
+			auto& light = m_Light.GetComponent<DirectionalLightComponent>();
+			light.Intensity = 0.65f;
+			m_Light.GetTransform().SetRotation({35.0f, 0.0f, 0.0f});
+			GE_INFO("SceneRenderHelpers changed the directional light after 45 frames.");
 		}
 		if (m_FrameCount == 60)
 		{

@@ -14,9 +14,14 @@ namespace GEngine
 		virtual void OnRender() {};
 		virtual void OnAwake() {};
 		virtual void OnStart() {};
+		virtual void OnEnable() {};
+		virtual void OnDisable() {};
+		virtual void OnFixedUpdate() {};
 		virtual void OnUpdate() {};
 		virtual void OnPhysicsUpdate() {};
 		virtual void OnLateUpdate() {};
+		virtual void OnPause() {};
+		virtual void OnResume() {};
 		virtual void OnDestroy() {};
 
 		GameObject m_GameObject;

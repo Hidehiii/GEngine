@@ -8,6 +8,7 @@
 #include "GEngine/Graphics/Material.h"
 #include "GEngine/Core/Config.h"
 #include<filesystem>
+#include <cmath>
 #include "GEngine/Tools/FileSystemHelper.h"
 #include "GEngine/Runtime/ResourcePack.h"
 
@@ -162,6 +163,12 @@ namespace GEngine
         out << YAML::Key << "Position" << YAML::Value << transform.GetPosition();
         out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotation();
         out << YAML::Key << "Scale" << YAML::Value << transform.GetScale() << YAML::EndMap;
+        if (!object.GetScriptClasses().empty())
+        {
+            out << YAML::Key << "Scripts" << YAML::Value << YAML::BeginSeq;
+            for (const auto& script : object.GetScriptClasses()) out << script;
+            out << YAML::EndSeq;
+        }
         if (auto* camera = object.TryGetComponent<CameraComponent>())
         {
             out << YAML::Key << "CameraComponent" << YAML::Value << YAML::BeginMap;
@@ -197,6 +204,12 @@ namespace GEngine
             out << YAML::Key << "MeshIndex" << YAML::Value << mesh->GetMeshIndex();
             SerializeComponentMaterial(out, mesh->GetMaterial());
             out << YAML::EndMap;
+        }
+        if (auto* light = object.TryGetComponent<DirectionalLightComponent>())
+        {
+            out << YAML::Key << "DirectionalLightComponent" << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "Color" << YAML::Value << light->Color;
+            out << YAML::Key << "Intensity" << YAML::Value << light->Intensity << YAML::EndMap;
         }
         out << YAML::EndMap;
     }
@@ -400,7 +413,9 @@ namespace GEngine
             {
                 const auto key = entry.first.as<std::string>();
                 if (key != "GameObject" && key != "Name" && key != "Active" && key != "Attribute" &&
-                    key != "Transform" && key != "Parent" && key != "CameraComponent" && key != "ImageComponent" && key != "StaticMeshComponent")
+                    key != "Transform" && key != "Parent" && key != "Scripts" &&
+                    key != "CameraComponent" && key != "ImageComponent" &&
+                    key != "DirectionalLightComponent" && key != "StaticMeshComponent")
                     throw std::runtime_error("Removed or unknown scene component: " + key);
             }
             const auto id = node["GameObject"].as<uint64_t>();
@@ -413,6 +428,15 @@ namespace GEngine
                 object.GetTransform().SetPosition(transform["Position"].as<Vector3>());
                 object.GetTransform().SetRotation(transform["Rotation"].as<Quaternion>());
                 object.GetTransform().SetScale(transform["Scale"].as<Vector3>());
+            }
+            if (const auto scripts = node["Scripts"])
+            {
+                if (!scripts.IsSequence()) throw std::runtime_error("GameObject Scripts must be a sequence.");
+                for (const auto& script : scripts)
+                {
+                    if (!script.IsScalar()) throw std::runtime_error("GameObject script class must be a scalar.");
+                    object.AddScript(script.as<std::string>());
+                }
             }
             if (const auto nodeCamera = node["CameraComponent"])
             {
@@ -447,6 +471,15 @@ namespace GEngine
                 const auto path = nodeMesh["MeshAsset"].as<std::string>();
                 if (!path.empty()) mesh.LoadMeshAsset(path, nodeMesh["MeshIndex"].as<uint32_t>());
                 if (auto material = loadMaterial(nodeMesh["Material"])) mesh.SetMaterial(material);
+            }
+            if (const auto nodeLight = node["DirectionalLightComponent"])
+            {
+                object.AddComponent<DirectionalLightComponent>();
+                auto& light = object.GetComponent<DirectionalLightComponent>();
+                light.Color = nodeLight["Color"].as<Vector4>();
+                light.Intensity = nodeLight["Intensity"].as<float>();
+                if (!std::isfinite(light.Intensity) || light.Intensity < 0.0f)
+                    throw std::runtime_error("DirectionalLightComponent intensity must be finite and nonnegative.");
             }
         }
         for (const auto& node : data["GameObjects"])

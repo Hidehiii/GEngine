@@ -89,13 +89,32 @@ systems compile SPIRV-Cross core/GLSL from the same tree as its headers, replaci
 SDK prebuilt libraries. Verification and aggregate publication remain tracked in
 the [dependency TODO](../../TODO/Build/ThirdPartyDependencies.md).
 
+2026-10-31 backend module split: CMake and Premake build OpenGL, Vulkan, and
+D3D12 backend sources as named static targets — `GEngine-OpenGLBackend`,
+`GEngine-VulkanBackend`, and `GEngine-D3D12Backend` — and link all three into
+the `GEngine` shared library. This keeps runtime `GraphicsAPI` selection and
+application-facing APIs unchanged. Native backend import libraries and backend
+source ownership are recorded on the backend targets; the common engine target
+retains only non-backend engine/tool dependencies such as shader compilation.
+The modules are not optional or dynamically registered in this milestone.
+Backend headers remain under `GEngine/include/Platform` and private header
+cleanup remains future work.
+
+2026-10-31 physics service split: CMake and Premake also build the static
+`GEngine-Physics2DBackend` and `GEngine-Physics3DBackend` modules from the
+separate Physics 2D/3D source trees. The common GEngine target no longer
+compiles those sources directly. Box2D and PhysX are owned by the physics
+backend modules, and a common link anchor keeps their exported symbols available
+through GEngine; this is a service backend split, not a graphics-API backend
+selection.
+
 Premake remains the established Visual Studio generator. The separate CMake
 generator lives under `BuildScripts/CMake/`, uses the same first-party engine
 and third-party source tree. Two launchers under `BuildScripts/` select Premake
 or CMake. The bundled Premake executable is in
 `BuildScripts/Premake/premake5.exe`; engine dependencies are pinned in the
 `GEngine/GEngine-ThirdParty` aggregate submodule. The CMake graph has five vendored C++ libraries, the shared
-GEngine library, seven C++ examples, Sandbox, Editor, and the C# ScriptCore
+GEngine library, eight C++ examples, Sandbox, Editor, and the C# ScriptCore
 target when `GE_WITH_MONO` is ON. It copies the engine and required vendor
 runtime DLLs beside each built executable. Premake and CMake both generate the
 C# ScriptCore target for their standard Mono-enabled builds.

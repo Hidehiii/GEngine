@@ -22,7 +22,7 @@ S1 SDK/程序集、S2 增量导出、S3 编辑器编译与 Worker 重启。
 | 位置 | 当前行为 |
 | --- | --- |
 | ScriptEngine.cpp | 使用 RuntimeSpecification 的 ScriptRuntimeRoot / ScriptCoreAssembly。 |
-| ScriptEngine.cpp | 加载配置的 ScriptCore 程序集，创建 GEngine.Main 并调用测试方法。 |
+| ScriptEngine.cpp | 加载配置的 ScriptCore 程序集，验证 `GEngine.ScriptBehaviour`/`GEngine.GameObject` 契约，并按场景对象调度脚本实例。 |
 | RuntimeSpecification | 提供 EnableScripting、ScriptRuntimeRoot 与 ScriptCoreAssembly。 |
 | GEngine 链接 | Debug/Release 静态链接 libmono-static-sgen.lib。 |
 | 构建输入 | CMake/Premake 现在消费官方 Mono 6.10.0.87 SDK。 |
@@ -46,8 +46,23 @@ libmono-static-sgen.lib 与公开 Hazel 仓库提交 b22a7550 的同名二进制
 运行库目录加载。关闭脚本后可以省去托管运行库部署，但现有引擎仍链接原生
 Mono；完全消除原生链接依赖不属于此次方案。
 
-S0.1 已处理域/程序集检查、部分失败清理及托管异常接收；真实启用脚本的运行
-与故障验证仍待补齐，不能从编译成功推断脚本运行已通过。
+  2026-10-31 bounded script runtime: the scene world-logic pipeline creates
+  one managed ScriptBehaviour per scene/object/class, updates a minimal managed
+  GameObject wrapper, dispatches lifecycle/update phases, owns GC handles, logs
+  managed exceptions, stops the failed instance's future update dispatch and
+    still invokes OnDestroy cleanup. Native C++ scene scripts are supported
+    through statically registered `GEngine::NativeScriptBehaviour` subclasses;
+    they share the same lifecycle phases and scene script-name serialization as
+    C# behaviours. This is not a dynamic C++ source-file loader. Dynamic
+    loading, editor compilation, project assembly discovery, Transform/engine
+    API parity and packaging remain open.
+    Native script dispatch is currently verified with the default Mono-enabled
+    engine build; `GE_WITH_MONO=OFF` support remains open.
+    Managed dynamic loading is planned in four bounded milestones: startup
+    project-assembly loading, ABI/Build-ID validation, editor reload by
+    Worker restart, and only then optional in-process app-domain unload. The
+    current implementation does not load or unload managed assemblies at
+    runtime.
 
 ## 3. 依赖与所有权
 

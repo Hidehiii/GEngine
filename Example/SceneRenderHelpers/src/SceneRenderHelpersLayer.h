@@ -17,6 +17,7 @@ namespace GEngine
 		Ref<Scene> m_Scene;
 		GameObject m_Image;
 		GameObject m_Mesh;
+		GameObject m_Light;
 		uint64_t m_FrameCount = 0;
 		bool m_FirstSyntheticResizeRequested = false;
 		bool m_SecondSyntheticResizeRequested = false;

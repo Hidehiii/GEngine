@@ -14,6 +14,11 @@ update. Debug/Release engine, SceneRenderHelpers and EngineWorker builds plus
 six 120-frame OpenGL/Vulkan/D3D12 runs passed. Manual visible, real resize and
 long-run memory checks remain open in their focused TODOs.
 
+2026-10-31 backend module split is tracked in [Phase 4](Rendering/Phase4.md):
+CMake and Premake now build OpenGL, Vulkan, and D3D12 as named static modules
+and link all three into GEngine. Runtime selection and public rendering APIs are
+unchanged; generator/backend verification is recorded in Phase 4.
+
 Editor E1.9 imports source files through the native C++ tool into project GAssets.
 The Host remains independent of the engine. Rendering APIs, GPU ownership and
 Worker IPC are unchanged; acceptance is tracked in TODO/EditorArchitecture.md.

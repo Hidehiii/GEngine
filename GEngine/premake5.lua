@@ -1,3 +1,167 @@
+local backendIncludeDirs =
+{
+	"include",
+	"src",
+	"%{IncludeDir.spdlog}",
+	"%{IncludeDir.GLFW}",
+	"%{IncludeDir.GLAD}",
+	"%{IncludeDir.glm}",
+	"%{IncludeDir.stb}",
+	"%{IncludeDir.entt}",
+	"%{IncludeDir.vender}",
+	"%{IncludeDir.ImGui}",
+	"%{IncludeDir.yaml}",
+	"%{IncludeDir.SPIRVCross}",
+	"%{IncludeDir.shaderc}",
+	"%{IncludeDir.vulkan}",
+	"%{IncludeDir.Box2D}",
+	"%{IncludeDir.PhysX}",
+	"%{IncludeDir.DirectXHeaders}",
+	"%{IncludeDir.HLSLcc}",
+	"%{IncludeDir.dxc}",
+}
+
+local function graphicsBackendProject(name, sourcePath, headerPath)
+	project(name)
+	kind "StaticLib"
+	staticruntime "off"
+	language "C++"
+
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		sourcePath,
+		headerPath,
+	}
+
+	includedirs(backendIncludeDirs)
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE",
+		"FBX_SHARED",
+		"YAML_CPP_STATIC_DEFINE",
+		"GE_BUILD_DLL",
+		"GE_PROFILE",
+	}
+
+	filter "system:windows"
+		cppdialect "C++17"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		defines "GE_DEBUG"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release or Dist"
+		defines "GE_RELEASE"
+		runtime "Release"
+		optimize "On"
+
+	filter {}
+end
+
+local function physicsBackendProject(name, sourcePath, headerPath)
+	project(name)
+	kind "StaticLib"
+	staticruntime "off"
+	language "C++"
+
+	targetdir ("%{wks.location}/dist/" .. outputdir .. "/%{prj.name}")
+	objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		sourcePath,
+		headerPath,
+	}
+
+	includedirs(backendIncludeDirs)
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE",
+		"FBX_SHARED",
+		"YAML_CPP_STATIC_DEFINE",
+		"GE_BUILD_DLL",
+		"GE_PROFILE",
+	}
+
+	filter "system:windows"
+		cppdialect "C++17"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		defines "GE_DEBUG"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release or Dist"
+		defines "GE_RELEASE"
+		runtime "Release"
+		optimize "On"
+
+	filter {}
+end
+
+graphicsBackendProject("GEngine-OpenGLBackend", "src/Platform/OpenGL/**.cpp",
+	"include/Platform/OpenGL/**.h")
+links
+{
+	"GLFW",
+	"GLAD",
+	"ImGui",
+	"spirv-cross-core",
+	"spirv-cross-glsl",
+	"opengl32.lib",
+}
+
+graphicsBackendProject("GEngine-VulkanBackend", "src/Platform/Vulkan/**.cpp",
+	"include/Platform/Vulkan/**.h")
+links
+{
+	"GLFW",
+	"ImGui",
+	"spirv-cross-core",
+	"%{Library.Vulkan}",
+}
+
+graphicsBackendProject("GEngine-D3D12Backend", "src/Platform/D3D12/**.cpp",
+	"include/Platform/D3D12/**.h")
+links
+{
+	"GLFW",
+	"ImGui",
+	"d3dcompiler.lib",
+	"d3d12.lib",
+	"dxgi.lib",
+	"dxguid.lib",
+	"%{Library.dxc_dxcompiler}",
+	"%{Library.dxc_dxil}",
+}
+
+physicsBackendProject("GEngine-Physics2DBackend", "src/GEngine/Physics/2D/**.cpp",
+	"include/GEngine/Physics/2D/**.h")
+links
+{
+	"Box2D",
+}
+
+physicsBackendProject("GEngine-Physics3DBackend", "src/GEngine/Physics/3D/**.cpp",
+	"include/GEngine/Physics/3D/**.h")
+links
+{
+	"%{Library.PhysX_64}",
+	"%{Library.PhysXCommon_64}",
+	"%{Library.PhysXFoundation_64}",
+	"%{Library.PhysXCooking_64}",
+}
+
 project "GEngine"
 	kind "SharedLib"
 	staticruntime "off"
@@ -11,6 +175,10 @@ project "GEngine"
 	pchheader "GEpch.h"
 	pchsource "src/GEpch.cpp"
 
+	filter "files:src/Platform/Windows/WindowsResourcePack.cpp"
+		enablepch "Off"
+	filter {}
+
 	files
 	{
 		"include/**.h",
@@ -19,6 +187,15 @@ project "GEngine"
 		"GEngine-ThirdParty/glm/glm/**.inl",
 		"GEngine-ThirdParty/entt/single_include/entt/**.hpp",
 		
+	}
+
+	removefiles
+	{
+		"src/Platform/OpenGL/**.cpp",
+		"src/Platform/Vulkan/**.cpp",
+		"src/Platform/D3D12/**.cpp",
+		"src/GEngine/Physics/2D/**.cpp",
+		"src/GEngine/Physics/3D/**.cpp",
 	}
 
 	defines
@@ -58,17 +235,15 @@ project "GEngine"
 
 	links
 	{
+		"GEngine-OpenGLBackend",
+		"GEngine-VulkanBackend",
+		"GEngine-D3D12Backend",
+		"GEngine-Physics2DBackend",
+		"GEngine-Physics3DBackend",
 		"GLFW",
 		"GLAD",
 		"ImGui",
 		"yaml-cpp",
-		"Box2D",
-		"opengl32.lib",
-		"d3dcompiler.lib",
-		"d3d12.lib",
-		"dxgi.lib",
-		"dxguid.lib",
-		"%{Library.Vulkan}",
 	}
 
 	if _OPTIONS["without-mono"] then
@@ -93,12 +268,6 @@ project "GEngine"
 			"%{Library.WinMM}",
 			"%{Library.WinVersion}",
 			"%{Library.BCrypt}",
-
-
-			"%{Library.PhysX_64}",
-			"%{Library.PhysXCommon_64}",
-			"%{Library.PhysXFoundation_64}",
-			"%{Library.PhysXCooking_64}",
 
 			"%{Library.dxc_dxcompiler}",
 			"%{Library.dxc_dxil}"

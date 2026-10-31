@@ -2,6 +2,7 @@
 #include "GEngine/Object/Scene/Scene.h"
 #include "GEngine/Object/GameObject.h"
 #include "GEngine/Components/Components.h"
+#include "GEngine/Core/Time.h"
 #include <stdexcept>
 
 namespace GEngine
@@ -22,7 +23,10 @@ namespace GEngine
             if (auto* component = object.TryGetComponent<CameraComponent>()) function(*component);
         }
     }
-    Scene::~Scene() = default;
+    Scene::~Scene()
+    {
+        for (auto object : GetGameObjects<>()) object.OnDestroy();
+    }
     Ref<Scene> Scene::Copy(Ref<Scene> scene)
     {
         if (!scene) throw std::invalid_argument("Cannot copy a null scene.");
@@ -36,6 +40,7 @@ namespace GEngine
             auto destination = result->CreateGameObject(source.GetUUID(), source.GetName());
             destination.GetTransform() = source.GetTransform();
             destination.SetActive(source.IsActive());
+            for (const auto& script : source.GetScriptClasses()) destination.AddScript(script);
             CopyComponents(AllComponents{}, destination, source);
             mapping.emplace(static_cast<uint32_t>(source), destination);
         }
@@ -62,6 +67,7 @@ namespace GEngine
         destination.GetTransform() = source.GetTransform();
         destination.SetActive(source.IsActive());
         destination.SetParent(source.Parent());
+        for (const auto& script : source.GetScriptClasses()) destination.AddScript(script);
         CopyComponents(AllComponents{}, destination, source);
     }
     void Scene::DestroyGameObject(GameObject object)
@@ -81,28 +87,97 @@ namespace GEngine
         if (first) first->isPrimary = true;
         return first;
     }
-    void Scene::OnAwake() { ForComponents(*this, [](auto& component) { component.OnAwake(); }); }
-    void Scene::OnStart() { ForComponents(*this, [](auto& component) { component.OnStart(); }); }
-    void Scene::OnUpdate()
-    { if (!m_Paused) ForComponents(*this, [](auto& component) { component.OnUpdate(); }); }
+    void Scene::OnAwake()
+    {
+        if (m_Awake) return;
+        for (auto object : GetGameObjects<>())
+            if (object.IsActive())
+            {
+                object.OnAwake();
+                object.OnEnable();
+            }
+        m_Awake = true;
+    }
+
+    void Scene::OnStart()
+    {
+        OnAwake();
+        if (m_Started) return;
+        for (auto object : GetGameObjects<>()) object.OnStart();
+        m_Started = true;
+    }
+
+    void Scene::OnFixedUpdate()
+    {
+        if (m_Paused || !m_Started) return;
+        for (auto object : GetGameObjects<>()) object.OnFixedUpdate(Time::GetFixedTime());
+    }
+
+    void Scene::OnUpdate() { OnUpdate(Time::GetDeltaTime()); }
+
+    void Scene::OnUpdate(float deltaTime)
+    {
+        if (m_Paused) return;
+        OnStart();
+
+        m_FixedUpdateAccumulator += deltaTime;
+        constexpr int maximumFixedSteps = 5;
+        int fixedSteps = 0;
+        while (m_FixedUpdateAccumulator >= Time::GetFixedTime() && fixedSteps < maximumFixedSteps)
+        {
+            OnFixedUpdate();
+            m_FixedUpdateAccumulator -= Time::GetFixedTime();
+            ++fixedSteps;
+        }
+        if (m_FixedUpdateAccumulator >= Time::GetFixedTime())
+            m_FixedUpdateAccumulator = Time::GetFixedTime();
+
+        for (auto object : GetGameObjects<>()) object.OnUpdate(deltaTime);
+    }
+
     void Scene::OnLateUpdate()
-    { if (!m_Paused) ForComponents(*this, [](auto& component) { component.OnLateUpdate(); }); }
+    { if (!m_Paused) for (auto object : GetGameObjects<>()) object.OnLateUpdate(); }
+
     void Scene::OnEndFrame()
     {
         for (auto object : m_DeletedGameObject)
         {
             if (!object) continue;
+            object.OnDestroy();
             for (auto child : GetGameObjects<>()) if (child.Parent() == object) child.SetParent();
             m_Registry.destroy(object);
         }
         m_DeletedGameObject.clear();
     }
-    void Scene::OnPause() { m_Paused = true; }
-    void Scene::OnResume() { m_Paused = false; }
+    void Scene::OnPause()
+    {
+        if (m_Paused) return;
+        m_Paused = true;
+        for (auto object : GetGameObjects<>()) object.OnPause();
+    }
+
+    void Scene::OnResume()
+    {
+        if (!m_Paused) return;
+        m_Paused = false;
+        for (auto object : GetGameObjects<>()) object.OnResume();
+    }
     void Scene::OnViewportResize(uint32_t width, uint32_t height)
     {
         if (!width || !height) return;
         m_ViewportWidth = width; m_ViewportHeight = height;
         for (auto object : GetGameObjects<CameraComponent>()) object.GetComponent<CameraComponent>().SetViewportSize(width, height);
+    }
+
+    void Scene::OnGameObjectActiveChanged(GameObject object)
+    {
+        if (!object || object.m_Scene != this) return;
+        if (object.IsActive())
+        {
+            object.OnAwake();
+            object.OnEnable();
+            if (m_Started) object.OnStart();
+        }
+        else object.OnDisable();
     }
 }

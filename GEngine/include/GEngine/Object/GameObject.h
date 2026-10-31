@@ -8,10 +8,12 @@ namespace GEngine
     class StaticMeshComponent;
     class ImageComponent;
     class CameraComponent;
+    class DirectionalLightComponent;
 
     template<typename T>
     constexpr bool IsSceneComponent = std::is_same_v<T, StaticMeshComponent> ||
-        std::is_same_v<T, ImageComponent> || std::is_same_v<T, CameraComponent>;
+        std::is_same_v<T, ImageComponent> || std::is_same_v<T, CameraComponent> ||
+        std::is_same_v<T, DirectionalLightComponent>;
 
     class GENGINE_API GameObject : public Object
     {
@@ -30,8 +32,24 @@ namespace GEngine
         bool IsActive() const;
         void SetActive(bool active);
         GameObject Parent() const;
+        Scene* GetScene() const;
         void SetParent(GameObject parent = {});
+        void AddScript(const std::string& className);
+        void RemoveScript(const std::string& className);
+        bool HasScript(const std::string& className) const;
+        const std::vector<std::string>& GetScriptClasses() const;
+        void OnAwake();
+        void OnStart();
+        void OnEnable();
+        void OnDisable();
+        void OnFixedUpdate(float fixedDeltaTime);
+        void OnPhysicsUpdate(float fixedDeltaTime);
         void OnUpdate();
+        void OnUpdate(float deltaTime);
+        void OnLateUpdate();
+        void OnPause();
+        void OnResume();
+        void OnDestroy();
         void OnRender();
         operator bool() const;
 

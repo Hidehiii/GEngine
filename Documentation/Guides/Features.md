@@ -16,7 +16,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 - **Rendering:** shaders, materials, pipeline state, vertex/index/uniform buffers, textures, samplers, framebuffers, render passes, portable graphics/compute/transfer queues, and render graph scheduling.
 - **Compute:** compute pipelines, storage buffers and storage images.
 - **Scene and components:** game objects, scenes, transform and renderer components, cameras and serialization. Component renderer draw paths are currently incomplete.
-- **Physics:** Box2D-backed 2D scene simulation and PhysX-backed 3D world/body wrappers. The scene does not currently step the 3D world.
+- **Physics:** Box2D-backed 2D scene simulation and PhysX-backed 3D world/body wrappers, built as separate native service modules. The scene does not currently step the 3D world.
 - **Tools/assets:** YAML `.gasset` envelopes, `.gscene` files, model importing, string/file helpers, serialization, shader compilation and asset meshes.
 - **Editor:** a separate editor application built on the core engine.
 
@@ -26,6 +26,7 @@ Backend selection is read from `Config.ini` through `GraphicsAPI`. The Triangle 
 | --- | --- |
 | `Example/Triangle` | Minimal shader, vertex buffer, graphics pipeline and presentation draw; configured for D3D12. |
 | `Example/FrameGraphTriangle` | Cross-API queue submission, presentation, render-graph, and shutdown smoke test; use it on OpenGL, Vulkan, or D3D12. |
+| `Example/GameWorld` | C#/C++ scene-script lifecycle, failure handling and physics backend smoke checks. |
 | `Example/ShaderCompile` | Shader compilation and shader asset workflow. |
 | `Example/DeferredRender` | Deferred-rendering path. |
 | `Example/GpuDriven` | GPU-driven rendering work. |

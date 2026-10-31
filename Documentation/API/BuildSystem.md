@@ -128,6 +128,14 @@ All generated targets use
 files and `dist/<tool>/windows-x86_64/<Configuration>/<Target>/` for final
 binaries, libraries, PDBs, and copied runtime DLLs. `<tool>` is
 `premake-vs2022`, `premake-vs2019`, `premake-vs2026`, or `cmake-vs2022`.
+Both generators expose the engine backend source sets as the static targets
+`GEngine-OpenGLBackend`, `GEngine-VulkanBackend`, and `GEngine-D3D12Backend`;
+`GEngine` links all three by default. No build flag, public C++ signature, or
+runtime backend-selection API is added by this split.
+The physics service split adds the static targets
+`GEngine-Physics2DBackend` and `GEngine-Physics3DBackend`. `GEngine` links both
+modules, which own the Box2D/PhysX dependencies. These are native service
+backends, not graphics APIs.
 For example, the VS2022 Premake Debug executable is
 `dist/premake-vs2022/windows-x86_64/Debug/FrameGraphTriangle/FrameGraphTriangle.exe`.
 

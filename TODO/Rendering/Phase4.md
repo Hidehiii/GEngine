@@ -7,6 +7,39 @@
       every cube/array/storage-image factory variant. The GPU graph example now
       also exercises raw storage-buffer and compute-pipeline creation/readback.
 - [ ] Build OpenGL, Vulkan, and D3D12 as separate backend modules.
+      Current bounded milestone (2026-10-31, user authorized): keep the public
+      render API and runtime backend selection unchanged, but split each
+      platform source set and its native link dependencies into named static
+      backend modules for both CMake and Premake. The engine links all three
+      modules by default so GraphicsAPI selection remains unchanged. Do not
+      remove backend headers or introduce runtime dynamic loading in this
+      milestone. Acceptance: generated targets visibly separate OpenGL, Vulkan,
+      and D3D12; Debug/Release engine plus FrameGraphTriangle builds pass;
+      bounded 120-frame runs pass on all three APIs with both readbacks and
+      normal shutdown; common sources no longer contain native backend link
+      dependencies in build metadata; architecture/API/build documentation and
+      this TODO are synchronized. Remaining module-boundary cleanup (private
+      backend headers, optional backend build switches, dynamic registration,
+      and incremental-build measurements) stays explicitly out of scope.
+      Implemented: CMake now globs each `GEngine/src/Platform/{OpenGL,Vulkan,
+      D3D12}` tree into a static backend target, removes those sources from the
+      common `GEngine` target, and moves each backend's native link dependencies
+      to that target. Premake similarly defines the three static backend
+      projects, removes backend sources from `GEngine`, and links the modules
+      into the shared engine. `WindowsResourcePack.cpp` is excluded from the
+      engine PCH so its existing resource-pack regression include guard remains
+      valid. Public APIs, backend headers, runtime selection, and default
+      all-backend linking are unchanged.
+      Verification: CMake Debug and Release GEngine plus FrameGraphTriangle
+      builds passed; Premake Debug and Release GEngine plus FrameGraphTriangle
+      builds passed after VS2022 regeneration. CMake Debug, CMake Release, and
+      Premake Release each completed OpenGL/Vulkan/D3D12 120-frame runs with
+      all three GPU readbacks, normal shutdown, and no validation/assert/error
+      lines; Premake Debug completed the same matrix before the final source
+      cleanup. Logs are `build/backend-split-*.log`; build logs record only
+      existing warnings. VS2019/VS2026, optional backend switches, dynamic
+      registration, private header movement, and incremental-build measurements
+      remain open.
 - [~] Replace the Vulkan-only subpass public contract with portable graph pass
       attachments; retain a legacy adapter only where needed.
       Scope: introduce backend-neutral graph attachment descriptors for color,

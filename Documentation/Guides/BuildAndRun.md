@@ -241,13 +241,20 @@ final artifacts. For example, the CMake VS2022 Debug executable is
 `dist\cmake-vs2022\windows-x86_64\Debug\FrameGraphTriangle\FrameGraphTriangle.exe`.
 Run FrameGraphTriangle from `Example/FrameGraphTriangle` so its `Config.ini`
 and shader assets resolve.
-The CMake project covers the engine, vendored C++ libraries, seven C++ examples,
+The CMake project covers the engine, vendored C++ libraries, eight C++ examples,
 Sandbox and the standalone engine worker. Qt Host is opt-in. `GE_WITH_MONO=ON`
 (the default) generates `GEngine-ScriptCore`; native-only project builds set
 `GE_WITH_MONO=OFF` and omit it. CMake currently requires Windows/MSVC
 and does not offer a VS2026 generator entry in these launchers. Premake's
 `Dist` configuration is not exposed by the CMake launcher. The same
 `VULKAN_SDK` installation is required by both systems.
+CMake and Premake both build `GEngine-OpenGLBackend`,
+`GEngine-VulkanBackend`, and `GEngine-D3D12Backend` as static modules and link
+them into `GEngine`; application targets and backend-selection commands remain
+unchanged.
+They also build `GEngine-Physics2DBackend` and `GEngine-Physics3DBackend` as
+static service modules and link them into `GEngine`; Box2D and PhysX are owned
+by those backend modules.
 On 2026-10-20, Premake and CMake VS2022 Debug/Release GEngine plus
 FrameGraphTriangle builds passed in the unified layout. Premake Debug and
 CMake Release 120-frame D3D12 runs passed all three graph readbacks and exited

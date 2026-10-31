@@ -134,7 +134,19 @@ ge_set_output_directories(yaml-cpp)
 target_include_directories(yaml-cpp PUBLIC "${GE_VENDOR}/yaml-cpp/include")
 target_compile_definitions(yaml-cpp PUBLIC YAML_CPP_STATIC_DEFINE)
 
+file(GLOB_RECURSE GE_OPENGL_BACKEND_SOURCES CONFIGURE_DEPENDS
+    "${GE_ROOT}/GEngine/src/Platform/OpenGL/*.cpp")
+file(GLOB_RECURSE GE_VULKAN_BACKEND_SOURCES CONFIGURE_DEPENDS
+    "${GE_ROOT}/GEngine/src/Platform/Vulkan/*.cpp")
+file(GLOB_RECURSE GE_D3D12_BACKEND_SOURCES CONFIGURE_DEPENDS
+    "${GE_ROOT}/GEngine/src/Platform/D3D12/*.cpp")
+file(GLOB_RECURSE GE_PHYSICS2D_BACKEND_SOURCES CONFIGURE_DEPENDS
+    "${GE_ROOT}/GEngine/src/GEngine/Physics/2D/*.cpp")
+file(GLOB_RECURSE GE_PHYSICS3D_BACKEND_SOURCES CONFIGURE_DEPENDS
+    "${GE_ROOT}/GEngine/src/GEngine/Physics/3D/*.cpp")
 file(GLOB_RECURSE GE_ENGINE_SOURCES CONFIGURE_DEPENDS "${GE_ROOT}/GEngine/src/*.cpp")
+list(FILTER GE_ENGINE_SOURCES EXCLUDE REGEX "/GEngine/src/Platform/(OpenGL|Vulkan|D3D12)/")
+list(FILTER GE_ENGINE_SOURCES EXCLUDE REGEX "/GEngine/src/GEngine/Physics/(2D|3D)/")
 add_library(spirv-cross-core STATIC
     "${GE_VENDOR}/SPIRV-Cross/spirv_cross.cpp"
     "${GE_VENDOR}/SPIRV-Cross/spirv_parser.cpp"
@@ -154,6 +166,8 @@ endif()
 target_link_libraries(spirv-cross-glsl PUBLIC spirv-cross-core)
 add_library(GEngine SHARED ${GE_ENGINE_SOURCES})
 ge_set_output_directories(GEngine)
+set_source_files_properties("${GE_ROOT}/GEngine/src/Platform/Windows/WindowsResourcePack.cpp"
+    PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 target_include_directories(GEngine PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
 target_compile_definitions(GEngine PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
 target_compile_definitions(GEngine PRIVATE GE_WITH_MONO=$<BOOL:${GE_WITH_MONO}>)
@@ -165,13 +179,60 @@ target_compile_definitions(GEngine PUBLIC
 )
 target_compile_options(GEngine PRIVATE "$<$<CONFIG:Debug>:/FS>")
 target_precompile_headers(GEngine PRIVATE "${GE_ROOT}/GEngine/src/GEpch.h")
-target_link_libraries(GEngine PRIVATE GLFW GLAD ImGui yaml-cpp Box2D spirv-cross-core spirv-cross-glsl
-    opengl32 d3dcompiler d3d12 dxgi dxguid Ws2_32 Winmm Version Bcrypt
-    "${GE_VULKAN_SDK}/Lib/vulkan-1.lib"
+function(ge_add_graphics_backend target sources)
+    add_library(${target} STATIC ${sources})
+    ge_set_output_directories(${target})
+    target_include_directories(${target} PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
+    target_compile_definitions(${target} PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS
+        GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
+    target_compile_definitions(${target} PRIVATE
+        "$<$<CONFIG:Debug>:GE_DEBUG>"
+        "$<$<CONFIG:Release>:GE_RELEASE>"
+        "$<$<CONFIG:RelWithDebInfo>:GE_RELEASE>"
+        "$<$<CONFIG:MinSizeRel>:GE_RELEASE>")
+endfunction()
+
+function(ge_add_physics_backend target sources)
+    add_library(${target} STATIC ${sources})
+    ge_set_output_directories(${target})
+    target_include_directories(${target} PUBLIC ${GE_INCLUDE_DIRS} PRIVATE "${GE_ROOT}/GEngine/src")
+    target_compile_definitions(${target} PRIVATE GE_BUILD_DLL _CRT_SECURE_NO_WARNINGS
+        GLFW_INCLUDE_NONE FBX_SHARED GE_PROFILE)
+    target_compile_definitions(${target} PRIVATE
+        "$<$<CONFIG:Debug>:GE_DEBUG>"
+        "$<$<CONFIG:Release>:GE_RELEASE>"
+        "$<$<CONFIG:RelWithDebInfo>:GE_RELEASE>"
+        "$<$<CONFIG:MinSizeRel>:GE_RELEASE>")
+endfunction()
+
+ge_add_graphics_backend(GEngine-OpenGLBackend "${GE_OPENGL_BACKEND_SOURCES}")
+target_link_libraries(GEngine-OpenGLBackend PRIVATE GLFW GLAD ImGui
+    spirv-cross-core spirv-cross-glsl opengl32)
+
+ge_add_graphics_backend(GEngine-VulkanBackend "${GE_VULKAN_BACKEND_SOURCES}")
+target_link_libraries(GEngine-VulkanBackend PRIVATE GLFW ImGui spirv-cross-core
+    "${GE_VULKAN_SDK}/Lib/vulkan-1.lib")
+
+ge_add_graphics_backend(GEngine-D3D12Backend "${GE_D3D12_BACKEND_SOURCES}")
+target_link_libraries(GEngine-D3D12Backend PRIVATE GLFW ImGui d3d12 dxgi dxguid
+    d3dcompiler
+    "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"
+    "${GE_VENDOR}/dxc/lib/x64/dxil.lib")
+
+ge_add_physics_backend(GEngine-Physics2DBackend "${GE_PHYSICS2D_BACKEND_SOURCES}")
+target_link_libraries(GEngine-Physics2DBackend PRIVATE Box2D)
+
+ge_add_physics_backend(GEngine-Physics3DBackend "${GE_PHYSICS3D_BACKEND_SOURCES}")
+target_link_libraries(GEngine-Physics3DBackend PRIVATE
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysX_64.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCommon_64.lib"
     "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXFoundation_64.lib"
-    "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCooking_64.lib"
+    "${GE_VENDOR}/PhysX/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/PhysXCooking_64.lib")
+
+target_link_libraries(GEngine PRIVATE GEngine-OpenGLBackend GEngine-VulkanBackend GEngine-D3D12Backend
+    GEngine-Physics2DBackend GEngine-Physics3DBackend
+    GLFW GLAD ImGui yaml-cpp spirv-cross-core spirv-cross-glsl
+    d3dcompiler Ws2_32 Winmm Version Bcrypt
     "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"
     "${GE_VENDOR}/dxc/lib/x64/dxil.lib"
     "${GE_VULKAN_SDK}/Lib/shaderc_shared.lib"
@@ -235,6 +296,13 @@ add_custom_command(TARGET GEngine-EditorEngineWorker POST_BUILD
     COMMAND "${CMAKE_COMMAND}" "-DGE_WORKER_SOURCE=${GE_ROOT}/GEngine-Editor/Worker"
         "-DGE_WORKER_OUTPUT=$<TARGET_FILE_DIR:GEngine-EditorEngineWorker>"
         -P "${GE_ROOT}/BuildScripts/Editor/DeployWorkerConfig.cmake")
-foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle SceneRenderHelpers)
+foreach(example DeferredRender GpuDriven ShaderCompile InputSystem Triangle FrameGraphTriangle SceneRenderHelpers GameWorld)
     ge_add_application(${example} "Example/${example}")
 endforeach()
+
+if(GE_WITH_MONO)
+    target_compile_definitions(GameWorld PRIVATE
+        GE_SCRIPT_RUNTIME_ROOT="${GE_ROOT}/dist/mono/windows-x86_64/6.10.0.87/Mono/lib/mono/4.5"
+        GE_SCRIPT_CORE_ASSEMBLY="$<TARGET_FILE:GEngine-ScriptCore>")
+    add_dependencies(GameWorld GEngine-ScriptCore)
+endif()

@@ -36,12 +36,14 @@ ImGui 与引擎 EditorCamera 的接口和所有权不受本次删除影响。
 
 ## Scene and component ownership
 
-Only `StaticMeshComponent`, `ImageComponent` and the existing `CameraComponent` are attachable scene
-components. `GameObject` remains a non-owning registry handle. The scene's
+Only `StaticMeshComponent`, `ImageComponent`, `CameraComponent` and the retained
+`DirectionalLightComponent` are attachable scene components. `GameObject`
+remains a non-owning registry handle. The scene's
 `GameObjectData` owns UUID, name, active state, Transform values and a parent
 entity handle; Transform no longer inherits Component. Keep the scene alive
 while using handles. Removed components include Attribute, NativeScript,
-MeshFilter/MeshRenderer/ImageRenderer, lights, rigid bodies and colliders.
+MeshFilter/MeshRenderer/ImageRenderer, legacy light components, rigid bodies
+and colliders.
 
 StaticMeshComponent owns a shared immutable CPU Mesh asset and a material. Replacing
 either invalidates its GPU pipeline; copying retains those owners but rebuilds
@@ -49,6 +51,14 @@ the destination pipeline. ImageComponent owns a sampled Texture2D asset and mate
 and records a position/UV quad with color and tiling. Missing images use a white
 texture for color-only scenes. CameraComponent projection and selection behavior remain;
 EditorCamera remains a camera utility, not an additional attachable type.
+DirectionalLightComponent is the first retained light type. Its direction is
+read from the owning GameObject's `Transform::Forward()`, while Color and
+Intensity are component data. SceneRenderer selects the first active
+DirectionalLight and writes the direction/color/intensity into scene materials
+that declare the three `GE_DIRECTIONAL_LIGHT_*` constants; materials without
+that complete contract are unchanged. With no active directional light it uses
+a white forward-facing default. This milestone has no multiple-light
+accumulation, shadows, backend-specific light state, or global uniform buffer.
 
 Scene copy duplicates base data, reattaches components and remaps parent handles.
 Duplication assigns a new UUID. Deferred deletion detaches children and ignores
@@ -56,11 +66,29 @@ repeated deletion requests. Hierarchy links preserve relationships; model matric
 remain local Transform matrices (no new parent-transform composition).
 Scene lifecycle no longer creates or steps physics worlds, or dispatches native
 scripts. Standalone Box2D/PhysX and Mono runtime services remain optional and
-independent; Physics2DBodyDef uses PhysicsBodyType instead of a removed component
-enum. Standalone contact listener hooks no longer dispatch scene scripts.
+independent; Physics2D and Physics3D are now separate native service backend
+modules linked into GEngine. Physics2DBodyDef uses PhysicsBodyType instead of
+a removed component enum. Standalone contact listener hooks no longer dispatch
+scene scripts.
+Scene update behavior now has a bounded world-logic pipeline: awake and start
+run once, active changes dispatch enable/disable, variable update runs a
+bounded fixed-update accumulator followed by object/component update, and late
+update, pause/resume and deferred destruction have explicit phases. GameObject
+owns object-level awake/start state, stores script class names and forwards
+phases to retained components. Serializer<Scene> persists those class names as
+the `Scripts` sequence. ScriptEngine owns managed `ScriptBehaviour` instances
+per scene/object/class, updates a minimal C# GameObject wrapper, dispatches the
+same lifecycle phases, stops future dispatch after a managed or native
+exception, and still calls OnDestroy for cleanup. Game-side C++ behaviours
+derive from `NativeScriptBehaviour` and are statically registered by class
+name; they are not dynamically loaded source files. Physics stepping/contact
+ordering, Transform/engine APIs, project assemblies and editor script
+authoring remain open in [SceneAndPhysics](../../TODO/SceneAndPhysics.md).
 
-Scene serialization writes base data plus CameraComponent, StaticMeshComponent and ImageComponent, including
-asset paths, mesh index, and each material's shader path/name. Arbitrary runtime
+Scene serialization writes base data plus CameraComponent,
+StaticMeshComponent, ImageComponent and DirectionalLightComponent, including
+asset paths, mesh index, each material's shader path/name, and light
+color/intensity. Arbitrary runtime
 material property overrides are not serialized. In-memory procedural meshes or
 textures without persistent asset identities fail serialization explicitly.
 Removed/unknown component keys fail loading; failed loads preserve the destination
@@ -70,7 +98,8 @@ scenes have been migrated, removing historical physics/circle-renderer data.
 Legacy physics-demo filenames do not imply retained simulation.
 
 SceneRenderer records active ImageComponent/StaticMeshComponent components into an already-open
-graphics pass; GameObject::OnRender is the presentation adapter. Command/resource
+graphics pass and applies the selected DirectionalLightComponent contract above;
+GameObject::OnRender is the presentation adapter. Command/resource
 retention remains in backends: replacing CPU references does not imply GPU
 completion. No native handles, queue semantics or backend APIs changed.
 ImageComponent shaders explicitly expose the sampled-image binding contract documented
@@ -82,8 +111,9 @@ material bindings to the image's texture unit; the component-facing contract
 remains backend-neutral.
 
 The [SceneRenderHelpers example](../../Example/SceneRenderHelpers/README.md)
-draws a textured quad and indexed mesh, replaces materials/meshes/images and runs
-base-data, copy/duplicate, hierarchy, serialization and malformed-resource checks.
+draws a textured quad and a direction-lit indexed mesh, replaces
+materials/meshes/images, changes the light at frame 45 and runs base-data,
+copy/duplicate, hierarchy, serialization and malformed-resource checks.
 Current verification and remaining manual/backend checks are tracked in
 [SceneAndPhysics](../../TODO/SceneAndPhysics.md).
 

@@ -23,6 +23,9 @@ payload: |
                 cbuffer material
                 {
                     float4x4 GE_MATRIX_M;
+                    float3 GE_DIRECTIONAL_LIGHT_DIRECTION;
+                    float4 GE_DIRECTIONAL_LIGHT_COLOR;
+                    float GE_DIRECTIONAL_LIGHT_INTENSITY;
                 };
 
                 struct VsInput
@@ -41,12 +44,14 @@ payload: |
                 {
                     float4 position : SV_POSITION;
                     float4 color : COLOR0;
+                    float4 normal : NORMAL;
                 };
 
                 VsOutput vert(VsInput input)
                 {
                     VsOutput output;
                     output.position = mul(GE_MATRIX_M, input.position);
+                    output.normal = input.normal;
                     float attributes = input.normal.x + input.tangent.x +
                         input.uv0.x + input.uv1.x + input.uv2.x + input.uv3.x;
                     output.color = input.color * (1.0f + 0.00001f * attributes);
@@ -55,7 +60,10 @@ payload: |
 
                 float4 frag(VsOutput input) : SV_Target
                 {
-                    return input.color;
+                    float lighting = max(0.0f, dot(normalize(input.normal.xyz),
+                        -normalize(GE_DIRECTIONAL_LIGHT_DIRECTION.xyz)));
+                    return input.color * (0.35f + 0.65f * lighting) *
+                        GE_DIRECTIONAL_LIGHT_COLOR * GE_DIRECTIONAL_LIGHT_INTENSITY;
                 }
             }
         }

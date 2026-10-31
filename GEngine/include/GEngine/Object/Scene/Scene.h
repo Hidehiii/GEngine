@@ -17,8 +17,11 @@ namespace GEngine
         UUID Id;
         std::string Name = "GameObject";
         bool Active = true;
+        bool Awake = false;
+        bool Started = false;
         Transform Spatial;
         entt::entity Parent = entt::null;
+        std::vector<std::string> Scripts;
     };
 
     class GENGINE_API Scene : private Object
@@ -34,7 +37,9 @@ namespace GEngine
         CameraComponent* MainCamera();
         void OnAwake();
         void OnStart();
+        void OnFixedUpdate();
         void OnUpdate();
+        void OnUpdate(float deltaTime);
         void OnLateUpdate();
         void OnEndFrame();
         void OnPause();
@@ -61,6 +66,10 @@ namespace GEngine
         uint32_t m_ViewportWidth = 1920, m_ViewportHeight = 1080;
         std::vector<GameObject> m_DeletedGameObject;
         bool m_Paused = false;
+        bool m_Awake = false;
+        bool m_Started = false;
+        float m_FixedUpdateAccumulator = 0.0f;
+        void OnGameObjectActiveChanged(GameObject object);
         friend class GameObject;
         friend class Serializer;
     };

@@ -1,5 +1,76 @@
 # C#、Mono 与游戏打包
 
+- [x] Native C++ scene scripts (2026-10-31, user authorized): implement C++ as
+      a parallel scene-script language.
+      GameObject should be able to attach either a managed C# ScriptBehaviour
+      or a native C++ NativeScriptBehaviour by class name. Scope for the first
+      bounded implementation: define the native behaviour base class and
+      factory registry, keep scene serialization unchanged (`Scripts` remains
+      a class-name sequence), dispatch the same lifecycle phases, and allow a
+      focused example to register and run both C# and C++ behaviours. Do not
+      resurrect the removed legacy NativeScript component. Acceptance:
+      Debug/Release CMake and Premake engine plus focused example builds pass;
+      mixed C#/C++ lifecycle, failure handling and teardown are exercised;
+      documentation states that C++ scripts are statically registered in the
+      current milestone and not dynamically loaded source files.
+      Implemented: `NativeScriptBehaviour` provides the same lifecycle
+      contract, `ScriptEngine::RegisterNativeScript` owns a class-name factory
+      registry, and `GE_REGISTER_NATIVE_SCRIPT` statically registers a
+      game-side C++ behaviour. The GameWorld example now attaches and runs
+      both C# and C++ behaviours, including a native failure path and teardown.
+      CMake and Premake Debug/Release builds and runs passed. Remaining:
+      dynamic source loading, editor authoring/compilation, project assemblies,
+      native-only GE_WITH_MONO=OFF support, and managed Transform/API parity
+      are not implemented in this milestone.
+      A GE_WITH_MONO=OFF engine build compiles, but native script dispatch
+      remains unsupported in that configuration.
+
+2026-10-31 scene world-logic C# dispatch is owned by
+[SceneAndPhysics](SceneAndPhysics.md): GameObject script names round-trip in
+`.gscene`, ScriptEngine owns `ScriptBehaviour` instances and dispatches their
+lifecycle/update phases. Native C++ behaviours are now supported through
+static registration, while dynamic source loading, project assemblies,
+Transform/engine APIs, editor compilation and packaging remain owned by the
+S0–S5 items below.
+
+## Managed dynamic-loading milestones (planned, 2026-10-31)
+
+- [ ] D1 Startup project-assembly loading. Extend script startup to accept an
+  explicit ordered set containing `GEngine-ScriptCore.dll`, the game assembly
+  and declared managed dependencies. Preflight paths, hashes, architecture,
+  target framework and dependency closure; load them into the existing Mono
+  app domain before resolving scene script classes. Record the final assembly
+  identities and hashes in diagnostics. Acceptance: a focused example attaches
+  a class from a separately built project assembly, missing/duplicate/circular
+  dependencies fail before domain creation, and startup/normal shutdown pass in
+  Debug and Release. No unload or reload is included.
+- [ ] D2 ABI compatibility and Build ID contract. Add a versioned ScriptCore
+  ABI marker and require each project assembly to reference it. Build outputs
+  record Build ID, ScriptCore hash, project assembly hashes, dependency hashes
+  and target framework. Reject mismatched or stale combinations before any
+  scene state changes. Acceptance: compatible and deliberately mismatched
+  project assemblies are covered by focused regressions, and error messages
+  identify the failing artifact/version.
+- [ ] D3 Editor reload via Worker restart. Qt Host compiles a new Build ID,
+  validates it, stops the old Worker, starts a new Worker with that Build ID,
+  and restores the Host-owned scene snapshot. Compilation or load failure
+  preserves the current documents and keeps the last complete Worker/build
+  available. Acceptance: edit/compile/restart/reload and failure-rollback flows
+  are covered, including cancellation and repeated reload. This is the first
+  reload path; it does not use in-process domain unload.
+- [ ] D4 Optional in-process app-domain reload. Only after D1–D3 are stable,
+  design a bounded unload/reload path: quiesce script dispatch, destroy all
+  script instances and wrappers, free every GC handle, stop managed threads,
+  verify no live domain references, unload the app domain, load the next Build
+  ID and rebuild script instances from an explicit state snapshot. Define
+  serializable script state and failure behavior for non-serializable fields.
+  Acceptance: repeated in-process reload, exception cleanup and leak/handle
+  checks pass; otherwise keep this milestone closed and continue using D3.
+
+These milestones explicitly exclude loading arbitrary untrusted source files
+at runtime and do not make the Qt Host load Mono. Security validation and
+package-time assembly verification remain part of the export/manifest work.
+
 ## GAsset tooling entry point (2026-10-29)
 
 - [x] Native C++ correction: replace Python dispatch with C++ conversion and

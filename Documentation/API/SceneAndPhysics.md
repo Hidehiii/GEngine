@@ -16,13 +16,21 @@ cross-scene links. `SetParent()` detaches. Relationships do not compose local
 transform matrices. Scene copy remaps links; duplication preserves base data and
 assigns a new UUID. DestroyGameObject is deferred until OnEndFrame and detaches
 children. `GetGameObjects<>()` enumerates all objects.
+`AddScript`, `RemoveScript`, `HasScript` and `GetScriptClasses` manage managed
+script class names attached to the object. Script classes are dispatched either
+as C# `GEngine.ScriptBehaviour` instances or as statically registered C++
+`GEngine::NativeScriptBehaviour` instances. Use
+`GE_REGISTER_NATIVE_SCRIPT(Type, "Namespace.Type")` in game code to register a
+C++ behaviour; scene serialization stores only the class name and does not
+load source files dynamically.
 
 ## Retained components
 
-Only StaticMeshComponent, ImageComponent and CameraComponent are accepted by AddComponent,
-AddOrReplaceComponent, HasComponent, GetComponent, TryGetComponent and
-RemoveComponent. Transform/Attribute and native script, physics, light,
-MeshFilter, MeshRenderer and ImageRenderer component APIs have been removed.
+Only StaticMeshComponent, ImageComponent, CameraComponent and
+DirectionalLightComponent are accepted by AddComponent, AddOrReplaceComponent,
+HasComponent, GetComponent, TryGetComponent and RemoveComponent.
+Transform/Attribute and native script, physics, legacy light, MeshFilter,
+MeshRenderer and ImageRenderer component APIs have been removed.
 
 `StaticMeshComponent::SetMeshAsset(const Ref<const Mesh>&)` holds a shared, immutable
 in-memory mesh asset; callers replace the asset rather than mutating aliases.
@@ -48,16 +56,30 @@ CameraComponent retains its existing orthographic/perspective, primary, RenderOr
 viewport behavior. OnViewportResize updates cameras for nonzero sizes;
 MainCamera selects the primary camera. EditorCamera remains a standalone utility.
 
+`DirectionalLightComponent` stores `Color` (`Vector4`) and `Intensity`
+(`float`). `GetDirection()` returns the owning GameObject's
+`Transform::Forward()`; only the color and intensity are serialized, and
+loaded intensity must be finite and nonnegative. SceneRenderer selects the
+first active DirectionalLight. Lit materials must declare all three constants:
+GE_DIRECTIONAL_LIGHT_DIRECTION (float3), GE_DIRECTIONAL_LIGHT_COLOR (float4)
+and GE_DIRECTIONAL_LIGHT_INTENSITY (float). Materials that do not declare the
+complete contract are unchanged. If no active directional light exists, the
+renderer supplies a white, forward-facing default. Multiple-light
+accumulation, shadows and a backend global uniform buffer are not implemented.
+
 ## Recording, serialization and services
 
 Call `SceneRenderer::Render(scene, command)` inside an open graphics pass, or
-`GameObject::OnRender()` during OnPresent. ImageComponent/StaticMeshComponent also expose
-OnRender(command). The caller owns targets, graph dependencies and submissions;
-backends retain resources through GPU completion. No automatic camera pass,
-sorting, lighting or parent-transform composition is added.
+`GameObject::OnRender()` during OnPresent. SceneRenderer applies the
+DirectionalLightComponent contract documented above.
+ImageComponent/StaticMeshComponent also expose OnRender(command). The caller
+owns targets, graph dependencies and submissions; backends retain resources
+through GPU completion. No automatic camera pass, sorting or
+parent-transform composition is added.
 
 Serializer<Scene> writes GameObject/Name/Active/Transform/optional Parent,
-CameraComponent, ImageComponent and StaticMeshComponent maps. ImageAsset/MeshAsset store .gasset paths;
+CameraComponent, ImageComponent, StaticMeshComponent and
+DirectionalLightComponent maps. ImageAsset/MeshAsset store .gasset paths;
 StaticMeshComponent also stores MeshIndex. Material stores Shader and Name only;
 arbitrary material constants/resources/render-state overrides remain runtime-only.
 SetMeshAsset alone has no persistent submesh identity: use LoadMeshAsset before
@@ -66,12 +88,28 @@ Unknown/removed component keys fail load and leave the original scene reference
 unchanged. Legacy Attribute.IsActive is read as base metadata only; no Attribute
 component is created. First-party scenes use the new keys.
 
-Scene lifecycle no longer starts/steps physics or native scripts. Standalone
+Scene lifecycle no longer steps physics worlds. `Scene::OnAwake`, `OnStart`,
+`OnFixedUpdate`, `OnUpdate(deltaTime)`, `OnLateUpdate`, `OnPause`, `OnResume`
+and `OnEndFrame` define the current object/component/script tick. Awake/start
+run once, active changes dispatch enable/disable, fixed update uses the
+configured fixed timestep with a bounded accumulator, and paused scenes skip
+fixed/variable/late updates. Deferred destruction dispatches OnDestroy.
+Component virtual hooks include OnAwake, OnStart, OnEnable, OnDisable,
+OnFixedUpdate, OnUpdate, OnLateUpdate, OnPause, OnResume and OnDestroy. A
+managed or native exception stops that script instance's future updates but
+still allows OnDestroy cleanup. Standalone
 physics and Mono runtime services remain; Physics2DBodyDef::SetType now takes
 `PhysicsBodyType::{Static,Dynamic,Kinematic}`. Contact listener hooks can be
 overridden but do not dispatch scene scripts. GraphicsTool point/line helpers
 remain explicitly unsupported.
+Physics2D and Physics3D are built as separate native service backend modules
+and linked into GEngine; they are not graphics-API backend selections.
+Physics callback ordering, Transform/engine APIs, dynamic C++ source loading
+and project script assembly loading remain open in
+[TODO](../../TODO/SceneAndPhysics.md).
 
 See [SceneRenderHelpers](../../Example/SceneRenderHelpers/README.md) for asset,
-material, replacement, scene-roundtrip and available-backend checks. Current
-evidence and remaining work live in [TODO](../../TODO/SceneAndPhysics.md).
+material, replacement, scene-roundtrip and available-backend checks, and
+[GameWorld](../../Example/GameWorld/README.md) for the world-logic/script
+lifecycle regression. Current evidence and remaining work live in
+[TODO](../../TODO/SceneAndPhysics.md).

@@ -22,15 +22,15 @@ namespace GEngine
 	{
 		return Matrix4x4(1.0f) * Math::Scale(Matrix4x4(1.0f), m_Scale);
 	}
-	Vector3 Transform::Forward()
+	Vector3 Transform::Forward() const
 	{
 		return Math::Normalized(m_Rotation * Vector3(0.0f, 0.0f, -1.0f));
 	}
-	Vector3 Transform::Right()
+	Vector3 Transform::Right() const
 	{
 		return Math::Normalized(m_Rotation * Vector3(1.0f, 0.0f, 0.0f));
 	}
-	Vector3 Transform::Up()
+	Vector3 Transform::Up() const
 	{
 		return Math::Normalized(m_Rotation * Vector3(0.0f, 1.0f, 0.0f));
 	}
