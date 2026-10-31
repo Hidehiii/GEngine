@@ -155,6 +155,8 @@ C++ 数据类型，不依赖 Qt、引擎或文件系统枚举。
 
 `Host/ProjectWorkspace` 提供 Open(QString)、Close()、Select(QString)、
 ValidateSelection() 与根/选择/generation 查询，以及 Inspector/日志回调。
+Assets 树保留目录用于导航，但文件只显示 `.gasset` 与 `.gscene`；原始兼容
+扩展仍可被加载器或 Import resource 接受，不会出现在该浏览器中。
 Select 拒绝根外、直接符号链接与缺失目标，失败清除旧选择；项目打开失败则
 保留当前项目与选择。250 ms 校验删除/失联时使选择失效，项目根丢失时关闭
 项目。ProjectWorkspace 把 SelectionService 的相对 ID 映射回项目内路径，

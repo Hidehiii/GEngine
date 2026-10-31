@@ -1,5 +1,25 @@
 # 编辑器架构重设计
 
+- [x] Restrict the Assets content browser to engine resource files (2026-10-31,
+  user authorized). Scope: the Qt project browser keeps directories visible for
+  navigation, but displays only `.gasset` and `.gscene` files; raw compatibility
+  inputs remain hidden. Update the focused recovery regression to cover a mixed
+  asset fixture and selection behavior, then synchronize Qt editor architecture,
+  API contract and README documentation. Acceptance: Host Debug/Release build and
+  focused regression pass; no engine rendering, Worker IPC, import format or
+  project-file schema changes.
+  Implemented: `ProjectWorkspace` configures `QFileSystemModel` name filters for
+  `.gasset` and `.gscene`, keeps directories enabled, and leaves raw source files
+  hidden. `EditorRecovery` now creates a supported resource plus an unsupported
+  `.txt` fixture, verifies actual visible model rows, preserves selection and
+  metadata checks, and exercises a newly created `.gscene` preview selection.
+  Verification: Qt Host Debug and Release builds passed in
+  build/editor-asset-filter-{debug,release}-build.log; EditorRecovery passed in
+  both configurations with QT_QPA_PLATFORM=offscreen. Architecture/API/README
+  contracts and this TODO are synchronized. No engine, Worker, import format or
+  project schema behavior changed. Manual visual browsing and large/network
+  directory behavior remain covered by the existing E1.1 limitations.
+
 - [x] E1.9 资源导入（2026-10-29）：Project 菜单加入 Import resource，选择
   源文件及项目 Assets 内目标目录，调用纯 C++ Engine Tools 单资源导入。
   保留原始文件、拒绝覆盖已有资源，异步执行并显示失败原因，成功刷新/选择资源。

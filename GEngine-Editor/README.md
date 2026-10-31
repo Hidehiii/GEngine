@@ -160,6 +160,9 @@ dock; individual tabs cannot detach into separate windows yet. Tabs edit
 
 ## Project workspace (E1.1)
 
+The Assets tree lists every directory but only `.gasset` and `.gscene` files;
+raw source formats must be imported before they appear in Assets.
+
 Use File > Open project folder to browse a directory in Assets. Select a file or
 folder to see its relative path, type, size and modification time in Inspector.
 Both panels dock/float/close and reopen through View; Reset layout places Assets

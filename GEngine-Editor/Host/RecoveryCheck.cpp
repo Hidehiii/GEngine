@@ -301,10 +301,14 @@ namespace GEngineEditor
                     const auto other = root + "-sibling";
                     if (!QDir().mkpath(root + "/Assets") || !QDir().mkpath(other))
                     { finish(false, "project fixture folders failed"); return; }
-                    QFile file(root + "/Assets/sample.txt");
+                    QFile file(root + "/Assets/resource.gasset");
                     if (!file.open(QIODevice::WriteOnly) || file.write("asset") != 5)
                     { finish(false, "project fixture asset failed"); return; }
                     file.close();
+                    QFile ignoredFile(root + "/Assets/source.txt");
+                    if (!ignoredFile.open(QIODevice::WriteOnly) || ignoredFile.write("hidden") != 6)
+                    { finish(false, "project fixture unsupported file failed"); return; }
+                    ignoredFile.close();
                     auto& workspace = window.Workspace();
                     window.SetDraftText("Project switching preserves this draft.");
                     if (!window.OpenProject(root) || !workspace.Select(file.fileName()) ||
@@ -320,6 +324,18 @@ namespace GEngineEditor
                     if (!model || !model->isReadOnly() || tree->rootIndex() != model->index(workspace.Root()) ||
                         !(model->filter() & QDir::NoSymLinks))
                     { finish(false, "resource model scope/read-only policy failed"); return; }
+                    const auto assetsIndex = model->index(root + "/Assets");
+                    bool resourceVisible = false;
+                    bool unsupportedVisible = false;
+                    for (int row = 0; row < model->rowCount(assetsIndex); ++row)
+                    {
+                        const auto rowPath = model->filePath(model->index(row, 0, assetsIndex));
+                        if (rowPath == file.fileName()) resourceVisible = true;
+                        if (rowPath == ignoredFile.fileName()) unsupportedVisible = true;
+                    }
+                    if (model->nameFilters() != QStringList({ "*.gasset", "*.gscene" }) ||
+                        model->nameFilterDisables() || !resourceVisible || unsupportedVisible)
+                    { finish(false, "resource model extension filter failed"); return; }
                     if (workspace.Select(root + "/../" + QFileInfo(other).fileName()) || !workspace.SelectedPath().isEmpty())
                     { finish(false, "outside-project selection accepted"); return; }
                     const auto assetIndex = model->index(file.fileName());
@@ -328,7 +344,7 @@ namespace GEngineEditor
                         !window.InspectorText().contains("5 bytes") || !QFile::remove(file.fileName()))
                     { finish(false, "resource removal fixture failed"); return; }
                     workspace.ValidateSelection();
-                    if (!workspace.SelectedPath().isEmpty() || window.InspectorText().contains("sample.txt"))
+                    if (!workspace.SelectedPath().isEmpty() || window.InspectorText().contains("resource.gasset"))
                     { finish(false, "removed resource selection survived"); return; }
                     std::error_code linkError;
                     const auto link = root + "/outside-link";
@@ -365,13 +381,13 @@ namespace GEngineEditor
                             << ", selection models=" << tree->findChildren<QItemSelectionModel*>().size() << '\n';
                         finish(false, "project switch accumulated models or lost selection"); return;
                     }
-                    QFile preview(root + "/README.txt");
+                    QFile preview(root + "/browser-preview.gscene");
                     if (!preview.open(QIODevice::WriteOnly) || preview.write("Project browser preview") != 23)
                     { finish(false, "project preview fixture failed"); return; }
                     preview.close();
                     auto* finalModel = qobject_cast<QFileSystemModel*>(tree->model());
                     tree->setCurrentIndex(finalModel->index(preview.fileName()));
-                    if (!workspace.SelectedPath().endsWith("README.txt"))
+                    if (!workspace.SelectedPath().endsWith("browser-preview.gscene"))
                     { finish(false, "resource tree selection did not update inspector"); return; }
                 }
                 window.SetDraftText("Host draft must survive a child-process failure.");

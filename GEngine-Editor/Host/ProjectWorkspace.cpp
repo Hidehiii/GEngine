@@ -59,6 +59,8 @@ namespace GEngineEditor
         m_Model->setReadOnly(true);
         m_Model->setOption(QFileSystemModel::DontResolveSymlinks, true);
         m_Model->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+        m_Model->setNameFilters({ "*.gasset", "*.gscene" });
+        m_Model->setNameFilterDisables(false);
         const auto root = m_Model->setRootPath(Root());
         SetTreeModel(m_Model);
         delete oldModel;

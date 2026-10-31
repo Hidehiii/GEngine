@@ -121,6 +121,9 @@ Documents 内容容器仍是可关闭、重排页面的 QTabWidget，
 以 QFileSystemModel/QTreeView 延迟枚举该目录，Inspector 展示选中文件/目录的
 相对路径、类型、大小和时间。打开失败保留旧项目/选择，切换或关闭清除选择。
 选择按 canonical 路径检查根目录边界，浏览器隐藏符号链接，不读取/执行资源内容。
+2026-10-31 资源显示约束：Assets 树保留全部目录用于导航，文件条目仅限
+`.gasset` 与 `.gscene`；原始兼容源格式保持隐藏，须先经 Import resource
+导入。该过滤属于 Host 投影，不改变磁盘内容、加载器兼容输入或项目 schema。
 250 ms 定时校验处理资源删除与项目目录丢失；新模型/selection model 在切换时
 释放。Qt 自带文件系统枚举/监视由模型管理，未建立全项目导入或文件哈希服务。
 
