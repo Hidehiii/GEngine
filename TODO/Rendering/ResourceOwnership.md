@@ -124,9 +124,33 @@
       successfully and dedicated-family Debug/Release plus shared-family
       Debug both-opt-in 120-frame regressions passed all three readbacks.
       Keep the replacement-linked growth under investigation; these bounded
-      runs do not prove indefinite memory stability. Exclusive compute images,
-      external queue users, and unsupported-combination negative runtime tests
-      remain open beyond this milestone.
+      runs do not prove indefinite memory stability. Exclusive compute images
+      and external queue users remain open beyond this milestone.
+      - [x] Bounded follow-up (2026-10-31, user authorized): add focused negative
+      runtime regressions for the already implemented ownership modes. Scope:
+      with Vulkan dedicated queues and the existing transfer-image/compute-buffer
+      opt-ins, prove that compute access to an exclusive transfer image and
+      transfer access to an exclusive compute buffer are rejected before command
+      recording/submission. Do not implement exclusive compute images or
+      arbitrary external queue users. Acceptance: FrameGraphTriangle logs both
+      expected rejections; default/shared and other-backend runs remain
+      unchanged; Debug/Release Vulkan opt-in runs pass the existing readbacks
+      and normal shutdown while non-Vulkan/default runs skip the opt-in checks;
+      documentation and this TODO record the evidence.
+      Implemented: FrameGraphTriangle gates the checks on Vulkan, dedicated
+      queues, and the corresponding opt-in. It attempts compute access to an
+      exclusive transfer image and transfer access to an exclusive compute
+      buffer, matches the exact ownership rejection message, and logs that each
+      combination was rejected before submission. Default/shared runs and other
+      backends skip the opt-in-only checks.
+      Verification: current-source CMake Debug/Release builds passed. The
+      default OpenGL/Vulkan/D3D12 Debug/Release matrix passed all three
+      readbacks and normal shutdown without executing the opt-in checks.
+      Vulkan dedicated Debug/Release runs with both opt-ins logged both
+      rejection messages, selected graphics=0, compute=2, transfer=4, passed all
+      three readbacks, and exited normally. Config.ini was restored to
+      GraphicsAPI 3. This closes only the negative-runtime-test gap; exclusive
+      compute images and arbitrary external queue users remain open.
       Replacement-growth follow-up acceptance: repeat matched dedicated
       Debug runs with validation on/off and replacement on/off, compare live
       pipeline and retirement counts or an allocation trace, identify the

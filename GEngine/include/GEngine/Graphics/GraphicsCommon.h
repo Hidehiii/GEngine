@@ -207,6 +207,10 @@ namespace GEngine
 	{
 		All,
 		Graphics,
+		VertexShader,
+		FragmentShader,
+		ColorOutput,
+		DepthAttachment,
 		Compute,
 		Transfer
 	};

@@ -11,7 +11,11 @@ The graph validates state/read-write and state/stage compatibility when an
 access is declared, then checks the declared stage against the pass queue
 during compilation. Write-only attachment/copy/presentation states cannot be
 declared as reads, read-only shader/copy-source states cannot be declared as
-writes, and copy states require the transfer stage. Vulkan derives native
+writes, and copy states require the transfer stage. Fine graphics declarations
+can name vertex, fragment, color-output, or depth-attachment scope; Vulkan maps
+them to native stage masks and preserves same-state stage-intent changes with a
+memory dependency, D3D12 narrows shader-read resource states, and
+OpenGL conservatively synchronizes the whole resource. Vulkan derives native
 access masks only from compatible declaration intent and removes compute-shader
 scope from graphics command barriers. Validation runs in both Debug and
 Release before transient allocation or command recording.
@@ -74,6 +78,10 @@ unsupported exclusive resource/queue combinations before submission. Buffer
 upload/readback require graphics ownership. When graphics and compute share a
 queue family, no ownership preparation or native handoff is needed. This path is implemented but not
 yet general-purpose; exclusive compute images remain out of scope.
+FrameGraphTriangle's opt-in startup regression attempts both unsupported
+combinations and verifies the exact ownership rejection before command
+recording/submission. Current Debug/Release dedicated-queue runs log both
+rejections while preserving all three readbacks and normal shutdown.
 FrameGraphTriangle exercises both graphics-first and compute-first buffer
 handoffs with real draws and numeric readbacks. Debug/Release 120-frame runs
 passed on OpenGL, D3D12, Vulkan shared, and dedicated queues, with no captured

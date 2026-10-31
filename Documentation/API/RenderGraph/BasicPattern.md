@@ -44,6 +44,11 @@ compute pass, performs graphics/compute release-acquire, and acquires back on
 later graphics access. Unsupported exclusive image/compute or buffer/transfer
 combinations are rejected before submission. The example path is runtime-
 validated; a shared graphics/compute family needs no ownership preparation.
+FrameGraphTriangle has focused startup regressions for both unsupported
+combinations. With dedicated Vulkan queues and both opt-ins, it logs that
+exclusive transfer-image compute access and exclusive compute-buffer transfer
+access are rejected before submission, while the normal graph still passes all
+readbacks and shuts down normally.
 No new application-facing pass builder is needed. Exclusive
 compute image ownership remains outside this step and is tracked in
 [RenderingArchitecture.md](../../../TODO/RenderingArchitecture.md).

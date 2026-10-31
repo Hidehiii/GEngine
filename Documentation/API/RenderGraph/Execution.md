@@ -60,10 +60,12 @@ both read and write intent. ShaderWrite names the native state, not exclusively
 the access direction. Other compute states are explicitly rejected rather than
 emitting graphics-only stages on a compute queue. Access declarations identify
 graphics, compute, or transfer usage; omitted stage declarations remain
-conservative (`All`). Shader states accept graphics or compute, copy states
-require transfer, and render-target, depth-write, and presentation states
-require graphics. A graphics pass may also use the transfer stage for a copy;
-compute and transfer stages are rejected on incompatible pass queues during
+conservative (`All`). Fine graphics declarations may use VertexShader,
+FragmentShader, ColorOutput, or DepthAttachment. Shader states accept the
+shader stages, copy states require transfer, RenderTarget accepts ColorOutput,
+DepthWrite accepts DepthAttachment, and Present requires Graphics. A graphics
+pass may also use the transfer stage for a copy; compute and transfer stages
+are rejected on incompatible pass queues during
 compilation. Write-only states cannot be declared as reads and read-only states
 cannot be declared as writes. Vulkan narrows its stage/access masks from that
 validated intent, while D3D12 legacy barriers and OpenGL memory barriers

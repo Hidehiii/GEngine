@@ -20,7 +20,18 @@ state. Read/write declarations must match the state: `ShaderRead` and
 storage/UAV state and can be declared with either read or write intent. Stage
 declarations must also match the state: shader states accept graphics or
 compute, copy states require transfer, and attachment/presentation states
-require graphics.
+require graphics. Fine-grained graphics stages are available as
+`VertexShader`, `FragmentShader`, `ColorOutput`, and `DepthAttachment`.
+Shader states accept vertex or fragment; RenderTarget accepts ColorOutput;
+DepthWrite accepts DepthAttachment. These values are legal only on graphics
+passes. Vulkan maps them to native stage masks. D3D12 narrows ShaderRead to
+NON_PIXEL_SHADER_RESOURCE for vertex/compute, PIXEL_SHADER_RESOURCE for
+fragment, and ALL_SHADER_RESOURCE for Graphics/All. OpenGL accepts the
+declarations but conservatively uses whole-resource memory barriers.
+When only the declared stage changes while the logical state stays the same,
+Vulkan records a memory dependency, D3D12 transitions between pixel/non-pixel
+shader-resource states where applicable, and OpenGL conservatively emits its
+state-appropriate memory barrier.
 
 For a graphics-queue copy without a render target, use
 `BuildGraphicsCopyPass(name, callback)`. The callback receives a graphics

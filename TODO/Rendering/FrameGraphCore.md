@@ -1,5 +1,48 @@
 ## Phase 3 — real frame graph
 
+- [x] Add portable fine-grained graphics pipeline-stage declarations
+      (2026-10-31, user authorized). Scope: extend the backend-neutral
+      `GraphicsPipelineStage` model with vertex shader, fragment shader, color
+      output, and depth attachment stages while preserving `Graphics` and `All`
+      as conservative values. Vulkan must map declarations to native stage masks;
+      D3D12 and OpenGL must explicitly document or reject combinations their
+      current barrier model cannot express. Do not redesign queue types, add
+      new backends, or claim automatic parallel execution. Acceptance:
+      declaration/state and queue validation accept only legal combinations;
+      a focused startup regression confirms a fragment-stage declaration reaches
+      compiled transition intent and an illegal stage is rejected; Debug/Release
+      FrameGraphTriangle builds pass; OpenGL, Vulkan, and D3D12 bounded runs
+      retain all readbacks and normal shutdown; architecture/API/example
+      documentation is synchronized.
+      Implemented: `GraphicsPipelineStage` now has `VertexShader`,
+      `FragmentShader`, `ColorOutput`, and `DepthAttachment` alongside the
+      existing `Graphics`, `Compute`, `Transfer`, and `All` values.
+      RenderGraph validates legal state/stage combinations and rejects every
+      fine graphics stage on compute/transfer queues. Vulkan maps the values to
+      vertex/fragment/color-output/early-late depth stage masks and emits a
+      memory dependency when ShaderRead/ShaderWrite stage intent changes without
+      a logical-state change. D3D12 maps
+      ShaderRead by vertex/compute to NON_PIXEL_SHADER_RESOURCE, fragment to
+      PIXEL_SHADER_RESOURCE, and Graphics/All to ALL_SHADER_RESOURCE; output and
+      depth states remain native attachment states. OpenGL accepts validated
+      declarations but conservatively uses its existing whole-resource memory
+      barrier. Compiled transitions now retain a stage change even when the
+      logical resource state is unchanged.
+      FrameGraphTriangle checks fragment intent reaching compiled transitions,
+      rejects ColorOutput with ShaderRead and FragmentShader on a compute pass,
+      and uses FragmentShader for the real graphics storage-buffer and
+      texture-array reads. Verification: current-source CMake Debug/Release
+      builds passed. OpenGL, Vulkan, and D3D12 completed 120-frame runs in both
+      configurations; every run passed the compute, compute-first, and
+      texture-array readbacks and exited through normal shutdown. Vulkan
+      dedicated-queue Debug/Release runs also passed with graphics=0, compute=2,
+      transfer=4. D3D12 used the debug layer with no reported issues. Config.ini
+      was restored to GraphicsAPI 3.
+      Remaining: fine stage declarations improve barrier intent; they do not
+      imply parallel command execution. Broader queue ownership, buffer
+      subresources, pooling/aliasing, arbitrary external queue users,
+      interactive behavior, and long-run memory remain open.
+
 - [x] Enable independent scheduling for supported texture subresources
       (2026-10-31, user authorized). Scope: add a backend-neutral capability
       that reports whether native per-subresource barriers/state tracking can
@@ -89,7 +132,8 @@
       Graphics/compute/transfer queue dependencies are now submitted by
       ExecuteGpu; D3D12 uses command-generation fences, Vulkan uses per-edge
       semaphores, and the dedicated transfer-copy builder is implemented.
-      Fine-grained pipeline-stage scopes and broader queue ownership remain;
+      Fine-grained graphics pipeline-stage scopes are implemented; broader
+      queue ownership and buffer subresources remain;
       supported texture subresources can now avoid disjoint-range false
       dependencies through the backend capability above.
       Current milestone 2026-09-21: add portable pipeline-stage and read/write

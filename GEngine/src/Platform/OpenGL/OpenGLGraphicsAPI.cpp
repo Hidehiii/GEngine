@@ -23,6 +23,30 @@
 #include "Platform/OpenGL/OpenGLVertexBuffer.h"
 #include <unordered_set>
 
+namespace
+{
+	GLbitfield OpenGLBarrierForState(GEngine::GraphicsResourceState state)
+	{
+		switch (state)
+		{
+		case GEngine::GraphicsResourceState::ShaderRead:
+			return GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
+		case GEngine::GraphicsResourceState::ShaderWrite:
+			return GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
+		case GEngine::GraphicsResourceState::RenderTarget:
+		case GEngine::GraphicsResourceState::Present:
+			return GL_FRAMEBUFFER_BARRIER_BIT;
+		case GEngine::GraphicsResourceState::CopySource:
+		case GEngine::GraphicsResourceState::CopyDestination:
+			return GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT;
+		case GEngine::GraphicsResourceState::DepthWrite:
+		case GEngine::GraphicsResourceState::Undefined:
+			break;
+		}
+		return 0;
+	}
+}
+
 namespace GEngine
 {
 	Ref<Texture2DCombineSampler> OpenGLGraphicsAPI::CreateTexture2DCombineSampler(const Ref<Texture2D>& texture, const Ref<Sampler>& sampler)
@@ -318,26 +342,7 @@ namespace GEngine
 			before != GraphicsResourceState::RenderTarget)
 			return;
 
-		GLbitfield barriers = 0;
-		switch (after)
-		{
-		case GraphicsResourceState::ShaderRead:
-			barriers = GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
-			break;
-		case GraphicsResourceState::ShaderWrite:
-			barriers = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT;
-			break;
-		case GraphicsResourceState::RenderTarget:
-		case GraphicsResourceState::Present:
-			barriers = GL_FRAMEBUFFER_BARRIER_BIT;
-			break;
-		case GraphicsResourceState::CopySource:
-		case GraphicsResourceState::CopyDestination:
-			barriers = GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT;
-			break;
-		default:
-			break;
-		}
+		const auto barriers = OpenGLBarrierForState(after);
 		if (barriers != 0)
 			glMemoryBarrier(barriers);
 	}
@@ -347,6 +352,12 @@ namespace GEngine
 		const GraphicsResourceUsage& after, const GraphicsSubresourceRange& range)
 	{
 		ValidateSubresourceRange(resource, range);
+		if (before.State == after.State && before.Stage != after.Stage)
+		{
+			const auto barriers = OpenGLBarrierForState(after.State);
+			if (barriers != 0) glMemoryBarrier(barriers);
+			return;
+		}
 		// OpenGL memory barriers are resource-global, so this conservatively
 		// synchronizes the whole resource while graph dependencies stay ordered.
 		TransitionResource(commandBuffer, resource, before.State, after.State);

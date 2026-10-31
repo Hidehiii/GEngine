@@ -308,9 +308,12 @@ namespace GEngine
 		auto usageStorage = usageGraph.ImportResource("UsageIntent", RenderGraph::ResourceState::Undefined);
 		usageGraph.Write(usageGraph.AddPass("ComputeUsage", [] {}), usageStorage,
 			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
+		usageGraph.Read(usageGraph.AddPass("FragmentUsage", [] {}), usageStorage,
+			RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::FragmentShader);
 		usageGraph.Execute();
-		if (observedStage != GraphicsPipelineStage::Compute || observedAccess != GraphicsResourceAccess::Write)
+		if (observedStage != GraphicsPipelineStage::FragmentShader || observedAccess != GraphicsResourceAccess::Read)
 			throw std::runtime_error("RenderGraph stage/access intent did not reach transition compilation.");
+		GE_INFO("Fragment pipeline-stage intent reached compiled transitions.");
 
 		RenderGraph invalidUsageGraph;
 		auto invalidUsageResource = invalidUsageGraph.ImportResource("InvalidUsage");
@@ -338,6 +341,19 @@ namespace GEngine
 		if (!invalidStageRejected)
 			throw std::runtime_error("RenderGraph accepted a shader state with a transfer stage.");
 
+		RenderGraph invalidFineStageGraph;
+		auto invalidFineStageResource = invalidFineStageGraph.ImportResource("InvalidFineStage");
+		auto invalidFineStagePass = invalidFineStageGraph.AddPass("InvalidFineStage", []() {});
+		bool invalidFineStageRejected = false;
+		try
+		{
+			invalidFineStageGraph.Read(invalidFineStagePass, invalidFineStageResource,
+				RenderGraph::ResourceState::ShaderRead, GraphicsPipelineStage::ColorOutput);
+		}
+		catch (const std::invalid_argument&) { invalidFineStageRejected = true; }
+		if (!invalidFineStageRejected)
+			throw std::runtime_error("RenderGraph accepted an output stage with a shader-read state.");
+
 		RenderGraph invalidQueueStageGraph;
 		auto invalidQueueResource = invalidQueueStageGraph.ImportResource("InvalidQueueStage");
 		auto invalidQueuePass = invalidQueueStageGraph.BuildGraphicsCopyPass(
@@ -349,6 +365,18 @@ namespace GEngine
 		catch (const std::invalid_argument&) { invalidQueueStageRejected = true; }
 		if (!invalidQueueStageRejected)
 			throw std::runtime_error("RenderGraph accepted a compute stage on a graphics pass.");
+
+		RenderGraph invalidComputeFineStageGraph;
+		auto invalidComputeFineStageResource = invalidComputeFineStageGraph.ImportResource("InvalidComputeFineStage");
+		auto invalidComputeFineStagePass = invalidComputeFineStageGraph.BuildComputePass(
+			"InvalidComputeFineStage", [](const Ref<CommandBuffer>&) {});
+		invalidComputeFineStageGraph.Read(invalidComputeFineStagePass.GetHandle(), invalidComputeFineStageResource,
+			RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::FragmentShader);
+		bool invalidComputeFineStageRejected = false;
+		try { invalidComputeFineStageGraph.Compile(); }
+		catch (const std::invalid_argument&) { invalidComputeFineStageRejected = true; }
+		if (!invalidComputeFineStageRejected)
+			throw std::runtime_error("RenderGraph accepted a fragment stage on a compute pass.");
 
 		RenderGraph subpassGraph;
 		RenderGraph::AttachmentSpecification subpassAttachment{};
@@ -377,6 +405,59 @@ namespace GEngine
 		if (!supportsSubpasses && !subpassRejected)
 			throw std::runtime_error("A backend without graph subpass support accepted subpass semantics.");
 		subpassGraph.Reset();
+
+		const auto environmentFlag = [](const char* name)
+		{
+			const char* value = std::getenv(name);
+			return value != nullptr && value[0] == '1' && value[1] == '\0';
+		};
+		if (capabilities.Backend == "Vulkan" && environmentFlag("GENGINE_VULKAN_DEDICATED_QUEUES"))
+		{
+			if (environmentFlag("GENGINE_VULKAN_EXCLUSIVE_TRANSFER_IMAGES"))
+			{
+				RenderGraph invalidExclusiveImageGraph;
+				const Ref<Texture2D> exclusiveImage = Texture2D::Create(
+					1, 1, RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM);
+				const auto exclusiveImageResource = invalidExclusiveImageGraph.ImportTexture(
+					"ExclusiveTransferImage", exclusiveImage, RenderGraph::ResourceState::ShaderRead);
+				const auto invalidImagePass = invalidExclusiveImageGraph.BuildComputePass(
+					"InvalidExclusiveImageCompute", [](const Ref<CommandBuffer>&) {});
+				invalidExclusiveImageGraph.Write(invalidImagePass.GetHandle(), exclusiveImageResource,
+					RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
+				bool rejectedExclusiveImageCompute = false;
+				try { invalidExclusiveImageGraph.ExecuteGpu(GraphicsPresent::GetCommandBuffer()); }
+				catch (const std::invalid_argument& error)
+				{
+					rejectedExclusiveImageCompute = std::string(error.what()).find(
+						"Exclusive transfer images do not support compute graph access") != std::string::npos;
+				}
+				if (!rejectedExclusiveImageCompute)
+					throw std::runtime_error("RenderGraph accepted compute access to an exclusive transfer image.");
+				GE_INFO("Exclusive transfer-image compute access was rejected before submission.");
+			}
+
+			if (environmentFlag("GENGINE_VULKAN_EXCLUSIVE_COMPUTE_BUFFERS"))
+			{
+				RenderGraph invalidExclusiveBufferGraph;
+				const Ref<StorageBuffer> exclusiveBuffer = Graphics::GetRenderDevice().CreateStorageBuffer(16);
+				const auto exclusiveBufferResource = invalidExclusiveBufferGraph.ImportStorageBuffer(
+					"ExclusiveComputeBuffer", exclusiveBuffer, RenderGraph::ResourceState::ShaderWrite);
+				const auto invalidBufferPass = invalidExclusiveBufferGraph.BuildTransferCopyPass(
+					"InvalidExclusiveBufferTransfer", [](const Ref<CommandBuffer>&) {});
+				invalidExclusiveBufferGraph.Write(invalidBufferPass.GetHandle(), exclusiveBufferResource,
+					RenderGraph::ResourceState::CopyDestination, GraphicsPipelineStage::Transfer);
+				bool rejectedExclusiveBufferTransfer = false;
+				try { invalidExclusiveBufferGraph.ExecuteGpu(GraphicsPresent::GetCommandBuffer()); }
+				catch (const std::invalid_argument& error)
+				{
+					rejectedExclusiveBufferTransfer = std::string(error.what()).find(
+						"Exclusive compute buffers do not support transfer graph access") != std::string::npos;
+				}
+				if (!rejectedExclusiveBufferTransfer)
+					throw std::runtime_error("RenderGraph accepted transfer access to an exclusive compute buffer.");
+				GE_INFO("Exclusive compute-buffer transfer access was rejected before submission.");
+			}
+		}
 
 		const float vertices[] =
 		{
@@ -437,13 +518,13 @@ namespace GEngine
         }
 		const auto initialVersion = m_Graph.GetVersion(m_Graph.ImportStorageBuffer("ColorData", m_Color, RenderGraph::ResourceState::ShaderWrite));
 		auto first = m_Graph.BuildGraphicsPass("ReadPreviousColor", target, [this](const Ref<CommandBuffer>& command) { command->Render(m_Pipeline, 0); });
-		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
+		first.Read(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::FragmentShader);
 		auto compute = m_Graph.BuildComputePass("UpdateColor", [this](const Ref<CommandBuffer>& command) { command->Compute(m_ComputePipeline, 0, 1, 1, 1); });
 		auto updated = compute.Write(initialVersion, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Compute);
 		auto final = m_Graph.BuildGraphicsPass("ReadUpdatedColor", target, [this](const Ref<CommandBuffer>& command)
 			{ command->Render(m_Pipeline, 0); command->Render(m_ComputeFirstPipeline, 0); });
-		final.Read(updated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
-		final.Read(computeFirstUpdated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::Graphics);
+		final.Read(updated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::FragmentShader);
+		final.Read(computeFirstUpdated, RenderGraph::ResourceState::ShaderWrite, GraphicsPipelineStage::FragmentShader);
 
 		std::array<uint8_t, 4> sourcePixel{ 255, 0, 0, 255 };
 		const std::array<uint8_t, 4> initialPixel{ 0, 0, 0, 255 };
@@ -480,11 +561,11 @@ namespace GEngine
 		const auto layerReaders = m_Graph.BuildGraphicsPass("ArrayLayerReads", target,
 			[](const Ref<CommandBuffer>&) {}).GetHandle();
 		m_Graph.Read(layerReaders, rangeArrayResource, RenderGraph::ResourceState::ShaderRead,
-			GraphicsPipelineStage::Graphics, { 0, 1, 1, 1 });
+			GraphicsPipelineStage::FragmentShader, { 0, 1, 1, 1 });
 		m_Graph.Read(layerReaders, rangeArrayResource, RenderGraph::ResourceState::ShaderRead,
-			GraphicsPipelineStage::Graphics, { 0, 1, 0, 1 });
+			GraphicsPipelineStage::FragmentShader, { 0, 1, 0, 1 });
 		m_Graph.Read(layerReaders, sourceResource, RenderGraph::ResourceState::ShaderRead,
-			GraphicsPipelineStage::Graphics);
+			GraphicsPipelineStage::FragmentShader);
 	}
 
 	void FrameGraphTriangleLayer::OnUpdate()

@@ -57,6 +57,10 @@ namespace
 		switch (stage)
 		{
 		case Stage::Graphics: return VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+		case Stage::VertexShader: return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+		case Stage::FragmentShader: return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		case Stage::ColorOutput: return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		case Stage::DepthAttachment: return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		case Stage::Compute: return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		case Stage::Transfer: return VK_PIPELINE_STAGE_TRANSFER_BIT;
 		case Stage::All: return fallback;
@@ -83,6 +87,7 @@ namespace
 		GEngine::CommandBufferType type, bool source)
 	{
 		const VkPipelineStageFlags graphicsStages = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT |
+			VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
 			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		if (type == GEngine::COMMAND_BUFFER_TYPE_GRAPHICS)
@@ -805,11 +810,16 @@ namespace GEngine
 		const auto nativeCommandBuffer = vulkanCommandBuffer->GetCommandBuffer();
 		if (before.State == after.State)
 		{
-			if (before.State != GraphicsResourceState::ShaderWrite) return;
+			const bool needsStageDependency = before.State == GraphicsResourceState::ShaderWrite ||
+				(before.State == GraphicsResourceState::ShaderRead && before.Stage != after.Stage);
+			if (!needsStageDependency) return;
+			const auto accessFallback = before.State == GraphicsResourceState::ShaderRead
+				? VK_ACCESS_SHADER_READ_BIT
+				: VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 			VkMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-			barrier.srcAccessMask = ToVulkanAccess(before.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
-			barrier.dstAccessMask = ToVulkanAccess(after.Access, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+			barrier.srcAccessMask = ToVulkanAccess(before.Access, accessFallback);
+			barrier.dstAccessMask = ToVulkanAccess(after.Access, accessFallback);
 			const auto sourceStage = StageForCommandBuffer(
 				ToVulkanStage(before.Stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT), barrier.srcAccessMask,
 				vulkanCommandBuffer->GetType(), true);

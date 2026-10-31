@@ -26,6 +26,13 @@ analysis. D3D12 and Vulkan can omit false inferred dependencies; OpenGL and
 resources without metadata remain conservative. This is not parallel command
 execution and does not enable pooling or aliasing.
 
+2026-10-31 fine-grained pipeline stages are tracked in
+[FrameGraphCore](Rendering/FrameGraphCore.md): GraphicsPipelineStage now
+supports vertex, fragment, color-output, and depth-attachment declarations.
+Vulkan maps them to native stage masks, D3D12 narrows shader-read resource
+states, and OpenGL conservatively synchronizes the whole resource. This does
+not imply parallel command execution.
+
 Editor E1.9 imports source files through the native C++ tool into project GAssets.
 The Host remains independent of the engine. Rendering APIs, GPU ownership and
 Worker IPC are unchanged; acceptance is tracked in TODO/EditorArchitecture.md.

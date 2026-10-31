@@ -18,6 +18,7 @@
 #include "Platform/D3D12/D3D12UniformBuffer.h"
 #include "Platform/D3D12/D3D12VertexBuffer.h"
 #include <string>
+#include <stdexcept>
 
 namespace
 {
@@ -51,14 +52,29 @@ namespace
 		}
 	}
 
-	D3D12_RESOURCE_STATES ToD3D12ResourceState(GEngine::GraphicsResourceState state)
+	D3D12_RESOURCE_STATES ToD3D12ResourceState(GEngine::GraphicsResourceState state,
+		GEngine::GraphicsPipelineStage stage = GEngine::GraphicsPipelineStage::All)
 	{
 		using State = GEngine::GraphicsResourceState;
+		using Stage = GEngine::GraphicsPipelineStage;
 		switch (state)
 		{
 		case State::RenderTarget: return D3D12_RESOURCE_STATE_RENDER_TARGET;
 		case State::DepthWrite: return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-		case State::ShaderRead: return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+		case State::ShaderRead:
+			switch (stage)
+			{
+			case Stage::All:
+			case Stage::Graphics: return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			case Stage::VertexShader:
+			case Stage::Compute: return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+			case Stage::FragmentShader: return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			case Stage::ColorOutput:
+			case Stage::DepthAttachment:
+			case Stage::Transfer:
+				throw std::invalid_argument("D3D12 shader-read state cannot use this pipeline stage.");
+			}
+			break;
 		case State::ShaderWrite: return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 		case State::CopySource: return D3D12_RESOURCE_STATE_COPY_SOURCE;
 		case State::CopyDestination: return D3D12_RESOURCE_STATE_COPY_DEST;
@@ -490,13 +506,13 @@ namespace GEngine
 		if (auto texture = std::dynamic_pointer_cast<D3D12Texture2D>(resource))
 		{
 			texture->TransitionResourceState(d3dCommandBuffer->GetCommandList(),
-				ToD3D12ResourceState(after.State), range);
+				ToD3D12ResourceState(after.State, after.Stage), range);
 			return;
 		}
 		if (auto textureArray = std::dynamic_pointer_cast<D3D12Texture2DArray>(resource))
 		{
 			textureArray->TransitionResourceState(d3dCommandBuffer->GetCommandList(),
-				ToD3D12ResourceState(after.State), range);
+				ToD3D12ResourceState(after.State, after.Stage), range);
 			return;
 		}
 		TransitionResource(commandBuffer, resource, before.State, after.State);

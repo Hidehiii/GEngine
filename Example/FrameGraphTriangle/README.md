@@ -297,6 +297,10 @@ frame-119 numeric compute readback, no queue-family validation errors, and
 normal shutdown. A second buffer starts with compute as its first graph use,
 then drives a graphics draw and separate numeric readback; expect the
 `Compute-first GPU graph readback passed` message too.
+When both exclusive opt-ins are enabled, startup also logs
+`Exclusive transfer-image compute access was rejected before submission.` and
+`Exclusive compute-buffer transfer access was rejected before submission.`;
+these are expected negative ownership checks, not failures.
 The 2026-10-19 VS2022 Debug/Release runs passed 120 frames and all three
 readbacks on OpenGL, D3D12, Vulkan shared, and Vulkan dedicated queues. The
 dedicated mode selected graphics=0, compute=2, transfer=5; buffer-only and
@@ -327,6 +331,10 @@ Alternatively set `GENGINE_EXAMPLE_SECONDS` to a positive duration for a timed
 replacement test that still exits normally. If both limits are set, the first
 limit reached ends the run. Startup also checks overwrite-after-read ordering,
 branching-write rejection and same-state shader-write dependency emission.
+It also confirms a FragmentShader declaration reaches compiled transition
+intent, and rejects ColorOutput with ShaderRead plus FragmentShader on a
+compute pass. The live graph uses FragmentShader for graphics-side
+storage-buffer and texture-array reads.
 
 Startup also verifies subresource metadata and rejection paths: an empty range,
 an overflowing range, an out-of-bounds transient texture range, and a non-whole

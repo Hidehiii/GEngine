@@ -105,12 +105,19 @@ namespace GEngine
 			{
 			case RenderGraph::ResourceState::ShaderRead:
 			case RenderGraph::ResourceState::ShaderWrite:
-				return stage == GraphicsPipelineStage::Graphics || stage == GraphicsPipelineStage::Compute;
+				return stage == GraphicsPipelineStage::Graphics ||
+					stage == GraphicsPipelineStage::VertexShader ||
+					stage == GraphicsPipelineStage::FragmentShader ||
+					stage == GraphicsPipelineStage::Compute;
 			case RenderGraph::ResourceState::CopySource:
 			case RenderGraph::ResourceState::CopyDestination:
 				return stage == GraphicsPipelineStage::Transfer;
 			case RenderGraph::ResourceState::RenderTarget:
+				return stage == GraphicsPipelineStage::Graphics ||
+					stage == GraphicsPipelineStage::ColorOutput;
 			case RenderGraph::ResourceState::DepthWrite:
+				return stage == GraphicsPipelineStage::Graphics ||
+					stage == GraphicsPipelineStage::DepthAttachment;
 			case RenderGraph::ResourceState::Present:
 				return stage == GraphicsPipelineStage::Graphics;
 			case RenderGraph::ResourceState::Undefined:
@@ -128,11 +135,33 @@ namespace GEngine
 			case GraphicsPipelineStage::All:
 				return true;
 			case GraphicsPipelineStage::Graphics:
+			case GraphicsPipelineStage::VertexShader:
+			case GraphicsPipelineStage::FragmentShader:
+			case GraphicsPipelineStage::ColorOutput:
+			case GraphicsPipelineStage::DepthAttachment:
 				return queue == COMMAND_BUFFER_TYPE_GRAPHICS;
 			case GraphicsPipelineStage::Compute:
 				return queue == COMMAND_BUFFER_TYPE_COMPUTE;
 			case GraphicsPipelineStage::Transfer:
 				return queue == COMMAND_BUFFER_TYPE_GRAPHICS || queue == COMMAND_BUFFER_TYPE_TRANSFER;
+			}
+			return false;
+		}
+
+		bool IsGraphicsPipelineStage(GraphicsPipelineStage stage)
+		{
+			switch (stage)
+			{
+			case GraphicsPipelineStage::Graphics:
+			case GraphicsPipelineStage::VertexShader:
+			case GraphicsPipelineStage::FragmentShader:
+			case GraphicsPipelineStage::ColorOutput:
+			case GraphicsPipelineStage::DepthAttachment:
+				return true;
+			case GraphicsPipelineStage::All:
+			case GraphicsPipelineStage::Compute:
+			case GraphicsPipelineStage::Transfer:
+				break;
 			}
 			return false;
 		}
@@ -238,7 +267,8 @@ namespace GEngine
 					ownership == RenderDevice::QueueOwnershipKind::ComputeBuffer)
 					computePreparations[handle] = true;
 				if (pass.Queue == COMMAND_BUFFER_TYPE_COMPUTE &&
-					(access.Usage.State != ResourceState::ShaderWrite || access.Usage.Stage == GraphicsPipelineStage::Graphics ||
+					(access.Usage.State != ResourceState::ShaderWrite ||
+						IsGraphicsPipelineStage(access.Usage.Stage) ||
 						access.Usage.Stage == GraphicsPipelineStage::Transfer))
 					throw std::invalid_argument("Compute graph accesses currently require storage/UAV state.");
 				if (pass.Queue == COMMAND_BUFFER_TYPE_TRANSFER &&
@@ -863,7 +893,9 @@ namespace GEngine
 				{
 					if (!RangesOverlap(state.Range, access.Range))
 						continue;
-					if (state.Usage.State != access.Usage.State || access.Usage.State == ResourceState::ShaderWrite)
+					if (state.Usage.State != access.Usage.State ||
+						state.Usage.Stage != access.Usage.Stage ||
+						access.Usage.State == ResourceState::ShaderWrite)
 					{
 						accessTransitions.push_back({ access.Resource, state.Usage, access.Usage,
 							RangeIntersection(state.Range, access.Range) });

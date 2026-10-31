@@ -104,7 +104,7 @@
       less common resource variants remains open.
 
 Recommended implementation order for the remaining graph work:
-1. Fine-grained pipeline-stage scopes; subresource-range scheduling and
+1. Fine-grained pipeline-stage scopes, subresource-range scheduling, and
    transfer-copy builders are implemented.
 2. Pooling and aliasing only after lifetime and attachment semantics are
    verified across all three backends.
