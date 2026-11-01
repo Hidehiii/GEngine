@@ -2,6 +2,25 @@
 
 -- GEngine Dep
 
+AGILITY_SDK_ROOT = _OPTIONS["agility-sdk"] or os.getenv("GE_AGILITY_SDK_ROOT")
+if not AGILITY_SDK_ROOT or AGILITY_SDK_ROOT == "" then
+	error("GE_AGILITY_SDK_ROOT is required. Run cmake -P BuildScripts/PrepareAgilitySDK.cmake, then use --agility-sdk=<output path>.")
+end
+AGILITY_SDK_ROOT = path.getabsolute(AGILITY_SDK_ROOT)
+local agilityScript = path.join(_MAIN_SCRIPT_DIR, "BuildScripts/PrepareAgilitySDK.cmake")
+AgilityCheckCommand = 'cmake "-DGE_AGILITY_SDK_ROOT=' .. AGILITY_SDK_ROOT .. '" -DGE_AGILITY_CHECK_ONLY=ON -P "' .. agilityScript .. '"'
+local agilityOutput, agilityResult = os.outputof(AgilityCheckCommand)
+if agilityResult ~= 0 then
+	error("Required Agility SDK validation failed: " .. (agilityOutput or AGILITY_SDK_ROOT))
+end
+local agilityManifest = json.decode(io.readfile(path.join(_MAIN_SCRIPT_DIR, "BuildScripts/AgilitySDK.json")))
+AGILITY_SDK_VERSION = agilityManifest.SDKVersion
+AGILITY_VERSION_MS = agilityManifest.BinaryVersionMS
+AGILITY_VERSION_LS = agilityManifest.BinaryVersionLS
+function AgilityDeployCommand(directory)
+	return 'cmake "-DGE_AGILITY_SDK_ROOT=' .. AGILITY_SDK_ROOT .. '" -DGE_AGILITY_CHECK_ONLY=ON "-DGE_AGILITY_DEPLOY_DIR=' .. directory .. '" -P "' .. agilityScript .. '"'
+end
+
 local vulkanSdkOverride = os.getenv("VULKAN_SDK")
 if not vulkanSdkOverride or vulkanSdkOverride == "" then
 	error("VULKAN_SDK is required. Install the Vulkan SDK and export its root path.")

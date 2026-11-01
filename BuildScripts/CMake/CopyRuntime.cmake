@@ -1,3 +1,11 @@
+# Validate all selected SDK files before modifying the output directory.
+execute_process(COMMAND "${CMAKE_COMMAND}" "-DGE_AGILITY_SDK_ROOT=${GE_AGILITY_SDK_ROOT}"
+    -DGE_AGILITY_CHECK_ONLY=ON "-DGE_AGILITY_DEPLOY_DIR=${GE_OUTPUT_DIR}/D3D12"
+    -P "${CMAKE_CURRENT_LIST_DIR}/../PrepareAgilitySDK.cmake"
+    RESULT_VARIABLE agility_result)
+if(NOT agility_result EQUAL 0)
+    message(FATAL_ERROR "Required Agility SDK deployment failed")
+endif()
 if(NOT EXISTS "${GE_ENGINE_DLL}")
     message(FATAL_ERROR "GEngine DLL does not exist: ${GE_ENGINE_DLL}")
 endif()

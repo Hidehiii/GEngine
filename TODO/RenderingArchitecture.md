@@ -5,17 +5,37 @@
 structure/state/stages, preserves exact Program bytes and reports source/line/
 column errors. Shader loading commits parse data transactionally before disk
 cache/compilation; cache fingerprints include parser revision 2. DepthWrite On
-is corrected. CPU Debug/Release/corpus checks pass; new opt-in pipeline malformed-
-shader rollback/cache checks remain runtime-unverified because this host's D3D12
-version blocks complete engine/example builds. GPU/backend/public Shader::Create
+is corrected. CPU Debug/Release/corpus checks, subsequent engine/example builds
+and opt-in malformed-shader rollback/cache/output checks pass in Debug/Release
+on OpenGL, Vulkan shared, Vulkan dedicated and D3D12. GPU/backend/public Shader::Create
 semantics are unchanged; no visual graph or native scheduling work is included.
 
-Version-exclusion recovery tips distinguish Windows-serviced SDKLayers, compiler
-SDK retargeting and separate Agility integration; see
+Current builds require verified Agility 1.619.5 / SDK 619 through
+GE_AGILITY_SDK_ROOT (CMake/env) or Premake --agility-sdk. Preparation, validation
+and deployment use native CMake scripts without .ps1 calls. Independent backend
+factories select the paired app-local runtime with full validation; no queue
+ordering or public rendering API change. Debug/Release 30000-frame native Event
+ranges are 293..308 / 301..315; all-backend short MSAA/parser checks and D3D12
+6000-frame P3 stress pass. Real exported cold launch from an empty cwd passes
+with Runtime/D3D12/ and five pinned deployment hashes. See
 [BuildAndRun](../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
-This changes build diagnostic guidance only, not runtime selection/rendering APIs.
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Historical system-only version exclusion (superseded 2026-11-01)
+
+The following records the previous policy and failed host servicing attempt;
+the required Agility integration above is now the active build/runtime policy.
+
+Host Graphics Tools reinstall completed through the official capability's local
+source after normally cancelling a stalled online install: Installed, SDKLayers
+10.0.26100.1, no further restart required, existing guard exits 0. See
+[D3D12Memory](Integration/D3D12Memory.md) for evidence. Debug/Release builds and
+short MSAA/format/parser backend runs pass, but long-run handle acceptance fails:
+system Core remains 10.0.26100.4768; with validation on, 30000 native pending
+waits retain +30001 handles, and engine native Events grow 10817 -> 144379.
+Layer-off controls are flat. A separate 30000-frame foundation run exits normally
+while total handles grow 9673 -> 165544. Checking only SDKLayers misses this
+known failing combination; Core-aware exclusion is a proposed follow-up. No
+rendering implementation or version-exclusion policy was changed.
 
 User correction: the SDK pin/deployment approach below is superseded history. Current policy rejects Windows project builds when installed x64 system SDKLayers is exactly 10.0.26100.4768, with a console error and warning popup. CMake/Premake share the check; normal runtime creation/public APIs are unchanged. No pinned SDK or additional deployment dependency is required. See [D3D12Memory](Integration/D3D12Memory.md) for current verification and limits.
 

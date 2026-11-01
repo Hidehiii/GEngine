@@ -21,14 +21,36 @@ Manifest/logs distinguish accepted current containers from expected old #Name
 GLSL containers/fragments and deliberately malformed rollback fixtures. All
 current tracked containers pass; legacy rejection is not a successful shader
 compile. See Example/RenderPipeline --parser for runtime rollback/cache/readback
-checks; that mode remains unverified while the current D3D12 build guard blocks
-full builds. CPU builds may report existing Core/Log.h C4251 export warnings.
+checks; after the host reinstall, Debug/Release engine/example builds and this
+mode pass separately on OpenGL, Vulkan shared, Vulkan dedicated and D3D12.
+Logs: build/graphics-tools-install/verification/parser-{Debug,Release}/.
+CPU builds may report existing Core/Log.h C4251 export warnings.
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Required Agility SDK (2026-11-01)
 
-Run powershell -NoProfile -File Tests/D3D12RuntimeBuildCheck.ps1 for exact-version policy coverage. BuildScripts/CheckD3D12Runtime.ps1 -NoPopup checks the actual installed x64 system layer; 10.0.26100.4768 returns 1. CMake/Premake use the same script, normally with a 10-second warning popup. GENGINE_BUILD_NO_POPUP=1 or CI hides only UI. Missing Graphics Tools is allowed; unreadable existing metadata fails.
+Run `python -B Tests/AgilitySDKConfiguration.py --sdk-root <prepared-root>
+--logs <fresh-directory>`. Add --archive <official.nupkg> for offline preparation/
+bad-archive checks, and --executable <Release-FrameGraphTriangle.exe> for real
+missing-runtime/mixed-layer startup checks. The test exercises missing CMake/
+Premake configuration, tampered files at deployment and actual build time, and
+no output publication on invalid input. All SDK steps use native CMake scripts.
 
-D3D12HandleProbe.cpp and D3D12HandleGrowth.py preserve native attribution tools. The runner requires 64-bit Python, a FrameGraphTriangle executable, --logs <directory>, --frames 30000 --layer 1 --max-event-growth 256; it checks Event counts and GPU readbacks. Engine builds on the excluded host now fail by design. Historical SDK-pinning results do not verify the current system runtime; other allowed versions are not certified leak-free.
+D3D12HandleProbe.cpp and D3D12HandleGrowth.py preserve native attribution tools.
+For current engine acceptance, the latter requires 64-bit Python, the native
+FrameGraphTriangle executable, --logs <directory>, --frames 30000 --layer 1
+--max-event-growth 256 --required-sdk 619. It checks native Event growth, GPU
+readbacks, clean exit, actual paired app-local module paths and complete device
+validation flags. A WinError 299 module-enumeration race at shutdown permits one
+second for real process exit; persistent errors still fail, and readback/exit/
+handle budgets remain mandatory.
+
+Current Debug/Release 30000-frame SDK 619 runs pass, Event ranges 293..308 /
+301..315. All-backend short MSAA/format/parser tests pass in both configurations;
+Debug D3D12 post stress passes 6000 frames, handles 751->751. Logs are under
+build/agility-required/. System Core 10.0.26100.4768 / SDKLayers 10.0.26100.1
+previously failed (+30001 native pending-wait handles), retained as historical
+evidence in TODO/Integration/D3D12Memory.md. The old system-exclusion diagnostic
+helpers are no longer part of the build or current SDK acceptance.
 
 ## Ordered HDR effects
 

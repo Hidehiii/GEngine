@@ -156,6 +156,7 @@ def main():
     parser.add_argument("--layer", choices=(0, 1), type=int, default=1)
     parser.add_argument("--trace", action="store_true", help="Enable bounded handle stacks only in the owned child")
     parser.add_argument("--max-event-growth", type=int, help="Fail if post-warmup Event growth exceeds this budget")
+    parser.add_argument("--required-sdk", type=int, help="Require an app-local Agility SDK and its full validation flags")
     args = parser.parse_args()
     if C.sizeof(C.c_void_p) != 8:
         raise RuntimeError("Use 64-bit Python for the native x64 handle snapshot")
@@ -195,8 +196,15 @@ def main():
                     try:
                         current = native.snapshot()
                         modules = native.modules()
-                    except (OSError, RuntimeError):
+                    except (OSError, RuntimeError) as error:
                         if child.poll() is not None:
+                            break
+                        if isinstance(error, OSError) and error.winerror == 299:
+                            # The loader can disappear just before the process exit is signaled.
+                            try:
+                                child.wait(timeout=1)
+                            except subprocess.TimeoutExpired:
+                                raise error
                             break
                         raise
                     counts = Counter(native.type_name(handle, index) for handle, index in current.items())
@@ -220,6 +228,15 @@ def main():
         raise RuntimeError(f"Diagnostic child failed: exit={child.returncode}; inspect {directory}")
     if any(marker in text for marker in ("D3D12 Error:", "D3D12 Warning:")):
         raise RuntimeError(f"Native validation diagnostic: {directory}")
+    if args.required_sdk is not None:
+        marker = f"D3D12 Agility device: SDK={args.required_sdk}, debug={'true' if args.layer else 'false'}, synchronizedQueueValidation=true"
+        if marker not in text:
+            raise RuntimeError(f"Required Agility SDK/validation configuration was not applied: {directory}")
+        loaded = {str(Path(module['path']).resolve()).casefold()
+                  for row in samples for module in row['runtime_modules']}
+        for name in ('D3D12Core.dll', 'd3d12SDKLayers.dll') if args.layer else ('D3D12Core.dll',):
+            if str((executable.parent / 'D3D12' / name).resolve()).casefold() not in loaded:
+                raise RuntimeError(f"Required app-local {name} was not observed: {directory}")
     steady = [row for row in samples if 3 <= row["seconds"] <= time.monotonic() - started - 1]
     if args.max_event_growth is not None:
         if len(steady) < 2:

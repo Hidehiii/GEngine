@@ -1,8 +1,25 @@
 # FrameGraphTriangle
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Required Agility SDK (2026-11-01)
 
-CMake/Premake builds reject installed x64 system SDKLayers 10.0.26100.4768 and show a 10-second warning popup for its reproduced Event-handle leak. Update Windows/Graphics Tools before rebuilding. GENGINE_BUILD_NO_POPUP=1 suppresses only UI for automation, never rejection. No app-local SDK is required. Example/runtime APIs are unchanged; this does not certify another machine.
+CMake/Premake require the prepared Agility 1.619.5 runtime through
+GE_AGILITY_SDK_ROOT or Premake --agility-sdk. Follow the
+[setup guide](../../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
+Native CMake scripts validate/deploy D3D12/ beside this executable; copy it with
+the application. Missing or mixed-version files fail before device creation.
+Expected logs are SDK=619, debug=true and synchronizedQueueValidation=true when
+GENGINE_D3D12_DEBUG_LAYER=1. No PowerShell build step or system DLL replacement.
+
+For the concrete Event-handle regression, run Tests/D3D12HandleGrowth.py with this
+native executable, --frames 30000 --layer 1 --max-event-growth 256
+--required-sdk 619 --logs <fresh directory>. It requires three GPU readbacks,
+normal shutdown, actual app-local Core/layer module paths, complete validation
+flags and bounded native Event counts. Debug/Release 30000-frame runs pass with
+Event ranges 293..308 / 301..315; private bytes 173297664->174170112 /
+172359680->172478464. Logs: build/agility-required/handles-{Debug,Release}/.
+All-backend Debug/Release MSAA/format/resize/LOAD tests pass separately; non-ASCII
+executable paths and a packaged launch from an empty cwd also pass. Shutdown
+live-object summaries occur while context-owned children still exist.
 
 ## Per-format and MSAA regression
 

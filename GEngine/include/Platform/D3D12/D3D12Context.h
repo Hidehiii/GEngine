@@ -65,6 +65,7 @@ namespace GEngine
 		Ref<D3D12CommandBuffer>		GetCommandBuffer(CommandBufferType type);
 	private:
 		UINT m_SamplerDescriptorIncrementSize = 0;
+		void						CreateAgilityFactory();
 		void						GetHardwareAdapter(IDXGIFactory1* pFactory, IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter = false);
 		void						CreateFactory();
 		void						CreateDevice();
@@ -84,6 +85,8 @@ namespace GEngine
 	private:
 		void*											m_WindowHandle;
 		static D3D12Context*							s_ContextInstance;
+		// Declared before device children so the SDK factory outlives them.
+		Microsoft::WRL::ComPtr<ID3D12DeviceFactory>		m_DeviceFactory = nullptr;
 		Microsoft::WRL::ComPtr<IDXGIFactory7>			m_Factory = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Device>			m_Device = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue>		m_GraphicsQueue = nullptr;

@@ -8,7 +8,7 @@ reflection/cache/backend creation; SPIR-V failure cannot be overwritten by DXIL
 success, and operation result/blob references are scoped. This changes runtime
 error recovery, not shader graph authoring. Verification is recorded in P1.
 
-- [ ] Harden the remaining legacy shader-container parser separately. Concrete
+- [x] Harden the remaining legacy shader-container parser separately. Concrete
   source paths still use assertions for malformed Cull/DepthTest/DepthWrite/
   pragma commands and unknown blend factors; missing structural delimiters are
   not comprehensively validated. Acceptance: invalid containers/directives fail
@@ -79,6 +79,18 @@ error recovery, not shader graph authoring. Verification is recorded in P1.
   includes the new source. Python runner syntax, 43 relative documentation links
   and git diff --check pass. Source/integration diff reviewed; unstaged review
   refresh queued. Existing tmp/ remains the only unrelated content.
+  Later host setup (2026-11-01): Graphics Tools is Installed with system
+  SDKLayers 10.0.26100.1 and the unchanged build guard passes. The historical
+  build blocker above is cleared; engine/example rebuild and backend runtime
+  acceptance remain pending. See ../Integration/D3D12Memory.md for setup evidence.
+  Final integration verification after reinstall: engine, FrameGraphTriangle
+  and RenderPipeline build in Debug/Release. Each configuration passes --parser
+  separately on OpenGL, Vulkan shared, Vulkan dedicated and D3D12: 4 malformed
+  rollback retries, 22 total rejections, no malformed fixture cache, 7 valid
+  switches, 9 numeric probes and normal exit. Logs are under
+  build/graphics-tools-install/verification/parser-{Debug,Release}/. Bounded
+  parser rewrite acceptance is now complete. The independent D3D12 validation
+  handle leak still reproduces and remains owned by Integration/D3D12Memory.md.
 
 ## Planned: editor-facing shader graph (2026-10-27)
 

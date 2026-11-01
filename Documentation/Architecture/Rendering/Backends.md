@@ -15,9 +15,21 @@ ShaderCacheSource includes parser revision 2 so old extraction results are not
 reused after this change. Utils state converters keep their signatures but now
 throw for unknown values. Documented DepthWrite On correctly enables writes.
 GPU ownership, GL/Vulkan/D3D12 compilation and queue semantics are unchanged.
-CPU Debug/Release/corpus checks pass; complete engine/example builds are blocked
-by the separately required host D3D12 version guard. New pipeline rollback/cache
-fixtures are implemented but their GPU/runtime acceptance remains unverified.
+CPU Debug/Release/corpus checks and subsequent engine/example builds pass.
+Malformed-container rollback/cache fixtures and unchanged valid-output probes
+pass separately on OpenGL, Vulkan shared, Vulkan dedicated and D3D12 in both
+Debug and Release. This verifies the shared parser integration, not runtime
+leak freedom for arbitrary runtimes: the former system Core 10.0.26100.4768 /
+SDKLayers 10.0.26100.1 exhibits validation-path Event growth. Current builds
+require verified Agility 1.619.5 (SDK 619). The backend owns an independent
+device factory, configures complete synchronized-queue validation there, probes
+adapters/creates devices from it and serializes root signatures through the
+device configuration. It rejects missing/mixed executable-relative D3D12 files,
+checks actual SDK/debug flags, and retains the factory beyond device children.
+Public Shader APIs, GPU resource ownership and native queue synchronization
+remain unchanged. Debug/Release 30000-frame runs pass native Event budgets;
+all-backend MSAA/parser regressions also pass. See the
+[runtime verification](../../../TODO/Integration/D3D12Memory.md).
 
 P3 in progress: RGBA16F maps to GL_RGBA16F, VK_FORMAT_R16G16B16A16_SFLOAT and
 DXGI_FORMAT_R16G16B16A16_FLOAT. Format queries and graph/asset validation accept

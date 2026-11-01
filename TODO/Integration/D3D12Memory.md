@@ -1,3 +1,199 @@
+## Required Agility SDK build configuration (2026-11-01)
+
+- [x] User now explicitly authorizes mandatory Agility integration, superseding
+  the earlier system-only policy. Pin verified package 1.619.5 / SDK 619; provide
+  an official download/offline preparation script with archive/file hashes.
+  Require GE_AGILITY_SDK_ROOT in CMake and Premake, validate at generation and
+  every backend build, deploy matched Core/layers/state-object compiler/licenses
+  for native applications and exported games. Select the SDK in backend-owned
+  independent device factories with full debug/synchronized-queue validation;
+  missing/mismatched runtime must fail before device use, without system fallback.
+  Public renderer APIs, queue ordering and GL/Vulkan behavior stay unchanged.
+  Acceptance: missing/bad SDK configuration and missing/mismatched deployment
+  negatives; Debug/Release engine/examples, Premake generation/build check,
+  all-backend short MSAA/parser checks, D3D12 30000-frame native Event growth
+  <=256 with actual app-local module paths/SDK flags, and package deployment.
+  Preserve previous setup/verification records, tmp/ and backend selections.
+  User constraint: no .ps1 calls in build scripts. Preparation, checking and
+  deployment must use native CMake -P scripts shared by CMake/Premake; remove
+  the newly introduced PowerShell SDK helper before final verification.
+  Extend the native runner with required-SDK/module-path acceptance and handle
+  the observed WinError 299 teardown race by waiting briefly for actual exit;
+  persistent enumeration errors still fail. This is regression tooling for the
+  real recorded shutdown failure, not a relaxation of Event growth limits.
+  Implemented native PrepareAgilitySDK.cmake and central manifest; CMake cache/
+  environment and Premake option/environment roots are mandatory. Generation and
+  build hashes, repeated CMake application deployment, Premake post-build hooks,
+  and real project export share native CMake commands. No .ps1 SDK build calls.
+  The backend selects an independent factory, validates three binary resource
+  versions, SDK/debug/synchronized-queue flags, and uses device configuration
+  for root signature serialization. Factory COM ownership outlives all children;
+  no new per-frame wait, silent fallback or public interface is added.
+  Debug/Release engine/examples build with the final native CMake steps. Both
+  30000-frame validation-on native handle captures pass <=256 budget, three
+  readbacks, normal exit, actual executable/D3D12 module paths and full SDK 619
+  validation flags. Event ranges are Debug 293..308 and Release 301..315; sampled
+  private bytes 173297664->174170112 and 172359680->172478464 respectively.
+  All four backend variants separately pass MSAA/format/depth/LOAD and parser
+  rollback in Debug/Release. Debug D3D12 P3 6000-frame stress passes 349 swaps/
+  403 probes, handles 751->751, private bytes 184315904->185503744.
+  Configuration negatives pass for missing CMake/Premake root, tampered SDK
+  deployment and actual custom build target, malformed archive before extraction,
+  missing runtime and system-layer/app-core mismatch. Native startup negatives
+  log actionable messages and exit nonzero (uncaught startup exception), without
+  fallback. Offline archive preparation and official HTTPS NuGet preparation pass;
+  initial restricted-network invocation failed TLS, authorized network execution
+  succeeded without disabling TLS/hash checks. Non-ASCII executable path passes.
+  Real GEngineTools Ninja export builds, deploys five exact manifest files under
+  Runtime/D3D12/, and the root launcher passes SDK/full-validation/three readbacks/
+  normal exit from an empty cwd without creating loose Assets. Logs and JSON:
+  build/agility-required/{build-cmake-*,handles-*,configuration-final,msaa-*,
+  parser-*,post-stress-Debug,unicode-launch,export.log,cold-launch.log}.
+  Premake generation and actual standalone Debug backend build pass with native
+  CMake commands (premake-build.log). Existing C4251/import-library duplicate
+  warnings and the unrelated CreateFenceEvent C4172 warning remain visible.
+  Full Premake/Mono builds, other OS/driver combinations,
+  injected device loss/OOM and indefinite stress remain untested.
+  Final handoff: source/deployment diff reviewed; 84 local documentation links,
+  Python/JSON syntax and git diff --check pass. Active SDK build sources and
+  final generated SDK/application projects contain no PowerShell/.ps1 calls.
+  All owned builds/downloads/runs finished; unstaged review refreshed. No commit
+  or push requested; unrelated tmp/ and backend configuration remain preserved.
+
+- [ ] Inspection follow-up outside this SDK change: existing
+  D3D12Utils.cpp::CreateFenceEvent returns HANDLE& to a local variable (C4172).
+  Audit call sites/ownership, return a stable value or remove an unused helper,
+  and verify any affected wait/close path before considering that helper safe.
+  No implementation authorized or included in this bounded SDK integration.
+
+## Installed 10.0.26100.1 verification (2026-11-01)
+
+- [ ] User authorizes verification after reinstall. Scope: rebuild the native
+  system-runtime probe, repeat 30000 pending cross-queue waits with validation
+  on/off and completed-wait controls; rebuild FrameGraphTriangle/RenderPipeline
+  Debug/Release with unchanged guard. Run a 30000-frame D3D12 native Event-handle
+  capture plus bounded foundation/MSAA and parser rollback examples. Acceptance:
+  actual system module paths, bounded post-warmup Event growth (<=256), numeric
+  readbacks, normal shutdown, no native warnings/errors; record handles/private
+  bytes and backend-specific results. If native repro still grows, report that
+  evidence without silently changing the exclusion policy or host again.
+  No active compilers/builds found; existing tmp/ and setup documentation retained.
+  Native probe rebuilt without Agility selection. 30000 calls: validation-on
+  pending-wait grows handles 391 -> 30392 after idle/settle (+30001), still 30229
+  after device release. Validation-off pending-wait stays 367 -> 367; validation-
+  on already-completed wait stays 391 -> 391. All native API calls return success
+  and no InfoQueue warning/error occurs, but the external <=256 growth criterion
+  fails. Logs: build/graphics-tools-install/verification/probe-layer-*.log.
+  Installed 10.0.26100.1 is therefore not certified/fixed by reinstall; continue
+  engine capture for native Event type attribution. Exact-version policy remains
+  unchanged because this is a verification request, not authorization to expand it.
+  Final evidence: actual loaded modules are System32 d3d12.dll, D3D12Core.dll
+  and D3D12SDKLayers.dll (native-handles.json); file versions are Core
+  10.0.26100.4768 / SDKLayers 10.0.26100.1. Native Event sampling in Debug grows
+  10817 -> 144379 after warmup, private bytes 174206976 -> 185462784. The first
+  layer-on 30000-frame capture reached all three readbacks and frame completion,
+  then module enumeration hit WinError 299 during shutdown; its runner failed
+  and may have terminated teardown, so it is not clean-exit evidence. A separate
+  existing foundation run completes 30000 frames and exits 0 in 47.7s, with total
+  handles 9673 -> 165544, private bytes 172810240 -> 186343424. Pending submissions
+  remain bounded (typically 1..6), deferred retirement and InfoQueue message
+  counts stay zero. The layer-off native capture completes 30000 frames/exit 0,
+  Events remain 276 and total handles 703 after warmup; private bytes reach
+  152772608. Thus the current validation-enabled runtime combination still leaks.
+  Debug/Release engine + FrameGraphTriangle + RenderPipeline builds pass. Existing
+  FBX missing-PDB and compiler warnings remain; no native warning/error in the
+  acceptance runs. Each configuration separately passes 120-frame MSAA/format/
+  numeric-depth/cross-frame LOAD and parser rollback/cache/pixel checks on OpenGL,
+  Vulkan shared, Vulkan dedicated and D3D12 (16 short runs total). Parser runs
+  require 4 malformed retries, 22 rejections, 7 switches and 9 pixel probes.
+  Logs: build/graphics-tools-install/verification/{build-*,foundation-msaa-*,
+  parser-*,foundation-long-Debug-D3D12,engine-Debug-layer0,engine-Debug-layer1}.
+  Verification is complete, but leak-free acceptance fails; leave this item open.
+  No engine/build-script changes or further host servicing performed.
+  Handoff: all owned builds/runs finished; source/config files remain unchanged.
+  Documentation links (68) and git diff --check pass; unstaged review refreshed.
+
+- [ ] Guard coverage follow-up discovered by verification: checking SDKLayers
+  alone permits Core 10.0.26100.4768 / SDKLayers 10.0.26100.1, despite the above
+  native and engine regressions. Proposed bounded scope: inspect the system core
+  as well as layer and reject the known failing runtime combination/version with
+  updated recovery guidance and policy tests. Exact policy needs authorization;
+  do not infer which DLL alone causes retention from this mixed-version test.
+  Acceptance: the reproduced combination fails the guard in CMake/Premake,
+  adjacent nonexcluded versions retain existing policy, popup/console identify
+  actual paths/versions, and no unrequested SDK pinning or host changes occur.
+  Superseded by the subsequently authorized mandatory Agility integration above;
+  the Core-aware system exclusion was not implemented and is no longer active
+  work. This proposal and the failing system-version evidence remain as history.
+
+## Host Graphics Tools reinstall (2026-11-01)
+
+- [x] User reports Graphics Tools uninstalled and authorizes reinstall through
+  the Windows optional capability Tools.Graphics.DirectX~~~~0.0.1.0. Scope is
+  host setup only, not runtime selection or build-guard changes. Acceptance:
+  official capability state Installed, actual x64 SDKLayers file version and
+  guard result recorded; report restart/UAC/network blockers. Reinstalling on
+  the same Windows may restore the excluded version. Initial file check confirms
+  SDKLayers absent; normal and escalated agent processes still lack Windows
+  administrator tokens. Next use a user-consented elevated child, capturing
+  output in the workspace. Engine APIs/architecture are unaffected.
+  Elevated install started successfully (owned PowerShell PID 37124, parent exec
+  session 88399); Windows Update downloaded 291472108/291472108 bytes and logged
+  download completion. Add-WindowsCapability has not returned; SDKLayers remains
+  absent and no result.json exists yet. CBS has a RebootPending marker. User
+  confirms the preceding Graphics Tools uninstall was not followed by reboot.
+  Handoff requires the user to save work and restart Windows before retrying/
+  verifying; no automatic restart, DLL replacement, service termination or claim
+  of successful/newer installation. The owned installation process is still
+  waiting at handoff. Logs are Windows Logs/CBS/CBS.log and Logs/DISM/dism.log;
+  helper/result location is build/graphics-tools-install/. Other rendering/build
+  behavior is unchanged. No engine build is warranted for setup record changes.
+  After the user-reported reboot, the CBS pending-reboot marker is cleared;
+  neither SDKLayers nor result.json exists, and the old installer is gone.
+  Retried the authorized official capability installation in elevated hidden
+  PowerShell PID 11868 (owned parent session 98213). CBS reports a successful
+  Windows Update search and is acquiring the payload; installation/version
+  acceptance remains pending. No build-guard bypass or machine restart issued.
+  Retry downloaded 291472108/291472108 bytes (CBS 22:27:17, Windows Update
+  event 41 at 22:27:22), after a long applicability/planning pass. CBS then
+  stopped advancing; the installer remains running without result.json or the
+  system SDKLayers file. CBS RebootPending reappeared during servicing, which
+  alone does not establish that another restart will fix this. An optional
+  elevated read-only transfer diagnostic was cancelled by the user; no retry
+  or system-service termination. Installation remains unverified/incomplete.
+  Continuation diagnostics now captured WindowsUpdate.log: TrustedInstaller FOD
+  download call completed successfully at 22:28:17 with error 0. It is therefore
+  stalled after download, not proven to be a network failure. Plan: preserve the
+  downloaded official Graphics Tools CAB, request Ctrl+C only in the verified
+  owned installer console, and retry using Add-WindowsCapability -Source with
+  -LimitAccess only if the original process exits. Never terminate servicing
+  services, overlap capability installs, or treat downloaded CAB as installed.
+  Preserved the official 16449331-byte CAB in build/graphics-tools-install/source.
+  A verified-console Ctrl+C request was sent at 22:35:35; the recovery host also
+  stopped its pipeline, and the original installer remains alive afterward.
+  No local retry actually started. An initial recovery-helper array type error
+  was corrected before cancellation; its old failure JSON is not current
+  installation evidence. Normal cancellation has not completed; no force-kill
+  attempted. Prepared install-local.ps1 for a clean post-reboot attempt with
+  -Source/-LimitAccess and an overlapping-owned-installer check. Local-source
+  completeness and resulting runtime version remain unverified; it may report
+  missing source rather than contacting Windows Update. User must save work and
+  restart to clear the stuck servicing session before that attempt. No automatic
+  reboot or startup task configured. APIs and runtime architecture unchanged.
+  Subsequent recheck supersedes the restart plan: cancellation completed, owned
+  installer exited, CBS finalized cancellation with 0x800f0820 and finished
+  cleanup at 22:37:25. No reboot required before trying the prepared local-source
+  installer; starting it now without overlapping the original process.
+  Completed: local-source installer PID 11848 exited successfully. Official
+  capability reports Installed, RestartNeeded false, and actual x64 System32
+  SDKLayers is 10.0.26100.1 (WinBuild.160101.0800). Existing runtime build guard
+  prints that installed version and exits 0; no policy bypass. Evidence:
+  build/graphics-tools-install/local-result.json, source CAB and servicing logs.
+  No further reboot was needed. This is a freshly installed base component, not
+  a claim that it is newer than 10.0.26100.4768. No long-run Event-handle or engine
+  runtime validation performed for this version; shader integration rebuild and
+  backend acceptance remain in ShaderGraph. No installer is left running.
+
 ## Build-time exact-version exclusion (2026-11-01)
 
 - [x] Recovery guidance (user request): add concrete version-switch tips to

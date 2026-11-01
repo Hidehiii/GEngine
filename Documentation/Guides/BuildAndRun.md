@@ -1,45 +1,53 @@
 # Build and run
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Required Agility SDK (2026-11-01)
 
-Windows builds reject installed x64 system d3d12SDKLayers.dll version 10.0.26100.4768 with a console error and warning popup because pending cross-queue validation waits leak Event handles. Update Windows/Graphics Tools to another version, then rebuild. The warning closes after 10 seconds. GENGINE_BUILD_NO_POPUP=1 or CI suppresses only UI in automation, never rejection. No app-local Agility SDK is required. This checks the build host, not a separate deployment machine.
+Windows engine builds require the pinned Agility 1.619.5 runtime (SDK 619),
+including builds used for OpenGL/Vulkan applications. CMake/Premake fail when
+configuration or verified package files are missing. SDK preparation, validation
+and deployment use native CMake scripts, without PowerShell.
 
 ## Prerequisites
 
 ### Changing SDK/runtime versions
 
-The excluded version is the installed **system D3D12 validation runtime**,
-separate from the Windows SDK chosen for C++ compilation.
+Prepare the official pinned package from the repository root:
 
-1. Open **Settings > Windows Update**, install available updates, and restart
-   if requested. Search Settings for **Optional features > Graphics Tools** to
-   manage the OS debug-layer component. Reinstalling Graphics Tools on the same
-   OS may leave the same version; do not replace System32 DLLs manually. Microsoft
-   documents the component in its [debug-layer installation guide](https://learn.microsoft.com/en-us/windows/ai/directml/dml-debug-layer#installing-the-directml-and-direct3d-12-debug-layers-system-component).
-2. From the repository root, recheck:
+```bat
+cmake -P BuildScripts/PrepareAgilitySDK.cmake
+set "GE_AGILITY_SDK_ROOT=E:\GEngine\dist\d3d12-agility\windows-x86_64\1.619.5"
+cmake -S BuildScripts/CMake -B build/agility -G "Visual Studio 17 2022" -A x64
+BuildScripts\Premake\premake5.exe --agility-sdk="%GE_AGILITY_SDK_ROOT%" vs2022
+```
 
-   ```powershell
-   powershell -NoProfile -File BuildScripts/CheckD3D12Runtime.ps1 -NoPopup
-   ```
+Replace E:\GEngine with your checkout path. CMake also accepts the explicit cache
+argument `-DGE_AGILITY_SDK_ROOT=<prepared directory>`. This directory contains
+three x64 DLLs and two licenses, not the entire NuGet extraction. Set the same
+variable in the shell launching GEngineTools export-project or the editor's
+native project export, so their child engine configuration receives it.
 
-   Confirm the reported version differs from `10.0.26100.4768`, then rebuild.
-   If updates offer no different runtime, use a development machine/OS with a
-   different version. The system-runtime path has no arbitrary version selector.
-   Removing Graphics Tools is not a repair and removes system debug diagnostics.
-3. To change the **compilation Windows SDK**, install the desired SDK using
-   Visual Studio Installer's individual components. Select **Project > Properties
-   > Configuration Properties > General > Windows SDK Version**, or **Retarget
-   solution**; see Microsoft's [retargeting instructions](https://learn.microsoft.com/en-us/visualstudio/msbuild/errors/msb8037).
-   This changes headers/libraries, not the checked system DLL, so it does not
-   clear this rejection. Keep persistent choices in build-generation sources;
-   generated Premake projects currently use `systemversion "latest"`.
-4. For an **application-local Agility SDK**, Microsoft's [Agility setup guide](https://devblogs.microsoft.com/directx/gettingstarted-dx12agility/)
-   describes selecting `Microsoft.Direct3D.D3D12` from NuGet, configuring runtime
-   selection, and deploying matched binaries. This project currently has no
-   supported Agility selector: installing the package or copying DLLs alone does
-   not activate it. Separate engine/build integration and a corresponding check
-   policy would be required. The current guard still checks the system DLL;
-   these instructions do not implement an alternate runtime or bypass rejection.
+For offline setup, download the official Microsoft.Direct3D.D3D12 1.619.5 NuGet
+archive and run `cmake -DGE_AGILITY_ARCHIVE=<archive.nupkg> -P BuildScripts/PrepareAgilitySDK.cmake`.
+Archive/file hashes are mandatory. To validate an existing root, pass
+`-DGE_AGILITY_CHECK_ONLY=ON -DGE_AGILITY_SDK_ROOT=<root>` before -P. Builds never
+download automatically. TLS/network errors require fixing connectivity or using
+the offline archive; do not disable hash/TLS verification.
+
+Builds deploy Core, matching SDKLayers, StateObjectCompiler and licenses under
+D3D12/ beside the real native executable (Runtime/D3D12/ in exported games).
+Copy that directory with the executable. Missing or mismatched DLLs produce an
+actionable startup error without falling back to System32. Device logs must show
+SDK=619 and, when validation is requested, debug=true and
+synchronizedQueueValidation=true. System Windows SDK retargeting only changes
+compilation headers/libraries. Updating this pin requires updating the central
+manifest and repeating runtime/handle regressions. See Microsoft's
+[Agility guide](https://devblogs.microsoft.com/directx/gettingstarted-dx12agility/)
+and [independent-device specification](https://microsoft.github.io/DirectX-Specs/d3d/IndependentDevices.html).
+
+The former system-only exclusion is historical: Core 10.0.26100.4768 still
+leaked with reinstalled SDKLayers 10.0.26100.1. See
+[runtime evidence](../../TODO/Integration/D3D12Memory.md); Windows components
+remain untouched by this project-local integration.
 
 C# runtime deployment redesign is documented in the
 [Mono/shared SDK and packaging proposal](../Architecture/ManagedScripting.md).
@@ -58,7 +66,8 @@ Development is currently Windows-first. Install the following before generating 
 - Visual Studio 2026, 2022 or 2019 with Desktop development with C++ and the Windows SDK.
 - Premake 5.0.0-beta8 is bundled as `BuildScripts/Premake/premake5.exe` and supports
   VS2026, VS2022 and VS2019 project generation.
-- CMake 3.24 or newer is required for the alternative VS2022/VS2019 C++ build.
+- CMake 3.24 or newer is required for SDK preparation/validation/deployment with
+  both Premake and CMake, as well as the VS2022/VS2019 C++ build.
 - Install the Vulkan SDK, select its optional Vulkan Memory Allocator
   component, and export its root as `VULKAN_SDK`. CMake and Premake require
   this environment variable and validate its Vulkan/VMA headers, import

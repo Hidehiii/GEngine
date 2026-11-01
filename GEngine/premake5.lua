@@ -131,22 +131,22 @@ links
 	"%{Library.Vulkan}",
 }
 
-local d3d12RuntimeCheckCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ..
-	path.getabsolute(path.join(_MAIN_SCRIPT_DIR, "BuildScripts/CheckD3D12Runtime.ps1")) .. '"'
-
-project "GEngine-D3D12RuntimeCheck"
+project "GEngine-AgilitySDKCheck"
 kind "Utility"
 objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
-prebuildmessage "Checking installed D3D12 validation runtime"
+prebuildmessage "Checking required Agility SDK"
 prebuildcommands {
-	d3d12RuntimeCheckCommand
+	AgilityCheckCommand
 }
 
 graphicsBackendProject("GEngine-D3D12Backend", "src/Platform/D3D12/**.cpp",
 	"include/Platform/D3D12/**.h")
-dependson { "GEngine-D3D12RuntimeCheck" }
+dependson { "GEngine-AgilitySDKCheck" }
+defines { "GE_D3D12_AGILITY_SDK_VERSION=" .. AGILITY_SDK_VERSION,
+	"GE_D3D12_AGILITY_VERSION_MS=" .. AGILITY_VERSION_MS,
+	"GE_D3D12_AGILITY_VERSION_LS=" .. AGILITY_VERSION_LS }
 -- Also protect standalone backend project builds outside the solution graph.
-prebuildcommands { d3d12RuntimeCheckCommand }
+prebuildcommands { AgilityCheckCommand }
 links
 {
 	"GLFW",
@@ -289,6 +289,7 @@ project "GEngine"
 
 		postbuildcommands
 		{
+			AgilityDeployCommand("%{cfg.targetdir}/D3D12"),
 			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do IF \"%%d\\\" neq \"%{cfg.buildtarget.directory}\" (xcopy /Q /Y /I \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" \"%%d\\\" > nul) ELSE (echo Skipping copy \"%{cfg.buildtarget.directory}%{cfg.buildtarget.name}\" to \"%%d\")"),
 			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.PhysX}*.dll\" \"%%d\\\""),
 			("for /d %%d in (\"%{wks.location}/dist/" .. outputdir .. "/*\") do {COPY} \"%{LibraryDir.VulkanSDK_Bin}*.dll\" \"%%d\\\""),

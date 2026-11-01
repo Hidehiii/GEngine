@@ -41,6 +41,7 @@ file(TO_CMAKE_PATH "$ENV{VULKAN_SDK}" project_vulkan)
 add_custom_target(GProjectPackage DEPENDS GProjectGame GProjectGameLauncher
     COMMAND "${CMAKE_COMMAND}" "-DGE_VENDOR=${GE_ENGINE_ROOT}/GEngine/GEngine-ThirdParty"
         "-DGE_VULKAN_SDK=${project_vulkan}"
+        "-DGE_AGILITY_SDK_ROOT=${GE_AGILITY_SDK_ROOT}"
         "-DGE_CONFIG=$<CONFIG>" "-DGE_ENGINE_DLL=$<TARGET_FILE:GEngine>"
         "-DGE_OUTPUT_DIR=$<TARGET_FILE_DIR:GProjectGame>"
         -P "${GE_ENGINE_ROOT}/BuildScripts/CMake/CopyRuntime.cmake")

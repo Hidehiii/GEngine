@@ -7,6 +7,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
+#include <filesystem>
 #include <directx/d3d12sdklayers.h>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -96,6 +97,7 @@ namespace
 	}
 	void D3D12Context::Init(const unsigned int width, const unsigned int height)
 	{
+		CreateAgilityFactory();
 		CreateFactory();
 		CreateDevice();
 		if (IsD3D12DebugLayerRequested())
@@ -348,7 +350,7 @@ namespace
 
 				// Check to see whether the adapter supports Direct3D 12, but don't create the
 				// actual device yet.
-				if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+				if (SUCCEEDED(m_DeviceFactory->CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
 				{
 					break;
 				}
@@ -371,7 +373,7 @@ namespace
 
 				// Check to see whether the adapter supports Direct3D 12, but don't create the
 				// actual device yet.
-				if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+				if (SUCCEEDED(m_DeviceFactory->CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
 				{
 					break;
 				}
@@ -380,14 +382,58 @@ namespace
 
 		*ppAdapter = adapter.Detach();
 	}
+	void D3D12Context::CreateAgilityFactory()
+	{
+		auto fail = [](const std::string& message) {
+			GE_CORE_ERROR("D3D12 Agility SDK: {}", message);
+			throw std::runtime_error("D3D12 Agility SDK: " + message);
+		};
+		std::wstring executable(32768, L'\0');
+		const DWORD length = GetModuleFileNameW(nullptr, executable.data(), static_cast<DWORD>(executable.size()));
+		if (length == 0 || length >= executable.size())
+			fail("Cannot resolve executable directory for required D3D12 runtime.");
+		executable.resize(length);
+		const auto directory = std::filesystem::path(executable).parent_path() / L"D3D12";
+		for (const wchar_t* name : { L"D3D12Core.dll", L"d3d12SDKLayers.dll", L"D3D12StateObjectCompiler.dll" })
+		{
+			const auto path = directory / name;
+			DWORD ignored = 0;
+			const DWORD size = GetFileVersionInfoSizeW(path.c_str(), &ignored);
+			if (!size)
+				fail("Missing required runtime file: " + path.u8string() + ". Rebuild/deploy the configured Agility SDK.");
+			std::vector<char> bytes(size);
+			if (!GetFileVersionInfoW(path.c_str(), 0, size, bytes.data()))
+				fail("Cannot read runtime version: " + path.u8string());
+			VS_FIXEDFILEINFO* version = nullptr;
+			UINT versionSize = 0;
+			if (!VerQueryValueW(bytes.data(), L"\\", reinterpret_cast<void**>(&version), &versionSize) ||
+				versionSize < sizeof(VS_FIXEDFILEINFO) || version->dwSignature != 0xFEEF04BD ||
+				version->dwFileVersionMS != GE_D3D12_AGILITY_VERSION_MS || version->dwFileVersionLS != GE_D3D12_AGILITY_VERSION_LS)
+				fail("Mismatched required runtime file: " + path.u8string() + ". Deploy the matched configured package.");
+		}
+		Microsoft::WRL::ComPtr<ID3D12SDKConfiguration1> configuration;
+		HRESULT result = D3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(&configuration));
+		if (FAILED(result))
+			fail("This Windows D3D12 loader does not support independent Agility factories: " + HrToString(result));
+		const auto sdkPath = directory.u8string() + "\\";
+		result = configuration->CreateDeviceFactory(GE_D3D12_AGILITY_SDK_VERSION, sdkPath.c_str(), IID_PPV_ARGS(&m_DeviceFactory));
+		if (FAILED(result))
+			fail("Cannot select required app-local SDK at " + sdkPath + ": " + HrToString(result));
+		D3D12_THROW_IF_FAILED(m_DeviceFactory->SetFlags(D3D12_DEVICE_FACTORY_FLAG_DISALLOW_STORING_NEW_DEVICE_AS_SINGLETON));
+		if (IsD3D12DebugLayerRequested())
+		{
+			Microsoft::WRL::ComPtr<ID3D12Debug1> debug;
+			D3D12_THROW_IF_FAILED(m_DeviceFactory->GetConfigurationInterface(CLSID_D3D12Debug, IID_PPV_ARGS(&debug)));
+			debug->EnableDebugLayer();
+			debug->SetEnableSynchronizedCommandQueueValidation(TRUE);
+		}
+		GE_CORE_INFO("D3D12 Agility runtime: SDK={}, path={}", GE_D3D12_AGILITY_SDK_VERSION, sdkPath);
+	}
 	void D3D12Context::CreateFactory()
 	{
 		UINT dxgiFactoryFlags = 0;
 		if (IsD3D12DebugLayerRequested())
 		{
-			Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
-			D3D12_THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-			debugController->EnableDebugLayer();
 			dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
 		D3D12_THROW_IF_FAILED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_Factory)));
@@ -398,14 +444,25 @@ namespace
 		{
 			Microsoft::WRL::ComPtr<IDXGIAdapter> warpAdapter;
 			D3D12_THROW_IF_FAILED(m_Factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-			D3D12_THROW_IF_FAILED(D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
+			D3D12_THROW_IF_FAILED(m_DeviceFactory->CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
 		}
 		else
 		{
 			Microsoft::WRL::ComPtr<IDXGIAdapter1> hardwareAdapter;
 			GetHardwareAdapter(m_Factory.Get(), &hardwareAdapter);
-			D3D12_THROW_IF_FAILED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
+			D3D12_THROW_IF_FAILED(m_DeviceFactory->CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_Device)));
 		}
+		Microsoft::WRL::ComPtr<ID3D12DeviceConfiguration> configuration;
+		D3D12_THROW_IF_FAILED(m_Device.As(&configuration));
+		const auto description = configuration->GetDesc();
+		const bool debug = (description.Flags & D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED) != 0;
+		const bool synchronized = (description.Flags & D3D12_DEVICE_FLAG_SYNCHRONIZED_COMMAND_QUEUE_VALIDATION_DISABLED) == 0;
+		if (description.SDKVersion != GE_D3D12_AGILITY_SDK_VERSION || debug != IsD3D12DebugLayerRequested() || (debug && !synchronized))
+		{
+			GE_CORE_ERROR("Required Agility SDK device configuration was not applied; no system fallback is supported.");
+			throw std::runtime_error("Required Agility SDK device configuration mismatch");
+		}
+		GE_CORE_INFO("D3D12 Agility device: SDK={}, debug={}, synchronizedQueueValidation={}", description.SDKVersion, debug, synchronized);
 	}
 	void D3D12Context::SetupDebugInfoQueue()
 	{

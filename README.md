@@ -9,6 +9,11 @@ Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics 
 - A Windows 10 or newer development environment.
 - Visual Studio 2026, 2022, or 2019 with Desktop development with C++ and the
   matching Windows SDK installed.
+- CMake 3.24 or newer, including for Premake's SDK validation/deployment steps.
+- The prepared x64 Agility SDK 1.619.5 runtime, configured through
+  `GE_AGILITY_SDK_ROOT` (or Premake `--agility-sdk`); run
+  `cmake -P BuildScripts/PrepareAgilitySDK.cmake` first. See the
+  [configuration guide](Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
 - Git and Git LFS installed, with the repository cloned recursively so
   `GEngine/GEngine-ThirdParty` is present.
 - [.NET Framework 4.7.2 Developer Pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net472)
@@ -23,7 +28,6 @@ Its rendering is developed based on the OpenGL, Vulkan and Dx12, the 2D physics 
 
 Additional requirements depend on the selected build path:
 
-- CMake builds require CMake 3.24 or newer.
 - Building the Qt editor requires Python and a locally built Qt 6.10.3 SDK;
   `GEngineTools.exe qt-sdk` builds that SDK.
 - Vulkan headers, libraries, shader tools, and runtime DLLs come from the

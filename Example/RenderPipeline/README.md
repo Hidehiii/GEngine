@@ -18,8 +18,18 @@ diagnostics, changed active pipeline or numeric/native diagnostics. Fresh copied
 run directories avoid stale fixture cache. Direct launch uses
 GENGINE_RENDER_PIPELINE_ASSET_CHECK=1 and GENGINE_RENDER_PIPELINE_PARSER_CHECK=1
 with a frame limit. Existing modes are unchanged.
-CPU parser tests pass independently, but this runtime mode has not been run:
-the current host's known D3D12 version intentionally blocks complete builds.
+CPU parser tests and subsequent engine/example Debug/Release builds pass.
+The --parser mode passes separately on OpenGL, Vulkan shared, Vulkan dedicated
+and D3D12 in both configurations, including the required rollback/cache checks,
+7 switches, 9 numeric probes and normal exit. Logs are under
+build/graphics-tools-install/verification/parser-{Debug,Release}/.
+The former system Core 10.0.26100.4768 / SDKLayers 10.0.26100.1 path leaked;
+current builds require app-local Agility 1.619.5 through GE_AGILITY_SDK_ROOT.
+Native CMake scripts validate and deploy its D3D12/ directory beside the
+executable, without PowerShell or system fallback. After integration, --parser
+and MSAA regressions pass all four variants in Debug/Release, and D3D12 P3
+6000-frame stress passes 349 replacements/403 probes with handles 751->751.
+Current logs: build/agility-required/{parser-*,msaa-*,post-stress-Debug}/.
 No OpenGL/Vulkan/D3D12 runtime success is inferred from CPU checks. Follow the
 [version guide](../../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
 

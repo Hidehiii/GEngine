@@ -1,15 +1,30 @@
 # Build entry points
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Required Agility SDK (2026-11-01)
 
-Windows CMake/Premake builds reject installed x64 system SDKLayers version 10.0.26100.4768 with a console error and warning popup (10-second timeout). Update Windows/Graphics Tools and rebuild. Other versions are allowed, not certified. Run powershell -NoProfile -File BuildScripts/CheckD3D12Runtime.ps1 -NoPopup for a console-only check; exit 1 still rejects. GENGINE_BUILD_NO_POPUP=1 or nonempty CI suppresses only UI. Missing optional SDKLayers is allowed; unreadable existing metadata fails explicitly. No SDK preparation or public rendering API change is required.
+Windows engine builds require GE_AGILITY_SDK_ROOT containing the prepared x64
+Microsoft.Direct3D.D3D12 1.619.5 runtime (SDK 619). CMake accepts a cache PATH or
+environment variable; Premake accepts --agility-sdk=PATH or the same variable.
+There is no system-runtime opt-out. Generation and each backend build validate
+the five pinned DLL/license hashes from BuildScripts/AgilitySDK.json.
 
-Rejected-build console/popup output includes Windows Update/Graphics Tools steps,
-the console recheck command and the local
-[version-switch guide](../Guides/BuildAndRun.md#changing-sdkruntime-versions).
-Windows SDK retargeting only changes compilation inputs; app-local Agility needs
-separate integration and does not bypass the system check. Exit codes and
-exact-version exclusion are unchanged; no SDK selector/rendering API is added.
+Run `cmake -P BuildScripts/PrepareAgilitySDK.cmake` to download/prepare the pinned
+package. For offline setup, pass -DGE_AGILITY_ARCHIVE=<official.nupkg> before -P;
+archive and extracted files are verified. -DGE_AGILITY_CHECK_ONLY=ON validates
+without downloading. -DGE_AGILITY_DEPLOY_DIR=<directory> validates all input files
+before copying the paired runtime/licenses. No PowerShell step is used.
+
+Native examples and exported games deploy D3D12/ beside their real executable.
+The backend requires matching binaries there, selects an independent SDK 619
+factory and checks actual device/debug/synchronized-queue settings. Missing or
+mismatched runtime fails explicitly without system fallback. Public rendering
+APIs and GL/Vulkan usage remain unchanged; see the
+[configuration guide](../Guides/BuildAndRun.md#changing-sdkruntime-versions).
+
+The earlier system-only SDKLayers exclusion is superseded. Its diagnostic helper
+and tests are historical and are not called by the build. Reinstalling Graphics
+Tools left Core 10.0.26100.4768 / SDKLayers 10.0.26100.1 leaking; full evidence
+and the new SDK acceptance live in TODO/Integration/D3D12Memory.md.
 
 ## GAsset conversion
 

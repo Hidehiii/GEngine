@@ -117,12 +117,15 @@ namespace GEngine
 			rootSignatureDesc.NumStaticSamplers = 0;
 			rootSignatureDesc.pStaticSamplers = nullptr;
 			rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-			ID3DBlob* blob = nullptr;
-			ID3DBlob* errorBlob = nullptr;
-			D3D12_THROW_IF_FAILED(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &errorBlob));
+			Microsoft::WRL::ComPtr<ID3DBlob> blob;
+			Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+			Microsoft::WRL::ComPtr<ID3D12DeviceConfiguration> configuration;
+			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice().As(&configuration));
+			D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned{};
+			versioned.Version = D3D_ROOT_SIGNATURE_VERSION_1_0;
+			versioned.Desc_1_0 = rootSignatureDesc;
+			D3D12_THROW_IF_FAILED(configuration->SerializeVersionedRootSignature(&versioned, &blob, &errorBlob));
 			D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignatures.at(pass))));
-			if (errorBlob) errorBlob->Release();
-			blob->Release();
 		}
 	}
 }

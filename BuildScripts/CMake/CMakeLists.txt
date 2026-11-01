@@ -13,6 +13,7 @@ endif()
 set(GE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
 get_filename_component(GE_ROOT "${GE_ROOT}" ABSOLUTE)
 set(GE_VENDOR "${GE_ROOT}/GEngine/GEngine-ThirdParty")
+include("${CMAKE_CURRENT_LIST_DIR}/AgilitySDK.cmake")
 if(NOT DEFINED ENV{VULKAN_SDK} OR "$ENV{VULKAN_SDK}" STREQUAL "")
     message(FATAL_ERROR "VULKAN_SDK is required. Install the Vulkan SDK and export its root path.")
 endif()
@@ -214,12 +215,16 @@ target_link_libraries(GEngine-VulkanBackend PRIVATE GLFW ImGui spirv-cross-core
     "${GE_VULKAN_SDK}/Lib/vulkan-1.lib")
 
 ge_add_graphics_backend(GEngine-D3D12Backend "${GE_D3D12_BACKEND_SOURCES}")
-add_custom_target(GEngine-D3D12RuntimeCheck
-    COMMAND powershell.exe -NoProfile -ExecutionPolicy Bypass
-        -File "${GE_ROOT}/BuildScripts/CheckD3D12Runtime.ps1"
-    COMMENT "Checking installed D3D12 validation runtime"
+add_custom_target(GEngine-AgilitySDKCheck
+    COMMAND "${CMAKE_COMMAND}" "-DGE_AGILITY_SDK_ROOT=${GE_AGILITY_SDK_ROOT}"
+        -DGE_AGILITY_CHECK_ONLY=ON -P "${GE_ROOT}/BuildScripts/PrepareAgilitySDK.cmake"
+    COMMENT "Checking required Agility SDK"
     VERBATIM)
-add_dependencies(GEngine-D3D12Backend GEngine-D3D12RuntimeCheck)
+add_dependencies(GEngine-D3D12Backend GEngine-AgilitySDKCheck)
+target_compile_definitions(GEngine-D3D12Backend PRIVATE
+    GE_D3D12_AGILITY_SDK_VERSION=${GE_AGILITY_SDK_VERSION}
+    GE_D3D12_AGILITY_VERSION_MS=${GE_AGILITY_VERSION_MS}
+    GE_D3D12_AGILITY_VERSION_LS=${GE_AGILITY_VERSION_LS})
 target_link_libraries(GEngine-D3D12Backend PRIVATE GLFW ImGui d3d12 dxgi dxguid
     d3dcompiler
     "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"
@@ -279,9 +284,16 @@ function(ge_add_application name directory)
         "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/libxml2-md.lib"
         "${GE_FBX_SDK}/lib/x64/$<IF:$<CONFIG:Debug>,debug,release>/zlib-md.lib")
     set_target_properties(${name} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${GE_ROOT}/${directory}")
+    add_custom_target(${name}-AgilityRuntime
+        COMMAND "${CMAKE_COMMAND}" "-DGE_AGILITY_SDK_ROOT=${GE_AGILITY_SDK_ROOT}"
+            -DGE_AGILITY_CHECK_ONLY=ON "-DGE_AGILITY_DEPLOY_DIR=$<TARGET_FILE_DIR:${name}>/D3D12"
+            -P "${GE_ROOT}/BuildScripts/PrepareAgilitySDK.cmake"
+        DEPENDS GEngine VERBATIM)
+    add_dependencies(${name} ${name}-AgilityRuntime)
     add_custom_command(TARGET ${name} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" "-DGE_VENDOR=${GE_VENDOR}"
             "-DGE_VULKAN_SDK=${GE_VULKAN_SDK}" "-DGE_CONFIG=$<CONFIG>"
+            "-DGE_AGILITY_SDK_ROOT=${GE_AGILITY_SDK_ROOT}"
             "-DGE_OUTPUT_DIR=$<TARGET_FILE_DIR:${name}>"
             "-DGE_ENGINE_DLL=$<TARGET_FILE:GEngine>"
             -P "${CMAKE_CURRENT_LIST_DIR}/CopyRuntime.cmake"

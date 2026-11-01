@@ -1,6 +1,46 @@
 # Build system architecture
 
-## D3D12 build-host version exclusion (2026-11-01)
+## Required Agility SDK (2026-11-01)
+
+BuildScripts/AgilitySDK.json pins package 1.619.5, SDK 619, binary resource version
+and SHA256 values. Native PrepareAgilitySDK.cmake handles official download or an
+offline archive and shares validation/deployment across CMake/Premake. Engine
+generation requires GE_AGILITY_SDK_ROOT; GEngine-AgilitySDKCheck always runs
+before the backend. Premake also protects standalone backend builds. No
+PowerShell build step or global host change occurs.
+
+CMake application runtime dependencies refresh the paired SDK even on otherwise
+incremental builds; CopyRuntime and GProjectPackage carry Core, layers,
+StateObjectCompiler and licenses into executable-relative D3D12/. Premake
+application/engine post-build hooks deploy the same five files.
+
+The backend creates an independent SDK 619 ID3D12DeviceFactory, configures its
+debug interface before probing/creating devices, and checks the actual device
+SDK/full synchronized-queue validation flags. Factory ownership outlives device
+children. Version checks reject missing/mixed deployment before loading, without
+system fallback. Root signature serialization uses the selected device
+configuration. Queue submission, retirement and public renderer APIs are
+unchanged. Verification and limits live in TODO/Integration/D3D12Memory.md.
+
+## Historical system-only exclusion (superseded 2026-11-01)
+
+The following records the previous behavior. The current build validates the
+required app-local SDK instead of inspecting an unused system validation layer.
+
+Host Graphics Tools installation is Windows optional-feature servicing, separate
+from project generation/runtime selection. Installing it does not modify engine
+architecture or bypass version exclusion; verify the resulting SDKLayers version
+with the existing guard. Host servicing outcomes are tracked in D3D12Memory.md.
+After a stalled online install was normally cancelled, local-source capability
+installation succeeded using the official downloaded CAB: Installed, SDKLayers
+10.0.26100.1, RestartNeeded false. The existing guard passes. This verifies host
+setup only; engine rebuild, runtime behavior and handle-growth checks remain
+separate. No project runtime selector or automatic startup action was introduced.
+Subsequent Debug/Release builds and short backend acceptance runs pass, but
+native and engine long runs still reproduce validation-path handle growth with
+system Core 10.0.26100.4768 / SDKLayers 10.0.26100.1. Checking only SDKLayers
+misses that failing combination. Core-aware exclusion remains a tracked proposal;
+this verification changes neither the build dependency graph nor rendering APIs.
 
 Both Windows CMake and Premake build graphs require an always-run utility check before the D3D12 backend. BuildScripts/CheckD3D12Runtime.ps1 reads the installed x64 system d3d12SDKLayers.dll file version (Sysnative in a 32-bit host). Exactly 10.0.26100.4768 rejects the build for the reproduced pending-Wait Event leak. It prints version/path/recovery guidance and shows a warning popup with a 10-second timeout. GENGINE_BUILD_NO_POPUP=1 or CI suppresses only the popup; rejection remains active. Missing optional Graphics Tools is allowed; unreadable existing metadata fails. Runtime creation, public APIs and queue scheduling are unchanged. No pinned SDK/download/deployment step is required. This checks the build machine, not another deployment machine.
 

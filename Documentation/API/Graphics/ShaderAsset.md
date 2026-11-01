@@ -17,6 +17,12 @@ No Application/device/compiler/cache is needed. Shader::Create(path) signatures
 remain unchanged; loading parses before disk-cache access or compilation. Its
 existing in-memory cache still reuses a previously loaded path without hot reload.
 See [grammar/error rules](../ShaderAuthoring.md#container-parser-contract).
+Debug/Release engine/example builds and --parser rollback/cache/output checks
+pass separately on OpenGL, Vulkan shared, Vulkan dedicated and D3D12. The
+former system D3D12 validation-runtime handle leak is isolated separately;
+current mandatory Agility 1.619.5 integration passes 30000-frame Debug/Release
+handle checks. Shader signatures/cache behavior are unchanged by SDK selection;
+these functional checks do not certify arbitrary host runtimes.
 
 Packaged games create and reuse `Cache/Shaders/<API>/` under the game root
 (1=OpenGL, 2=Vulkan, 3=D3D12); configuration remains external at

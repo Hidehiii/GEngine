@@ -1,4 +1,5 @@
 newoption { trigger = "without-mono", description = "Build native-only games without managed scripting support" }
+newoption { trigger = "agility-sdk", value = "PATH", description = "Required prepared Agility SDK runtime root" }
 newoption {
     trigger = "qt6-sdk",
     value = "PATH",
@@ -27,6 +28,10 @@ filter {}
 
 -- Include directories relative to root folder (solution directory)
 include "Dependencies.lua"
+
+filter { "system:windows", "kind:ConsoleApp or WindowedApp" }
+	postbuildcommands { AgilityDeployCommand("%{cfg.targetdir}/D3D12") }
+filter {}
 
 
 
