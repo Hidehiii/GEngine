@@ -1,6 +1,45 @@
 # Build and run
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+Windows builds reject installed x64 system d3d12SDKLayers.dll version 10.0.26100.4768 with a console error and warning popup because pending cross-queue validation waits leak Event handles. Update Windows/Graphics Tools to another version, then rebuild. The warning closes after 10 seconds. GENGINE_BUILD_NO_POPUP=1 or CI suppresses only UI in automation, never rejection. No app-local Agility SDK is required. This checks the build host, not a separate deployment machine.
+
 ## Prerequisites
+
+### Changing SDK/runtime versions
+
+The excluded version is the installed **system D3D12 validation runtime**,
+separate from the Windows SDK chosen for C++ compilation.
+
+1. Open **Settings > Windows Update**, install available updates, and restart
+   if requested. Search Settings for **Optional features > Graphics Tools** to
+   manage the OS debug-layer component. Reinstalling Graphics Tools on the same
+   OS may leave the same version; do not replace System32 DLLs manually. Microsoft
+   documents the component in its [debug-layer installation guide](https://learn.microsoft.com/en-us/windows/ai/directml/dml-debug-layer#installing-the-directml-and-direct3d-12-debug-layers-system-component).
+2. From the repository root, recheck:
+
+   ```powershell
+   powershell -NoProfile -File BuildScripts/CheckD3D12Runtime.ps1 -NoPopup
+   ```
+
+   Confirm the reported version differs from `10.0.26100.4768`, then rebuild.
+   If updates offer no different runtime, use a development machine/OS with a
+   different version. The system-runtime path has no arbitrary version selector.
+   Removing Graphics Tools is not a repair and removes system debug diagnostics.
+3. To change the **compilation Windows SDK**, install the desired SDK using
+   Visual Studio Installer's individual components. Select **Project > Properties
+   > Configuration Properties > General > Windows SDK Version**, or **Retarget
+   solution**; see Microsoft's [retargeting instructions](https://learn.microsoft.com/en-us/visualstudio/msbuild/errors/msb8037).
+   This changes headers/libraries, not the checked system DLL, so it does not
+   clear this rejection. Keep persistent choices in build-generation sources;
+   generated Premake projects currently use `systemversion "latest"`.
+4. For an **application-local Agility SDK**, Microsoft's [Agility setup guide](https://devblogs.microsoft.com/directx/gettingstarted-dx12agility/)
+   describes selecting `Microsoft.Direct3D.D3D12` from NuGet, configuring runtime
+   selection, and deploying matched binaries. This project currently has no
+   supported Agility selector: installing the package or copying DLLs alone does
+   not activate it. Separate engine/build integration and a corresponding check
+   policy would be required. The current guard still checks the system DLL;
+   these instructions do not implement an alternate runtime or bypass rejection.
 
 C# runtime deployment redesign is documented in the
 [Mono/shared SDK and packaging proposal](../Architecture/ManagedScripting.md).

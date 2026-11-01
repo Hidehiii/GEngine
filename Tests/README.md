@@ -1,5 +1,11 @@
 # Focused regression checks
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+Run powershell -NoProfile -File Tests/D3D12RuntimeBuildCheck.ps1 for exact-version policy coverage. BuildScripts/CheckD3D12Runtime.ps1 -NoPopup checks the actual installed x64 system layer; 10.0.26100.4768 returns 1. CMake/Premake use the same script, normally with a 10-second warning popup. GENGINE_BUILD_NO_POPUP=1 or CI hides only UI. Missing Graphics Tools is allowed; unreadable existing metadata fails.
+
+D3D12HandleProbe.cpp and D3D12HandleGrowth.py preserve native attribution tools. The runner requires 64-bit Python, a FrameGraphTriangle executable, --logs <directory>, --frames 30000 --layer 1 --max-event-growth 256; it checks Event counts and GPU readbacks. Engine builds on the excluded host now fail by design. Historical SDK-pinning results do not verify the current system runtime; other allowed versions are not certified leak-free.
+
 ## Ordered HDR effects
 
 RenderPipelineAssets.py --post exercises P3 HDR camera composition followed by

@@ -1,3 +1,174 @@
+## Build-time exact-version exclusion (2026-11-01)
+
+- [x] Recovery guidance (user request): add concrete version-switch tips to
+  rejected-build console/popup output and BuildAndRun, distinguishing system
+  runtime servicing from Windows SDK retargeting and optional Agility integration.
+  Keep exact-version rejection unchanged; do not install/update the host or add
+  SDK selection as part of this documentation/message task. Acceptance: actionable
+  update/recheck steps, official references, accurate current-project limitations,
+  policy regression and actual no-popup failure output, architecture/API sync.
+  Implemented console/popup shared recovery text and a linked BuildAndRun section
+  covering OS update/Graphics Tools, recheck command, Visual Studio SDK retargeting
+  and Agility's separate integration requirement. Official Microsoft installation,
+  retargeting and Agility references reviewed. No host changes or SDK selection
+  implemented. Policy regression passes; actual -NoPopup invocation reports the
+  installed blocked version, displays all four tips and exits 1. Popup rendering
+  was not re-inspected; it receives the same failure string. Engine rebuild is
+  unnecessary for message/documentation-only changes; rejection logic unchanged.
+
+- [x] User correction: remove the mandatory pinned Agility SDK and its build/
+  deployment dependency. Final user direction: reject project builds and display
+  a warning popup when installed x64 system SDKLayers is exactly 10.0.26100.4768.
+  Integrate the same prebuild script into CMake and Premake; leave runtime device
+  creation/public APIs/GPU scheduling unchanged. Missing optional Graphics Tools
+  is not this defect; unreadable existing DLL metadata fails explicitly. Provide
+  a popup-only suppression for CI/automated checks which never bypasses rejection.
+  Acceptance: real Debug/Release build rejection on this host, exact-version and
+  neighboring-version checks, popup attempt, generation/dependency review, no
+  mandatory SDK package/deployment, documentation/diff review. Earlier successful
+  rendering builds remain historical: the corrected policy intentionally rejects
+  this host until its installed validation runtime changes.
+  Earlier SDK pinning below is superseded history;
+  its long-run results do not validate the revised exclusion policy.
+
+  Implemented: shared CheckD3D12Runtime.ps1, CMake always-run dependency and
+  Premake utility dependency (Debug/Release/Dist). Popup suppression never
+  changes failure exit. The native WScript.Shell.Popup call completed with
+  rejection exit 1 after its 10-second timeout and no popup-unavailable error;
+  visual inspection was not performed. Runtime C++/headers and deployment
+  configuration are restored; no SDK preparation script or package is required.
+  Exact-version policy tests pass for the excluded version, adjacent revisions,
+  other build/minor/major and Agility versions. CMake FrameGraphTriangle Debug/
+  Release configure successfully then fail on the installed version before
+  D3D12 compilation. Premake generation and generated utility Debug/Release
+  builds reject the same version; 32-bit MSBuild correctly selects Sysnative.
+  An initial solution invocation used an invalid nested target and was discarded;
+  utility projects were then built directly with SolutionDir set. Initial
+  Premake buildcommands generated no event; corrected to prebuildcommands and
+  verified generated events/configurations and actual build failures.
+  Logs: build/pipeline-lifecycle/build-FrameGraphTriangle-{Debug,Release}.log and
+  build/d3d12-handle-fix/premake-check-{Debug,Release}.log. No successful current
+  engine/runtime build is claimed on this intentionally excluded host. Other
+  installed runtime versions and complete Premake engine builds remain untested.
+  Historical attribution tools remain; the runner no longer assumes SDK 619.
+  Existing tmp/ and backend selection are preserved.
+  Final Premake hardening uses an absolute generated script path and a backend
+  prebuild event as well as the solution utility, covering standalone backend
+  project builds. The actual standalone Debug backend build rejects correctly
+  without SolutionDir (premake-standalone.log); no D3D12 compilation occurred.
+  Policy/runner syntax and git diff --check pass; unstaged review refresh queued.
+
+## Handle-growth attribution and repair (2026-11-01, superseded SDK pinning)
+
+- [x] User-authorized investigation/fix of current D3D12 handle/private-memory
+  growth after P1-P3. Scope: reproduce matched workloads with real validation
+  on/off, identify increasing native handle types and their creation/retention
+  path, then repair the responsible engine synchronization/lifetime behavior.
+  Keep default validation enabled; do not mask growth by disabling diagnostics
+  or adding unexplained per-frame device waits. Use owned child processes and
+  bounded programmatic diagnostics; no desktop automation or machine-wide
+  tracing configuration. Existing tmp/ is preserved.
+  Acceptance: concrete failing path and native attribution, focused regression
+  that fails before the repair and passes afterward, Debug/Release engine/example
+  builds, matched frame-count handle/private-byte controls, clean native output,
+  GPU readbacks and resize/replacement/shutdown coverage. Recheck affected P1-P3
+  and all backends for any shared interface change. Keep unrelated driver/heap
+  growth open if evidence does not attribute it. Update architecture/API,
+  diagnostics/example guides and RenderingArchitecture with measured results.
+  Initial source review: persistent completion fences/events are reused; the
+  strongest historical growth needs validation on and occurs without replacement.
+  First step is native handle-type/stack attribution, not another process-count
+  trend alone. Public API/architecture semantics are unchanged by inspection.
+  Reproduction: Release/no replacement/layer-on 30,000-frame owned-child run
+  passed all GPU checks; native Event handles grew 7,046 at 2.5 s to 239,059 at
+  56.5 s. A layer-off trace control stayed at 274->276 Events over 6,000 frames.
+  Other handle categories were bounded. Per-process handle tracing was accepted
+  but returned empty stack arrays on this host; this is type attribution only.
+  Next isolate native Wait/Signal/SetEventOnCompletion/Execute calls with a small
+  device-only probe, preserving validation and checking counts after queue idle.
+  Attribution: native pending-wait/layer-on 30,000 calls grow 389->30,390 handles
+  after idle and still leave 30,227 after device release. Completed waits,
+  Signal, CPU event waits, completed list reuse/reset controls are flat; layer-off
+  pending waits stay flat. An early empty-list probe resubmitted before completion
+  was invalid and discarded; the corrected control waits before reuse. System
+  D3D12Core/SDKLayers are 10.0.26100.4768. A Microsoft-signed Agility 1.619.5
+  matched pending-wait probe stays 391->395 after idle and 229 after device
+  release, with validation enabled. This attributes the unbounded Events to the
+  system SDK layer's pending Queue::Wait handling, not engine-created events.
+  Repair scope: pin and prepare official Agility 1.619.5 (SDK 619) with SHA256
+  verification, load it through a backend-owned independent device factory,
+  configure full debug/synchronized-queue validation on that factory, and deploy
+  the paired runtime/layers plus licenses beside each native executable through
+  CMake/Premake/export. Do not change queue ordering or add CPU frame waits.
+  Missing/mismatched runtime fails explicitly; no silent fallback to leaking
+  system validation. Verify loaded SDK/validation flags and actual module paths,
+  matched engine controls, missing-runtime failure and export/cold launch.
+  Deployment checks: isolated missing-runtime copy fails before writing output;
+  a copied missing-runtime executable exits nonzero but the uncaught startup
+  exception drops its message on MSVC. Log the actionable missing-runtime message
+  before throwing so failure is explicit in native logs. A non-ASCII executable/
+  runtime path passed 120 frames, validation and all three readbacks. SDK 619
+  factory flags confirm full debug and synchronized queue validation.
+  Bootstrap robustness check: a native/Python-launched Windows PowerShell child
+  lacks the Get-FileHash script cmdlet under the host's inherited module path.
+  Use disposable .NET SHA256/FileStream directly, preserving the same pinned
+  digest and avoiding global environment/module changes; retest valid/invalid
+  archives in that exact launch path. The first missing-runtime launch fixture
+  also omitted required config keys and failed before device creation; discard
+  that attempt. Full-config rerun reaches the missing-SDK check, logs actionable
+  diagnostics and exits nonzero without fallback. No normal-startup behavior
+  changes beyond the explicit error log.
+  Verification complete (2026-11-01): the isolated regression fails on the
+  pre-fix Release binary at 6,000 frames (Event range 21,149 > budget 256),
+  after all GPU checks passed. Final Debug/Release 30,000-frame layer-on runs
+  pass with Event ranges 290..298 and 292..313 respectively, SDK=619/debug=true/
+  synchronizedQueueValidation=true, paired app-local module paths, three GPU
+  readbacks, normal exit and no native warnings/errors. Private bytes in sampled
+  steady windows: Debug 174575616->175243264; Release 174182400->174370816.
+  Logs/JSON: build/d3d12-handle-fix/baseline-regression, fixed-Debug-on,
+  fixed-Release-on. Probe logs: probe-system.log and probe-agility.log; matched
+  30,000 pending waits leave 30,001 versus four extra handles after idle, and
+  30,228 versus 229 total handles after device release. No private DLL stack
+  attribution is claimed; the failing native API/validation-runtime combination
+  is directly isolated, and the paired runtime update removes it.
+  Release matched 30,000-frame controls (matched-Release):
+  layer off/no replacement: handles 707->707, private 162000896->162193408;
+  layer off/replacement: 704->704, 162193408->163078144;
+  layer on/no replacement: 748->763, 176721920->177250304;
+  layer on/replacement: 752->745, 175263744->175751168.
+  All four pass readbacks, shutdown, native validation and bounded retirement.
+  Earlier historical layer-on controls reached 271,487/281,367 handles at the
+  same frame count. Debug P3 6,000 frames also passes 349 replacements/403 probes
+  with handles 748->748 and private 188461056->189296640 (post-stress-Debug).
+  D3D12 P1/P2 Debug/Release and P3 Release acceptance pass (p1-/p2-/p3-*);
+  MSAA/MRT/depth/LOAD/resize regression passes all four backend variants in
+  Debug/Release (msaa-*). Final engine DLL hashes match both examples in both
+  configurations; all deployed DLL/license bytes match the prepared package.
+  CMake VS2022 native engine/examples and real Ninja export builds pass;
+  Premake VS2022 generation and emitted SDK deployment commands pass inspection.
+  Exported Runtime/D3D12 includes all five files; packaged replacement/no-
+  replacement/discard/synthetic-resize/eight-second stress pass with clean
+  diagnostics (package-check, handles 751..776). A cache/log-free package copy
+  launched through the root launcher from an empty cwd passes SDK/full-validation
+  and readback checks without extracting Assets (cold-package/cold-launch.log).
+  Non-ASCII executable paths, missing-runtime startup, mismatched system-layer/
+  app-Core startup and missing-runtime deployment checks pass; malformed hash
+  is rejected before extraction and the valid offline archive prepares in a
+  native-launched Windows PowerShell child. Full-config missing-runtime failure
+  intentionally exits nonzero; there is no system fallback. All owned processes
+  have finished. No device-wide frame waits, disabled validation, vendor changes,
+  OS runtime replacement, global environment/profiler changes or desktop control.
+  Remaining limits: other OS/driver combinations, full Premake/Mono builds,
+  interactive window checks, injected device loss/OOM and indefinite runs are
+  untested. Historical unrelated driver/heap groups remain unattributed below;
+  this does not mean the reproduced Event leak is still open on the pinned SDK.
+  No commit/push requested for this fix; preexisting tmp/ and backend config stay
+  untouched. Link/diff review and unstaged panel refresh are handoff checks.
+  Handoff checks passed: 72 relative documentation links, diagnostic-runner syntax,
+  final DLL/runtime/license identity checks and git diff --check. Intended source/
+  deployment diff reviewed; each Premake consumer has exactly one SDK copy hook.
+  Unstaged review refresh requested (queued by the app); staging remains empty.
+
 ## Current-source matched-frame follow-up (2026-10-31)
 
 Bounded diagnostic milestone completed under
@@ -25,6 +196,11 @@ build/foundation/lifetime-Release/. Earlier stack attribution below is historica
 evidence, not a new current-source profiler capture.
 
 ## Open diagnosis and historical evidence
+
+The current native Event-handle leak is resolved above. The older heap traces
+below remain historical evidence about additional driver/CPU bookkeeping; they
+do not establish continuing growth with the pinned runtime or assign every heap
+allocation to the Event defect.
 
 - [ ] Isolate D3D12 Debug Layer private-byte growth. It rose by about 17-19 MB
   over 110 seconds with and without resource replacement, while the layer-off

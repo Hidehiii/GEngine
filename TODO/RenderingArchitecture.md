@@ -1,5 +1,28 @@
 # Rendering architecture refactor
 
+Version-exclusion recovery tips distinguish Windows-serviced SDKLayers, compiler
+SDK retargeting and separate Agility integration; see
+[BuildAndRun](../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
+This changes build diagnostic guidance only, not runtime selection/rendering APIs.
+
+## D3D12 build-host version exclusion (2026-11-01)
+
+User correction: the SDK pin/deployment approach below is superseded history. Current policy rejects Windows project builds when installed x64 system SDKLayers is exactly 10.0.26100.4768, with a console error and warning popup. CMake/Premake share the check; normal runtime creation/public APIs are unchanged. No pinned SDK or additional deployment dependency is required. See [D3D12Memory](Integration/D3D12Memory.md) for current verification and limits.
+
+2026-11-01 D3D12 Event-handle growth has native API attribution under
+[D3D12Memory](Integration/D3D12Memory.md): the system SDK layer retains Events
+for pending cross-queue Wait calls, including after idle/device release. The
+same probe is flat on Agility 1.619.5. The repair pins/prepares/deploys this
+paired runtime and uses a backend-owned SDK 619 independent device factory,
+with full synchronized queue validation. No queue ordering or public API
+changes. Debug/Release 30,000-frame native Event ranges are 290..298 / 292..313;
+the unfixed 6,000-frame regression fails with growth 21,149. Matched Release
+layer/replacement controls, all-backend MSAA, D3D12 P1-P3 and true package/cold
+launch pass with clean native output. P3 Debug stress keeps handles 748->748
+across 6,000 frames. Exact logs, bootstrap/deployment negatives and remaining
+OS/driver/build limits are in the owning TODO. The historical extra driver/heap
+groups are not all attributed; the reproduced native Event leak is fixed.
+
 2026-11-01 bounded P3 ordered HDR post-processing is implemented and verified,
 under [RenderPipeline](Rendering/RenderPipeline.md). Payload v3 declares ordered
 exposure/Reinhard settings over RGBA16F intermediates and an explicit linear/sRGB

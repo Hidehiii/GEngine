@@ -1,5 +1,16 @@
 # Build entry points
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+Windows CMake/Premake builds reject installed x64 system SDKLayers version 10.0.26100.4768 with a console error and warning popup (10-second timeout). Update Windows/Graphics Tools and rebuild. Other versions are allowed, not certified. Run powershell -NoProfile -File BuildScripts/CheckD3D12Runtime.ps1 -NoPopup for a console-only check; exit 1 still rejects. GENGINE_BUILD_NO_POPUP=1 or nonempty CI suppresses only UI. Missing optional SDKLayers is allowed; unreadable existing metadata fails explicitly. No SDK preparation or public rendering API change is required.
+
+Rejected-build console/popup output includes Windows Update/Graphics Tools steps,
+the console recheck command and the local
+[version-switch guide](../Guides/BuildAndRun.md#changing-sdkruntime-versions).
+Windows SDK retargeting only changes compilation inputs; app-local Agility needs
+separate integration and does not bypass the system check. Exit codes and
+exact-version exclusion are unchanged; no SDK selector/rendering API is added.
+
 ## GAsset conversion
 
 `GEngineTools.exe import-resource --source <file> --output <new.gasset>` imports

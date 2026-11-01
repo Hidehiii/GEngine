@@ -131,8 +131,22 @@ links
 	"%{Library.Vulkan}",
 }
 
+local d3d12RuntimeCheckCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ..
+	path.getabsolute(path.join(_MAIN_SCRIPT_DIR, "BuildScripts/CheckD3D12Runtime.ps1")) .. '"'
+
+project "GEngine-D3D12RuntimeCheck"
+kind "Utility"
+objdir ("%{wks.location}/build/" .. outputdir .. "/%{prj.name}")
+prebuildmessage "Checking installed D3D12 validation runtime"
+prebuildcommands {
+	d3d12RuntimeCheckCommand
+}
+
 graphicsBackendProject("GEngine-D3D12Backend", "src/Platform/D3D12/**.cpp",
 	"include/Platform/D3D12/**.h")
+dependson { "GEngine-D3D12RuntimeCheck" }
+-- Also protect standalone backend project builds outside the solution graph.
+prebuildcommands { d3d12RuntimeCheckCommand }
 links
 {
 	"GLFW",

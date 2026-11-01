@@ -1,6 +1,16 @@
 # D3D12 diagnostics and troubleshooting
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+The isolated Tests/D3D12HandleProbe.cpp pending-wait test reproduced unbounded Event handles on system Core/SDKLayers 10.0.26100.4768: about 30,000 extra handles after 30,000 waits, retained after idle/device release. Layer-off, completed waits, signals and correctly synchronized reuse controls were flat. An alternate Agility 1.619.5 pair was flat with validation enabled; it is a diagnostic control, not a deployment requirement. No private allocation stack was available.
+
+Per user direction, CMake/Premake now reject builds when installed x64 system SDKLayers is exactly 10.0.26100.4768 and display a bounded warning popup. Update Windows/Graphics Tools before rebuilding. No forced SDK replacement or runtime validation disable occurs. GENGINE_BUILD_NO_POPUP=1/CI hides only UI; a console-only check is powershell -File BuildScripts/CheckD3D12Runtime.ps1 -NoPopup. Missing optional SDKLayers is allowed; unreadable existing metadata fails. Other versions are allowed but not verified; separate deployment machines need separate checks. See [the investigation record](../../TODO/Integration/D3D12Memory.md) for current evidence and superseded SDK-pinning history.
+
 ## Enable validation
+
+For SDK choices and recovery, see [Changing SDK/runtime versions](../Guides/BuildAndRun.md#changing-sdkruntime-versions).
+Build warnings include OS update/recheck steps. Compiler SDK retargeting or
+installing an Agility package alone does not switch this project's runtime.
 
 The D3D12 debug layer is opt-in in Debug and Release builds. Enable it for a diagnostic run:
 

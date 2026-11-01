@@ -1,5 +1,9 @@
 # FrameGraphTriangle
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+CMake/Premake builds reject installed x64 system SDKLayers 10.0.26100.4768 and show a 10-second warning popup for its reproduced Event-handle leak. Update Windows/Graphics Tools before rebuilding. GENGINE_BUILD_NO_POPUP=1 suppresses only UI for automation, never rejection. No app-local SDK is required. Example/runtime APIs are unchanged; this does not certify another machine.
+
 ## Per-format and MSAA regression
 
 Set `GENGINE_EXAMPLE_MSAA_CHECK=1` and `GENGINE_EXAMPLE_FRAME_LIMIT=120`, or use:

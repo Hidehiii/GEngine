@@ -214,6 +214,12 @@ target_link_libraries(GEngine-VulkanBackend PRIVATE GLFW ImGui spirv-cross-core
     "${GE_VULKAN_SDK}/Lib/vulkan-1.lib")
 
 ge_add_graphics_backend(GEngine-D3D12Backend "${GE_D3D12_BACKEND_SOURCES}")
+add_custom_target(GEngine-D3D12RuntimeCheck
+    COMMAND powershell.exe -NoProfile -ExecutionPolicy Bypass
+        -File "${GE_ROOT}/BuildScripts/CheckD3D12Runtime.ps1"
+    COMMENT "Checking installed D3D12 validation runtime"
+    VERBATIM)
+add_dependencies(GEngine-D3D12Backend GEngine-D3D12RuntimeCheck)
 target_link_libraries(GEngine-D3D12Backend PRIVATE GLFW ImGui d3d12 dxgi dxguid
     d3dcompiler
     "${GE_VENDOR}/dxc/lib/x64/dxcompiler.lib"

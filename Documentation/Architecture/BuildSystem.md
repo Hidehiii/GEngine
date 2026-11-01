@@ -1,5 +1,15 @@
 # Build system architecture
 
+## D3D12 build-host version exclusion (2026-11-01)
+
+Both Windows CMake and Premake build graphs require an always-run utility check before the D3D12 backend. BuildScripts/CheckD3D12Runtime.ps1 reads the installed x64 system d3d12SDKLayers.dll file version (Sysnative in a 32-bit host). Exactly 10.0.26100.4768 rejects the build for the reproduced pending-Wait Event leak. It prints version/path/recovery guidance and shows a warning popup with a 10-second timeout. GENGINE_BUILD_NO_POPUP=1 or CI suppresses only the popup; rejection remains active. Missing optional Graphics Tools is allowed; unreadable existing metadata fails. Runtime creation, public APIs and queue scheduling are unchanged. No pinned SDK/download/deployment step is required. This checks the build machine, not another deployment machine.
+
+Version-rejection messages include OS servicing/recheck steps and distinguish
+compiler SDK retargeting; see the [version-switch guide](../Guides/BuildAndRun.md#changing-sdkruntime-versions).
+App-local Agility remains unimplemented under the current system-runtime policy.
+This changes diagnostic text only; build dependencies, rejection policy, runtime
+selection and public rendering interfaces are unchanged.
+
 GAsset conversion and reference repair are exposed through `GEngineTools gasset`.
 `import-resource` reuses its C++ serializer for one nondestructive import, with
 same-directory staging and a no-replacement publish operation. The Qt Host calls
