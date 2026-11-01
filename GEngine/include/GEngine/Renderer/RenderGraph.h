@@ -44,6 +44,7 @@ namespace GEngine
 			std::vector<FrameBufferTextureFormat> ColorFormats;
 			FrameBufferTextureFormat DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_NONE;
 			uint32_t Samples = 1;
+			DepthResolveMode DepthResolve = DepthResolveMode::BackendDefault;
 			RenderPassOperation Operation{};
 			std::vector<SubpassSpecification> Subpasses;
 		};

@@ -172,6 +172,16 @@ namespace GEngine
 	{
 		if (!width || !height || specification.RenderTargets.empty())
 			throw std::invalid_argument("A graph target needs dimensions and color attachments.");
+		AttachmentSpecification portable{};
+		portable.ColorFormats = specification.RenderTargets;
+		portable.DepthStencilFormat = specification.DepthStencil;
+		portable.Samples = specification.Samples;
+		portable.DepthResolve = specification.DepthResolve;
+		portable.Operation = specification.Operation;
+		for (const auto& subpass : specification.Subpasses)
+			portable.Subpasses.push_back({ subpass.RenderTargetIndices,
+				subpass.InputRenderTargetIndices, subpass.EnableDepthStencil });
+		ValidateAttachmentSpecification(portable);
 		Target target{ specification, width, height, {}, {} };
 		for (size_t i = 0; i < specification.RenderTargets.size(); ++i)
 		{
@@ -632,8 +642,8 @@ namespace GEngine
 	bool RenderGraph::Compile()
 	{
 		m_IsCompiled = false;
-		m_SupportsIndependentSubresourceScheduling =
-			Graphics::GetCapabilities().IndependentSubresourceScheduling;
+		const auto capabilities = Graphics::GetCapabilities();
+		m_SupportsIndependentSubresourceScheduling = capabilities.IndependentSubresourceScheduling;
 		m_ExecutionOrder.clear();
 		for (auto& pass : m_Passes)
 			pass.InferredDependencies.clear();
@@ -655,11 +665,22 @@ namespace GEngine
 		}
 
 		ValidateResourceAccesses();
+		const uint32_t maxTextureSize = m_Targets.empty() ? 0 : Graphics::GetMaxTexture2DSize();
+		for (const auto& target : m_Targets)
+		{
+			if (!capabilities.RenderPass || !capabilities.FrameBuffer)
+				throw std::invalid_argument("Render-graph targets are not supported by the active backend.");
+			if (target.Width > maxTextureSize || target.Height > maxTextureSize)
+				throw std::invalid_argument("Render-graph target dimensions exceed the device limit.");
+			if (target.Colors.size() > capabilities.MaxColorAttachments)
+				throw std::invalid_argument("Render-graph color attachment count exceeds the device limit.");
+			if (!target.Specification.Subpasses.empty() && !capabilities.Subpasses)
+				throw std::invalid_argument("Render-graph subpasses are not supported by the active backend.");
+			Graphics::GetRenderDevice().ValidateRenderTarget(target.Specification, target.Width, target.Height);
+		}
 		CreateTransientResources();
 		for (auto& target : m_Targets)
 		{
-			if (!target.Specification.Subpasses.empty() && !Graphics::GetCapabilities().Subpasses)
-				throw std::invalid_argument("Render-graph subpasses are not supported by the active backend.");
 			if (!target.Object)
 			{
 				auto& device = Graphics::GetRenderDevice();
@@ -950,6 +971,7 @@ namespace GEngine
 		result.RenderTargets = specification.ColorFormats;
 		result.DepthStencil = specification.DepthStencilFormat;
 		result.Samples = specification.Samples;
+		result.DepthResolve = specification.DepthResolve;
 		result.Operation = specification.Operation;
 		result.Subpasses.reserve(specification.Subpasses.size());
 		for (const auto& subpass : specification.Subpasses)
@@ -964,14 +986,21 @@ namespace GEngine
 	{
 		if (specification.ColorFormats.empty())
 			throw std::invalid_argument("A portable graph attachment needs at least one color format.");
-		if (std::find(specification.ColorFormats.begin(), specification.ColorFormats.end(),
-			FRAME_BUFFER_TEXTURE_FORMAT_NONE) != specification.ColorFormats.end())
-			throw std::invalid_argument("Portable graph color formats cannot be none.");
-		if (specification.Samples == 0)
-			throw std::invalid_argument("Portable graph attachments require a non-zero sample count.");
+		for (const auto format : specification.ColorFormats)
+			if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RG16UI)
+				throw std::invalid_argument("Portable graph color formats must be valid color formats.");
+		if (specification.Samples == 0 || specification.Samples > 64 ||
+			(specification.Samples & (specification.Samples - 1)) != 0)
+			throw std::invalid_argument("Portable graph sample count must be a power of two from 1 through 64.");
 		if (specification.DepthStencilFormat != FRAME_BUFFER_TEXTURE_FORMAT_NONE &&
 			!Utils::isDepthFormat(specification.DepthStencilFormat))
 			throw std::invalid_argument("Portable graph depth format must be a depth-stencil format.");
+		const auto& operation = specification.Operation;
+		if (operation.ColorBegin < RENDER_PASS_BEGINE_OP_NONE || operation.ColorBegin > RENDER_PASS_BEGINE_OP_CLEAR ||
+			operation.DepthStencilBegin < RENDER_PASS_BEGINE_OP_NONE || operation.DepthStencilBegin > RENDER_PASS_BEGINE_OP_CLEAR ||
+			operation.ColorEnd < RENDER_PASS_END_OP_NONE || operation.ColorEnd > RENDER_PASS_END_OP_STORE ||
+			operation.DepthStencilEnd < RENDER_PASS_END_OP_NONE || operation.DepthStencilEnd > RENDER_PASS_END_OP_STORE)
+			throw std::invalid_argument("Portable graph attachment operation is invalid.");
 
 		const uint32_t depthAttachmentIndex = static_cast<uint32_t>(specification.ColorFormats.size());
 		for (const auto& subpass : specification.Subpasses)
@@ -980,8 +1009,7 @@ namespace GEngine
 				if (index >= specification.ColorFormats.size())
 					throw std::invalid_argument("Portable graph subpass color attachment index is out of range.");
 			for (uint32_t index : subpass.InputAttachmentIndices)
-				if (index >= depthAttachmentIndex ||
-					(index == depthAttachmentIndex && specification.DepthStencilFormat == FRAME_BUFFER_TEXTURE_FORMAT_NONE))
+				if (index >= depthAttachmentIndex)
 					throw std::invalid_argument("Portable graph subpass input attachment index is out of range.");
 			if (subpass.EnableDepthStencil && specification.DepthStencilFormat == FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 				throw std::invalid_argument("Portable graph subpass cannot enable a missing depth attachment.");

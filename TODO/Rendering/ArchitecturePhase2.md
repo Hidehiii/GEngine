@@ -1,3 +1,14 @@
+## Current status (2026-10-31)
+
+This file preserves retirement history. Current submission/ownership coverage
+is tracked in [ResourceOwnership](ResourceOwnership.md); build and capability
+follow-ups are in [Phase4](Phase4.md). Older statements about Release/PhysX or
+Debug fmt failures are historical. Transfer builders and texture subresource
+barriers now exist; general exclusive ownership, external queue users and
+allocation-growth attribution remain open.
+
+## Historical notes
+
         in `CrossComputerIntegration.md`, not inferred from either parent.
         Current milestone: retire material descriptor sets and shader-owned
         layouts/modules through submission completion; make shared-pool release

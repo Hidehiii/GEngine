@@ -31,6 +31,7 @@ namespace GEngine
 		bool Compute = false;
 		bool Subpasses = false;
 		bool IndependentSubresourceScheduling = false;
+		uint32_t MaxColorAttachments = 0;
 
 		std::string Backend;
 		std::string Version;

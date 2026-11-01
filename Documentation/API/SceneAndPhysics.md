@@ -1,5 +1,9 @@
 # Scene, component, and physics API
 
+TODO reconciliation (2026-10-31): native C++ scripts use static registration
+alongside managed scripts; scene physics stepping remains unsupported. This
+audit changes no public API; removed component helper tasks are historical.
+
 [API index](README.md) · [Scene architecture](../Architecture/SceneAndServices.md)
 
 ## GameObject base data

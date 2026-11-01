@@ -33,7 +33,7 @@ namespace GEngine
 		m_Descriptor.AddressW = ToD3D12AddressMode(spec.WrapW);
 		m_Descriptor.MipLODBias = 0.0f;
 		m_Descriptor.MaxAnisotropy = 1;
-		m_Descriptor.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		m_Descriptor.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 		m_Descriptor.BorderColor[0] = 0.0f;
 		m_Descriptor.BorderColor[1] = 0.0f;
 		m_Descriptor.BorderColor[2] = 0.0f;

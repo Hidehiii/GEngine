@@ -1,5 +1,14 @@
 ## Combined milestones requested 2026-09-12
 
+Current status (2026-10-31): the entries below retain historical milestone
+evidence. Fine graphics-stage declarations, supported texture-range scheduling,
+transfer builders, device-owned factories and named backend modules are now
+implemented; see [FrameGraphCore](FrameGraphCore.md),
+[ResourceOwnership](ResourceOwnership.md) and [Phase4](Phase4.md). Remaining
+foundation work includes broader ownership/buffer ranges, attachment/capability
+coverage and lifetime diagnosis. Pooling/aliasing remains deferred. Old
+whole-resource-only and transfer-unsupported descriptions below are historical.
+
 - [~] Completion follow-up: graph-owned command recording/submission and portable
       framebuffer attachments; graphics/compute dependency submission with early
       Vulkan semaphore waits and safe semaphore retirement; shared-family Vulkan

@@ -83,7 +83,8 @@ namespace GEngine
 			m_Height = desc.Height;
 			m_MipLevels = desc.MipLevels;
 			m_DxgiFormat = desc.Format;
-			m_Format = RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM;
+			m_Format = desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM ? RENDER_IMAGE_2D_FORMAT_RGBA8_UNORM :
+				(desc.Format == DXGI_FORMAT_R8G8B8A8_SNORM ? RENDER_IMAGE_2D_FORMAT_RGBA8_SNORM : RENDER_IMAGE_2D_FORMAT_NONE);
 			InitializeShaderResourceView();
 		}
 	}
@@ -96,6 +97,10 @@ namespace GEngine
 	void D3D12Texture2D::InitializeShaderResourceView()
 	{
 		m_SRVDesc.Format					= m_DxgiFormat != DXGI_FORMAT_UNKNOWN ? m_DxgiFormat : Utils::RenderImage2DFormatToDXGIFormat(m_Format);
+		if (m_DxgiFormat == DXGI_FORMAT_R32_TYPELESS || m_DxgiFormat == DXGI_FORMAT_D32_FLOAT)
+			m_SRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		if (m_DxgiFormat == DXGI_FORMAT_R24G8_TYPELESS || m_DxgiFormat == DXGI_FORMAT_D24_UNORM_S8_UINT)
+			m_SRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 		m_SRVDesc.ViewDimension				= D3D12_SRV_DIMENSION_TEXTURE2D;
 		m_SRVDesc.Shader4ComponentMapping	= D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		m_SRVDesc.Texture2D.MipLevels		= m_MipLevels;

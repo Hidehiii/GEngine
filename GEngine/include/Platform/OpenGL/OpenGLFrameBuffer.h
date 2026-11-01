@@ -36,6 +36,7 @@ namespace GEngine
 		void EndPresentRender(CommandBuffer* cmdBuffer) override;
 	private:
 		void CreateBuffer();
+		void ReleaseBuffer();
 	private:
 		uint32_t										m_FrameBuffer = 0;
 		Ref<OpenGLRenderPass>							m_RenderPass;

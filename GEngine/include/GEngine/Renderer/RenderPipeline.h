@@ -114,9 +114,15 @@ namespace GEngine
 		void ConfigureIfNeeded();
 
 	private:
+		enum class State
+		{
+			Unconfigured, Configuring, ConfiguringPasses, Ready,
+			Executing, AwaitingPresent, Presenting, Failed
+		};
+
 		RenderGraph m_Graph;
 		std::vector<Ref<RenderPipelinePass>> m_Passes;
 		uint64_t m_Frame = 0;
-		bool m_Configured = false;
+		State m_State = State::Unconfigured;
 	};
 }

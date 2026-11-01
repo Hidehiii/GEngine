@@ -1,4 +1,5 @@
 #include "FrameGraphTriangleLayer.h"
+#include "MsaaChecks.h"
 #include <GEngine/Graphics/Texture.h>
 #include <GEngine/Renderer/RenderGraph.h>
 #include <array>
@@ -67,6 +68,96 @@ namespace GEngine
 		GE_INFO("Graphics capability snapshot: {} {}.", capabilities.Backend, capabilities.Version);
 		for (const auto& source : capabilities.QuerySources)
 			GE_INFO("Graphics capability source: {}.", source);
+		const auto maxTextureSize = Graphics::GetMaxTexture2DSize();
+		const auto maxUniformBytes = Graphics::GetMaxUniformBufferSize();
+		GE_INFO("Foundation limits: color attachments={}, texture dimension={}, uniform bytes={}.",
+			capabilities.MaxColorAttachments, maxTextureSize, maxUniformBytes);
+		if (!capabilities.MaxColorAttachments || !maxTextureSize ||
+			(capabilities.UniformBuffer && maxUniformBytes < 16384))
+			throw std::runtime_error("Invalid foundation limits or uniform-buffer capacity units.");
+
+		for (int legacy = 0; legacy < 2; ++legacy)
+		{
+			for (int scenario = 0; scenario < 13; ++scenario)
+			{
+				RenderGraph invalid;
+				RenderGraph::AttachmentSpecification attachment{};
+				attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+				uint32_t width = 16;
+				switch (scenario)
+				{
+				case 0: attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 }; break;
+				case 1: attachment.ColorFormats = { static_cast<FrameBufferTextureFormat>(999) }; break;
+				case 2: attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_NONE }; break;
+				case 3: attachment.DepthStencilFormat = FRAME_BUFFER_TEXTURE_FORMAT_RGBA8; break;
+				case 4: attachment.Samples = 0; break;
+				case 5: attachment.Samples = 3; break;
+				case 6: attachment.Operation.ColorBegin = static_cast<RenderPassBeginOperation>(99); break;
+				case 7: attachment.Operation.ColorEnd = static_cast<RenderPassEndOperation>(99); break;
+				case 8: attachment.Subpasses.push_back({ { 1 }, {}, false }); break;
+				case 9: attachment.Subpasses.push_back({ { 0 }, { 1 }, false }); break;
+				case 10: attachment.Subpasses.push_back({ { 0 }, {}, true }); break;
+				case 11: width = 0; break;
+				case 12: attachment.DepthStencilFormat = static_cast<FrameBufferTextureFormat>(999); break;
+				}
+				bool rejected = false;
+				try
+				{
+					if (legacy)
+					{
+						RenderPassSpecification specification{};
+						specification.RenderTargets = attachment.ColorFormats;
+						specification.DepthStencil = attachment.DepthStencilFormat;
+						specification.Samples = attachment.Samples;
+						specification.Operation = attachment.Operation;
+						for (const auto& subpass : attachment.Subpasses)
+							specification.Subpasses.push_back({ subpass.ColorAttachmentIndices,
+								subpass.InputAttachmentIndices, subpass.EnableDepthStencil });
+						invalid.CreateRenderTarget("InvalidLegacyAttachment", specification, width, 16);
+					}
+					else
+						invalid.CreateRenderTarget("InvalidPortableAttachment", attachment, width, 16);
+				}
+				catch (const std::invalid_argument&) { rejected = true; }
+				if (!rejected)
+					throw std::runtime_error("Malformed graph attachment was accepted.");
+				RenderGraph::AttachmentSpecification valid{};
+				valid.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+				const auto target = invalid.CreateRenderTarget("AfterRejection", valid, 16, 16);
+				if (target != 0 || invalid.GetColorAttachment(target) != 0)
+					throw std::runtime_error("Rejected graph attachment modified graph declarations.");
+			}
+		}
+		for (int scenario = 0; scenario < 3; ++scenario)
+		{
+			if (scenario == 2 && capabilities.Subpasses) continue;
+			RenderGraph invalid;
+			const auto transient = invalid.CreateTransientStorageBuffer("PreflightSentinel", { 16 });
+			RenderGraph::AttachmentSpecification attachment{};
+			attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };
+			const auto valid = invalid.CreateRenderTarget("UnallocatedValidTarget", attachment, 16, 16);
+			uint32_t width = 16;
+			if (scenario == 0) width = maxTextureSize + 1;
+			if (scenario == 1) attachment.ColorFormats.resize(capabilities.MaxColorAttachments + 1,
+				FRAME_BUFFER_TEXTURE_FORMAT_RGBA8);
+			if (scenario == 2) attachment.Subpasses.push_back({ { 0 }, {}, false });
+			invalid.CreateRenderTarget("UnsupportedTarget", attachment, width, 16);
+			const char* expected = scenario == 0 ? "Render-graph target dimensions exceed the device limit." :
+				(scenario == 1 ? "Render-graph color attachment count exceeds the device limit." :
+					"Render-graph subpasses are not supported by the active backend.");
+			bool rejected = false;
+			try { invalid.Compile(); }
+			catch (const std::invalid_argument& error)
+			{
+				if (std::string(error.what()) != expected) throw;
+				rejected = true;
+				GE_INFO("Foundation preflight rejected: {}", error.what());
+			}
+			if (!rejected || invalid.GetStorageBuffer(transient) ||
+				invalid.GetResource(invalid.GetColorAttachment(valid)))
+				throw std::runtime_error("Graph target preflight allocated resources or accepted an unsupported target.");
+		}
+		GE_INFO("Foundation attachment preflight passed: portable/legacy declarations and allocation-free device rejection.");
 
 		// This must execute even when assertions are disabled.
 		RenderGraph graph;
@@ -607,6 +698,14 @@ namespace GEngine
 
 	void FrameGraphTriangleLayer::OnRender()
 	{
+		if ((m_RenderCount == 0 || m_RenderCount == 30 || m_RenderCount == 60) &&
+			std::getenv("GENGINE_EXAMPLE_MSAA_CHECK")) RunMsaaChecks();
+		if (std::getenv("GENGINE_EXAMPLE_MSAA_CHECK") && m_RenderCount < 120)
+		{
+			if (!m_MsaaFrameChecks) m_MsaaFrameChecks = CreateMsaaFrameChecks();
+			m_MsaaFrameChecks->Run(m_RenderCount);
+			if (m_RenderCount == 119) m_MsaaFrameChecks.reset();
+		}
 		static const bool replaceResources = std::getenv("GENGINE_EXAMPLE_NO_REPLACEMENT") == nullptr;
 		if (++m_RenderCount % 30 == 0 && replaceResources)
 		{

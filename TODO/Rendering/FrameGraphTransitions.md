@@ -1,3 +1,14 @@
+## Current status (2026-10-31)
+
+The notes below preserve implementation history. Fine stage intent, supported
+texture-range scheduling and transfer builders are implemented; see
+[FrameGraphCore](FrameGraphCore.md). Exclusive transfer images and compute
+buffers have bounded opt-in paths in [ResourceOwnership](ResourceOwnership.md).
+General ownership, buffer ranges, pooling/aliasing and lifetime diagnosis remain
+open; historical whole-resource-only/transfer-unsupported notes are superseded.
+
+## Historical notes
+
       transfer builders, and pooling/aliasing remain separate open work.
       Next milestone 2026-10-03: replace the empty array-layer transition
       callbacks with an actual backend-neutral texture copy on the graphics

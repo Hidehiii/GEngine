@@ -284,10 +284,24 @@ namespace GEngine
 				subpassDepthStencilResolve.sType							= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
 				subpassDepthStencilResolve.pDepthStencilResolveAttachment	= &depthAttachmentRef;
 				subpassDepthStencilResolve.depthResolveMode					= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
-				subpassDepthStencilResolve.stencilResolveMode				= VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+				subpassDepthStencilResolve.stencilResolveMode = m_Specification.DepthStencil ==
+					FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 ? VK_RESOLVE_MODE_SAMPLE_ZERO_BIT : VK_RESOLVE_MODE_NONE;
 			}
 		}
 		// create subpasses
+		if (m_Specification.Samples > 1 && m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+		{
+			const auto requested = m_Specification.DepthResolve;
+			if (requested == DepthResolveMode::Minimum || requested == DepthResolveMode::Maximum)
+			{
+				subpassDepthStencilResolve.depthResolveMode = requested == DepthResolveMode::Minimum ? VK_RESOLVE_MODE_MIN_BIT : VK_RESOLVE_MODE_MAX_BIT;
+				VkPhysicalDeviceDepthStencilResolveProperties resolve{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES };
+				VkPhysicalDeviceProperties2 properties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, &resolve };
+				vkGetPhysicalDeviceProperties2(VulkanContext::Get()->GetPhysicalDevice(), &properties);
+				if (m_Specification.DepthStencil == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 && !resolve.independentResolve)
+					subpassDepthStencilResolve.stencilResolveMode = subpassDepthStencilResolve.depthResolveMode;
+			}
+		}
 		if (m_Specification.Subpasses.size() > 0)
 		{
 			// use the subpasses specified in the specification
@@ -401,14 +415,14 @@ namespace GEngine
 				dependency.srcStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 				dependency.srcAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 				dependency.dstStageMask		|= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				dependency.dstAccessMask	|= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 			}
 			if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
 			{
 				dependency.srcStageMask		|= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 				dependency.srcAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 				dependency.dstStageMask		|= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-				dependency.dstAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				dependency.dstAccessMask	|= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 			}
 
 			dependencies.push_back(dependency);

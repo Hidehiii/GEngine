@@ -93,8 +93,9 @@
   Publication adds no further architecture or public API behavior.
 
 - [ ] Wire or explicitly scope out 3D scene simulation. Current
-  `Scene::OnAwake` creates `Physics3DWorld`, but `Scene::OnFixedUpdate` only
-  calls `Physics2DWorld::Simulate`; no 3D step occurs through `Scene::OnUpdate`.
+  scene lifecycle no longer creates or steps either physics world after the
+  component consolidation. The earlier Physics3DWorld/Physics2DWorld call-path
+  description is historical; standalone physics services remain available.
   Acceptance if supported: a scene-owned 3D rigid body advances under a fixed
   timestep in a focused example, with PhysX initialization and shutdown owned
   by the runtime. Otherwise document the 3D world as a manual/experimental API.
@@ -148,5 +149,6 @@
       Transform/engine API access, project assemblies beyond ScriptCore,
       editor script authoring/compilation, long-run behavior, and backend
       rendering interaction with script-driven scene changes are not complete.
-      C++ is the native engine/application language but is not a generic
-      scene-script language; only C# ScriptBehaviour classes are dispatched.
+      Native C++ scene scripts are now supported through static registration;
+      see [the native script milestone](ScriptingAndPackaging.md). Dynamic
+      native loading and project managed assemblies remain unsupported.

@@ -227,23 +227,79 @@ namespace GEngine
 		capabilities.StorageImage = version >= 420 || hasExtension("GL_ARB_shader_image_load_store");
 		capabilities.Compute = version >= 430 || hasExtension("GL_ARB_compute_shader");
 		capabilities.Subpasses = false;
+		GLint maxColorAttachments = 0, maxDrawBuffers = 0;
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
+		capabilities.MaxColorAttachments = static_cast<uint32_t>(std::max(0,
+			std::min(maxColorAttachments, maxDrawBuffers)));
+		capabilities.QuerySources.push_back("MaxColorAttachments=min(GL_MAX_COLOR_ATTACHMENTS,GL_MAX_DRAW_BUFFERS)=" +
+			std::to_string(capabilities.MaxColorAttachments));
 		capabilities.IndependentSubresourceScheduling = false;
 		capabilities.QuerySources.push_back("Subpasses=OpenGL has no subpass contract");
 		capabilities.QuerySources.push_back(
 			"IndependentSubresourceScheduling=OpenGL uses whole-resource memory barriers");
 		return capabilities;
 	}
+	RenderTargetFormatCapabilities OpenGLGraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
+	{
+		RenderTargetFormatCapabilities result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		const auto native = Utils::FrameBufferTextureFormatToGLInternalFormat(format);
+		GLint supported = 0, renderable = 0, sampled = 0;
+		glGetInternalformativ(GL_TEXTURE_2D, native, GL_INTERNALFORMAT_SUPPORTED, 1, &supported);
+		glGetInternalformativ(GL_TEXTURE_2D, native, GL_FRAMEBUFFER_RENDERABLE, 1, &renderable);
+		glGetInternalformativ(GL_TEXTURE_2D, native, GL_FRAGMENT_TEXTURE, 1, &sampled);
+		if (!supported || renderable == GL_NONE) return result;
+		const bool depth = format >= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		result.ColorAttachment = !depth;
+		result.DepthStencilAttachment = depth;
+		result.Sampled = sampled != GL_NONE;
+		result.ColorResolve = !depth;
+		result.DepthResolve = depth;
+		if (depth) result.DepthResolveModes = static_cast<uint32_t>(DepthResolveMode::BackendDefault);
+		result.MultisampleLoad = true;
+		result.SampleCounts = 1;
+		GLint count = 0;
+		glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, native, GL_NUM_SAMPLE_COUNTS, 1, &count);
+		std::vector<GLint> samples(static_cast<size_t>(std::max(0, count)));
+		if (count) glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, native, GL_SAMPLES, count, samples.data());
+		for (const auto sample : samples)
+			if (sample > 1 && sample <= 64 && (sample & (sample - 1)) == 0) result.SampleCounts |= sample;
+		GLint maxWidth = 0, maxHeight = 0, framebufferWidth = 0, framebufferHeight = 0;
+		glGetInternalformativ(GL_TEXTURE_2D, native, GL_MAX_WIDTH, 1, &maxWidth);
+		glGetInternalformativ(GL_TEXTURE_2D, native, GL_MAX_HEIGHT, 1, &maxHeight);
+		if (result.SampleCounts > 1)
+		{
+			GLint multisampleWidth = 0, multisampleHeight = 0;
+			glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, native, GL_MAX_WIDTH, 1, &multisampleWidth);
+			glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, native, GL_MAX_HEIGHT, 1, &multisampleHeight);
+			maxWidth = std::min(maxWidth, multisampleWidth);
+			maxHeight = std::min(maxHeight, multisampleHeight);
+		}
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &framebufferWidth);
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &framebufferHeight);
+		result.MaxWidth = static_cast<uint32_t>(std::max(0, std::min(maxWidth, framebufferWidth)));
+		result.MaxHeight = static_cast<uint32_t>(std::max(0, std::min(maxHeight, framebufferHeight)));
+		return result;
+	}
+
 	Ref<RenderPass> OpenGLGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
 	{
+		ValidateRenderTarget(spec, 1, 1);
+		if (!spec.Subpasses.empty() || spec.RenderTargets.size() > GetCapabilities().MaxColorAttachments)
+			throw std::invalid_argument("Unsupported OpenGL subpasses or color attachment count.");
 		return CreateRef<OpenGLRenderPass>(spec);
 	}
 	Ref<FrameBuffer> OpenGLGraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
+		if (!renderPass) throw std::invalid_argument("A render pass is required.");
+		ValidateRenderTarget(renderPass->GetSpecification(), width, height);
 		return CreateRef<OpenGLFrameBuffer>(renderPass, width, height);
 	}
 	Ref<FrameBuffer> OpenGLGraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
 	{
-		return CreateRef<OpenGLFrameBuffer>(buffer, width, height);
+		if (!buffer) throw std::invalid_argument("A framebuffer is required.");
+		return CreateFrameBuffer(buffer->GetRenderPass(), width, height);
 	}
 	Ref<Texture2D> OpenGLGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
 	{

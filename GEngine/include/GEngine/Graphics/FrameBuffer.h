@@ -13,7 +13,7 @@ namespace GEngine
 
 	class CommandBuffer;
 
-	class GENGINE_API FrameBuffer
+	class GENGINE_API FrameBuffer : public std::enable_shared_from_this<FrameBuffer>
 	{
 	public:
 		FrameBuffer() = default;

@@ -1,5 +1,53 @@
 # Rendering architecture refactor
 
+2026-11-01 per-format queries and MSAA are tracked in
+[Phase 4](Rendering/Phase4.md#per-format-capabilities-and-msaa-2026-11-01).
+Device queries expose attachment/sample/resolve support and format/framebuffer
+dimensions; graph/native factories validate before allocation. Backend MSAA
+color creation/views/resolves are repaired, and returned attachment references
+retain their framebuffer through later queue submissions. FrameGraphTriangle
+has opt-in repeated MRT/depth/fractional-edge readbacks and a D3D12 single-mip
+array regression. CMake GE_WITH_MONO=OFF Debug/Release and all four 120-frame
+backend variants passed three 24-case matrices; Debug 6000-frame runs also
+passed. D3D12 debug-layer handle growth remains separately unresolved. D3D12 depth
+resolve and Vulkan preserved multisample LOAD were unsupported in that baseline.
+The authorized follow-up now implements queried native min/max D3D12 depth
+resolve with sampled views and Vulkan stored MSAA attachments/LOAD dependencies.
+DepthResolveMode is forwarded through graph declarations and render-pass cache
+keys. Debug/Release four-backend 120-frame matrices passed 1536 color cases,
+1184 numeric depth probes and 432 min/max edge checks, with actual-frame LOAD
+and recreation. Debug 6000-frame runs passed separately; Vulkan handles stayed
+near-flat, while the existing D3D12 debug-layer growth remains open. Native
+diagnostics were clean. Final logs: build/msaa-depth/verified-{Debug,Release}
+and stress-Debug; scope and untested hardware/build variants remain in Phase 4.
+
+2026-10-31 foundation closeout is tracked in
+[Phase 4](Rendering/Phase4.md#foundation-closeout-milestone-2026-10-31): consistent
+portable/legacy attachment validation, allocation-free target-limit preflight,
+backend color attachment limits and byte-correct D3D12 uniform capacity are
+implemented. Debug/Release FrameGraphTriangle builds and all four backend
+variants passed 120-frame regressions. Matched D3D12 lifetime controls completed;
+allocation ownership, general queue ownership, per-format/sample capability
+reporting and pooling/aliasing remain open. Historical foundation summaries now
+point to current topic evidence.
+
+2026-10-31 planned RenderPipeline extensions are tracked as P1-P3 in
+[RenderPipeline](Rendering/RenderPipeline.md#planned-pipeline-extensions-2026-10-31):
+pipeline assets/runtime switching, base/overlay camera stacking and ordered
+post-processing (initially exposure/tone mapping). Each entry defines scope,
+prerequisites and backend-specific acceptance. This is planning only; current
+rendering APIs, backend synchronization and GPU ownership are unchanged.
+
+2026-10-31 pipeline lifecycle follow-up is tracked in
+[RenderPipeline](Rendering/RenderPipeline.md): centralized pass configuration,
+paired frame phases and explicit graph rebuilds are implemented. Isolated
+GE_WITH_MONO=OFF CMake Debug/Release builds and OpenGL/Vulkan shared/D3D12/
+Vulkan dedicated 120-frame runs passed; Debug also passed 6,000 frames per
+variant. Actual window/visible checks and long-run memory remain unverified.
+Scene TODO
+reconciliation preserves native script registration and standalone physics
+ownership; no rendering backend API change is introduced by that audit.
+
 2026-10-29 component consolidation is tracked in SceneAndPhysics.md: only
 StaticMeshComponent, ImageComponent and CameraComponent remain attachable.
 GameObject owns transform/identity/active base data. ImageComponent samples its

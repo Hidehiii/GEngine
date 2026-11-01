@@ -15,3 +15,15 @@ non-memory Vulkan objects remain backend-owned native handles.
 ## Shader cache
 
 Compiled shader data is stored under the directory configured by `ShaderCacheDirectory` in `Config.ini`. The cache is keyed by source hash and backend. Reflection still runs when cached DXIL/SPIR-V is loaded, so engine-side reflection fixes do not require editing the shader source.
+
+D3D12 texture arrays (2026-11-01) explicitly allocate the same single mip that
+their public metadata and layer-copy/readback indexing report. This corrects
+layer 1 being mistaken for mip 1 on textures larger than 1x1; the existing
+texture-array signatures and one-mip contract are unchanged. The MSAA MRT
+regression exercises this path at 31x29 and 47x33 with both array layers.
+
+Framebuffer formats outside the existing RenderImage2DFormat schema report
+NONE through Texture2D::GetFormat instead of an RGBA8 alias or undefined value.
+Their native attachment format remains in FrameBufferSpecification and the
+per-format device query; shader use follows that native format. RGBA8 array
+copy/readback does not accept these differently typed images.

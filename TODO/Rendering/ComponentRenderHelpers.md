@@ -70,7 +70,9 @@ real resize/minimize/restore and long-run memory checks stay open.
   debug-output and long-run memory measurements remain tracked by the separate
   D3D12 Debug Layer memory investigation rather than this resize milestone.
 
-- [ ] Decide whether to implement or explicitly retire the scene component
+- [ ] Historical scope, superseded by [component consolidation](../SceneAndPhysics.md).
+  The old API below is retained as history, not a current implementation task.
+  Original task: decide whether to implement or explicitly retire the scene component
   render helpers. `ImageRenderer::OnRender` contains only a commented-out draw,
   `MeshRenderer::OnRender` has its pipeline draw disabled, and
   `GraphicsTool::Init/RenderPoint/RenderLine` have empty bodies. Acceptance for

@@ -34,6 +34,7 @@ namespace GEngine
 
 		virtual std::vector<std::string> GetExtensions() override;
 		virtual GraphicsCapabilities GetCapabilities() const override;
+		RenderTargetFormatCapabilities QueryRenderTargetFormat(FrameBufferTextureFormat format) const override;
 		virtual Ref<RenderPass> CreateRenderPass(const RenderPassSpecification& spec) override;
 		virtual Ref<FrameBuffer> CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height) override;
 		virtual Ref<FrameBuffer> ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height) override;

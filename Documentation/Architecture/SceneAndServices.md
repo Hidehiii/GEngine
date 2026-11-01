@@ -1,5 +1,9 @@
 # Scene, physics, assets, and services architecture
 
+TODO reconciliation (2026-10-31) preserves current ownership: standalone physics
+services are not scene-stepped, and ScriptEngine dispatches statically registered
+native behaviours alongside managed behaviours. No architecture change is made.
+
 ## GAsset envelope and scene extension
 
 First-party runtime resources use `.gasset`, and scenes use `.gscene`. A

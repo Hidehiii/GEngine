@@ -1,0 +1,55 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "MsaaCheck"
+    {
+        Pass
+        {
+            Cull Off
+            DepthTest Always
+            DepthWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            BlendOp None
+            ColorMask R G B A
+            Tag MsaaCheck
+            #pragma vertex vert
+            #pragma fragment frag
+            Program
+            {
+                struct Input
+                {
+                    float3 position : POSITION;
+                    float4 color0 : COLOR0;
+                    float4 color1 : COLOR1;
+                };
+                struct Varyings
+                {
+                    float4 position : SV_POSITION;
+                    float4 color0 : COLOR0;
+                    float4 color1 : COLOR1;
+                };
+                struct Output
+                {
+                    float4 color0 : SV_Target0;
+                    float4 color1 : SV_Target1;
+                };
+                Varyings vert(Input input)
+                {
+                    Varyings output;
+                    output.position = float4(input.position, 1.0);
+                    output.color0 = input.color0;
+                    output.color1 = input.color1;
+                    return output;
+                }
+                Output frag(Varyings input)
+                {
+                    Output output;
+                    output.color0 = input.color0;
+                    output.color1 = input.color1;
+                    return output;
+                }
+            }
+        }
+    }

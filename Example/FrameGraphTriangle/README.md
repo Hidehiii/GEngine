@@ -1,5 +1,72 @@
 # FrameGraphTriangle
 
+## Per-format and MSAA regression
+
+Set `GENGINE_EXAMPLE_MSAA_CHECK=1` and `GENGINE_EXAMPLE_FRAME_LIMIT=120`, or use:
+
+```bat
+python -B Tests/RenderingFoundation.py dist/pipeline-lifecycle/windows-x86_64/Debug/FrameGraphTriangle/FrameGraphTriangle.exe --msaa --logs build/msaa/Debug
+```
+
+Run the command from the repository root with your actual executable path;
+replace Debug with Release for that matrix. `--backend OpenGL`, `Vulkan`,
+`D3D12` or `VulkanDedicated` restricts the runner to one backend. It copies
+assets/config into isolated directories and records runtime.log/memory.csv.
+CMake discovers MsaaChecks.cpp through its existing CONFIGURE_DEPENDS glob;
+regenerate Premake projects to discover the added source through src/**.cpp.
+
+At frames 0, 30 and 60 the example logs all existing attachment-format queries,
+instantiates supported single-sample color formats, and rejects unsupported
+sample counts before graph allocations or native factory creation. For supported
+1x/2x/4x/8x counts it renders distinct red/green MRT outputs at 31x29 and 47x33,
+with no depth, D24S8 or D32 depth, then copies resolved colors to two array
+layers for numeric readback. A farther blue draw must remain occluded when
+depth is enabled; multisampled edges must contain fractional coverage values.
+Each case executes three times, checks explicit device resize/sample count,
+and retains an attachment reference across graph Reset. All three backends switch
+the second/third render to preserved MSAA LOAD where reported supported.
+Unsupported explicit depth modes are checked for rejection before allocation.
+
+Expected markers: `MSAA format`, `MSAA pixels passed`, and three
+`MSAA matrix passed` records followed by the normal three frame-119 readbacks
+and shutdown. Unsupported cases log a skip or rejection based on queried
+capabilities; a pixel mismatch, missing fractional edge, native validation error,
+or hanging run fails verification. These are offscreen numeric checks, not
+manual final-window pixel inspection. Supported D3D12 depth resolve and Vulkan
+preserved MSAA LOAD are included; no count is silently reduced.
+
+Verification (2026-11-01): GE_WITH_MONO=OFF CMake Debug/Release builds and
+120-frame GL, Vulkan shared, D3D12 layer-on and Vulkan dedicated runs passed.
+Each logged three 24-case matrices (18 multisample cases each) plus normal
+frame-119 readbacks/shutdown. Debug also passed 6000 frames per variant. Final
+logs are build/msaa/verified-{Debug,Release}/ and stress-Debug/; GL's final
+format-bound recheck is in final-limit-stress-Debug/ and final-limit-Release/.
+No final D3D12 warnings/errors or Vulkan validation diagnostics were captured.
+This does not establish numeric depth-sampling semantics, counts above 8,
+Premake/script integration or long-term memory stability. Existing D3D12
+debug-layer handle growth remains an independent open diagnosis.
+
+Foundation startup regression (2026-10-31): prints color attachment count,
+maximum texture dimension and uniform-buffer byte capacity. It rejects 13
+malformed target descriptions through each portable/legacy overload and checks
+that rejected declarations consume no graph handles. Device-limit and unsupported
+subpass checks must leave both a sentinel transient buffer and an earlier valid
+target unallocated. Expected marker: `Foundation attachment preflight passed:`.
+These checks execute in Debug and Release before the normal rendering workload.
+Run the isolated backend/lifetime matrix described in
+[Tests/README](../../Tests/README.md#rendering-foundation-and-lifetime-controls).
+Per-format multisample support and full removal of legacy render-pass contracts
+remain open; structural sample validation is not a hardware support query.
+
+Current verification: isolated GE_WITH_MONO=OFF CMake Debug/Release builds and
+120-frame OpenGL/Vulkan shared/D3D12/Vulkan dedicated runs passed all foundation
+checks, three readbacks and normal exit 0. Four matched 30,000-frame Release
+D3D12 layer/replacement controls also passed. Native validation errors were
+absent; validation-enabled memory/handle growth still requires attribution.
+See build/foundation/ for local logs/CSV and
+[the lifetime diagnosis](../../TODO/Integration/D3D12Memory.md). No visual or
+actual window interaction checks are claimed.
+
 Open FrameGraphTriangle.gproject in the Qt editor to load
 Assets/Scenes/Default.gscene automatically: a red quad on the left and a cyan
 quad above center on the right, rendered by the shared scene path. Project >
@@ -482,3 +549,24 @@ smoke run logged no validation errors; private bytes at 10/20/30 seconds were
 404291584 / 404422656 / 404422656. The process was stopped after the bounded test,
 so this does not verify normal shutdown, resize, visible output, or long-duration
 stability. OpenGL, D3D12, and Release were not run in this check.
+
+## Depth-resolve and preserved MSAA LOAD follow-up
+
+The existing `--msaa` runner also exercises conventional and reversed depth,
+queried explicit depth modes at 4x, and a depth-texture shader that converts
+resolved depth to RGBA8 for numeric center/background readback. After the first
+stored draw, LOAD executions omit the near geometry: only the farther geometry
+is drawn against retained depth. Color-only LOAD draws nothing. This catches
+discarded contents even when rendering the original triangle again would hide
+the defect. Run both Debug and Release and Vulkan shared/dedicated separately.
+Expected log: `MSAA numeric depth passed`, then three `MSAA matrix passed`.
+The persistent fixture also renders only far geometry on later actual frames,
+requires queried 4x D32 support and fails explicitly if it is unavailable,
+checks stored color and depth at frames 1/59/61/119, and recreates the target at
+60. Explicit min/max modes verify mixed-coverage edge pixels against clear and
+geometry depths. A nearest sampler reads exact pixel centers through the
+existing portable separate texture/sampler path. CMake GE_WITH_MONO=OFF
+Debug/Release and all four 120-frame backend variants passed, with clean native
+diagnostics. GL logs 48 cases/matrix, Vulkan shared/dedicated 72, D3D12 64,
+each repeated three times. Final logs: build/msaa-depth/verified-{Debug,Release}.
+See the owning Phase 4 TODO for stress and remaining verification limits.

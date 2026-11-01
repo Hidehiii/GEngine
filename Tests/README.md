@@ -1,5 +1,44 @@
 # Focused regression checks
 
+## Rendering foundation and lifetime controls
+
+Build the native FrameGraphTriangle target, then run from the repository root:
+
+```bat
+python Tests/RenderingFoundation.py dist/pipeline-lifecycle/windows-x86_64/Debug/FrameGraphTriangle/FrameGraphTriangle.exe --logs build/foundation/Debug
+python Tests/RenderingFoundation.py dist/pipeline-lifecycle/windows-x86_64/Debug/FrameGraphTriangle/FrameGraphTriangle.exe --mode lifetime --logs build/foundation/lifetime
+```
+
+Replace the executable with your actual build output; Release uses the same
+checks. The first command runs 120 frames each on OpenGL, Vulkan shared, D3D12
+with the debug layer, and Vulkan dedicated. The second runs matched 30,000-frame
+D3D12 controls with the layer on/off and replacement on/off. `--frames` overrides
+the bounded count (120..60000). Config and assets are copied to isolated run
+directories; original backend settings stay unchanged. Each run must pass the
+attachment preflight marker, three frame-119 GPU readbacks and normal shutdown;
+native validation errors and Vulkan validation warnings fail the run. Startup checks cover malformed
+portable/legacy attachments, device limits and rejection before any allocation.
+runtime.log and memory.csv record output, handles and private bytes; optional
+native lifetime traces/live-object messages are diagnostic evidence, not leak
+proof. Reports occur while context-owned objects still exist. A 120-second
+timeout kills only the runner's own process. No desktop automation or elevated
+system profiler configuration is used.
+Trend summaries omit the first three seconds and final teardown second;
+process-exit samples may show zero handles and must not be used as a plateau.
+
+Add `--msaa` to the native matrix command to check all attachment-format
+queries, supported format creation and repeated 1x/2x/4x/8x MRT/depth resolve
+pixel readbacks. The runner requires three `MSAA matrix passed` records at
+frames 0/30/60 in addition to the standard readbacks and exact frame-limit
+shutdown. `--backend OpenGL|Vulkan|D3D12|VulkanDedicated` selects one matrix
+case for focused diagnosis. See the FrameGraphTriangle README for unsupported
+depth-resolve/preserved-load semantics. No UI automation is used.
+
+The MSAA matrix passed in CMake Debug/Release on OpenGL, Vulkan shared/
+dedicated and D3D12 (real debug layer), plus Debug 6000-frame runs. The final
+logs contain three 24-case matrices per backend and all standard readbacks.
+MSAA mode additionally rejects D3D12 warnings and GL_INVALID diagnostics.
+
 ## Scene component assets and base data
 
 Build and run SceneRenderHelpers with GENGINE_SCENE_HELPER_FRAME_LIMIT=120.
@@ -116,3 +155,13 @@ the test writes `Logs/GEngine.log` only in the enabled case. Compile with the
 same Debug/Release runtime flags as above, adding `GEngine/src/GEngine/Core/Log.cpp`,
 `/I GEngine/src`, `/DGE_BUILD_DLL`, and `/DGE_ENABLE_LOCAL_LOG_SAVE=0` or `=1`.
 This is a focused branch check, not a substitute for building the full engine.
+Depth-resolve/LOAD follow-up: `RenderingFoundation.py --msaa` now additionally
+requires numeric resolved-depth logs and exactly four cross-frame LOAD probes.
+The example tests both depth conventions, explicit queried modes, min/max edge
+reduction, preserved color/depth at frames 1/59/61/119, and target recreation at
+60. Failed earlier fixture attempts remain in build/msaa-depth; use the final
+verified directories recorded in TODO/Rendering/Phase4.md as acceptance evidence.
+Final depth/LOAD acceptance logs: build/msaa-depth/verified-{Debug,Release} and
+stress-Debug, each containing all four variants. Debug/Release totaled 1536
+color cases, 1184 numeric depth probes and 432 min/max edge checks; stress added
+6000 frames per variant with the same early matrices and normal shutdown.

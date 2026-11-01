@@ -1,3 +1,31 @@
+## Current-source matched-frame follow-up (2026-10-31)
+
+Bounded diagnostic milestone completed under
+[Phase4](../Rendering/Phase4.md#foundation-closeout-milestone-2026-10-31).
+Tests/RenderingFoundation.py ran current-source Release FrameGraphTriangle with
+the real debug layer off/on and replacement off/on for 30,000 frames each.
+All four exited 0 with three GPU readbacks, normal shutdown and no native
+validation errors. Configurations/assets were isolated; no desktop automation,
+elevated tracing or system setting changes were used.
+
+After 3 seconds and before the final teardown second, layer-off handles were
+706->706 / 703->707 and private bytes 146.01->146.30 / 143.94->145.23 MiB
+(no replacement / replacement). Layer-on handles were 14819->271487 /
+15217->281367 and private bytes 164.45->180.43 / 165.26->181.63 MiB.
+Elapsed durations differed (21.5/19.7 s off, 56.1/54.1 s on); these are matched
+frame counts, not matched time samples. Pending submissions sampled at most 15;
+deferred releases and stored/discarded debug messages were 0. Replacement
+pipeline traces logged 1000 created, 3 live. Context-owned native resources/PSOs
+were still present at reporting time and differed with replacement (11/13
+resources, 5/8 PSOs), so this is not a post-device leak report. Growth without
+replacement is reproduced; native handle/allocation attribution remains open.
+Final process-exit samples can contain zero handles/released working memory and
+are excluded from trend summaries. Raw logs/CSV remain in
+build/foundation/lifetime-Release/. Earlier stack attribution below is historical
+evidence, not a new current-source profiler capture.
+
+## Open diagnosis and historical evidence
+
 - [ ] Isolate D3D12 Debug Layer private-byte growth. It rose by about 17-19 MB
   over 110 seconds with and without resource replacement, while the layer-off
   run remained within about 0.6 MB. Acceptance: use matched frame-count and

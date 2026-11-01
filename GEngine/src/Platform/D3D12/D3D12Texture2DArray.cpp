@@ -17,7 +17,7 @@ namespace GEngine
 		m_MipLevels = 1;
 		m_SubresourceStates.assign(layers, D3D12_RESOURCE_STATE_GENERIC_READ);
 
-		D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(Utils::RenderImage2DFormatToDXGIFormat(format), width, height, static_cast<UINT16>(layers));
+		D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(Utils::RenderImage2DFormatToDXGIFormat(format), width, height, static_cast<UINT16>(layers), 1);
 		D3D12_THROW_IF_FAILED(D3D12Context::Get()->GetDevice()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &desc,
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_Texture)));

@@ -400,22 +400,85 @@ namespace GEngine
         capabilities.StorageImage = supportsStorageImage;
         capabilities.Compute = supportsComputeQueue;
         capabilities.Subpasses = supportsRenderPass2;
+        capabilities.MaxColorAttachments = deviceProperties.limits.maxColorAttachments;
+        capabilities.QuerySources.push_back("MaxColorAttachments=VkPhysicalDeviceLimits.maxColorAttachments=" +
+            std::to_string(capabilities.MaxColorAttachments));
         capabilities.IndependentSubresourceScheduling = supportsSampledColor;
         capabilities.QuerySources.push_back(
             "IndependentSubresourceScheduling=per-mip/per-layer Vulkan image barriers");
         return capabilities;
     }
+	RenderTargetFormatCapabilities VulkanGraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
+	{
+		RenderTargetFormatCapabilities result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		const auto device = VulkanContext::Get()->GetPhysicalDevice();
+		const auto native = Utils::FrameBufferTextureFormatToVulkanFormat(format);
+		const bool depth = format >= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		const auto attachment = depth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		VkFormatProperties features{};
+		vkGetPhysicalDeviceFormatProperties(device, native, &features);
+		result.Sampled = (features.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+		VkImageFormatProperties resolved{}, multisample{};
+		const auto usage = attachment | VK_IMAGE_USAGE_SAMPLED_BIT | (depth ? 0 : VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+		if (vkGetPhysicalDeviceImageFormatProperties(device, native, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+			usage, 0, &resolved) != VK_SUCCESS ||
+			vkGetPhysicalDeviceImageFormatProperties(device, native, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+				attachment, 0, &multisample) != VK_SUCCESS) return result;
+		result.ColorAttachment = !depth;
+		result.DepthStencilAttachment = depth;
+		result.ColorResolve = !depth;
+		result.SampleCounts = (resolved.sampleCounts & VK_SAMPLE_COUNT_1_BIT) ? multisample.sampleCounts : 0;
+		VkPhysicalDeviceDepthStencilResolveProperties resolve{};
+		resolve.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES;
+		VkPhysicalDeviceProperties2 properties{};
+		properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		properties.pNext = &resolve;
+		vkGetPhysicalDeviceProperties2(device, &properties);
+		result.SampleCounts &= depth ? properties.properties.limits.framebufferDepthSampleCounts :
+			properties.properties.limits.framebufferColorSampleCounts;
+		if (format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8)
+			result.SampleCounts &= properties.properties.limits.framebufferStencilSampleCounts;
+		result.DepthResolve = depth && (resolve.supportedDepthResolveModes & VK_RESOLVE_MODE_SAMPLE_ZERO_BIT) &&
+			(format != FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 ||
+				(resolve.supportedStencilResolveModes & VK_RESOLVE_MODE_SAMPLE_ZERO_BIT));
+		if (depth && !result.DepthResolve) result.SampleCounts &= 1;
+		result.MultisampleLoad = true;
+		if (result.DepthResolve)
+		{
+			result.DepthResolveModes = static_cast<uint32_t>(DepthResolveMode::BackendDefault) |
+				static_cast<uint32_t>(DepthResolveMode::SampleZero);
+			for (auto mode : { DepthResolveMode::Minimum, DepthResolveMode::Maximum })
+			{
+				const auto nativeMode = mode == DepthResolveMode::Minimum ? VK_RESOLVE_MODE_MIN_BIT : VK_RESOLVE_MODE_MAX_BIT;
+				if ((resolve.supportedDepthResolveModes & nativeMode) &&
+					(format != FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 || resolve.independentResolve ||
+						(resolve.supportedStencilResolveModes & nativeMode)))
+					result.DepthResolveModes |= static_cast<uint32_t>(mode);
+			}
+		}
+		result.MaxWidth = std::min({ resolved.maxExtent.width, multisample.maxExtent.width, properties.properties.limits.maxFramebufferWidth });
+		result.MaxHeight = std::min({ resolved.maxExtent.height, multisample.maxExtent.height, properties.properties.limits.maxFramebufferHeight });
+		return result;
+	}
+
     Ref<RenderPass> VulkanGraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
     {
+        ValidateRenderTarget(spec, 1, 1);
+        if (spec.RenderTargets.size() > GetCapabilities().MaxColorAttachments)
+            throw std::invalid_argument("Vulkan color attachment count exceeds the device limit.");
         return CreateRef<VulkanRenderPass>(spec);
     }
     Ref<FrameBuffer> VulkanGraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
     {
+        if (!renderPass) throw std::invalid_argument("A render pass is required.");
+        ValidateRenderTarget(renderPass->GetSpecification(), width, height);
         return CreateRef<VulkanFrameBuffer>(renderPass, width, height);
     }
     Ref<FrameBuffer> VulkanGraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
     {
-        return CreateRef<VulkanFrameBuffer>(buffer, width, height);
+        if (!buffer) throw std::invalid_argument("A framebuffer is required.");
+        return CreateFrameBuffer(buffer->GetRenderPass(), width, height);
     }
     Ref<Texture2D> VulkanGraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
     {

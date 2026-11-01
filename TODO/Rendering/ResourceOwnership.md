@@ -1,3 +1,10 @@
+2026-11-01 attachment retention follow-up is tracked in
+[Phase4](Phase4.md#per-format-capabilities-and-msaa-2026-11-01). Returned color/
+depth texture references now retain their framebuffer owner across graph Reset
+and later queue use, preserving native views, backing allocations and descriptors.
+The bounded MSAA matrix and 6000-frame runs passed; this does not enable pooling,
+aliasing or general external-queue ownership.
+
 - [x] Migrate engine-owned Vulkan buffer/image memory usage to VMA. Scope:
       replace direct `vkAllocateMemory`, memory binding, mapping/unmapping,
       and `vkFreeMemory` in backend resource, staging, upload, and readback

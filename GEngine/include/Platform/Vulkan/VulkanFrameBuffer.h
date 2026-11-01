@@ -26,7 +26,7 @@ namespace GEngine
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;
 
-		virtual uint32_t						GetRenderTargetCount() override { return m_ColorImages.size(); }
+		virtual uint32_t						GetRenderTargetCount() override { return m_Specification.RenderTargets.size(); }
 		virtual Ref<Texture2D>					GetRenderTarget(uint32_t index) override;
 		virtual Ref<Texture2D>					GetDepthStencil() override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
@@ -48,8 +48,10 @@ namespace GEngine
 		static Ref<VulkanFrameBuffer> CreateForSwapChain(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec);
 	private:
 		void CreateBuffer();
+		void ReleaseBuffer();
+		bool m_MultisampleInitialized = false;
 	private:
-		VkFramebuffer				m_FrameBuffer = nullptr;
+		VkFramebuffer				m_FrameBuffer = VK_NULL_HANDLE;
 		Ref<VulkanRenderPass>		m_RenderPass = nullptr;
 		std::vector<VkImageView>	m_Attachments;
 		std::vector<VkImageView>	m_SwapChainAdditionalAttachments;

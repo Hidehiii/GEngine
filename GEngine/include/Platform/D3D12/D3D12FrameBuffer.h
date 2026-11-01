@@ -55,6 +55,7 @@ namespace GEngine
 
 	private:
 		void CreateResources();
+		void ReleaseDescriptors();
 	private:
 		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_RtvHeap;
 		D3D12DescriptorHeap::D3D12DescriptorAllocationInfo		m_MultiSampleRtvHeap;

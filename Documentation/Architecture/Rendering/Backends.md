@@ -1,5 +1,98 @@
 ## Backend layering and shader ownership
 
+Per-format/MSAA follow-up (2026-11-01) keeps native format queries,
+multisample allocations, views and resolves backend-owned. Scope and acceptance
+are in [Phase 4](../../../TODO/Rendering/Phase4.md#per-format-capabilities-and-msaa-2026-11-01).
+Graph and device factories reject unsupported combinations before allocation;
+no resource pooling or per-frame device wait is introduced.
+
+Per-format implementation: OpenGL uses internalformat query2 support/role,
+per-format sample-count queries and framebuffer size limits. Vulkan queries
+optimal image usages for sampled resolved images and persistent multisample
+attachments, intersects framebuffer sample masks and queries depth/stencil
+resolve properties. D3D12 queries FORMAT_SUPPORT and MULTISAMPLE_QUALITY_LEVELS;
+the native quality index is zero. Color resolve and depth resolve are separate.
+No native handles or format enums escape into application code.
+
+GL creates immutable single-sample attachments, correctly creates multisample
+textures, resolves each MRT color separately and resolves applicable depth/
+stencil aspects. Completeness checks execute in Release and construction
+failure releases partial objects. D3D12 uses TEXTURE2DMS RTV/DSV views, resolves
+colors and supported native depth reductions, keeping MSAA depth for later LOAD.
+Vulkan creates each MSAA color with its own format, clears both resolved and
+multisample depth slots and uses a depth-only sampled view for D24S8. D32
+resolve uses no stencil resolve mode. New attachment view failures release
+their image allocation, while tracked children use existing retirement.
+
+Framebuffer attachment accessors return aliasing shared references that retain
+the framebuffer owner. This keeps native allocations/views/descriptors alive
+when later copy/compute/material submissions retain a texture after graph
+Reset; the framebuffer holds the wrapper objects without an ownership cycle.
+Depth-resolve/LOAD follow-up (2026-11-01): Vulkan retains
+device-local MSAA backing with STORE, attachment-optimal LOAD layouts and explicit
+attachment read/write dependencies. D3D12 uses typeless depth resources with typed
+DSV/SRV views and graphics-list ResolveSubresourceRegion min/max reductions.
+Native source returns to DEPTH_WRITE for later LOAD; resolved output follows
+normal texture state tracking. Mode support is queried and validated per format;
+render-pass caching and graph portable/legacy conversion include the selected mode.
+D3D12 viewports keep [0,1] in both depth conventions and depth optimized clear
+values match the active convention. Example coordinates account for OpenGL's
+existing [-1,1] clip and reversed viewport mapping; no GL projection API changes.
+Standard D3D12 sampler descriptors, including the material fallback, use NEVER
+for the ignored comparison field, avoiding native comparison-filter warnings.
+Ownership remains framebuffer-scoped and follows existing queue retirement;
+acceptance and verification are tracked in Phase 4.
+
+Partial D3D12 construction frees only valid descriptor allocations. Native
+MSAA backing images remain framebuffer-owned, and device children still retire
+after the existing queue completion tokens. No per-frame idle wait was added.
+Vulkan preserved multisample LOAD and supported D3D12 depth reduction now use
+the existing framebuffer lifetime; swap-chain MSAA uses the offscreen path.
+
+MSAA MRT readback also exposed D3D12 arrays allocating a full native mip chain
+while engine metadata and subresource calculations assumed one mip. Native array
+creation now explicitly requests one mip, keeping layer indices consistent
+for uploads, graph copies, barriers and readback without changing the API.
+Wrapped float/integer/depth attachments not represented in RenderImage2DFormat
+now report NONE consistently: D3D12 no longer aliases them to RGBA8 and Vulkan's
+conversion has an explicit default. This prevents misleading copy validation;
+native attachment formats remain independently available for rendering.
+
+CMake Debug/Release engine/example builds and GL/Vulkan shared/D3D12/Vulkan
+dedicated 120-frame MSAA runs passed, with 24 cases repeated three times each.
+Debug 6000-frame runs also passed. Final runs captured no D3D12/Vulkan validation
+diagnostics; Debug Vulkan had no unavailable-layer fallback. These are bounded
+color resolve/depth test/retention checks, not numeric resolved-depth sampling
+or indefinite memory proof. Existing D3D12 layer-on handle growth stays open;
+validation was kept enabled rather than bypassed.
+
+Depth/LOAD follow-up Debug/Release GL, Vulkan shared, D3D12 layer-on and Vulkan
+dedicated runs passed separately at 120 frames. Three matrices per run total
+1536 color cases, 1184 numeric depth probes and 432 mixed-coverage min/max edge
+checks, plus actual-frame retained color/depth and recreation. Logs are
+build/msaa-depth/verified-{Debug,Release}; no native warnings/errors were captured.
+Dedicated Vulkan selected graphics=0, compute=2, transfer=5. Tier0 D3D12 hardware,
+numeric stencil outputs, >8x rendering and injected allocation failure remain
+outside this bounded verification; lifetime growth remains a separate open item.
+Debug 6000-frame runs passed all four variants, with normal shutdown and clean
+native diagnostics. Vulkan shared/dedicated handles were 791->793 / 836->837;
+D3D12 layer-on remained growing (1577->41170), as recorded in the open diagnosis.
+
+Foundation capability/lifetime follow-up is tracked in
+[Phase 4](../../../TODO/Rendering/Phase4.md): color attachment limits now use
+queried OpenGL/Vulkan values or D3D12's native required count, and D3D12 uniform
+capacity converts 16-byte elements to bytes. The same work compares current-source
+debug-layer lifetime controls. Backend allocation and queue ownership remain
+unchanged by reporting/preflight work; allocation attribution remains open.
+
+Current-source matched-frame D3D12 controls completed 30,000 frames with the
+layer off/on and replacement off/on. All passed readbacks and normal shutdown.
+Growth reproduced with validation enabled even without replacement; sampled
+pending submissions were bounded (at most 15), deferred releases were zero,
+and replacement traces showed 3 live pipelines after 1000 creations. Context
+reports still include retained objects and do not establish a leak or its
+owner. See [the open diagnosis](../../../TODO/Integration/D3D12Memory.md).
+
 Packaged shader cache files live in game-root Cache/Shaders/<API>/ and persist
 between launches. Backend directories prevent switching APIs from clearing another
 backend's cache. Cache fingerprints include recursively referenced literal HLSL

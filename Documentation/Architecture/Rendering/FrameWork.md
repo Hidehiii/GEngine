@@ -1,5 +1,35 @@
 ## Frame work and graph
 
+Foundation follow-up (2026-10-31) validates graph target structure through the
+same path for portable and legacy input, then validates device dimensions,
+color attachment counts and subpass support before any new transient or
+framebuffer allocation. Invalid declarations do not append graph handles. Format/
+sample support beyond structural validation still belongs to native creation;
+full format-specific capability reporting remains open. Existing
+GPU completion ownership and compatibility adapters remain unchanged; no
+pooling or aliasing is enabled. Scope/evidence: [Phase 4](../../../TODO/Rendering/Phase4.md).
+
+Current-source CMake Debug/Release FrameGraphTriangle runs passed the attachment
+preflight regression and three GPU readbacks on OpenGL, Vulkan shared/dedicated
+and D3D12. This closes the initial generic preflight milestone; the 2026-11-01
+follow-up below implements format/MSAA queries and framebuffer bounds. Broader
+resource variants and general queue ownership remain open.
+
+Per-format/MSAA follow-up (2026-11-01) adds format/framebuffer dimensions and
+sample/resolve capability checks to target preflight, before graph allocations.
+Graph passes render into backend-owned multisample attachments and expose
+resolved colors through ordinary graph resources. Aliasing attachment references
+retain their framebuffer owner across graph reset and later queue submissions.
+This updates attachment ownership but leaves queue submission interfaces,
+dependency scheduling and pooling unchanged. Remaining explicit limitations
+are described in [device capabilities](../../API/Graphics/Device.md).
+
+The MSAA diagnostic closes its graphics/transfer copy with graphics ShaderRead
+consumers. It deliberately reuses the graph before the frame's presentation
+completion command is submitted, so this explicit queue join is required for
+that diagnostic sequence. Normal presentation completion remains caller-owned;
+this work does not add arbitrary cross-graph dependency inference.
+
 `RenderSystem` owns the presentation graph and `FrameContext`. Per frame it
 acquires the swap-chain image, records `LayerRender` (`Layer::OnRender`), an
 optional ImGui pass, and `Present` (`Layer::OnPresent`), transitions the
@@ -97,3 +127,16 @@ Transient `Texture2D`, texture-array, storage-buffer, and storage-image
 descriptions are allocated at graph compilation, exposed during pass execution,
 and released at reset. The graph does not yet pool or alias their memory before
 resource lifetime analysis.
+
+## MSAA depth and preserved LOAD follow-up (2026-11-01)
+
+Depth resolve mode travels with target declarations and render-pass cache keys.
+Backend-specific resolve and persistent MSAA backing remain framebuffer-owned;
+the graph schedules the resolved texture and retains the framebuffer as before.
+Vulkan backing receives attachment dependencies on the graphics queue before
+each pass; no compute pass or per-frame device wait is introduced. Numeric
+depth and retained-load acceptance checks passed on all four backend variants
+in Debug/Release, including actual frames and recreation; Debug also passed
+6000 frames per variant. Existing RenderPipeline rebuilt against the final
+engine and passed its four-backend lifecycle/readback checks in both builds.
+Phase 4 records evidence and remaining hardware/build/lifetime limitations.

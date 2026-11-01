@@ -1,5 +1,13 @@
 ## Architecture target
 
+Current status (2026-10-31): early Phase 2 verification notes below are history.
+OpenGL initialization, Release definitions and core submission retirement have
+later fixes and backend evidence in [Phase4](Phase4.md) and
+[ResourceOwnership](ResourceOwnership.md). Do not treat old PhysX Release build
+blockers or unverified shutdown notes as current blockers. Long-run memory and
+broader resource coverage remain separate; current foundation closeout is in
+[Phase4](Phase4.md#foundation-closeout-milestone-2026-10-31).
+
 ```text
 Application / render features
             |

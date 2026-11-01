@@ -28,8 +28,8 @@ namespace GEngine
 			}
             else
             {
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, width, height);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -69,7 +69,8 @@ namespace GEngine
 
         m_RenderPass = std::dynamic_pointer_cast<OpenGLRenderPass>(renderPass);
 
-        CreateBuffer();
+        try { CreateBuffer(); }
+        catch (...) { ReleaseBuffer(); throw; }
     }
     OpenGLFrameBuffer::OpenGLFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
     {
@@ -79,16 +80,32 @@ namespace GEngine
 
         m_RenderPass = std::dynamic_pointer_cast<OpenGLRenderPass>(buffer->GetRenderPass());
 
-        CreateBuffer();
+        try { CreateBuffer(); }
+        catch (...) { ReleaseBuffer(); throw; }
     }
     OpenGLFrameBuffer::~OpenGLFrameBuffer()
     {
+        ReleaseBuffer();
+    }
+    void OpenGLFrameBuffer::ReleaseBuffer()
+    {
         glDeleteFramebuffers(1, &m_FrameBuffer);
+        m_FrameBuffer = 0;
+        for (size_t i = m_RenderTargets.size(); i < m_ColorAttachments.size(); ++i)
+            glDeleteTextures(1, &m_ColorAttachments[i]);
+        m_RenderTargets.clear();
+        m_ColorAttachments.clear();
+        if (!m_DepthStencil) glDeleteTextures(1, &m_DepthStencilAttachment);
+        m_DepthStencil.reset();
+        m_DepthStencilAttachment = 0;
         if (m_Specification.Samples > 1)
         {
             glDeleteFramebuffers(1, &m_MultiSampleFrameBuffer);
             glDeleteTextures(m_MultiSampleColorAttachments.size(), m_MultiSampleColorAttachments.data());
             glDeleteTextures(1, &m_MultiSampleDepthStencilAttachment);
+            m_MultiSampleFrameBuffer = 0;
+            m_MultiSampleDepthStencilAttachment = 0;
+            m_MultiSampleColorAttachments.clear();
         }
     }
     void OpenGLFrameBuffer::BeginPresentRender(CommandBuffer* cmdBuffer)
@@ -117,7 +134,7 @@ namespace GEngine
                 for (size_t i = 0; i < m_MultiSampleColorAttachments.size(); i++)
                 {
                     Utils::BindTexture(m_Specification.Samples > 1, m_MultiSampleColorAttachments[i]);
-					Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], 1, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.RenderTargets[i]),
+					Utils::AttachColorTexture(m_MultiSampleColorAttachments[i], m_Specification.Samples, Utils::FrameBufferTextureFormatToGLInternalFormat(m_Specification.RenderTargets[i]),
 						Utils::FrameBufferTextureFormatToGLDataFormat(m_Specification.RenderTargets[i]), m_Specification.Width, m_Specification.Height, i);
                 }
             }
@@ -153,7 +170,8 @@ namespace GEngine
             }
 
 
-            GE_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "multisample Framebuffer is incomplete!");
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                throw std::runtime_error("OpenGL multisample framebuffer is incomplete.");
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
@@ -212,7 +230,8 @@ namespace GEngine
         }
 
         
-        GE_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            throw std::runtime_error("OpenGL framebuffer is incomplete.");
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -247,7 +266,20 @@ namespace GEngine
         {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer);
-			glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+			for (uint32_t index = 0; index < m_ColorAttachments.size(); ++index)
+			{
+				glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
+				glDrawBuffer(GL_COLOR_ATTACHMENT0 + index);
+				glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height,
+					0, 0, m_Specification.Width, m_Specification.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			}
+			if (m_Specification.DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE)
+			{
+				const auto mask = GL_DEPTH_BUFFER_BIT | (m_Specification.DepthStencil ==
+					FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 ? GL_STENCIL_BUFFER_BIT : 0);
+				glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height,
+					0, 0, m_Specification.Width, m_Specification.Height, mask, GL_NEAREST);
+			}
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -260,12 +292,12 @@ namespace GEngine
     Ref<Texture2D> OpenGLFrameBuffer::GetRenderTarget(uint32_t index)
     {
         GE_CORE_ASSERT(index < m_ColorAttachments.size(), "index out of range");
-        return m_RenderTargets.at(index);
+        return Ref<Texture2D>(shared_from_this(), m_RenderTargets.at(index).get());
     }
     Ref<Texture2D> OpenGLFrameBuffer::GetDepthStencil()
     {
         GE_CORE_ASSERT(m_DepthStencilAttachment != 0, "No depth frame buffer");
-        return m_DepthStencil;
+        return Ref<Texture2D>(shared_from_this(), m_DepthStencil.get());
     }
 
 }

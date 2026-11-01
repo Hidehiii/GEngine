@@ -7,6 +7,23 @@
 
 namespace GEngine
 {
+	namespace
+	{
+		void CreateAttachmentView(VkImage image, VmaAllocation allocation, VkFormat format,
+			VkImageAspectFlags aspect, VkImageView& view)
+		{
+			try
+			{
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, format,
+					VK_IMAGE_VIEW_TYPE_2D, 1, aspect, 1, view);
+			}
+			catch (...)
+			{
+				vmaDestroyImage(VulkanContext::Get()->GetVmaAllocator(), image, allocation);
+				throw;
+			}
+		}
+	}
 
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
 	{
@@ -18,7 +35,8 @@ namespace GEngine
 
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
-		CreateBuffer();
+		try { CreateBuffer(); }
+		catch (...) { ReleaseBuffer(); throw; }
 	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
 	{
@@ -28,7 +46,8 @@ namespace GEngine
 
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(buffer->GetRenderPass());
 
-		CreateBuffer();
+		try { CreateBuffer(); }
+		catch (...) { ReleaseBuffer(); throw; }
 	}
 	VulkanFrameBuffer::VulkanFrameBuffer(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
@@ -36,6 +55,8 @@ namespace GEngine
 		m_Specification.Width					= spec.Width;
 		m_Specification.Height					= spec.Height;
 		m_Specification.Samples					= renderpassSpec.Samples;
+		if (m_Specification.Samples > 1)
+			throw std::invalid_argument("Swap-chain MSAA is unsupported; resolve an offscreen target before presentation.");
 		// restore the count of render targets to the specification, 
 		// because the spec is only used to create the framebuffer, 
 		// and the render targets are not used to create the framebuffer, 
@@ -45,8 +66,8 @@ namespace GEngine
 		m_RenderPass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
 
 		std::vector<VkImageView>	attachments(spec.ColorAttachments);
-		VkImage						image;
-		VkImageView					imageView;
+		VkImage						image = VK_NULL_HANDLE;
+		VkImageView					imageView = VK_NULL_HANDLE;
 		VmaAllocation				imageAllocation = nullptr;
 		VkFormat					imageFormat;
 		VkFlags						depthAspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -69,7 +90,7 @@ namespace GEngine
 				1,
 				image,
 				imageAllocation);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+			CreateAttachmentView(image, imageAllocation, imageFormat, depthAspectFlag, imageView);
 
 			m_SwapChainAdditionalAttachments.push_back(imageView);
 
@@ -91,7 +112,7 @@ namespace GEngine
 					m_Specification.Height,
 					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT,
 					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 					1,
@@ -99,7 +120,7 @@ namespace GEngine
 					1,
 					image,
 					imageAllocation);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+				CreateAttachmentView(image, imageAllocation, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 
 				m_SwapChainAdditionalAttachments.push_back(imageView);
 
@@ -118,7 +139,7 @@ namespace GEngine
 					m_Specification.Height,
 					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT,
 					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 					1,
@@ -126,7 +147,7 @@ namespace GEngine
 					1,
 					image,
 					imageAllocation);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+				CreateAttachmentView(image, imageAllocation, imageFormat, depthAspectFlag, imageView);
 
 				m_SwapChainAdditionalAttachments.push_back(imageView);
 
@@ -150,6 +171,10 @@ namespace GEngine
 		VK_CHECK_RESULT(vkCreateFramebuffer(VulkanContext::Get()->GetDevice(), &framebufferInfo, nullptr, &m_FrameBuffer));
 	}
 	VulkanFrameBuffer::~VulkanFrameBuffer()
+	{
+		ReleaseBuffer();
+	}
+	void VulkanFrameBuffer::ReleaseBuffer()
 	{
 		auto* context = VulkanContext::Get();
 		if (context != nullptr && context->GetDevice() != VK_NULL_HANDLE)
@@ -194,6 +219,33 @@ namespace GEngine
 	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
 		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
+		if (m_Specification.Samples > 1)
+		{
+			std::vector<VkImageMemoryBarrier> barriers;
+			auto preserve = [&](VkImage image, bool depth)
+			{
+				VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+				barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.image = image;
+				barrier.subresourceRange = { static_cast<VkImageAspectFlags>(depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT), 0, 1, 0, 1 };
+				if (depth && m_Specification.DepthStencil == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8)
+					barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+				barrier.newLayout = depth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				barrier.oldLayout = m_MultisampleInitialized ? barrier.newLayout : VK_IMAGE_LAYOUT_UNDEFINED;
+				barrier.srcAccessMask = m_MultisampleInitialized ?
+					(depth ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT : VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT) : 0;
+				barrier.dstAccessMask = depth ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT :
+					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				barriers.push_back(barrier);
+			};
+			for (size_t i = m_Specification.RenderTargets.size(); i < m_ColorImages.size(); ++i) preserve(m_ColorImages[i], false);
+			if (m_DepthStencil) preserve(m_DepthStencilImages.back(), true);
+			const auto stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			vkCmdPipelineBarrier(cmd, m_MultisampleInitialized ? stages : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, stages,
+				0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
+			m_MultisampleInitialized = true;
+		}
 		for (int i = 0; i < m_RenderTargets.size(); i++)
 		{
 			m_RenderTargets.at(i)->SetImageLayout(cmd, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -218,7 +270,9 @@ namespace GEngine
 		std::vector<VkClearValue>				clearValues(m_Attachments.size(), clearColor);
 		if (m_DepthStencilImages.size() > 0)
 		{
-			clearValues.at(clearValues.size() - 1) = { Graphics::IsReverseDepth() ? 0 : 1.0f, 0 };
+			clearValues.at(m_Specification.RenderTargets.size()).depthStencil = { Graphics::IsReverseDepth() ? 0 : 1.0f, 0 };
+			if (m_Specification.Samples > 1)
+				clearValues.back().depthStencil = { Graphics::IsReverseDepth() ? 0 : 1.0f, 0 };
 		}
 		renderPassInfo.clearValueCount			= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues				= clearValues.data();
@@ -288,14 +342,12 @@ namespace GEngine
 	Ref<Texture2D> VulkanFrameBuffer::GetRenderTarget(uint32_t index)
 	{
 		GE_CORE_ASSERT(index < m_RenderTargets.size(), "index out of range");
-		Ref<VulkanTexture2D> texture = m_RenderTargets.at(index);
-		return texture;
+		return Ref<Texture2D>(shared_from_this(), m_RenderTargets.at(index).get());
 	}
 	Ref<Texture2D> VulkanFrameBuffer::GetDepthStencil()
 	{
 		GE_CORE_ASSERT(m_DepthStencilImages.size() > 0, "no depth frame buffer");
-		Ref<VulkanTexture2D> texture = m_DepthStencil;
-		return texture;
+		return Ref<Texture2D>(shared_from_this(), m_DepthStencil.get());
 	}
 	Ref<VulkanFrameBuffer> VulkanFrameBuffer::CreateForSwapChain(const Ref<VulkanRenderPass>& renderPass, const FrameBufferSpecificationForVulkan spec, const RenderPassSpecificationForVulkan& renderpassSpec)
 	{
@@ -317,8 +369,8 @@ namespace GEngine
 		m_DepthStencilImages.clear();
 		m_DepthStencilImageAllocations.clear();
 
-		VkImage						image;
-		VkImageView					imageView;
+		VkImage						image = VK_NULL_HANDLE;
+		VkImageView					imageView = VK_NULL_HANDLE;
 		VmaAllocation				imageAllocation = nullptr;
 		VkFormat 					imageFormat;
 		VkFlags						depthAspectFlag;
@@ -340,7 +392,7 @@ namespace GEngine
 				1,
 				image,
 				imageAllocation);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+			CreateAttachmentView(image, imageAllocation, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 
 			m_Attachments.push_back(imageView);
 
@@ -386,13 +438,19 @@ namespace GEngine
 				1,
 				image,
 				imageAllocation);
-			Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+			CreateAttachmentView(image, imageAllocation, imageFormat, depthAspectFlag, imageView);
 
 			m_Attachments.push_back(imageView);
 
 			m_DepthStencilImages.push_back(image);
 			m_DepthStencilImageAllocations.push_back(imageAllocation);
 
+			if (m_Specification.DepthStencil == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8)
+			{
+				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat,
+					VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_DEPTH_BIT, 1, imageView);
+				m_SwapChainAdditionalAttachments.push_back(imageView);
+			}
 			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag,
                 m_Specification.Width, m_Specification.Height);
 		}
@@ -403,13 +461,14 @@ namespace GEngine
 			// create multi sample color attachments
 			for (int i = 0; i < m_Specification.RenderTargets.size(); i++)
 			{
+				imageFormat = Utils::FrameBufferTextureFormatToVulkanFormat(m_Specification.RenderTargets[i]);
 				Utils::CreateImages(VulkanContext::Get()->GetPhysicalDevice(),
 					VulkanContext::Get()->GetDevice(),
 					m_Specification.Width,
 					m_Specification.Height,
 					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 					1,
@@ -417,7 +476,7 @@ namespace GEngine
 					1,
 					image,
 					imageAllocation);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_COLOR_BIT, 1, imageView);
+				CreateAttachmentView(image, imageAllocation, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, imageView);
 
 				m_Attachments.push_back(imageView);
 
@@ -451,7 +510,7 @@ namespace GEngine
 					m_Specification.Height,
 					imageFormat,
 					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					Utils::SampleCountToVulkanFlag(m_Specification.Samples),
 					1,
@@ -459,7 +518,7 @@ namespace GEngine
 					1,
 					image,
 					imageAllocation);
-				Utils::CreateImageViews(VulkanContext::Get()->GetDevice(), image, imageFormat, VK_IMAGE_VIEW_TYPE_2D, 1, depthAspectFlag, 1, imageView);
+				CreateAttachmentView(image, imageAllocation, imageFormat, depthAspectFlag, imageView);
 
 				m_Attachments.push_back(imageView);
 

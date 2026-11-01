@@ -1,0 +1,38 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "DepthResolveCheck"
+    {
+        Pass
+        {
+            Cull Off
+            DepthTest Always
+            DepthWrite Off
+            BlendOp None
+            ColorMask R G B A
+            Tag DepthResolveCheck
+            #pragma vertex vert
+            #pragma fragment frag
+            Program
+            {
+                Texture2D<float> DepthTexture;
+                Texture2D<float4> StoredColor;
+                SamplerState DepthSampler;
+                SamplerState ColorSampler;
+                cbuffer ProbeSize { float2 InvSize; };
+                float4 vert(float2 position : POSITION) : SV_POSITION
+                {
+                    return float4(position, 0.0, 1.0);
+                }
+                float4 frag(float4 position : SV_POSITION) : SV_Target0
+                {
+                    float2 uv = position.xy * InvSize;
+                    float depth = DepthTexture.SampleLevel(DepthSampler, uv, 0);
+                    float4 color = StoredColor.SampleLevel(ColorSampler, uv, 0);
+                    return float4(depth, color.r, color.b, 1.0);
+                }
+            }
+        }
+    }

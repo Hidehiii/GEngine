@@ -372,11 +372,20 @@ namespace GEngine
 		}
 	};
 
+	enum class DepthResolveMode : uint32_t
+	{
+		BackendDefault = 1,
+		SampleZero = 2,
+		Minimum = 4,
+		Maximum = 8
+	};
+
 	struct RenderPassSpecification
 	{
 		std::vector<FrameBufferTextureFormat>	RenderTargets;
 		FrameBufferTextureFormat				DepthStencil;
 		uint32_t								Samples = 1;
+		DepthResolveMode DepthResolve = DepthResolveMode::BackendDefault;
 		RenderPassOperation						Operation;
 
 		// only work for vulkan, opengl does not support subpass
@@ -388,6 +397,7 @@ namespace GEngine
 			return RenderTargets == other.RenderTargets &&
 				DepthStencil == other.DepthStencil &&
 				Samples == other.Samples &&
+				DepthResolve == other.DepthResolve &&
 				Operation == other.Operation &&
 				Subpasses == other.Subpasses &&
 				SubpassDependencies == other.SubpassDependencies;

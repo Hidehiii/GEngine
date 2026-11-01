@@ -2,6 +2,7 @@
 
 #include <GEngine.h>
 #include <GEngine/Renderer/RenderGraph.h>
+#include "MsaaChecks.h"
 
 namespace GEngine
 {
@@ -19,6 +20,7 @@ namespace GEngine
 
 	private:
 		uint64_t m_RenderCount = 0;
+		Ref<MsaaFrameChecks> m_MsaaFrameChecks;
 		Ref<GraphicsPipeline> m_Pipeline;
 		Ref<GraphicsPipeline> m_ComputeFirstPipeline;
 		Ref<ComputePipeline> m_ComputePipeline;

@@ -222,7 +222,7 @@ namespace GEngine
 			Attachment.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
 			Attachment.samples			= sample;
 			Attachment.loadOp			= loadOp;
-			Attachment.storeOp			= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			Attachment.storeOp			= storeOp;
 			Attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			Attachment.stencilStoreOp	= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			Attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
@@ -262,7 +262,7 @@ namespace GEngine
 			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8:
 				Attachment.format			= FindSupportedFormat({ VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 				Attachment.stencilLoadOp	= loadOp;
-				Attachment.stencilStoreOp	= sample == 1 ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				Attachment.stencilStoreOp	= storeOp;
 				Attachment.finalLayout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				break;
 			case FRAME_BUFFER_TEXTURE_FORMAT_DEPTH:
@@ -273,6 +273,7 @@ namespace GEngine
 				break;
 			}
 
+			if (loadOp == VK_ATTACHMENT_LOAD_OP_LOAD) Attachment.initialLayout = Attachment.finalLayout;
 			return Attachment;
 		}
 
@@ -588,6 +589,7 @@ namespace GEngine
 			default:
 				break;
 			}
+			return RENDER_IMAGE_2D_FORMAT_NONE;
 		}
 		// front和back要反过来，适应viewport的反转
 		VkCullModeFlagBits CullModeToVkCullMode(CullMode mode)

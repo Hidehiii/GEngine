@@ -287,22 +287,71 @@ namespace GEngine
         capabilities.StorageImage = supportsStorageImage;
         capabilities.Compute = featureLevelSupported && shaderModelSupported;
         capabilities.Subpasses = false;
+        capabilities.MaxColorAttachments = D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT;
+        capabilities.QuerySources.push_back("MaxColorAttachments=D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT=" +
+            std::to_string(capabilities.MaxColorAttachments));
         capabilities.IndependentSubresourceScheduling = supportsColorTexture;
         capabilities.QuerySources.push_back(
             "IndependentSubresourceScheduling=per-mip/per-layer D3D12 resource barriers");
         return capabilities;
     }
+	RenderTargetFormatCapabilities D3D12GraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
+	{
+		RenderTargetFormatCapabilities result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		const auto native = Utils::FrameBufferTextureFormatToDXGIFormat(format);
+		const auto device = D3D12Context::Get()->GetDevice();
+		D3D12_FEATURE_DATA_FORMAT_SUPPORT support{};
+		support.Format = native;
+		if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) ||
+			!(support.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D)) return result;
+		result.ColorAttachment = (support.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
+		result.DepthStencilAttachment = (support.Support1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL) != 0;
+		result.Sampled = (support.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_LOAD) != 0;
+		result.ColorResolve = (support.Support1 & D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RESOLVE) != 0;
+		result.MultisampleLoad = true;
+		if (result.DepthStencilAttachment)
+		{
+			D3D12_FEATURE_DATA_D3D12_OPTIONS2 options{};
+			result.DepthResolve = SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options, sizeof(options))) &&
+				options.ProgrammableSamplePositionsTier >= D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_1;
+			if (result.DepthResolve) result.DepthResolveModes = static_cast<uint32_t>(DepthResolveMode::BackendDefault) |
+				static_cast<uint32_t>(DepthResolveMode::Minimum) | static_cast<uint32_t>(DepthResolveMode::Maximum);
+			D3D12_FEATURE_DATA_FORMAT_SUPPORT sampled{};
+			sampled.Format = format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH ? DXGI_FORMAT_R32_FLOAT : DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			result.Sampled = SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &sampled, sizeof(sampled))) &&
+				(sampled.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_LOAD);
+		}
+		for (uint32_t samples = 1; samples <= 32; samples *= 2)
+		{
+			D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality{};
+			quality.Format = native;
+			quality.SampleCount = samples;
+			if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &quality, sizeof(quality))) &&
+				quality.NumQualityLevels) result.SampleCounts |= samples;
+		}
+		result.MaxWidth = result.MaxHeight = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		if (result.DepthStencilAttachment && !result.DepthResolve) result.SampleCounts &= 1;
+		return result;
+	}
+
     Ref<RenderPass> D3D12GraphicsAPI::CreateRenderPass(const RenderPassSpecification& spec)
     {
+        ValidateRenderTarget(spec, 1, 1);
+        if (!spec.Subpasses.empty() || spec.RenderTargets.size() > GetCapabilities().MaxColorAttachments)
+            throw std::invalid_argument("Unsupported D3D12 subpasses or color attachment count.");
         return CreateRef<D3D12RenderPass>(spec);
     }
     Ref<FrameBuffer> D3D12GraphicsAPI::CreateFrameBuffer(const Ref<RenderPass>& renderPass, uint32_t width, uint32_t height)
     {
+        if (!renderPass) throw std::invalid_argument("A render pass is required.");
+        ValidateRenderTarget(renderPass->GetSpecification(), width, height);
         return CreateRef<D3D12FrameBuffer>(renderPass, width, height);
     }
     Ref<FrameBuffer> D3D12GraphicsAPI::ResizeFrameBuffer(const Ref<FrameBuffer>& buffer, uint32_t width, uint32_t height)
     {
-        return CreateRef<D3D12FrameBuffer>(buffer, width, height);
+        if (!buffer) throw std::invalid_argument("A framebuffer is required.");
+        return CreateFrameBuffer(buffer->GetRenderPass(), width, height);
     }
     Ref<Texture2D> D3D12GraphicsAPI::CreateTexture2D(uint32_t width, uint32_t height, RenderImage2DFormat format)
     {
@@ -385,7 +434,7 @@ namespace GEngine
     {
         // Use the constant-buffer element count if available (elements are 16 bytes each).
 #ifdef D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
-        return static_cast<uint32_t>(D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT);
+        return static_cast<uint32_t>(D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT) * 16u;
 #else
 		return 65536u; // 64KB
 #endif

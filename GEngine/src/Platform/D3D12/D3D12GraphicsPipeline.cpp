@@ -194,7 +194,7 @@ namespace GEngine
 		rasterizerDesc.DepthBiasClamp 			= D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
 		rasterizerDesc.SlopeScaledDepthBias 	= D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
 		rasterizerDesc.DepthClipEnable 			= TRUE;
-		rasterizerDesc.MultisampleEnable 		= FALSE;
+		rasterizerDesc.MultisampleEnable 		= frameBuffer->GetSpecification().Samples > 1;
 		rasterizerDesc.ForcedSampleCount 		= 0;
 
 		// --- blend (per RT) ---
@@ -216,7 +216,7 @@ namespace GEngine
 			blendDescNew.RenderTarget[i] = rtBlendDesc;
 
 		D3D12_DEPTH_STENCIL_DESC				depthStencilDesc = {};
-		depthStencilDesc.DepthEnable			= TRUE;
+		depthStencilDesc.DepthEnable = d3dFrameBuffer->GetSpecification().DepthStencil != FRAME_BUFFER_TEXTURE_FORMAT_NONE;
 		depthStencilDesc.DepthWriteMask			= m_Material->GetEnableDepthWrite(pass) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 		depthStencilDesc.DepthFunc				= Utils::CompareOperationToD3D12ComparisonFunc(m_Material->GetDepthTestOp(pass));
 		depthStencilDesc.StencilEnable			= FALSE;

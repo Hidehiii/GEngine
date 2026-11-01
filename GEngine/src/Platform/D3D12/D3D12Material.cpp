@@ -235,7 +235,7 @@ namespace GEngine
 						D3D12_SAMPLER_DESC defaultSampler{};
 						defaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 						defaultSampler.AddressU = defaultSampler.AddressV = defaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-						defaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+						defaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 						defaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
 						D3D12Context::Get()->GetDevice()->CreateSampler(&defaultSampler, handle);
 					}
