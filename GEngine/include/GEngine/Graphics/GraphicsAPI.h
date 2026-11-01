@@ -19,6 +19,8 @@ namespace GEngine
 
 	struct GraphicsCapabilities
 	{
+		// Describes framebuffer attachment sampling, not imported asset orientation.
+		bool AttachmentUvStartsAtTop = true;
 		bool RenderPass = false;
 		bool FrameBuffer = false;
 		bool Texture2D = false;

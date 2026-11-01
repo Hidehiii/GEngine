@@ -298,7 +298,7 @@ namespace GEngine
 	RenderTargetFormatCapabilities D3D12GraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
 	{
 		RenderTargetFormatCapabilities result;
-		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F) return result;
 		const auto native = Utils::FrameBufferTextureFormatToDXGIFormat(format);
 		const auto device = D3D12Context::Get()->GetDevice();
 		D3D12_FEATURE_DATA_FORMAT_SUPPORT support{};

@@ -1,5 +1,49 @@
 # Rendering architecture refactor
 
+2026-11-01 bounded P3 ordered HDR post-processing is implemented and verified,
+under [RenderPipeline](Rendering/RenderPipeline.md). Payload v3 declares ordered
+exposure/Reinhard settings over RGBA16F intermediates and an explicit linear/sRGB
+RGBA8 output. A reusable graphics pass supports live enable/EV/order without
+new GPU targets. RGBA16F has native three-backend mappings/queries and graph/asset
+validation; existing enum values are preserved. The example composes two HDR
+cameras before processing and checks reference pixels, rollback and resource
+counts. Debug/Release four-backend 120-frame runs passed 18 invalid candidates,
+four invalid live snapshots, two live markers, six replacements and 11 reference
+probes each; Debug 6000-frame runs passed 349 replacements/403 probes per variant.
+P1/P2/default/MSAA regressions passed all four variants in both builds with clean
+native diagnostics. Logs and bounded memory: build/post-process, P3 TODO. Manual
+display, packaged runtime, extended chains and HDR MSAA limits remain explicit.
+
+2026-11-01 P2 camera stacks are implemented and programmatically verified under
+[RenderPipeline](Rendering/RenderPipeline.md). Payload v2 adds stable camera IDs,
+validated base/overlay trees, viewport/clear/load/target rules; a reusable stack
+pass records serial per-camera graph work. v1 assets remain supported. Native
+commands now support immutable compatible pass overrides and top-left viewport/
+scissor state; Vulkan attachment layout metadata is initialized honestly. The
+example checks real camera projections, depth, UI, disabled parents and switching.
+Debug/Release four-backend 120-frame runs passed 16 invalid candidates, three
+binding failures, two live activity changes, seven replacements and 11 paired
+raw/sampled probes each; Debug 6000-frame runs passed 399 replacements/403 probes.
+P1, original C++ and MSAA regressions passed both builds/all four variants with
+clean native diagnostics. Logs: build/camera-stacks/final-*; limitations and
+bounded memory observations are in the P2 TODO.
+No scene-camera discovery, editor authoring or P3 effects are included.
+
+2026-11-01 P1 asset selection is complete under
+[RenderPipeline](Rendering/RenderPipeline.md). Versioned GAsset payloads,
+runtime-owned pass validators/factories, target/dependency capability preflight,
+Prepare and transactional frame-boundary selection are implemented. Debug/Release
+four-backend 120-frame runs passed 18 failed candidates, seven switches and nine
+pixel probes each; Debug 6000-frame runs passed 399 switches and 401 probes per
+variant. Native diagnostics were clean and real HLSL compile failure recovered.
+Vulkan command recording now retains framebuffer owners across replacement.
+The opt-in RenderPipeline example switches two actual assets and verifies GPU
+output/rollback/lifetime; existing C++ mode remains. P2 is described above;
+P3 is described above.
+Final logs: build/pipeline-assets/final-{Debug,Release} and final-stress-Debug.
+Legacy shader-container parser hardening and broader archive/editor integration
+remain separate; this milestone adds no camera stack or effects.
+
 2026-11-01 per-format queries and MSAA are tracked in
 [Phase 4](Rendering/Phase4.md#per-format-capabilities-and-msaa-2026-11-01).
 Device queries expose attachment/sample/resolve support and format/framebuffer

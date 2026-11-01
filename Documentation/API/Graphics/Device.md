@@ -1,5 +1,20 @@
 ## Device capabilities
 
+P3 adds FrameBufferTextureFormat::FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F (appended
+without renumbering existing values), with queried attachment/sample/resolve and
+unfiltered sampling support on GL/Vulkan/D3D12. It is an attachment format, not
+a new imported-texture or CPU readback format. P3 Debug/Release four-backend
+numeric runs and MSAA format-query/1x metadata regressions passed; post-processing
+uses nearest sampling and single-sample HDR targets. Numeric RGBA16F MSAA resolve
+remains untested; querying native support does not constitute that runtime check.
+
+`GraphicsCapabilities::AttachmentUvStartsAtTop` describes native framebuffer
+attachment sampling: true on Vulkan/D3D12 and false on OpenGL. A fullscreen
+consumer can choose top/bottom vertex UVs from this value without inspecting the
+backend identity. It does not describe imported asset texture orientation or
+change texture-array readback row order. Rebuild clients after this capability
+snapshot layout change.
+
 The depth-resolve/LOAD follow-up in Phase 4 is implemented and verified below.
 RenderPassSpecification and graph AttachmentSpecification accept DepthResolve
 (DepthResolveMode). Call QueryRenderTargetFormat(format).SupportsDepthResolve(mode)

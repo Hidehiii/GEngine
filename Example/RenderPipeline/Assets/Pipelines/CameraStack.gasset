@@ -1,0 +1,24 @@
+schemaVersion: 1
+type: render-pipeline
+format: render-pipeline
+payloadEncoding: text
+payload: |
+    version: 2
+    pipelineType: GEngine.Composable
+    targets:
+      - {name: Output, width: 96, height: 80, samples: 1, colors: [RGBA8], depth: D24S8}
+      - {name: Presented, width: 96, height: 80, samples: 1, colors: [RGBA8], depth: None}
+    resources:
+      CameraShader: {path: Assets/Shaders/CameraStack.gasset, type: shader}
+      PresentShader: {path: Assets/Shaders/RenderPipelinePresent.gasset, type: shader}
+    passes:
+      - {name: Cameras, type: Example.CameraStack.v1, settings: {stack: Main}}
+      - {name: Present, type: Example.StackPresent.v1, settings: {target: Output}}
+    cameraStacks:
+      - name: Main
+        target: Output
+        base: Base
+        nodes:
+          - {camera: Base, role: base, color: clear, depth: clear, overlays: [Scene, UI]}
+          - {camera: Scene, role: overlay, color: load, depth: load}
+          - {camera: UI, role: overlay, color: load, depth: load, viewport: [0.5, 0, 0.5, 0.5]}

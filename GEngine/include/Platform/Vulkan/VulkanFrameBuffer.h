@@ -22,6 +22,7 @@ namespace GEngine
 		virtual ~VulkanFrameBuffer() override;
 
 		virtual void Begin(CommandBuffer* cmdBuffer) override;
+		void Begin(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass) override;
 		virtual void End(CommandBuffer* cmdBuffer) override;
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) override;

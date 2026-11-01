@@ -1,5 +1,21 @@
 ## Off-screen command submission
 
+Camera stacking adds two offscreen command operations (2026-11-01, verified by
+P2 Debug/Release runs on GL/Vulkan/D3D12). `BeginRenderPass(framebuffer, renderPass)` selects a device-created
+compatible pass: only load/store operations may differ from the framebuffer's
+pass. Attachments/sample count/depth resolve/subpasses must match. Commands retain
+the pass and framebuffer through native submission; shared framebuffer operations
+are not mutated. The original one-argument overload remains supported.
+
+`SetViewport(GraphicsViewport{X,Y,Width,Height})` sets viewport plus matching
+scissor in top-left target pixels. An active graphics target and nonempty,
+in-bounds rectangle are required; overflow/out-of-bounds calls throw in both
+builds. Begin resets the command's viewport to the whole target. Clears and MSAA
+resolve cover whole attachments, independent of prior camera scissor. Vulkan draws
+honor the recorded viewport, GL translates its Y origin and clears/resolves reset
+scissor; presentation starts from full-window state. Rebuild apps/backends with
+the engine for the new virtual command/framebuffer overloads.
+
 Use `OnRender` for off-screen work. Record a command buffer first and submit it
 through the queue matching its type. Queue selection stays portable across all
 three backends:

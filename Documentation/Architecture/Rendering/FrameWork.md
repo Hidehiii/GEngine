@@ -1,5 +1,12 @@
 ## Frame work and graph
 
+P3 adds RGBA16F to graph color attachment validation and native queried formats.
+Post-process stages use existing graph-owned framebuffer targets and declare
+separate sampled inputs/attachment outputs. Intermediate lifetimes/dependencies
+are resolved through the existing graph, without new submission, pooling or
+aliasing APIs. HDR attachment numeric verification is tracked in the P3 TODO;
+the imported texture/readback format schema remains unchanged.
+
 Foundation follow-up (2026-10-31) validates graph target structure through the
 same path for portable and legacy input, then validates device dimensions,
 color attachment counts and subpass support before any new transient or

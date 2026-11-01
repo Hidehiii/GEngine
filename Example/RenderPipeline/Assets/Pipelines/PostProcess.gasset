@@ -1,0 +1,35 @@
+schemaVersion: 1
+type: render-pipeline
+format: render-pipeline
+payloadEncoding: text
+payload: |
+    version: 3
+    pipelineType: GEngine.Composable
+    targets:
+      - {name: HDR, width: 96, height: 80, samples: 1, colors: [RGBA16F], depth: D24S8}
+      - {name: Output, width: 96, height: 80, samples: 1, colors: [RGBA8], depth: None}
+    resources:
+      CameraShader: {path: Assets/Shaders/CameraStack.gasset, type: shader}
+      EffectsShader: {path: Assets/Shaders/PostProcess.gasset, type: shader}
+      PresentShader: {path: Assets/Shaders/RenderPipelinePresent.gasset, type: shader}
+    passes:
+      - {name: Cameras, type: Example.HDRCameras.v1, settings: {stack: Main}}
+      - {name: Effects, type: GEngine.PostProcess.v1, settings: {stack: Main}}
+      - {name: Present, type: Example.PostPresent.v1, settings: {target: Output}}
+    cameraStacks:
+      - name: Main
+        target: HDR
+        base: Base
+        nodes:
+          - {camera: Base, role: base, color: clear, depth: clear, overlays: [UI]}
+          - {camera: UI, role: overlay, color: load, depth: load, viewport: [0.5, 0, 0.5, 0.5]}
+    postProcessStacks:
+      - name: Main
+        input: HDR
+        output: Output
+        shader: EffectsShader
+        enabled: true
+        encoding: linear
+        effects:
+          - {id: Exposure, type: exposure, enabled: true, ev: 1}
+          - {id: Tone, type: reinhard, enabled: true}

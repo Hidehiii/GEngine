@@ -1,0 +1,49 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "PostProcessV1"
+    {
+        Pass
+        {
+            Cull Off
+            DepthTest Always
+            DepthWrite Off
+            Blend One Zero
+            BlendOp None
+            ColorMask R G B A
+            Tag PostProcess
+            #pragma vertex vert
+            #pragma fragment frag
+            Program
+            {
+                cbuffer material { float4 PostParameters; };
+                Texture2D PostInput;
+                sampler PostSampler;
+                struct VsInput { float3 position : POSITION; float2 uv : TEXCOORD0; };
+                struct VsOutput { float4 position : SV_POSITION; float2 uv : TEXCOORD0; };
+                VsOutput vert(VsInput input)
+                {
+                    VsOutput output;
+                    output.position = float4(input.position, 1);
+                    output.uv = input.uv;
+                    return output;
+                }
+                float EncodeSRGB(float value)
+                {
+                    value = saturate(value);
+                    return value <= 0.0031308 ? 12.92 * value : 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+                }
+                float4 frag(VsOutput input) : SV_Target
+                {
+                    float4 value = PostInput.Sample(PostSampler, input.uv);
+                    float3 rgb = max(value.rgb, 0);
+                    if (PostParameters.x > 1.5) rgb = rgb / (1 + rgb);
+                    else if (PostParameters.x > 0.5) rgb = min(rgb * PostParameters.y, 65504.0);
+                    if (PostParameters.z > 0.5) rgb = float3(EncodeSRGB(rgb.r), EncodeSRGB(rgb.g), EncodeSRGB(rgb.b));
+                    return float4(rgb, value.a);
+                }
+            }
+        }
+    }

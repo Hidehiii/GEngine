@@ -1,5 +1,16 @@
 # Shader authoring and reflection
 
+Pipeline candidate failure follow-up (2026-11-01): failed DXC status, empty
+output or missing stage/source now causes a runtime exception before reflection,
+cache publication or native shader construction, including Release. GL/Vulkan
+require successful SPIR-V and DXIL reflection compilation; DXIL success cannot
+mask SPIR-V failure. DXC operation results/diagnostic/output blobs use owned
+references released on all paths. Warning diagnostics with successful status
+remain warnings. A well-formed shader container with invalid HLSL exercises
+candidate rollback in Example/RenderPipeline. This does not claim comprehensive
+validation of malformed legacy shader-container directives or native draw-time
+pipeline errors. Scope and verification: [P1](../../TODO/Rendering/RenderPipeline.md).
+
 ## File format
 
 GEngine shader assets use the `.gasset` YAML envelope with `type: shader`,

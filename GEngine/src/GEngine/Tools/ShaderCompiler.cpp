@@ -9,6 +9,7 @@
 #include <SPIRV-Cross/spirv_cross.hpp>
 #include "GEngine/Runtime/ResourcePack.h"
 #include <atomic>
+#include <wrl/client.h>
 namespace GEngine
 {
     namespace
@@ -476,7 +477,7 @@ namespace GEngine
 		bool ret = false;
 		if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL || Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN)
 		{
-			ret = CompileSpirv(source, target, entryPoint, machineCode);
+			if (!CompileSpirv(source, target, entryPoint, machineCode)) return false;
 			// compile to dxil for reflection
 			std::vector<std::byte> dxilMachineCode;
 			ret = CompileDxil(source, target, entryPoint, dxilMachineCode, reflectionDxil);
@@ -498,6 +499,7 @@ namespace GEngine
 	}
 	bool ShaderCompiler::CompileSpirv(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<std::byte>& machineCode)
 	{
+		machineCode.clear();
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
 		sourceBuffer.Size		= source.size();
@@ -520,24 +522,26 @@ namespace GEngine
 		args.push_back(L"Zi");
 #endif
 
-		IDxcResult* result;
-		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(&result));
-		if (FAILED(hr))
+		Microsoft::WRL::ComPtr<IDxcResult> result;
+		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(result.GetAddressOf()));
+		if (FAILED(hr) || !result)
 		{
 			GE_CORE_ERROR("Shader compilation failed");
 			return false;
 		}
-		IDxcBlobUtf8* errors;
-		result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
-		if (errors && errors->GetStringLength() != 0)
+		Microsoft::WRL::ComPtr<IDxcBlobUtf8> errors;
+		result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(errors.GetAddressOf()), nullptr);
+		HRESULT status = E_FAIL;
+		if (FAILED(result->GetStatus(&status)) || FAILED(status))
 		{
-			GE_CORE_ERROR("Shader compilation error: {0}", errors->GetStringPointer());
+			GE_CORE_ERROR("Shader compilation error: {0}", errors ? errors->GetStringPointer() : "DXC returned no diagnostics.");
 			return false;
 		}
+		if (errors && errors->GetStringLength()) GE_CORE_WARN("Shader compilation warning: {}", errors->GetStringPointer());
 
-		IDxcBlob* compiledShaderBlob;
-		hr = result->GetResult(&compiledShaderBlob);
-		if (FAILED(hr))
+		Microsoft::WRL::ComPtr<IDxcBlob> compiledShaderBlob;
+		hr = result->GetResult(compiledShaderBlob.GetAddressOf());
+		if (FAILED(hr) || !compiledShaderBlob || !compiledShaderBlob->GetBufferSize())
 		{
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
@@ -550,6 +554,8 @@ namespace GEngine
 	}
 	bool ShaderCompiler::CompileDxil(const std::string& source, const std::string& target, const std::string& entryPoint, std::vector<std::byte>& machineCode, std::vector<std::byte>& reflectionDxil)
 	{
+		machineCode.clear();
+		reflectionDxil.clear();
 		DxcBuffer				sourceBuffer;
 		sourceBuffer.Ptr		= source.data();
 		sourceBuffer.Size		= source.size();
@@ -566,24 +572,26 @@ namespace GEngine
 #if GE_DEBUG
 		args.push_back(L"Zi");
 #endif
-		IDxcResult* result;
-		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(&result));
-		if (FAILED(hr))
+		Microsoft::WRL::ComPtr<IDxcResult> result;
+		HRESULT hr = m_Compiler->Compile(&sourceBuffer, args.data(), (uint32_t)args.size(), m_IncludeHandler, IID_PPV_ARGS(result.GetAddressOf()));
+		if (FAILED(hr) || !result)
 		{
 			GE_CORE_ERROR("Shader compilation failed");
 			return false;
 		}
-		IDxcBlobUtf8* errors;
-		result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
-		if (errors && errors->GetStringLength() != 0)
+		Microsoft::WRL::ComPtr<IDxcBlobUtf8> errors;
+		result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(errors.GetAddressOf()), nullptr);
+		HRESULT status = E_FAIL;
+		if (FAILED(result->GetStatus(&status)) || FAILED(status))
 		{
-			GE_CORE_ERROR("Shader compilation error: {0}", errors->GetStringPointer());
+			GE_CORE_ERROR("Shader compilation error: {0}", errors ? errors->GetStringPointer() : "DXC returned no diagnostics.");
 			return false;
 		}
+		if (errors && errors->GetStringLength()) GE_CORE_WARN("Shader compilation warning: {}", errors->GetStringPointer());
 
-		IDxcBlob* compiledShaderBlob;
-		hr = result->GetResult(&compiledShaderBlob);
-		if (FAILED(hr))
+		Microsoft::WRL::ComPtr<IDxcBlob> compiledShaderBlob;
+		hr = result->GetResult(compiledShaderBlob.GetAddressOf());
+		if (FAILED(hr) || !compiledShaderBlob || !compiledShaderBlob->GetBufferSize())
 		{
 			GE_CORE_ERROR("Get compiled shader failed");
 			return false;
@@ -592,9 +600,9 @@ namespace GEngine
 		machineCode.resize(compiledShaderBlob->GetBufferSize());
 		memcpy(machineCode.data(), compiledShaderBlob->GetBufferPointer(), compiledShaderBlob->GetBufferSize());
 
-		IDxcBlob* reflectionBlob;
-		hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
-		if (FAILED(hr) || reflectionBlob == nullptr)
+		Microsoft::WRL::ComPtr<IDxcBlob> reflectionBlob;
+		hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(reflectionBlob.GetAddressOf()), nullptr);
+		if (FAILED(hr) || !reflectionBlob || !reflectionBlob->GetBufferSize())
 		{
 			GE_CORE_ERROR("Get shader reflection failed");
 			return false;

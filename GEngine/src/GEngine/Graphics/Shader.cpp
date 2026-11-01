@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <regex>
 #include <set>
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -191,7 +192,8 @@ namespace GEngine
 			GE_INFO("Load shader {} from cache.", m_Name);
 			return;
 		}
-		Compile(srcCodes, shaders, reflectionDxils);
+		if (!Compile(srcCodes, shaders, reflectionDxils))
+			throw std::runtime_error("Shader compilation failed: " + path);
 		ReflectShader(shaders, reflectionDxils);
 		ComputeShaderCacheInfo(source, cache);
 		SaveToCache(shaders, reflectionDxils, cache);
@@ -426,11 +428,12 @@ namespace GEngine
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& shaders,
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>& reflectionDxils)
 	{
-		GE_CORE_ASSERT(m_StageEntryPoints.size() == m_PassReflections.size(), "Size of pass and entryPoint not match!");
+		if (m_StageEntryPoints.empty() || m_StageEntryPoints.size() != m_PassReflections.size())
+			throw std::runtime_error("Shader has no valid passes or entry points: " + m_FilePath);
 		for (int i = 0; i < m_StageEntryPoints.size(); i++)
 		{
-			GE_CORE_ASSERT(i < shaderSrcCodes.size(), "Shader source code size mismatch!");
-			GE_CORE_ASSERT(m_StageEntryPoints.at(i).size() > 0, "No entry points found for shader pass " + std::to_string(i));
+			if (i >= shaderSrcCodes.size() || m_StageEntryPoints.at(i).empty())
+				throw std::runtime_error("Shader pass has no source or entry points: " + m_FilePath);
 			shaders.push_back(std::unordered_map<std::string, std::vector<std::byte>>());
 			if (Graphics::GetGraphicsAPI() == GRAPHICS_API_OPENGL ||
 				Graphics::GetGraphicsAPI() == GRAPHICS_API_VULKAN ||
@@ -450,7 +453,8 @@ namespace GEngine
 					std::vector<std::byte> machineCode;
 					std::vector<std::byte> reflectionDxil;
 					bool result = ShaderCompiler::Get()->Compile(shaderSrcCodes.at(i), stage, entryPoint, machineCode, reflectionDxil);
-					GE_CORE_ASSERT(result, "Failed to compile shader stage " + stage + " for pass " + std::to_string(i));
+					if (!result || machineCode.empty() || reflectionDxil.empty())
+						throw std::runtime_error("Failed to compile shader stage " + stage + " for pass " + std::to_string(i) + ": " + m_FilePath);
 					shaders.at(i)[stage] = machineCode;
 					reflectionDxils.at(i)[stage] = reflectionDxil;
 				}

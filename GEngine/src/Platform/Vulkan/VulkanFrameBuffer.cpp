@@ -218,6 +218,13 @@ namespace GEngine
 	}
 	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
+		Begin(cmdBuffer, m_RenderPass);
+	}
+	void VulkanFrameBuffer::Begin(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass)
+	{
+		ValidateRenderPass(renderPass);
+		const auto nativePass = std::dynamic_pointer_cast<VulkanRenderPass>(renderPass);
+		if (!nativePass) throw std::invalid_argument("A Vulkan render-pass override is required.");
 		VkCommandBuffer cmd = ((VulkanCommandBuffer*)cmdBuffer)->GetCommandBuffer();
 		if (m_Specification.Samples > 1)
 		{
@@ -257,7 +264,7 @@ namespace GEngine
 
 		VkRenderPassBeginInfo					renderPassInfo{};
 		renderPassInfo.sType					= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass				= m_RenderPass->GetRenderPass();
+		renderPassInfo.renderPass				= nativePass->GetRenderPass();
 		renderPassInfo.framebuffer				= m_FrameBuffer;
 		renderPassInfo.renderArea.offset		= { 0, 0 };
 		renderPassInfo.renderArea.extent.width	= m_Specification.Width;
@@ -399,7 +406,7 @@ namespace GEngine
 			m_ColorImages.push_back(image);
 			m_ColorImageAllocations.push_back(imageAllocation);
 
-			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT,
+			Ref<VulkanTexture2D> texture = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_ASPECT_COLOR_BIT,
                 m_Specification.Width, m_Specification.Height);
 			m_RenderTargets.push_back(texture);
 		}
@@ -451,7 +458,7 @@ namespace GEngine
 					VK_IMAGE_VIEW_TYPE_2D, 1, VK_IMAGE_ASPECT_DEPTH_BIT, 1, imageView);
 				m_SwapChainAdditionalAttachments.push_back(imageView);
 			}
-			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, depthAspectFlag,
+			m_DepthStencil = CreateRef<VulkanTexture2D>(imageFormat, image, imageView, imageAllocation, VK_IMAGE_LAYOUT_UNDEFINED, depthAspectFlag,
                 m_Specification.Width, m_Specification.Height);
 		}
 		// multi samples

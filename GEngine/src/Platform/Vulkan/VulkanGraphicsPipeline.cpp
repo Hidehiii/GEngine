@@ -76,17 +76,18 @@ namespace GEngine
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline(frameBuffer, pass));
 
 		VkViewport			Viewport{};
-		Viewport.x			= 0.0f;
-		Viewport.y			= vkFrameBuffer->GetHeight();
-		Viewport.width		= vkFrameBuffer->GetWidth();
-		Viewport.height		= -(vkFrameBuffer->GetHeight());
+		const auto& rectangle = static_cast<VulkanCommandBuffer*>(cmdBuffer)->GetViewport();
+		Viewport.x = float(rectangle.X);
+		Viewport.y = float(rectangle.Y + rectangle.Height);
+		Viewport.width = float(rectangle.Width);
+		Viewport.height = -float(rectangle.Height);
 		Viewport.minDepth	= 0.0f;
 		Viewport.maxDepth	= 1.0f;
 		vkCmdSetViewport(cmd, 0, 1, &Viewport);
 
 		VkRect2D		Scissor{};
-		Scissor.offset	= { 0, 0 };
-		Scissor.extent	= { (unsigned int)vkFrameBuffer->GetWidth(), (unsigned int)vkFrameBuffer->GetHeight() };
+		Scissor.offset = { int32_t(rectangle.X), int32_t(rectangle.Y) };
+		Scissor.extent = { rectangle.Width, rectangle.Height };
 		vkCmdSetScissor(cmd, 0, 1, &Scissor);
 
 		vkCmdSetLineWidth(cmd, 1.0f);

@@ -32,11 +32,28 @@ namespace GEngine
 		m_Passes.erase(iterator, m_Passes.end());
 	}
 
+	void RenderPipeline::Prepare()
+	{
+		if (m_State != State::Unconfigured && m_State != State::Ready)
+			throw std::logic_error("RenderPipeline Prepare requires an idle pipeline.");
+		ConfigureIfNeeded();
+		if (m_Prepared) return;
+		m_State = State::Preparing;
+		try
+		{
+			if (!m_Graph.Compile()) throw std::runtime_error("RenderPipeline graph contains a dependency cycle.");
+			for (const auto& pass : m_Passes) pass->Prepare(m_Graph);
+			m_Prepared = true;
+			m_State = State::Ready;
+		}
+		catch (...) { m_State = State::Failed; throw; }
+	}
+
 	void RenderPipeline::Execute(const Ref<CommandBuffer>& completion, std::vector<CameraComponent>& cameras)
 	{
 		if (!completion)
 			throw std::invalid_argument("RenderPipeline requires a completion command buffer.");
-		ConfigureIfNeeded();
+		Prepare();
 		if (m_State != State::Ready)
 			throw std::logic_error("RenderPipeline Execute requires an idle configured pipeline.");
 		m_State = State::Executing;
@@ -84,6 +101,7 @@ namespace GEngine
 		m_Graph.Reset();
 		m_Passes.clear();
 		m_Frame = 0;
+		m_Prepared = false;
 		m_State = State::Unconfigured;
 	}
 

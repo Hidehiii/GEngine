@@ -10,6 +10,10 @@
 
 namespace GEngine
 {
+	struct GraphicsViewport
+	{
+		uint32_t X = 0, Y = 0, Width = 0, Height = 0;
+	};
 	
 
 	class GENGINE_API CommandBuffer
@@ -28,12 +32,23 @@ namespace GEngine
 		virtual void Begin(Ref<FrameBuffer>& buffer) = 0;
 		virtual void Begin() = 0;
 		virtual void BeginRenderPass(Ref<FrameBuffer>& buffer) = 0;
+		virtual void BeginRenderPass(Ref<FrameBuffer>& buffer, const Ref<RenderPass>& renderPass) = 0;
+		virtual void SetViewport(const GraphicsViewport& viewport) = 0;
+		const GraphicsViewport& GetViewport() const { return m_Viewport; }
 		virtual void EndRenderPass() = 0;
 		virtual void End() = 0;
 	protected:
 		virtual void BeginPresentRender(Ref<FrameBuffer>& buffer) = 0;
 		virtual void EndPresentRender() = 0;
 	protected:
+		void CheckViewport(const GraphicsViewport& viewport, const Ref<FrameBuffer>& buffer) const
+		{
+			if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || !viewport.Width || !viewport.Height ||
+				uint64_t(viewport.X) + viewport.Width > buffer->GetSpecification().Width ||
+				uint64_t(viewport.Y) + viewport.Height > buffer->GetSpecification().Height)
+				throw std::invalid_argument("Viewport requires an active graphics target and an in-bounds nonempty rectangle.");
+		}
+		GraphicsViewport m_Viewport;
 		CommandBufferType				m_Type = COMMAND_BUFFER_TYPE_NONE;
 	};
 }

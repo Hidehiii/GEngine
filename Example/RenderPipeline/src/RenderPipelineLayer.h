@@ -2,6 +2,7 @@
 
 #include <GEngine.h>
 #include <GEngine/Renderer/RenderPipeline.h>
+#include "PipelineAssetChecks.h"
 
 namespace GEngine
 {
@@ -36,6 +37,7 @@ namespace GEngine
 
 	private:
 		ForwardRenderPipeline m_Pipeline;
+		Ref<PipelineAssetChecks> m_AssetChecks;
 		Ref<RenderPipelinePass> m_LifecycleChecks;
 		std::vector<CameraComponent> m_Cameras;
 		uint64_t m_FrameCount = 0;

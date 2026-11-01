@@ -12,16 +12,32 @@ namespace GEngine
 {
 	void D3D12CommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer)
 	{
+		BeginRenderPass(buffer, buffer ? buffer->GetRenderPass() : nullptr);
+	}
+	void D3D12CommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer, const Ref<RenderPass>& renderPass)
+	{
 		if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || m_FrameBuffer)
 			throw std::invalid_argument("Invalid render-pass begin.");
+		buffer->ValidateRenderPass(renderPass);
 		m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
+		Retain(renderPass);
 		Retain(buffer);
-		m_FrameBuffer->Begin(this);
+		m_FrameBuffer->Begin(this, renderPass);
+		m_Viewport = { 0, 0, buffer->GetSpecification().Width, buffer->GetSpecification().Height };
 	}
 	void D3D12CommandBuffer::EndRenderPass()
 	{
 		if (m_FrameBuffer) m_FrameBuffer->End(this);
 		m_FrameBuffer.reset();
+	}
+	void D3D12CommandBuffer::SetViewport(const GraphicsViewport& viewport)
+	{
+		CheckViewport(viewport, m_FrameBuffer);
+		m_Viewport = viewport;
+		D3D12_VIEWPORT native{ float(viewport.X), float(viewport.Y), float(viewport.Width), float(viewport.Height), 0, 1 };
+		D3D12_RECT scissor{ LONG(viewport.X), LONG(viewport.Y), LONG(viewport.X + viewport.Width), LONG(viewport.Y + viewport.Height) };
+		m_CommandList->RSSetViewports(1, &native);
+		m_CommandList->RSSetScissorRects(1, &scissor);
 	}
     D3D12CommandPool::D3D12CommandPool(int count)
     {
@@ -248,6 +264,7 @@ namespace GEngine
 		GE_CORE_ASSERT(m_Type == COMMAND_BUFFER_TYPE_GRAPHICS, "Present render must be graphics command buffer");
 		m_FrameBuffer = std::static_pointer_cast<D3D12FrameBuffer>(buffer);
         m_FrameBuffer->BeginPresentRender(this);
+		m_Viewport = { 0, 0, buffer->GetSpecification().Width, buffer->GetSpecification().Height };
     }
     void D3D12CommandBuffer::EndPresentRender()
     {

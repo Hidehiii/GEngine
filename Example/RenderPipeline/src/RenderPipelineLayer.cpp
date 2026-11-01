@@ -1,4 +1,6 @@
 #include "RenderPipelineLayer.h"
+#include "CameraStackChecks.h"
+#include "PostProcessChecks.h"
 
 #include <GEngine/Graphics/GraphicsPresent.h>
 #include <GEngine/Graphics/Sampler.h>
@@ -267,6 +269,25 @@ namespace GEngine
 		camera.SetViewportSize(1280, 720);
 		camera.isPrimary = true;
 		m_Cameras.push_back(camera);
+		if (std::getenv("GENGINE_RENDER_PIPELINE_POST_CHECK"))
+		{
+			m_Cameras.resize(2);
+			for (auto& view : m_Cameras) view.SetOrthoGraphic(2,-1,1);
+			m_AssetChecks = CreatePostProcessChecks();
+			return;
+		}
+		if (std::getenv("GENGINE_RENDER_PIPELINE_STACK_CHECK"))
+		{
+			m_Cameras.resize(3);
+			for (auto& view : m_Cameras) view.SetOrthoGraphic(2,-1,1);
+			m_AssetChecks = CreateCameraStackChecks();
+			return;
+		}
+		if (std::getenv("GENGINE_RENDER_PIPELINE_ASSET_CHECK"))
+		{
+			m_AssetChecks = CreatePipelineAssetChecks();
+			return;
+		}
 		m_LifecycleChecks = CreateRef<LifecycleCheckPass>(m_Pipeline);
 		m_Pipeline.AddPass(m_LifecycleChecks);
 		ExpectLifecycleRejection([this] { m_Pipeline.AddPass(m_LifecycleChecks); });
@@ -278,6 +299,7 @@ namespace GEngine
 
 	void RenderPipelineLayer::OnRender()
 	{
+		if (m_AssetChecks) { m_AssetChecks->Execute(m_FrameCount, m_Cameras); return; }
 		const auto command = GraphicsPresent::GetCommandBuffer();
 		if (m_FrameCount == 0)
 		{
@@ -329,9 +351,13 @@ namespace GEngine
 
 	void RenderPipelineLayer::OnPresent()
 	{
-		m_Pipeline.Present(GraphicsPresent::GetCommandBuffer(), m_Cameras);
-		ExpectLifecycleRejection([this] { m_Pipeline.AddPass(m_LifecycleChecks); });
-		ExpectLifecycleRejection([this] { m_Pipeline.Present(GraphicsPresent::GetCommandBuffer(), m_Cameras); });
+		if (m_AssetChecks) m_AssetChecks->Present(m_Cameras);
+		else
+		{
+			m_Pipeline.Present(GraphicsPresent::GetCommandBuffer(), m_Cameras);
+			ExpectLifecycleRejection([this] { m_Pipeline.AddPass(m_LifecycleChecks); });
+			ExpectLifecycleRejection([this] { m_Pipeline.Present(GraphicsPresent::GetCommandBuffer(), m_Cameras); });
+		}
 		++m_FrameCount;
 
 		static const uint64_t frameLimit = []

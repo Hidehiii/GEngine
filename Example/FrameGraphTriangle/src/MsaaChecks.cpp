@@ -119,7 +119,7 @@ namespace GEngine
 	void RunMsaaChecks()
 	{
 		auto& device = Graphics::GetRenderDevice();
-		for (uint32_t value = 0; value <= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH; ++value)
+		for (uint32_t value = 0; value <= FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F; ++value)
 		{
 			const auto support = device.QueryRenderTargetFormat(static_cast<FrameBufferTextureFormat>(value));
 			GE_INFO("MSAA format {}: color={}, depth={}, sampled={}, colorResolve={}, depthResolve={}, samples={}, max={}x{}, load={}.",

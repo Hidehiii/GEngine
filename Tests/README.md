@@ -1,5 +1,59 @@
 # Focused regression checks
 
+## Ordered HDR effects
+
+RenderPipelineAssets.py --post exercises P3 HDR camera composition followed by
+ordered exposure/Reinhard effects. Use the native RenderPipeline executable and
+isolated log directories as below. The runner provides 12 command slots in its
+copied config. Require 18 invalid candidates, four pre-recording invalid live
+snapshots, two same-instance live changes, six replacements and 11 numeric probes
+per 120 frames; 6000 frames require 349 replacements/403 probes. Checks cover
+the required `Post-process pass reuse passed` preparation regression as well as
+empty/global/individual bypass, each effect, order, EV extremes, sRGB toe/curve,
+resize, independent parameters and stable intermediate target identities/counts.
+RGBA16F capability queries are also included in FrameGraphTriangle --msaa format
+metadata checks. Debug/Release 120-frame and Debug 6000-frame P3 runs passed all
+four variants, with P1/P2/default/MSAA regressions in both builds. Logs/CSV:
+build/post-process/final-{Debug,Release}, final-stress-Debug and named regression
+directories. See the P3 TODO and example README for the precise shader contract,
+bounded memory observations, launch instructions and remaining limitations.
+
+## Pipeline asset switching
+
+P2 adds `--stack` to this runner. Build the native RenderPipeline example and
+run the same command below with `--stack --logs build/camera-stacks/Debug`.
+Require 16 invalid-stack rejections, three pre-recording binding failures,
+two same-instance live binding changes, seven replacements and eleven
+four-quadrant probes of both raw and sampled output per 120-frame run.
+The eight cases cover depth LOAD/CLEAR, ordered UI, viewport/scissor, whole-color
+clear, disabled parents and 4x resized targets. `--frames 6000` repeats them for
+399 replacements/403 probes. See the example README for the visible result,
+native readback origin handling and verification status.
+Final-source P2 Debug/Release 120-frame and Debug 6000-frame runs passed all
+four variants; logs/CSV: build/camera-stacks/final-{Debug,Release} and
+final-stress-Debug. P1, original C++ and rebuilt MSAA regressions also passed
+both configurations; see the P2 TODO for exact evidence and remaining limits.
+
+Build the native RenderPipeline target, then run:
+
+```bat
+python -B Tests/RenderPipelineAssets.py dist/pipeline-lifecycle/windows-x86_64/Debug/RenderPipeline/RenderPipeline.exe --logs build/pipeline-assets/Debug
+```
+
+Repeat with Release. The four isolated backend runs enable asset mode, require
+18 rollback checks, seven switches and nine numeric pixel checks in 120 frames,
+and reject native warnings/errors or incomplete shutdown. Use `--backend` for
+one variant, or `--frames 6000` for 399 switches and 401 pixel checks. Outputs
+are runtime.log/memory.csv plus the example's development round-trip GAsset.
+The 120-second timeout only stops the runner-owned process. Original backend
+configurations stay unchanged. See Example/RenderPipeline/README.md and the P1
+TODO for schema scope, expected output and verification status.
+Final CMake GE_WITH_MONO=OFF Debug/Release runs passed all four backend variants
+at 120 frames, plus final Debug 6000-frame runs. Logs: build/pipeline-assets/
+final-{Debug,Release} and final-stress-Debug. Invalid HLSL intentionally logs a
+compiler error; the test verifies rollback and subsequent GPU output rather than
+treating this expected diagnostic as a native validation failure.
+
 ## Rendering foundation and lifetime controls
 
 Build the native FrameGraphTriangle target, then run from the repository root:

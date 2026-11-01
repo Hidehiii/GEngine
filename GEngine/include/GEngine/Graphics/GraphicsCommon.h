@@ -162,7 +162,10 @@ namespace GEngine
 		FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8,
 
 		// Depth
-		FRAME_BUFFER_TEXTURE_FORMAT_DEPTH
+		FRAME_BUFFER_TEXTURE_FORMAT_DEPTH,
+
+		// Appended to preserve the existing public enum values.
+		FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F
 	};
 
 	enum RenderPassBeginOperation

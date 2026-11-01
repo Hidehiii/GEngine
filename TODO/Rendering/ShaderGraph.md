@@ -1,5 +1,22 @@
 # Shader graph
 
+## Runtime compiler recovery (2026-11-01)
+
+P1 pipeline selection's required HLSL-failure repair and acceptance are owned by
+[RenderPipeline P1](RenderPipeline.md). Failed DXC stages now throw before
+reflection/cache/backend creation; SPIR-V failure cannot be overwritten by DXIL
+success, and operation result/blob references are scoped. This changes runtime
+error recovery, not shader graph authoring. Verification is recorded in P1.
+
+- [ ] Harden the remaining legacy shader-container parser separately. Concrete
+  source paths still use assertions for malformed Cull/DepthTest/DepthWrite/
+  pragma commands and unknown blend factors; missing structural delimiters are
+  not comprehensively validated. Acceptance: invalid containers/directives fail
+  with diagnostics in Debug/Release without assertion termination, invalid
+  indexing or cache publication; valid existing shaders retain behavior on all
+  backends, and pipeline selection preserves its old instance on these failures.
+  This is a registered follow-up, not additional implementation authorized by P1.
+
 ## Planned: editor-facing shader graph (2026-10-27)
 
 - [ ] Design and implement a visual shader graph authoring workflow. Scope:

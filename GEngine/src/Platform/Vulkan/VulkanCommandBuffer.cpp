@@ -10,15 +10,28 @@ namespace GEngine
 {
 	void VulkanCommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer)
 	{
+		BeginRenderPass(buffer, buffer ? buffer->GetRenderPass() : nullptr);
+	}
+	void VulkanCommandBuffer::BeginRenderPass(Ref<FrameBuffer>& buffer, const Ref<RenderPass>& renderPass)
+	{
 		if (!buffer || m_Type != COMMAND_BUFFER_TYPE_GRAPHICS || m_FrameBuffer)
 			throw std::invalid_argument("Invalid render-pass begin.");
+		buffer->ValidateRenderPass(renderPass);
 		m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
-		m_FrameBuffer->Begin(this);
+		Retain(renderPass);
+		Retain(buffer);
+		m_FrameBuffer->Begin(this, renderPass);
+		m_Viewport = { 0, 0, buffer->GetSpecification().Width, buffer->GetSpecification().Height };
 	}
 	void VulkanCommandBuffer::EndRenderPass()
 	{
 		if (m_FrameBuffer) m_FrameBuffer->End(this);
 		m_FrameBuffer.reset();
+	}
+	void VulkanCommandBuffer::SetViewport(const GraphicsViewport& viewport)
+	{
+		CheckViewport(viewport, m_FrameBuffer);
+		m_Viewport = viewport;
 	}
 	VulkanCommandBufferPool::VulkanCommandBufferPool(QueueFamilyIndices queueFamilyIndices, int count)
 	{
@@ -239,6 +252,7 @@ namespace GEngine
 			GE_CORE_ASSERT(buffer != nullptr, "graphics cmd must have frame buffer");
 			m_FrameBuffer = std::static_pointer_cast<VulkanFrameBuffer>(buffer);
 			m_FrameBuffer->BeginPresentRender(this);
+			m_Viewport = { 0, 0, buffer->GetSpecification().Width, buffer->GetSpecification().Height };
 		}
 	}
 	void VulkanCommandBuffer::EndPresentRender()

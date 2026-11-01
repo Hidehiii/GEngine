@@ -13,6 +13,8 @@ namespace GEngine
 		virtual void Begin(Ref<FrameBuffer>& buffer) override;
 		virtual void Begin() override;
 		virtual void BeginRenderPass(Ref<FrameBuffer>& buffer) override;
+		void BeginRenderPass(Ref<FrameBuffer>& buffer, const Ref<RenderPass>& renderPass) override;
+		void SetViewport(const GraphicsViewport& viewport) override;
 		virtual void EndRenderPass() override;
 		virtual void End() override;
 

@@ -411,10 +411,10 @@ namespace GEngine
 	RenderTargetFormatCapabilities VulkanGraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
 	{
 		RenderTargetFormatCapabilities result;
-		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F) return result;
 		const auto device = VulkanContext::Get()->GetPhysicalDevice();
 		const auto native = Utils::FrameBufferTextureFormatToVulkanFormat(format);
-		const bool depth = format >= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		const bool depth = format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 || format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH;
 		const auto attachment = depth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		VkFormatProperties features{};
 		vkGetPhysicalDeviceFormatProperties(device, native, &features);

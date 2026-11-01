@@ -5,6 +5,7 @@
 #include "GEngine/Graphics/GraphicsCommon.h"
 #include "RenderPass.h"
 #include "GEngine/Graphics/Texture.h"
+#include <stdexcept>
 
 namespace GEngine
 {
@@ -21,6 +22,15 @@ namespace GEngine
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 
 		virtual void Begin(CommandBuffer* cmdBuffer) = 0;
+		virtual void Begin(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass) = 0;
+		void ValidateRenderPass(const Ref<RenderPass>& renderPass)
+		{
+			if (!renderPass) throw std::invalid_argument("A render-pass override is required.");
+			auto expected = GetRenderPass()->GetSpecification();
+			const auto supplied = renderPass->GetSpecification();
+			expected.Operation = supplied.Operation;
+			if (!(expected == supplied)) throw std::invalid_argument("Render-pass override changes attachment compatibility.");
+		}
 		virtual void End(CommandBuffer* cmdBuffer) = 0;
 
 		virtual void SetRenderPassOperation(const RenderPassOperation& op) = 0;

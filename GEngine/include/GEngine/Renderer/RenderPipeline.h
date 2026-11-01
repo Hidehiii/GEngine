@@ -21,6 +21,7 @@ namespace GEngine
 
 		virtual const std::string& GetName() const = 0;
 		virtual void Configure(RenderPipelineBuilder& builder) = 0;
+		virtual void Prepare(const RenderGraph& graph) { (void)graph; }
 		virtual void Execute(RenderPipelineContext& context) = 0;
 		virtual void Present(RenderPipelineContext& context)
 		{
@@ -86,10 +87,13 @@ namespace GEngine
 	{
 	public:
 		RenderPipeline() = default;
+		RenderPipeline(const RenderPipeline&) = delete;
+		RenderPipeline& operator=(const RenderPipeline&) = delete;
 		virtual ~RenderPipeline() = default;
 
 		void AddPass(const Ref<RenderPipelinePass>& pass);
 		void RemovePass(const std::string& name);
+		void Prepare();
 		void Execute(const Ref<CommandBuffer>& completion, std::vector<CameraComponent>& cameras);
 		void Present(const Ref<CommandBuffer>& command, std::vector<CameraComponent>& cameras);
 		void Reset();
@@ -116,7 +120,7 @@ namespace GEngine
 	private:
 		enum class State
 		{
-			Unconfigured, Configuring, ConfiguringPasses, Ready,
+			Unconfigured, Configuring, ConfiguringPasses, Preparing, Ready,
 			Executing, AwaitingPresent, Presenting, Failed
 		};
 
@@ -124,5 +128,6 @@ namespace GEngine
 		std::vector<Ref<RenderPipelinePass>> m_Passes;
 		uint64_t m_Frame = 0;
 		State m_State = State::Unconfigured;
+		bool m_Prepared = false;
 	};
 }

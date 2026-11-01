@@ -1,5 +1,41 @@
 ## Backend layering and shader ownership
 
+P3 in progress: RGBA16F maps to GL_RGBA16F, VK_FORMAT_R16G16B16A16_SFLOAT and
+DXGI_FORMAT_R16G16B16A16_FLOAT. Format queries and graph/asset validation accept
+the appended color enum without treating it as depth; existing enum values stay
+unchanged. Imported texture schema/readback remains unchanged. Post stages use
+ordinary sampled/attachment resources and existing submission retention; there
+is no new native queue path. Debug/Release P3 numeric output and format-query/
+metadata regressions passed separately on all three backends, with Vulkan shared
+and dedicated queues. No native validation warnings/errors were captured; numeric
+RGBA16F MSAA resolve and unsupported-device injection remain untested.
+
+P2 foundation (2026-11-01, Debug/Release verified): command buffers accept a
+compatible immutable render-pass override and retain its owner independently of
+the framebuffer. This supports color/depth LOAD between cameras without replacing
+the framebuffer's shared pass pointer while recording. Viewport/scissor is command
+state with a portable top-left pixel origin. Vulkan pipelines consume that state
+for each draw; GL translates Y and disables scissor for full clears/resolves and
+presentation; D3D12 records native viewport/scissor commands. Existing full-target
+defaults and submission retirement remain in place; no per-camera allocation or
+device-wide idle is introduced during execution. Here allocation refers to GPU
+resources; binding lookup uses ordinary CPU containers.
+New Vulkan offscreen attachments now track UNDEFINED until their first actual
+transition/render pass. Claiming attachment-optimal at allocation caused invalid
+old-layout barriers for camera passes that explicitly begin their framebuffer.
+Unrepresented RenderImage2DFormat conversion returns VK_FORMAT_UNDEFINED instead
+of an undefined C++ return; explicit image aspects still drive layout barriers.
+AttachmentUvStartsAtTop describes framebuffer sampling origin (false on GL,
+true on Vulkan/D3D12), keeping consumer UV selection independent of native APIs.
+
+Pipeline asset candidate preparation now propagates shader compilation failure
+before reflection/cache publication/backend construction in both builds.
+SPIR-V compilation and DXIL reflection must both succeed; DXC result/blob COM
+references are scoped to the compilation operation and released on error too.
+Native backend interfaces and runtime compiler ownership are unchanged; the
+existing legacy shader-container parser is not comprehensively hardened by P1.
+See [pipeline selection](RenderPipeline.md) for the failure rollback boundary.
+
 Per-format/MSAA follow-up (2026-11-01) keeps native format queries,
 multisample allocations, views and resolves backend-owned. Scope and acceptance
 are in [Phase 4](../../../TODO/Rendering/Phase4.md#per-format-capabilities-and-msaa-2026-11-01).

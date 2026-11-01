@@ -139,6 +139,11 @@ namespace GEngine
 	}
 	void D3D12FrameBuffer::Begin(CommandBuffer* cmdBuffer)
 	{
+		Begin(cmdBuffer, m_RenderPass);
+	}
+	void D3D12FrameBuffer::Begin(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass)
+	{
+		ValidateRenderPass(renderPass);
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd = static_cast<D3D12CommandBuffer*>(cmdBuffer)->GetCommandList();
 
 		for (int i = 0; i < m_RenderTargets.size(); i++)
@@ -162,7 +167,7 @@ namespace GEngine
 		}
 
 		cmd->OMSetRenderTargets(static_cast<UINT>(m_Specification.RenderTargets.size()), &rtvDescriptor, TRUE, hasDepth ? &dsvDescriptor : nullptr);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
+		if (renderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			for (uint32_t index = 0; index < m_Specification.RenderTargets.size(); ++index)
 			{
@@ -170,7 +175,7 @@ namespace GEngine
 				cmd->ClearRenderTargetView(handle, Math::ValuePtr(D3D12Context::Get()->GetClearColor()), 0, nullptr);
 			}
 		}
-		if (hasDepth && m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
+		if (hasDepth && renderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			const auto flags = m_Specification.DepthStencil == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 ?
 				D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL : D3D12_CLEAR_FLAG_DEPTH;

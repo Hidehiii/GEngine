@@ -1,5 +1,11 @@
 ## Graph-owned recording and attachments
 
+P3 extends graph color attachment validation to appended RGBA16F, including
+device format/dimension preflight. This is an HDR attachment capability, not a
+new imported texture/readback format. Graph lifetime, command submission and
+public scheduling signatures are unchanged; post-processing uses existing
+graphics writes and sampled reads. See the pipeline API for the effect contract.
+
 ```cpp
 RenderGraph::AttachmentSpecification attachment{};
 attachment.ColorFormats = { FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 };

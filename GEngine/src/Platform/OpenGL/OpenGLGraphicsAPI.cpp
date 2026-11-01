@@ -188,6 +188,7 @@ namespace GEngine
 	GraphicsCapabilities OpenGLGraphicsAPI::GetCapabilities() const
 	{
 		GraphicsCapabilities capabilities;
+		capabilities.AttachmentUvStartsAtTop = false;
 		GLint majorVersion = 0;
 		GLint minorVersion = 0;
 		glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
@@ -243,14 +244,14 @@ namespace GEngine
 	RenderTargetFormatCapabilities OpenGLGraphicsAPI::QueryRenderTargetFormat(FrameBufferTextureFormat format) const
 	{
 		RenderTargetFormatCapabilities result;
-		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_DEPTH) return result;
+		if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F) return result;
 		const auto native = Utils::FrameBufferTextureFormatToGLInternalFormat(format);
 		GLint supported = 0, renderable = 0, sampled = 0;
 		glGetInternalformativ(GL_TEXTURE_2D, native, GL_INTERNALFORMAT_SUPPORTED, 1, &supported);
 		glGetInternalformativ(GL_TEXTURE_2D, native, GL_FRAMEBUFFER_RENDERABLE, 1, &renderable);
 		glGetInternalformativ(GL_TEXTURE_2D, native, GL_FRAGMENT_TEXTURE, 1, &sampled);
 		if (!supported || renderable == GL_NONE) return result;
-		const bool depth = format >= FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8;
+		const bool depth = format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH24_STENCIL8 || format == FRAME_BUFFER_TEXTURE_FORMAT_DEPTH;
 		result.ColorAttachment = !depth;
 		result.DepthStencilAttachment = depth;
 		result.Sampled = sampled != GL_NONE;

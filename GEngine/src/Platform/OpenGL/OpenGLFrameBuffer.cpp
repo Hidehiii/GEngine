@@ -236,7 +236,12 @@ namespace GEngine
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer)
+	{
+		Begin(cmdBuffer, m_RenderPass);
+	}
+	void OpenGLFrameBuffer::Begin(CommandBuffer* cmdBuffer, const Ref<RenderPass>& renderPass)
     {
+		ValidateRenderPass(renderPass);
 		if (m_Specification.Samples > 1)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, m_MultiSampleFrameBuffer);
@@ -251,17 +256,19 @@ namespace GEngine
 		glDepthMask(GL_TRUE);
         glDepthRange(Graphics::IsReverseDepth() ? 1 : 0, Graphics::IsReverseDepth() ? 0 : 1);
         glClearDepth(Graphics::IsReverseDepth() ? 0 : 1);
-		if (m_RenderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
+		glDisable(GL_SCISSOR_TEST);
+		if (renderPass->GetSpecification().Operation.ColorBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
-		if (m_RenderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
+		if (renderPass->GetSpecification().Operation.DepthStencilBegin == RENDER_PASS_BEGINE_OP_CLEAR)
 		{
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
     }
     void OpenGLFrameBuffer::End(CommandBuffer* cmdBuffer)
     {
+		glDisable(GL_SCISSOR_TEST);
         if (m_Specification.Samples > 1)
         {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MultiSampleFrameBuffer);

@@ -83,6 +83,8 @@ namespace GEngine
 				break;
 			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
 				return GL_RGBA8;
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F:
+				return GL_RGBA16F;
 			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return GL_R32F;
 			case FRAME_BUFFER_TEXTURE_FORMAT_RG16F:
@@ -111,6 +113,8 @@ namespace GEngine
 			case FRAME_BUFFER_TEXTURE_FORMAT_NONE:
 				break;
 			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA8:
+				return GL_RGBA;
+			case FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F:
 				return GL_RGBA;
 			case FRAME_BUFFER_TEXTURE_FORMAT_R32F:
 				return GL_R;

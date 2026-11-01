@@ -987,7 +987,7 @@ namespace GEngine
 		if (specification.ColorFormats.empty())
 			throw std::invalid_argument("A portable graph attachment needs at least one color format.");
 		for (const auto format : specification.ColorFormats)
-			if (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RG16UI)
+			if (format != FRAME_BUFFER_TEXTURE_FORMAT_RGBA16F && (format < FRAME_BUFFER_TEXTURE_FORMAT_RGBA8 || format > FRAME_BUFFER_TEXTURE_FORMAT_RG16UI))
 				throw std::invalid_argument("Portable graph color formats must be valid color formats.");
 		if (specification.Samples == 0 || specification.Samples > 64 ||
 			(specification.Samples & (specification.Samples - 1)) != 0)

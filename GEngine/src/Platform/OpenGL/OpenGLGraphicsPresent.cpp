@@ -16,6 +16,7 @@ namespace GEngine
 	void OpenGLGraphicsPresent::Begin()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_SCISSOR_TEST);
 		glEnable(GL_FRAMEBUFFER_SRGB);
 		glDepthRange(Graphics::IsReverseDepth() ? 1 : 0, Graphics::IsReverseDepth() ? 0 : 1);
 		glClearDepth(Graphics::IsReverseDepth() ? 0 : 1);

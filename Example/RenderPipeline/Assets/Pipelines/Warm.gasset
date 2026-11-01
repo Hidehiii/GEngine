@@ -1,0 +1,21 @@
+schemaVersion: 1
+type: render-pipeline
+format: render-pipeline
+payloadEncoding: text
+payload: |
+    version: 1
+    pipelineType: GEngine.Composable
+    settings: {label: warm}
+    targets:
+      - {name: Output, width: 96, height: 64, samples: 1, colors: [RGBA8], depth: D24S8}
+      - {name: LifetimeProbe, width: 8, height: 8, colors: [RGBA8]}
+    resources:
+      ColorShader: {path: Assets/Shaders/PipelineAssetColor.gasset, type: shader}
+      PresentShader: {path: Assets/Shaders/RenderPipelinePresent.gasset, type: shader}
+    passes:
+      - name: Draw
+        type: Example.SolidColor.v1
+        settings: {target: Output, shader: ColorShader, red: '0.9', green: '0.1', blue: '0.2'}
+      - name: Present
+        type: Example.Present.v1
+        settings: {target: Output, shader: PresentShader}
