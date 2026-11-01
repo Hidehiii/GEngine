@@ -1,5 +1,28 @@
 # RenderPipeline
 
+## Shader parser rollback checks
+
+After a normal engine/example build, run:
+
+```bat
+python -B Tests/RenderPipelineAssets.py dist/pipeline-lifecycle/windows-x86_64/Debug/RenderPipeline/RenderPipeline.exe --parser --logs build/shader-parser/Debug
+```
+
+Repeat with Release and individual --backend choices. This opt-in extends P1
+with an invalid DepthWrite token and a missing container brace, each retried
+twice. Require `Shader parser rollback passed: 4 cases.`, 22 total rejections,
+unchanged active instance/settings, no cache folders for either malformed shader,
+and the existing valid-output switch/readback/resize/discard/shutdown checks.
+Failure indicators include assertion termination, cache artifacts, missing parse
+diagnostics, changed active pipeline or numeric/native diagnostics. Fresh copied
+run directories avoid stale fixture cache. Direct launch uses
+GENGINE_RENDER_PIPELINE_ASSET_CHECK=1 and GENGINE_RENDER_PIPELINE_PARSER_CHECK=1
+with a frame limit. Existing modes are unchanged.
+CPU parser tests pass independently, but this runtime mode has not been run:
+the current host's known D3D12 version intentionally blocks complete builds.
+No OpenGL/Vulkan/D3D12 runtime success is inferred from CPU checks. Follow the
+[version guide](../../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).
+
 ## Ordered HDR post-processing (P3)
 
 Build the native example and run from the repository root:

@@ -1,5 +1,24 @@
 ## Backend layering and shader ownership
 
+Shader container rewrite (2026-11-01): ParseShaderContainer is a CPU-only shared
+front end in Graphics/ShaderContainer.h/.cpp. It returns owned name/pass state,
+stage entry maps, mesh flags and exact Program bodies; it performs no graphics,
+file/cache or compiler operations. A bounded scanner handles whitespace/BOM,
+comments, quoted values and nested program braces without matching keywords in
+comments/HLSL. Parse failures carry source/line/column in std::invalid_argument.
+State/pragma duplicates, unknown values, invalid stage combinations and trailing
+input fail before publication. Shader::Preprocess first builds temporary vectors,
+then swaps all fields only on complete success. Parsing precedes disk-cache
+access and folder creation, compilation, reflection and backend construction;
+existing in-memory Shader::Create cache reuse is unchanged (no hot reload).
+ShaderCacheSource includes parser revision 2 so old extraction results are not
+reused after this change. Utils state converters keep their signatures but now
+throw for unknown values. Documented DepthWrite On correctly enables writes.
+GPU ownership, GL/Vulkan/D3D12 compilation and queue semantics are unchanged.
+CPU Debug/Release/corpus checks pass; complete engine/example builds are blocked
+by the separately required host D3D12 version guard. New pipeline rollback/cache
+fixtures are implemented but their GPU/runtime acceptance remains unverified.
+
 P3 in progress: RGBA16F maps to GL_RGBA16F, VK_FORMAT_R16G16B16A16_SFLOAT and
 DXGI_FORMAT_R16G16B16A16_FLOAT. Format queries and graph/asset validation accept
 the appended color enum without treating it as depth; existing enum values stay

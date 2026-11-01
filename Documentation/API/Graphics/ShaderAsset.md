@@ -1,5 +1,23 @@
 ## Shader asset
 
+Include GEngine/Graphics/ShaderContainer.h for CPU-only validation:
+
+```cpp
+auto parsed = GEngine::ParseShaderContainer(payload, "Assets/Shaders/Example.gasset");
+const auto& pass = parsed.Passes.at(0);
+// pass.State, pass.EntryPoints, pass.Program and pass.MeshWorkflow are owned values.
+```
+
+ShaderContainer has Name and Passes; ShaderContainerPass has RenderState State,
+an entry-point map keyed by canonical lowercase stages, exact Program bytes and
+MeshWorkflow. Input string_views need only remain valid during the call. Invalid
+input throws std::invalid_argument containing source name, one-based line and
+byte column; .gasset diagnostics refer to the decoded payload, not YAML envelope lines.
+No Application/device/compiler/cache is needed. Shader::Create(path) signatures
+remain unchanged; loading parses before disk-cache access or compilation. Its
+existing in-memory cache still reuses a previously loaded path without hot reload.
+See [grammar/error rules](../ShaderAuthoring.md#container-parser-contract).
+
 Packaged games create and reuse `Cache/Shaders/<API>/` under the game root
 (1=OpenGL, 2=Vulkan, 3=D3D12); configuration remains external at
 `Config/Config.ini`. Cache identity includes source text, backend target and

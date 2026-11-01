@@ -7,11 +7,53 @@ require successful SPIR-V and DXIL reflection compilation; DXIL success cannot
 mask SPIR-V failure. DXC operation results/diagnostic/output blobs use owned
 references released on all paths. Warning diagnostics with successful status
 remain warnings. A well-formed shader container with invalid HLSL exercises
-candidate rollback in Example/RenderPipeline. This does not claim comprehensive
-validation of malformed legacy shader-container directives or native draw-time
-pipeline errors. Scope and verification: [P1](../../TODO/Rendering/RenderPipeline.md).
+candidate rollback in Example/RenderPipeline. The container rewrite below adds
+malformed-source validation separately; native draw-time pipeline errors remain
+outside that scope. See [P1](../../TODO/Rendering/RenderPipeline.md) and the
+[parser work item](../../TODO/Rendering/ShaderGraph.md).
 
-## File format
+## Container parser contract
+
+The container front end is rewritten as a scanner/parser, exposed through
+ParseShaderContainer in GEngine/Graphics/ShaderContainer.h. It validates the
+entire decoded text before committing parsed Shader state or touching disk cache/compiler
+state. It returns owned values or throws std::invalid_argument with source name,
+one-based line and byte column. Debug/Release execute the same validation. Diagnostics
+for .gasset refer to payload lines. This parser does not compile/validate HLSL
+types, entry-point existence, preprocessor conditions or device capabilities.
+
+- One nonempty quoted Shader name and one or more Pass blocks are required;
+  each Pass ends with exactly one Program block. Unknown/trailing input is an
+  error. Keywords and state/stage values are case-insensitive; entry names/Tags
+  preserve spelling. Quoted values support escaped quote/backslash.
+- Pass directives/pragmas occupy separate lines before Program. Whitespace,
+  CRLF, leading UTF-8 BOM, line comments and block comments are supported. Quoted
+  names cannot span lines; unterminated comments/quotes/blocks and NUL bytes fail.
+  Program extraction preserves every byte inside its braces, including its last
+  byte; braces inside comments and quoted/character literals do not end a block.
+  Braces must balance lexically; conditional HLSL preprocessing remains DXC's job.
+- Cull, DepthTest, DepthWrite, Blend, BlendOp, ColorMask and Tag may each appear
+  once per Pass. Unknown commands/values, incorrect argument counts, duplicate
+  directives/channels and malformed state values fail instead of defaulting or
+  asserting. Tag accepts one bare or quoted nonempty value. ColorMask accepts
+  individual R/G/B/A channels separated by spaces/commas, or 0 for none.
+- DepthWrite accepts On/True/1 and Off/False/0; On now correctly enables writes
+  (the old parser incorrectly disabled it). DepthTest keeps LEqual/GEQual aliases.
+  Blend accepts two factors or four for separate color/alpha; BlendOp accepts
+  one or two operations and keeps Substract/ReverseSubstract spellings while also
+  accepting Subtract/ReverseSubtract. Omitted directives retain RenderState defaults.
+- A stage is declared once with #pragma stage entry, using a valid identifier.
+  Compute cannot mix with graphics. Amplification requires Mesh; Mesh cannot mix
+  with Vertex/Hull/Domain/Geometry. Hull and Domain must pair. A graphics pass
+  needs Vertex or Mesh; fragment output is optional for depth-only passes.
+
+Cache hashes include parser revision 2, invalidating old compiled extraction
+results without changing the disk format. Existing Shader::Create in-memory path/
+name caching is not hot reload. Old #Name/#Type GLSL containers and shader fragments
+incorrectly marked type: shader are explicitly rejected; this rewrite does not
+add support for those already-incompatible assets.
+
+## File format examples
 
 GEngine shader assets use the `.gasset` YAML envelope with `type: shader`,
 `format: shader` and a text payload. The payload is the `.shader` authoring

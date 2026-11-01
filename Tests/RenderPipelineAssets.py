@@ -11,7 +11,7 @@ import time
 from D3D12QueueRegression import sample
 
 
-def run(executable, directory, frames, api, dedicated, stack=False, post=False):
+def run(executable, directory, frames, api, dedicated, stack=False, post=False, parser=False):
     assets = Path(__file__).resolve().parents[1] / "Example/RenderPipeline"
     directory.mkdir(parents=True, exist_ok=True)
     shutil.copytree(assets / "Assets", directory / "Assets", dirs_exist_ok=True)
@@ -30,6 +30,9 @@ def run(executable, directory, frames, api, dedicated, stack=False, post=False):
                GENGINE_D3D12_LIFETIME_TRACE="1", GENGINE_D3D12_LIVE_OBJECTS="1",
                GENGINE_VULKAN_DEDICATED_QUEUES=str(int(dedicated)))
     env.pop("GENGINE_RENDER_PIPELINE_POST_CHECK", None)
+    env.pop("GENGINE_RENDER_PIPELINE_PARSER_CHECK", None)
+    if parser:
+        env["GENGINE_RENDER_PIPELINE_PARSER_CHECK"] = "1"
     if post:
         env.pop("GENGINE_RENDER_PIPELINE_ASSET_CHECK", None)
         env.pop("GENGINE_RENDER_PIPELINE_STACK_CHECK", None)
@@ -82,7 +85,9 @@ def run(executable, directory, frames, api, dedicated, stack=False, post=False):
                     f"RenderPipeline completed {frames} frames; requesting normal shutdown.")
     if any(marker not in text for marker in required):
         raise RuntimeError(f"Missing acceptance marker: {path}")
-    if not stack and not post and (text.count("Pipeline asset rejection passed:") != 18 or
+    if parser and "Shader parser rollback passed: 4 cases." not in text:
+        raise RuntimeError(f"Missing malformed-shader rollback checks: {path}")
+    if not stack and not post and (text.count("Pipeline asset rejection passed:") != (22 if parser else 18) or
             text.count("Pipeline asset switch passed at frame") != switches or
             text.count("recorded outgoing target submitted.") != (switches + 1) // 2 or
             text.count("recorded outgoing target discarded/reset.") != switches // 2 or
@@ -122,6 +127,7 @@ def main():
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--stack", action="store_true", help="Run P2 camera composition instead of P1 asset mode")
     modes.add_argument("--post", action="store_true", help="Run P3 HDR composition and ordered effects")
+    modes.add_argument("--parser", action="store_true", help="P1 plus malformed shader rollback/cache checks")
     parser.add_argument("--backend", choices=("OpenGL", "Vulkan", "D3D12", "VulkanDedicated"))
     args = parser.parse_args()
     executable = args.executable.resolve()
@@ -129,7 +135,7 @@ def main():
         raise RuntimeError("Use a native executable and 120..6000 frames divisible by 15")
     for name, api, dedicated in (("OpenGL",1,False),("Vulkan",2,False),("D3D12",3,False),("VulkanDedicated",2,True)):
         if not args.backend or name == args.backend:
-            run(executable,args.logs.resolve() / name,args.frames,api,dedicated,args.stack,args.post)
+            run(executable,args.logs.resolve() / name,args.frames,api,dedicated,args.stack,args.post,args.parser)
 
 
 if __name__ == "__main__":

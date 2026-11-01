@@ -1,0 +1,17 @@
+schemaVersion: 1
+type: shader
+format: shader
+payloadEncoding: text
+payload: |
+    Shader "PipelineParserInvalidState"
+    {
+        Pass
+        {
+            DepthWrite Sometimes
+            #pragma vertex vert
+            Program
+            {
+                float4 vert(float2 p : POSITION) : SV_POSITION { return float4(p, 0, 1); }
+            }
+        }
+    }

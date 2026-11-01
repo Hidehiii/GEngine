@@ -1,8 +1,8 @@
 #include "GEpch.h"
 #include "GEngine/Graphics/Shader.h"
+#include "GEngine/Graphics/ShaderContainer.h"
 #include "GEngine/Asset/GAsset.h"
 #include "GEngine/Graphics/Graphics.h"
-#include "GEngine/Tools/StringHelper.h"
 #include "GEngine/Tools/FileSystemHelper.h"
 #include "GEngine/Tools/Serializer.h"
 #include "GEngine/Tools/OpenSSLTool.h"
@@ -30,7 +30,7 @@ namespace GEngine
             static const std::regex includePattern(R"inc((?:^|\n)[ \t]*#[ \t]*include\s*["<]([^">]+)[">])inc");
             static const std::regex comments(R"inc(/\*[\s\S]*?\*/|//[^\r\n]*)inc");
             std::set<std::string> visited;
-            std::string result = source;
+            std::string result = source + "\nGEngine-ShaderContainer:2";
             std::function<void(const std::string&)> append = [&](const std::string& text)
             {
                 const auto active = std::regex_replace(text, comments, "");
@@ -111,57 +111,6 @@ namespace GEngine
 			return 0;
 		}
 
-		CompareOperation ShaderCompareOperationFromString(const std::string& value)
-		{
-			if (StringHelper::ToLower(value) == VAR_NAME(less))			return COMPARE_OP_LESS;
-			if (StringHelper::ToLower(value) == VAR_NAME(greater))		return COMPARE_OP_GREATER;
-			if (StringHelper::ToLower(value) == VAR_NAME(lessequal))	return COMPARE_OP_LESS_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(lequal))		return COMPARE_OP_LESS_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(greaterequal))	return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(gequal))		return COMPARE_OP_GREATER_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(equal))		return COMPARE_OP_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(notequal))		return COMPARE_OP_NOT_EQUAL;
-			if (StringHelper::ToLower(value) == VAR_NAME(always))		return COMPARE_OP_ALWAYS;
-
-			return COMPARE_OP_LESS_EQUAL;
-		}
-		CullMode ShaderCullModeFromString(const std::string& value)
-		{
-			const std::string cullMode = StringHelper::ToLower(value);
-			if (cullMode == VAR_NAME(none) || cullMode == VAR_NAME(off)) return CULL_MODE_NONE;
-			if (cullMode == VAR_NAME(back))		return CULL_MODE_BACK;
-			if (cullMode == VAR_NAME(front))	return CULL_MODE_FRONT;
-			GE_CORE_WARN("Unknown cull mode '{}', falling back to back-face culling.", value);
-			return CULL_MODE_BACK;
-		}
-		
-		BlendFactor ShaderBlendFactorFromString(const std::string& factor)
-		{
-			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCALPHA))			return BLEND_FACTOR_SRC_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTALPHA))			return BLEND_FACTOR_DST_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(SRCCOLOR))			return BLEND_FACTOR_SRC_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(DSTCOLOR))			return BLEND_FACTOR_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCALPHA))	return BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTALPHA))	return BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSSRCCOLOR))	return BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONEMINUSDSTCOLOR))	return BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ONE))					return BLEND_FACTOR_ONE;
-			if (StringHelper::ToUpper(factor) == VAR_NAME(ZERO))				return BLEND_FACTOR_ZERO;
-
-			GE_CORE_ASSERT(false, "Unknown blend factor! " + factor);
-		}
-		BlendMode ShaderBlendModeFromString(const std::string& type)
-		{
-			if (StringHelper::ToLower(type) == VAR_NAME(none))				return BLEND_MODE_NONE;
-			if (StringHelper::ToLower(type) == VAR_NAME(add))				return BLEND_MODE_ADD;
-			if (StringHelper::ToLower(type) == VAR_NAME(substract))			return BLEND_MODE_SUBSTRACT;
-			if (StringHelper::ToLower(type) == VAR_NAME(reversesubstract))	return BLEND_MODE_REVERSE_SUBSTRACT;
-			if (StringHelper::ToLower(type) == VAR_NAME(min))				return BLEND_MODE_MIN;
-			if (StringHelper::ToLower(type) == VAR_NAME(max))				return BLEND_MODE_MAX;
-
-			GE_CORE_ASSERT(false, "Unknown blend type! " + type);
-			return BLEND_MODE_NONE;
-		}
 	}
 
 	const ShaderPropertyType Shader::GetPropertyType(const std::string& name)
@@ -175,7 +124,6 @@ namespace GEngine
 	void Shader::InitializeShader(const std::string& path, std::function<void(const std::vector<std::unordered_map<std::string, std::vector<std::byte>>>&)> processMachingCodeFunc)
 	{
 		m_FilePath = path;
-		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 		std::vector<std::string>												srcCodes; // each pass src code
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	shaders; // pass { stage : code }
 		std::vector<std::unordered_map<std::string, std::vector<std::byte>>>	reflectionDxils; // pass { stage : reflection dxil }
@@ -185,6 +133,7 @@ namespace GEngine
 			: FileSystemHelper::ReadFileAsString(path);
 		ShaderCacheInfo															cache;
 		Preprocess(source, srcCodes);
+		FileSystemHelper::CreateFolder(Application::Get().GetConfig()->GetShaderCacheDirectory());
 		if (LoadFromCache(shaders, reflectionDxils, source, cache))
 		{
 			ReflectShader(shaders, reflectionDxils);
@@ -217,211 +166,26 @@ namespace GEngine
 
 	void Shader::Preprocess(const std::string& source, std::vector<std::string>& shaderSrcCode)
 	{
-		std::stack<int> stack;
-		std::string block;
-
-		size_t pos = source.find("Shader", 0);
-		pos = source.find("\"", pos);
-
-		m_Name = source.substr(pos + 1, source.find("\"", pos + 1) - pos - 1);
-		GE_CORE_INFO("Shader name: {}", m_Name);
-
-		pos = source.find("{", pos);
-		stack.push(1);
-
-
-		while (source.find("Pass", pos) != std::string::npos)
+		auto container = ParseShaderContainer(source, m_FilePath);
+		std::vector<ShaderReflectionInfo> reflections;
+		std::vector<std::unordered_map<std::string, std::string>> entries;
+		std::vector<uint8_t> mesh;
+		std::vector<std::string> programs;
+		for (auto& pass : container.Passes)
 		{
-			GE_CORE_INFO("Shader pass {}:", m_PassReflections.size());
-
-			m_PassReflections.emplace_back(ShaderReflectionInfo());
-			pos = source.find("Pass", pos);
-			pos = source.find("{", pos);
-			stack.push(1);
-
-			block = source.substr(pos + 1, source.find("Program", pos + 1) - pos - 1);
-
-			std::string commandLine;
-			size_t commandPos;
-			// cull
-			commandPos = block.find("Cull", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 2, "Invalid cull command! " + commandLine);
-				m_PassReflections.at(m_PassReflections.size() - 1).State.Cull = Utils::ShaderCullModeFromString(words[1]);
-				GE_CORE_TRACE("	Cull mode: {}", words[1]);
-			}
-			//depth test
-			commandPos = block.find("DepthTest", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthTest command! " + commandLine);
-				m_PassReflections.at(m_PassReflections.size() - 1).State.DepthTestOp = Utils::ShaderCompareOperationFromString(words[1]);
-				GE_CORE_TRACE("	Depth test: {}", words[1]);
-			}
-			//depth write
-			commandPos = block.find("DepthWrite", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 2, "Invalid DepthWrite command! " + commandLine);
-				m_PassReflections.at(m_PassReflections.size() - 1).State.DepthWrite = (StringHelper::ToLower(words[1]) == "true" || words[1] == "1");
-				GE_CORE_TRACE("	Depth write: {}", words[1]);
-			}
-			//blend,用空格避免找到BlendOp等类似命令
-			commandPos = block.find("Blend ", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 3 || words.size() == 5, "Invalid Blend command! " + commandLine);
-				if (words.size() == 3)
-				{
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[2]);
-					GE_CORE_TRACE("	Blend mode: {} {}", words[1], words[2]);
-				}
-				if (words.size() == 5)
-				{
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorSrc = Utils::ShaderBlendFactorFromString(words[1]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaSrc = Utils::ShaderBlendFactorFromString(words[3]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColorDst = Utils::ShaderBlendFactorFromString(words[2]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlphaDst = Utils::ShaderBlendFactorFromString(words[4]);
-					GE_CORE_TRACE("	Blend mode: {} {} {} {}", words[1], words[2], words[3], words[4]);
-				}
-			}
-			// blend op
-			commandPos = block.find("BlendOp", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 2 || words.size() == 3, "Invalid BlendOp command! " + commandLine);
-				if (words.size() == 2)
-				{
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[1]);
-					GE_CORE_TRACE("	Blend op: {}", words[1]);
-				}
-				if (words.size() == 3)
-				{
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendColor = Utils::ShaderBlendModeFromString(words[1]);
-					m_PassReflections.at(m_PassReflections.size() - 1).State.BlendAlpha = Utils::ShaderBlendModeFromString(words[2]);
-					GE_CORE_TRACE("	Blend op: {} {}", words[1], words[2]);
-				}
-			}
-			//color mask
-			commandPos = block.find("ColorMask", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				int mask = 0;
-				for (size_t i = 1; i < words.size(); i++)
-				{
-					if (StringHelper::ToUpper(words[i]) == "R") mask |= COLOR_MASK_CHANNEL_R;
-					if (StringHelper::ToUpper(words[i]) == "G") mask |= COLOR_MASK_CHANNEL_G;
-					if (StringHelper::ToUpper(words[i]) == "B") mask |= COLOR_MASK_CHANNEL_B;
-					if (StringHelper::ToUpper(words[i]) == "A") mask |= COLOR_MASK_CHANNEL_A;
-				}
-				m_PassReflections.at(m_PassReflections.size() - 1).State.ColorMask = mask;
-				GE_CORE_TRACE("	Color mask: {}", mask);
-			}
-			//tag
-			commandPos = block.find("Tag", 0);
-			if (commandPos != std::string::npos)
-			{
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 2, "Invalid Tag command! " + commandLine);
-				m_PassReflections.at(m_PassReflections.size() - 1).State.Tag = words[1];
-				GE_CORE_TRACE("	Tag: {}", words[1]);
-			}
-			//#pragma
-			commandPos = 0;
-			m_StageEntryPoints.push_back(std::unordered_map<std::string, std::string>());
-			m_IsMeshWorkflow.push_back(0);
-			while (block.find("#pragma", commandPos) != std::string::npos)
-			{
-				commandPos = block.find("#pragma", commandPos);
-				commandLine = block.substr(commandPos, block.find("\n", commandPos) - commandPos);
-				auto words = StringHelper::Split(commandLine, { ' ', '\t', ',', '\r'});
-				words = StringHelper::ClearEmptyStrings(words);
-				GE_CORE_ASSERT(words.size() == 3, "Invalid pragma command! " + commandLine);
-				if (StringHelper::ToUpper(words[1]) == "VERTEX")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_VERTEX] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "FRAGMENT")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_FRAGMENT] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "HULL")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_HULL] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "DOMAIN")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_DOMAIN] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "GEOMETRY")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_GEOMETRY] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "COMPUTE")
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_COMPUTE] = words[2];
-				else if (StringHelper::ToUpper(words[1]) == "AMPLIFICATION")
-				{
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_AMPLIFICATION] = words[2];
-					m_IsMeshWorkflow.back() = 1;
-				}
-				else if (StringHelper::ToUpper(words[1]) == "MESH")
-				{
-					m_StageEntryPoints.at(m_StageEntryPoints.size() - 1)[SHADER_STAGE_MESH] = words[2];
-					m_IsMeshWorkflow.back() = 1;
-				}
-				else
-					GE_CORE_ASSERT(false, "Unknown shader stage in pragma command! " + commandLine);
-				commandPos++;
-			}
-			
-
-
-			pos = source.find("Program", pos);
-			pos = source.find("{", pos);
-			stack.push(1);
-			size_t begin = pos + 1;
-			pos++;
-			while (pos < source.size())
-			{
-				if (source.at(pos) == '{')
-				{
-					stack.push(1);
-				}
-				if (source.at(pos) == '}')
-				{
-					stack.pop();
-				}
-				if (stack.size() == 2)
-				{
-					pos;
-					break;
-				}
-				pos++;
-			}
-			block = source.substr(begin, pos - begin - 1);
-
-			// src code
-			shaderSrcCode.push_back(block);
-
-			pos = source.find("}", pos + 1);
-			stack.pop();
+			ShaderReflectionInfo reflection;
+			reflection.State = std::move(pass.State);
+			reflections.push_back(std::move(reflection));
+			entries.push_back(std::move(pass.EntryPoints));
+			mesh.push_back(pass.MeshWorkflow ? 1 : 0);
+			programs.push_back(std::move(pass.Program));
 		}
-		
+		// Commit only after the entire container and all temporary allocations succeed.
+		m_Name.swap(container.Name);
+		m_PassReflections.swap(reflections);
+		m_StageEntryPoints.swap(entries);
+		m_IsMeshWorkflow.swap(mesh);
+		shaderSrcCode.swap(programs);
 	}
 
 	bool Shader::Compile(const std::vector<std::string>& shaderSrcCodes, 

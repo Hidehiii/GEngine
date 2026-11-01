@@ -1,5 +1,15 @@
 # Rendering architecture refactor
 
+2026-11-01 shader-container parser rewrite is implemented under
+[ShaderGraph](Rendering/ShaderGraph.md): a CPU-only scanner/parser validates full
+structure/state/stages, preserves exact Program bytes and reports source/line/
+column errors. Shader loading commits parse data transactionally before disk
+cache/compilation; cache fingerprints include parser revision 2. DepthWrite On
+is corrected. CPU Debug/Release/corpus checks pass; new opt-in pipeline malformed-
+shader rollback/cache checks remain runtime-unverified because this host's D3D12
+version blocks complete engine/example builds. GPU/backend/public Shader::Create
+semantics are unchanged; no visual graph or native scheduling work is included.
+
 Version-exclusion recovery tips distinguish Windows-serviced SDKLayers, compiler
 SDK retargeting and separate Agility integration; see
 [BuildAndRun](../Documentation/Guides/BuildAndRun.md#changing-sdkruntime-versions).

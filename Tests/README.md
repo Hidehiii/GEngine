@@ -1,5 +1,29 @@
 # Focused regression checks
 
+## Shader container parser
+
+Run `powershell -NoProfile -File Tests/RunShaderContainerChecks.ps1` to build/run
+the production CPU parser in Debug and Release with VS2022, without the engine,
+Application, compiler or GPU runtime. The standalone CMake target is deliberately
+limited to parser code; it does not bypass the engine's D3D12 build rejection.
+Checks cover render-state/default/alias semantics, exact Program extraction,
+multi-pass/stages, BOM/CRLF/comments/quotes, malformed structures/directives,
+truncations and 2000 deterministic arbitrary inputs (2160 rejection checks total).
+
+With Python/PyYAML, check tracked assets in each configuration:
+
+```bat
+python -B Tests/ShaderContainerCorpus.py build/shader-container/Debug/ShaderContainerChecks.exe --logs build/shader-container/corpus-Debug
+python -B Tests/ShaderContainerCorpus.py build/shader-container/Release/ShaderContainerChecks.exe --logs build/shader-container/corpus-Release
+```
+
+Manifest/logs distinguish accepted current containers from expected old #Name
+GLSL containers/fragments and deliberately malformed rollback fixtures. All
+current tracked containers pass; legacy rejection is not a successful shader
+compile. See Example/RenderPipeline --parser for runtime rollback/cache/readback
+checks; that mode remains unverified while the current D3D12 build guard blocks
+full builds. CPU builds may report existing Core/Log.h C4251 export warnings.
+
 ## D3D12 build-host version exclusion (2026-11-01)
 
 Run powershell -NoProfile -File Tests/D3D12RuntimeBuildCheck.ps1 for exact-version policy coverage. BuildScripts/CheckD3D12Runtime.ps1 -NoPopup checks the actual installed x64 system layer; 10.0.26100.4768 returns 1. CMake/Premake use the same script, normally with a 10-second warning popup. GENGINE_BUILD_NO_POPUP=1 or CI hides only UI. Missing Graphics Tools is allowed; unreadable existing metadata fails.

@@ -5,6 +5,7 @@
 #include <GEngine/Graphics/Sampler.h>
 #include <GEngine/Graphics/Texture.h>
 #include <cmath>
+#include <cstdlib>
 #include <stdexcept>
 
 namespace GEngine
@@ -332,6 +333,23 @@ namespace GEngine
 				Failure("null factory",[&]{m_Selector.Activate(invalid,m_Registry);},false);
 				invalid = m_Warm; invalid.Resources.at("ColorShader").Path = "Assets/Shaders/PipelineAssetInvalid.gasset";
 				Failure("shader compilation",[&]{m_Selector.Activate(invalid,m_Registry);},false,"Failed to compile shader stage");
+				const char* parserCheck = std::getenv("GENGINE_RENDER_PIPELINE_PARSER_CHECK");
+				if (parserCheck && std::string(parserCheck) == "1")
+				{
+					for (const std::string file : { "PipelineParserInvalidState", "PipelineParserInvalidStructure" })
+					{
+						const auto cache = std::filesystem::path(Application::Get().GetConfig()->GetShaderCacheDirectory()) / file;
+						Check(!std::filesystem::exists(cache), "malformed shader fixture has stale cache.");
+						invalid = m_Warm;
+						invalid.Resources.at("ColorShader").Path = "Assets/Shaders/" + file + ".gasset";
+						for (int attempt = 0; attempt < 2; ++attempt)
+						{
+							Failure(file.c_str(), [&]{m_Selector.Activate(invalid,m_Registry);}, false, "Shader parse error ");
+							Check(!std::filesystem::exists(cache), "malformed shader published a cache.");
+						}
+					}
+					GE_INFO("Shader parser rollback passed: 4 cases.");
+				}
 			}
 			RenderPipelineAssetRegistry m_Registry;
 			RenderPipelineSelector m_Selector;
